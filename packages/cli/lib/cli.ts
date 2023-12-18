@@ -146,7 +146,8 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames,
                 mappings,
-                inputs: input && Object.keys(input).length > 0 ? input : ''
+                inputs: input && Object.keys(input).length > 0 ? input : '',
+                hasWebhook: type === SyncConfigType.SYNC && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
             });
 
             const stripped = rendered.replace(/^\s+/, '');

@@ -17,7 +17,8 @@ const publicProcedure = t.procedure; //.use(logging);
 
 interface RunParams {
     nangoProps: NangoProps;
-    isAction: boolean;
+    isInvokedImmediately: boolean;
+    isWebhook: boolean;
     code: string;
     codeParams?: object;
 }
@@ -44,6 +45,6 @@ function runProcedure() {
         .input((input) => input as RunParams)
         .mutation(async ({ input }) => {
             const { nangoProps, code, codeParams } = input;
-            return await exec(nangoProps, input.isAction, code, codeParams);
+            return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
         });
 }

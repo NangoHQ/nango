@@ -444,6 +444,10 @@ export class NangoError extends Error {
                 this.message = `The action script failed with an error: ${this.payload}`;
                 break;
 
+            case 'webhook_script_failure':
+                this.message = `The webhook script failed with an error: ${this.payload}`;
+                break;
+
             case 'pass_through_error':
                 this.status = 400;
                 this.message = `${this.payload}`;

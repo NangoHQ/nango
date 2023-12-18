@@ -570,6 +570,10 @@ hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
+    connection_configuration:
+        - portalId
+    post_connection_script: hubspot-post-connection
+    webhook_routing_script: hubspot-webhook-routing
     proxy:
         base_url: https://api.hubapi.com
         decompress: true
@@ -605,6 +609,9 @@ jira:
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
+    connection_configuration:
+        - cloudID
+        - accountId
     proxy:
         base_url: https://api.atlassian.com
         paginate:
@@ -613,6 +620,8 @@ jira:
             limit_name_in_request: limit
             response_path: results
             link_path_in_response_body: _links.next
+    post_connection_script: jira-post-connection
+    webhook_routing_script: jira-webhook-routing
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize

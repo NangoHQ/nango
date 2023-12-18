@@ -9,6 +9,7 @@ import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
+import environmentService from '../services/environment.service.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate } | null;
@@ -79,6 +80,23 @@ class ConfigService {
         }
 
         return result[0].id;
+    }
+
+    async getProviderConfigByUuid(providerConfigKey: string, environment_uuid: string): Promise<ProviderConfig | null> {
+        if (!providerConfigKey) {
+            throw new NangoError('missing_provider_config');
+        }
+        if (!environment_uuid) {
+            throw new NangoError('missing_environment_uuid');
+        }
+
+        const environment_id = await environmentService.getIdByUuid(environment_uuid);
+
+        if (!environment_id) {
+            return null;
+        }
+
+        return this.getProviderConfig(providerConfigKey, environment_id);
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {

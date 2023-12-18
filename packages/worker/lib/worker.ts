@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
-import { TASK_QUEUE, isProd } from '@nangohq/shared';
+import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE, isProd } from '@nangohq/shared';
 
 async function run() {
     if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
@@ -32,22 +32,27 @@ async function run() {
               }
     });
 
-    const worker = await Worker.create({
+    const syncWorker = {
         connection,
         namespace,
         workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
         activities,
-        taskQueue: TASK_QUEUE,
-        maxConcurrentWorkflowTaskExecutions: 50
-    });
-    // Worker connects to localhost by default and uses console.error for logging.
-    // Customize the Worker by passing more options to create():
-    // https://typescript.temporal.io/api/classes/worker.Worker
-    // If you need to configure server connection parameters, see docs:
-    // https://docs.temporal.io/typescript/security#encryption-in-transit-with-mtls
+        maxConcurrentWorkflowTaskExecutions: 50,
+        taskQueue: SYNC_TASK_QUEUE
+    };
 
-    // Step 2: Start accepting tasks on the `${TASK_QUEUE}` queue
-    await worker.run();
+    const webhookWorker = {
+        connection,
+        namespace,
+        workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
+        activities,
+        maxConcurrentWorkflowTaskExecutions: 50,
+        maxActivitiesPerSecond: 50,
+        taskQueue: WEBHOOK_TASK_QUEUE
+    };
+
+    const workers = await Promise.all([Worker.create(syncWorker), Worker.create(webhookWorker)]);
+    await Promise.all(workers.map((worker) => worker.run()));
 }
 
 run().catch((err) => {

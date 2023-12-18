@@ -15,6 +15,7 @@ export enum SyncStatus {
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL',
+    WEBHOOK = 'WEBHOOK',
     FULL = 'FULL',
     ACTION = 'ACTION'
 }
@@ -102,6 +103,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     endpoints?: NangoSyncEndpoint[];
     input?: string;
     sync_type?: SyncType | undefined;
+    webhook_subscriptions?: string[];
 }
 
 export interface SyncEndpoint extends Timestamps {
@@ -187,6 +189,7 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     track_deletes?: boolean;
     input?: string;
     sync_type?: SyncType;
+    webhookSubscriptions?: string[];
 }
 
 export enum ScheduleStatus {
@@ -268,6 +271,7 @@ export const SyncCommandToScheduleStatus = {
 };
 
 export interface NangoSyncWebhookBody {
+    from: string;
     connectionId: string;
     providerConfigKey: string;
     syncName: string;
@@ -297,7 +301,8 @@ export interface IntegrationServiceInterface {
         integrationData: NangoIntegrationData,
         environmentId: number,
         writeToDb: boolean,
-        isAction: boolean,
+        isInvokedImmediately: boolean,
+        isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object,
         temporalContext?: Context

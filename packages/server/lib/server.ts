@@ -20,6 +20,7 @@ import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
+import webhookController from './controllers/webhook.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -75,6 +76,7 @@ app.get('/health', (_, res) => {
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 app.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
+app.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(authController));
 app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(authController));
 app.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
@@ -91,6 +93,7 @@ app.route('/connection/:connectionId').get(apiAuth, connectionController.getConn
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadata.bind(connectionController));
+app.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadata.bind(connectionController));
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));

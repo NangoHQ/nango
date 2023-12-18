@@ -332,6 +332,21 @@ export default function Activity() {
                                                             )}
                                                         </span>
                                                     )}
+                                                    {activity?.action === 'webhook' && (
+                                                        <div className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
+                                                                <ArrowRight className="stroke-red-500 mr-2" size="16" />
+                                                                <p className="inline-block text-red-500">webhook</p>
+                                                            </div>
+                                                            {activity.endpoint && (
+                                                                <Tooltip text={`${activity.endpoint}`} type="dark">
+                                                                    <div className="w-52 text-gray-500 overflow-hidden truncate">
+                                                                        <span className="ml-3">{activity.endpoint}</span>
+                                                                    </div>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                     {activity?.action === 'sync' && (
                                                         <span className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">

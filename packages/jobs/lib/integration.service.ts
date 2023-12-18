@@ -31,7 +31,8 @@ class IntegrationService implements IntegrationServiceInterface {
         integrationData: NangoIntegrationData,
         environmentId: number,
         writeToDb: boolean,
-        isAction: boolean,
+        isInvokedImmediately: boolean,
+        isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object,
         temporalContext?: Context
@@ -95,10 +96,21 @@ class IntegrationService implements IntegrationServiceInterface {
             try {
                 // TODO: request sent to the runner for it to run the script is synchronous.
                 // TODO: Make the request return immediately and have the runner ping the job service when it's done.
-                const res = await runner.client.run.mutate({ nangoProps, code: script as string, codeParams: input as object, isAction });
+                const res = await runner.client.run.mutate({
+                    nangoProps,
+                    code: script as string,
+                    codeParams: input as object,
+                    isInvokedImmediately,
+                    isWebhook
+                });
                 return { success: true, error: null, response: res };
             } catch (err: any) {
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failure';
+                let errorType = 'sync_script_failure';
+                if (isWebhook) {
+                    errorType = 'webhook_script_failure';
+                } else if (isInvokedImmediately) {
+                    errorType = 'action_script_failure';
+                }
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
 
                 if (activityLogId && writeToDb) {

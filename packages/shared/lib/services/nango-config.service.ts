@@ -269,6 +269,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
     for (const providerConfigKey in config.integrations) {
         const builtSyncs: NangoSyncConfig[] = [];
         const builtActions: NangoSyncConfig[] = [];
+
         const integration: NangoV2Integration = config.integrations[providerConfigKey] as NangoV2Integration;
         let provider;
 
@@ -283,6 +284,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
         const syncs = integration['syncs'] as NangoV2Integration;
         const actions = integration['actions'] as NangoV2Integration;
+
         for (const syncName in syncs) {
             const sync: NangoIntegrationDataV2 = syncs[syncName] as NangoIntegrationDataV2;
             const models: NangoSyncModel[] = [];
@@ -358,6 +360,16 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 return { success: false, error, response: null };
             }
 
+            let webhookSubscriptions: string[] = [];
+
+            if (sync['webhook-subscriptions']) {
+                if (Array.isArray(sync['webhook-subscriptions'])) {
+                    webhookSubscriptions = sync['webhook-subscriptions'] as string[];
+                } else {
+                    webhookSubscriptions = [sync['webhook-subscriptions'] as string];
+                }
+            }
+
             const syncObject: NangoSyncConfig = {
                 name: syncName,
                 type: SyncConfigType.SYNC,
@@ -372,7 +384,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
-                endpoints
+                endpoints,
+                webhookSubscriptions
             };
 
             builtSyncs.push(syncObject);

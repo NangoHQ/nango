@@ -23,10 +23,11 @@ import {
     MetricTypes,
     isInitialSyncStillRunning,
     initialSyncExists,
+    getSyncByIdAndName,
     logger
 } from '@nangohq/shared';
 import integrationService from './integration.service.js';
-import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
+import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
@@ -79,6 +80,48 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const actionResults = await syncRun.run();
 
     return actionResults;
+}
+
+export async function runWebhook(args: WebhookArgs): Promise<boolean> {
+    const { input, nangoConnection, activityLogId, parentSyncName } = args;
+
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.environment_id as number
+    )) as ProviderConfig;
+
+    const sync = await getSyncByIdAndName(nangoConnection.id as number, parentSyncName);
+
+    const context: Context = Context.current();
+
+    const syncJobId = await createSyncJob(
+        sync?.id as string,
+        SyncType.WEBHOOK,
+        SyncStatus.RUNNING,
+        context.info.workflowExecution.workflowId,
+        nangoConnection,
+        context.info.workflowExecution.runId
+    );
+
+    const syncRun = new syncRunService({
+        integrationService,
+        writeToDb: true,
+        nangoConnection,
+        syncJobId: syncJobId?.id as number,
+        syncName: parentSyncName,
+        isAction: false,
+        syncType: SyncType.WEBHOOK,
+        isWebhook: true,
+        activityLogId,
+        input,
+        provider: syncConfig.provider,
+        debug: false,
+        temporalContext: context
+    });
+
+    const result = await syncRun.run();
+
+    return result.success;
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object | null> {
@@ -309,13 +352,24 @@ export async function syncProvider(
 
 export async function reportFailure(
     error: any,
-    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs,
+    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs,
     DEFAULT_TIMEOUT: string,
     MAXIMUM_ATTEMPTS: number
 ): Promise<void> {
     const { nangoConnection } = workflowArguments;
-    const type = 'syncName' in workflowArguments ? 'sync' : 'action';
-    const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName;
+    let type = 'webhook';
+
+    let name = '';
+    if ('syncName' in workflowArguments) {
+        name = workflowArguments.syncName;
+        type = 'sync';
+    } else if ('actionName' in workflowArguments) {
+        name = workflowArguments.actionName;
+        type = 'action';
+    } else {
+        name = workflowArguments.name;
+    }
+
     let content = `The ${type} "${name}" failed `;
     const context: Context = Context.current();
 

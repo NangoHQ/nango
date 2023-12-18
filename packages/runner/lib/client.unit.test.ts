@@ -36,8 +36,9 @@ describe('Runner client', () => {
             stubbedMetadata: {}
         };
         const jsCode = 'f = () => { return [1, 2, 3] }; exports.default = f';
-        const isAction = true;
-        const run = client.run.mutate({ nangoProps, isAction, code: jsCode });
+        const isInvokedImmediately = true;
+        const isWebhook = false;
+        const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
         await expect(run).resolves.toEqual([1, 2, 3]);
     });
 });

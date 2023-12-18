@@ -43,6 +43,8 @@ export interface Template {
     token_response_metadata?: Array<string>;
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
+    webhook_routing_script?: string;
+    post_connection_script?: string;
 }
 
 export interface TemplateAlias {

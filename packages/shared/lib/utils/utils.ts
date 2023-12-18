@@ -176,6 +176,11 @@ export function getGlobalAppCallbackUrl() {
     return baseUrl + '/app-auth/connect';
 }
 
+export function getGlobalWebhookReceiveUrl() {
+    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
+    return baseUrl + '/webhook';
+}
+
 export async function getOauthCallbackUrl(environmentId?: number) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 

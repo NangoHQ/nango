@@ -1,11 +1,11 @@
 import { proxyActivities } from '@temporalio/workflow';
 import type * as activities from './activities.js';
-import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
+import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/Worker';
 
 const DEFAULT_TIMEOUT = '24 hours';
 const MAXIMUM_ATTEMPTS = 3;
 
-const { reportFailure, routeSync, scheduleAndRouteSync, runAction } = proxyActivities<typeof activities>({
+const { reportFailure, routeSync, scheduleAndRouteSync, runAction, runWebhook } = proxyActivities<typeof activities>({
     startToCloseTimeout: DEFAULT_TIMEOUT,
     scheduleToCloseTimeout: DEFAULT_TIMEOUT,
     retry: {
@@ -42,5 +42,15 @@ export async function action(args: ActionArgs): Promise<object> {
         await reportFailure(e, args, DEFAULT_TIMEOUT, MAXIMUM_ATTEMPTS);
 
         return { success: false };
+    }
+}
+
+export async function webhook(args: WebhookArgs): Promise<boolean> {
+    try {
+        return await runWebhook(args);
+    } catch (e: any) {
+        await reportFailure(e, args, DEFAULT_TIMEOUT, MAXIMUM_ATTEMPTS);
+
+        return false;
     }
 }

@@ -32,7 +32,8 @@
                 "returns": ["GithubIssue"],
                 "description": "Sync github issues continuously from public repos\n",
                 "scopes": ["public_repo"],
-                "endpoints": [{ "GET": "/ticketing/tickets" }]
+                "endpoints": [{ "GET": "/ticketing/tickets" }],
+                "webhookSubscriptions": ["issue.creation"]
             },
             {
                 "name": "github-issue-example-two",
@@ -64,7 +65,8 @@
                 "returns": ["GithubIssue2"],
                 "description": "Sync github issues continuously from public repos example two\n",
                 "scopes": ["public_repo"],
-                "endpoints": [{ "GET": "/ticketing/tickets-two" }]
+                "endpoints": [{ "GET": "/ticketing/tickets-two" }],
+                "webhookSubscriptions": []
             },
             {
                 "name": "github-multiple-models",
@@ -112,7 +114,8 @@
                 "returns": ["GithubIssue3", "GithubPR"],
                 "description": "Sync github issues to multiple models",
                 "scopes": [],
-                "endpoints": [{ "GET": "/ticketing/ticket" }, { "GET": "/ticketing/pr" }]
+                "endpoints": [{ "GET": "/ticketing/ticket" }, { "GET": "/ticketing/pr" }],
+                "webhookSubscriptions": []
             }
         ],
         "actions": [
