@@ -133,6 +133,20 @@ class EnvironmentService {
         return uuid;
     }
 
+    async getAccountUUIDFromEnvironmentUUID(environment_uuid: string): Promise<string | null> {
+        const result = await db.knex.withSchema(db.schema()).select('account_id').from<Environment>(TABLE).where({ uuid: environment_uuid });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        const accountId = result[0].account_id;
+
+        const uuid = await accountService.getUUIDFromAccountId(accountId);
+
+        return uuid;
+    }
+
     async getAccountIdAndEnvironmentIdByPublicKey(publicKey: string): Promise<{ accountId: number; environmentId: number } | null> {
         if (!isCloud()) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_')) || [];

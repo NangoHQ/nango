@@ -1,20 +1,21 @@
 {
-    "name": "@nangohq/nango-worker",
+    "name": "@nangohq/nango-jobs",
     "version": "0.36.52",
     "type": "module",
-    "main": "dist/worker.js",
+    "main": "dist/app.js",
     "scripts": {
-        "start": "tsc && node dist/worker.js",
+        "start": "tsc && node dist/app.js",
         "dev": "nodemon",
-        "build": "tsc"
+        "build": "rimraf dist && tsc"
     },
     "keywords": [],
     "repository": {
         "type": "git",
         "url": "https://github.com/NangoHQ/nango",
-        "directory": "packages/worker"
+        "directory": "packages/jobs"
     },
     "dependencies": {
+        "@nangohq/nango-runner": "0.36.52",
         "@nangohq/shared": "0.36.52",
         "@octokit/plugin-retry": "^6.0.0",
         "@octokit/plugin-throttling": "^7.0.0",
@@ -23,15 +24,17 @@
         "@temporalio/client": "^1.5.2",
         "@temporalio/worker": "^1.5.2",
         "@temporalio/workflow": "^1.5.2",
+        "@trpc/client": "^10.44.1",
+        "@trpc/server": "^10.44.1",
         "@types/fs-extra": "^11.0.1",
+        "dd-trace": "^4.21.0",
         "dotenv": "^16.0.3",
         "fs-extra": "^11.1.1",
         "js-yaml": "^4.1.0",
         "knex": "^2.4.2",
         "md5": "^2.3.0",
         "nanoid": "3.x",
-        "uuid": "^9.0.0",
-        "vm2": "^3.9.19"
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
         "@tsconfig/node16": "^1.0.0",
@@ -43,6 +46,6 @@
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-deprecation": "^1.2.1",
         "nodemon": "^3.0.1",
-        "typescript": "^4.4.2"
+        "typescript": "^5.3.2"
     }
 }
