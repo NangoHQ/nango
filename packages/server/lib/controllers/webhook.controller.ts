@@ -21,7 +21,10 @@ class WebhookController {
 
             if (areWebhooksEnabled) {
                 routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
+            } else {
+                res.status(404).send();
             }
+
             res.status(200).send();
         } catch (err) {
             next(err);
