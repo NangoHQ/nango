@@ -46,7 +46,6 @@
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-deprecation": "^1.2.1",
         "nodemon": "^3.0.1",
-        "ts-node": "^10.9.1",
         "typescript": "^5.3.2"
     }
 }

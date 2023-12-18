@@ -46,6 +46,7 @@ export class Temporal {
             namespace: this.namespace,
             workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
             activities,
+            maxConcurrentWorkflowTaskExecutions: 50,
             taskQueue: SYNC_TASK_QUEUE
         };
 
@@ -54,6 +55,7 @@ export class Temporal {
             namespace: this.namespace,
             workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
             activities,
+            maxConcurrentWorkflowTaskExecutions: 50,
             maxActivitiesPerSecond: 50,
             taskQueue: WEBHOOK_TASK_QUEUE
         };
