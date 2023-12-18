@@ -17,7 +17,7 @@ class WebhookController {
                 return;
             }
 
-            const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true);
+            const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true, true);
 
             if (areWebhooksEnabled) {
                 routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
