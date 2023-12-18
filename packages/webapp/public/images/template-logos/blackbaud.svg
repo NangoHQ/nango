@@ -1,0 +1,19 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1590 1590" width="1590" height="1590">
+	<title>blackbaud-media-kit-1-pdf-svg</title>
+	<defs>
+		<linearGradient id="g1" x1="794.9" y1="1590" x2="794.9" y2=".1" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#52c06f"/>
+			<stop offset="1" stop-color="#4dd1f7"/>
+		</linearGradient>
+	</defs>
+	<style>
+		.s0 { fill: url(#g1) } 
+		.s1 { fill: #ffffff } 
+	</style>
+	<g id="Clip-Path: Page 1" clip-path="url(#cp1)">
+		<g id="Page 1">
+			<path id="Path 51" class="s0" d="m794.9 1590c-439.4 0-794.6-355.3-794.6-794.9 0-439.7 355.2-795 794.6-795 439.5 0 794.7 355.3 794.7 795 0 439.6-355.2 794.9-794.7 794.9z"/>
+			<path id="Path 52" fill-rule="evenodd" class="s1" d="m458.1 1015.4v-587.6h103.6v246.3c30.3-21.6 73.4-43.2 125.3-47.5 177.1-8.7 280.7 120.9 280.7 267.8 0 146.9-103.6 272.2-276.4 272.2-172.8 0-233.2-151.2-233.2-151.2zm224.6 47.5c107.9 13 190-77.8 190-164.2 0-90.7-73.4-185.7-194.4-168.5-51.8 8.7-95 38.9-116.6 73.5v185.8c25.9 34.5 69.1 69.1 121 73.4zm427.5-168.5c0-43.2-51.8-125.3-51.8-125.3q-19.4-25.9 13-12.9l194.3 125.3q25.9 12.9 0 25.9l-194.3 125.3c-21.6 12.9-25.9 4.3-13-13 51.8-77.8 51.8-125.3 51.8-125.3z"/>
+		</g>
+	</g>
+</svg>

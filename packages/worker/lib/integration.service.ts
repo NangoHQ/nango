@@ -5,6 +5,8 @@ import {
     createActivityLogMessage,
     getRootDir,
     NangoIntegrationData,
+    NangoProps,
+    NangoAction,
     NangoSync,
     localFileService,
     remoteFileService,
@@ -25,7 +27,7 @@ class IntegrationService implements IntegrationServiceInterface {
         syncName: string,
         syncId: string,
         activityLogId: number | undefined,
-        nango: NangoSync,
+        nangoProps: NangoProps,
         integrationData: NangoIntegrationData,
         environmentId: number,
         writeToDb: boolean,
@@ -36,6 +38,7 @@ class IntegrationService implements IntegrationServiceInterface {
         temporalContext?: Context
     ): Promise<ServiceResponse<any>> {
         try {
+            const nango = isInvokedImmediately && !isWebhook ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
             const script: string | null =
                 isCloud() && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)

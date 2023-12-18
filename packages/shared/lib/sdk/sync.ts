@@ -170,9 +170,10 @@ interface Connection {
     credentials: AuthCredentials;
 }
 
-interface NangoProps {
+export interface NangoProps {
     host?: string;
     secretKey: string;
+    accountId?: number;
     connectionId?: string;
     environmentId?: number;
     activityLogId?: number;
@@ -326,7 +327,7 @@ export class NangoAction {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async setMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
