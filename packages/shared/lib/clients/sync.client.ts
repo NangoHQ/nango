@@ -1,5 +1,5 @@
 import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
-import type { NangoConnection } from '../models/Connection.js';
+import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
 import ms from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -579,6 +579,9 @@ class SyncClient {
                 timestamp: Date.now()
             });
 
+            const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
+                nangoConnection as unknown as NangoFullConnection;
+
             const webhookHandler = await this.client?.workflow.execute('webhook', {
                 taskQueue: WEBHOOK_TASK_QUEUE,
                 workflowId,
@@ -586,7 +589,7 @@ class SyncClient {
                     {
                         name: webhookName,
                         parentSyncName,
-                        nangoConnection,
+                        nangoConnection: nangoConnectionWithoutCredentials,
                         input,
                         activityLogId
                     }

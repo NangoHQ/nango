@@ -15,6 +15,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     const valid = validate(integration, headers, body);
 
     if (!valid) {
+        console.log('Hubspot webhook signature invalid');
         return;
     }
 

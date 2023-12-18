@@ -17,11 +17,14 @@ class WebhookController {
                 return;
             }
 
-            const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true);
+            const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true, true);
 
             if (areWebhooksEnabled) {
                 routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
+            } else {
+                res.status(404).send();
             }
+
             res.status(200).send();
         } catch (err) {
             next(err);
