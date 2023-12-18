@@ -23,10 +23,11 @@ import {
     MetricTypes,
     isInitialSyncStillRunning,
     initialSyncExists,
+    getSyncByIdAndName,
     logger
 } from '@nangohq/shared';
 import integrationService from './integration.service.js';
-import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/worker';
+import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
@@ -307,23 +308,76 @@ export async function syncProvider(
     }
 }
 
+export async function runWebhook(args: WebhookArgs): Promise<boolean> {
+    const { input, nangoConnection, activityLogId, parentSyncName } = args;
+
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.environment_id as number
+    )) as ProviderConfig;
+
+    const sync = await getSyncByIdAndName(nangoConnection.id as number, parentSyncName);
+
+    const context: Context = Context.current();
+
+    const syncJobId = await createSyncJob(
+        sync?.id as string,
+        SyncType.WEBHOOK,
+        SyncStatus.RUNNING,
+        context.info.workflowExecution.workflowId,
+        nangoConnection,
+        context.info.workflowExecution.runId
+    );
+
+    const syncRun = new syncRunService({
+        integrationService,
+        writeToDb: true,
+        nangoConnection,
+        syncJobId: syncJobId?.id as number,
+        syncName: parentSyncName,
+        isAction: false,
+        syncType: SyncType.WEBHOOK,
+        isWebhook: true,
+        activityLogId,
+        input,
+        provider: syncConfig.provider,
+        debug: false,
+        temporalContext: context
+    });
+
+    const result = await syncRun.run();
+
+    return result.success;
+}
+
 export async function reportFailure(
     error: any,
-    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs,
+    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs,
     DEFAULT_TIMEOUT: string,
     MAXIMUM_ATTEMPTS: number
 ): Promise<void> {
     const { nangoConnection } = workflowArguments;
-    const type = 'syncName' in workflowArguments ? 'sync' : 'action';
-    const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName;
+    let type = 'webhook';
+
+    let name = '';
+    if ('syncName' in workflowArguments) {
+        name = workflowArguments.syncName;
+        type = 'sync';
+    } else if ('actionName' in workflowArguments) {
+        name = workflowArguments.actionName;
+        type = 'action';
+    } else {
+        name = workflowArguments.name;
+    }
+
     let content = `The ${type} "${name}" failed `;
     const context: Context = Context.current();
 
     if (error instanceof CancelledFailure) {
         content += `due to a cancellation.`;
-    } else if (error.cause instanceof TerminatedFailure || error.cause.name === 'TerminatedFailure') {
+    } else if (error.cause instanceof TerminatedFailure || error.cause?.name === 'TerminatedFailure') {
         content += `due to a termination.`;
-    } else if (error.cause instanceof TimeoutFailure || error.cause.name === 'TimeoutFailure') {
+    } else if (error.cause instanceof TimeoutFailure || error.cause?.name === 'TimeoutFailure') {
         if (error.cause.timeoutType === 3) {
             content += `due to a timeout with respect to the max schedule length timeout of ${DEFAULT_TIMEOUT}.`;
         } else {

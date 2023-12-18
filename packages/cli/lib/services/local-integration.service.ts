@@ -34,7 +34,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         var module = { exports: {} };
                         var exports = module.exports;
                         ${script}
-                        return module.exports.default || module.exports;
+                        return module.exports;
                     })();
                 `;
 
@@ -57,8 +57,8 @@ class IntegrationService implements IntegrationServiceInterface {
                 const context = vm.createContext(sandbox);
                 const scriptExports: any = scriptObj.runInContext(context);
 
-                if (scriptExports && typeof scriptExports === 'function') {
-                    const results = isInvokedImmediately ? await scriptExports(nango, input) : await scriptExports(nango);
+                if (scriptExports.default && typeof scriptExports.default === 'function') {
+                    const results = isInvokedImmediately ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
                     return { success: true, error: null, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
