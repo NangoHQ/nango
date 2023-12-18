@@ -46,7 +46,8 @@ export class Temporal {
             namespace: this.namespace,
             workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
             activities,
-            taskQueue: TASK_QUEUE
+            taskQueue: TASK_QUEUE,
+            maxConcurrentWorkflowTaskExecutions: 50
         });
         // Worker connects to localhost by default and uses console.error for logging.
         // Customize the Worker by passing more options to create():
