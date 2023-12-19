@@ -220,6 +220,11 @@ class FlowController {
                 return;
             }
 
+            if (!syncName) {
+                res.status(400).send('Missing sync_name');
+                return;
+            }
+
             const connections = connectionIds.split(',');
 
             const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
