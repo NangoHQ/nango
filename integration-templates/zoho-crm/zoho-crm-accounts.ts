@@ -1,71 +1,37 @@
 import type { ZohoCRMAccount, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    try {
-        const responses = await getAllAccounts(nango, '/crm/v2/Accounts');
-        if (responses.length > 0) {
-            const mappedAccounts: ZohoCRMAccount[] = responses.map(mapAccounts);
-            // Save Accounts
-            await nango.batchSave(mappedAccounts, 'ZohoCRMAccount');
-        } else {
-            await nango.log('No Accounts found.');
-        }
-    } catch (error: any) {
-        await nango.log(`Error in fetchData: ${error.message}`);
-    }
-}
-
-async function getAllAccounts(nango: NangoSync, endpoint: string): Promise<any[]> {
-    const accounts: any[] = [];
-    let page = 1;
-    const perPage = 100;
-    let response: { data: { data?: any[]; info?: { more_records?: boolean }; nextPage?: string } };
-
-    try {
-        do {
-            const { params, headers } = generateApiRequestParams(nango, page, perPage);
-
-            response = await nango.get({
-                endpoint: endpoint,
-                params: params,
-                headers: headers
-            });
-
-            if (!response.data.data) {
-                throw new Error(`Received a ZohoCRMAccounts API error (for ${endpoint}): ${JSON.stringify(response.data, null, 2)}`);
-            }
-
-            accounts.push(...response.data.data);
-            page++; // Increment the page for the next request
-        } while (response.data.info?.more_records);
-
-        return accounts;
-    } catch (error: any) {
-        // Handle unexpected errors, log them, and possibly retry or take appropriate action
-        await nango.log(`Error in getAllAccounts: ${error.message}`);
-        return [];
-    }
-}
-
-function generateApiRequestParams(nango: NangoSync, page: number, perPage: number): { params: any; headers: any } {
-    const params: any = {
-        page: `${page}`,
-        per_page: `${perPage}`
-    };
+    let totalRecords = 0;
     const fields = ''; // Define your fields to retrieve specific field values
 
-    const { lastSyncDate } = nango;
+    try {
+        const endpoint = '/crm/v2/Accounts';
+        const config = {
+            headers: {
+                'If-Modified-Since': nango.lastSyncDate?.toUTCString() || ''
+            },
+            paginate: {
+                limit: 100
+            },
+            ...(fields ? { params: { fields } } : {})
+        };
+        for await (const account of nango.paginate({ ...config, endpoint })) {
+            const mappedAccounts: ZohoCRMAccount[] = account.map(mapAccounts) || [];
+            // Save Accounts
+            const batchSize: number = mappedAccounts.length;
+            totalRecords += batchSize;
 
-    if (fields) {
-        params.fields = fields;
+            await nango.log(`Saving batch of ${batchSize} accounts (total accounts: ${totalRecords})`);
+            await nango.batchSave(mappedAccounts, 'ZohoCRMAccount');
+        }
+    } catch (error: any) {
+        if (error.status = 304) {
+            await nango.log('No Accounts found.');
+        }
+        else{
+            throw new Error(`Error in fetchData: ${error.message}`);
+        }
     }
-
-    const headers: any = {};
-    if (lastSyncDate) {
-        headers['If-Modified-Since'] = lastSyncDate.toUTCString();
-    }
-
-    return { params, headers };
 }
 
 function mapAccounts(account: any): ZohoCRMAccount {

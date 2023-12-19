@@ -1399,6 +1399,11 @@ zoho:
         access_type: offline
     proxy:
         base_url: https://www.zohoapis.${connectionConfig.extension}
+        paginate:
+            type: offset
+            response_path: data
+            offset_name_in_request: page
+            limit_name_in_request: per_page
 zoho-books:
     alias: zoho
 zoho-crm:
