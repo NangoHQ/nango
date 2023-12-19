@@ -99,7 +99,8 @@
                         "integration-templates/notion",
                         "integration-templates/salesforce",
                         "integration-templates/slack",
-                        "integration-templates/zendesk"
+                        "integration-templates/zendesk",
+                        "integration-templates/zoho-crm"
                     ]
                 }
             ]
