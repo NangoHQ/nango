@@ -1,5 +1,6 @@
 import type { NangoProps } from '@nangohq/shared';
 import { NangoSync, NangoAction } from '@nangohq/shared';
+import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
@@ -29,7 +30,8 @@ export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean
                     default:
                         throw new Error(`Module '${moduleName}' is not allowed`);
                 }
-            }
+            },
+            Buffer
         };
         const context = vm.createContext(sandbox);
         const scriptExports = script.runInContext(context);
