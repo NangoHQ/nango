@@ -87,7 +87,8 @@ export default function Syncs() {
     }
 
     const onDeletePreBuilt = async () => {
-        const res = await fetch(`/api/v1/flow/${selectedFlowToDelete?.id}`, {
+        const connections = selectedFlowToDelete?.connections?.map((connection) => connection.connection_id).join(',');
+        const res = await fetch(`/api/v1/flow/${selectedFlowToDelete?.id}?sync_name=${selectedFlowToDelete?.sync_name}&connectionIds=${connections}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
