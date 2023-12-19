@@ -29,7 +29,7 @@ integrations:
         Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
 models:
   ZohoCRMAccount:
-    Owner: 
+    Owner:
       name: string
       id: string
       email: string
@@ -46,7 +46,7 @@ models:
     $locked_for_me: boolean
     id: string
     $approved: boolean
-    $approval: 
+    $approval:
       delegate: boolean
       approve: boolean
       reject: boolean
@@ -59,7 +59,7 @@ models:
     Shipping_Country: string
     Shipping_Code: string
     Billing_City: string
-    Created_By: 
+    Created_By:
       name: string
       id: string
       email: string
@@ -77,7 +77,7 @@ models:
     Website: string
     Employees: integer
     Record_Image: string
-    Modified_By: 
+    Modified_By:
       name: string
       id: string
       email: string
@@ -88,7 +88,7 @@ models:
     Ticker_Symbol: string
     Modified_Time: date
     $orchestration: boolean
-    Parent_Account: 
+    Parent_Account:
       name: string
       id: string
     $in_merge: boolean
@@ -122,7 +122,7 @@ models:
     Reporting_To:
       name: string
       id: string
-    $approval: 
+    $approval:
       delegate: boolean
       approve: boolean
       reject: boolean
@@ -131,14 +131,14 @@ models:
     Created_Time: date
     $editable: boolean
     Home_Phone: string
-    Created_By: 
+    Created_By:
       name: string
       id: string
       email: string
     $zia_owner_assignment: string
     Secondary_Email: string
     Description: string
-    Vendor_Name: 
+    Vendor_Name:
       name: string
       id: string
     Mailing_Zip: string
@@ -211,7 +211,7 @@ models:
     Overall_Sales_Duration: integer
     Stage: string
     $locked_for_me: boolean
-    Account_Name: 
+    Account_Name:
       name: string
       id: string
     id: string
