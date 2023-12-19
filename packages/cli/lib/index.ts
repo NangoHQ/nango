@@ -76,7 +76,7 @@ program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
 program
     .command('version')
-    .description('Print the version of the Nango CLI, Nango Worker, and Nango Server.')
+    .description('Print the version of the Nango CLI and Nango Server.')
     .action(function (this: Command) {
         const { debug } = this.opts();
         version(debug);
