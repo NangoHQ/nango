@@ -2,8 +2,11 @@ import { initTRPC } from '@trpc/server';
 import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import type { NangoProps } from '@nangohq/shared';
 import { exec } from './exec.js';
+import superjson from 'superjson';
 
-const t = initTRPC.create();
+export const t = initTRPC.create({
+    transformer: superjson
+});
 
 // const logging = t.middleware(async (opts) => {
 //     // TODO

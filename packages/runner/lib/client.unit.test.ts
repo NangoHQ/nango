@@ -35,8 +35,15 @@ describe('Runner client', () => {
             logMessages: [],
             stubbedMetadata: {}
         };
-        const jsCode = 'f = () => { return [1, 2, 3] }; exports.default = f';
-        const isInvokedImmediately = true;
+        const jsCode = `
+        f = (nango) => {
+            const s = nango.lastSyncDate.toISOString();
+            const b = Buffer.from("hello world");
+            return [1, 2, 3]
+        };
+        exports.default = f
+        `;
+        const isInvokedImmediately = false;
         const isWebhook = false;
         const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
         await expect(run).resolves.toEqual([1, 2, 3]);
