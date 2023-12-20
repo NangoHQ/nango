@@ -25,7 +25,7 @@ export default async function fetchData(nango: NangoSync) {
             await nango.batchSave(mappedContacts, 'ZohoCRMContact');
         }
     } catch (error: any) {
-        if ((error.status = 304)) {
+        if (error.status == 304) {
             await nango.log('No Contacts found.');
         } else {
             throw new Error(`Error in fetchData: ${error.message}`);
