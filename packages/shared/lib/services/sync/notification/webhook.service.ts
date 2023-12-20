@@ -89,6 +89,8 @@ class WebhookService {
             body.responseResults.deleted = responseResults.deleted;
         }
 
+        const endingMesssage = noChanges ? 'no data changes as per your environment settings' : `with the following data: ${JSON.stringify(body, null, 2)}`;
+
         try {
             const response = await backOff(
                 () => {
@@ -96,8 +98,6 @@ class WebhookService {
                 },
                 { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
             );
-
-            const endingMesssage = noChanges ? 'no data changes as per your environment settings' : `with the following data: ${JSON.stringify(body, null, 2)}`;
 
             if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessage({
