@@ -27,7 +27,7 @@ else
     fi
 
     if [ "$ENV" == "enterprise" ]; then
-        npm run build:enterprise && docker buildx build --platform linux/amd64 -f packages/$PACKAGE_NAME/Dockerfile -t nangohq/$package:enterprise -t nangohq/$package:enterprise@$version . --no-cache --output type=registry
+        npm run build:enterprise && docker buildx build --platform linux/amd64 -f packages/$PACKAGE_NAME/Dockerfile -t nangohq/$package:enterprise -t nangohq/$package:enterprise-$version . --no-cache --output type=registry
     fi
 
     if [ "$ENV" == "hosted" ]; then
