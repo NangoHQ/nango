@@ -2,7 +2,7 @@
 
 if [ $# -lt 2 ]
 then
-    echo "Usage: ./release.bash [server_and_worker_version] [prod|staging|hosted|enterprise] [optional_specific_version]"
+    echo "Usage: ./release.bash [server_version] [prod|staging|hosted|enterprise] [optional_specific_version]"
     exit 1
 fi
 
@@ -57,7 +57,7 @@ function update_package_json_version() {
 # 2) Shared depends on the node-client so update the shared dependency on node-client.
 # npm install to update that dependency.
 # 3) Bump the shared package version, install build and publish it
-# 4) server, worker, and cli all depend on the shared package. Update their shared
+# 4) server and cli all depend on the shared package. Update their shared
 # dependency.
 # 5) The frontend has no dependencies so bump that version and publish it
 # 6) The webapp depends on the frontend so update that dependency, install, and build it.
@@ -65,8 +65,7 @@ function update_package_json_version() {
 # Docker publish flow
 # 1) Build the nango-server cloud version (staging or prod) and push it to dockerhub
 # 2) Build the nango-server hosted version and push it to dockerhub
-# 3) Build the nango-worker hosted version and push it to dockerhub
-# 4) Update the docker-compose.yaml in the cli to use the new server and worker versions
+# 4) Update the docker-compose.yaml in the cli to use the new server version
 # 5) Bump the cli package.json, copy the NangoSync type declaration since that is used
 # for integration scripts. Publish the package and then npm install at the root
 # to ensure all dependencies are updated
@@ -88,7 +87,7 @@ cd ./packages/node-client && npm run build && npm publish --access public && cd 
 # update the shared package that depends on the node client
 update_node_dep "packages/shared/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
 
-# Update the shared package and then bump the cli, server and worker versions that depend on it
+# Update the shared package and then bump the cli and server versions that depend on it
 SHARED_PACKAGE_JSON="packages/shared/package.json"
 update_package_json_version $SHARED_PACKAGE_JSON $3
 
@@ -97,7 +96,6 @@ npm run ts-build
 cd ./packages/shared && npm publish --access public && cd ../../
 
 update_shared_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-update_shared_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 update_shared_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 update_shared_dep "packages/jobs/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 update_shared_dep "packages/runner/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
@@ -116,34 +114,28 @@ npm i
 npm run ts-build
 cd ./packages/webapp && npm run build && cd ../../
 
-SERVER_WORKER_VERSION=$1
+SERVER_VERSION=$1
 ENV=$2
 DOCKER_COMPOSE_FILE="packages/cli/docker/docker-compose.yaml"
 
-WORKER_PACKAGE_JSON="packages/worker/package.json"
 SERVER_PACKAGE_JSON="packages/server/package.json"
 update_package_json_version $SERVER_PACKAGE_JSON $3
-update_package_json_version $WORKER_PACKAGE_JSON $3
 
 # End npm package publish flow (Minus the CLI which is published last since that depends on docker versions)
 
 rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true $2
+./scripts/docker-publish.bash nango-server $SERVER_VERSION true $2
 rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true hosted
+./scripts/docker-publish.bash nango-server $SERVER_VERSION true enterprise
 rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true enterprise
-rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-worker $SERVER_WORKER_VERSION true hosted
+./scripts/docker-publish.bash nango-server $SERVER_VERSION true hosted
 
 
 SERVER_IMAGE="nangohq/nango-server"
-WORKER_IMAGE="nangohq/nango-worker"
 
-sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
-sed -i "" "s|${WORKER_IMAGE}:[^ ]*|${WORKER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
+sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_VERSION}|g" $DOCKER_COMPOSE_FILE
 
-echo "nango-server and nango-worker published successfully and docker-compose in the cli was updated"
+echo "nango-server was published successfully and docker-compose in the cli was updated"
 
 CLI_PACKAGE_JSON="packages/cli/package.json"
 update_package_json_version $CLI_PACKAGE_JSON $3

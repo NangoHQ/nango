@@ -16,7 +16,7 @@
     },
     "dependencies": {
         "@nangohq/nango-runner": "0.36.52",
-        "@nangohq/shared": "0.36.63",
+        "@nangohq/shared": "0.36.64",
         "@octokit/plugin-retry": "^6.0.0",
         "@octokit/plugin-throttling": "^7.0.0",
         "@octokit/rest": "^20.0.1",
@@ -27,13 +27,14 @@
         "@trpc/client": "^10.44.1",
         "@trpc/server": "^10.44.1",
         "@types/fs-extra": "^11.0.1",
-        "dd-trace": "^4.21.0",
+        "dd-trace": "4.20.0",
         "dotenv": "^16.0.3",
         "fs-extra": "^11.1.1",
         "js-yaml": "^4.1.0",
         "knex": "^2.4.2",
         "md5": "^2.3.0",
         "nanoid": "3.x",
+        "superjson": "^2.2.1",
         "uuid": "^9.0.0"
     },
     "devDependencies": {

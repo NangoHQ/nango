@@ -37,10 +37,10 @@ jobs:
                     exit 1
                   fi
 
-                  CONTAINER_NAME=nango-worker
-                  WORKER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
-                  if [ ! "${WORKER}" ]; then
-                    echo "Worker container doesn't exist"
+                  CONTAINER_NAME=nango-jobs
+                  JOBS=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
+                  if [ ! "${JOBS}" ]; then
+                    echo "Jobs container doesn't exist"
                     exit 1
                   fi
               shell: bash
