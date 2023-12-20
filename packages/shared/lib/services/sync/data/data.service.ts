@@ -85,10 +85,18 @@ export async function upsert(
         errorMessage += `Model: ${model}, Unique Key: ${uniqueKey}, Nango Connection ID: ${nangoConnectionId}.\n`;
         errorMessage += `Attempted to insert/update/delete: ${responseWithoutDuplicates.length} records\n`;
 
-        if ('code' in error) errorMessage += `Error code: ${error.code}.\n`;
-        if ('detail' in error) errorMessage += `Detail: ${error.detail}.\n`;
+        if (error.code) errorMessage += `Error code: ${error.code}.\n`;
 
-        errorMessage += `Error Message: ${error.message}`;
+        console.log(`${errorMessage}${error}`);
+
+        let errorDetail = '';
+        switch (error.code) {
+            case '22001': {
+                errorDetail = 'Payload too big. Limit = 256MB';
+                break;
+            }
+        }
+        if (errorDetail) errorMessage += `Info: ${errorDetail}.\n`;
 
         return {
             success: false,
