@@ -89,7 +89,9 @@ class WebhookService {
             body.responseResults.deleted = responseResults.deleted;
         }
 
-        const endingMesssage = noChanges ? 'no data changes as per your environment settings' : `with the following data: ${JSON.stringify(body, null, 2)}`;
+        const endingMessage = noChanges
+            ? 'with no data changes as per your environment settings.'
+            : `with the following data: ${JSON.stringify(body, null, 2)}`;
 
         try {
             const response = await backOff(
