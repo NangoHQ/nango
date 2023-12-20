@@ -1,71 +1,37 @@
 import type { ZohoCRMDeal, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    try {
-        const responses = await getAllDeals(nango, '/crm/v2/Deals');
-        if (responses.length > 0) {
-            const mappedDeals: ZohoCRMDeal[] = responses.map(mapDeals);
-            // Save Deals
-            await nango.batchSave(mappedDeals, 'ZohoCRMDeal');
-        } else {
-            await nango.log('No Deals found.');
-        }
-    } catch (error: any) {
-        await nango.log(`Error in fetchData: ${error.message}`);
-    }
-}
-
-async function getAllDeals(nango: NangoSync, endpoint: string): Promise<any[]> {
-    const deals: any[] = [];
-    let page = 1;
-    const perPage = 100;
-    let response: { data: { data?: any[]; info?: { more_records?: boolean }; nextPage?: string } };
-
-    try {
-        do {
-            const { params, headers } = generateApiRequestParams(nango, page, perPage);
-
-            response = await nango.get({
-                endpoint: endpoint,
-                params: params,
-                headers: headers
-            });
-
-            if (!response.data.data) {
-                throw new Error(`Received a ZohoCRMDeals API error (for ${endpoint}): ${JSON.stringify(response.data, null, 2)}`);
-            }
-
-            deals.push(...response.data.data);
-            page++; // Increment the page for the next request
-        } while (response.data.info?.more_records);
-
-        return deals;
-    } catch (error: any) {
-        // Handle unexpected errors, log them, and possibly retry or take appropriate action
-        await nango.log(`Error in getAllDeals: ${error.message}`);
-        return [];
-    }
-}
-
-function generateApiRequestParams(nango: NangoSync, page: number, perPage: number): { params: any; headers: any } {
-    const params: any = {
-        page: `${page}`,
-        per_page: `${perPage}`
-    };
+    let totalRecords = 0;
     const fields = ''; // Define your fields to retrieve specific field values
 
-    const { lastSyncDate } = nango;
+    try {
+        const endpoint = '/crm/v2/Deals';
+        const config = {
+            headers: {
+                'If-Modified-Since': nango.lastSyncDate?.toUTCString() || ''
+            },
+            paginate: {
+                limit: 100
+            },
+            ...(fields ? { params: { fields } } : {})
+        };
+        for await (const deal of nango.paginate({ ...config, endpoint })) {
+            const mappedDeals: ZohoCRMDeal[] = deal.map(mapDeals) || [];
+            // Save Deals
+            const batchSize: number = mappedDeals.length;
+            totalRecords += batchSize;
 
-    if (fields) {
-        params.fields = fields;
+            await nango.log(`Saving batch of ${batchSize} deals (total deals: ${totalRecords})`);
+            await nango.batchSave(mappedDeals, 'ZohoCRMDeal');
+        }
+    } catch (error: any) {
+        if (error.status = 304) {
+            await nango.log('No Deals found.');
+        }
+        else{
+            throw new Error(`Error in fetchData: ${error.message}`);
+        }
     }
-
-    const headers: any = {};
-    if (lastSyncDate) {
-        headers['If-Modified-Since'] = lastSyncDate.toUTCString();
-    }
-
-    return { params, headers };
 }
 
 function mapDeals(deal: any): ZohoCRMDeal {
@@ -102,7 +68,7 @@ function mapDeals(deal: any): ZohoCRMDeal {
         $orchestration: deal.$orchestration,
         Contact_Name: deal.Contact_Name,
         Sales_Cycle_Duration: deal.Sales_Cycle_Duration,
-        Type:deal. Type,
+        Type: deal.Type,
         $in_merge: deal.$in_merge,
         Locked__s: deal.Locked__s,
         Lead_Source: deal.Lead_Source,
