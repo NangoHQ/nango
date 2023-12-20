@@ -42,6 +42,7 @@
         "start:staging": "env-cmd -f .env.staging npm run start",
         "start:prod": "env-cmd -f .env.prod npm run start",
         "build:hosted": "env-cmd -f .env.hosted npm run build",
+        "build:enterprise": "env-cmd -f .env.enterprise npm run build",
         "build:staging": "env-cmd -f .env.staging npm run build",
         "build:prod": "env-cmd -f .env.prod npm run build"
     },

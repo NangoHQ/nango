@@ -45,6 +45,10 @@ export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }
 
+export function isEnterprise() {
+    return process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
+}
+
 export function isStaging() {
     return process.env['NODE_ENV'] === NodeEnv.Staging;
 }

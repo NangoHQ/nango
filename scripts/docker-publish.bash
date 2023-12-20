@@ -26,6 +26,10 @@ else
         npm run build:prod && docker buildx build --platform linux/amd64 -f packages/$PACKAGE_NAME/Dockerfile -t nangohq/nango-cloud:$version -t nangohq/nango-cloud:latest . --no-cache --output type=registry
     fi
 
+    if [ "$ENV" == "enterprise" ]; then
+        npm run build:enterprise && docker buildx build --platform linux/amd64 -f packages/$PACKAGE_NAME/Dockerfile -t nangohq/$package:$version . --no-cache --output type=registry
+    fi
+
     if [ "$ENV" == "hosted" ]; then
         if [ "$tagLatest" == "true" ]; then
           npm run build:hosted && docker buildx build --platform linux/amd64 -f packages/$PACKAGE_NAME/Dockerfile -t nangohq/$package:$version -t nangohq/$package:latest . --no-cache --output type=registry

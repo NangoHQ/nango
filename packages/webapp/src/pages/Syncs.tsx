@@ -10,7 +10,7 @@ import { useGetAllSyncsAPI } from '../utils/api';
 import { Sync } from '../types';
 import { formatDateToUSFormat } from '../utils/utils';
 import Info from '../components/ui/Info'
-import { isLocal, isCloud } from '../utils/utils';
+import { isLocal, isCloud, isEnterprise } from '../utils/utils';
 import Button from '../components/ui/button/Button';
 
 import { useStore } from '../store';
@@ -152,7 +152,7 @@ export default function Syncs() {
                             Actions
                         </span>
                     </div>
-                    {hasFlows && (isCloud() || isLocal()) &&  (
+                    {hasFlows && (isCloud() || isLocal() || isEnterprise()) &&  (
                         <div className="flex">
                             <Link to="/flow/create" className="mt-auto mb-4 pt-2.5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                                 Add New
@@ -161,7 +161,7 @@ export default function Syncs() {
                     )}
                 </div>
 
-                {!isCloud() && !isLocal() ? (
+                {!isCloud() && !isLocal() && !isEnterprise() ? (
                     <div className="flex pt-8">
                         <Info size={24}>
                             {currentTab === 'action' ? 'Action' : 'Sync'}s are only available for <a href="https://docs.nango.dev/cloud" rel="noreferrer" target="_blank" className="text-[#4E80EE]">Cloud & Enterprise self-hosting</a>.

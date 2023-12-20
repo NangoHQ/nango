@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
-import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE, isProd } from '@nangohq/shared';
+import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE, isProd, isEnterprise } from '@nangohq/shared';
 
 export class Temporal {
     namespace: string;
@@ -24,21 +24,22 @@ export class Temporal {
         let crt: Buffer | null = null;
         let key: Buffer | null = null;
 
-        if (isProd()) {
+        if (isProd() || isEnterprise()) {
             crt = await fs.readFile(`/etc/secrets/${this.namespace}.crt`);
             key = await fs.readFile(`/etc/secrets/${this.namespace}.key`);
         }
 
         const connection = await NativeConnection.connect({
             address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
-            tls: !isProd()
-                ? false
-                : {
-                      clientCertPair: {
-                          crt: crt as Buffer,
-                          key: key as Buffer
+            tls:
+                !isProd() && !isEnterprise()
+                    ? false
+                    : {
+                          clientCertPair: {
+                              crt: crt as Buffer,
+                              key: key as Buffer
+                          }
                       }
-                  }
         });
 
         const syncWorker = {
