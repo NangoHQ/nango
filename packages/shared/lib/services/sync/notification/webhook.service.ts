@@ -51,12 +51,15 @@ class WebhookService {
 
         const { webhook_url: webhookUrl, always_send_webhook: alwaysSendWebhook } = webhookInfo;
 
-        if (!alwaysSendWebhook && responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
+        const noChanges =
+            responseResults.added === 0 && responseResults.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
+
+        if (!alwaysSendWebhook && noChanges) {
             await createActivityLogMessage({
                 level: 'info',
                 environment_id,
                 activity_log_id: activityLogId,
-                content: `There were no added, updated, or deleted results so a webhook with changes was not sent.`,
+                content: `There were no added, updated, or deleted results. No webhook sent, as per your environment settings.`,
                 timestamp: Date.now()
             });
 
@@ -94,14 +97,14 @@ class WebhookService {
                 { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
             );
 
+            const endingMesssage = noChanges ? 'no data changes as per your environment settings' : `with the following data: ${JSON.stringify(body, null, 2)}`;
+
             if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessage({
                     level: 'info',
                     environment_id,
                     activity_log_id: activityLogId,
-                    content: `Webhook sent successfully and received with a ${
-                        response.status
-                    } response code to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
+                    content: `Webhook sent successfully and received with a ${response.status} response code to ${webhookUrl} ${endingMessage}`,
                     timestamp: Date.now()
                 });
             } else {
@@ -109,9 +112,7 @@ class WebhookService {
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId,
-                    content: `Webhook sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)} but received a ${
-                        response.status
-                    } response code. Please send a 200 on successful receipt.`,
+                    content: `Webhook sent successfully to ${webhookUrl} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
                     timestamp: Date.now()
                 });
             }
