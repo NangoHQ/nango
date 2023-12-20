@@ -3,7 +3,7 @@ import { execSync, spawn, ChildProcess } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
 
 export class LocalRunner implements Runner {
-    constructor(public readonly client: any, private readonly childProcess: ChildProcess) {}
+    constructor(public readonly id: string, public readonly client: any, private readonly childProcess: ChildProcess) {}
 
     async stop(): Promise<void> {
         this.childProcess.kill();
@@ -47,7 +47,7 @@ export class LocalRunner implements Runner {
             }
 
             const client = getRunnerClient(`http://localhost:${port}`);
-            return new LocalRunner(client, childProcess);
+            return new LocalRunner(runnerId, client, childProcess);
         } catch (err) {
             throw new Error(`Unable to get runner ${runnerId}: ${err}`);
         }

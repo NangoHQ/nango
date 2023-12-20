@@ -7,7 +7,7 @@ const render = api('@render-api/v1.0#aiie8wizhlp1is9bu');
 render.auth(process.env['RENDER_API_KEY']);
 
 export class RenderRunner implements Runner {
-    constructor(public readonly client: any, private readonly serviceId: string) {}
+    constructor(public readonly id: string, public readonly client: any, private readonly serviceId: string) {}
 
     async stop(): Promise<void> {
         render.suspendService({ serviceId: this.serviceId });
@@ -40,7 +40,8 @@ export class RenderRunner implements Runner {
                         { key: 'NANGO_DB_PASSWORD', value: process.env['NANGO_DB_PASSWORD'] },
                         { key: 'NANGO_DB_PORT', value: process.env['NANGO_DB_PORT'] },
                         { key: 'NANGO_DB_SSL', value: process.env['NANGO_DB_SSL'] },
-                        { key: 'NANGO_ENCRYPTION_KEY', value: process.env['NANGO_ENCRYPTION_KEY'] }
+                        { key: 'NANGO_ENCRYPTION_KEY', value: process.env['NANGO_ENCRYPTION_KEY'] },
+                        { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' }
                     ]
                 });
                 svc = res.data.service;
@@ -54,7 +55,7 @@ export class RenderRunner implements Runner {
                 console.log(res);
             }
             const client = getRunnerClient(`http://${runnerId}`);
-            return new RenderRunner(client, svc.id);
+            return new RenderRunner(runnerId, client, svc.id);
         } catch (err) {
             throw new Error(`Unable to get runner ${runnerId}: ${err}`);
         }

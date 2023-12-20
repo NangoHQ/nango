@@ -66,7 +66,6 @@ export class Temporal {
 
     stop() {
         if (this.workers) {
-            console.log('Stopping Temporal worker');
             this.workers.forEach((worker) => worker.shutdown());
         }
     }

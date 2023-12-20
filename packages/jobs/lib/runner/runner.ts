@@ -1,12 +1,17 @@
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
+import { getEnv } from '@nangohq/shared';
+
+export function getRunnerId(suffix: string): string {
+    return `${getEnv()}-runner-account-${suffix}`;
+}
 
 export async function getRunner(runnerId: string): Promise<Runner> {
     const isRender = process.env['IS_RENDER'] === 'true';
     const runner = isRender ? await RenderRunner.get(runnerId) : await LocalRunner.get(runnerId);
 
     // Wait for runner to start and be healthy
-    const timeoutMs = isRender ? 90000 : 10000;
+    const timeoutMs = 5000;
     let healthCheck = false;
     let startTime = Date.now();
     while (!healthCheck && Date.now() - startTime < timeoutMs) {
@@ -24,6 +29,7 @@ export async function getRunner(runnerId: string): Promise<Runner> {
 }
 
 export interface Runner {
+    id: string;
     client: any;
     stop(): Promise<void>;
 }
