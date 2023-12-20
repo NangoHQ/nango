@@ -902,10 +902,11 @@ pipedrive:
         base_url: ${connectionConfig.api_domain}/api
         decompress: true
         paginate:
-            type: offset
-            offset_name_in_request: start
-            response_path: data
+            type: cursor
+            cursor_path_in_response: additional_data.next_cursor
+            cursor_name_in_request: cursor
             limit_name_in_request: limit
+            response_path: data
     docs: https://developers.pipedrive.com/docs/api/v1
 qualtrics:
     auth_mode: OAUTH2
