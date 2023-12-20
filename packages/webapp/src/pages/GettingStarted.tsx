@@ -216,7 +216,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
             model
         };
 
-        const res = await fetch(`/sync/records?${new URLSearchParams(params).toString()}`, {
+        const res = await fetch(`/records?${new URLSearchParams(params).toString()}`, {
             method: 'GET',
             headers: {
                     'Authorization': `Bearer ${secretKey}`,
