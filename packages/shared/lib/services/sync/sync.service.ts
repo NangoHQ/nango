@@ -520,8 +520,9 @@ export const getAndReconcileDifferences = async (
          * When we come back here and performAction is true, the sync would have been created so exists will be true and we'll only create
          * the sync if there are connections
          */
+        let syncsByConnection: Sync[] = [];
         if (exists && connections.length > 0) {
-            const syncsByConnection = await findSyncByConnections(
+            syncsByConnection = await findSyncByConnections(
                 connections.map((connection) => connection.id as number),
                 syncName
             );
@@ -546,6 +547,26 @@ export const getAndReconcileDifferences = async (
                     });
                 }
                 syncsToCreate.push({ connections, syncName, sync, providerConfigKey, environmentId });
+            }
+        }
+
+        // in some cases syncs are missing so let's also create them if missing
+        if (performAction && syncsByConnection.length !== 0 && syncsByConnection.length !== connections.length) {
+            const missingConnections = connections.filter((connection) => {
+                return !syncsByConnection.find((sync) => sync.nango_connection_id === connection.id);
+            });
+
+            if (missingConnections.length > 0) {
+                if (debug && activityLogId) {
+                    await createActivityLogMessage({
+                        level: 'debug',
+                        environment_id: environmentId,
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: `Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`
+                    });
+                }
+                syncsToCreate.push({ connections: missingConnections, syncName, sync, providerConfigKey, environmentId });
             }
         }
     }
