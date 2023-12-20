@@ -25,10 +25,9 @@ export default async function fetchData(nango: NangoSync) {
             await nango.batchSave(mappedAccounts, 'ZohoCRMAccount');
         }
     } catch (error: any) {
-        if (error.status = 304) {
+        if ((error.status = 304)) {
             await nango.log('No Accounts found.');
-        }
-        else{
+        } else {
             throw new Error(`Error in fetchData: ${error.message}`);
         }
     }
