@@ -91,13 +91,13 @@ export default class Nango {
     public auth(
         providerConfigKey: string,
         connectionId: string,
-        conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
+        conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials | AppCredentials
     ): Promise<AuthResult> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
 
-            return this.apiAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
+            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
         const url =
@@ -184,7 +184,7 @@ export default class Nango {
         return { params };
     }
 
-    private async apiAuth(
+    private async customAuth(
         providerConfigKey: string,
         connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
@@ -237,7 +237,28 @@ export default class Nango {
             return res.json();
         }
 
-        return Promise.reject('Something went wrong with the API authorization');
+        if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
+            const appCredentials = credentials as unknown as AppCredentials;
+
+            const url = this.hostBaseUrl + `/app-store-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(appCredentials)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw new AuthError(errorResponse.error, errorResponse.type);
+            }
+
+            return res.json();
+        }
+
+        return Promise.reject('Something went wrong with the authorization');
     }
 
     private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
@@ -284,7 +305,7 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: BasicApiCredentials | ApiKeyCredentials;
+    credentials?: BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 }
 
 interface BasicApiCredentials {
@@ -294,6 +315,12 @@ interface BasicApiCredentials {
 
 interface ApiKeyCredentials {
     apiKey?: string;
+}
+
+interface AppCredentials {
+    privateKeyId: string;
+    issuerId: string;
+    privateKey: string;
 }
 
 enum AuthorizationStatus {

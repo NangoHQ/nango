@@ -26,6 +26,7 @@ export enum AnalyticsTypes {
     ONBOARDING_4 = 'onboarding:step_5_ship_first_integration',
     PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
     PRE_APP_AUTH = 'server:pre_appauth',
+    PRE_APP_STORE_AUTH = 'server:pre_app_store_auth',
     PRE_BASIC_API_KEY_AUTH = 'server:pre_basic_api_key_auth',
     PRE_UNAUTH = 'server:pre_unauth',
     PRE_WS_OAUTH = 'server:pre_ws_oauth',

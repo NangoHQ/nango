@@ -62,6 +62,9 @@ amplitude:
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+apple-app-store:
+    auth_mode: APP_STORE
+    token_url: https://api.appstoreconnect.apple.com/v1/apps
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
