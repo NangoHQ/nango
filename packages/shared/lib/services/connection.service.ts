@@ -687,10 +687,6 @@ class ConnectionService {
                 connection.credentials = newCredentials;
                 await this.updateConnection(connection);
 
-                if (activityLogId && logAction === 'token') {
-                    await this.logActivity(activityLogId, environment_id, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
-                }
-
                 await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId,
