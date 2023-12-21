@@ -10,6 +10,7 @@ export type LogAction =
     | 'file'
     | 'full sync'
     | 'internal authorization'
+    | 'infrastructure'
     | 'pause sync'
     | 'proxy'
     | 'restart sync'
