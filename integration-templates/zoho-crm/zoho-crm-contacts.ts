@@ -1,71 +1,37 @@
 import type { ZohoCRMContact, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    try {
-        const responses = await getAllContacts(nango, '/crm/v2/Contacts');
-        if (responses.length > 0) {
-            const mappedContacts: ZohoCRMContact[] = responses.map(mapContacts);
-            // Save Contacts
-            await nango.batchSave(mappedContacts, 'ZohoCRMContact');
-        } else {
-            await nango.log('No Contacts found.');
-        }
-    } catch (error: any) {
-        await nango.log(`Error in fetchData: ${error.message}`);
-    }
-}
-
-async function getAllContacts(nango: NangoSync, endpoint: string): Promise<any[]> {
-    const contacts: any[] = [];
-    let page = 1;
-    const perPage = 100;
-    let response: { data: { data?: any[]; info?: { more_records?: boolean }; nextPage?: string } };
-
-    try {
-        do {
-            const { params, headers } = generateApiRequestParams(nango, page, perPage);
-
-            response = await nango.get({
-                endpoint: endpoint,
-                params: params,
-                headers: headers
-            });
-
-            if (!response.data.data) {
-                throw new Error(`Received a ZohoCRMContacts API error (for ${endpoint}): ${JSON.stringify(response.data, null, 2)}`);
-            }
-
-            contacts.push(...response.data.data);
-            page++; // Increment the page for the next request
-        } while (response.data.info?.more_records);
-
-        return contacts;
-    } catch (error: any) {
-        // Handle unexpected errors, log them, and possibly retry or take appropriate action
-        await nango.log(`Error in getAllContacts: ${error.message}`);
-        return [];
-    }
-}
-
-function generateApiRequestParams(nango: NangoSync, page: number, perPage: number): { params: any; headers: any } {
-    const params: any = {
-        page: `${page}`,
-        per_page: `${perPage}`
-    };
+    let totalRecords = 0;
     const fields = ''; // Define your fields to retrieve specific field values
 
-    const { lastSyncDate } = nango;
+    try {
+        const endpoint = '/crm/v2/Contacts';
+        const config = {
+            headers: {
+                'If-Modified-Since': nango.lastSyncDate?.toUTCString() || ''
+            },
+            paginate: {
+                limit: 100
+            },
+            ...(fields ? { params: { fields } } : {})
+        };
+        for await (const contact of nango.paginate({ ...config, endpoint })) {
+            const mappedContacts: ZohoCRMContact[] = contact.map(mapContacts) || [];
+            // Save Contacts
+            const batchSize: number = mappedContacts.length;
+            totalRecords += batchSize;
 
-    if (fields) {
-        params.fields = fields;
+            await nango.log(`Saving batch of ${batchSize} contacts (total contacts: ${totalRecords})`);
+            await nango.batchSave(mappedContacts, 'ZohoCRMContact');
+        }
+    } catch (error: any) {
+        if (error.status = 304) {
+            await nango.log('No Contacts found.');
+        }
+        else{
+            throw new Error(`Error in fetchData: ${error.message}`);
+        }
     }
-
-    const headers: any = {};
-    if (lastSyncDate) {
-        headers['If-Modified-Since'] = lastSyncDate.toUTCString();
-    }
-
-    return { params, headers };
 }
 
 function mapContacts(contact: any): ZohoCRMContact {
