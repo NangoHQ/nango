@@ -8,24 +8,29 @@ export function getRunnerId(suffix: string): string {
 
 export async function getRunner(runnerId: string): Promise<Runner> {
     const isRender = process.env['IS_RENDER'] === 'true';
-    const runner = isRender ? await RenderRunner.get(runnerId) : await LocalRunner.get(runnerId);
+    try {
+        const runner = isRender ? await RenderRunner.get(runnerId) : await LocalRunner.get(runnerId);
 
-    // Wait for runner to start and be healthy
-    const timeoutMs = 5000;
-    let healthCheck = false;
-    let startTime = Date.now();
-    while (!healthCheck && Date.now() - startTime < timeoutMs) {
-        try {
-            await runner.client.health.query();
-            healthCheck = true;
-        } catch (err) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Wait for runner to start and be healthy
+        const timeoutMs = 5000;
+        let healthCheck = false;
+        let startTime = Date.now();
+        while (!healthCheck && Date.now() - startTime < timeoutMs) {
+            try {
+                await runner.client.health.query();
+                healthCheck = true;
+            } catch (err) {
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
         }
+        if (!healthCheck) {
+            throw new Error(`Runner '${runnerId}' hasn't started after ${timeoutMs}ms,`);
+        }
+        return runner;
+    } catch (e) {
+        console.log(e);
+        return await LocalRunner.get(runnerId);
     }
-    if (!healthCheck) {
-        throw new Error(`Runner '${runnerId}' hasn't started after ${timeoutMs}ms,`);
-    }
-    return runner;
 }
 
 export interface Runner {
