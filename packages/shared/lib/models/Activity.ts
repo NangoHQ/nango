@@ -28,6 +28,7 @@ export enum LogActionEnum {
     DATABASE = 'database',
     FILE = 'file',
     FULL_SYNC = 'full sync',
+    INFRASTRUCTURE = 'infrastructure',
     INTERNAL_AUTHORIZATION = 'internal authorization',
     PAUSE_SYNC = 'pause sync',
     PROXY = 'proxy',
