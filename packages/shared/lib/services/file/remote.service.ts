@@ -24,7 +24,8 @@ class RemoteFileService {
 
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
         if (isEnterprise()) {
-            localFileService.putIntegrationFile(fileName, fileContents, fileName.includes('dist'));
+            const fileNameOnly = fileName.split('/').slice(-1)[0];
+            localFileService.putIntegrationFile(fileNameOnly as string, fileContents, fileName.includes('dist'));
 
             return '_LOCAL_FILE_';
         }
