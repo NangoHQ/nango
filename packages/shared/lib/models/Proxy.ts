@@ -4,18 +4,32 @@ import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from './A
 import type { Connection } from './Connection.js';
 import type { Template as ProviderTemplate } from './Provider.js';
 
-export interface ApplicationConstructedProxyConfiguration {
+interface BaseProxyConfiguration {
     endpoint: string;
-    providerConfigKey: string;
-    connectionId: string;
     retries?: number;
     data?: unknown;
     headers?: Record<string, string>;
-    params?: string | Record<string, string>;
+    params?: string | Record<string, string | number>;
     paramsSerializer?: ParamsSerializerOptions;
     baseUrlOverride?: string;
+    responseType?: ResponseType;
+    retryHeader?: RetryHeaderConfig;
+}
+
+export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
+    providerConfigKey?: string;
+    connectionId?: string;
+    retries?: number;
+    decompress?: boolean | string;
+
+    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
+    paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
+}
+
+export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
+    providerConfigKey: string;
+    connectionId: string;
     decompress?: boolean;
-    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
     method: HTTP_VERB;
     provider: string;
@@ -26,23 +40,6 @@ export interface ApplicationConstructedProxyConfiguration {
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
-export interface UserProvidedProxyConfiguration {
-    endpoint: string;
-    providerConfigKey?: string;
-    connectionId?: string;
-    retries?: number;
-    data?: unknown;
-    headers?: Record<string, string>;
-    params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
-    baseUrlOverride?: string;
-    decompress?: boolean | string;
-
-    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
-    paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
-    responseType?: ResponseType;
-}
-
 export interface InternalProxyConfiguration {
     environmentId: number;
     accountId?: number;
@@ -51,6 +48,11 @@ export interface InternalProxyConfiguration {
     existingActivityLogId?: number;
     throwErrors?: boolean;
     connection?: Connection;
+}
+
+export interface RetryHeaderConfig {
+    at?: string;
+    after?: string;
 }
 
 export enum PaginationType {

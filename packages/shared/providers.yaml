@@ -782,6 +782,8 @@ notion:
     authorization_method: header
     body_format: json
     proxy:
+        retry:
+            after: 'Retry-After'
         base_url: https://api.notion.com
         headers:
             'Notion-Version': '2022-06-28'
