@@ -2,7 +2,7 @@ import type { Response } from 'express';
 import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
-import { isCloud } from '../../utils/utils.js';
+import { isCloud, isEnterprise } from '../../utils/utils.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -23,6 +23,11 @@ class RemoteFileService {
     publicRoute = 'integration-templates';
 
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
+        if (isEnterprise()) {
+            localFileService.putIntegrationFile(fileName, fileContents, fileName.includes('dist'));
+
+            return '_LOCAL_FILE_';
+        }
         if (!isCloud()) {
             return '_LOCAL_FILE_';
         }
