@@ -32,7 +32,7 @@ export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean
                 }
             },
             Buffer,
-            setTimeout,
+            setTimeout
         };
         const context = vm.createContext(sandbox);
         const scriptExports = script.runInContext(context);
