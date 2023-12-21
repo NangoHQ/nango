@@ -736,9 +736,13 @@ class ConnectionService {
         const privateKeyBase64 = config.oauth_client_secret;
 
         let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-        privateKey = privateKey.replace(/(.{64})/g, '$1\n');
+
+        const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+
+        if (!hasLineBreak) {
+            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
+            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
+        }
 
         const now = Math.floor(Date.now() / 1000);
         const expiration = now + 10 * 60;
