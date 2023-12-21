@@ -2,7 +2,7 @@
 
 if [ $# -lt 2 ]
 then
-    echo "Usage: ./release.bash [server_version] [prod|staging|hosted] [optional_specific_version]"
+    echo "Usage: ./release.bash [server_version] [prod|staging|hosted|enterprise] [optional_specific_version]"
     exit 1
 fi
 
@@ -125,6 +125,8 @@ update_package_json_version $SERVER_PACKAGE_JSON $3
 
 rm -rf ./packages/webapp/build/fonts
 ./scripts/docker-publish.bash nango-server $SERVER_VERSION true $2
+rm -rf ./packages/webapp/build/fonts
+./scripts/docker-publish.bash nango-server $SERVER_VERSION true enterprise
 rm -rf ./packages/webapp/build/fonts
 ./scripts/docker-publish.bash nango-server $SERVER_VERSION true hosted
 

@@ -31,7 +31,8 @@ export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean
                         throw new Error(`Module '${moduleName}' is not allowed`);
                 }
             },
-            Buffer
+            Buffer,
+            setTimeout,
         };
         const context = vm.createContext(sandbox);
         const scriptExports = script.runInContext(context);

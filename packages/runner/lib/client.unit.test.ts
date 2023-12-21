@@ -36,9 +36,10 @@ describe('Runner client', () => {
             stubbedMetadata: {}
         };
         const jsCode = `
-        f = (nango) => {
+        f = async (nango) => {
             const s = nango.lastSyncDate.toISOString();
             const b = Buffer.from("hello world");
+            const t = await Promise.resolve(setTimeout(() => {}, 5));
             return [1, 2, 3]
         };
         exports.default = f
