@@ -10,7 +10,7 @@ PACKAGE_NAME=${package:6}
 
 if [ "$PACKAGE_NAME" == "jobs" ] || [ "$PACKAGE_NAME" == "runner" ]; then
     if [ "$ENV" == "staging" ]; then
-        npm run ts-build && docker build -f packages/$PACKAGE_NAME/Dockerfile --platform linux/amd64 -t nangohq/$package:$(git rev-parse --short HEAD) -t nangohq/$package:staging . && docker push nangohq/$package --all-tags
+        npm run ts-build && docker build -f packages/$PACKAGE_NAME/Dockerfile --platform linux/amd64 -t nangohq/$package:$(git rev-parse --short HEAD) -t nangohq/$package:staging . --no-cache --output type=registry
     fi
 
     if [ "$ENV" == "prod" ]; then
