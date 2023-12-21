@@ -830,17 +830,6 @@ class ConnectionService {
         }
     }
 
-    private async logActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
-        await updateActivityLogAction(activityLogId, 'token');
-        await createActivityLogMessage({
-            level: 'info',
-            environment_id,
-            activity_log_id: activityLogId,
-            content: message,
-            timestamp: Date.now()
-        });
-    }
-
     private async logErrorActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
         await updateActivityLogAction(activityLogId, 'token');
         await createActivityLogMessage({
