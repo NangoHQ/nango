@@ -69,7 +69,7 @@ class ModelService {
                 })
                 .map((fieldName: string) => {
                     const fieldModel = fields[fieldName] as string | NangoModel;
-                    const fieldType = this.getFieldType(fieldModel, debug);
+                    const fieldType = this.getFieldType(fieldModel, debug, modelName);
                     return `  ${fieldName}: ${fieldType};`;
                 })
                 .join('\n');
@@ -80,8 +80,12 @@ class ModelService {
         return interfaceDefinitions;
     }
 
-    private getFieldType(rawField: string | NangoModel, debug = false): string {
+    private getFieldType(rawField: string | NangoModel, debug = false, modelName: string): string {
         if (typeof rawField === 'string') {
+            if (rawField.toString().endsWith(',') || rawField.toString().endsWith(';')) {
+                throw new Error(`Field "${rawField}" in the model ${modelName} ends with a comma or semicolon which is not allowed.`);
+            }
+
             let field = rawField;
             let hasNull = false;
             let hasUndefined = false;
@@ -137,7 +141,7 @@ class ModelService {
         } else {
             try {
                 const nestedFields = Object.keys(rawField)
-                    .map((fieldName: string) => `  ${fieldName}: ${this.getFieldType(rawField[fieldName] as string | NangoModel)};`)
+                    .map((fieldName: string) => `  ${fieldName}: ${this.getFieldType(rawField[fieldName] as string | NangoModel, debug, modelName)};`)
                     .join('\n');
                 return `{\n${nestedFields}\n}`;
             } catch (_) {

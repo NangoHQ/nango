@@ -32,7 +32,7 @@ import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { isCloud } from './utils/utils';
+import { isCloud, isEnterprise } from './utils/utils';
 import { useStore } from './store';
 
 Sentry.init({
@@ -113,7 +113,7 @@ const App = () => {
                 <Route path="/flow/create" element={<PrivateRoute />}>
                     <Route path="/flow/create" element={<FlowCreate />} />
                 </Route>
-                {isCloud() && (
+                {(isCloud() || isEnterprise()) && (
                     <>
                         <Route path="/account-settings" element={<AccountSettings />} />
                         <Route path="/user-settings" element={<UserSettings />} />

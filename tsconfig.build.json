@@ -3,7 +3,6 @@
     "references": [
         { "path": "packages/node-client" },
         { "path": "packages/shared" },
-        { "path": "packages/worker" },
         { "path": "packages/cli" },
         { "path": "packages/server" },
         { "path": "packages/frontend" },

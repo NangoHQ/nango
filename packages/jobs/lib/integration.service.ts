@@ -7,13 +7,12 @@ import {
     localFileService,
     remoteFileService,
     isCloud,
-    getEnv,
+    isProd,
     ServiceResponse,
     NangoError,
-    formatScriptError,
-    featureFlags
+    formatScriptError
 } from '@nangohq/shared';
-import { getRunner } from './runner/runner.js';
+import { getRunner, getRunnerId } from './runner/runner.js';
 import tracer from './tracer.js';
 
 class IntegrationService implements IntegrationServiceInterface {
@@ -87,12 +86,10 @@ class IntegrationService implements IntegrationServiceInterface {
             }
 
             const accountId = nangoProps.accountId;
-            const isRunnerForAccountEnabled = await featureFlags.isEnabled('runner-for-account', `${accountId}`, false);
-            const runnerSuffix = isRunnerForAccountEnabled ? `${accountId}` : 'default';
-            const runnerId = `${getEnv()}-runner-account-${runnerSuffix}`;
-            const runner = await getRunner(runnerId);
+            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default'); // a runner per account in prod only
+            const runner = await getRunner(runnerId).catch((_) => getRunner(getRunnerId('default'))); // fallback to default runner if account runner isn't ready yet
 
-            const runSpan = tracer.startSpan('runner.run', { childOf: span }).setTag('runnerId', runnerId);
+            const runSpan = tracer.startSpan('runner.run', { childOf: span }).setTag('runnerId', runner.id);
             try {
                 // TODO: request sent to the runner for it to run the script is synchronous.
                 // TODO: Make the request return immediately and have the runner ping the job service when it's done.

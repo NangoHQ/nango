@@ -34,7 +34,16 @@ import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { getGlobalOAuthCallbackUrl, environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
+import {
+    getGlobalOAuthCallbackUrl,
+    environmentService,
+    getPort,
+    isCloud,
+    isEnterprise,
+    isBasicAuthEnabled,
+    errorManager,
+    getWebsocketsPath
+} from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
@@ -47,11 +56,12 @@ const app = express();
 AuthClient.setup(app);
 const apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
 const apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
-const webAuth = isCloud()
-    ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
-    : isBasicAuthEnabled()
-    ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
-    : [authMiddleware.noAuth.bind(authMiddleware)];
+const webAuth =
+    isCloud() || isEnterprise()
+        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
+        : isBasicAuthEnabled()
+        ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
+        : [authMiddleware.noAuth.bind(authMiddleware)];
 
 app.use(express.json({ limit: '75mb' }));
 app.use(cors());
@@ -117,7 +127,7 @@ app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDepl
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
 
 // Webapp routes (no auth).
-if (isCloud()) {
+if (isCloud() || isEnterprise()) {
     app.route('/api/v1/signup').post(authController.signup.bind(authController));
     app.route('/api/v1/signup/invite').get(authController.invitation.bind(authController));
     app.route('/api/v1/logout').post(authController.logout.bind(authController));
@@ -183,7 +193,7 @@ app.route('/api/v1/onboarding/:id').put(webAuth, onboardingController.updateStat
 app.route('/api/v1/onboarding/sync-status').get(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 
 // Hosted signin
-if (!isCloud()) {
+if (!isCloud() && !isEnterprise()) {
     app.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
         res.status(200).send();
     });

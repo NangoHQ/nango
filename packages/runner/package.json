@@ -18,10 +18,11 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "0.36.56",
+        "@nangohq/shared": "0.36.64",
         "@trpc/client": "^10.44.0",
         "@trpc/server": "^10.44.0",
-        "api": "^6.1.1"
+        "api": "^6.1.1",
+        "superjson": "^2.2.1"
     },
     "devDependencies": {
         "@types/node": "^18.7.6",

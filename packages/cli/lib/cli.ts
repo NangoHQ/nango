@@ -33,13 +33,10 @@ export const version = (debug: boolean) => {
     const dockerCompose = yaml.load(dockerComposeYaml) as any;
 
     const nangoServerImage = dockerCompose.services['nango-server'].image;
-    const nangoWorkerImage = dockerCompose.services['nango-worker'].image;
 
     const nangoServerVersion = nangoServerImage.split(':').pop();
-    const nangoWorkerVersion = nangoWorkerImage.split(':').pop();
 
     console.log(chalk.green('Nango Server version:'), nangoServerVersion);
-    console.log(chalk.green('Nango Worker version:'), nangoWorkerVersion);
     console.log(chalk.green('Nango CLI version:'), packageJson.version);
 };
 

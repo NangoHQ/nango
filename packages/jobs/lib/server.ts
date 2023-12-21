@@ -1,7 +1,10 @@
 import { initTRPC } from '@trpc/server';
 import { createHTTPServer } from '@trpc/server/adapters/standalone';
+import superjson from 'superjson';
 
-const t = initTRPC.create();
+export const t = initTRPC.create({
+    transformer: superjson
+});
 
 const router = t.router;
 const publicProcedure = t.procedure;
