@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
+import crypto from 'crypto';
 import { SyncType } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection';
 import { LogActionEnum, LogLevel } from '../../../models/Activity.js';
@@ -33,6 +34,15 @@ class WebhookService {
         return false;
     };
 
+    private getSignatureHeader = (secret: string, payload: unknown): Record<string, string> => {
+        const combinedSignature = `${secret}${JSON.stringify(payload)}`;
+        const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
+
+        return {
+            'X-Nango-Signature': createdHash
+        };
+    };
+
     async send(
         nangoConnection: NangoConnection,
         syncName: string,
@@ -43,7 +53,7 @@ class WebhookService {
         activityLogId: number,
         environment_id: number
     ) {
-        const webhookInfo = await environmentService.getWebhookInfo(nangoConnection.environment_id);
+        const webhookInfo = await environmentService.getById(nangoConnection.environment_id);
 
         if (!webhookInfo || !webhookInfo.webhook_url) {
             return;
@@ -51,12 +61,15 @@ class WebhookService {
 
         const { webhook_url: webhookUrl, always_send_webhook: alwaysSendWebhook } = webhookInfo;
 
-        if (!alwaysSendWebhook && responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
+        const noChanges =
+            responseResults.added === 0 && responseResults.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
+
+        if (!alwaysSendWebhook && noChanges) {
             await createActivityLogMessage({
                 level: 'info',
                 environment_id,
                 activity_log_id: activityLogId,
-                content: `There were no added, updated, or deleted results so a webhook with changes was not sent.`,
+                content: `There were no added, updated, or deleted results. No webhook sent, as per your environment settings.`,
                 timestamp: Date.now()
             });
 
@@ -86,10 +99,16 @@ class WebhookService {
             body.responseResults.deleted = responseResults.deleted;
         }
 
+        const endingMessage = noChanges
+            ? 'with no data changes as per your environment settings.'
+            : `with the following data: ${JSON.stringify(body, null, 2)}`;
+
         try {
+            const headers = this.getSignatureHeader(webhookInfo.secret_key, body);
+
             const response = await backOff(
                 () => {
-                    return axios.post(webhookUrl, body);
+                    return axios.post(webhookUrl, body, { headers });
                 },
                 { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
             );
@@ -99,9 +118,7 @@ class WebhookService {
                     level: 'info',
                     environment_id,
                     activity_log_id: activityLogId,
-                    content: `Webhook sent successfully and received with a ${
-                        response.status
-                    } response code to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
+                    content: `Webhook sent successfully and received with a ${response.status} response code to ${webhookUrl} ${endingMessage}`,
                     timestamp: Date.now()
                 });
             } else {
@@ -109,9 +126,7 @@ class WebhookService {
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId,
-                    content: `Webhook sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)} but received a ${
-                        response.status
-                    } response code. Please send a 200 on successful receipt.`,
+                    content: `Webhook sent successfully to ${webhookUrl} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
                     timestamp: Date.now()
                 });
             }
@@ -129,7 +144,7 @@ class WebhookService {
     }
 
     async forward(environment_id: number, providerConfigKey: string, provider: string, payload: unknown) {
-        const webhookInfo = await environmentService.getWebhookInfo(environment_id);
+        const webhookInfo = await environmentService.getById(environment_id);
 
         if (!webhookInfo || !webhookInfo.webhook_url) {
             return;
@@ -157,10 +172,12 @@ class WebhookService {
             payload
         };
 
+        const headers = this.getSignatureHeader(webhookInfo.secret_key, body);
+
         try {
             const response = await backOff(
                 () => {
-                    return axios.post(webhookUrl, body);
+                    return axios.post(webhookUrl, body, { headers });
                 },
                 { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId as number, environment_id) }
             );
