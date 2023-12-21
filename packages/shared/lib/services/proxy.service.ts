@@ -374,6 +374,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             error?.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string)
         ) {
+            if (config.retryHeader) {
+                const type = config.retryHeader.at ? 'at' : 'after';
+                const retryHeader = config.retryHeader.at ? config.retryHeader.at : config.retryHeader.after;
+
+                return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
+            }
+
             if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
                 const type = config.template.proxy.retry.at ? 'at' : 'after';
                 const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;

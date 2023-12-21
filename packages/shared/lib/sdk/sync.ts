@@ -89,6 +89,11 @@ interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
 }
 
+interface RetryHeaderConfig {
+    at?: string;
+    after?: string;
+}
+
 export interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
@@ -102,6 +107,7 @@ export interface ProxyConfiguration {
     retries?: number;
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
+    retryHeader?: RetryHeaderConfig;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
 

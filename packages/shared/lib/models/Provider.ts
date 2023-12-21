@@ -1,4 +1,4 @@
-import type { CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
+import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { SyncConfig, Action } from './Sync.js';
@@ -24,10 +24,7 @@ export interface Template {
         query?: {
             api_key: string;
         };
-        retry?: {
-            at?: string;
-            after?: string;
-        };
+        retry?: RetryHeaderConfig;
         decompress?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
     };

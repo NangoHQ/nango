@@ -687,10 +687,6 @@ class ConnectionService {
                 connection.credentials = newCredentials;
                 await this.updateConnection(connection);
 
-                if (activityLogId && logAction === 'token') {
-                    await this.logActivity(activityLogId, environment_id, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
-                }
-
                 await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId,
@@ -740,9 +736,13 @@ class ConnectionService {
         const privateKeyBase64 = config.oauth_client_secret;
 
         let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-        privateKey = privateKey.replace(/(.{64})/g, '$1\n');
+
+        const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+
+        if (!hasLineBreak) {
+            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
+            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
+        }
 
         const now = Math.floor(Date.now() / 1000);
         const expiration = now + 10 * 60;
@@ -832,17 +832,6 @@ class ConnectionService {
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
-    }
-
-    private async logActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
-        await updateActivityLogAction(activityLogId, 'token');
-        await createActivityLogMessage({
-            level: 'info',
-            environment_id,
-            activity_log_id: activityLogId,
-            content: message,
-            timestamp: Date.now()
-        });
     }
 
     private async logErrorActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
