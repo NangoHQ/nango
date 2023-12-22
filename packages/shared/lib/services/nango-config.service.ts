@@ -388,9 +388,6 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
                             allModels.push(model);
                         }
-                    } else {
-                        const error = new NangoError('duplicate_model', { model, name: actionName, type: 'action' });
-                        return { success: false, error, response: null };
                     }
                     const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
                     models.push({ name: model, fields: modelFields });
