@@ -102,6 +102,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 });
                 return { success: true, error: null, response: res };
             } catch (err: any) {
+                runSpan.setTag('error', err);
                 let errorType = 'sync_script_failure';
                 if (isWebhook) {
                     errorType = 'webhook_script_failure';
@@ -124,6 +125,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 runSpan.finish();
             }
         } catch (err) {
+            span.setTag('error', err);
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
             const content = `There was an error running integration '${syncName}': ${errorMessage}`;
 
