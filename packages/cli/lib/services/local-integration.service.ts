@@ -75,6 +75,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
+                // TODO merge this back with the main integration service
                 if (err instanceof ActionError) {
                     return { success: false, error: err, response: null };
                 }

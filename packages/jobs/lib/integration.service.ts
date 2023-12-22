@@ -101,6 +101,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     isWebhook
                 });
 
+                // TODO handle errors from the runner more gracefully and this service doesn't have to handle them
                 if (!res.success && res.error) {
                     const { error } = res;
 
