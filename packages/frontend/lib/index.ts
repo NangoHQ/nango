@@ -91,7 +91,7 @@ export default class Nango {
     public auth(
         providerConfigKey: string,
         connectionId: string,
-        conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials | AppCredentials
+        conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials
     ): Promise<AuthResult> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
@@ -168,7 +168,7 @@ export default class Nango {
         });
     }
 
-    private convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials): ConnectionConfig {
+    private convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials): ConnectionConfig {
         const params: Record<string, string> = {};
 
         if ('username' in credentials) {
@@ -179,6 +179,21 @@ export default class Nango {
         }
         if ('apiKey' in credentials) {
             params['apiKey'] = credentials.apiKey || '';
+        }
+
+        if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
+            const appStoreCredentials: { params: Record<string, string | string[]> } = {
+                params: {
+                    privateKeyId: credentials.privateKeyId as string,
+                    issuerId: credentials.issuerId as string,
+                    privateKey: credentials.privateKey as string
+                }
+            };
+
+            if (credentials.scope) {
+                appStoreCredentials.params['scope'] = credentials.scope;
+            }
+            return appStoreCredentials as unknown as ConnectionConfig;
         }
 
         return { params };
@@ -238,7 +253,7 @@ export default class Nango {
         }
 
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
-            const appCredentials = credentials as unknown as AppCredentials;
+            const appCredentials = credentials as unknown as AppStoreCredentials;
 
             const url = this.hostBaseUrl + `/app-store-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
 
@@ -305,7 +320,7 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: BasicApiCredentials | ApiKeyCredentials | AppCredentials;
+    credentials?: BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials;
 }
 
 interface BasicApiCredentials {
@@ -317,10 +332,11 @@ interface ApiKeyCredentials {
     apiKey?: string;
 }
 
-interface AppCredentials {
+interface AppStoreCredentials {
     privateKeyId: string;
     issuerId: string;
     privateKey: string;
+    scope?: string[];
 }
 
 enum AuthorizationStatus {

@@ -10,12 +10,12 @@ import {
     connectionCreated as connectionCreatedHook,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
+    AuthCredentials,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
     AuthModes,
-    getConnectionConfig,
     hmacService,
     ErrorSourceEnum,
     LogActionEnum
@@ -27,7 +27,6 @@ class AppStoreAuthController {
         const environmentId = getEnvironmentId(res);
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
-        const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
         const log = {
             level: 'info' as LogLevel,
@@ -44,7 +43,7 @@ class AppStoreAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, accountId);
+            analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -97,7 +96,7 @@ class AppStoreAuthController {
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: `Error during API Key auth: config not found`,
+                    content: `Error during App store auth: config not found`,
                     timestamp: Date.now()
                 });
 
@@ -108,13 +107,13 @@ class AppStoreAuthController {
 
             const template = await configService.getTemplate(config?.provider as string);
 
-            if (template.auth_mode !== AuthModes.ApiKey) {
+            if (template.auth_mode !== AuthModes.AppStore) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Provider ${config?.provider} does not support API key auth`
+                    content: `Provider ${config?.provider} does not support App store auth`
                 });
 
                 errorManager.errRes(res, 'invalid_auth_mode');
@@ -124,32 +123,54 @@ class AppStoreAuthController {
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
-            if (!req.body.apiKey) {
-                errorManager.errRes(res, 'missing_api_key');
+            if (!req.body.privateKeyId) {
+                errorManager.errRes(res, 'missing_private_key_id');
 
                 return;
             }
 
-            const { apiKey } = req.body;
+            if (!req.body.privateKey) {
+                errorManager.errRes(res, 'missing_private_key');
+
+                return;
+            }
+
+            if (!req.body.issuerId) {
+                errorManager.errRes(res, 'missing_issuer_id');
+
+                return;
+            }
+
+            const { privateKeyId, privateKey, issuerId, scope } = req.body;
+
+            const connectionConfig = {
+                privateKeyId,
+                issuerId,
+                scope
+            };
+
+            const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
+
+            if (!success || !credentials) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             await createActivityLogMessage({
                 level: 'info',
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
-                content: `API key auth creation was successful`,
+                content: `App store auth creation was successful`,
                 timestamp: Date.now()
             });
 
             await updateSuccessActivityLog(activityLogId as number, true);
 
-            const [updatedConnection] = await connectionService.upsertApiConnection(
-                connectionId as string,
-                providerConfigKey as string,
+            const [updatedConnection] = await connectionService.upsertConnection(
+                connectionId,
+                providerConfigKey,
                 config?.provider as string,
-                {
-                    type: AuthModes.ApiKey,
-                    apiKey
-                },
+                credentials as unknown as AuthCredentials,
                 connectionConfig,
                 environmentId,
                 accountId
@@ -175,7 +196,7 @@ class AppStoreAuthController {
                 level: 'error',
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
-                content: `Error during API key auth: ${prettyError}`,
+                content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
             });
 

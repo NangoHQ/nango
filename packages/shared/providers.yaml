@@ -65,6 +65,8 @@ amplitude:
 apple-app-store:
     auth_mode: APP_STORE
     token_url: https://api.appstoreconnect.apple.com/v1/apps
+    authorization_params:
+      audience: appstoreconnect-v1
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize

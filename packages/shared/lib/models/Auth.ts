@@ -103,6 +103,14 @@ export interface AppCredentials {
     raw: Record<string, any>;
 }
 
+export interface AppStoreCredentials {
+    type?: AuthModes.AppStore;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
+    private_key: string;
+}
+
 export interface OAuth2Credentials extends CredentialsCommon {
     type: AuthModes.OAuth2;
     access_token: string;
