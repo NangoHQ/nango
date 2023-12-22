@@ -1,4 +1,13 @@
-import { NangoError, formatScriptError, IntegrationServiceInterface, NangoIntegrationData, NangoSync, NangoProps, localFileService } from '@nangohq/shared';
+import {
+    ActionError,
+    NangoError,
+    formatScriptError,
+    IntegrationServiceInterface,
+    NangoIntegrationData,
+    NangoSync,
+    NangoProps,
+    localFileService
+} from '@nangohq/shared';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
@@ -66,6 +75,11 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
+                // TODO merge this back with the main integration service
+                if (err instanceof ActionError) {
+                    return { success: false, error: err, response: null };
+                }
+
                 let errorType = 'sync_script_failure';
                 if (isWebhook) {
                     errorType = 'webhook_script_failure';
