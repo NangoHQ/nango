@@ -453,6 +453,11 @@ export class NangoError extends Error {
                 this.message = `${this.payload}`;
                 break;
 
+            case 'action_script_runtime_error':
+                this.status = 500;
+                this.message = '';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

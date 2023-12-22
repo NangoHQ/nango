@@ -1,5 +1,5 @@
 import type { NangoProps } from '@nangohq/shared';
-import { NangoSync, NangoAction } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -54,7 +54,19 @@ export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean
                 return await scriptExports.default(nango);
             }
         }
-    } catch (error) {
-        throw new Error(`Error executing code '${error}'`);
+    } catch (error: any) {
+        if (error instanceof ActionError) {
+            const { type, payload } = error;
+            return {
+                success: false,
+                error: {
+                    type,
+                    payload
+                },
+                response: null
+            };
+        } else {
+            throw new Error(`Error executing code '${error}'`);
+        }
     }
 }

@@ -100,9 +100,19 @@ class IntegrationService implements IntegrationServiceInterface {
                     isInvokedImmediately,
                     isWebhook
                 });
+
+                // TODO handle errors from the runner more gracefully and this service doesn't have to handle them
+                if (res && !res.success && res.error) {
+                    const { error } = res;
+
+                    const err = new NangoError(error.type, error.payload);
+
+                    return { success: false, error: err, response: null };
+                }
                 return { success: true, error: null, response: res };
             } catch (err: any) {
                 runSpan.setTag('error', err);
+
                 let errorType = 'sync_script_failure';
                 if (isWebhook) {
                     errorType = 'webhook_script_failure';
