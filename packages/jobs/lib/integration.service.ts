@@ -102,7 +102,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 });
 
                 // TODO handle errors from the runner more gracefully and this service doesn't have to handle them
-                if (!res.success && res.error) {
+                if (res && !res.success && res.error) {
                     const { error } = res;
 
                     const err = new NangoError(error.type, error.payload);
