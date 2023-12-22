@@ -455,6 +455,7 @@ export class NangoError extends Error {
 
             case 'action_script_runtime_error':
                 this.status = 500;
+                this.message = '';
                 break;
 
             default:

@@ -10,7 +10,6 @@ import {
     isProd,
     ServiceResponse,
     NangoError,
-    ActionError,
     formatScriptError
 } from '@nangohq/shared';
 import { getRunner, getRunnerId } from './runner/runner.js';
