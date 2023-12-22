@@ -1072,6 +1072,7 @@ slack:
         - incoming_webhook.channel
         - incoming_webhook.channel_id
         - bot_user_id
+        - team.id
     proxy:
         base_url: https://slack.com/api
         paginate:
@@ -1080,6 +1081,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     docs: https://api.slack.com/apis
+    webhook_routing_script: slack-webhook-routing
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken

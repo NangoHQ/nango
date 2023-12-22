@@ -143,7 +143,7 @@ class WebhookService {
         }
     }
 
-    async forward(environment_id: number, providerConfigKey: string, provider: string, payload: unknown) {
+    async forward(environment_id: number, providerConfigKey: string, provider: string, payload: Record<string, any> | null) {
         const webhookInfo = await environmentService.getById(environment_id);
 
         if (!webhookInfo || !webhookInfo.webhook_url) {
@@ -169,7 +169,7 @@ class WebhookService {
 
         const body = {
             from: provider,
-            payload
+            payload: payload
         };
 
         const headers = this.getSignatureHeader(webhookInfo.secret_key, body);
