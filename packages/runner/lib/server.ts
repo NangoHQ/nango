@@ -1,5 +1,8 @@
 import { initTRPC } from '@trpc/server';
-import { createHTTPServer } from '@trpc/server/adapters/standalone';
+import * as trpcExpress from '@trpc/server/adapters/express';
+import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import timeout from 'connect-timeout';
 import type { NangoProps } from '@nangohq/shared';
 import { exec } from './exec.js';
 import superjson from 'superjson';
@@ -8,15 +11,8 @@ export const t = initTRPC.create({
     transformer: superjson
 });
 
-// const logging = t.middleware(async (opts) => {
-//     // TODO
-//     console.log(`[Runner] Received: ${JSON.stringify(opts)}`);
-//     const result = await opts.next();
-//     return result;
-// });
-
 const router = t.router;
-const publicProcedure = t.procedure; //.use(logging);
+const publicProcedure = t.procedure;
 
 interface RunParams {
     nangoProps: NangoProps;
@@ -33,10 +29,6 @@ const appRouter = router({
 
 export type AppRouter = typeof appRouter;
 
-export const server = createHTTPServer({
-    router: appRouter
-});
-
 function healthProcedure() {
     return publicProcedure.query(async () => {
         return { status: 'ok' };
@@ -50,4 +42,19 @@ function runProcedure() {
             const { nangoProps, code, codeParams } = input;
             return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
         });
+}
+
+export const server = express();
+server.use(timeout('24h'));
+server.use(
+    '/',
+    trpcExpress.createExpressMiddleware({
+        router: appRouter,
+        createContext: () => ({})
+    })
+);
+server.use(haltOnTimedout);
+
+function haltOnTimedout(req: Request, _res: Response, next: NextFunction) {
+    if (!req.timedout) next();
 }
