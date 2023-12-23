@@ -65,6 +65,7 @@ const webAuth =
 
 app.use(express.json({ limit: '75mb' }));
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
 // Set to 'false' to disable migration at startup. Appropriate when you
 // have multiple replicas of the service running and you do not want them
