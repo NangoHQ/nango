@@ -16,6 +16,11 @@ interface WebhookHandler {
     (internalNango: InternalNango, integration: ProviderConfig, headers: Record<string, any>, body: any): Promise<void | any>;
 }
 
+export interface WebhookResponse {
+    acknowledgementResponse?: unknown;
+    parsedBody?: unknown;
+}
+
 type WebhookHandlersMap = { [key: string]: WebhookHandler };
 
 const handlers: WebhookHandlersMap = webhookHandlers as unknown as WebhookHandlersMap;
@@ -95,29 +100,19 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     const handler = handlers[`${provider}Webhook`];
 
-    let res = null;
-
-    // Only handles form-urlencoded and JSON for now, both forwarded as JSON (other formats are not forwarded).
-    let parsedBody: Record<string, any> | null = null;
-    if (headers['content-type'] === 'application/x-www-form-urlencoded') {
-        parsedBody = parse(parse(body)['payload']);
-    } else if (headers['content-type'] === 'application/json') {
-        parsedBody = parse(body);
-    }
+    let res: WebhookResponse | null = null;
 
     if (handler) {
-        res = await handler(internalNango, integration, headers, parsedBody);
+        res = await handler(internalNango, integration, headers, body);
     }
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, provider, parsedBody);
+    const webhookBodyToForward = res?.parsedBody || body;
+
+    await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward);
 
     if (res) {
-        return res;
+        return res.acknowledgementResponse;
     }
-}
-
-function parse(obj: any) {
-    return JSON.parse(JSON.stringify(obj));
 }
 
 export default execute;

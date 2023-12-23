@@ -1,14 +1,19 @@
-import type { InternalNango as Nango } from './webhook.manager.js';
+import type { InternalNango as Nango, WebhookResponse } from './webhook.manager.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 
-export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: Record<string, any>): Promise<void | any> {
-    console.log('Slack webhook received');
-    console.log('Headers', headers);
-    console.log('Body ', body);
+export default async function route(
+    nango: Nango,
+    integration: ProviderConfig,
+    _headers: Record<string, any>,
+    body: Record<string, any>
+): Promise<WebhookResponse> {
+    // slack sends the payload as a form encoded string, so we need to parse it
+    const payload = JSON.parse(body['payload']);
 
-    if (body['type'] === 'url_verification') {
-        return body['challenge'];
+    if (payload['type'] === 'url_verification') {
+        return { acknowledgementResponse: body['challenge'] };
     } else {
-        await nango.executeScriptForWebhooks(integration, body, 'type', 'payload.team.id', 'team.id');
+        await nango.executeScriptForWebhooks(integration, payload, 'type', 'team.id');
+        return { parsedBody: payload };
     }
 }
