@@ -13,7 +13,7 @@ import { LogActionEnum } from '../../../models/Activity.js';
 import * as webhookHandlers from './index.js';
 
 interface WebhookHandler {
-    (internalNango: InternalNango, integration: ProviderConfig, headers: Record<string, any>, body: any): Promise<void | any>;
+    (internalNango: InternalNango, integration: ProviderConfig, headers: Record<string, any>, body: any): Promise<void | WebhookResponse>;
 }
 
 export interface WebhookResponse {
@@ -100,7 +100,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     const handler = handlers[`${provider}Webhook`];
 
-    let res: WebhookResponse | null = null;
+    let res: WebhookResponse | null | void = null;
 
     if (handler) {
         res = await handler(internalNango, integration, headers, body);
