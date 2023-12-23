@@ -14,6 +14,7 @@ export default async function route(
         return { acknowledgementResponse: body['challenge'] };
     } else {
         await nango.executeScriptForWebhooks(integration, payload, 'type', 'team.id');
+
         return { parsedBody: payload };
     }
 }

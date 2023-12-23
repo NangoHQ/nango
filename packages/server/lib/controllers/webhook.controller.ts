@@ -24,6 +24,8 @@ class WebhookController {
                 responsePayload = await routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
             } else {
                 res.status(404).send();
+
+                return;
             }
 
             res.status(200).send(responsePayload);

@@ -6,7 +6,7 @@ import type { NangoConnection } from '../../../models/Connection';
 import { LogActionEnum, LogLevel } from '../../../models/Activity.js';
 import type { SyncResult, NangoSyncWebhookBody } from '../../../models/Sync';
 import environmentService from '../../environment.service.js';
-import { createActivityLog, createActivityLogMessage } from '../../activity/activity.service.js';
+import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../../activity/activity.service.js';
 
 const RETRY_ATTEMPTS = 10;
 
@@ -154,8 +154,8 @@ class WebhookService {
 
         const log = {
             level: 'info' as LogLevel,
-            success: null,
-            action: LogActionEnum.SYNC,
+            success: true,
+            action: LogActionEnum.WEBHOOK,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -183,21 +183,21 @@ class WebhookService {
             );
 
             if (response.status >= 200 && response.status < 300) {
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'info',
                     environment_id,
                     activity_log_id: activityLogId as number,
-                    content: `Webhook sent successfully and received with a ${
+                    content: `Webhook forward was sent successfully and received with a ${
                         response.status
                     } response code to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
                     timestamp: Date.now()
                 });
             } else {
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId as number,
-                    content: `Webhook sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)} but received a ${
+                    content: `Webhook forward was sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)} but received a ${
                         response.status
                     } response code. Please send a 200 on successful receipt.`,
                     timestamp: Date.now()
@@ -206,11 +206,11 @@ class WebhookService {
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
 
-            await createActivityLogMessage({
+            await createActivityLogMessageAndEnd({
                 level: 'error',
                 environment_id,
                 activity_log_id: activityLogId as number,
-                content: `Webhook failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
+                content: `Webhook forward failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                 timestamp: Date.now()
             });
         }
