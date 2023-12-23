@@ -337,6 +337,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         syncName: parentSyncName,
         isAction: false,
         syncType: SyncType.WEBHOOK,
+        syncId: sync?.id as string,
         isWebhook: true,
         activityLogId,
         input,
