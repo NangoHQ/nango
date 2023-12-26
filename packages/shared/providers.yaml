@@ -62,6 +62,12 @@ amplitude:
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+apollo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.apollo.io/api
+        query:
+            api_key: ${apiKey}
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
