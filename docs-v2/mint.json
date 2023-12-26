@@ -171,6 +171,7 @@
                         "integrations/all/airtable",
                         "integrations/all/amazon",
                         "integrations/all/amplitude",
+                        "integrations/all/apollo",
                         "integrations/all/asana",
                         "integrations/all/ashby",
                         "integrations/all/atlassian",
