@@ -111,7 +111,11 @@ class ErrorManager {
 
     public errResFromNangoErr(res: Response, err: NangoError | null) {
         if (err) {
-            res.status(err.status).send({ error: err.message, type: err.type, payload: err.payload });
+            if (!err.message) {
+                res.status(err.status).send({ type: err.type, payload: err.payload });
+            } else {
+                res.status(err.status).send({ error: err.message, type: err.type, payload: err.payload });
+            }
         }
     }
 

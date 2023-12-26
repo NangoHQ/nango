@@ -295,7 +295,8 @@ class DeployService {
                         ts: localFileService.getIntegrationTsFile(syncName, './') as string
                     },
                     model_schema: JSON.stringify(model_schema),
-                    endpoints: flow.endpoints
+                    endpoints: flow.endpoints,
+                    webhookSubscriptions: flow.webhookSubscriptions || []
                 };
 
                 postData.push(body);

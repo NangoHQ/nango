@@ -25,7 +25,7 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
@@ -39,7 +39,7 @@ import {
 } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
-import SyncClient from '../clients/sync.client.js';
+import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -61,7 +61,7 @@ class ConnectionService {
         environment_id: number,
         accountId: number,
         metadata?: Metadata
-    ) {
+    ): Promise<{ id: number }[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
         if (storedConnection) {
@@ -208,8 +208,15 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0]?.id as number);
+            await connectionCreatedHook(
+                {
+                    id: importedConnection[0]?.id as number,
+                    connection_id,
+                    provider_config_key,
+                    environment_id: environmentId
+                },
+                provider
+            );
         }
 
         return importedConnection;
@@ -232,8 +239,15 @@ class ConnectionService {
         const importedConnection = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0].id);
+            await connectionCreatedHook(
+                {
+                    id: importedConnection[0].id,
+                    connection_id,
+                    provider_config_key,
+                    environment_id: environmentId
+                },
+                provider
+            );
         }
 
         return importedConnection;
@@ -376,11 +390,26 @@ class ConnectionService {
         return result[0].metadata;
     }
 
+    public async getConnectionConfig(connection: Connection): Promise<ConnectionConfig> {
+        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('connection_config').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return {};
+        }
+
+        return result[0].connection_config;
+    }
+
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
         const result = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
-            .select('id', 'connection_id', 'provider_config_key', 'environment_id')
+            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config')
             .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
@@ -390,12 +419,50 @@ class ConnectionService {
         return result;
     }
 
-    public async updateMetadata(connection: Connection, metadata: Metadata) {
+    public async replaceMetadata(connection: Connection, metadata: Metadata) {
         await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .where({ id: connection.id as number, deleted: false })
             .update({ metadata });
+    }
+
+    public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .where({ id: connection.id as number, deleted: false })
+            .update({ connection_config: config });
+    }
+
+    public async updateMetadata(connection: Connection, metadata: Metadata): Promise<Metadata> {
+        const existingMetadata = await this.getMetadata(connection);
+        const newMetadata = { ...existingMetadata, ...metadata };
+        await this.replaceMetadata(connection, newMetadata);
+
+        return newMetadata;
+    }
+
+    public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {
+        const existingConfig = await this.getConnectionConfig(connection);
+        const newConfig = { ...existingConfig, ...config };
+        await this.replaceConnectionConfig(connection, newConfig);
+
+        return newConfig;
+    }
+
+    public async findConnectionByConnectionConfigValue(key: string, value: string): Promise<Connection | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .select('*')
+            .whereRaw(`connection_config->>? = ? AND deleted = false`, [key, value]);
+
+        if (!result || result.length == 0 || !result[0]) {
+            return null;
+        }
+
+        return encryptionManager.decryptConnection(result[0]);
     }
 
     public async listConnections(
@@ -620,10 +687,6 @@ class ConnectionService {
                 connection.credentials = newCredentials;
                 await this.updateConnection(connection);
 
-                if (activityLogId && logAction === 'token') {
-                    await this.logActivity(activityLogId, environment_id, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
-                }
-
                 await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId,
@@ -673,9 +736,13 @@ class ConnectionService {
         const privateKeyBase64 = config.oauth_client_secret;
 
         let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-        privateKey = privateKey.replace(/(.{64})/g, '$1\n');
+
+        const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+
+        if (!hasLineBreak) {
+            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
+            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
+        }
 
         const now = Math.floor(Date.now() / 1000);
         const expiration = now + 10 * 60;
@@ -765,17 +832,6 @@ class ConnectionService {
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
-    }
-
-    private async logActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
-        await updateActivityLogAction(activityLogId, 'token');
-        await createActivityLogMessage({
-            level: 'info',
-            environment_id,
-            activity_log_id: activityLogId,
-            content: message,
-            timestamp: Date.now()
-        });
     }
 
     private async logErrorActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {

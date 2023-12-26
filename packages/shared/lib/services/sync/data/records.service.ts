@@ -525,3 +525,45 @@ export async function deleteRecordsBySyncId(sync_id: string): Promise<void> {
     await schema().from<SyncDataRecord>('_nango_sync_data_records').where({ sync_id }).del();
     await schema().from<SyncDataRecord>('_nango_sync_data_records_deletes').where({ sync_id }).del();
 }
+
+export async function getSingleRecord(external_id: string, nango_connection_id: number, model: string): Promise<SyncDataRecord | null> {
+    const encryptedRecord = await schema().from<SyncDataRecord>('_nango_sync_data_records').where({
+        nango_connection_id,
+        model,
+        external_id
+    });
+
+    if (!encryptedRecord) {
+        return null;
+    }
+
+    const result = encryptionManager.decryptDataRecords(encryptedRecord, 'json');
+
+    if (!result || result.length === 0) {
+        return null;
+    }
+
+    return result[0] as unknown as SyncDataRecord;
+}
+
+export async function getRecordsByExternalIds(external_ids: string[], nango_connection_id: number, model: string): Promise<SyncDataRecord[]> {
+    const encryptedRecords = await schema()
+        .from<SyncDataRecord>('_nango_sync_data_records')
+        .where({
+            nango_connection_id,
+            model
+        })
+        .whereIn('external_id', external_ids);
+
+    if (!encryptedRecords) {
+        return [];
+    }
+
+    const result = encryptionManager.decryptDataRecords(encryptedRecords, 'json');
+
+    if (!result || result.length === 0) {
+        return [];
+    }
+
+    return result as unknown as SyncDataRecord[];
+}

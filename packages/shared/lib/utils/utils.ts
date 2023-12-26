@@ -45,6 +45,10 @@ export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }
 
+export function isEnterprise() {
+    return process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
+}
+
 export function isStaging() {
     return process.env['NODE_ENV'] === NodeEnv.Staging;
 }
@@ -174,6 +178,11 @@ export function getGlobalOAuthCallbackUrl() {
 export function getGlobalAppCallbackUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/app-auth/connect';
+}
+
+export function getGlobalWebhookReceiveUrl() {
+    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
+    return baseUrl + '/webhook';
 }
 
 export async function getOauthCallbackUrl(environmentId?: number) {

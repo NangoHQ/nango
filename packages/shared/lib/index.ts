@@ -20,6 +20,7 @@ import flowService from './services/flow.service.js';
 import slackNotificationService from './services/sync/notification/slack.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import logger from './logger/console.js';
+import routeWebhook from './integrations/scripts/webhook/webhook.manager.js';
 import featureFlags from './utils/featureflags.js';
 
 export * from './services/activity/activity.service.js';
@@ -30,6 +31,8 @@ export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/onboarding.service.js';
+
+export * from './hooks/hooks.js';
 
 export * as dataService from './services/sync/data/data.service.js';
 export * as syncDataService from './services/sync/data/records.service.js';
@@ -72,6 +75,7 @@ export {
     slackNotificationService,
     analytics,
     AnalyticsTypes,
+    routeWebhook,
     logger,
     featureFlags
 };

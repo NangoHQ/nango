@@ -1,7 +1,7 @@
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { errorManager, userService, getBaseUrl, isCloud } from '@nangohq/shared';
+import { errorManager, userService, getBaseUrl, isCloud, isEnterprise } from '@nangohq/shared';
 
 class UserController {
     async getUser(req: Request, res: Response, next: NextFunction) {
@@ -99,7 +99,7 @@ class UserController {
             if (!invited) {
                 throw new Error('Failed to invite user.');
             }
-            if (isCloud()) {
+            if (isCloud() || isEnterprise()) {
                 const emailClient = EmailClient.getInstance();
                 emailClient.send(
                     invited.email,

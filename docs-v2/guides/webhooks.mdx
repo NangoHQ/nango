@@ -54,9 +54,25 @@ app.post('/webhook', (req, res) => {
 Webhooks with non-2xx responses are retried with exponential backoff. 
 </Tip>
 
+## Webhook Verification
+
+You can validate that the webhook indeed comes from Nango by looking at the
+`X-Nango-Signature` header which is a SHA-256 hash built using the secret
+key found in your project settings combined with the payload of the request body:
+```ts
+import crypto from 'crypto';
+
+const secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+const signature = `${secretKeyDev}${JSON.stringify(payload)}`;
+const hash = crypto.createHash('sha256').update(signature).digest('hex');
+```
+
+If the value of the `X-Nango-Signature` matches that of `hash` (as seen above)
+then the request passed validation.
+
 ## Webhooks from external APIs to Nango[](#to-nango)
 
 You can handle incoming webhooks from external APIs using Nango:
 - Configure the webhook with your application as you would normally do
 - Write a _sync_ script that returns the data models you want (it can perform additional API requests if needed)
-- Upon webhook reception, trigger the _sync_ script and pass it the webhook payload
+- Upon webhook reception, trigger the _sync_ script and pass it the webhook payload- Upon webhook reception, trigger the _sync_ script and pass it the webhook payload
