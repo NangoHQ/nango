@@ -62,6 +62,12 @@ amplitude:
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+apollo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.apollo.io/api
+        query:
+            api_key: ${apiKey}
 apple-app-store:
     auth_mode: APP_STORE
     token_url: https://api.appstoreconnect.apple.com/v1/apps
@@ -239,6 +245,12 @@ close:
     proxy:
         base_url: https://api.close.com/api
         docs: https://developer.close.com/
+coda:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://coda.io/apis/v1
+        headers:
+            Authorization: Bearer ${apiKey}
 confluence:
     alias: jira
 contentstack:
@@ -1077,6 +1089,7 @@ slack:
         - incoming_webhook.channel
         - incoming_webhook.channel_id
         - bot_user_id
+        - team.id
     proxy:
         base_url: https://slack.com/api
         paginate:
@@ -1085,6 +1098,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     docs: https://api.slack.com/apis
+    webhook_routing_script: slack-webhook-routing
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken

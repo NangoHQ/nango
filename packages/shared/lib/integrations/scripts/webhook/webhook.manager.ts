@@ -13,7 +13,12 @@ import { LogActionEnum } from '../../../models/Activity.js';
 import * as webhookHandlers from './index.js';
 
 interface WebhookHandler {
-    (internalNango: InternalNango, integration: ProviderConfig, headers: Record<string, any>, body: any): Promise<void>;
+    (internalNango: InternalNango, integration: ProviderConfig, headers: Record<string, any>, body: any): Promise<void | WebhookResponse>;
+}
+
+export interface WebhookResponse {
+    acknowledgementResponse?: unknown;
+    parsedBody?: unknown;
 }
 
 type WebhookHandlersMap = { [key: string]: WebhookHandler };
@@ -81,7 +86,7 @@ const internalNango: InternalNango = {
     }
 };
 
-async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any) {
+async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any): Promise<void | any> {
     if (!body) {
         return;
     }
@@ -95,11 +100,19 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     const handler = handlers[`${provider}Webhook`];
 
+    let res: WebhookResponse | null | void = null;
+
     if (handler) {
-        await handler(internalNango, integration, headers, body);
+        res = await handler(internalNango, integration, headers, body);
     }
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, provider, body);
+    const webhookBodyToForward = res?.parsedBody || body;
+
+    await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward);
+
+    if (res) {
+        return res.acknowledgementResponse;
+    }
 }
 
 export default execute;

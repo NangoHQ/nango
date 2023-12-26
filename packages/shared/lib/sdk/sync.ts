@@ -178,6 +178,19 @@ interface Connection {
     credentials: AuthCredentials;
 }
 
+export class ActionError extends Error {
+    type: string;
+    payload: unknown;
+
+    constructor(payload?: unknown) {
+        super();
+        this.type = 'action_script_runtime_error';
+        if (payload) {
+            this.payload = payload;
+        }
+    }
+}
+
 export interface NangoProps {
     host?: string;
     secretKey: string;
@@ -219,6 +232,8 @@ export class NangoAction {
 
     public connectionId?: string;
     public providerConfigKey?: string;
+
+    public ActionError = ActionError;
 
     constructor(config: NangoProps) {
         if (config.activityLogId) {
