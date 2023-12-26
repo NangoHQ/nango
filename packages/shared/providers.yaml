@@ -240,6 +240,12 @@ close:
     proxy:
         base_url: https://api.close.com/api
         docs: https://developer.close.com/
+coda:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://coda.io/apis/v1
+        headers:
+            Authorization: Bearer ${apiKey}
 confluence:
     alias: jira
 contentstack:
