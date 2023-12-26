@@ -32,6 +32,7 @@ import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
 import {
     AppCredentials,
     AuthModes as ProviderAuthModes,
+    AppStoreCredentials,
     OAuth2Credentials,
     ImportedCredentials,
     ApiKeyCredentials,
@@ -727,6 +728,59 @@ class ConnectionService {
         return { success: true, error: null, response: credentials };
     }
 
+    public async getAppStoreCredentials(
+        template: ProviderTemplate,
+        connectionConfig: Connection['connection_config'],
+        privateKey: string
+    ): Promise<ServiceResponse<AppStoreCredentials>> {
+        const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
+
+        const now = Math.floor(Date.now() / 1000);
+        const expiration = now + 15 * 60;
+
+        const payload: Record<string, string | number> = {
+            iat: now,
+            exp: expiration,
+            iss: connectionConfig['issuerId']
+        };
+
+        if (template.authorization_params && template.authorization_params['audience']) {
+            payload['aud'] = template.authorization_params['audience'];
+        }
+
+        if (connectionConfig['scope']) {
+            payload['scope'] = connectionConfig['scope'];
+        }
+
+        const {
+            success,
+            error,
+            response: tokenResponse
+        } = await this.getJWTCredentials(privateKey, tokenUrl, payload, null, {
+            header: {
+                alg: 'ES256',
+                kid: connectionConfig['privateKeyId'],
+                typ: 'JWT'
+            }
+        });
+
+        if (!success || !tokenResponse) {
+            return { success, error, response: null };
+        }
+
+        const rawCredentials = tokenResponse.data;
+
+        const credentials: AppStoreCredentials = {
+            type: ProviderAuthModes.AppStore,
+            access_token: (rawCredentials as any)?.token,
+            private_key: Buffer.from(privateKey).toString('base64'),
+            expires_at: (rawCredentials as any)?.expires_at,
+            raw: rawCredentials as unknown as Record<string, unknown>
+        };
+
+        return { success: true, error: null, response: credentials };
+    }
+
     public async getAppCredentials(
         template: ProviderTemplate,
         config: ProviderConfig,
@@ -735,8 +789,46 @@ class ConnectionService {
         const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
         const privateKeyBase64 = config.oauth_client_secret;
 
-        let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
+        const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
 
+        const headers = {
+            Accept: 'application/vnd.github.v3+json'
+        };
+
+        const now = Math.floor(Date.now() / 1000);
+        const expiration = now + 10 * 60;
+
+        const payload: Record<string, string | number> = {
+            iat: now,
+            exp: expiration,
+            iss: config.oauth_client_id
+        };
+
+        const { success, error, response: tokenResponse } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
+
+        if (!success || !tokenResponse) {
+            return { success, error, response: null };
+        }
+
+        const rawCredentials = tokenResponse.data;
+
+        const credentials: AppCredentials = {
+            type: ProviderAuthModes.App,
+            access_token: (rawCredentials as any)?.token,
+            expires_at: (rawCredentials as any)?.expires_at,
+            raw: rawCredentials as unknown as Record<string, unknown>
+        };
+
+        return { success: true, error: null, response: credentials };
+    }
+
+    private async getJWTCredentials(
+        privateKey: string,
+        url: string,
+        payload: Record<string, string | number>,
+        additionalApiHeaders: Record<string, string> | null,
+        options: object
+    ): Promise<ServiceResponse<any>> {
         const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
 
         if (!hasLineBreak) {
@@ -744,42 +836,32 @@ class ConnectionService {
             privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
         }
 
-        const now = Math.floor(Date.now() / 1000);
-        const expiration = now + 10 * 60;
-
-        const payload = {
-            iat: now,
-            exp: expiration,
-            iss: config.oauth_client_id
-        };
-
-        const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
-
         try {
+            const token = jwt.sign(payload, privateKey, options);
+
+            const headers = {
+                Authorization: `Bearer ${token}`
+            };
+
+            if (additionalApiHeaders) {
+                Object.assign(headers, additionalApiHeaders);
+            }
+
             const tokenResponse = await axios.post(
-                tokenUrl,
+                url,
                 {},
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: 'application/vnd.github.v3+json'
-                    }
+                    headers
                 }
             );
 
-            const rawCredentials = tokenResponse.data;
-
-            const credentials: AppCredentials = {
-                type: ProviderAuthModes.App,
-                access_token: (rawCredentials as any)?.token,
-                expires_at: (rawCredentials as any)?.expires_at,
-                raw: rawCredentials as unknown as Record<string, unknown>
+            return { success: true, error: null, response: tokenResponse.data };
+        } catch (e: any) {
+            const errorPayload = {
+                message: e.message || 'Unknown error',
+                name: e.name || 'Error'
             };
-
-            return { success: true, error: null, response: credentials };
-        } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
-            const error = new NangoError('refresh_token_external_error', errorMessage);
+            const error = new NangoError('refresh_token_external_error', errorPayload);
             return { success: false, error, response: null };
         }
     }
