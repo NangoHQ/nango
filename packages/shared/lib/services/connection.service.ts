@@ -648,7 +648,7 @@ class ConnectionService {
         environment_id: number,
         instantRefresh = false,
         logAction: LogAction = 'token'
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
@@ -755,7 +755,7 @@ class ConnectionService {
         const {
             success,
             error,
-            response: tokenResponse
+            response: rawCredentials
         } = await this.getJWTCredentials(privateKey, tokenUrl, payload, null, {
             header: {
                 alg: 'ES256',
@@ -764,11 +764,9 @@ class ConnectionService {
             }
         });
 
-        if (!success || !tokenResponse) {
+        if (!success || !rawCredentials) {
             return { success, error, response: null };
         }
-
-        const rawCredentials = tokenResponse.data;
 
         const credentials: AppStoreCredentials = {
             type: ProviderAuthModes.AppStore,
@@ -804,13 +802,11 @@ class ConnectionService {
             iss: config.oauth_client_id
         };
 
-        const { success, error, response: tokenResponse } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
+        const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
 
-        if (!success || !tokenResponse) {
+        if (!success || !rawCredentials) {
             return { success, error, response: null };
         }
-
-        const rawCredentials = tokenResponse.data;
 
         const credentials: AppCredentials = {
             type: ProviderAuthModes.App,
@@ -883,7 +879,7 @@ class ConnectionService {
             tokenExpirationCondition =
                 credentials.refresh_token &&
                 (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
-        } else if (template.auth_mode === ProviderAuthModes.App) {
+        } else if (template.auth_mode === ProviderAuthModes.App || template.auth_mode === ProviderAuthModes.AppStore) {
             tokenExpirationCondition =
                 refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
         }
@@ -895,12 +891,21 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplate
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
         if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
+        } else if (template.auth_mode === ProviderAuthModes.AppStore) {
+            const { private_key } = connection.credentials as AppStoreCredentials;
+            const { success, error, response: credentials } = await this.getAppStoreCredentials(template, connection.connection_config, private_key);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
         } else if (template.auth_mode === ProviderAuthModes.App) {
             const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
 
