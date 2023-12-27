@@ -755,7 +755,7 @@ class ConnectionService {
         const {
             success,
             error,
-            response: tokenResponse
+            response: rawCredentials
         } = await this.getJWTCredentials(privateKey, tokenUrl, payload, null, {
             header: {
                 alg: 'ES256',
@@ -764,11 +764,9 @@ class ConnectionService {
             }
         });
 
-        if (!success || !tokenResponse) {
+        if (!success || !rawCredentials) {
             return { success, error, response: null };
         }
-
-        const rawCredentials = tokenResponse.data;
 
         const credentials: AppStoreCredentials = {
             type: ProviderAuthModes.AppStore,
@@ -804,13 +802,11 @@ class ConnectionService {
             iss: config.oauth_client_id
         };
 
-        const { success, error, response: tokenResponse } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
+        const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
 
-        if (!success || !tokenResponse) {
+        if (!success || !rawCredentials) {
             return { success, error, response: null };
         }
-
-        const rawCredentials = tokenResponse.data;
 
         const credentials: AppCredentials = {
             type: ProviderAuthModes.App,
