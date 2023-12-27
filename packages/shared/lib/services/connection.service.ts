@@ -801,6 +801,7 @@ class ConnectionService {
             tokenExpirationCondition =
                 credentials.refresh_token &&
                 (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
+        } else if (template.auth_mode === ProviderAuthModes.AppStore) {
         } else if (template.auth_mode === ProviderAuthModes.App) {
             tokenExpirationCondition =
                 refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
@@ -813,12 +814,21 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplate
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
         if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
+        } else if (template.auth_mode === ProviderAuthModes.AppStore) {
+            const { private_key } = connection.credentials as AppStoreCredentials;
+            const { success, error, response: credentials } = await this.getAppStoreCredentials(template, connection.connection_config, private_key);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
         } else if (template.auth_mode === ProviderAuthModes.App) {
             const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
 
