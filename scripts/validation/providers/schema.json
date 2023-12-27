@@ -6,7 +6,7 @@
             "properties": {
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["API_KEY", "APP", "BASIC", "NONE", "OAUTH1", "OAUTH2"]
+                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2"]
                 },
                 "authorization_url": { "type": "string" },
                 "token_url": { "type": "string" },

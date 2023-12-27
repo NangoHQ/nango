@@ -1,5 +1,6 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Spinner from '../components/ui/Spinner';
 import {
     ChevronsLeft,
     Clock,
@@ -242,6 +243,7 @@ export default function Activity() {
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
                             <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
+                            {!loaded && <Spinner size={1.5} />}
                         </span>
                         <span>
                             <p className="text-white text-left">Note that logs older than 15 days are cleared</p>
