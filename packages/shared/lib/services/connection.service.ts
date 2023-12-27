@@ -648,7 +648,7 @@ class ConnectionService {
         environment_id: number,
         instantRefresh = false,
         logAction: LogAction = 'token'
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
