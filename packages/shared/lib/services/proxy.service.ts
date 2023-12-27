@@ -70,16 +70,6 @@ class ProxyService {
             connection = internalConfig.connection;
         }
 
-        if (!isFlow) {
-            await createActivityLogMessage({
-                level: 'debug',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Connection credentials found successfully'
-            });
-        }
-
         let token;
 
         switch (connection?.credentials?.type) {

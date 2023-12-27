@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import {
     createActivityLog,
-    createActivityLogMessageAndEnd,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
@@ -284,19 +283,6 @@ class ConnectionController {
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
-            }
-
-            if (!isSync && !isDryRun) {
-                await createActivityLogMessageAndEnd({
-                    level: 'debug',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: 'Connection credentials found successfully',
-                    params: {
-                        instant_refresh: instantRefresh
-                    }
-                });
             }
 
             if (connection && connection.credentials && connection.credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
