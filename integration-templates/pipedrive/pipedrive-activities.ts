@@ -12,9 +12,8 @@ export default async function fetchData(nango: NangoSync) {
             }
         };
 
-        for await (const activity of nango.paginate({ ...config, endpoint })) {
+        for await (const activity of paginate(nango, endpoint, config)) {
             const mappedActivity: PipeDriveActivity[] = activity.map(mapActivity) || [];
-
             const batchSize: number = mappedActivity.length;
             totalRecords += batchSize;
             await nango.log(`Saving batch of ${batchSize} activities (total activities: ${totalRecords})`);
@@ -22,6 +21,41 @@ export default async function fetchData(nango: NangoSync) {
         }
     } catch (error: any) {
         throw new Error(`Error in fetchData: ${error.message}`);
+    }
+}
+
+async function* paginate(nango: NangoSync, endpoint: string, config?: any, queryParams?: Record<string, string | string[]>) {
+    let cursor: string | undefined;
+    let callParams = queryParams || {};
+
+    while (true) {
+        if (cursor) {
+            callParams['cursor'] = `${cursor}`;
+        }
+
+        const resp = await nango.proxy({
+            method: 'GET',
+            endpoint: endpoint,
+            params: {
+                ...(config?.paginate?.limit && { limit: config.paginate.limit }),
+                ...(config?.params?.since && { since: config.params.since }),
+                ...callParams
+            }
+        });
+
+        const activities = resp.data.data;
+
+        if (!activities || activities.length === 0) {
+            break;
+        }
+
+        yield activities;
+
+        if (!resp.data.additional_data || !resp.data.additional_data.next_cursor) {
+            break;
+        } else {
+            cursor = resp.data.additional_data.next_cursor;
+        }
     }
 }
 

@@ -2,7 +2,6 @@ integrations:
   pipedrive:
     pipedrive-activities:
       runs: every hour
-      auto_start: false
       returns:
         - PipeDriveActivity
       description: |
@@ -11,7 +10,6 @@ integrations:
         Scope(s): activities:read
     pipedrive-deals:
       runs: every hour
-      auto_start: false
       returns:
         - PipeDriveDeal
       description: |
@@ -20,7 +18,6 @@ integrations:
         Scope(s): deals:read
     pipedrive-organizations:
       runs: every hour
-      auto_start: false
       returns:
         - PipeDriveOrganization
       description: |
@@ -29,7 +26,6 @@ integrations:
         Scope(s): contacts:read
     pipedrive-persons:
       runs: every half hour
-      auto_start: false
       returns:
         - PipeDrivePerson
       description: |

@@ -11,10 +11,9 @@ export default async function fetchData(nango: NangoSync) {
                 limit: 100
             }
         };
-        for await (const deal of nango.paginate({ ...config, endpoint })) {
-            const mappedDeal: PipeDriveDeal[] = deal.map(mapDeals) || [];
 
-            // Save Deals
+        for await (const deal of paginate(nango, endpoint, config)) {
+            const mappedDeal: PipeDriveDeal[] = deal.map(mapDeal) || [];
             const batchSize: number = mappedDeal.length;
             totalRecords += batchSize;
             await nango.log(`Saving batch of ${batchSize} deals (total deals: ${totalRecords})`);
@@ -25,7 +24,42 @@ export default async function fetchData(nango: NangoSync) {
     }
 }
 
-function mapDeals(deal: any): PipeDriveDeal {
+async function* paginate(nango: NangoSync, endpoint: string, config?: any, queryParams?: Record<string, string | string[]>) {
+    let cursor: string | undefined;
+    let callParams = queryParams || {};
+
+    while (true) {
+        if (cursor) {
+            callParams['cursor'] = `${cursor}`;
+        }
+
+        const resp = await nango.proxy({
+            method: 'GET',
+            endpoint: endpoint,
+            params: {
+                ...(config?.paginate?.limit && { limit: config.paginate.limit }),
+                ...(config?.params?.since && { since: config.params.since }),
+                ...callParams
+            }
+        });
+
+        const deals = resp.data.data;
+
+        if (!deals || deals.length === 0) {
+            break;
+        }
+
+        yield deals;
+
+        if (!resp.data.additional_data || !resp.data.additional_data.next_cursor) {
+            break;
+        } else {
+            cursor = resp.data.additional_data.next_cursor;
+        }
+    }
+}
+
+function mapDeal(deal: any): PipeDriveDeal {
     return {
         id: deal.id,
         creator_user_id: deal.creator_user_id,

@@ -11,9 +11,9 @@ export default async function fetchData(nango: NangoSync) {
                 limit: 100
             }
         };
-        for await (const organization of nango.paginate({ ...config, endpoint })) {
+
+        for await (const organization of paginate(nango, endpoint, config)) {
             const mappedOrganization: PipeDriveOrganization[] = organization.map(mapOrganization) || [];
-            // Save Organizations
             const batchSize: number = mappedOrganization.length;
             totalRecords += batchSize;
             await nango.log(`Saving batch of ${batchSize} organizations (total organizations: ${totalRecords})`);
@@ -21,6 +21,41 @@ export default async function fetchData(nango: NangoSync) {
         }
     } catch (error: any) {
         throw new Error(`Error in fetchData: ${error.message}`);
+    }
+}
+
+async function* paginate(nango: NangoSync, endpoint: string, config?: any, queryParams?: Record<string, string | string[]>) {
+    let cursor: string | undefined;
+    let callParams = queryParams || {};
+
+    while (true) {
+        if (cursor) {
+            callParams['cursor'] = `${cursor}`;
+        }
+
+        const resp = await nango.proxy({
+            method: 'GET',
+            endpoint: endpoint,
+            params: {
+                ...(config?.paginate?.limit && { limit: config.paginate.limit }),
+                ...(config?.params?.since && { since: config.params.since }),
+                ...callParams
+            }
+        });
+
+        const organizations = resp.data.data;
+
+        if (!organizations || organizations.length === 0) {
+            break;
+        }
+
+        yield organizations;
+
+        if (!resp.data.additional_data || !resp.data.additional_data.next_cursor) {
+            break;
+        } else {
+            cursor = resp.data.additional_data.next_cursor;
+        }
     }
 }
 
