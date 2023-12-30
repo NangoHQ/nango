@@ -16,6 +16,7 @@ API configuration: [`atlassian`](https://nango.dev/providers.yaml)
 | API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
 ## Getting started
 
 -   [Registering an App](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
@@ -28,9 +29,9 @@ API configuration: [`atlassian`](https://nango.dev/providers.yaml)
 
 ## API gotchas
 
--   \***\*To allow the possibility of refreshing the token**. You must add `offline_access`to your scopes when creating the integration on the Nango UI.\*\*
--   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps)
--   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days, Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
--   When using the proxy for atlassian it is important to know that Jira apps will use `/jira/{cloudid}/{api}` for jira apps and `/confluence/{cloudid}/{api}` for confluence apps
+-   \***\*To allow the possibility of refreshing the token**, you must add `offline_access` to your scopes when creating the integration on the Nango UI.\*\*
+-   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps)
+-   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+-   When using the proxy for atlassian, it is important to know that Jira apps will use `/jira/{cloudid}/{api}` for jira apps and `/confluence/{cloudid}/{api}` for confluence apps.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian.mdx)</Note>

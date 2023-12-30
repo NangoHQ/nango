@@ -14,10 +14,10 @@ import {
     remoteFileService,
     getAllSyncsAndActions,
     getNangoConfigIdAndLocationFromId,
-    getSyncConfigConnections,
     getConfigWithEndpointsByProviderConfigKey,
     StandardNangoConfig,
-    getConfigWithEndpointsByProviderConfigKeyAndName
+    getConfigWithEndpointsByProviderConfigKeyAndName,
+    getSyncsByConnectionIdsAndEnvironmentIdAndSyncName
 } from '@nangohq/shared';
 
 class FlowController {
@@ -210,16 +210,30 @@ class FlowController {
             const { environmentId } = response;
 
             const id = req.params['id'];
+            const connectionIds = req.query['connectionIds'] as string;
+            const syncName = req.query['sync_name'] as string;
 
             if (!id) {
                 res.status(400).send('Missing id');
                 return;
             }
 
-            const syncsWithConnections = await getSyncConfigConnections(Number(id), environmentId);
+            if (!connectionIds) {
+                res.status(400).send('Missing connectionIds');
+                return;
+            }
 
-            for (const syncsWithConnection of syncsWithConnections) {
-                await syncOrchestrator.deleteSync(syncsWithConnection.id as string, environmentId);
+            if (!syncName) {
+                res.status(400).send('Missing sync_name');
+                return;
+            }
+
+            const connections = connectionIds.split(',');
+
+            const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
+
+            for (const sync of syncs) {
+                await syncOrchestrator.deleteSync(sync.id as string, environmentId);
             }
 
             await syncOrchestrator.deleteConfig(Number(id), environmentId);

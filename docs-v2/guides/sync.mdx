@@ -53,7 +53,7 @@ Now, collect the continually updated data:
 
 ```bash
 curl --request GET \
-  --url 'https://api.nango.dev/sync/records?model=<MODEL-NAME>' \
+  --url 'https://api.nango.dev/records?model=<MODEL-NAME>' \
   --header 'Authorization: Bearer <PROJECT-SECRET-KEY>' \
   --header 'Connection-Id: <CONNECTION-ID>' \
   --header 'Provider-Config-Key: <INTEGRATION-ID>'
@@ -67,7 +67,7 @@ import { Nango }  from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
 
-const result = await nango.getRecords({
+const result = await nango.listRecords({
     providerConfigKey: '<INTEGRATION-ID>',
     connectionId: '<CONNECTION-ID>',
     model: '<MODEL-NAME>'
@@ -82,7 +82,7 @@ Nango also sends [webhooks](/guides/webhooks) whenever new/updated/deleted recor
 
 ## Next Steps
 
-Dive deeper with the [Customize Syncs & Actions guide](/guides/custom). Explore the [Field Mapping guide](/guides/sync) or the [Webhooks guide](/guides/webhooks).
+Dive deeper with the [Customize Syncs & Actions guide](/guides/custom). Explore the [Field Mapping guide](/guides/field-mapping) or the [Webhooks guide](/guides/webhooks).
 
 ## Questions, problems, feedback?
 

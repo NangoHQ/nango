@@ -11,6 +11,10 @@ export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
 }
 
+export function isEnterprise() {
+    return process.env.REACT_APP_ENV === 'enterprise';
+}
+
 export function isStaging() {
     return process.env.REACT_APP_ENV === 'staging';
 }

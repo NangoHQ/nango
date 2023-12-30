@@ -3,13 +3,13 @@ title: BambooHR
 sidebarTitle: BambooHR
 ---
 
-API configuration: [`bambookhr`](https://nango.dev/providers.yaml)
+API configuration: [`bambookhr`](https://nango.dev/providers.yaml), [`bamboohr-basic`](https://nango.dev/providers.yaml)
 
 ## Features
 
 | Feature                                                                          | Status                          |
 | -------------------------------------------------------------------------------- | ------------------------------- |
-| [Auth (OAuth)](/guides/oauth)                                                      | ✅                              |
+| Auth ([Basic](/guides/api-key) + [OAuth](guides/oauth))| ✅                              |
 | [Syncs](/guides/sync) & [Actions](/guides/action)                                                              | ✅                              |
 | [Nango Proxy](/guides/proxy)                          | ✅   |
 | Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
@@ -28,18 +28,31 @@ API configuration: [`bambookhr`](https://nango.dev/providers.yaml)
 
 ## Connection configuration in Nango
 
-BambooHR requires a user specific subdomain to run OAuth.
+BambooHR requires a user specific subdomain to authenticate
 
 You should request this from the user and pass it to Nango in the `nango.auth()` call:
 
 ```js
+// oAuth
 nango.auth('bamboohr', '<CONNECTION-ID>', {params: {subdomain: '<bamboohr-subdomain>'}});
+// API key
+nango.auth('bamboohr-basic', '<CONNECTION-ID>', {
+        credentials: {
+            username: '<END-USER-API-KEY>',
+            password: 'x'
+        },
+        params: {
+            subdomain: '<bamboohr-subdomain>'
+        }
+    })
 ```
 
-For more details see the [docs here](/guides/oauth#connection-configuration).
+For more details, see the [docs here](/guides/oauth#connection-configuration).
 
 ## API gotchas
 
--   When creating a connection you need to add the subdomain as a params argument, for example `nango.auth('bamhoo-hr', '1', {params: {subdomain: '<your-subdomain>'}})`
+- When creating a connection, you need to add the subdomain as a params argument, for example: `nango.auth('bamhoo-hr', '1', {params: {subdomain: '<your-subdomain>'}})`.
+- Authenticating via API key: BambooHR gives only an `API Key` but uses Basic auth for the API. Pass the `API Key` as the username and use `x` for the password. See BambooHR [documentation](https://documentation.bamboohr.com/docs#section-authentication)
+
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>

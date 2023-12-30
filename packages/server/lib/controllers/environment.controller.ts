@@ -8,6 +8,7 @@ import {
     isCloud,
     getWebsocketsPath,
     getOauthCallbackUrl,
+    getGlobalWebhookReceiveUrl,
     getEnvironmentId
 } from '@nangohq/shared';
 import { packageJsonFile, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -53,6 +54,8 @@ class EnvironmentController {
             }
 
             environment.callback_url = await getOauthCallbackUrl(environment.id);
+            const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
+            environment.webhook_receive_url = `${webhookBaseUrl}/${environment.uuid}`;
 
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 

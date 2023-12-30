@@ -1,4 +1,4 @@
-import type { CursorPagination, LinkPagination, OffsetPagination } from '../sdk/sync.js';
+import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { SyncConfig, Action } from './Sync.js';
@@ -24,10 +24,7 @@ export interface Template {
         query?: {
             api_key: string;
         };
-        retry?: {
-            at?: string;
-            after?: string;
-        };
+        retry?: RetryHeaderConfig;
         decompress?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
     };
@@ -43,6 +40,8 @@ export interface Template {
     token_response_metadata?: Array<string>;
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
+    webhook_routing_script?: string;
+    post_connection_script?: string;
 }
 
 export interface TemplateAlias {

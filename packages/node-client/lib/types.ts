@@ -5,7 +5,9 @@ export enum AuthModes {
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
-    App = 'APP'
+    AppStore = 'APP_STORE',
+    App = 'APP',
+    None = 'NONE'
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {
@@ -66,6 +68,16 @@ export interface GetRecordsRequestConfig {
     filter?: FilterAction | CombinedFilterAction;
 }
 
+export interface ListRecordsRequestConfig {
+    providerConfigKey: string;
+    connectionId: string;
+    model: string;
+    delta?: string;
+    limit?: number;
+    filter?: FilterAction | CombinedFilterAction;
+    cursor?: string | null;
+}
+
 export interface BasicApiCredentials extends CredentialsCommon {
     type: AuthModes.Basic;
     username: string;
@@ -85,8 +97,8 @@ export interface Metadata {
 
 export interface Connection {
     id?: number;
-    created_at?: string;
-    updated_at?: string;
+    created_at?: Date;
+    updated_at?: Date;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
@@ -102,6 +114,7 @@ export interface ConnectionList {
     connection_id: string;
     provider: string;
     created: string;
+    metadata: Metadata;
 }
 
 export interface IntegrationWithCreds extends Integration {

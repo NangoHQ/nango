@@ -7,6 +7,7 @@ import {
     OAuth2Credentials,
     ProxyConfiguration,
     GetRecordsRequestConfig,
+    ListRecordsRequestConfig,
     BasicApiCredentials,
     ApiKeyCredentials,
     AppCredentials,
@@ -138,7 +139,7 @@ export class Nango {
      * =======
      */
 
-    public async listIntegrations(): Promise<{ config: Pick<Integration, 'unique_key' | 'provider'>[] }> {
+    public async listIntegrations(): Promise<{ configs: Pick<Integration, 'unique_key' | 'provider'>[] }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}) });
 
@@ -295,6 +296,28 @@ export class Nango {
         return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
     }
 
+    public async updateMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!metadata) {
+            throw new Error('Metadata is required');
+        }
+
+        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
+
+        const headers: Record<string, string | number | boolean> = {
+            'Provider-Config-Key': providerConfigKey as string
+        };
+
+        return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });
+    }
+
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
 
@@ -343,6 +366,30 @@ export class Nango {
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
             sortBy || ''
         }&include_nango_metadata=${includeMetadata}${filter ? `&filter=${filter}` : ''}`;
+
+        const headers: Record<string, string | number | boolean> = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        const options = {
+            headers: this.enrichHeaders(headers)
+        };
+
+        const response = await axios.get(url, options);
+
+        return response.data;
+    }
+
+    public async listRecords<T = any>(
+        config: ListRecordsRequestConfig
+    ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
+        const { connectionId, providerConfigKey, model, delta, limit, filter, cursor } = config;
+        validateSyncRecordConfiguration(config);
+
+        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&delta=${delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+            filter ? `&filter=${filter}` : ''
+        }${cursor ? `&cursor=${cursor}` : ''}`;
 
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
@@ -511,7 +558,7 @@ export class Nango {
 
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride } = config;
+        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress } = config;
 
         const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
@@ -535,6 +582,10 @@ export class Nango {
 
         if (retries) {
             headers['Retries'] = retries;
+        }
+
+        if (decompress) {
+            headers['Decompress'] = decompress;
         }
 
         const options: AxiosRequestConfig = {

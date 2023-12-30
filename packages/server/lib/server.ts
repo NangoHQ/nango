@@ -11,6 +11,7 @@ import providerController from './controllers/provider.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import unAuthController from './controllers/unauth.controller.js';
+import appStoreAuthController from './controllers/appStoreAuth.controller.js';
 import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
@@ -20,6 +21,7 @@ import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
+import webhookController from './controllers/webhook.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -33,7 +35,16 @@ import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { getGlobalOAuthCallbackUrl, environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
+import {
+    getGlobalOAuthCallbackUrl,
+    environmentService,
+    getPort,
+    isCloud,
+    isEnterprise,
+    isBasicAuthEnabled,
+    errorManager,
+    getWebsocketsPath
+} from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
@@ -46,14 +57,16 @@ const app = express();
 AuthClient.setup(app);
 const apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
 const apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
-const webAuth = isCloud()
-    ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
-    : isBasicAuthEnabled()
-    ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
-    : [authMiddleware.noAuth.bind(authMiddleware)];
+const webAuth =
+    isCloud() || isEnterprise()
+        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
+        : isBasicAuthEnabled()
+        ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
+        : [authMiddleware.noAuth.bind(authMiddleware)];
 
 app.use(express.json({ limit: '75mb' }));
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
 // Set to 'false' to disable migration at startup. Appropriate when you
 // have multiple replicas of the service running and you do not want them
@@ -75,8 +88,10 @@ app.get('/health', (_, res) => {
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 app.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
-app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(authController));
-app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(authController));
+app.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
+app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
+app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
+app.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
 app.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API routes (API key auth).
@@ -91,11 +106,13 @@ app.route('/connection/:connectionId').get(apiAuth, connectionController.getConn
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadata.bind(connectionController));
+app.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadata.bind(connectionController));
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController)); //TODO: to deprecate
+app.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 app.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
@@ -113,7 +130,7 @@ app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDepl
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
 
 // Webapp routes (no auth).
-if (isCloud()) {
+if (isCloud() || isEnterprise()) {
     app.route('/api/v1/signup').post(authController.signup.bind(authController));
     app.route('/api/v1/signup/invite').get(authController.invitation.bind(authController));
     app.route('/api/v1/logout').post(authController.logout.bind(authController));
@@ -182,7 +199,7 @@ app.route('/api/v1/onboarding/:id').put(webAuth, onboardingController.updateStat
 app.route('/api/v1/onboarding/sync-status').get(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 
 // Hosted signin
-if (!isCloud()) {
+if (!isCloud() && !isEnterprise()) {
     app.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
         res.status(200).send();
     });

@@ -1,5 +1,15 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import {
+    Routes,
+    Route,
+    Navigate,
+    useLocation,
+    useNavigationType,
+    createRoutesFromChildren,
+    matchRoutes
+} from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
+import * as Sentry from "@sentry/react";
 
 import Signup from './pages/Signup';
 import InviteSignup from './pages/InviteSignup';
@@ -24,10 +34,27 @@ import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { isCloud } from './utils/utils';
+import { isCloud, isEnterprise } from './utils/utils';
 import { useStore } from './store';
 
+Sentry.init({
+  dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
+  integrations: [
+    new Sentry.BrowserTracing({
+      routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+        React.useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes
+      ),
+    }),
+  ],
+  tracesSampleRate: 0.1,
+});
+
 const App = () => {
+    const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
     const env = useStore(state => state.cookieValue);
 
     const landingPage = env === 'dev' ? '/getting-started' : '/integrations';
@@ -49,7 +76,7 @@ const App = () => {
                 })
             }}
         >
-            <Routes>
+            <SentryRoutes>
                 <Route path="/" element={<Navigate to={landingPage} replace />} />
                 <Route path="/getting-started" element={<PrivateRoute />}>
                     <Route path="/getting-started" element={<GettingStarted />} />
@@ -91,7 +118,7 @@ const App = () => {
                 <Route path="/integration/:providerConfigKey/:flowName" element={<PrivateRoute />}>
                     <Route path="/integration/:providerConfigKey/:flowName" element={<FlowPage />} />
                 </Route>
-                {isCloud() && (
+                {(isCloud() || isEnterprise()) && (
                     <>
                         <Route path="/account-settings" element={<AccountSettings />} />
                         <Route path="/user-settings" element={<UserSettings />} />
@@ -103,7 +130,7 @@ const App = () => {
                     </>
                 )}
                 <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            </SentryRoutes>
             <ToastContainer />
         </MantineProvider>
     );

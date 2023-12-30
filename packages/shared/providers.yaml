@@ -23,6 +23,10 @@ adobe:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+affinity:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.affinity.co
 aircall:
     auth_mode: OAUTH2
     authorization_url: https://dashboard.aircall.io/oauth/authorize
@@ -58,6 +62,17 @@ amplitude:
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+apollo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.apollo.io/api
+        query:
+            api_key: ${apiKey}
+apple-app-store:
+    auth_mode: APP_STORE
+    token_url: https://api.appstoreconnect.apple.com/v1/apps
+    authorization_params:
+        audience: appstoreconnect-v1
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
@@ -97,6 +112,17 @@ atlassian:
         grant_type: refresh_token
     proxy:
         base_url: https://api.atlassian.com
+auth0:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
+    token_url: https://${connectionConfig.subdomain}.auth0.com/oauth/token
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 bamboohr:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
@@ -107,6 +133,10 @@ bamboohr:
     token_params:
         grant_type: authorization_code
         request: token
+    proxy:
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+bamboohr-basic:
+    auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
 battlenet:
@@ -123,6 +153,18 @@ bitbucket:
     token_url: https://bitbucket.org/site/oauth2/access_token
     proxy:
         base_url: https://api.bitbucket.org
+blackbaud:
+    auth_mode: OAUTH2
+    authorization_url: https://app.blackbaud.com/oauth/authorize
+    token_url: https://oauth2.sky.blackbaud.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sky.blackbaud.com
 boldsign:
     auth_mode: OAUTH2
     authorization_url: https://account.boldsign.com/connect/authorize
@@ -192,6 +234,23 @@ clickup:
     token_url: https://api.clickup.com/api/v2/oauth/token
     proxy:
         base_url: https://api.clickup.com
+close:
+    auth_mode: OAUTH2
+    authorization_url: https://app.close.com/oauth2/authorize
+    token_url: https://api.close.com/oauth2/token/
+    authorization_params:
+        response_type: code
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.close.com/api
+        docs: https://developer.close.com/
+coda:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://coda.io/apis/v1
+        headers:
+            Authorization: Bearer ${apiKey}
 confluence:
     alias: jira
 contentstack:
@@ -349,6 +408,10 @@ freshbooks:
         response_type: code
     proxy:
         base_url: https://api.freshbooks.com
+freshdesk:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshdesk.com
 freshservice:
     auth_mode: BASIC
     proxy:
@@ -444,6 +507,9 @@ google-sheet:
     proxy:
         base_url: https://sheets.googleapis.com
     docs: https://developers.google.com/sheets/api/reference/rest
+google-drive:
+    alias: google
+    docs: https://developers.google.com/drive/api/reference/rest/v3
 gorgias:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
@@ -501,6 +567,10 @@ health-gorilla:
         grant_type: refresh_token
     proxy:
         base_url: https://healthgorilla.com
+hibob-service-user:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.hibob.com
 highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
@@ -517,6 +587,10 @@ hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
+    connection_configuration:
+        - portalId
+    post_connection_script: hubspot-post-connection
+    webhook_routing_script: hubspot-webhook-routing
     proxy:
         base_url: https://api.hubapi.com
         decompress: true
@@ -552,6 +626,9 @@ jira:
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
+    connection_configuration:
+        - cloudID
+        - accountId
     proxy:
         base_url: https://api.atlassian.com
         paginate:
@@ -560,6 +637,8 @@ jira:
             limit_name_in_request: limit
             response_path: results
             link_path_in_response_body: _links.next
+    post_connection_script: jira-post-connection
+    webhook_routing_script: jira-webhook-routing
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
@@ -572,6 +651,12 @@ keap:
         grant_type: refresh_token
     proxy:
         base_url: https://api.infusionsoft.com
+klaviyo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://a.klaviyo.com
+        headers:
+            Authorization: Klaviyo-API-Key ${apiKey}
 lever:
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
@@ -714,6 +799,8 @@ notion:
     authorization_method: header
     body_format: json
     proxy:
+        retry:
+            after: 'Retry-After'
         base_url: https://api.notion.com
         headers:
             'Notion-Version': '2022-06-28'
@@ -724,6 +811,17 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://developers.notion.com/reference
+okta:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
+    token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 one-drive:
     alias: microsoft-teams
 osu:
@@ -778,6 +876,28 @@ payfit:
         response_type: code
     token_params:
         grant_type: authorization_code
+paypal:
+    auth_mode: OAUTH2
+    authorization_url: https://www.paypal.com/signin/authorize
+    token_url: https://api.paypal.com/v1/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+paypal-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://www.sandbox.paypal.com/signin/authorize
+    token_url: https://api-m.sandbox.paypal.com/v1/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pennylane:
     auth_mode: OAUTH2
     authorization_url: https://app.pennylane.com/oauth/authorize
@@ -890,6 +1010,8 @@ salesforce:
     auth_mode: OAUTH2
     authorization_url: https://login.salesforce.com/services/oauth2/authorize
     token_url: https://login.salesforce.com/services/oauth2/token
+    authorization_params:
+        prompt: consent
     default_scopes:
         - offline_access
     token_response_metadata:
@@ -934,6 +1056,16 @@ servicem8:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+servicenow:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
+    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 shopify:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
@@ -957,6 +1089,7 @@ slack:
         - incoming_webhook.channel
         - incoming_webhook.channel_id
         - bot_user_id
+        - team.id
     proxy:
         base_url: https://slack.com/api
         paginate:
@@ -965,6 +1098,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     docs: https://api.slack.com/apis
+    webhook_routing_script: slack-webhook-routing
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
@@ -1286,6 +1420,11 @@ zoho:
         access_type: offline
     proxy:
         base_url: https://www.zohoapis.${connectionConfig.extension}
+        paginate:
+            type: offset
+            response_path: data
+            offset_name_in_request: page
+            limit_name_in_request: per_page
 zoho-books:
     alias: zoho
 zoho-crm:

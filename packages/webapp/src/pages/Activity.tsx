@@ -1,5 +1,6 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Spinner from '../components/ui/Spinner';
 import {
     ChevronsLeft,
     Clock,
@@ -242,6 +243,7 @@ export default function Activity() {
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
                             <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
+                            {!loaded && <Spinner size={1.5} />}
                         </span>
                         <span>
                             <p className="text-white text-left">Note that logs older than 15 days are cleared</p>
@@ -331,6 +333,21 @@ export default function Activity() {
                                                                 </Tooltip>
                                                             )}
                                                         </span>
+                                                    )}
+                                                    {activity?.action === 'webhook' && (
+                                                        <div className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
+                                                                <ArrowRight className="stroke-red-500 mr-2" size="16" />
+                                                                <p className="inline-block text-red-500">webhook</p>
+                                                            </div>
+                                                            {activity.endpoint && (
+                                                                <Tooltip text={`${activity.endpoint}`} type="dark">
+                                                                    <div className="w-52 text-gray-500 overflow-hidden truncate">
+                                                                        <span className="ml-3">{activity.endpoint}</span>
+                                                                    </div>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
                                                     )}
                                                     {activity?.action === 'sync' && (
                                                         <span className="flex items-center">

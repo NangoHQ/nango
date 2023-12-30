@@ -46,7 +46,7 @@ When a new user connects your integration, Nango automatically starts fetching t
 
 ## 2. Get data update notifications
 
-Nango will alert your app with a webhook, whenever there is new data available.
+Nango will alert your app with a webhook whenever there is new data available.
 
 You choose how often to check for data updates. Nango will only alert you when there are actual changes.
 
@@ -75,7 +75,7 @@ Nango returns the fetched data in your own, custom data model. It can even be st
 You can directly save this data to your database, or process it further, as needed.
 
 ```ts Backend: Fetch & save new records.
-const records = await nango.getRecords<Ticket>({
+const records = await nango.listRecords<Ticket>({
     providerConfigKey: 'zendesk',
     connectionId: 'user123',
     model: 'ticket',
@@ -111,4 +111,4 @@ Dive deeper with the following guides:
 
 ## Questions, problems, feedback?
 
-We're here to help! Please reach out on the [Slack community](https://nango.dev/slack), we are very active there.
+We're here to help! Please reach out on the [Slack community](https://nango.dev/slack), we are very active there. We're here to help! Please reach out on the [Slack community](https://nango.dev/slack), we are very active there.

@@ -123,7 +123,10 @@ This returns you all connections of a specific user (i.e. Connection ID):
         {
             connection_id: '<CONNECTION-ID>',
             provider: '<INTEGRATION-ID>',
-            created: '2023-03-08T09:43:03.725Z'
+            created: '2023-03-08T09:43:03.725Z',
+            metadata: {
+                someKey: 'value'
+            }
         },
         // ...
     ];
@@ -149,7 +152,7 @@ This will throw an exception if the delete call is not successful.
 
 ### Set and fetch custom Metadata
 
-Nango lets you store [custom metadata](/guides/oauth#storing-custom-metadata-per-connection) on the Connection.
+Nango lets you store [custom metadata](/guides/advanced-auth#storing-custom-metadata-per-connection) on the Connection.
 
 `setMetadata` overrides any existing Metadata for the connection!
 
@@ -164,7 +167,7 @@ console.log(JSON.stringify(myMetadata));
 // prints: { "filter": "status=closed" }
 ```
 
-If you know the structure of the metadata you can specify a type for it when
+If you know the structure of the metadata, you can specify a type for it when
 retrieving;
 
 ```ts
@@ -190,6 +193,7 @@ const integration = await nango.getIntegration(
 ```
 
 Please check the [REST API reference](/api-reference/integration/get) for an example response and the full list of returned fields.
+
 ## Sync
 
 ### Proxy
@@ -244,14 +248,14 @@ const res = await nango.proxy({
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
 **Return value**  
-When you call the proxy Nango creates the API request to the external API and runs it for you (possibly with retries).
+When you call the proxy, Nango creates the API request to the external API and runs it for you (possibly with retries).
 
 The response from the external API is passed back to you exactly as Nango gets it:
 * Response code
 * Response headers
 * Response body
 
-For the node SDK Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
+For the node SDK, Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
 
 ### Trigger syncs
 
@@ -275,6 +279,7 @@ await nango.startSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CON
 ```
 
 ### Sync status
+
 Returns the status of syncs given an integration, sync names, and an optional connection id
 
 ```ts
@@ -315,46 +320,55 @@ console.log(syncStatuses);
 
 ### Read synced data
 
-To read synced data from Nango, use `getRecords`:
+<Warning>
+`nango.getRecords()` is deprecated and  will be removed in future releases as it does not support efficient pagination. Please use `nango.listRecords()` detailed below.
+</Warning>
+
+To read synced data from Nango, use `listRecords`:
 
 ```ts
 import type { ModelName } from '<path-to-nango-integrations>/models'
 
-const records = await nango.getRecords<ModelName>({
+const records = await nango.listRecords<ModelName>({
     providerConfigKey: '<integration-id>',    // Name of your integration, from nango.yaml. E.g. github
     connectionId: '<user-id>',                // The connection id you passed to nango.auth()
     model: '<model-name>',                    // The name of the data model, from nango.yaml. E.g. ticket
     delta: '<timestamp>'                      // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
     limit: <number>,                          // Optional: For pagination: Maximum of records to return. If not passed, all records are returned.
-    offset: <number>,                         // Optional: For pagination: The number of records to skip. If not passed, no records are skipped.
-    sortBy: 'id' | 'createdAt' | 'updatedAt', // Optional: Optional: Set how the records are sorted. The default is by 'id'
-    order: 'asc' | 'desc',                    // Optional: Set the order of results. The default is 'desc'
+    cursor: '<string>'                        // Optional: Paginate through records using this value which can be obtained from the "next_cursor" property in the response.
     filter: 'added' | 'updated' | 'deleted'   // Optional: Retrieve only records that have been added, updated, or deleted since the last sync. Useful when used with the delta parameter. Also accepts comma separated combinations e.g., "added,updated"
 });
 
 console.log(records);
 ```
 
-By default this returns an array of objects in the data model that you queried with some metadata about each record.
+By default, this returns an array of objects in the data model that you queried with some metadata about each record.
 
 ```json
-[
-    {
-        id: 123,
-        ..., // Fields as specified in the model you queried
-        _nango_metadata: {
-            deleted_at: null,
-            last_action: 'ADDED',
-            first_seen_at: '2023-09-18T15:20:35.941305+00:00',
-            last_modified_at: '2023-09-18T15:20:35.941305+00:00'
-        }
-    },
-    ...
-]
+{
+    records:
+        [
+            {
+                id: 123,
+                ..., // Fields as specified in the model you queried
+                _nango_metadata: {
+                    deleted_at: null,
+                    last_action: 'ADDED',
+                    first_seen_at: '2023-09-18T15:20:35.941305+00:00',
+                    last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+                }
+            },
+            ...
+        ],
+    next_cursor: "Y3JlYXRlZF9hdF4yMDIzLTExLTE3VDExOjQ3OjE0LjQ0NyswMjowMHxpZF4xYTE2MTYwMS0yMzk5LTQ4MzYtYWFiMi1mNjk1ZWI2YTZhYzI"
+}
 ```
 
-If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
 
+If you are using the [Nango webhooks](/guides/webhooks#from-nango), you can use the timestamp you get from the webhook for the `delta` parameter.
+  
+The value from the `next_cursor` property can be used with the `cursor` parameter to get the next page of results.
+If there are no more results, the `next_cursor` will be null.
 
 ### Trigger an action
 
@@ -372,7 +386,7 @@ This will return whatever the action script is configured to return.
 
 ### Get environment variables
 
-To get the environment variables from a sync script you can use `getEnvironmentVariables`:
+To get the environment variables from a sync script, you can use `getEnvironmentVariables`:
 
 ```ts
 const vars = await nango.getEnvironmentVariables();

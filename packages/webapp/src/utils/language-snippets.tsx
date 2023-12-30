@@ -2,7 +2,7 @@ export const nodeSnippet = (endpoint: string, secretKey: string, connectionId: s
         return `import Nango from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
-const issues = await nango.getRecords({
+const issues = await nango.listRecords({
     proivderConfigKey: '${providerConfigKey}',
     connectionId: '${connectionId}',
     endpoint: '${endpoint}'

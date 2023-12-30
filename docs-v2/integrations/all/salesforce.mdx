@@ -3,7 +3,7 @@ title: Salesforce
 sidebarTitle: Salesforce
 ---
 
-API configuration: [`salesforce`](https://nango.dev/providers.yaml)
+API configuration: [`salesforce`](https://nango.dev/providers.yaml), [`salesforce-sandbox`](https://nango.dev/providers.yaml)
 
 ## Features
 
@@ -17,6 +17,7 @@ API configuration: [`salesforce`](https://nango.dev/providers.yaml)
 | API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
 ## Getting started
 
 -   [Get a free Salesforce Developer Edition here](https://developer.salesforce.com/free-trials) (it's a free Sandbox to test your integration)
@@ -30,14 +31,15 @@ API configuration: [`salesforce`](https://nango.dev/providers.yaml)
 
 Salesforce uses a different API base URL, called the `instance_url`, for each customer.
 
-Nango automatically retrieves the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) from Salesforce and stores it in the [Connection config](/guides/oauth#automatically-retrieved-connection-configuration) for you.
+Nango automatically retrieves the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) from Salesforce and stores it in the [Connection config](/guides/advanced-auth#automatically-retrieved-connection-configuration) for you.
 
-If you use the Nango Proxy it is automatically using the correct API base URL. But if needed you can retrieve the `instance_url` with the [backend SDK](sdks/node#retrieve-api-credentials) or [Connections API](api-reference/connection/get).
+If you use the Nango Proxy, it is automatically using the correct API base URL. But, if needed, you can retrieve the `instance_url` with the [backend SDK](sdks/node#retrieve-api-credentials) or [Connections API](api-reference/connection/get).
 
 ## API gotchas
 
--   Salesforce calls the `client_id` and `client_secret` the `Consumer Key` and `Consumer Secret`
--   To enable offline data access with a refresh token, add the `refresh_token` (or its synonym, `offline_access`) scope. By default access tokens expire in ~2h (but customers can configure this value).
--   If you encounter an error in your flow that says `invalid_client_id` [make sure your (developer) User's password does not contain any special characters](https://developer.salesforce.com/forums/?id=906F00000009ABLIA2) (yes, really.)
+-   If you or your end-user are authorizing a Salesforce sandbox account, you must use the `salesforce-sandbox` integration in Nango.
+-   Salesforce calls the `client_id` and `client_secret` as `Consumer Key` and `Consumer Secret`.
+-   To enable offline data access with a refresh token, add the `refresh_token` (or its synonym, `offline_access`) scope. By default, access tokens expire in ~2h (but customers can configure this value). Also, check the "Introspect All Tokens" checkbox in your OAuth app settings on the Salesforce developer portal (Salesforce doesn't share the expiration date of access tokens. Instead, Nango needs to call the Salesforce API to check if access tokens are valid.)
+-   If you encounter an error in your flow that says `invalid_client_id`, [make sure your (developer) User's password does not contain any special characters](https://developer.salesforce.com/forums/?id=906F00000009ABLIA2) (yes, really.)
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>

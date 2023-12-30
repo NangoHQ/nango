@@ -4,6 +4,10 @@ integrations:
       runs: every half hour
       returns:
         - HubspotServiceTicket
+    hubspot-contacts:
+      runs: every day
+      returns:
+        - HubspotContact
     hubspot-owner:
       runs: every day
       returns:
@@ -53,3 +57,10 @@ models:
     category: string
     content: string
     publishDate: number
+  HubspotContact:
+    id: string
+    created_at: string
+    updated_at: string
+    first_name: string
+    last_name: string
+    email: string

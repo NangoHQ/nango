@@ -192,6 +192,7 @@ class ConfigController {
                 };
             });
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
+            const hasWebhook = providerTemplate.webhook_routing_script;
 
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
                 ? ({
@@ -204,7 +205,8 @@ class ConfigController {
                       auth_mode: authMode,
                       created_at: config.created_at as Date,
                       syncs,
-                      actions
+                      actions,
+                      has_webhook: Boolean(hasWebhook)
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 

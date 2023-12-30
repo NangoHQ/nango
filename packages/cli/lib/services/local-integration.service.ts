@@ -1,4 +1,13 @@
-import { NangoError, formatScriptError, IntegrationServiceInterface, NangoIntegrationData, NangoSync, localFileService } from '@nangohq/shared';
+import {
+    ActionError,
+    NangoError,
+    formatScriptError,
+    IntegrationServiceInterface,
+    NangoIntegrationData,
+    NangoSync,
+    NangoProps,
+    localFileService
+} from '@nangohq/shared';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
@@ -7,16 +16,19 @@ import { Buffer } from 'buffer';
 class IntegrationService implements IntegrationServiceInterface {
     async runScript(
         syncName: string,
+        _syncId: string,
         _activityLogId: number | undefined,
-        nango: NangoSync,
+        nangoProps: NangoProps,
         _integrationData: NangoIntegrationData,
         _environmentId: number,
         _writeToDb: boolean,
-        isAction: boolean,
+        isInvokedImmediately: boolean,
+        isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object
     ): Promise<any> {
         try {
+            const nango = new NangoSync(nangoProps);
             const script: string | null = localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 
             if (!script) {
@@ -31,7 +43,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         var module = { exports: {} };
                         var exports = module.exports;
                         ${script}
-                        return module.exports.default || module.exports;
+                        return module.exports;
                     })();
                 `;
 
@@ -54,8 +66,8 @@ class IntegrationService implements IntegrationServiceInterface {
                 const context = vm.createContext(sandbox);
                 const scriptExports: any = scriptObj.runInContext(context);
 
-                if (scriptExports && typeof scriptExports === 'function') {
-                    const results = isAction ? await scriptExports(nango, input) : await scriptExports(nango);
+                if (scriptExports.default && typeof scriptExports.default === 'function') {
+                    const results = isInvokedImmediately ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
                     return { success: true, error: null, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
@@ -63,7 +75,17 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failre';
+                // TODO merge this back with the main integration service
+                if (err instanceof ActionError) {
+                    return { success: false, error: err, response: null };
+                }
+
+                let errorType = 'sync_script_failure';
+                if (isWebhook) {
+                    errorType = 'webhook_script_failure';
+                } else if (isInvokedImmediately) {
+                    errorType = 'action_script_failure';
+                }
 
                 return formatScriptError(err, errorType, syncName);
             }

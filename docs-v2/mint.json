@@ -99,15 +99,17 @@
                         "integration-templates/notion",
                         "integration-templates/salesforce",
                         "integration-templates/slack",
-                        "integration-templates/zendesk"
+                        "integration-templates/zendesk",
+                        "integration-templates/zoho-crm"
                     ]
                 }
             ]
         },
         {
-            "group": "Hosting Nango",
+            "group": "Nango Offers",
             "pages": [
                 "cloud",
+                "managed-integrations",
                 {
                     "group": "Self-Hosting Instructions",
                     "pages": [
@@ -164,22 +166,28 @@
                     "pages": [
                         "integrations/all/accelo",
                         "integrations/all/adobe",
+                        "integrations/all/affinity",
                         "integrations/all/aircall",
                         "integrations/all/airtable",
                         "integrations/all/amazon",
                         "integrations/all/amplitude",
+                        "integrations/all/apollo",
                         "integrations/all/asana",
                         "integrations/all/ashby",
                         "integrations/all/atlassian",
+                        "integrations/all/auth0",
                         "integrations/all/bamboohr",
                         "integrations/all/battlenet",
                         "integrations/all/bitbucket",
+                        "integrations/all/blackbaud",
                         "integrations/all/boldsign",
                         "integrations/all/box",
                         "integrations/all/braintree",
                         "integrations/all/brex",
                         "integrations/all/calendly",
                         "integrations/all/clickup",
+                        "integrations/all/close",
+                        "integrations/all/coda",
                         "integrations/all/confluence",
                         "integrations/all/contentstack",
                         "integrations/all/deel",
@@ -197,6 +205,7 @@
                         "integrations/all/figma",
                         "integrations/all/fitbit",
                         "integrations/all/freshbooks",
+                        "integrations/all/freshdesk",
                         "integrations/all/freshservice",
                         "integrations/all/front",
                         "integrations/all/github",
@@ -211,6 +220,7 @@
                         "integrations/all/gumroad",
                         "integrations/all/gusto",
                         "integrations/all/healthgorilla",
+                        "integrations/all/hibob",
                         "integrations/all/highlevel",
                         "integrations/all/hubspot",
                         "integrations/all/instagram",
@@ -218,6 +228,7 @@
                         "integrations/all/intuit",
                         "integrations/all/jira",
                         "integrations/all/keap",
+                        "integrations/all/klaviyo",
                         "integrations/all/lever",
                         "integrations/all/linear",
                         "integrations/all/linkedin",
@@ -231,12 +242,14 @@
                         "integrations/all/nationbuilder",
                         "integrations/all/netsuite",
                         "integrations/all/notion",
+                        "integrations/all/okta",
                         "integrations/all/one-drive",
                         "integrations/all/osu",
                         "integrations/all/outreach",
                         "integrations/all/pagerduty",
                         "integrations/all/pandadoc",
                         "integrations/all/payfit",
+                        "integrations/all/paypal",
                         "integrations/all/pennylane",
                         "integrations/all/pipedrive",
                         "integrations/all/qualtrics",
@@ -250,6 +263,7 @@
                         "integrations/all/segment",
                         "integrations/all/sendgrid",
                         "integrations/all/servicem8",
+                        "integrations/all/servicenow",
                         "integrations/all/shopify",
                         "integrations/all/shortcut",
                         "integrations/all/slack",
@@ -329,12 +343,13 @@
                 "api-reference/connection/get",
                 "api-reference/connection/post",
                 "api-reference/connection/set-metadata",
+                "api-reference/connection/update-metadata",
                 "api-reference/connection/delete"
             ]
         },
         {
             "group": "Syncs",
-            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause", "api-reference/sync/status", "api-reference/sync/environment-variables"]
+            "pages": ["api-reference/sync/records-list", "api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause", "api-reference/sync/status", "api-reference/sync/environment-variables"]
         },
         {
             "group": "Actions",

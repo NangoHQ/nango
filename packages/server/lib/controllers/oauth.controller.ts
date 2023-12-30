@@ -11,7 +11,7 @@ import {
 } from '../utils/utils.js';
 import {
     getConnectionConfig,
-    SyncClient,
+    connectionCreated as connectionCreatedHook,
     interpolateStringFromObject,
     getOauthCallbackUrl,
     getGlobalAppCallbackUrl,
@@ -42,6 +42,8 @@ import {
     providerClientManager,
     errorManager,
     analytics,
+    metricsManager,
+    MetricTypes,
     AnalyticsTypes,
     hmacService,
     ErrorSourceEnum
@@ -78,6 +80,13 @@ class OAuthController {
                 analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
 
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_START, 'OAuth request process start', LogActionEnum.AUTH, {
+                environmentId: String(environmentId),
+                accountId: String(accountId),
+                providerConfigKey: String(providerConfigKey),
+                connectionId: String(connectionId)
+            });
+
             const callbackUrl = await getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
             const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
@@ -103,6 +112,7 @@ class OAuthController {
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingProviderConfigKey());
             }
+
             connectionId = connectionId.toString();
 
             const hmacEnabled = await hmacService.isEnabled(environmentId);
@@ -120,6 +130,7 @@ class OAuthController {
                     return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingHmac());
                 }
                 const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
+
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
@@ -371,6 +382,15 @@ class OAuthController {
                     ...allAuthParams
                 });
 
+                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth2 callback url received', LogActionEnum.AUTH, {
+                    environmentId: String(environment_id),
+                    callbackUrl,
+                    providerConfigKey: String(providerConfigKey),
+                    provider: String(providerConfig.provider),
+                    connectionId: String(connectionId),
+                    authMode: String(template.auth_mode)
+                });
+
                 await createActivityLogMessage({
                     level: 'info',
                     environment_id,
@@ -416,6 +436,13 @@ class OAuthController {
             const prettyError = JSON.stringify(error, ['message', 'name'], 2);
 
             const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
+                callbackUrl,
+                environmentId: String(environment_id),
+                providerConfigKey: String(providerConfigKey),
+                connectionId: String(connectionId)
+            });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -605,6 +632,15 @@ class OAuthController {
         // if they end the flow early, be sure to have an end time
         await addEndTimeActivityLog(activityLogId as number);
 
+        await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth1 callback url received', LogActionEnum.AUTH, {
+            environmentId: String(environment_id),
+            callbackUrl,
+            providerConfigKey: String(providerConfigKey),
+            provider: config.provider,
+            connectionId: String(connectionId),
+            authMode: String(template.auth_mode)
+        });
+
         // All worked, let's redirect the user to the authorization page
         return res.redirect(redirectUrl);
     }
@@ -736,6 +772,14 @@ class OAuthController {
                 }
             });
 
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed with a missing code', LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                providerConfigKey: String(providerConfigKey),
+                provider: String(config.provider),
+                connectionId: String(connectionId),
+                authMode: String(template.auth_mode)
+            });
+
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
         }
 
@@ -819,6 +863,19 @@ class OAuthController {
                     timestamp: Date.now()
                 });
 
+                await metricsManager.capture(
+                    MetricTypes.AUTH_TOKEN_REQUEST_FAILURE,
+                    'OAuth2 token request failed, response from the server could not be parsed',
+                    LogActionEnum.AUTH,
+                    {
+                        environmentId: String(environment_id),
+                        providerConfigKey: String(providerConfigKey),
+                        provider: String(config.provider),
+                        connectionId: String(connectionId),
+                        authMode: String(template.auth_mode)
+                    }
+                );
+
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
             }
 
@@ -853,11 +910,26 @@ class OAuthController {
             });
 
             if (updatedConnection) {
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.initiate(updatedConnection.id);
+                await connectionCreatedHook(
+                    {
+                        id: updatedConnection.id,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        environment_id
+                    },
+                    session.provider
+                );
             }
 
             await updateSuccessActivityLog(activityLogId, true);
+
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                providerConfigKey: String(providerConfigKey),
+                provider: String(config.provider),
+                connectionId: String(connectionId),
+                authMode: String(template.auth_mode)
+            });
 
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         } catch (e) {
@@ -870,6 +942,14 @@ class OAuthController {
                     providerConfigKey: session.providerConfigKey,
                     connectionId: session.connectionId
                 }
+            });
+
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed', LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                providerConfigKey: String(providerConfigKey),
+                provider: String(config.provider),
+                connectionId: String(connectionId),
+                authMode: String(template.auth_mode)
             });
 
             await createActivityLogMessageAndEnd({
@@ -943,6 +1023,14 @@ class OAuthController {
                     url: session.callbackUrl
                 });
 
+                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth1 token request succeeded', LogActionEnum.AUTH, {
+                    environmentId: String(environment_id),
+                    providerConfigKey: String(providerConfigKey),
+                    provider: String(config.provider),
+                    connectionId: String(connectionId),
+                    authMode: String(template.auth_mode)
+                });
+
                 return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
             })
             .catch(async (e) => {
@@ -957,6 +1045,14 @@ class OAuthController {
                     }
                 });
                 const prettyError = JSON.stringify(e, ['message', 'name'], 2);
+
+                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth1 token request failed', LogActionEnum.AUTH, {
+                    environmentId: String(environment_id),
+                    providerConfigKey: String(providerConfigKey),
+                    provider: String(config.provider),
+                    connectionId: String(connectionId),
+                    authMode: String(template.auth_mode)
+                });
 
                 await createActivityLogMessageAndEnd({
                     level: 'error',

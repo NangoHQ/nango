@@ -1,5 +1,5 @@
 import { Book, Slack, Github } from '@geist-ui/icons';
-import { isCloud } from '../utils/utils';
+import { isCloud, isEnterprise } from '../utils/utils';
 import { useSignout } from '../utils/user';
 
 export default function NavBar() {
@@ -43,7 +43,7 @@ export default function NavBar() {
                         <Github className="h-4 mr-1 mt-0.5"></Github>
                         <p>Github</p>
                     </a>
-                    {isCloud() && (
+                    {(isCloud() || isEnterprise()) && (
                         <button
                             onClick={logoutButtonClicked}
                             className="flex h-8 rounded-md ml-4 px-3 pt-1.5 text-sm hover:bg-gray-700 text-red-600 font-semibold mt-3"

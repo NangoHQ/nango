@@ -21,8 +21,6 @@ Head to the [Integrations tab](https://app.nango.dev) and select Auth adjacent t
 
 Within the `Add New Connection` page, retain the default settings and press `Start OAuth Flow`.
 
-Authorize GitHub and retrieve your credentials from the [Connections tab](https://app.nango.dev/connections) 🎉
-
 Authorize your GitHub account and access your credentials from the [Connections tab](https://app.nango.dev/connections). Great work!
 
 ## Sync data from an API (Github issues)
@@ -68,7 +66,7 @@ import type { GithubIssue } from '<path-to-nango-integrations>/models'
 
 const nango = new Nango({ secretKey: '<your-dev-secret-key>' });
 
-const result = await nango.getRecords<GithubIssue>({
+const result = await nango.listRecords<GithubIssue>({
     providerConfigKey: 'demo-github-integration',
     connectionId: 'test-connection-id',
     model: 'GithubIssue'

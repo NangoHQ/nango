@@ -3,7 +3,7 @@ import * as tsNode from 'ts-node';
 import glob from 'glob';
 import chalk from 'chalk';
 import path from 'path';
-import { SyncConfigType } from '@nangohq/shared';
+import { SyncConfigType, NangoSyncConfig } from '@nangohq/shared';
 
 import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
@@ -55,10 +55,12 @@ class CompileService {
                 const providerConfiguration = config.find((config) =>
                     [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
                 );
+
                 if (!providerConfiguration) {
                     continue;
                 }
-                const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find(
+
+                const syncConfig = [...(providerConfiguration?.syncs as NangoSyncConfig[]), ...(providerConfiguration?.actions as NangoSyncConfig[])].find(
                     (sync) => sync.name === path.basename(filePath, '.ts')
                 );
                 const type = syncConfig?.type || SyncConfigType.SYNC;

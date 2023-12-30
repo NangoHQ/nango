@@ -3,7 +3,7 @@ import {
     environmentService,
     AuthCredentials,
     NangoError,
-    SyncClient,
+    connectionCreated as connectionCreatedHook,
     findActivityLogBySession,
     errorManager,
     analytics,
@@ -12,7 +12,10 @@ import {
     updateSuccess as updateSuccessActivityLog,
     configService,
     connectionService,
+    LogActionEnum,
     createActivityLogMessageAndEnd,
+    metricsManager,
+    MetricTypes,
     AuthModes
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
@@ -129,6 +132,18 @@ class AppAuthController {
                     timestamp: Date.now()
                 });
 
+                await metricsManager.capture(
+                    MetricTypes.AUTH_TOKEN_REQUEST_FAILURE,
+                    `App auth token retrieval request process failed ${error?.message}`,
+                    LogActionEnum.AUTH,
+                    {
+                        environmentId: String(environmentId),
+                        providerConfigKey: String(providerConfigKey),
+                        connectionId: String(connectionId),
+                        authMode: String(template.auth_mode)
+                    }
+                );
+
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
 
@@ -145,8 +160,15 @@ class AppAuthController {
             );
 
             if (updatedConnection) {
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.initiate(updatedConnection.id);
+                await connectionCreatedHook(
+                    {
+                        id: updatedConnection.id,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        environment_id: environmentId
+                    },
+                    session.provider
+                );
             }
 
             await createActivityLogMessageAndEnd({
@@ -155,6 +177,14 @@ class AppAuthController {
                 activity_log_id: activityLogId as number,
                 content: 'App connection was successful and credentials were saved',
                 timestamp: Date.now()
+            });
+
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
+                environmentId: String(environmentId),
+                providerConfigKey: String(providerConfigKey),
+                provider: String(config.provider),
+                connectionId: String(connectionId),
+                authMode: String(template.auth_mode)
             });
 
             return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
@@ -171,6 +201,12 @@ class AppAuthController {
                 timestamp: Date.now(),
                 auth_mode: AuthModes.App,
                 url: req.originalUrl
+            });
+
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
+                environmentId: String(environmentId),
+                providerConfigKey: String(providerConfigKey),
+                connectionId: String(connectionId)
             });
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));

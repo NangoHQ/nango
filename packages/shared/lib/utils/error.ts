@@ -135,6 +135,21 @@ export class NangoError extends Error {
                 this.message = `Missing param 'api_key'.`;
                 break;
 
+            case 'missing_private_key':
+                this.status = 400;
+                this.message = `Missing param 'missing_private_key'.`;
+                break;
+
+            case 'missing_private_key_id':
+                this.status = 400;
+                this.message = `Missing param 'private_key_id'.`;
+                break;
+
+            case 'missing_issuer_id':
+                this.status = 400;
+                this.message = `Missing param 'missing_issuer_id'.`;
+                break;
+
             case 'missing_app_id':
                 this.status = 400;
                 this.message = `Missing param 'app_id'.`;
@@ -234,11 +249,6 @@ export class NangoError extends Error {
             case 'missing_client_secret':
                 this.status = 400;
                 this.message = `Missing param 'oauth_client_secret'.`;
-                break;
-
-            case 'missing_app_id':
-                this.status = 400;
-                this.message = `Missing param 'app_id'.`;
                 break;
 
             case 'missing_app_secret':
@@ -449,9 +459,18 @@ export class NangoError extends Error {
                 this.message = `The action script failed with an error: ${this.payload}`;
                 break;
 
+            case 'webhook_script_failure':
+                this.message = `The webhook script failed with an error: ${this.payload}`;
+                break;
+
             case 'pass_through_error':
                 this.status = 400;
                 this.message = `${this.payload}`;
+                break;
+
+            case 'action_script_runtime_error':
+                this.status = 500;
+                this.message = '';
                 break;
 
             default:

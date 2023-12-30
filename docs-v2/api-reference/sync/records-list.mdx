@@ -1,0 +1,35 @@
+---
+title: 'Get records'
+sidebarTitle: 'Get records'
+openapi: 'GET /records'
+---
+
+## The `delta` parameter & webhooks
+
+If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
+
+## Response
+
+### Default behaviour
+By default this returns an array of objects in the data model that you queried with some metadata about each record.
+
+```json
+{ 
+    records: 
+        [
+            {
+                id: 123,
+                ..., // Fields as specified in the model you queried
+                _nango_metadata: {
+                    deleted_at: null,
+                    last_action: 'ADDED',
+                    first_seen_at: '2023-09-18T15:20:35.941305+00:00',
+                    last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+                }
+            },
+            ...
+        ],
+    next_cursor: "MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=="
+}
+```
+
