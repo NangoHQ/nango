@@ -31,11 +31,11 @@ while true; do
     serviceId=$(echo "$item" | jq -r '.service.id')
     echo "Deploying service with ID: $serviceId and name $name"
 
-    curl --request POST \
-      --url "https://api.render.com/v1/services/$serviceId/deploys" \
-      --header "accept: application/json" \
-      --header "authorization: Bearer $API_KEY" \
-      --header "content-type: application/json"
+    #curl --request POST \
+      #--url "https://api.render.com/v1/services/$serviceId/deploys" \
+      #--header "accept: application/json" \
+      #--header "authorization: Bearer $API_KEY" \
+      #--header "content-type: application/json"
 
     sleep 1
   done
