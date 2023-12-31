@@ -6,13 +6,17 @@
 # RUNNER_OWNER_ID
 
 CURSOR=""
+LIMIT=50
 
 while true; do
   response=$(curl -s --request GET \
-     --url "https://api.render.com/v1/services?limit=20&ownerId=$RUNNER_OWNER_ID&cursor=$CURSOR" \
+     --url "https://api.render.com/v1/services?limit=$LIMIT&ownerId=$RUNNER_OWNER_ID&cursor=$CURSOR&env=image&type=private_service" \
      --header "accept: application/json" \
      --header "authorization: Bearer $API_KEY")
 
+  if [ "$response" == "[]" ]; then
+    break
+  fi
 
   CURSOR=$(echo "$response" | jq -r '.[-1].cursor')
 
@@ -36,6 +40,11 @@ while true; do
       #--header "accept: application/json" \
       #--header "authorization: Bearer $API_KEY" \
       #--header "content-type: application/json"
+
+    RESPONSE_LENGTH=$(echo "$response" | jq -r '. | length')
+    if [ "$RESPONSE_LENGTH" -lt "$LIMIT" ]; then
+      break
+    fi
 
     sleep 1
   done
