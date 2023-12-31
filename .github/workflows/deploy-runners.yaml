@@ -1,0 +1,27 @@
+name: Nango Deploy Runners
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: "Environment to deploy to, defaults to staging"
+        required: true
+        default: "staging"
+        options:
+          - staging
+          - production
+
+jobs:
+    deploy_runners:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Prepare ansible variable files for the develop environment
+              env:
+                API_KEY: ${{ secrets.RENDER_API_KEY }}
+                ENVIRONMENT: ${{ github.event.inputs.environment }}
+                RUNNER_OWNER_ID: ${{ secrets.RENDER_RUNNER_OWNER_ID }}
+              shell: bash
+              run: |
+               bash ./scripts/deploy/runners.bash
+
