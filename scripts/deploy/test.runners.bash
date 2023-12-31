@@ -5,7 +5,8 @@
 # API_KEY
 # RUNNER_OWNER_ID
 
-    ENVIRONMENT=production
+ENVIRONMENT=production
+
 CURSOR=""
 
 while true; do
@@ -19,7 +20,6 @@ while true; do
 
   echo "$response" | jq -c '.[]' | while read -r item; do
     name=$(echo "$item" | jq -r '.service.name')
-    echo $name
     if [[ "$name" != "$ENVIRONMENT-runner-"* ]]; then
       continue
     fi

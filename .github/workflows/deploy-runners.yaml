@@ -16,7 +16,9 @@ jobs:
     deploy_runners:
         runs-on: ubuntu-latest
         steps:
-            - name: Prepare ansible variable files for the develop environment
+            - name: Checkout
+              uses: actions/checkout@v3
+            - name: Call deploy runners script
               env:
                 API_KEY: ${{ secrets.RENDER_API_KEY }}
                 ENVIRONMENT: ${{ github.event.inputs.environment }}
