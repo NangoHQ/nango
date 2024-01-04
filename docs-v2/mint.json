@@ -184,6 +184,7 @@
                         "integrations/all/box",
                         "integrations/all/braintree",
                         "integrations/all/brex",
+                        "integrations/all/brex-api-key",
                         "integrations/all/calendly",
                         "integrations/all/clickup",
                         "integrations/all/close",
