@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server:0.36.70
+        image: nangohq/nango-server:0.36.74
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233

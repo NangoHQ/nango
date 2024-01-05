@@ -67,7 +67,11 @@ const internalNango: InternalNango = {
             return;
         }
 
-        const connection = await connectionService.findConnectionByConnectionConfigValue(propName || connectionIdentifier, get(body, connectionIdentifier));
+        const connection = await connectionService.findConnectionByConnectionConfigValue(
+            propName || connectionIdentifier,
+            get(body, connectionIdentifier),
+            integration.environment_id
+        );
 
         if (!connection) {
             await metricsManager.capture(
