@@ -79,7 +79,8 @@ const internalNango: InternalNango = {
                     provider: integration.provider,
                     providerConfigKey: integration.unique_key,
                     propName: String(propName),
-                    connectionIdentifier
+                    connectionIdentifier,
+                    payload: body
                 }
             );
             return;
