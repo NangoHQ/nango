@@ -54,8 +54,7 @@ class ModelService {
                 throw new Error(`Model "${modelName}" doesn't have an id field. This is required to be able to uniquely identify the data record.`);
             }
 
-            const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
-            const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
+            const interfaceName = `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`;
             let extendsClause = '';
             const fieldDefinitions = Object.keys(fields)
                 .filter((fieldName: string) => {
