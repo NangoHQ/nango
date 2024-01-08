@@ -199,7 +199,12 @@ export async function getTopLevelLogByEnvironment(
     environment_id: number,
     limit = 20,
     offset = 0,
-    { status, script, connection, integration }: { status?: string; script?: string; connection?: string; integration?: string } = {}
+    {
+        status,
+        script,
+        connection,
+        integration
+    }: { status?: string | undefined; script?: string | undefined; connection?: string | undefined; integration?: string | undefined }
 ): Promise<ActivityLog[]> {
     const logs = db.knex
         .withSchema(db.schema())
