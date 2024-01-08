@@ -148,13 +148,30 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     let res: WebhookResponse | null | void = null;
 
-    if (handler) {
-        res = await handler(internalNango, integration, headers, body);
+    try {
+        if (handler) {
+            res = await handler(internalNango, integration, headers, body);
+        }
+    } catch (e) {
+        await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
+            environmentId: String(integration.environment_id),
+            provider: integration.provider,
+            providerConfigKey: integration.unique_key,
+            payload: body,
+            error: String(e)
+        });
     }
 
     const webhookBodyToForward = res?.parsedBody || body;
 
     await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward);
+
+    await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
+        environmentId: String(integration.environment_id),
+        provider: integration.provider,
+        providerConfigKey: integration.unique_key,
+        payload: webhookBodyToForward
+    });
 
     if (res) {
         return res.acknowledgementResponse;
