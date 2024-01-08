@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-runner",
-    "version": "0.36.52",
+    "version": "1.0.0",
     "description": "Runs Nango integration code",
     "type": "module",
     "main": "dist/index.js",
