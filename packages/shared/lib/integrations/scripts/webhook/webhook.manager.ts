@@ -60,7 +60,7 @@ const internalNango: InternalNango = {
                     provider: integration.provider,
                     providerConfigKey: integration.unique_key,
                     connectionIdentifier,
-                    payload: body
+                    payload: JSON.stringify(body)
                 }
             );
 
@@ -84,7 +84,7 @@ const internalNango: InternalNango = {
                     providerConfigKey: integration.unique_key,
                     propName: String(propName),
                     connectionIdentifier,
-                    payload: body
+                    payload: JSON.stringify(body)
                 }
             );
             return;
@@ -123,7 +123,7 @@ const internalNango: InternalNango = {
                             connectionId: String(connection.connection_id),
                             registeredWebhook: webhook,
                             webhookType,
-                            payload: body
+                            payload: JSON.stringify(body)
                         }
                     );
                 }
@@ -157,7 +157,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
             environmentId: String(integration.environment_id),
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
-            payload: body,
+            payload: JSON.stringify(body),
             error: String(e)
         });
     }
@@ -170,7 +170,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
         environmentId: String(integration.environment_id),
         provider: integration.provider,
         providerConfigKey: integration.unique_key,
-        payload: webhookBodyToForward
+        payload: JSON.stringify(webhookBodyToForward)
     });
 
     if (res) {

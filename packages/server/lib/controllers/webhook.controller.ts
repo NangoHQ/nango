@@ -20,6 +20,7 @@ class WebhookController {
             const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true, true);
 
             let responsePayload = null;
+
             if (areWebhooksEnabled) {
                 responsePayload = await routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
             } else {
@@ -28,7 +29,13 @@ class WebhookController {
                 return;
             }
 
-            res.status(200).send(responsePayload);
+            if (!responsePayload) {
+                res.status(200).send();
+                return;
+            } else {
+                res.status(200).send(responsePayload);
+                return;
+            }
         } catch (err) {
             next(err);
         }
