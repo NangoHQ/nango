@@ -31,6 +31,7 @@ export default async function fetchData(nango: NangoSync) {
             mappedTasks = [];
         }
     }
+    await nango.batchSave(mappedTasks, 'AsanaTask');
 }
 
 async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string | string[]>) {

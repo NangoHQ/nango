@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.36.52",
+    "version": "0.36.78",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
@@ -19,7 +19,7 @@
         "@aws-sdk/client-s3": "^3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "0.36.52",
+        "@nangohq/node": "0.36.78",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "@types/fs-extra": "^11.0.1",
@@ -48,7 +48,6 @@
         "rimraf": "^5.0.1",
         "semver": "^7.5.4",
         "simple-oauth2": "^5.0.0",
-        "ts-node": "^10.9.1",
         "uuid": "^9.0.0",
         "winston": "^3.8.2",
         "winston-daily-rotate-file": "^4.7.1"

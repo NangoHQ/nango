@@ -133,6 +133,20 @@ class EnvironmentService {
         return uuid;
     }
 
+    async getAccountUUIDFromEnvironmentUUID(environment_uuid: string): Promise<string | null> {
+        const result = await db.knex.withSchema(db.schema()).select('account_id').from<Environment>(TABLE).where({ uuid: environment_uuid });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        const accountId = result[0].account_id;
+
+        const uuid = await accountService.getUUIDFromAccountId(accountId);
+
+        return uuid;
+    }
+
     async getAccountIdAndEnvironmentIdByPublicKey(publicKey: string): Promise<{ accountId: number; environmentId: number } | null> {
         if (!isCloud()) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_')) || [];
@@ -199,6 +213,16 @@ class EnvironmentService {
         }
 
         return { account: account[0], environment: encryptionManager.decryptEnvironment(environmentResult[0]) };
+    }
+
+    async getIdByUuid(uuid: string): Promise<number | null> {
+        const result = await db.knex.withSchema(db.schema()).select('id').from<Environment>(TABLE).where({ uuid });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].id;
     }
 
     async getById(id: number): Promise<Environment | null> {
@@ -322,16 +346,6 @@ class EnvironmentService {
 
     async editWebhookUrl(webhookUrl: string, id: number): Promise<Environment | null> {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ webhook_url: webhookUrl }, ['id']);
-    }
-
-    async getWebhookInfo(id: number): Promise<{ webhook_url: string; always_send_webhook: boolean } | null> {
-        const result = await db.knex.withSchema(db.schema()).select('webhook_url', 'always_send_webhook').from<Environment>(TABLE).where({ id });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
     }
 
     async editHmacEnabled(hmacEnabled: boolean, id: number): Promise<Environment | null> {

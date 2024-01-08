@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
+import Spinner from '../components/ui/Spinner';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
 import { Clock, RefreshCw, Lock, Check, X } from '@geist-ui/icons';
@@ -226,20 +227,25 @@ We could not retrieve and/or refresh your access token due to the following erro
                             </Tooltip>
                         )}
                     </div>
-                    <div className={`flex inline-flex text-white ${currentTab === 'auth' || (currentTab === 'sync' && syncs.length > 0) ? 'mb-12' : ''} border border-border-gray rounded-md`}>
-                        <span
-                            className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'auth' ? 'bg-gray-800' : ''}`}
-                            onClick={() => setCurrentTab('auth')}
-                        >
-                            <Lock className="flex stroke-white mr-2 mb-0.5" size="14" />
-                            Auth
-                        </span>
-                        <span
-                            className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'sync' ? 'bg-gray-800' : ''}`}
-                            onClick={() => setCurrentTab('sync')}
-                        >
-                            <RefreshCw className="flex stroke-white mr-2 mb-0.5" size="14" />
-                            Sync
+                    <div className={`flex items-center ${currentTab === 'auth' || (currentTab === 'sync' && syncs.length > 0) ? 'mb-12' : ''}`}>
+                        <div className={`flex inline-flex text-white border border-border-gray rounded-md`}>
+                            <span
+                                className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'auth' ? 'bg-gray-800' : ''}`}
+                                onClick={() => setCurrentTab('auth')}
+                            >
+                                <Lock className="flex stroke-white mr-2 mb-0.5" size="14" />
+                                Auth
+                            </span>
+                            <span
+                                className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'sync' ? 'bg-gray-800' : ''}`}
+                                onClick={() => setCurrentTab('sync')}
+                            >
+                                <RefreshCw className="flex stroke-white mr-2 mb-0.5" size="14" />
+                                Sync
+                            </span>
+                        </div>
+                        <span className="flex ml-2">
+                            {!loaded && (<Spinner size={1} />)}
                         </span>
                     </div>
                     <div className={`${currentTab === 'auth' || (currentTab === 'sync' && syncs.length > 0) ? 'border border-border-gray' : ''} rounded-md h-fit ${currentTab === 'auth' ? 'py-14' : 'pt-6'} text-white text-sm`}>

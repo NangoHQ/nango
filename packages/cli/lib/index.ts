@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*
- * Copyright (c) 2023 Nango, all rights reserved.
+ * Copyright (c) 2024 Nango, all rights reserved.
  */
 
 import { Command } from 'commander';
@@ -76,7 +76,7 @@ program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
 program
     .command('version')
-    .description('Print the version of the Nango CLI, Nango Worker, and Nango Server.')
+    .description('Print the version of the Nango CLI and Nango Server.')
     .action(function (this: Command) {
         const { debug } = this.opts();
         version(debug);
@@ -103,9 +103,18 @@ program
     .description('Dry run the sync|action process to help with debugging against an existing connection in cloud.')
     .arguments('name connection_id')
     .option('-e [environment]', 'The Nango environment, defaults to dev.', 'dev')
-    .option('-l, --lastSyncDate [lastSyncDate]', 'Optional (for syncs only): last sync date to retrieve records greater than this date')
-    .option('-i, --input [input]', 'Optional (for actions only): input to pass to the action script')
-    .option('-m, --metadata [metadata]', 'Optional (for syncs only): metadata to stub for the sync script')
+    .option(
+        '-l, --lastSyncDate [lastSyncDate]',
+        'Optional (for syncs only): last sync date to retrieve records greater than this date. The format is any string that can be successfully parsed by `new Date()` in JavaScript'
+    )
+    .option(
+        '-i, --input [input]',
+        'Optional (for actions only): input to pass to the action script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\''
+    )
+    .option(
+        '-m, --metadata [metadata]',
+        'Optional (for syncs only): metadata to stub for the sync script supplied in JSON format, for example --metadata \'{"foo": "bar"}\''
+    )
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);

@@ -2,6 +2,7 @@ import type { Timestamps } from './Generic.js';
 
 export interface Environment extends Timestamps {
     id: number;
+    uuid?: string;
     name: string;
     account_id: number;
     secret_key: string;
@@ -24,4 +25,6 @@ export interface Environment extends Timestamps {
     pending_secret_key_tag?: string | null;
     pending_public_key?: string | null;
     slack_notifications?: boolean;
+
+    webhook_receive_url?: string;
 }

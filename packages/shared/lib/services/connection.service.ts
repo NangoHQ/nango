@@ -25,13 +25,14 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
 import {
     AppCredentials,
     AuthModes as ProviderAuthModes,
+    AppStoreCredentials,
     OAuth2Credentials,
     ImportedCredentials,
     ApiKeyCredentials,
@@ -39,7 +40,7 @@ import {
 } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
-import SyncClient from '../clients/sync.client.js';
+import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -61,7 +62,7 @@ class ConnectionService {
         environment_id: number,
         accountId: number,
         metadata?: Metadata
-    ) {
+    ): Promise<{ id: number }[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
         if (storedConnection) {
@@ -208,8 +209,15 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0]?.id as number);
+            await connectionCreatedHook(
+                {
+                    id: importedConnection[0]?.id as number,
+                    connection_id,
+                    provider_config_key,
+                    environment_id: environmentId
+                },
+                provider
+            );
         }
 
         return importedConnection;
@@ -232,8 +240,15 @@ class ConnectionService {
         const importedConnection = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0].id);
+            await connectionCreatedHook(
+                {
+                    id: importedConnection[0].id,
+                    connection_id,
+                    provider_config_key,
+                    environment_id: environmentId
+                },
+                provider
+            );
         }
 
         return importedConnection;
@@ -376,11 +391,26 @@ class ConnectionService {
         return result[0].metadata;
     }
 
+    public async getConnectionConfig(connection: Connection): Promise<ConnectionConfig> {
+        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('connection_config').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return {};
+        }
+
+        return result[0].connection_config;
+    }
+
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
         const result = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
-            .select('id', 'connection_id', 'provider_config_key', 'environment_id')
+            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config')
             .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
@@ -390,12 +420,51 @@ class ConnectionService {
         return result;
     }
 
-    public async updateMetadata(connection: Connection, metadata: Metadata) {
+    public async replaceMetadata(connection: Connection, metadata: Metadata) {
         await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .where({ id: connection.id as number, deleted: false })
             .update({ metadata });
+    }
+
+    public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .where({ id: connection.id as number, deleted: false })
+            .update({ connection_config: config });
+    }
+
+    public async updateMetadata(connection: Connection, metadata: Metadata): Promise<Metadata> {
+        const existingMetadata = await this.getMetadata(connection);
+        const newMetadata = { ...existingMetadata, ...metadata };
+        await this.replaceMetadata(connection, newMetadata);
+
+        return newMetadata;
+    }
+
+    public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {
+        const existingConfig = await this.getConnectionConfig(connection);
+        const newConfig = { ...existingConfig, ...config };
+        await this.replaceConnectionConfig(connection, newConfig);
+
+        return newConfig;
+    }
+
+    public async findConnectionByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<Connection | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .select('*')
+            .where({ environment_id: environmentId })
+            .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return null;
+        }
+
+        return encryptionManager.decryptConnection(result[0]);
     }
 
     public async listConnections(
@@ -580,7 +649,7 @@ class ConnectionService {
         environment_id: number,
         instantRefresh = false,
         logAction: LogAction = 'token'
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
@@ -619,10 +688,6 @@ class ConnectionService {
                 }
                 connection.credentials = newCredentials;
                 await this.updateConnection(connection);
-
-                if (activityLogId && logAction === 'token') {
-                    await this.logActivity(activityLogId, environment_id, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
-                }
 
                 await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
@@ -664,6 +729,57 @@ class ConnectionService {
         return { success: true, error: null, response: credentials };
     }
 
+    public async getAppStoreCredentials(
+        template: ProviderTemplate,
+        connectionConfig: Connection['connection_config'],
+        privateKey: string
+    ): Promise<ServiceResponse<AppStoreCredentials>> {
+        const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
+
+        const now = Math.floor(Date.now() / 1000);
+        const expiration = now + 15 * 60;
+
+        const payload: Record<string, string | number> = {
+            iat: now,
+            exp: expiration,
+            iss: connectionConfig['issuerId']
+        };
+
+        if (template.authorization_params && template.authorization_params['audience']) {
+            payload['aud'] = template.authorization_params['audience'];
+        }
+
+        if (connectionConfig['scope']) {
+            payload['scope'] = connectionConfig['scope'];
+        }
+
+        const {
+            success,
+            error,
+            response: rawCredentials
+        } = await this.getJWTCredentials(privateKey, tokenUrl, payload, null, {
+            header: {
+                alg: 'ES256',
+                kid: connectionConfig['privateKeyId'],
+                typ: 'JWT'
+            }
+        });
+
+        if (!success || !rawCredentials) {
+            return { success, error, response: null };
+        }
+
+        const credentials: AppStoreCredentials = {
+            type: ProviderAuthModes.AppStore,
+            access_token: (rawCredentials as any)?.token,
+            private_key: Buffer.from(privateKey).toString('base64'),
+            expires_at: (rawCredentials as any)?.expires_at,
+            raw: rawCredentials as unknown as Record<string, unknown>
+        };
+
+        return { success: true, error: null, response: credentials };
+    }
+
     public async getAppCredentials(
         template: ProviderTemplate,
         config: ProviderConfig,
@@ -672,47 +788,77 @@ class ConnectionService {
         const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
         const privateKeyBase64 = config.oauth_client_secret;
 
-        let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-        privateKey = privateKey.replace(/(.{64})/g, '$1\n');
+        const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
+
+        const headers = {
+            Accept: 'application/vnd.github.v3+json'
+        };
 
         const now = Math.floor(Date.now() / 1000);
         const expiration = now + 10 * 60;
 
-        const payload = {
+        const payload: Record<string, string | number> = {
             iat: now,
             exp: expiration,
             iss: config.oauth_client_id
         };
 
-        const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
+        const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
+
+        if (!success || !rawCredentials) {
+            return { success, error, response: null };
+        }
+
+        const credentials: AppCredentials = {
+            type: ProviderAuthModes.App,
+            access_token: (rawCredentials as any)?.token,
+            expires_at: (rawCredentials as any)?.expires_at,
+            raw: rawCredentials as unknown as Record<string, unknown>
+        };
+
+        return { success: true, error: null, response: credentials };
+    }
+
+    private async getJWTCredentials(
+        privateKey: string,
+        url: string,
+        payload: Record<string, string | number>,
+        additionalApiHeaders: Record<string, string> | null,
+        options: object
+    ): Promise<ServiceResponse<any>> {
+        const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+
+        if (!hasLineBreak) {
+            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
+            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
+        }
 
         try {
+            const token = jwt.sign(payload, privateKey, options);
+
+            const headers = {
+                Authorization: `Bearer ${token}`
+            };
+
+            if (additionalApiHeaders) {
+                Object.assign(headers, additionalApiHeaders);
+            }
+
             const tokenResponse = await axios.post(
-                tokenUrl,
+                url,
                 {},
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: 'application/vnd.github.v3+json'
-                    }
+                    headers
                 }
             );
 
-            const rawCredentials = tokenResponse.data;
-
-            const credentials: AppCredentials = {
-                type: ProviderAuthModes.App,
-                access_token: (rawCredentials as any)?.token,
-                expires_at: (rawCredentials as any)?.expires_at,
-                raw: rawCredentials as unknown as Record<string, unknown>
+            return { success: true, error: null, response: tokenResponse.data };
+        } catch (e: any) {
+            const errorPayload = {
+                message: e.message || 'Unknown error',
+                name: e.name || 'Error'
             };
-
-            return { success: true, error: null, response: credentials };
-        } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
-            const error = new NangoError('refresh_token_external_error', errorMessage);
+            const error = new NangoError('refresh_token_external_error', errorPayload);
             return { success: false, error, response: null };
         }
     }
@@ -734,7 +880,7 @@ class ConnectionService {
             tokenExpirationCondition =
                 credentials.refresh_token &&
                 (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
-        } else if (template.auth_mode === ProviderAuthModes.App) {
+        } else if (template.auth_mode === ProviderAuthModes.App || template.auth_mode === ProviderAuthModes.AppStore) {
             tokenExpirationCondition =
                 refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
         }
@@ -746,12 +892,21 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplate
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
         if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
+        } else if (template.auth_mode === ProviderAuthModes.AppStore) {
+            const { private_key } = connection.credentials as AppStoreCredentials;
+            const { success, error, response: credentials } = await this.getAppStoreCredentials(template, connection.connection_config, private_key);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
         } else if (template.auth_mode === ProviderAuthModes.App) {
             const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
 
@@ -765,17 +920,6 @@ class ConnectionService {
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
-    }
-
-    private async logActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
-        await updateActivityLogAction(activityLogId, 'token');
-        await createActivityLogMessage({
-            level: 'info',
-            environment_id,
-            activity_log_id: activityLogId,
-            content: message,
-            timestamp: Date.now()
-        });
     }
 
     private async logErrorActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {

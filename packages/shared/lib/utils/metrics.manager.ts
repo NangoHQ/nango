@@ -24,7 +24,15 @@ export enum MetricTypes {
     SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used',
     SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used',
     SYNC_GET_RECORDS_QUERY_TIMEOUT = 'sync_get_records_query_timeout',
-    FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure'
+    FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure',
+    POST_CONNECTION_SCRIPT_FAILURE = 'post_connection_script_failure',
+    INCOMING_WEBHOOK_RECEIVED = 'incoming_webhook_received',
+    INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER = 'incoming_webhook_issue_wrong_connection_identifier',
+    INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND = 'incoming_webhook_issue_connection_not_found',
+    INCOMING_WEBHOOK_ISSUE_WEBHOOK_SUBSCRIPTION_NOT_FOUND_REGISTERED = 'incoming_webhook_issue_webhook_subscription_not_found_registered',
+    INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY = 'incoming_webhook_processed_successfully',
+    INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing',
+    RENDER_RUNNER_FAILURE_RESOLVED_BACK_TO_LOCAL = 'render_runner_failure_resolved_back_to_local'
 }
 
 class MetricsManager {

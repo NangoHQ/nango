@@ -99,7 +99,8 @@
                         "integration-templates/notion",
                         "integration-templates/salesforce",
                         "integration-templates/slack",
-                        "integration-templates/zendesk"
+                        "integration-templates/zendesk",
+                        "integration-templates/zoho-crm"
                     ]
                 }
             ]
@@ -170,6 +171,7 @@
                         "integrations/all/airtable",
                         "integrations/all/amazon",
                         "integrations/all/amplitude",
+                        "integrations/all/apollo",
                         "integrations/all/asana",
                         "integrations/all/ashby",
                         "integrations/all/atlassian",
@@ -185,6 +187,7 @@
                         "integrations/all/calendly",
                         "integrations/all/clickup",
                         "integrations/all/close",
+                        "integrations/all/coda",
                         "integrations/all/confluence",
                         "integrations/all/contentstack",
                         "integrations/all/deel",
@@ -341,6 +344,7 @@
                 "api-reference/connection/get",
                 "api-reference/connection/post",
                 "api-reference/connection/set-metadata",
+                "api-reference/connection/update-metadata",
                 "api-reference/connection/delete"
             ]
         },

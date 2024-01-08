@@ -16,7 +16,6 @@ import type {
     NangoSyncEndpoint,
     NangoIntegrationDataV2
 } from '../models/NangoConfig.js';
-import { isCloud } from '../utils/utils.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
@@ -84,20 +83,6 @@ export function loadStandardConfig(configData: NangoConfig, showMessages = false
         return configServiceResponse;
     } catch (error: any) {
         return { success: false, error: new NangoError('error_loading_nango_config', error?.message), response: null };
-    }
-}
-
-export function getRootDir(optionalLoadLocation?: string) {
-    if (isCloud()) {
-        return './';
-    }
-
-    if (optionalLoadLocation) {
-        return optionalLoadLocation;
-    } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
-        return `${process.env['NANGO_INTEGRATIONS_FULL_PATH']}/dist`;
-    } else {
-        return path.resolve(__dirname, '../nango-integrations/dist');
     }
 }
 
@@ -269,6 +254,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
     for (const providerConfigKey in config.integrations) {
         const builtSyncs: NangoSyncConfig[] = [];
         const builtActions: NangoSyncConfig[] = [];
+
         const integration: NangoV2Integration = config.integrations[providerConfigKey] as NangoV2Integration;
         let provider;
 
@@ -283,6 +269,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
         const syncs = integration['syncs'] as NangoV2Integration;
         const actions = integration['actions'] as NangoV2Integration;
+
         for (const syncName in syncs) {
             const sync: NangoIntegrationDataV2 = syncs[syncName] as NangoIntegrationDataV2;
             const models: NangoSyncModel[] = [];
@@ -358,6 +345,16 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 return { success: false, error, response: null };
             }
 
+            let webhookSubscriptions: string[] = [];
+
+            if (sync['webhook-subscriptions']) {
+                if (Array.isArray(sync['webhook-subscriptions'])) {
+                    webhookSubscriptions = sync['webhook-subscriptions'] as string[];
+                } else {
+                    webhookSubscriptions = [sync['webhook-subscriptions'] as string];
+                }
+            }
+
             const syncObject: NangoSyncConfig = {
                 name: syncName,
                 type: SyncConfigType.SYNC,
@@ -372,7 +369,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
-                endpoints
+                endpoints,
+                webhookSubscriptions
             };
 
             builtSyncs.push(syncObject);
@@ -390,9 +388,6 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
                             allModels.push(model);
                         }
-                    } else {
-                        const error = new NangoError('duplicate_model', { model, name: actionName, type: 'action' });
-                        return { success: false, error, response: null };
                     }
                     const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
                     models.push({ name: model, fields: modelFields });

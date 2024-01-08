@@ -1,0 +1,36 @@
+---
+title: Stripe
+sidebarTitle: Stripe
+---
+
+API configuration: [`stripe`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/guides/oauth)                                                      | ✅                              |
+| [Syncs](/guides/sync) & [Actions](/guides/action)                                                              | ✅                              |
+| [Nango Proxy](/guides/proxy)                          | ✅   |
+| Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
+| API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to register an Application](https://stripe.com/docs/stripe-apps)
+-   [OAuth-related docs](https://stripe.com/docs/stripe-apps/api-authentication/oauth)
+-   [List of OAuth scopes](https://stripe.com/docs/stripe-apps/reference/permissions)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## Connection configuration in Nango
+
+Stripe requires you to use either the application domain or a temporary id (in test mode) to identify your application. See the [docs](https://stripe.com/docs/stripe-apps/api-authentication/oauth#install-app) for more information.
+
+You should add your app domain to the `appDomain` field in the connection params.
+
+```js
+nango.auth('stripe-app', '<CONNECTION-ID>', {params: {appDomain: '<stripe-app-domain>'}});
+```

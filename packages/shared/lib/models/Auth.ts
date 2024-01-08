@@ -7,6 +7,7 @@ export enum AuthModes {
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
+    AppStore = 'APP_STORE',
     App = 'APP',
     None = 'NONE'
 }
@@ -100,6 +101,14 @@ export interface AppCredentials {
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
+}
+
+export interface AppStoreCredentials {
+    type?: AuthModes.AppStore;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
+    private_key: string;
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {

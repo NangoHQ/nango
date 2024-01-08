@@ -219,6 +219,42 @@ describe('generate function tests', () => {
         );
     });
 
+    it('should allow models to end in an s', async () => {
+        await init();
+        const data = {
+            integrations: {
+                'demo-github-integration': {
+                    'single-model-return': {
+                        type: 'sync',
+                        runs: 'every half hour',
+                        returns: 'GithubIssues'
+                    }
+                }
+            },
+            models: {
+                GithubIssues: {
+                    id: 'string',
+                    owner: 'string',
+                    repo: 'string',
+                    issue_number: 'number',
+                    title: 'string',
+                    author: 'string',
+                    author_id: 'string',
+                    state: 'string',
+                    date_created: 'date',
+                    date_last_modified: 'date',
+                    body: 'string'
+                }
+            }
+        };
+        const yamlData = yaml.dump(data);
+        console.log(yamlData);
+        await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
+        await generate(false, true);
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain('export interface GithubIssues');
+    });
+
     it('should not throw an error if a model is missing an id for an action', async () => {
         await init();
         const data = {
@@ -313,16 +349,42 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
-        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1`));
+        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid`));
         expect(config).toBeDefined();
-        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v1/object.json`), 'utf8');
+        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid/object.json`), 'utf8');
         expect(config).toEqual(JSON.parse(json));
     });
 
+    it('v1 - should complain about commas at the end of declared types', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v1/no-commas/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true)).rejects.toThrow(`Field "integer," in the model GithubIssue ends with a comma or semicolon which is not allowed.`);
+    });
+
+    it('v1 - should complain about semi colons at the end of declared types', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v1/no-semi-colons/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true)).rejects.toThrow(`Field "integer;" in the model GithubIssue ends with a comma or semicolon which is not allowed.`);
+    });
+
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
-        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
+        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/valid`));
         expect(config).toBeDefined();
-        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v2/object.json`), 'utf8');
+        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v2/valid/object.json`), 'utf8');
         expect(config).toEqual(JSON.parse(json));
+    });
+
+    it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', async () => {
+        const { response: config, error } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/invalid.1`));
+        expect(config).toBeNull();
+        expect(error).toBeDefined();
+        expect(error?.message).toEqual('Problem validating the nango.yaml file.');
+    });
+
+    it('should throw a validation error on a nango.yaml file that is not formatted correctly -- webhook subscriptions are not allowed in an action', async () => {
+        const { response: config, error } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/invalid.2`));
+        expect(config).toBeNull();
+        expect(error).toBeDefined();
+        expect(error?.message).toEqual('Problem validating the nango.yaml file.');
     });
 });

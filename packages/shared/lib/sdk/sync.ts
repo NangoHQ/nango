@@ -1,5 +1,5 @@
 import { getSyncConfigByJobId } from '../services/sync/config/config.service.js';
-import { upsert } from '../services/sync/data/data.service.js';
+import { updateRecord, upsert } from '../services/sync/data/data.service.js';
 import { formatDataRecords } from '../services/sync/data/records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
@@ -89,6 +89,11 @@ interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
 }
 
+interface RetryHeaderConfig {
+    at?: string;
+    after?: string;
+}
+
 export interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
@@ -102,6 +107,7 @@ export interface ProxyConfiguration {
     retries?: number;
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
+    retryHeader?: RetryHeaderConfig;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
 
@@ -110,7 +116,9 @@ enum AuthModes {
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
-    App = 'APP'
+    AppStore = 'APP_STORE',
+    App = 'APP',
+    None = 'NONE'
 }
 
 interface AppCredentials extends CredentialsCommon {
@@ -170,9 +178,23 @@ interface Connection {
     credentials: AuthCredentials;
 }
 
-interface NangoProps {
+export class ActionError extends Error {
+    type: string;
+    payload: unknown;
+
+    constructor(payload?: unknown) {
+        super();
+        this.type = 'action_script_runtime_error';
+        if (payload) {
+            this.payload = payload;
+        }
+    }
+}
+
+export interface NangoProps {
     host?: string;
     secretKey: string;
+    accountId?: number;
     connectionId?: string;
     environmentId?: number;
     activityLogId?: number;
@@ -210,6 +232,8 @@ export class NangoAction {
 
     public connectionId?: string;
     public providerConfigKey?: string;
+
+    public ActionError = ActionError;
 
     constructor(config: NangoProps) {
         if (config.activityLogId) {
@@ -326,8 +350,12 @@ export class NangoAction {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async setMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+    }
+
+    public async updateMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+        return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
@@ -497,7 +525,7 @@ export class NangoSync extends NangoAction {
     public async batchSave<T = any>(results: T[], model: string): Promise<boolean | null> {
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchSave received an empty array. No records to send.');
+                console.log('batchSave received an empty array. No records to save.');
             }
             return true;
         }
@@ -723,6 +751,114 @@ export class NangoSync extends NangoAction {
             throw new Error(responseResults?.error);
         }
     }
+
+    public async batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null> {
+        if (!results || results.length === 0) {
+            if (this.dryRun) {
+                console.log('batchUpdate received an empty array. No records to update.');
+            }
+            return true;
+        }
+
+        if (!this.nangoConnectionId || !this.activityLogId) {
+            throw new Error('Nango Connection Id, and Activity Log Id both required');
+        }
+
+        const {
+            success,
+            error,
+            response: formattedResults
+        } = formatDataRecords(
+            results as unknown as DataResponse[],
+            this.nangoConnectionId as number,
+            model,
+            this.syncId as string,
+            this.syncJobId || 0,
+            this.lastSyncDate,
+            false
+        );
+
+        if (!success || formattedResults === null) {
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    environment_id: this.environmentId as number,
+                    activity_log_id: this.activityLogId as number,
+                    content: `There was an issue with the batch save. ${error?.message}`,
+                    timestamp: Date.now()
+                });
+            }
+
+            throw error;
+        }
+
+        if (this.dryRun) {
+            this.logMessages?.push(`A batch update call would update the following data to the ${model} model:`);
+            this.logMessages?.push(...results);
+            return null;
+        }
+
+        const responseResults = await updateRecord(
+            formattedResults,
+            '_nango_sync_data_records',
+            'external_id',
+            this.nangoConnectionId as number,
+            model,
+            this.activityLogId as number,
+            this.environmentId as number
+        );
+
+        if (responseResults.success) {
+            const { summary } = responseResults;
+            const updatedResults = {
+                [model]: {
+                    added: summary?.addedKeys.length as number,
+                    updated: summary?.updatedKeys.length as number,
+                    deleted: summary?.deletedKeys?.length as number
+                }
+            };
+
+            await createActivityLogMessage({
+                level: 'info',
+                environment_id: this.environmentId as number,
+                activity_log_id: this.activityLogId as number,
+                content: `Batch update was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
+                timestamp: Date.now()
+            });
+
+            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
+
+            return true;
+        } else {
+            const content = `There was an issue with the batch update. ${responseResults?.error}`;
+
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    environment_id: this.environmentId as number,
+                    activity_log_id: this.activityLogId as number,
+                    content,
+                    timestamp: Date.now()
+                });
+
+                await errorManager.report(content, {
+                    environmentId: this.environmentId as number,
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC,
+                    metadata: {
+                        connectionId: this.connectionId,
+                        providerConfigKey: this.providerConfigKey,
+                        syncId: this.syncId,
+                        nanogConnectionId: this.nangoConnectionId,
+                        syncJobId: this.syncJobId
+                    }
+                });
+            }
+
+            throw new Error(responseResults?.error);
+        }
+    }
+
     public override async getMetadata<T = Metadata>(): Promise<T> {
         if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;

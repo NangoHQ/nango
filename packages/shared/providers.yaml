@@ -62,6 +62,17 @@ amplitude:
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+apollo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.apollo.io/api
+        query:
+            api_key: ${apiKey}
+apple-app-store:
+    auth_mode: APP_STORE
+    token_url: https://api.appstoreconnect.apple.com/v1/apps
+    authorization_params:
+        audience: appstoreconnect-v1
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
@@ -234,6 +245,12 @@ close:
     proxy:
         base_url: https://api.close.com/api
         docs: https://developer.close.com/
+coda:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://coda.io/apis/v1
+        headers:
+            Authorization: Bearer ${apiKey}
 confluence:
     alias: jira
 contentstack:
@@ -574,6 +591,10 @@ hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
+    connection_configuration:
+        - portalId
+    post_connection_script: hubspot-post-connection
+    webhook_routing_script: hubspot-webhook-routing
     proxy:
         base_url: https://api.hubapi.com
         decompress: true
@@ -609,6 +630,9 @@ jira:
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
+    connection_configuration:
+        - cloudID
+        - accountId
     proxy:
         base_url: https://api.atlassian.com
         paginate:
@@ -617,6 +641,8 @@ jira:
             limit_name_in_request: limit
             response_path: results
             link_path_in_response_body: _links.next
+    post_connection_script: jira-post-connection
+    webhook_routing_script: jira-webhook-routing
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
@@ -777,6 +803,8 @@ notion:
     authorization_method: header
     body_format: json
     proxy:
+        retry:
+            after: 'Retry-After'
         base_url: https://api.notion.com
         headers:
             'Notion-Version': '2022-06-28'
@@ -1065,6 +1093,7 @@ slack:
         - incoming_webhook.channel
         - incoming_webhook.channel_id
         - bot_user_id
+        - team.id
     proxy:
         base_url: https://slack.com/api
         paginate:
@@ -1073,6 +1102,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     docs: https://api.slack.com/apis
+    webhook_routing_script: slack-webhook-routing
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
@@ -1165,6 +1195,13 @@ stripe-express:
     token_url: https://connect.stripe.com/oauth/token
     token_response_metadata:
         - stripe_user_id
+    proxy:
+        base_url: https://api.stripe.com
+stripe-app:
+    auth_mode: OAUTH2
+    authorization_url: https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
+    token_url: https://api.stripe.com/v1/oauth/token
+    disable_pkce: true
     proxy:
         base_url: https://api.stripe.com
 survey-monkey:
@@ -1394,6 +1431,11 @@ zoho:
         access_type: offline
     proxy:
         base_url: https://www.zohoapis.${connectionConfig.extension}
+        paginate:
+            type: offset
+            response_path: data
+            offset_name_in_request: page
+            limit_name_in_request: per_page
 zoho-books:
     alias: zoho
 zoho-crm:

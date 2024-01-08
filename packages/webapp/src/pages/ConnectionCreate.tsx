@@ -14,6 +14,7 @@ import DashboardLayout from '../layout/DashboardLayout';
 import TagsInput from '../components/ui/input/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/input/SecretInput';
+import SecretTextArea from '../components/ui/input/SecretTextArea';
 import { useStore } from '../store';
 import { AuthModes } from '../types';
 
@@ -48,6 +49,9 @@ export default function IntegrationCreate() {
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
+    const [privateKeyId, setPrivateKeyId] = useState('');
+    const [privateKey, setPrivateKey] = useState('');
+    const [issuerId, setIssuerId] = useState('');
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI();
     const { providerConfigKey } = useParams();
@@ -136,7 +140,15 @@ export default function IntegrationCreate() {
 
         if (authMode === AuthModes.ApiKey) {
             credentials = {
-                apiKey: apiKey
+                apiKey
+            };
+        }
+
+        if (authMode === AuthModes.AppStore) {
+            credentials = {
+                privateKeyId,
+                issuerId,
+                privateKey
             };
         }
 
@@ -264,23 +276,36 @@ export default function IntegrationCreate() {
 
         let apiAuthString = '';
         if (integration?.authMode === AuthModes.ApiKey) {
-        apiAuthString = `
-credentials: {
-  apiKey: '${apiKey}'
-}`;
-        }
-        if (integration?.authMode === AuthModes.Basic) {
-        apiAuthString = `
-credentials: {
-  username: '${apiAuthUsername}',
-  password: '${apiAuthPassword}'
+            apiAuthString = `
+    credentials: {
+      apiKey: '${apiKey}'
 }`;
         }
 
+        if (integration?.authMode === AuthModes.Basic) {
+            apiAuthString = `
+    credentials: {
+      username: '${apiAuthUsername}',
+      password: '${apiAuthPassword}'
+}`;
+        }
+
+        let appStoreAuthString = '';
+
+        if (integration?.authMode === AuthModes.AppStore) {
+            appStoreAuthString = `
+    credentials: {
+        privateKeyId: '${privateKeyId}',
+        issuerId: '${issuerId}',
+        privateKey: '${privateKey}'
+}`;
+        }
+
+
         const connectionConfigStr =
-            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr
+            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr && !apiAuthString && !appStoreAuthString
                 ? ''
-                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString].filter(Boolean).join(', ') + ' }';
+                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') + ' }';
 
         return `import Nango from '@nangohq/frontend';
 
@@ -417,7 +442,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                             ))}
 
                             {(authMode === AuthModes.ApiKey || authMode === AuthModes.Basic) && (
-                                <>
+                                <div>
                                     <div>
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                             Auth Type
@@ -461,7 +486,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                         </div>
                                     )}
                                     {authMode === AuthModes.ApiKey && (
-                                        <>
+                                        <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
                                                     API Key
@@ -489,9 +514,97 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                                     required
                                                 />
                                             </div>
-                                        </>
+                                        </div>
                                     )}
-                                </>
+                                </div>
+                            )}
+
+                            {authMode === AuthModes.AppStore && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
+                                            Private Key ID
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        <p>{`Obtained after creating an API Key.`}</p>
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                    </div>
+                                    <div className="mt-1">
+                                        <input
+                                            id="private_key_id"
+                                            name="private_key_id"
+                                            type="text"
+                                            autoComplete="new-password"
+                                            required
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            value={privateKeyId}
+                                            onChange={(e) => setPrivateKeyId(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="issuer_id" className="text-text-light-gray block text-sm font-semibold">
+                                            Issuer ID
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        <p>{`is accessible in App Store Connect, under Users and Access, then Copy next to the ID`}</p>
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                    </div>
+                                    <div className="mt-1">
+                                        <input
+                                            id="issuer_id"
+                                            name="issuer_id"
+                                            type="text"
+                                            autoComplete="new-password"
+                                            required
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            value={issuerId}
+                                            onChange={(e) => setIssuerId(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
+                                            Private Key
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        <p>{`Obtained after creating an API Key. This value should be base64 encoded when passing to the auth call`}</p>
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                    </div>
+
+                                    <div className="mt-1">
+                                        <SecretTextArea
+                                            copy={true}
+                                            id="private_key"
+                                            name="private_key"
+                                            optionalvalue={privateKey}
+                                            setoptionalvalue={(value) => setPrivateKey(value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             )}
 
                             {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (

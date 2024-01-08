@@ -14,7 +14,7 @@ console.log(issues);
 export const curlSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
         return `
     curl --request GET \\
-    --url https://api.nango.dev/sync/records?model=${model} \\
+    --url https://api.nango.dev/records?model=${model} \\
     --header 'Authorization: Bearer ${secretKey}' \\
     --header 'Connection-Id: ${connectionId}' \\
     --header 'Provider-Config-Key: ${providerConfigKey}'
@@ -25,7 +25,7 @@ export const pythonSnippet = (model: string, secretKey: string, connectionId: st
         return`
         import requests
 
-url = "https://api.nango.dev/sync/records"
+url = "https://api.nango.dev/records"
 
 querystring = {"model":"${model}"}
 
@@ -48,7 +48,7 @@ export const phpSnippet = (model: string, secretKey: string, connectionId: strin
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-  CURLOPT_URL => "https://api.nango.dev/sync/records?model=${model}",
+  CURLOPT_URL => "https://api.nango.dev/records?model=${model}",
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => "",
   CURLOPT_MAXREDIRS => 10,
@@ -86,7 +86,7 @@ import (
 
 func main() {
 
-	url := "https://api.nango.dev/sync/records?model=${model}"
+	url := "https://api.nango.dev/records?model=${model}"
 
 	req, _ := http.NewRequest("GET", url, nil)
 
@@ -106,7 +106,7 @@ func main() {
 
 export const javaSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
         return`
-HttpResponse<String> response = Unirest.get("https://api.nango.dev/sync/records?model=${model}")
+HttpResponse<String> response = Unirest.get("https://api.nango.dev/records?model=${model}")
   .header("Authorization", "Bearer ${secretKey}")
   .header("Connection-Id", "${connectionId}")
   .header("Provider-Config-Key", "${providerConfigKey}")
