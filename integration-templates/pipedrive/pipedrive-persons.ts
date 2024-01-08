@@ -8,12 +8,17 @@ export default async function fetchData(nango: NangoSync) {
         const config = {
             ...(nango.lastSyncDate ? { params: { since: nango.lastSyncDate?.toISOString() } } : {}),
             paginate: {
+                type: 'cursor',
+                cursor_path_in_response: 'additional_data.next_cursor',
+                cursor_name_in_request: 'cursor',
+                limit_name_in_request: 'limit',
+                response_path: 'data',
                 limit: 100
             }
         };
-
-        for await (const person of paginate(nango, endpoint, config)) {
+        for await (const person of nango.paginate({ ...config, endpoint })) {
             const mappedPerson: PipeDrivePerson[] = person.map(mapPerson) || [];
+            // Save Person
             const batchSize: number = mappedPerson.length;
             totalRecords += batchSize;
             await nango.log(`Saving batch of ${batchSize} persons (total persons: ${totalRecords})`);
@@ -21,41 +26,6 @@ export default async function fetchData(nango: NangoSync) {
         }
     } catch (error: any) {
         throw new Error(`Error in fetchData: ${error.message}`);
-    }
-}
-
-async function* paginate(nango: NangoSync, endpoint: string, config?: any, queryParams?: Record<string, string | string[]>) {
-    let cursor: string | undefined;
-    let callParams = queryParams || {};
-
-    while (true) {
-        if (cursor) {
-            callParams['cursor'] = `${cursor}`;
-        }
-
-        const resp = await nango.proxy({
-            method: 'GET',
-            endpoint: endpoint,
-            params: {
-                ...(config?.paginate?.limit && { limit: config.paginate.limit }),
-                ...(config?.params?.since && { since: config.params.since }),
-                ...callParams
-            }
-        });
-
-        const persons = resp.data.data;
-
-        if (!persons || persons.length === 0) {
-            break;
-        }
-
-        yield persons;
-
-        if (!resp.data.additional_data || !resp.data.additional_data.next_cursor) {
-            break;
-        } else {
-            cursor = resp.data.additional_data.next_cursor;
-        }
     }
 }
 
