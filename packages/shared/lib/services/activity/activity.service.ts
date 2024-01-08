@@ -195,8 +195,13 @@ export async function findActivityLogBySession(session_id: string): Promise<numb
     return result[0].id;
 }
 
-export async function getTopLevelLogByEnvironment(environment_id: number, limit = 20, offset = 0): Promise<ActivityLog[]> {
-    const logs = await db.knex
+export async function getTopLevelLogByEnvironment(
+    environment_id: number,
+    limit = 20,
+    offset = 0,
+    { status, script, connection, integration }: { status?: string; script?: string; connection?: string; integration?: string } = {}
+): Promise<ActivityLog[]> {
+    const logs = db.knex
         .withSchema(db.schema())
         .from<ActivityLog>('_nango_activity_logs')
         .where({ environment_id })
@@ -204,6 +209,28 @@ export async function getTopLevelLogByEnvironment(environment_id: number, limit 
         .orderBy('_nango_activity_logs.timestamp', 'desc')
         .offset(offset)
         .limit(limit);
+
+    if (status === 'success' || status === 'failure') {
+        logs.where({ success: status === 'success' });
+    }
+
+    if (status === 'in_progress') {
+        logs.where({ success: null });
+    }
+
+    if (script) {
+        logs.where({ operation_name: script });
+    }
+
+    if (connection) {
+        logs.where({ connection_id: connection });
+    }
+
+    if (integration) {
+        logs.where({ provider_config_key: integration });
+    }
+
+    await logs.select('_nango_activity_logs.*');
 
     return logs || [];
 }

@@ -536,9 +536,15 @@ export function useResetPasswordAPI() {
 }
 
 export function useActivityAPI() {
-    return async (limit: number, offset: number) => {
+    return async (limit: number, offset: number, status?: string, script?: string, integration?: string, connection?: string) => {
         try {
-            let res = await fetch(`/api/v1/activity?limit=${limit}&offset=${offset}`, {
+            let res = await fetch(
+                `/api/v1/activity?limit=${limit}&offset=${offset}
+                ${status ? `&status=${status}` : ''}
+                ${script ? `&script=${script}` : ''}
+                ${integration ? `&integration=${integration}` : ''}
+                ${connection ? `&connection=${connection}` : ''}
+                `, {
                 method: 'GET',
                 headers: getHeaders(),
             });

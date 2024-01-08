@@ -180,6 +180,7 @@ app.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userC
 
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
 app.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
+app.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibleFilters.bind(activityController));
 
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));

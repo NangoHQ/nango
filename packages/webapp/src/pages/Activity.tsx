@@ -81,12 +81,24 @@ export default function Activity() {
     const [limit,] = useState(20);
     const [offset, setOffset] = useState(0);
     const [logIds, setLogIds] = useState<number[]>([]);
+    const [status, setStatus] = useState<string>('');
+    const [selectedScript, setSelectedScript] = useState<string>('');
+    const [selectedIntegration, setSelectedIntegration] = useState<string>('');
+    const [selectedConnection, setSelectedConnection] = useState<string>('');
+
+    const [scripts, setScripts] = useState<string[]>([]);
+    const [integrations, setIntegrations] = useState<string[]>([]);
+    const [connections, setConnections] = useState<string[]>([]);
 
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
     const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
     const initialOffset: string | (string | null)[] | null = queryParams.offset;
     const initialEnv: string | (string | null)[] | null = queryParams.env;
+    const initialStatus: string | (string | null)[] | null = queryParams.status;
+    const initialScript: string | (string | null)[] | null = queryParams.script;
+    const initialIntegration: string | (string | null)[] | null = queryParams.integration;
+    const initialConnection: string | (string | null)[] | null = queryParams.connection;
 
     const getActivityAPI = useActivityAPI();
 
@@ -110,7 +122,23 @@ export default function Activity() {
                 setOffset(parseInt(initialOffset));
             }
 
-            const res = await getActivityAPI(limit, offset);
+            if (initialStatus && typeof initialStatus === 'string') {
+                setStatus(initialStatus);
+            }
+
+            if (initialScript && typeof initialScript === 'string') {
+                setSelectedScript(initialScript);
+            }
+
+            if (initialIntegration && typeof initialIntegration === 'string') {
+                setSelectedIntegration(initialIntegration);
+            }
+
+            if (initialConnection && typeof initialConnection === 'string') {
+                setSelectedConnection(initialConnection);
+            }
+
+            const res = await getActivityAPI(limit, offset, status, selectedScript, selectedIntegration, selectedConnection);
 
             if (res?.status === 200) {
                 try {
@@ -130,10 +158,21 @@ export default function Activity() {
         };
 
         if (!loaded) {
-            setLoaded(true);
             getActivity();
         }
-    }, [getActivityAPI, loaded, setLoaded, limit, offset, initialOffset]);
+    }, [
+        getActivityAPI,
+        loaded,
+        setLoaded,
+        limit,
+        offset,
+        status,
+        selectedScript,
+        selectedIntegration,
+        selectedConnection,
+        initialOffset,
+        initialStatus
+    ]);
 
     useEffect(() => {
         const getActivityLogs = async () => {
@@ -167,6 +206,47 @@ export default function Activity() {
         getActivityLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [logIds]);
+
+    useEffect(() => {
+        const getFilters = async () => {
+            if (activities.length > 0) {
+                const res = await fetch(`/api/v1/activity-filters/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (res?.status === 200) {
+                    try {
+                        const filters = await res.json();
+
+                        if (filters) {
+                            if (filters.scripts.length > 0) {
+                                filters.scripts.sort((a: string, b: string) => a.localeCompare(b));
+                                setScripts(filters.scripts);
+                            }
+
+                            if (filters.integrations.length > 0) {
+                                filters.integrations.sort((a: string, b: string) => a.localeCompare(b));
+                                setIntegrations(filters.integrations);
+                            }
+
+                            if (filters.connections.length > 0) {
+                                filters.connections.sort((a: string, b: string) => a.localeCompare(b));
+                                setConnections(filters.connections);
+                            }
+                        }
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+            }
+        };
+
+        getFilters();
+    }, [activities]);
 
 
     useEffect(() => {
@@ -236,6 +316,38 @@ export default function Activity() {
         ));
     };
 
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setStatus(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value }));
+    }
+
+    const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedScript(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value }));
+    }
+
+    const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedIntegration(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value }));
+    }
+
+    const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedConnection(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value }));
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="max-w-screen-xl px-16 w-fit mx-auto">
@@ -250,15 +362,64 @@ export default function Activity() {
                         </span>
                     </div>
                 </div>
-                {activities.length === 0 && (
-                    <div className="flex items-center">
-                        <Slash className="stroke-red-500" />
-                        <div className="text-white ml-3">No recent activity yet!</div>
+                <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md">
+                    <div className="flex justify-between px-2 w-full">
+                        <select
+                            id="status"
+                            name="status"
+                            className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                            onChange={handleStatusChange}
+                            value={undefined}
+                        >
+                            <option key="" value="" disabled selected>Status</option>
+                            <option key="success" value="success">Success</option>
+                            <option key="progress" value="in_progress">In Progress</option>
+                            <option key="failure" value="failure">Failure</option>
+                        </select>
+                        {scripts.length > 0 && (
+                            <select
+                                id="script"
+                                name="script"
+                                className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                onChange={handleScriptChange}
+                                value={undefined}
+                            >
+                                <option key="" value="" disabled selected>Script</option>
+                                {scripts.map((script: string) => (
+                                    <option key={script} value={script}>{script}</option>
+                                ))}
+                            </select>
+                        )}
+                        {integrations.length > 0 && (
+                            <select
+                                id="integration"
+                                name="integration"
+                                className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                onChange={handleIntegrationChange}
+                                value={undefined}
+                            >
+                                <option key="" value="" disabled selected>Integration</option>
+                                {integrations.map((integration: string) => (
+                                    <option key={integration} value={integration}>{integration}</option>
+                                ))}
+                            </select>
+                        )}
+                        {connections.length > 0 && (
+                            <select
+                                id="connection"
+                                name="connection"
+                                className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                onChange={handleConnectionChange}
+                                value={undefined}
+                            >
+                                <option key="" value="" disabled selected>Connection</option>
+                                {connections.map((connection: string) => (
+                                    <option key={connection} value={connection}>{connection}</option>
+                                ))}
+                            </select>
+                        )}
                     </div>
-                )}
-                {activities.length > 0 && (
-                    <>
-                    <div className="flex justify-end mb-4 items-center">
+                    <div className="flex">
                         {offset >= limit * 3 && (
                             <ChevronsLeft onClick={resetOffset} className="flex stroke-white cursor-pointer mr-3" size="16" />
                         )}
@@ -269,7 +430,16 @@ export default function Activity() {
                           <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                         </span>
                     </div>
+                </div>
 
+                {loaded && activities.length === 0 && (
+                    <div className="flex items-center">
+                        <Slash className="stroke-red-500" />
+                        <div className="text-white ml-3">No recent activity yet!</div>
+                    </div>
+                )}
+                {activities.length > 0 && (
+                    <>
                     <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden">
                         <table className="table-auto">
                             <tbody className="px-4">
