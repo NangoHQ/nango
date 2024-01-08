@@ -60,7 +60,7 @@ const internalNango: InternalNango = {
                     provider: integration.provider,
                     providerConfigKey: integration.unique_key,
                     connectionIdentifier,
-                    payload: body
+                    payload: JSON.stringify(body)
                 }
             );
 
@@ -84,7 +84,7 @@ const internalNango: InternalNango = {
                     providerConfigKey: integration.unique_key,
                     propName: String(propName),
                     connectionIdentifier,
-                    payload: body
+                    payload: JSON.stringify(body)
                 }
             );
             return;
@@ -123,7 +123,7 @@ const internalNango: InternalNango = {
                             connectionId: String(connection.connection_id),
                             registeredWebhook: webhook,
                             webhookType,
-                            payload: body
+                            payload: JSON.stringify(body)
                         }
                     );
                 }
@@ -148,13 +148,30 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     let res: WebhookResponse | null | void = null;
 
-    if (handler) {
-        res = await handler(internalNango, integration, headers, body);
+    try {
+        if (handler) {
+            res = await handler(internalNango, integration, headers, body);
+        }
+    } catch (e) {
+        await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
+            environmentId: String(integration.environment_id),
+            provider: integration.provider,
+            providerConfigKey: integration.unique_key,
+            payload: JSON.stringify(body),
+            error: String(e)
+        });
     }
 
     const webhookBodyToForward = res?.parsedBody || body;
 
     await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward);
+
+    await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
+        environmentId: String(integration.environment_id),
+        provider: integration.provider,
+        providerConfigKey: integration.unique_key,
+        payload: JSON.stringify(webhookBodyToForward)
+    });
 
     if (res) {
         return res.acknowledgementResponse;
