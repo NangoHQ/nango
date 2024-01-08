@@ -428,7 +428,7 @@ export async function parseSecretKey(environment: string, debug = false): Promis
     }
 
     if (!process.env['NANGO_SECRET_KEY']) {
-        console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
+        console.log(chalk.red(`NANGO_SECRET_KEY_${environment.toUpperCase()} environment variable is not set. Please set it now`));
         try {
             const secretKey = await promptly.prompt('Secret Key: ');
             if (secretKey) {
