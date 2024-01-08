@@ -187,6 +187,7 @@ export default function IntegrationCreate() {
         setTemplateLogo(`images/template-logos/${integration.provider}.svg`);
     }
 
+    // @ts-ignore
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             {deleteAlertState && (

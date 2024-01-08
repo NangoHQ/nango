@@ -201,6 +201,8 @@ export default function IntegrationCreate() {
         setConnectionId(e.target.value);
     };
 
+    console.log('connectionConfigParams', connectionConfigParams);
+
     const handleConnectionConfigParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
         params[e.target.name.replace('connection-config-', '')] = e.target.value;
