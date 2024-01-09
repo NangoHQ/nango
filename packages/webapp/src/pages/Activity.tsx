@@ -413,7 +413,7 @@ export default function Activity() {
                         </span>
                     </div>
                 </div>
-                <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md">
+                <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md min-w-[1150px]">
                     <div className="flex space-x-10 justify-between px-2 w-full">
                         <div className="flex w-full items-center">
                             <select
@@ -483,10 +483,10 @@ export default function Activity() {
                                     {connections.map((connection: string) => (
                                         <option key={connection} value={connection}>{connection}</option>
                                     ))}
+                                </select>
                                 {selectedConnection && (
                                     <XCircleIcon onClick={() => onRemoveFilter(setSelectedConnection, 'connection')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
                                 )}
-                                </select>
                             </div>
                         )}
                         <div className="flex w-full items-center">
