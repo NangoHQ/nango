@@ -219,6 +219,42 @@ describe('generate function tests', () => {
         );
     });
 
+    it('should allow models to end in an s', async () => {
+        await init();
+        const data = {
+            integrations: {
+                'demo-github-integration': {
+                    'single-model-return': {
+                        type: 'sync',
+                        runs: 'every half hour',
+                        returns: 'GithubIssues'
+                    }
+                }
+            },
+            models: {
+                GithubIssues: {
+                    id: 'string',
+                    owner: 'string',
+                    repo: 'string',
+                    issue_number: 'number',
+                    title: 'string',
+                    author: 'string',
+                    author_id: 'string',
+                    state: 'string',
+                    date_created: 'date',
+                    date_last_modified: 'date',
+                    body: 'string'
+                }
+            }
+        };
+        const yamlData = yaml.dump(data);
+        console.log(yamlData);
+        await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
+        await generate(false, true);
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain('export interface GithubIssues');
+    });
+
     it('should not throw an error if a model is missing an id for an action', async () => {
         await init();
         const data = {

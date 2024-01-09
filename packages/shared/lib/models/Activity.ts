@@ -10,6 +10,7 @@ export type LogAction =
     | 'file'
     | 'full sync'
     | 'internal authorization'
+    | 'infrastructure'
     | 'pause sync'
     | 'proxy'
     | 'restart sync'
@@ -28,6 +29,7 @@ export enum LogActionEnum {
     DATABASE = 'database',
     FILE = 'file',
     FULL_SYNC = 'full sync',
+    INFRASTRUCTURE = 'infrastructure',
     INTERNAL_AUTHORIZATION = 'internal authorization',
     PAUSE_SYNC = 'pause sync',
     PROXY = 'proxy',

@@ -1,4 +1,4 @@
-import type { AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials } from './Auth.js';
+import type { AppStoreCredentials, AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 
 export interface Metadata {
@@ -26,7 +26,7 @@ export interface StoredConnection extends BaseConnection {
 }
 
 export interface Connection extends BaseConnection {
-    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials;
+    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials;
 }
 
 export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;

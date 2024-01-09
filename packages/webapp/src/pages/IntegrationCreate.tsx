@@ -407,6 +407,7 @@ export default function IntegrationCreate() {
                                     </div>
                                 </>
                             )}
+
                             {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
                                 <>
                                     <div>

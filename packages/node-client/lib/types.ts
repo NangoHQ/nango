@@ -5,7 +5,9 @@ export enum AuthModes {
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
-    App = 'APP'
+    AppStore = 'APP_STORE',
+    App = 'APP',
+    None = 'NONE'
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {

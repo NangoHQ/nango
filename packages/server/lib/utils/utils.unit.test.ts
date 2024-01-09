@@ -4,6 +4,7 @@ import type { Template as ProviderTemplate } from '@nangohq/shared';
 
 describe('Utils unit tests', () => {
     it('Should parse template connection config params', () => {
+        // parsing connectionConfigParams from authorization_url
         const authTemplate = {
             name: 'braintree',
             provider: 'braintree',
@@ -13,6 +14,7 @@ describe('Utils unit tests', () => {
         const connectionConfigAuth = parseConnectionConfigParamsFromTemplate(authTemplate as unknown as ProviderTemplate);
         expect(connectionConfigAuth).toEqual(['auth']);
 
+        // parsing connectionConfigParams from token_url
         const tokenTemplate = {
             name: 'braintree',
             provider: 'braintree',
@@ -21,6 +23,18 @@ describe('Utils unit tests', () => {
 
         const connectionConfigToken = parseConnectionConfigParamsFromTemplate(tokenTemplate as unknown as ProviderTemplate);
         expect(connectionConfigToken).toEqual(['token']);
+
+        // parsing connectionConfigParams from proxy.base_url
+        const proxyBaseUrlTemplate = {
+            name: 'freshdesk',
+            provider: 'freshdesk',
+            proxy: {
+                base_url: 'https://${connectionConfig.subdomain}.freshdesk.com'
+            }
+        };
+
+        const connectionConfigProxyBaseUrl = parseConnectionConfigParamsFromTemplate(proxyBaseUrlTemplate as unknown as ProviderTemplate);
+        expect(connectionConfigProxyBaseUrl).toEqual(['subdomain']);
     });
 
     it('Should extract metadata from token response based on template', () => {

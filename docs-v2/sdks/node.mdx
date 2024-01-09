@@ -150,11 +150,12 @@ await nango.deleteConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 This will throw an exception if the delete call is not successful.
 
 
-### Set and fetch custom Metadata
+### Set, update or fetch custom Metadata
 
 Nango lets you store [custom metadata](/guides/advanced-auth#storing-custom-metadata-per-connection) on the Connection.
 
-`setMetadata` overrides any existing Metadata for the connection!
+`updateMetadata` updates existing Metadata for the connection by merging with any existing Metadata.
+`setMetadata` overrides any existing Metadata for the connection.
 
 ```js
 // Store custom metadata with the connection
@@ -165,6 +166,19 @@ const myMetadata = await nango.getMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>'
 
 console.log(JSON.stringify(myMetadata));
 // prints: { "filter": "status=closed" }
+
+await nango.updateMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', { type: 'ticket' });
+
+console.log(JSON.stringify(myMetadata));
+// prints: { "filter": "status=closed", "type": "ticket" }
+
+// this will overwrite any existing metadata
+await nango.setMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', { reset: true });
+
+const resetMetadata = await nango.getMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>');
+
+console.log(JSON.stringify(resetMetadata));
+// prints: { "reset": true }
 ```
 
 If you know the structure of the metadata, you can specify a type for it when
