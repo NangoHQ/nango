@@ -1,8 +1,8 @@
 import { server } from './server.js';
 
 try {
-    const port = parseInt(process.argv[2] || '3006', 10);
-    const id = process.argv[3] || 'unknown-id';
+    const port = parseInt(process.argv[2] || '') || 3006;
+    const id = process.argv[3] || process.env['RUNNER_ID'] || 'unknown-id';
     server.listen(port, () => {
         console.log(`🚀 Runner '${id}' ready at http://localhost:${port}`);
     });

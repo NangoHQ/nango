@@ -6,10 +6,10 @@ export function getRunnerId(suffix: string): string {
     return `${getEnv()}-runner-account-${suffix}`;
 }
 
-export async function getRunner(runnerId: string): Promise<Runner> {
+export async function getOrStartRunner(runnerId: string): Promise<Runner> {
     const isRender = process.env['IS_RENDER'] === 'true';
     try {
-        const runner = isRender ? await RenderRunner.get(runnerId) : await LocalRunner.get(runnerId);
+        const runner = isRender ? await RenderRunner.getOrStart(runnerId) : await LocalRunner.getOrStart(runnerId);
 
         // Wait for runner to start and be healthy
         const timeoutMs = 5000;
@@ -38,12 +38,23 @@ export async function getRunner(runnerId: string): Promise<Runner> {
             }
         );
 
-        return await LocalRunner.get(runnerId);
+        return await LocalRunner.getOrStart(runnerId);
     }
 }
 
 export interface Runner {
     id: string;
     client: any;
-    stop(): Promise<void>;
+    suspend(): Promise<void>;
+}
+
+export async function suspendRunner(runnerId: string): Promise<void> {
+    const isRender = process.env['IS_RENDER'] === 'true';
+    if (isRender) {
+        // we only suspend render runners
+        const runner = await RenderRunner.get(runnerId);
+        if (runner) {
+            await runner.suspend();
+        }
+    }
 }

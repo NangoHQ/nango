@@ -5,11 +5,11 @@ import { getRunnerClient } from '@nangohq/nango-runner';
 export class LocalRunner implements Runner {
     constructor(public readonly id: string, public readonly client: any, private readonly childProcess: ChildProcess) {}
 
-    async stop(): Promise<void> {
+    async suspend(): Promise<void> {
         this.childProcess.kill();
     }
 
-    static async get(runnerId: string): Promise<LocalRunner> {
+    static async getOrStart(runnerId: string): Promise<LocalRunner> {
         try {
             const port = Math.floor(Math.random() * 1000) + 11000; // random port between 11000 and 12000;
             let nodePath = '';

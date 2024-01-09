@@ -3,7 +3,7 @@ import { server } from './server.js';
 import './tracer.js';
 
 try {
-    const port = parseInt(process.env['NANGO_JOBS_PORT'] || '3005', 10);
+    const port = parseInt(process.env['NANGO_JOBS_PORT'] || '') || 3005;
     server.listen(port);
     console.log(`🚀 Jobs service ready at http://localhost:${port}`);
     const temporalNs = process.env['TEMPORAL_NAMESPACE'] || 'default';

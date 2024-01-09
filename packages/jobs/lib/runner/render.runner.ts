@@ -2,18 +2,37 @@ import type { Runner } from './runner.js';
 import { getRunnerClient } from '@nangohq/nango-runner';
 import { getEnv } from '@nangohq/shared';
 import api from 'api';
+import tracer from '../tracer.js';
 
 const render = api('@render-api/v1.0#aiie8wizhlp1is9bu');
 render.auth(process.env['RENDER_API_KEY']);
 
+const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
+
 export class RenderRunner implements Runner {
     constructor(public readonly id: string, public readonly client: any, private readonly serviceId: string) {}
 
-    async stop(): Promise<void> {
-        render.suspendService({ serviceId: this.serviceId });
+    async suspend(): Promise<void> {
+        const span = tracer.startSpan('runner.suspend').setTag('serviceId', this.serviceId).setTag('runnerId', this.id);
+        try {
+            await render.suspendService({ serviceId: this.serviceId });
+        } finally {
+            span.finish();
+        }
     }
 
-    static async get(runnerId: string): Promise<RenderRunner> {
+    static async get(runnerId: string): Promise<RenderRunner | undefined> {
+        let svc = null;
+        let res = await render.getServices({ name: runnerId, type: 'private_service', limit: '1' });
+        if (res.data.length > 0) {
+            svc = res.data[0].service;
+            const client = getRunnerClient(`http://${runnerId}`);
+            return new RenderRunner(runnerId, client, svc.id);
+        }
+        return undefined;
+    }
+
+    static async getOrStart(runnerId: string): Promise<RenderRunner> {
         try {
             let svc = null;
             // check if runner exists, if not, create it
@@ -41,7 +60,10 @@ export class RenderRunner implements Runner {
                         { key: 'NANGO_DB_PORT', value: process.env['NANGO_DB_PORT'] },
                         { key: 'NANGO_DB_SSL', value: process.env['NANGO_DB_SSL'] },
                         { key: 'NANGO_ENCRYPTION_KEY', value: process.env['NANGO_ENCRYPTION_KEY'] },
-                        { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' }
+                        { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
+                        { key: 'RUNNER_ID', value: runnerId },
+                        { key: 'NOTIFY_IDLE_ENDPOINT', value: `${{ jobsServiceUrl }}/idle` },
+                        { key: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` } // 25 hours
                     ]
                 });
                 svc = res.data.service;
@@ -51,8 +73,12 @@ export class RenderRunner implements Runner {
             }
             // check if runner is suspended, if so, resume it
             if (svc.suspended === 'suspended') {
-                const res = await render.resumeService({ serviceId: svc.id });
-                console.log(res);
+                const span = tracer.startSpan('runner.resume').setTag('serviceId', svc.id).setTag('runnerId', runnerId);
+                try {
+                    await render.resumeService({ serviceId: svc.id });
+                } finally {
+                    span.finish();
+                }
             }
             const client = getRunnerClient(`http://${runnerId}`);
             return new RenderRunner(runnerId, client, svc.id);
