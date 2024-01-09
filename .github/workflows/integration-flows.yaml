@@ -1,6 +1,6 @@
 name: Nango Integration Flows Compile
 
-on: [push, pull_request]
+on: [push]
 
 concurrency:
     group: flows-compile--${{ github.event.pull_request.number || github.ref }}

@@ -1,6 +1,6 @@
 name: Run Unit & Integration Tests
 
-on: [push, pull_request]
+on: [push]
 
 concurrency:
     group: tests-${{ github.event.pull_request.number || github.ref }}

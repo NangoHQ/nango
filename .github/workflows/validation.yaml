@@ -1,6 +1,6 @@
 name: Yaml Validation
 
-on: [push, pull_request]
+on: [push]
 
 concurrency:
     group: validation-${{ github.event.pull_request.number || github.ref }}
