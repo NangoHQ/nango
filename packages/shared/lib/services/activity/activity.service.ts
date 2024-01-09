@@ -203,8 +203,15 @@ export async function getTopLevelLogByEnvironment(
         status,
         script,
         connection,
-        integration
-    }: { status?: string | undefined; script?: string | undefined; connection?: string | undefined; integration?: string | undefined }
+        integration,
+        date
+    }: {
+        status?: string | undefined;
+        script?: string | undefined;
+        connection?: string | undefined;
+        integration?: string | undefined;
+        date?: string | undefined;
+    }
 ): Promise<ActivityLog[]> {
     const logs = db.knex
         .withSchema(db.schema())
@@ -233,6 +240,14 @@ export async function getTopLevelLogByEnvironment(
 
     if (integration) {
         logs.where({ provider_config_key: integration });
+    }
+
+    if (date) {
+        const dateObj = new Date(date);
+        const month = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0'); // Add leading zero if needed
+        const day = dateObj.getUTCDate().toString().padStart(2, '0'); // Add leading zero if needed
+        const formattedDate = `${month}/${day}/${dateObj.getUTCFullYear()}`;
+        logs.whereRaw(`to_char(to_timestamp(_nango_activity_logs.timestamp / 1000), 'MM/DD/YYYY') = '${formattedDate}'`);
     }
 
     await logs.select('_nango_activity_logs.*');

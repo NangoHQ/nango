@@ -13,6 +13,7 @@ class ActivityController {
             const script = req.query['script']?.toString();
             const connection = req.query['connection']?.toString();
             const integration = req.query['integration']?.toString();
+            const date = req.query['date']?.toString();
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
                 errorManager.errResFromNangoErr(res, sessionError);
@@ -20,7 +21,7 @@ class ActivityController {
             }
             const { environment } = response;
 
-            const logs = await getTopLevelLogByEnvironment(environment.id, limit, offset, { status, script, connection, integration });
+            const logs = await getTopLevelLogByEnvironment(environment.id, limit, offset, { status, script, connection, integration, date });
             res.send(logs);
         } catch (error) {
             next(error);

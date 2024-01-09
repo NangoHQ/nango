@@ -1,4 +1,5 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
+import { Helmet } from 'react-helmet';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Spinner from '../components/ui/Spinner';
 import {
@@ -14,6 +15,7 @@ import {
     User,
     FastForward
 } from '@geist-ui/icons'
+import { XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
@@ -85,7 +87,9 @@ export default function Activity() {
     const [selectedScript, setSelectedScript] = useState<string>('');
     const [selectedIntegration, setSelectedIntegration] = useState<string>('');
     const [selectedConnection, setSelectedConnection] = useState<string>('');
+    const [selectedDate, setDate] = useState<string>('');
 
+    const [filtersFetched, setFiltersFetched] = useState(false);
     const [scripts, setScripts] = useState<string[]>([]);
     const [integrations, setIntegrations] = useState<string[]>([]);
     const [connections, setConnections] = useState<string[]>([]);
@@ -99,6 +103,10 @@ export default function Activity() {
     const initialScript: string | (string | null)[] | null = queryParams.script;
     const initialIntegration: string | (string | null)[] | null = queryParams.integration;
     const initialConnection: string | (string | null)[] | null = queryParams.connection;
+    const initialDate: string | (string | null)[] | null = queryParams.date;
+
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
     const getActivityAPI = useActivityAPI();
 
@@ -118,27 +126,43 @@ export default function Activity() {
 
     useEffect(() => {
         const getActivity = async () => {
+            let queryOffset = offset;
             if (initialOffset && typeof initialOffset === 'string') {
                 setOffset(parseInt(initialOffset));
+                queryOffset = parseInt(initialOffset);
             }
 
+            let queryStatus = status;
             if (initialStatus && typeof initialStatus === 'string') {
                 setStatus(initialStatus);
+                queryStatus = initialStatus;
             }
 
+            let queryScript = selectedScript;
             if (initialScript && typeof initialScript === 'string') {
                 setSelectedScript(initialScript);
+                queryScript = initialScript;
             }
 
+            let queryIntegration = selectedIntegration;
             if (initialIntegration && typeof initialIntegration === 'string') {
                 setSelectedIntegration(initialIntegration);
+                queryIntegration = initialIntegration;
             }
 
+            let queryConnection = selectedConnection;
             if (initialConnection && typeof initialConnection === 'string') {
                 setSelectedConnection(initialConnection);
+                queryConnection = initialConnection;
             }
 
-            const res = await getActivityAPI(limit, offset, status, selectedScript, selectedIntegration, selectedConnection);
+            let queryDate = selectedDate;
+            if (initialDate && typeof initialDate === 'string') {
+                setDate(initialDate);
+                queryDate = initialDate;
+            }
+
+            const res = await getActivityAPI(limit, queryOffset, queryStatus, queryScript, queryIntegration, queryConnection, queryDate);
 
             if (res?.status === 200) {
                 try {
@@ -170,6 +194,9 @@ export default function Activity() {
         selectedScript,
         selectedIntegration,
         selectedConnection,
+        initialConnection,
+        initialIntegration,
+        initialScript,
         initialOffset,
         initialStatus
     ]);
@@ -238,6 +265,7 @@ export default function Activity() {
                                 setConnections(filters.connections);
                             }
                         }
+                        setFiltersFetched(true);
                     } catch (e) {
                         console.log(e)
                     }
@@ -245,8 +273,10 @@ export default function Activity() {
             }
         };
 
-        getFilters();
-    }, [activities]);
+        if (!filtersFetched) {
+            getFilters();
+        }
+    }, [activities, filtersFetched, setFiltersFetched]);
 
 
     useEffect(() => {
@@ -348,6 +378,25 @@ export default function Activity() {
         navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value }));
     }
 
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDate(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value }));
+    }
+
+    const onRemoveFilter = (action: (val: string) => void, prop: string) => {
+        action('');
+        setLoaded(false);
+        const url = window.location.pathname;
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.delete(prop);
+
+        const updatedUrl = url + '?' + searchParams.toString();
+        navigate(updatedUrl);
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="max-w-screen-xl px-16 w-fit mx-auto">
@@ -363,61 +412,97 @@ export default function Activity() {
                     </div>
                 </div>
                 <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md">
-                    <div className="flex justify-between px-2 w-full">
-                        <select
-                            id="status"
-                            name="status"
-                            className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
-                            onChange={handleStatusChange}
-                            value={undefined}
-                        >
-                            <option key="" value="" disabled selected>Status</option>
-                            <option key="success" value="success">Success</option>
-                            <option key="progress" value="in_progress">In Progress</option>
-                            <option key="failure" value="failure">Failure</option>
-                        </select>
-                        {scripts.length > 0 && (
+                    <div className="flex space-x-10 justify-between px-2 w-full">
+                        <div className="flex w-full items-center">
                             <select
-                                id="script"
-                                name="script"
+                                id="status"
+                                name="status"
                                 className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
-                                onChange={handleScriptChange}
-                                value={undefined}
+                                onChange={handleStatusChange}
+                                value={status}
                             >
-                                <option key="" value="" disabled selected>Script</option>
-                                {scripts.map((script: string) => (
-                                    <option key={script} value={script}>{script}</option>
-                                ))}
+                                <option key="" value="" disabled selected>Status</option>
+                                <option key="success" value="success">Success</option>
+                                <option key="progress" value="in_progress">In Progress</option>
+                                <option key="failure" value="failure">Failure</option>
                             </select>
+                            {status && (
+                                <XCircleIcon onClick={() => onRemoveFilter(setStatus, 'status')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                            )}
+                        </div>
+                        {scripts.length > 0 && (
+                            <div className="flex w-full items-center">
+                                <select
+                                    id="script"
+                                    name="script"
+                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                    onChange={handleScriptChange}
+                                    value={selectedScript}
+                                >
+                                    <option key="" value="" disabled selected>Script</option>
+                                    {scripts.map((script: string) => (
+                                        <option key={script} value={script}>{script}</option>
+                                    ))}
+                                </select>
+                                {selectedScript && (
+                                    <XCircleIcon onClick={() => onRemoveFilter(setSelectedScript, 'script')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                )}
+                            </div>
                         )}
                         {integrations.length > 0 && (
-                            <select
-                                id="integration"
-                                name="integration"
-                                className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
-                                onChange={handleIntegrationChange}
-                                value={undefined}
-                            >
-                                <option key="" value="" disabled selected>Integration</option>
-                                {integrations.map((integration: string) => (
-                                    <option key={integration} value={integration}>{integration}</option>
-                                ))}
-                            </select>
+                            <div className="flex w-full items-center">
+                                <select
+                                    id="integration"
+                                    name="integration"
+                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                    onChange={handleIntegrationChange}
+                                    value={selectedIntegration}
+                                >
+                                    <option key="" value="" disabled selected>Integration</option>
+                                    {integrations.map((integration: string) => (
+                                        <option key={integration} value={integration}>{integration}</option>
+                                    ))}
+                                </select>
+                                {selectedIntegration && (
+                                    <XCircleIcon onClick={() => onRemoveFilter(setSelectedIntegration, 'integration')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                )}
+                            </div>
                         )}
                         {connections.length > 0 && (
-                            <select
-                                id="connection"
-                                name="connection"
-                                className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
-                                onChange={handleConnectionChange}
-                                value={undefined}
-                            >
-                                <option key="" value="" disabled selected>Connection</option>
-                                {connections.map((connection: string) => (
-                                    <option key={connection} value={connection}>{connection}</option>
-                                ))}
-                            </select>
+                            <div className="flex w-full items-center">
+                                <select
+                                    id="connection"
+                                    name="connection"
+                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                    onChange={handleConnectionChange}
+                                    value={selectedConnection}
+                                >
+                                    <option key="" value="" disabled selected>Connection</option>
+                                    {connections.map((connection: string) => (
+                                        <option key={connection} value={connection}>{connection}</option>
+                                    ))}
+                                {selectedConnection && (
+                                    <XCircleIcon onClick={() => onRemoveFilter(setSelectedConnection, 'connection')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                )}
+                                </select>
+                            </div>
                         )}
+                        <div className="flex w-full items-center">
+                              <input
+                                type="date"
+                                id="date-filter"
+                                name="date-filter"
+                                className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm hide-calendar-icon"
+                                style={{ WebkitAppearance: 'none' }}
+                                onChange={handleDateChange}
+                                value={selectedDate}
+                                max={new Date().toISOString().split('T')[0]}
+                                min={fifteenDaysAgo.toISOString().split('T')[0]}
+                              />
+                              {selectedDate && (
+                                  <XCircleIcon onClick={() => onRemoveFilter(setDate, 'date')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                              )}
+                        </div>
                     </div>
                     <div className="flex">
                         {offset >= limit * 3 && (
@@ -435,7 +520,7 @@ export default function Activity() {
                 {loaded && activities.length === 0 && (
                     <div className="flex items-center">
                         <Slash className="stroke-red-500" />
-                        <div className="text-white ml-3">No recent activity yet!</div>
+                        <div className="text-white ml-3">No activity found</div>
                     </div>
                 )}
                 {activities.length > 0 && (
@@ -652,7 +737,7 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
+                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${Object.entries(queryParams).length > 0 ? '&' + queryString.stringify(queryParams) : ''}`} />}
                                             </div>
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
@@ -708,6 +793,11 @@ export default function Activity() {
                 </>
                 )}
             </div>
+            <Helmet>
+                <style>
+                    {'::-webkit-calendar-picker-indicator { filter: invert(1); }'}
+                </style>
+          </Helmet>
         </DashboardLayout>
     );
 }
