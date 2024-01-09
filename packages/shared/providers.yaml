@@ -426,7 +426,7 @@ front:
             type: link
             response_path: _results
             link_path_in_response_body: _pagination.next
-getguru:
+guru:
     auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/v1
