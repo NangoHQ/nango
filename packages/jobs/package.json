@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-jobs",
-    "version": "0.36.52",
+    "version": "1.0.0",
     "type": "module",
     "main": "dist/app.js",
     "scripts": {
@@ -11,11 +11,11 @@
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/nango",
+        "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/jobs"
     },
     "dependencies": {
-        "@nangohq/nango-runner": "0.36.52",
+        "@nangohq/nango-runner": "1.0.0",
         "@nangohq/shared": "0.36.78",
         "@octokit/plugin-retry": "^6.0.0",
         "@octokit/plugin-throttling": "^7.0.0",

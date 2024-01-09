@@ -6,7 +6,8 @@
     "main": "dist/index.js",
     "module": "./dist/index.js",
     "scripts": {
-        "build": "tsup lib/index.ts --format cjs"
+        "build": "tsup lib/index.ts --format cjs",
+        "prepublishOnly": "npm install && npm run build && tsc"
     },
     "exports": {
         ".": {
@@ -19,7 +20,7 @@
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/nango",
+        "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/node-client"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
