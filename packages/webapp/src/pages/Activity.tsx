@@ -194,11 +194,13 @@ export default function Activity() {
         selectedScript,
         selectedIntegration,
         selectedConnection,
+        selectedDate,
         initialConnection,
         initialIntegration,
         initialScript,
         initialOffset,
-        initialStatus
+        initialStatus,
+        initialDate
     ]);
 
     useEffect(() => {
