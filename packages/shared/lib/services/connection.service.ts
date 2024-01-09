@@ -452,12 +452,13 @@ class ConnectionService {
         return newConfig;
     }
 
-    public async findConnectionByConnectionConfigValue(key: string, value: string): Promise<Connection | null> {
+    public async findConnectionByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<Connection | null> {
         const result = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .select('*')
-            .whereRaw(`connection_config->>? = ? AND deleted = false`, [key, value]);
+            .where({ environment_id: environmentId })
+            .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
 
         if (!result || result.length == 0 || !result[0]) {
             return null;
