@@ -9,9 +9,9 @@ class WebhookController {
             if (!environmentUuid || !providerConfigKey) {
                 return;
             }
-            const isGloballyDisabled = await featureFlags.isEnabled('external-webhooks', 'global', true, true);
+            const isGloballyEnabled = await featureFlags.isEnabled('external-webhooks', 'global', true, true);
 
-            if (!isGloballyDisabled) {
+            if (!isGloballyEnabled) {
                 res.status(404).send();
                 return;
             }
