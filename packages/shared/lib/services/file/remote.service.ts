@@ -20,6 +20,8 @@ if (isCloud()) {
             secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] as string
         }
     });
+} else {
+    client = new S3Client();
 }
 
 class RemoteFileService {
