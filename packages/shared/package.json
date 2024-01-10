@@ -6,12 +6,13 @@
     "main": "dist/lib/index.js",
     "typings": "dist/lib/index.d.ts",
     "scripts": {
-        "build": "rimraf dist && tsc"
+        "build": "rimraf dist && tsc",
+        "prepublishOnly": "npm install && npm run build"
     },
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/nango",
+        "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/shared"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
