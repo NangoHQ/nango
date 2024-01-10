@@ -29,18 +29,15 @@ npm install
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-npm update @nangohq/node -w @nangohq/shared
+npm install @nangohq/node@latest -w @nangohq/shared
 
 # Shared
 node scripts/flows.js
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-npm update @nangohq/shared -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs @nangohq/nango-runner
+npm install @nangohq/shared@latest -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs -w @nangohq/nango-runner
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
-
-# update package-lock.json
-npm install
