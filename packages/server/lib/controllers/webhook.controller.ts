@@ -9,6 +9,12 @@ class WebhookController {
             if (!environmentUuid || !providerConfigKey) {
                 return;
             }
+            const isGloballyEnabled = await featureFlags.isEnabled('external-webhooks', 'global', true, true);
+
+            if (!isGloballyEnabled) {
+                res.status(404).send();
+                return;
+            }
 
             const accountUUID = await environmentService.getAccountUUIDFromEnvironmentUUID(environmentUuid);
 
