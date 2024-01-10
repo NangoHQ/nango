@@ -482,6 +482,11 @@ class ConnectionService {
         return queryBuilder;
     }
 
+    public async getAllNames(environment_id: number): Promise<string[]> {
+        const connections = await this.listConnections(environment_id);
+        return connections.map((config) => config.connection_id);
+    }
+
     public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
         if (connection) {
             await syncOrchestrator.deleteSyncsByConnection(connection);

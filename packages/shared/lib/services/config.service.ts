@@ -126,6 +126,11 @@ class ConfigService {
             .filter((config) => config != null) as ProviderConfig[];
     }
 
+    async getAllNames(environment_id: number): Promise<string[]> {
+        const configs = await this.listProviderConfigs(environment_id);
+        return configs.map((config) => config.unique_key);
+    }
+
     async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
         return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(configToInsert, ['id']);

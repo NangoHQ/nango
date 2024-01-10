@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import {
-    createActivityLog,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
@@ -15,7 +14,6 @@ import {
     ConnectionList,
     LogLevel,
     LogActionEnum,
-    HTTP_VERB,
     configService,
     connectionService,
     getAccount,
@@ -242,42 +240,14 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
             const instantRefresh = req.query['force_refresh'] === 'true';
-            const isSync = req.get('Nango-Is-Sync') as string;
-            const isDryRun = req.get('Nango-Is-Dry-Run') as string;
-
-            let activityLogId: number | null = null;
 
             const action = LogActionEnum.TOKEN;
-            const log = {
-                level: 'debug' as LogLevel,
-                success: true,
-                action,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                method: req.method as HTTP_VERB,
-                connection_id: connectionId as string,
-                provider_config_key: providerConfigKey as string,
-                environment_id: environmentId
-            };
-
-            if (!isSync && !isDryRun) {
-                activityLogId = await createActivityLog(log);
-            }
 
             const {
                 success,
                 error,
                 response: connection
-            } = await connectionService.getConnectionCredentials(
-                accountId,
-                environmentId,
-                connectionId,
-                providerConfigKey,
-                activityLogId,
-                action,
-                instantRefresh
-            );
+            } = await connectionService.getConnectionCredentials(accountId, environmentId, connectionId, providerConfigKey, null, action, instantRefresh);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
