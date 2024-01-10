@@ -635,8 +635,8 @@ export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ n
         .from<SyncConfig>(TABLE)
         .select(`${TABLE}.nango_config_id`, `${TABLE}.file_location`)
         .where({
-            [`${TABLE}.id`]: id,
-            [`${TABLE}.deleted`]: false
+            id,
+            deleted: false
         })
         .first();
 

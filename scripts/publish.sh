@@ -37,8 +37,6 @@ bump_and_npm_publish "@nangohq/shared" "$VERSION"
 npm update @nangohq/shared -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs @nangohq/nango-runner
 
 # CLI
-# exporting the NangoSync type
-cp "$GIT_ROOT_DIR/packages/shared/dist/lib/sdk/sync.d.ts" "./packages/cli/dist/nango-sync.d.ts" && chmod +x "$GIT_ROOT_DIR/packages/cli/dist/index.js"
 bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
