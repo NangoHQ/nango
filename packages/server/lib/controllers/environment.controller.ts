@@ -9,9 +9,10 @@ import {
     getWebsocketsPath,
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
+    packageJsonFile,
     getEnvironmentId
 } from '@nangohq/shared';
-import { packageJsonFile, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class EnvironmentController {
     async meta(req: Request, res: Response, next: NextFunction) {
