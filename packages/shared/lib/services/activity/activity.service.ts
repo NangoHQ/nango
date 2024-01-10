@@ -247,7 +247,7 @@ export async function getTopLevelLogByEnvironment(
         const month = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0'); // Add leading zero if needed
         const day = dateObj.getUTCDate().toString().padStart(2, '0'); // Add leading zero if needed
         const formattedDate = `${month}/${day}/${dateObj.getUTCFullYear()}`;
-        logs.whereRaw(`to_char(to_timestamp(_nango_activity_logs.timestamp / 1000), 'MM/DD/YYYY') = '${formattedDate}'`);
+        logs.whereRaw("date_trunc('day', to_timestamp(_nango_activity_logs.timestamp / 1000)) = ?", [formattedDate]);
     }
 
     await logs.select('_nango_activity_logs.*');
