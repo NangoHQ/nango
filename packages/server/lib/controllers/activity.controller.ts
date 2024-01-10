@@ -2,13 +2,18 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import { getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
+import { connectionService, configService, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
 
 class ActivityController {
     public async retrieve(req: Request, res: Response, next: NextFunction) {
         try {
             const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 20;
             const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;
+            const status = req.query['status']?.toString();
+            const script = req.query['script']?.toString();
+            const connection = req.query['connection']?.toString();
+            const integration = req.query['integration']?.toString();
+            const date = req.query['date']?.toString();
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
                 errorManager.errResFromNangoErr(res, sessionError);
@@ -16,7 +21,7 @@ class ActivityController {
             }
             const { environment } = response;
 
-            const logs = await getTopLevelLogByEnvironment(environment.id, limit, offset);
+            const logs = await getTopLevelLogByEnvironment(environment.id, limit, offset, { status, script, connection, integration, date });
             res.send(logs);
         } catch (error) {
             next(error);
@@ -36,6 +41,24 @@ class ActivityController {
 
             const logs = await getLogMessagesForLogs(logIds, environment.id);
             res.send(logs);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async getPossibleFilters(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
+            const scripts = await getAllSyncAndActionNames(environment.id);
+            const integrations = await configService.getAllNames(environment.id);
+            const connections = await connectionService.getAllNames(environment.id);
+            res.send({ scripts, integrations, connections });
         } catch (error) {
             next(error);
         }

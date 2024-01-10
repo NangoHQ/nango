@@ -635,8 +635,8 @@ export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ n
         .from<SyncConfig>(TABLE)
         .select(`${TABLE}.nango_config_id`, `${TABLE}.file_location`)
         .where({
-            [`${TABLE}.id`]: id,
-            [`${TABLE}.deleted`]: false
+            id,
+            deleted: false
         })
         .first();
 
@@ -645,4 +645,18 @@ export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ n
     }
 
     return result;
+}
+
+export async function getAllSyncAndActionNames(environmentId: number): Promise<string[]> {
+    const result = await schema().from<SyncConfig>(TABLE).select(`${TABLE}.sync_name`).where({
+        deleted: false,
+        environment_id: environmentId,
+        active: true
+    });
+
+    if (!result) {
+        return [];
+    }
+
+    return result.map((syncConfig: SyncConfig) => syncConfig.sync_name);
 }

@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
   "compilerOptions": {
-    //"incremental": true,
+    "ignoreDeprecations": "5.0",
     "declaration": true,
     "sourceMap": true,
     "composite": true,

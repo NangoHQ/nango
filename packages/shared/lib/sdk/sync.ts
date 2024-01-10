@@ -626,7 +626,7 @@ export class NangoSync extends NangoAction {
                         connectionId: this.connectionId,
                         providerConfigKey: this.providerConfigKey,
                         syncId: this.syncId,
-                        nanogConnectionId: this.nangoConnectionId,
+                        nangoConnectionId: this.nangoConnectionId,
                         syncJobId: this.syncJobId
                     }
                 });
@@ -742,7 +742,7 @@ export class NangoSync extends NangoAction {
                         connectionId: this.connectionId,
                         providerConfigKey: this.providerConfigKey,
                         syncId: this.syncId,
-                        nanogConnectionId: this.nangoConnectionId,
+                        nangoConnectionId: this.nangoConnectionId,
                         syncJobId: this.syncJobId
                     }
                 });
@@ -849,7 +849,7 @@ export class NangoSync extends NangoAction {
                         connectionId: this.connectionId,
                         providerConfigKey: this.providerConfigKey,
                         syncId: this.syncId,
-                        nanogConnectionId: this.nangoConnectionId,
+                        nangoConnectionId: this.nangoConnectionId,
                         syncJobId: this.syncJobId
                     }
                 });
