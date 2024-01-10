@@ -30,6 +30,8 @@ export enum MetricTypes {
     INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER = 'incoming_webhook_issue_wrong_connection_identifier',
     INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND = 'incoming_webhook_issue_connection_not_found',
     INCOMING_WEBHOOK_ISSUE_WEBHOOK_SUBSCRIPTION_NOT_FOUND_REGISTERED = 'incoming_webhook_issue_webhook_subscription_not_found_registered',
+    INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY = 'incoming_webhook_processed_successfully',
+    INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing',
     RENDER_RUNNER_FAILURE_RESOLVED_BACK_TO_LOCAL = 'render_runner_failure_resolved_back_to_local'
 }
 

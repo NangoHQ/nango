@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-runner",
-    "version": "0.36.52",
+    "version": "1.0.0",
     "description": "Runs Nango integration code",
     "type": "module",
     "main": "dist/index.js",
@@ -13,12 +13,12 @@
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/nango",
+        "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/runner"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "0.36.74",
+        "@nangohq/shared": "0.36.78",
         "@trpc/client": "^10.44.0",
         "@trpc/server": "^10.44.0",
         "api": "^6.1.1",
