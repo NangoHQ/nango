@@ -60,7 +60,8 @@ class IntegrationService implements IntegrationServiceInterface {
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }
                     },
-                    Buffer
+                    Buffer,
+                    setTimeout
                 };
 
                 const context = vm.createContext(sandbox);
