@@ -153,7 +153,9 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
         const tokenUrlMatches = template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g);
         const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g);
         const proxyBaseUrlMatches = template.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g);
-        const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || []), ...(proxyBaseUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
+        const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || []), ...(proxyBaseUrlMatches || [])].filter(
+            (value, index, array) => array.indexOf(value) === index
+        );
         return params.map((param) => param.replace('${connectionConfig.', '').replace('}', '')); // Remove the ${connectionConfig.'} and return only the param name.
     }
 
