@@ -31,6 +31,7 @@ class CompileService {
         }
 
         const compiler = tsNode.create({
+            skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
             compilerOptions: JSON.parse(tsconfig).compilerOptions
         });
 
