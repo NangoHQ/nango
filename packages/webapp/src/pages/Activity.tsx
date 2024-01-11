@@ -413,7 +413,7 @@ export default function Activity() {
                         </span>
                     </div>
                 </div>
-                {loaded && activities.length === 0 && (!status && !selectedIntegration && !selectedConnection && !selectedDate) ? null : (
+                {loaded && activities.length === 0 && (!status && !selectedIntegration && !selectedScript && !selectedConnection && !selectedDate) ? null : (
                     <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md min-w-[1150px]">
                         <div className="flex space-x-10 justify-between px-2 w-full">
                             <div className="flex w-full items-center">
