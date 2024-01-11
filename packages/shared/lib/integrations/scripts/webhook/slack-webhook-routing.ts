@@ -4,11 +4,21 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 export default async function route(
     nango: Nango,
     integration: ProviderConfig,
-    _headers: Record<string, any>,
+    headers: Record<string, any>,
     body: Record<string, any>
 ): Promise<WebhookResponse> {
-    // slack sends the payload as a form encoded string, so we need to parse it
-    const payload = JSON.parse(body['payload']);
+    // slack sometimes sends the payload as a form encoded string, so we need to parse it
+    // it also sends json as a x-www-form-urlencoded string, so we need to handle that too
+    let payload;
+    if (headers['content-type'] === 'application/x-www-form-urlencoded') {
+        try {
+            payload = JSON.parse(body['payload'] || body);
+        } catch (e) {
+            payload = body;
+        }
+    } else {
+        payload = body;
+    }
 
     if (payload['type'] === 'url_verification') {
         return { acknowledgementResponse: body['challenge'] };
