@@ -209,6 +209,7 @@
                         "integrations/all/freshdesk",
                         "integrations/all/freshservice",
                         "integrations/all/front",
+                        "integrations/all/guru",
                         "integrations/all/github",
                         "integrations/all/gitlab",
                         "integrations/all/gong",
