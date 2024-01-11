@@ -467,7 +467,7 @@ export async function getAllDataRecords(
 
         const customerResult = result.map((item) => item.record);
 
-        if (customerResult.length > (limit || 100)) {
+        if (customerResult.length > Number(limit || 100)) {
             customerResult.pop();
             rawResult.pop();
 

@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
-import path from 'path';
+import path, { resolve } from 'path';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { NangoError } from './error.js';
 import type { User, Account } from '../models/Admin.js';
@@ -8,6 +9,10 @@ import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Connection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
+
+type PackageJson = {
+    version: string;
+};
 
 const PORT = process.env['SERVER_PORT'] || 3003;
 export const localhostUrl = `http://localhost:${PORT}`;
@@ -370,4 +375,9 @@ export function isUserAuthenticated(req: Request): boolean {
 export function getConnectionConfig(queryParams: any): Record<string, string> {
     const arr = Object.entries(queryParams).filter(([_, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
+}
+
+export function packageJsonFile(): PackageJson {
+    const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/shared/package.json' : '../shared/package.json';
+    return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
 }

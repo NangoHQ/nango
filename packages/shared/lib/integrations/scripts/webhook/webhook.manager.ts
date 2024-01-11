@@ -51,12 +51,42 @@ const internalNango: InternalNango = {
         const syncClient = await SyncClient.getInstance();
 
         if (!get(body, connectionIdentifier)) {
+            await metricsManager.capture(
+                MetricTypes.INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER,
+                'Incoming webhook had the wrong connection identifier',
+                LogActionEnum.WEBHOOK,
+                {
+                    environmentId: String(integration.environment_id),
+                    provider: integration.provider,
+                    providerConfigKey: integration.unique_key,
+                    connectionIdentifier,
+                    payload: JSON.stringify(body)
+                }
+            );
+
             return;
         }
 
-        const connection = await connectionService.findConnectionByConnectionConfigValue(propName || connectionIdentifier, get(body, connectionIdentifier));
+        const connection = await connectionService.findConnectionByConnectionConfigValue(
+            propName || connectionIdentifier,
+            get(body, connectionIdentifier),
+            integration.environment_id
+        );
 
         if (!connection) {
+            await metricsManager.capture(
+                MetricTypes.INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND,
+                'Incoming webhook received but no connection found for it',
+                LogActionEnum.WEBHOOK,
+                {
+                    environmentId: String(integration.environment_id),
+                    provider: integration.provider,
+                    providerConfigKey: integration.unique_key,
+                    propName: String(propName),
+                    connectionIdentifier,
+                    payload: JSON.stringify(body)
+                }
+            );
             return;
         }
 
@@ -80,6 +110,22 @@ const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (get(body, webhookType) === webhook) {
                     await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
+                } else {
+                    await metricsManager.capture(
+                        MetricTypes.INCOMING_WEBHOOK_ISSUE_WEBHOOK_SUBSCRIPTION_NOT_FOUND_REGISTERED,
+                        'Incoming webhook received but the webhook was not registered in the nango.yaml',
+                        LogActionEnum.WEBHOOK,
+                        {
+                            accountId: String(accountId),
+                            environmentId: String(integration.environment_id),
+                            provider: integration.provider,
+                            providerConfigKey: integration.unique_key,
+                            connectionId: String(connection.connection_id),
+                            registeredWebhook: webhook,
+                            webhookType,
+                            payload: JSON.stringify(body)
+                        }
+                    );
                 }
             }
         }
@@ -102,13 +148,30 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     let res: WebhookResponse | null | void = null;
 
-    if (handler) {
-        res = await handler(internalNango, integration, headers, body);
+    try {
+        if (handler) {
+            res = await handler(internalNango, integration, headers, body);
+        }
+    } catch (e) {
+        await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
+            environmentId: String(integration.environment_id),
+            provider: integration.provider,
+            providerConfigKey: integration.unique_key,
+            payload: JSON.stringify(body),
+            error: String(e)
+        });
     }
 
     const webhookBodyToForward = res?.parsedBody || body;
 
     await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward);
+
+    await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
+        environmentId: String(integration.environment_id),
+        provider: integration.provider,
+        providerConfigKey: integration.unique_key,
+        payload: JSON.stringify(webhookBodyToForward)
+    });
 
     if (res) {
         return res.acknowledgementResponse;

@@ -1,4 +1,5 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
+import { Helmet } from 'react-helmet';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Spinner from '../components/ui/Spinner';
 import {
@@ -14,6 +15,7 @@ import {
     User,
     FastForward
 } from '@geist-ui/icons'
+import { XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
@@ -81,12 +83,30 @@ export default function Activity() {
     const [limit,] = useState(20);
     const [offset, setOffset] = useState(0);
     const [logIds, setLogIds] = useState<number[]>([]);
+    const [status, setStatus] = useState<string>('');
+    const [selectedScript, setSelectedScript] = useState<string>('');
+    const [selectedIntegration, setSelectedIntegration] = useState<string>('');
+    const [selectedConnection, setSelectedConnection] = useState<string>('');
+    const [selectedDate, setDate] = useState<string>('');
+
+    const [filtersFetched, setFiltersFetched] = useState(false);
+    const [scripts, setScripts] = useState<string[]>([]);
+    const [integrations, setIntegrations] = useState<string[]>([]);
+    const [connections, setConnections] = useState<string[]>([]);
 
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
     const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
     const initialOffset: string | (string | null)[] | null = queryParams.offset;
     const initialEnv: string | (string | null)[] | null = queryParams.env;
+    const initialStatus: string | (string | null)[] | null = queryParams.status;
+    const initialScript: string | (string | null)[] | null = queryParams.script;
+    const initialIntegration: string | (string | null)[] | null = queryParams.integration;
+    const initialConnection: string | (string | null)[] | null = queryParams.connection;
+    const initialDate: string | (string | null)[] | null = queryParams.date;
+
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
     const getActivityAPI = useActivityAPI();
 
@@ -106,11 +126,43 @@ export default function Activity() {
 
     useEffect(() => {
         const getActivity = async () => {
+            let queryOffset = offset;
             if (initialOffset && typeof initialOffset === 'string') {
                 setOffset(parseInt(initialOffset));
+                queryOffset = parseInt(initialOffset);
             }
 
-            const res = await getActivityAPI(limit, offset);
+            let queryStatus = status;
+            if (initialStatus && typeof initialStatus === 'string') {
+                setStatus(initialStatus);
+                queryStatus = initialStatus;
+            }
+
+            let queryScript = selectedScript;
+            if (initialScript && typeof initialScript === 'string') {
+                setSelectedScript(initialScript);
+                queryScript = initialScript;
+            }
+
+            let queryIntegration = selectedIntegration;
+            if (initialIntegration && typeof initialIntegration === 'string') {
+                setSelectedIntegration(initialIntegration);
+                queryIntegration = initialIntegration;
+            }
+
+            let queryConnection = selectedConnection;
+            if (initialConnection && typeof initialConnection === 'string') {
+                setSelectedConnection(initialConnection);
+                queryConnection = initialConnection;
+            }
+
+            let queryDate = selectedDate;
+            if (initialDate && typeof initialDate === 'string') {
+                setDate(initialDate);
+                queryDate = initialDate;
+            }
+
+            const res = await getActivityAPI(limit, queryOffset, queryStatus, queryScript, queryIntegration, queryConnection, queryDate);
 
             if (res?.status === 200) {
                 try {
@@ -130,10 +182,26 @@ export default function Activity() {
         };
 
         if (!loaded) {
-            setLoaded(true);
             getActivity();
         }
-    }, [getActivityAPI, loaded, setLoaded, limit, offset, initialOffset]);
+    }, [
+        getActivityAPI,
+        loaded,
+        setLoaded,
+        limit,
+        offset,
+        status,
+        selectedScript,
+        selectedIntegration,
+        selectedConnection,
+        selectedDate,
+        initialConnection,
+        initialIntegration,
+        initialScript,
+        initialOffset,
+        initialStatus,
+        initialDate
+    ]);
 
     useEffect(() => {
         const getActivityLogs = async () => {
@@ -167,6 +235,50 @@ export default function Activity() {
         getActivityLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [logIds]);
+
+    useEffect(() => {
+        const getFilters = async () => {
+            if (activities.length > 0) {
+                const res = await fetch(`/api/v1/activity-filters/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (res?.status === 200) {
+                    try {
+                        const filters = await res.json();
+
+                        if (filters) {
+                            if (filters.scripts.length > 0) {
+                                filters.scripts.sort((a: string, b: string) => a.localeCompare(b));
+                                setScripts(filters.scripts);
+                            }
+
+                            if (filters.integrations.length > 0) {
+                                filters.integrations.sort((a: string, b: string) => a.localeCompare(b));
+                                setIntegrations(filters.integrations);
+                            }
+
+                            if (filters.connections.length > 0) {
+                                filters.connections.sort((a: string, b: string) => a.localeCompare(b));
+                                setConnections(filters.connections);
+                            }
+                        }
+                        setFiltersFetched(true);
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+            }
+        };
+
+        if (!filtersFetched) {
+            getFilters();
+        }
+    }, [activities, filtersFetched, setFiltersFetched]);
 
 
     useEffect(() => {
@@ -236,6 +348,57 @@ export default function Activity() {
         ));
     };
 
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setStatus(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value }));
+    }
+
+    const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedScript(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value }));
+    }
+
+    const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedIntegration(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value }));
+    }
+
+    const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedConnection(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value }));
+    }
+
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDate(value);
+        setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value }));
+    }
+
+    const onRemoveFilter = (action: (val: string) => void, prop: string) => {
+        action('');
+        setLoaded(false);
+        const url = window.location.pathname;
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.delete(prop);
+
+        const updatedUrl = url + '?' + searchParams.toString();
+        navigate(updatedUrl);
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="max-w-screen-xl px-16 w-fit mx-auto">
@@ -250,26 +413,122 @@ export default function Activity() {
                         </span>
                     </div>
                 </div>
-                {activities.length === 0 && (
+                {loaded && activities.length === 0 && (!status && !selectedIntegration && !selectedScript && !selectedConnection && !selectedDate) ? null : (
+                    <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md min-w-[1150px]">
+                        <div className="flex space-x-10 justify-between px-2 w-full">
+                            <div className="flex w-full items-center">
+                                <select
+                                    id="status"
+                                    name="status"
+                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                    onChange={handleStatusChange}
+                                    value={status}
+                                >
+                                    <option key="" value="" disabled selected>Status</option>
+                                    <option key="success" value="success">Success</option>
+                                    <option key="progress" value="in_progress">In Progress</option>
+                                    <option key="failure" value="failure">Failure</option>
+                                </select>
+                                {status && (
+                                    <XCircleIcon onClick={() => onRemoveFilter(setStatus, 'status')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                )}
+                            </div>
+                            {scripts.length > 0 && (
+                                <div className="flex w-full items-center">
+                                    <select
+                                        id="script"
+                                        name="script"
+                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        onChange={handleScriptChange}
+                                        value={selectedScript}
+                                    >
+                                        <option key="" value="" disabled selected>Script</option>
+                                        {scripts.map((script: string) => (
+                                            <option key={script} value={script}>{script}</option>
+                                        ))}
+                                    </select>
+                                    {selectedScript && (
+                                        <XCircleIcon onClick={() => onRemoveFilter(setSelectedScript, 'script')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                    )}
+                                </div>
+                            )}
+                            {integrations.length > 0 && (
+                                <div className="flex w-full items-center">
+                                    <select
+                                        id="integration"
+                                        name="integration"
+                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        onChange={handleIntegrationChange}
+                                        value={selectedIntegration}
+                                    >
+                                        <option key="" value="" disabled selected>Integration</option>
+                                        {integrations.map((integration: string) => (
+                                            <option key={integration} value={integration}>{integration}</option>
+                                        ))}
+                                    </select>
+                                    {selectedIntegration && (
+                                        <XCircleIcon onClick={() => onRemoveFilter(setSelectedIntegration, 'integration')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                    )}
+                                </div>
+                            )}
+                            {connections.length > 0 && (
+                                <div className="flex w-full items-center">
+                                    <select
+                                        id="connection"
+                                        name="connection"
+                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        onChange={handleConnectionChange}
+                                        value={selectedConnection}
+                                    >
+                                        <option key="" value="" disabled selected>Connection</option>
+                                        {connections.map((connection: string) => (
+                                            <option key={connection} value={connection}>{connection}</option>
+                                        ))}
+                                    </select>
+                                    {selectedConnection && (
+                                        <XCircleIcon onClick={() => onRemoveFilter(setSelectedConnection, 'connection')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                    )}
+                                </div>
+                            )}
+                            <div className="flex w-full items-center">
+                                  <input
+                                    type="date"
+                                    id="date-filter"
+                                    name="date-filter"
+                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm hide-calendar-icon"
+                                    style={{ WebkitAppearance: 'none' }}
+                                    onChange={handleDateChange}
+                                    value={selectedDate}
+                                    max={new Date().toISOString().split('T')[0]}
+                                    min={fifteenDaysAgo.toISOString().split('T')[0]}
+                                  />
+                                  {selectedDate && (
+                                      <XCircleIcon onClick={() => onRemoveFilter(setDate, 'date')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                  )}
+                            </div>
+                        </div>
+                        <div className="flex">
+                            {offset >= limit * 3 && (
+                                <ChevronsLeft onClick={resetOffset} className="flex stroke-white cursor-pointer mr-3" size="16" />
+                            )}
+                            <span onClick={decrementPage} className={`flex ${offset - limit >= 0 ? 'cursor-pointer hover:bg-gray-700' : ''} h-8 mr-2 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
+                              <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
+                            </span>
+                            <span onClick={incrementPage} className={`flex ${activities.length < limit ? '' : 'cursor-pointer hover:bg-gray-700'} h-8 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
+                              <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {loaded && activities.length === 0 && (
                     <div className="flex items-center">
                         <Slash className="stroke-red-500" />
-                        <div className="text-white ml-3">No recent activity yet!</div>
+                        <div className="text-white ml-3">No activity found</div>
                     </div>
                 )}
                 {activities.length > 0 && (
                     <>
-                    <div className="flex justify-end mb-4 items-center">
-                        {offset >= limit * 3 && (
-                            <ChevronsLeft onClick={resetOffset} className="flex stroke-white cursor-pointer mr-3" size="16" />
-                        )}
-                        <span onClick={decrementPage} className={`flex ${offset - limit >= 0 ? 'cursor-pointer hover:bg-gray-700' : ''} h-8 mr-2 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
-                          <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
-                        </span>
-                        <span onClick={incrementPage} className={`flex ${activities.length < limit ? '' : 'cursor-pointer hover:bg-gray-700'} h-8 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
-                          <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        </span>
-                    </div>
-
                     <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden">
                         <table className="table-auto">
                             <tbody className="px-4">
@@ -482,7 +741,7 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
+                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${Object.entries(queryParams).length > 0 ? '&' + queryString.stringify(queryParams) : ''}`} />}
                                             </div>
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
@@ -538,6 +797,11 @@ export default function Activity() {
                 </>
                 )}
             </div>
+            <Helmet>
+                <style>
+                    {'::-webkit-calendar-picker-indicator { filter: invert(1); }'}
+                </style>
+          </Helmet>
         </DashboardLayout>
     );
 }

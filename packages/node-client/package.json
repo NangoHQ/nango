@@ -1,12 +1,13 @@
 {
     "name": "@nangohq/node",
-    "version": "0.36.69",
+    "version": "0.36.87",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
     "module": "./dist/index.js",
     "scripts": {
-        "build": "tsup lib/index.ts --format cjs"
+        "build": "tsup lib/index.ts --format cjs && tsc",
+        "prepublishOnly": "npm install && npm run build"
     },
     "exports": {
         ".": {
@@ -19,7 +20,7 @@
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/nango",
+        "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/node-client"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
