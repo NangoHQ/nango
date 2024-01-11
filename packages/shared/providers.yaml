@@ -1204,6 +1204,8 @@ stripe-app:
     disable_pkce: true
     proxy:
         base_url: https://api.stripe.com
+    refresh_params:
+        grant_type: refresh_token
 survey-monkey:
     auth_mode: OAUTH2
     authorization_url: https://api.surveymonkey.com/oauth/authorize

@@ -195,8 +195,25 @@ export async function findActivityLogBySession(session_id: string): Promise<numb
     return result[0].id;
 }
 
-export async function getTopLevelLogByEnvironment(environment_id: number, limit = 20, offset = 0): Promise<ActivityLog[]> {
-    const logs = await db.knex
+export async function getTopLevelLogByEnvironment(
+    environment_id: number,
+    limit = 20,
+    offset = 0,
+    {
+        status,
+        script,
+        connection,
+        integration,
+        date
+    }: {
+        status?: string | undefined;
+        script?: string | undefined;
+        connection?: string | undefined;
+        integration?: string | undefined;
+        date?: string | undefined;
+    }
+): Promise<ActivityLog[]> {
+    const logs = db.knex
         .withSchema(db.schema())
         .from<ActivityLog>('_nango_activity_logs')
         .where({ environment_id })
@@ -204,6 +221,36 @@ export async function getTopLevelLogByEnvironment(environment_id: number, limit 
         .orderBy('_nango_activity_logs.timestamp', 'desc')
         .offset(offset)
         .limit(limit);
+
+    if (status === 'success' || status === 'failure') {
+        logs.where({ success: status === 'success' });
+    }
+
+    if (status === 'in_progress') {
+        logs.where({ success: null });
+    }
+
+    if (script) {
+        logs.where({ operation_name: script });
+    }
+
+    if (connection) {
+        logs.where({ connection_id: connection });
+    }
+
+    if (integration) {
+        logs.where({ provider_config_key: integration });
+    }
+
+    if (date) {
+        const dateObj = new Date(date);
+        const month = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0'); // Add leading zero if needed
+        const day = dateObj.getUTCDate().toString().padStart(2, '0'); // Add leading zero if needed
+        const formattedDate = `${month}/${day}/${dateObj.getUTCFullYear()}`;
+        logs.whereRaw("date_trunc('day', to_timestamp(_nango_activity_logs.timestamp / 1000)) = ?", [formattedDate]);
+    }
+
+    await logs.select('_nango_activity_logs.*');
 
     return logs || [];
 }
