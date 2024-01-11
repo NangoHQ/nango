@@ -12,7 +12,7 @@ import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
 import type { NangoConfig } from '@nangohq/shared';
-import { nangoConfigFile, SyncConfigType, JAVASCRIPT_PRIMITIVES } from '@nangohq/shared';
+import { nangoConfigFile, SyncConfigType } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
 import configService from './services/config.service.js';
 import modelService from './services/model.service.js';
