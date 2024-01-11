@@ -23,7 +23,7 @@ import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
 import path from 'path';
-import { packageJsonFile, dirname } from './utils/utils.js';
+import { dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
@@ -43,7 +43,8 @@ import {
     isEnterprise,
     isBasicAuthEnabled,
     errorManager,
-    getWebsocketsPath
+    getWebsocketsPath,
+    packageJsonFile
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
