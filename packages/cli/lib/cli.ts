@@ -103,19 +103,11 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
             }
 
-            const formatModelName = (model: string) => {
-                if (JAVASCRIPT_PRIMITIVES.includes(model)) {
-                    return '';
-                }
-                const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-            };
-
             let interfaceNames: string | string[] = [];
             let mappings: { name: string; type: string } | { name: string; type: string }[] = [];
 
             if (typeof models === 'string') {
-                const formattedName = formatModelName(models);
+                const formattedName = models;
                 interfaceNames = formattedName;
                 mappings = {
                     name: models,
@@ -123,10 +115,10 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 };
             } else {
                 if (models && models.length !== 0) {
-                    interfaceNames = models.map(formatModelName);
+                    interfaceNames = models;
                     mappings = models.map((model) => ({
                         name: model,
-                        type: formatModelName(model)
+                        type: model
                     }));
                 }
             }
@@ -136,7 +128,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames,
                 mappings,
-                inputs: input && Object.keys(input).length > 0 ? input : '',
+                inputs: input && Object.keys(input).length > 0 ? input.name || input : '',
                 hasWebhook: type === SyncConfigType.SYNC && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
             });
 
