@@ -348,6 +348,32 @@ export function useCreateIntegrationAPI() {
     };
 }
 
+export function useCreateEmptyIntegrationAPI() {
+    const signout = useSignout();
+
+    return async (provider: string) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    provider: provider
+                })
+            };
+
+            let res = await fetch('/api/v1/integration/new', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useEditIntegrationAPI() {
     const signout = useSignout();
 

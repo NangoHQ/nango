@@ -227,6 +227,45 @@ class ConfigController {
         }
     }
 
+    async createEmptyProviderConfig(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { accountId, environmentId } = response;
+
+            if (req.body['provider'] == null) {
+                errorManager.errRes(res, 'missing_provider_template');
+                return;
+            }
+
+            const provider = req.body['provider'];
+
+            if (!configService.checkProviderTemplateExists(provider)) {
+                errorManager.errRes(res, 'unknown_provider_template');
+                return;
+            }
+
+            const result = await configService.createEmptyProviderConfig(provider, environmentId);
+
+            if (result) {
+                analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider });
+                res.status(200).send({
+                    config: {
+                        unique_key: result.unique_key,
+                        provider
+                    }
+                });
+            } else {
+                throw new NangoError('provider_config_creation_failure');
+            }
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async createProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
             const { success, error, response } = await getEnvironmentAndAccountId(res, req);

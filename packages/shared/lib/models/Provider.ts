@@ -42,6 +42,7 @@ export interface Template {
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
     post_connection_script?: string;
+    categories?: string[];
 }
 
 export interface TemplateAlias {

@@ -12,6 +12,8 @@ accelo:
     proxy:
         base_url: https://${connectionConfig.subdomain}.api.accelo.com
 adobe:
+    categories:
+      - design
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
     token_url: https://ims-na1.adobelogin.com/ims/token/v3
@@ -47,6 +49,9 @@ airtable:
         base_url: https://api.airtable.com
     docs: https://airtable.com/developers/web/api/introduction
 amazon:
+    categories:
+      - dev-tools
+      - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://www.amazon.com/ap/oa
     token_url: https://api.amazon.${connectionConfig.extension}/auth/o2/token
@@ -93,10 +98,14 @@ asana:
             limit_name_in_request: limit
     docs: https://developers.asana.com/reference
 ashby:
+    categories:
+      - ats
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
 atlassian:
+    categories:
+      - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
@@ -148,6 +157,8 @@ battlenet:
     token_params:
         grant_type: authorization_code
 bitbucket:
+    categories:
+      - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
     token_url: https://bitbucket.org/site/oauth2/access_token
@@ -206,6 +217,8 @@ braintree-sandbox:
     redirect_uri_metadata:
         - merchantId
 brex:
+    categories:
+      - banking
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.brex.com/oauth2/default/v1/token
@@ -260,6 +273,8 @@ coda:
 confluence:
     alias: jira
 contentstack:
+    categories:
+      - cms
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
@@ -290,6 +305,8 @@ deel-sandbox:
     proxy:
         base_url: https://api-staging.letsdeel.com
 digitalocean:
+    categories:
+      - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
     token_url: https://cloud.digitalocean.com/v1/oauth/token
@@ -367,6 +384,8 @@ eventbrite:
     proxy:
         base_url: https://www.eventbriteapi.com
 exact-online:
+    categories:
+      - accounting
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
     token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
@@ -390,8 +409,12 @@ facebook:
     proxy:
         base_url: https://graph.facebook.com
 figjam:
+    categories:
+      - design
     alias: figma
 figma:
+    categories:
+      - design
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
     token_url: https://www.figma.com/api/oauth/token
@@ -407,6 +430,8 @@ fitbit:
     proxy:
         base_url: https://api.fitbit.com
 freshbooks:
+    categories:
+      - accounting
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
     token_url: https://api.freshbooks.com/auth/oauth/token
@@ -437,6 +462,8 @@ guru:
     proxy:
         base_url: https://api.getguru.com/api/v1
 github:
+    categories:
+      - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
     token_url: https://github.com/login/oauth/access_token
@@ -450,12 +477,16 @@ github:
             link_rel_in_response_header: next
     docs: https://docs.github.com/en/rest
 github-app:
+    categories:
+      - dev-tools
     alias: github
     auth_mode: APP
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     docs: https://docs.github.com/en/apps
 gitlab:
+    categories:
+      - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
     token_url: https://gitlab.com/oauth/token
@@ -521,6 +552,8 @@ google-drive:
     alias: google
     docs: https://developers.google.com/drive/api/reference/rest/v3
 gorgias:
+    categories:
+      - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/token
@@ -536,12 +569,17 @@ gorgias:
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
 greenhouse:
+    categories:
+      - ats
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
 gumroad:
+    categories:
+      - design
+      - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://gumroad.com/oauth/authorize
     token_url: https://api.gumroad.com/oauth/token
@@ -668,6 +706,8 @@ klaviyo:
         headers:
             Authorization: Klaviyo-API-Key ${apiKey}
 lever:
+    categories:
+      - ats
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
     token_url: https://auth.lever.co/oauth/token
@@ -698,6 +738,8 @@ linear:
         base_url: https://api.linear.app
     disable_pkce: true
 linkedin:
+    categories:
+      - ats
     auth_mode: OAUTH2
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
     token_url: https://www.linkedin.com/oauth/v2/accessToken
@@ -735,6 +777,8 @@ microsoft-teams:
     refresh_params:
         grant_type: refresh_token
 microsoft-tenant-specific:
+    categories:
+      - erp
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
@@ -750,10 +794,14 @@ microsoft-tenant-specific:
     refresh_params:
         grant_type: refresh_token
 mixpanel:
+    categories:
+      - analytics
     auth_mode: BASIC
     proxy:
         base_url: https://mixpanel.com
 miro:
+    categories:
+      - design
     auth_mode: OAUTH2
     authorization_url: https://miro.com/oauth/authorize
     token_url: https://api.miro.com/v1/oauth/token
@@ -770,6 +818,8 @@ monday:
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
 mural:
+    categories:
+      - design
     auth_mode: OAUTH2
     authorization_url: https://app.mural.co/api/public/v1/authorization/oauth2
     token_url: https://app.mural.co/api/public/v1/authorization/oauth2/token
@@ -794,6 +844,9 @@ nationbuilder:
     default_scopes:
         - default
 netsuite:
+    categories:
+      - accounting
+      - erp
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
     token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
@@ -861,6 +914,8 @@ outreach:
     proxy:
         base_url: https://api.outreach.io
 pagerduty:
+    categories:
+      - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
@@ -909,6 +964,9 @@ paypal-sandbox:
     refresh_params:
         grant_type: refresh_token
 pennylane:
+    categories:
+      - accounting
+      - banking
     auth_mode: OAUTH2
     authorization_url: https://app.pennylane.com/oauth/authorize
     token_url: https://app.pennylane.com/oauth/token
@@ -943,6 +1001,8 @@ qualtrics:
     proxy:
         base_url: https://${connectionConfig.subdomain}.qualtrics.com
 quickbooks:
+    categories:
+      - accounting
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
@@ -951,6 +1011,8 @@ quickbooks:
     proxy:
         base_url: https://quickbooks.api.intuit.com
 ramp:
+    categories:
+      - banking
     auth_mode: OAUTH2
     authorization_url: https://app.ramp.com/v1/authorize
     token_url: https://api.ramp.com/developer/v1/token
@@ -1002,6 +1064,8 @@ ring-central-sandbox:
         base_url: https://platform.devtest.ringcentral.com
     docs: https://developers.ringcentral.com/api-reference/
 segment:
+    categories:
+      - analytics
     auth_mode: OAUTH2
     authorization_url: https://id.segmentapis.com/oauth2/auth
     token_url: https://id.segmentapis.com/oauth2/token
@@ -1009,6 +1073,9 @@ segment:
     proxy:
         base_url: https://api.segment.io
 sage:
+    categories:
+      - accounting
+      - erp
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
     token_url: https://oauth.accounting.sage.com/token
@@ -1077,6 +1144,8 @@ servicenow:
     refresh_params:
         grant_type: refresh_token
 shopify:
+    categories:
+      - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
@@ -1085,6 +1154,8 @@ shopify:
         headers:
             X-Shopify-Access-Token: ${accessToken}
 shortcut:
+    categories:
+      - dev-tools
     auth_mode: API_KEY
     proxy:
         base_url: https://api.app.shortcut.com
@@ -1345,6 +1416,9 @@ uber:
 unauthenticated:
     auth_mode: NONE
 wakatime:
+    categories:
+      - analytics
+      - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://wakatime.com/oauth/authorize
     token_url: https://wakatime.com/oauth/token
@@ -1352,6 +1426,8 @@ wakatime:
     proxy:
         base_url: https://wakatime.com
 wave-accounting:
+    categories:
+      - accounting
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
     token_url: https://api.waveapps.com/oauth2/token
@@ -1369,12 +1445,16 @@ wildix-pbx:
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
 workable:
+    categories:
+      - ats
     auth_mode: API_KEY
     proxy:
         headers:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
 xero:
+    categories:
+      - accounting
     auth_mode: OAUTH2
     authorization_url: https://login.xero.com/identity/connect/authorize
     token_url: https://identity.xero.com/connect/token
@@ -1431,6 +1511,8 @@ zenefits:
     proxy:
         base_url: https://api.zenefits.com
 zoho:
+    categories:
+      - accounting
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
     token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
@@ -1451,6 +1533,8 @@ zoho-crm:
 zoho-desk:
     alias: zoho
 zoho-inventory:
+    categories:
+      - e-commerce
     alias: zoho
 zoho-invoice:
     alias: zoho

@@ -128,15 +128,21 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <span className="text-white">{integration?.provider}</span>
                 </div>
                 <div className="flex flex-col w-1/2">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Creation Date</span>
-                    <span className="text-white">{formatDateToShortUSFormat(integration?.created_at as string)}</span>
+                    <span className="text-gray-400 text-xs uppercase mb-1">Integration ID</span>
+                    <span className="text-white">{integration?.unique_key}</span>
                 </div>
             </div>
             <div className="flex">
                 <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Creation Date</span>
+                    <span className="text-white">{formatDateToShortUSFormat(integration?.created_at as string)}</span>
+                </div>
+                <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Auth Type</span>
                     <span className="text-white">{integration?.auth_mode}</span>
                 </div>
+            </div>
+            <div className="flex">
                 <div className="flex flex-col w-1/2">
                     <div className="flex">
                         <span className="text-gray-400 text-xs uppercase mb-1">Callback Url</span>
