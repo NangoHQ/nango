@@ -1109,6 +1109,12 @@ slack:
             limit_name_in_request: limit
     docs: https://api.slack.com/apis
     webhook_routing_script: slack-webhook-routing
+smartrecruiters-api-key:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.smartrecruiters.com
+        headers:
+            X-SmartToken: ${apiKey}
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
