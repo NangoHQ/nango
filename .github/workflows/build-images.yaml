@@ -10,21 +10,21 @@ jobs:
         with:
             package: jobs
             run-cmd: ts-build
-            tags: -t nangohq/nango-jobs:${{ github.sha }}
+            tags: -t nangohq/nango-jobs:$GITHUB_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-jobs:enterprise-$GITHUB_SHA -t nangohq/nango-jobs:enterprise -t nangohq/nango-jobs:hosted-$GITHUB_SHA -t nangohq/nango-jobs:hosted' || '' }}
     nango-runner:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: runner
             run-cmd: ts-build
-            tags: -t nangohq/nango-runner:${{ github.sha }}
+            tags: -t nangohq/nango-runner:$GITHUB_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-runner:enterprise-$GITHUB_SHA -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-$GITHUB_SHA -t nangohq/nango-runner:hosted' || '' }}
     nango-server-staging:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: server
             run-cmd: build:staging
-            tags: -t nangohq/nango-server:staging-${{ github.sha }}
+            tags: -t nangohq/nango-server:staging-$GITHUB_SHA
     nango-server-prod:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -32,7 +32,7 @@ jobs:
         with:
             package: server
             run-cmd: build:prod
-            tags: -t nangohq/nango-server:production-${{ github.sha }}
+            tags: -t nangohq/nango-server:production-$GITHUB_SHA
     nango-server-self-hosted:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -40,7 +40,7 @@ jobs:
         with:
             package: server
             run-cmd: build:hosted
-            tags: -t nangohq/nango-server:hosted -t nangohq/nango-server:hosted-${{ github.sha }}
+            tags: -t nangohq/nango-server:hosted -t nangohq/nango-server:hosted-$GITHUB_SHA
     nango-server-enterprise:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -48,4 +48,4 @@ jobs:
         with:
             package: server
             run-cmd: build:enterprise
-            tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-${{ github.sha }}
+            tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-$GITHUB_SHA
