@@ -67,13 +67,13 @@ const internalNango: InternalNango = {
             return;
         }
 
-        const connection = await connectionService.findConnectionByConnectionConfigValue(
+        const connections = await connectionService.findConnectionsByConnectionConfigValue(
             propName || connectionIdentifier,
             get(body, connectionIdentifier),
             integration.environment_id
         );
 
-        if (!connection) {
+        if (!connections || connections.length === 0) {
             await metricsManager.capture(
                 MetricTypes.INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND,
                 'Incoming webhook received but no connection found for it',
@@ -97,7 +97,7 @@ const internalNango: InternalNango = {
             environmentId: String(integration.environment_id),
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
-            connectionId: String(connection.connection_id)
+            connectionIds: connections.map((connection) => connection.connection_id).join(',')
         });
 
         for (const syncConfig of syncConfigsWithWebhooks) {
@@ -109,23 +109,9 @@ const internalNango: InternalNango = {
 
             for (const webhook of webhook_subscriptions) {
                 if (get(body, webhookType) === webhook) {
-                    await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
-                } else {
-                    await metricsManager.capture(
-                        MetricTypes.INCOMING_WEBHOOK_ISSUE_WEBHOOK_SUBSCRIPTION_NOT_FOUND_REGISTERED,
-                        'Incoming webhook received but the webhook was not registered in the nango.yaml',
-                        LogActionEnum.WEBHOOK,
-                        {
-                            accountId: String(accountId),
-                            environmentId: String(integration.environment_id),
-                            provider: integration.provider,
-                            providerConfigKey: integration.unique_key,
-                            connectionId: String(connection.connection_id),
-                            registeredWebhook: webhook,
-                            webhookType,
-                            payload: JSON.stringify(body)
-                        }
-                    );
+                    for (const connection of connections) {
+                        await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
+                    }
                 }
             }
         }
