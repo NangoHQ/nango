@@ -13,7 +13,8 @@ import {
     Integration as ProviderIntegration,
     connectionService,
     getUniqueSyncsByProviderConfig,
-    getActionsByProviderConfigKey
+    getActionsByProviderConfigKey,
+    getSyncConfigsByParams
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -22,6 +23,7 @@ interface Integration {
     uniqueKey: string;
     provider: string;
     connectionCount: number;
+    syncScripts: number;
     creationDate: Date | undefined;
     connectionConfigParams?: string[];
 }
@@ -44,24 +46,33 @@ class ConfigController {
 
             const connections = await connectionService.listConnections(environment.id);
 
-            const integrations = configs.map((config: ProviderConfig) => {
-                const template = configService.getTemplates()[config.provider];
-                const integration: Integration = {
-                    authMode: template?.auth_mode as AuthModes,
-                    uniqueKey: config.unique_key,
-                    provider: config.provider,
-                    connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
-                    creationDate: config.created_at
-                };
-                if (template && template.auth_mode !== AuthModes.App) {
-                    integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
-                }
-                return integration;
-            });
+            const integrations = await Promise.all(
+                configs.map(async (config: ProviderConfig) => {
+                    const template = configService.getTemplates()[config.provider];
+                    const activeSyncs = await getSyncConfigsByParams(environment.id, config.unique_key);
+
+                    const integration: Integration = {
+                        authMode: template?.auth_mode || AuthModes.App,
+                        uniqueKey: config.unique_key,
+                        provider: config.provider,
+                        syncScripts: activeSyncs?.length || 0,
+                        connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
+                        creationDate: config.created_at
+                    };
+
+                    if (template && template.auth_mode !== AuthModes.App) {
+                        integration.connectionConfigParams = parseConnectionConfigParamsFromTemplate(template);
+                    }
+
+                    return integration;
+                })
+            );
 
             res.status(200).send({
-                integrations: integrations.sort(function (a: Integration, b: Integration) {
-                    return b.creationDate!.getTime() - a.creationDate!.getTime();
+                integrations: integrations.sort((a: Integration, b: Integration) => {
+                    const creationDateA = a.creationDate || new Date(0);
+                    const creationDateB = b.creationDate || new Date(0);
+                    return creationDateB.getTime() - creationDateA.getTime();
                 })
             });
         } catch (err) {

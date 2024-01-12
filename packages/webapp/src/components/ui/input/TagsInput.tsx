@@ -54,6 +54,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     }
 
     function handleAdd() {
+        console.log('on add')
         if (enteredValue.trim()) {
             if (enteredValue.includes(',')) {
                 const enteredScopes = enteredValue.split(',');
@@ -99,7 +100,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
             {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
             {enteredValue !== '' && isInputFocused && (
                 <div className="flex items-center border border-border-gray bg-zinc-900 text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer" onClick={handleAdd}>
-                    <PlusSmallIcon className="h-5 w-5 cursor-pointer" />
+                    <PlusSmallIcon onClick={handleAdd} className="h-5 w-5 cursor-pointer" />
                     <span className="">Add new scope: "{enteredValue}"</span>
                 </div>
             )}

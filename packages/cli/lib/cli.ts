@@ -29,14 +29,7 @@ export const version = (debug: boolean) => {
         printDebug('Looking up the version first for a local path first then globally');
     }
     const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
-    const dockerComposeYaml = fs.readFileSync(path.resolve(getNangoRootPath() as string, 'docker/docker-compose.yaml'), 'utf8');
-    const dockerCompose = yaml.load(dockerComposeYaml) as any;
 
-    const nangoServerImage = dockerCompose.services['nango-server'].image;
-
-    const nangoServerVersion = nangoServerImage.split(':').pop();
-
-    console.log(chalk.green('Nango Server version:'), nangoServerVersion);
     console.log(chalk.green('Nango CLI version:'), packageJson.version);
 };
 

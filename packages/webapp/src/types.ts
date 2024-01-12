@@ -194,6 +194,7 @@ export interface Account {
     secret_key_tag: string | null;
     callback_url: string;
     webhook_url: string;
+    webhook_receive_url: string;
     hmac_enabled: boolean;
     hmac_key: string;
     created_at: string;
@@ -218,6 +219,7 @@ export interface IntegrationConfig {
     client_id: string;
     client_secret: string;
     app_link?: string;
+    has_webhook: boolean;
     scopes: string;
     auth_mode: AuthModes;
     created_at: string;

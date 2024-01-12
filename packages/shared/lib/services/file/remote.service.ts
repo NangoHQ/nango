@@ -10,13 +10,19 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import { nangoConfigFile } from '../nango-config.service.js';
 import localFileService from './local.service.js';
 
-const client = new S3Client({
-    region: process.env['AWS_REGION'] as string,
-    credentials: {
-        accessKeyId: process.env['AWS_ACCESS_KEY_ID'] as string,
-        secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] as string
-    }
-});
+let client: S3Client | null = null;
+
+if (isCloud()) {
+    client = new S3Client({
+        region: process.env['AWS_REGION'] as string,
+        credentials: {
+            accessKeyId: process.env['AWS_ACCESS_KEY_ID'] as string,
+            secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] as string
+        }
+    });
+} else {
+    client = new S3Client();
+}
 
 class RemoteFileService {
     bucket = process.env['AWS_BUCKET_NAME'] as string;
@@ -34,7 +40,7 @@ class RemoteFileService {
         }
 
         try {
-            await client.send(
+            await client?.send(
                 new PutObjectCommand({
                     Bucket: this.bucket,
                     Key: fileName,
@@ -71,7 +77,7 @@ class RemoteFileService {
             const s3FilePath = `${this.publicRoute}/${integrationName}/${fileName}`;
 
             if (isCloud()) {
-                await client.send(
+                await client?.send(
                     new CopyObjectCommand({
                         Bucket: this.bucket,
                         Key: destinationPath,
@@ -109,7 +115,7 @@ class RemoteFileService {
             });
 
             client
-                .send(getObjectCommand)
+                ?.send(getObjectCommand)
                 .then((response: GetObjectCommandOutput) => {
                     if (response.Body && response.Body instanceof Readable) {
                         const responseDataChunks: Buffer[] = [];
@@ -144,9 +150,9 @@ class RemoteFileService {
                 Key: fileName
             });
 
-            const response = await client.send(getObjectCommand);
+            const response = await client?.send(getObjectCommand);
 
-            if (response.Body && response.Body instanceof Readable) {
+            if (response?.Body && response?.Body instanceof Readable) {
                 return { success: true, error: null, response: response.Body };
             } else {
                 return { success: false, error: null, response: null };
@@ -169,7 +175,7 @@ class RemoteFileService {
             }
         });
 
-        await client.send(deleteObjectsCommand);
+        await client?.send(deleteObjectsCommand);
     }
 
     async zipAndSendPublicFiles(res: Response, integrationName: string, accountId: number, environmentId: number, providerPath: string): Promise<void> {

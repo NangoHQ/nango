@@ -14,6 +14,7 @@ interface Integration {
     uniqueKey: string;
     provider: string;
     connectionCount: number;
+    syncScripts: number;
 }
 
 export default function IntegrationList() {
@@ -62,10 +63,11 @@ export default function IntegrationList() {
                                 <tr>
                                     <td className="flex items-center px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
                                         <div className="w-96">Name</div>
-                                        <div className="">Connections</div>
+                                        <div className="w-52">Connections</div>
+                                        <div className="">Enabled Syncs</div>
                                     </td>
                                 </tr>
-                                {integrations.map(({ uniqueKey, provider, connectionCount }) => (
+                                {integrations.map(({ uniqueKey, provider, connectionCount, syncScripts }) => (
                                     <tr key={`tr-${uniqueKey}`}>
                                         <td
                                             className={`flex ${
@@ -82,6 +84,9 @@ export default function IntegrationList() {
                                                 </div>
                                                 <div className="flex items-center pl-8 flex w-40">
                                                     <p className="">{connectionCount}</p>
+                                                </div>
+                                                <div className="flex items-center pl-20 flex w-40">
+                                                    <p className="">{syncScripts}</p>
                                                 </div>
                                             </div>
                                             <div className="group relative">

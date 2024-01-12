@@ -189,7 +189,10 @@ program
         const { autoConfirm, debug } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
         await verificationService.filesMatchConfig();
-        await compileService.run(debug);
+        const success = await compileService.run(debug);
+        if (!success) {
+            process.exitCode = 1;
+        }
     });
 
 program
@@ -227,7 +230,7 @@ program
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));
-            return;
+            process.exitCode = 1;
         }
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));

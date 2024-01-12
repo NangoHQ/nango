@@ -1,17 +1,18 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.36.78",
+    "version": "0.36.87",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
     "typings": "dist/lib/index.d.ts",
     "scripts": {
-        "build": "rimraf dist && tsc"
+        "build": "rimraf dist && tsc",
+        "prepublishOnly": "npm install && npm run build"
     },
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/nango",
+        "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/shared"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
@@ -19,7 +20,7 @@
         "@aws-sdk/client-s3": "^3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "0.36.78",
+        "@nangohq/node": "^0.36.87",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "@types/fs-extra": "^11.0.1",
@@ -67,6 +68,6 @@
         "@types/node": "^18.7.6",
         "@types/parse-link-header": "^2.0.0",
         "@types/uuid": "^9.0.0",
-        "typescript": "^4.7.4"
+        "typescript": "^5.3.3"
     }
 }

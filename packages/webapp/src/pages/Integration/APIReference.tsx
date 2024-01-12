@@ -39,6 +39,11 @@ export default function APIReference(props: APIReferenceProps) {
 
     const { integration, setActiveTab, endpoints, account } = props;
 
+    const allFlows = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.actions || []];
+    // if any element in the array has elements in the endpoints array then return true
+    const hasEndpoints = allFlows.some((flow) => flow.endpoints.length > 0);
+    console.log(allFlows)
+
     const endpoint = '/github/lite-issues';
     const connectionId = '<CONNECTION-ID>';
 
@@ -326,38 +331,48 @@ export default function APIReference(props: APIReferenceProps) {
                     </div>
                 </div>
             </div>
-            <table className="w-[976px]">
-                <tbody className="flex flex-col space-y-2">
-                    <tr>
-                        <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
-                            <div className="w-48">Endpoint</div>
-                            <div className="w-64">Description</div>
-                            <div className="w-48">Source</div>
-                            <div className="">Sync/Action Info</div>
-                        </td>
-                    </tr>
-                    {[...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.actions || []].map((flow, flowIndex) => (
-                        <Fragment key={flowIndex}>
-                            {flow.endpoints.map((endpoint, index: number) => (
-                                <tr key={`tr-${flow.name}-${flowIndex}-${index}`}>
-                                    <EndpointRow
-                                        flow={flow}
-                                        endpoint={endpoint}
-                                        output={Array.isArray(flow.returns) ? flow.returns[index] : flow.returns}
-                                        openAPIDocModal={openAPIDocModal}
-                                        source={
-                                            flow.is_public ? 'Public' :
-                                            flow.pre_built ? 'Managed' :
-                                            'Custom'
-                                        }
-                                    />
-                                </tr>
+            {!hasEndpoints ? (
+                <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
+                    <h2 className="text-xl text-center w-full">Integrate with {integration?.provider}</h2>
+                    <div className="mt-4 text-gray-400">{integration?.provider} does not yet have publicly available endpoints on Nango.</div>
+                    <HelpFooter type="Endpoints" />
+                </div>
+            ) : (
+                <>
+                    <table className="w-[976px]">
+                        <tbody className="flex flex-col space-y-2">
+                            <tr>
+                                <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
+                                    <div className="w-48">Endpoint</div>
+                                    <div className="w-64">Description</div>
+                                    <div className="w-48">Source</div>
+                                    <div className="">Sync/Action Info</div>
+                                </td>
+                            </tr>
+                            {allFlows.map((flow, flowIndex) => (
+                                <Fragment key={flowIndex}>
+                                    {flow.endpoints.map((endpoint, index: number) => (
+                                        <tr key={`tr-${flow.name}-${flowIndex}-${index}`}>
+                                            <EndpointRow
+                                                flow={flow}
+                                                endpoint={endpoint}
+                                                output={Array.isArray(flow.returns) ? flow.returns[index] : flow.returns}
+                                                openAPIDocModal={openAPIDocModal}
+                                                source={
+                                                    flow.is_public ? 'Public' :
+                                                    flow.pre_built ? 'Managed' :
+                                                    'Custom'
+                                                }
+                                            />
+                                        </tr>
+                                    ))}
+                                </Fragment>
                             ))}
-                        </Fragment>
-                    ))}
-                </tbody>
-            </table>
-            <HelpFooter />
+                        </tbody>
+                    </table>
+                    <HelpFooter />
+                </>
+            )}
         </div>
     );
 }

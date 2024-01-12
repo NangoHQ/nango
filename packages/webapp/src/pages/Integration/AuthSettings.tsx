@@ -154,11 +154,20 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </Tooltip>
                     </div>
                     <span className="flex items-center">
-                        <span className="text-white">{account.callback_url}</span>
+                        <span className="text-white mr-3">{account.callback_url}</span>
                         <CopyButton text={account.callback_url} dark classNames="" />
                     </span>
                 </div>
             </div>
+            {integration?.unique_key && integration?.has_webhook && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Webhook Url</span>
+                    <div className="flex text-white items-center">
+                        <span className="text-white mr-3">{`${account.webhook_receive_url}/${integration?.unique_key}`}</span>
+                        <CopyButton text={`${account.webhook_receive_url}/${integration?.unique_key}`} dark classNames="" />
+                    </div>
+                </div>
+            )}
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs mb-1">Client ID</span>
                 <div className="flex text-white items-center">

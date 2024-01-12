@@ -1,15 +1,10 @@
 import { fileURLToPath } from 'url';
-import path, { resolve } from 'path';
+import path from 'path';
 import type { Request } from 'express';
 import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
-import { readFileSync } from 'fs';
 import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
-
-type PackageJson = {
-    version: string;
-};
 
 export async function getUserAccountAndEnvironmentFromSession(
     req: Request
@@ -149,10 +144,13 @@ export function parseJsonDateAware(input: string) {
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    if (template.token_url || template.authorization_url) {
+    if (template.token_url || template.authorization_url || template.proxy?.base_url) {
         const tokenUrlMatches = template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g);
         const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g);
-        const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
+        const proxyBaseUrlMatches = template.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g);
+        const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || []), ...(proxyBaseUrlMatches || [])].filter(
+            (value, index, array) => array.indexOf(value) === index
+        );
         return params.map((param) => param.replace('${connectionConfig.', '').replace('}', '')); // Remove the ${connectionConfig.'} and return only the param name.
     }
 
@@ -347,9 +345,4 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 
 export function resetPasswordSecret() {
     return process.env['NANGO_ADMIN_KEY'] || 'nango';
-}
-
-export function packageJsonFile(): PackageJson {
-    const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/server/package.json' : 'package.json';
-    return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
 }
