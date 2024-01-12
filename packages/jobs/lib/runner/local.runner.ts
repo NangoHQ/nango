@@ -1,12 +1,24 @@
 import type { Runner } from './runner.js';
+import { RunnerType } from './runner.js';
 import { execSync, spawn, ChildProcess } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
 
 export class LocalRunner implements Runner {
-    constructor(public readonly id: string, public readonly client: any, private readonly childProcess: ChildProcess) {}
+    public client: any;
+    public runnerType: RunnerType = RunnerType.Local;
+    constructor(public readonly id: string, public readonly url: string, private readonly childProcess: ChildProcess) {
+        this.client = getRunnerClient(this.url);
+    }
 
     async suspend(): Promise<void> {
         this.childProcess.kill();
+    }
+    toJSON() {
+        return { runnerType: this.runnerType, id: this.id, url: this.url };
+    }
+
+    static fromJSON(obj: any): LocalRunner {
+        throw new Error(`'fromJSON(${obj})' not implemented`);
     }
 
     static async getOrStart(runnerId: string): Promise<LocalRunner> {
@@ -46,8 +58,7 @@ export class LocalRunner implements Runner {
                 });
             }
 
-            const client = getRunnerClient(`http://localhost:${port}`);
-            return new LocalRunner(runnerId, client, childProcess);
+            return new LocalRunner(runnerId, `http://localhost:${port}`, childProcess);
         } catch (err) {
             throw new Error(`Unable to get runner ${runnerId}: ${err}`);
         }
