@@ -52,8 +52,6 @@ export default async function fetchData(nango: NangoSync) {
         ]
     };
 
-    let totalRecords = 0;
-
     try {
         const response = await nango.post({
             endpoint: '/v1/reports/custom',
@@ -64,11 +62,19 @@ export default async function fetchData(nango: NangoSync) {
             data: customReportData
         });
 
-        const mappedEmployees = mapEmployee(response.data.employees);
-        const batchSize = mappedEmployees.length;
-        totalRecords += batchSize;
-        await nango.log(`Saving batch of ${batchSize} employee(s) (total employee(s): ${totalRecords})`);
-        await nango.batchSave(mappedEmployees, 'BamboohrEmployee');
+        const employees = response.data.employees;
+        const chunkSize = 100;
+
+        for (let i = 0; i < employees.length; i += chunkSize) {
+            const chunk = employees.slice(i, i + chunkSize);
+            const mappedEmployees = mapEmployee(chunk);
+            const batchSize = mappedEmployees.length;
+
+            await nango.log(`Saving batch of ${batchSize} employee(s)`);
+            await nango.batchSave(mappedEmployees, 'BamboohrEmployee');
+        }
+
+        await nango.log(`Total employee(s) processed: ${employees.length}`);
     } catch (error: any) {
         throw new Error(`Error in fetchData: ${error.message}`);
     }

@@ -1,6 +1,21 @@
 import type { NangoAction, BamboohrEmployee, BamboohrCreateEmployeeResponse } from './models';
 
 export default async function runAction(nango: NangoAction, input: BamboohrEmployee): Promise<BamboohrCreateEmployeeResponse> {
+    // Input validation on only required fields
+    if (!input.firstName && !input.lastName) {
+        throw new nango.ActionError({
+            message: 'firstName and lastName are required fields'
+        });
+    } else if (!input.firstName) {
+        throw new nango.ActionError({
+            message: 'firstName is a required field'
+        });
+    } else if (!input.lastName) {
+        throw new nango.ActionError({
+            message: 'lastName is a required field'
+        });
+    }
+
     try {
         const postData = {
             firstName: input.firstName,
