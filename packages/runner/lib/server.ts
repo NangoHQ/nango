@@ -6,6 +6,7 @@ import timeout from 'connect-timeout';
 import type { NangoProps } from '@nangohq/shared';
 import { exec } from './exec.js';
 import superjson from 'superjson';
+import { fetch } from 'undici';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -30,10 +31,24 @@ const appRouter = router({
 export type AppRouter = typeof appRouter;
 
 function healthProcedure() {
-    return publicProcedure.query(async () => {
-        return { status: 'ok' };
-    });
+    return publicProcedure
+        .use(async (opts) => {
+            pendingRequests.add(opts);
+            const next = opts.next();
+            pendingRequests.delete(opts);
+            lastRequestTime = Date.now();
+            return next;
+        })
+        .query(async () => {
+            return { status: 'ok' };
+        });
 }
+
+const idleMaxDurationMs = parseInt(process.env['IDLE_MAX_DURATION_MS'] || '') || 0;
+const runnerId = process.env['RUNNER_ID'] || '';
+let lastRequestTime = Date.now();
+const pendingRequests = new Set();
+const notifyIdleEndpoint = process.env['NOTIFY_IDLE_ENDPOINT'] || '';
 
 function runProcedure() {
     return publicProcedure
@@ -57,4 +72,39 @@ server.use(haltOnTimedout);
 
 function haltOnTimedout(req: Request, _res: Response, next: NextFunction) {
     if (!req.timedout) next();
+}
+
+if (idleMaxDurationMs > 0) {
+    setInterval(async () => {
+        if (pendingRequests.size == 0) {
+            const idleTimeMs = Date.now() - lastRequestTime;
+            if (idleTimeMs > idleMaxDurationMs) {
+                console.log(`Runner '${runnerId}' idle for more than ${idleMaxDurationMs}ms`);
+                // calling jobs service to suspend runner
+                // using fetch instead of jobs trcp client to avoid circular dependency
+                // TODO: use trpc client once jobs doesn't depend on runner
+                if (notifyIdleEndpoint.length > 0) {
+                    try {
+                        const res = await fetch(notifyIdleEndpoint, {
+                            method: 'post',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: superjson.stringify({
+                                runnerId,
+                                idleTimeMs
+                            })
+                        });
+                        if (res.status !== 200) {
+                            console.error(`Error calling ${notifyIdleEndpoint}: ${JSON.stringify(await res.json())}`);
+                        }
+                    } catch (err) {
+                        console.error(`Error calling ${notifyIdleEndpoint}: ${err}`);
+                    }
+                }
+                lastRequestTime = Date.now(); // reset last request time
+            }
+        }
+    }, 10000);
 }

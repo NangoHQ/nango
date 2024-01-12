@@ -429,6 +429,11 @@ export class NangoError extends Error {
                 this.message = `Duplicate model "${this.payload['model']}" for the ${this.payload['type']} "${this.payload['name']}" found. Please make sure all models are unique within an integration.`;
                 break;
 
+            case 'invalid_app_secret':
+                this.status = 400;
+                this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
+                break;
+
             case 'no_config_found':
                 this.status = 400;
                 this.message = 'No nango config found. Please make sure it is present and formatted correctly.';

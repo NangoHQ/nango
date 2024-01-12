@@ -12,7 +12,7 @@ import {
     NangoError,
     formatScriptError
 } from '@nangohq/shared';
-import { getRunner, getRunnerId } from './runner/runner.js';
+import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from './tracer.js';
 
 class IntegrationService implements IntegrationServiceInterface {
@@ -87,7 +87,7 @@ class IntegrationService implements IntegrationServiceInterface {
 
             const accountId = nangoProps.accountId;
             const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default'); // a runner per account in prod only
-            const runner = await getRunner(runnerId).catch((_) => getRunner(getRunnerId('default'))); // fallback to default runner if account runner isn't ready yet
+            const runner = await getOrStartRunner(runnerId).catch((_) => getOrStartRunner(getRunnerId('default'))); // fallback to default runner if account runner isn't ready yet
 
             const runSpan = tracer.startSpan('runner.run', { childOf: span }).setTag('runnerId', runner.id);
             try {

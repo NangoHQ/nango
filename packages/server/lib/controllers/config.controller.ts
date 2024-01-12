@@ -291,6 +291,10 @@ class ConfigController {
             let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
 
             if (authMode === AuthModes.App) {
+                if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
+                    errorManager.errRes(res, 'invalid_app_secret');
+                    return;
+                }
                 oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
             }
 

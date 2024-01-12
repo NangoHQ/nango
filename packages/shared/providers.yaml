@@ -214,6 +214,12 @@ brex:
         - offline_access
     proxy:
         base_url: https://platform.brexapis.com
+brex-api-key:
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://platform.brexapis.com
 brex-staging:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
@@ -426,6 +432,10 @@ front:
             type: link
             response_path: _results
             link_path_in_response_body: _pagination.next
+guru:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.getguru.com/api/v1
 github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize

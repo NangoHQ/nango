@@ -10,7 +10,7 @@ LIMIT=50
 
 while true; do
   response=$(curl -s --request GET \
-     --url "https://api.render.com/v1/services?limit=$LIMIT&ownerId=$RUNNER_OWNER_ID&cursor=$CURSOR&env=image&type=private_service" \
+     --url "https://api.render.com/v1/services?suspended=not_suspended&limit=$LIMIT&ownerId=$RUNNER_OWNER_ID&cursor=$CURSOR&env=image&type=private_service" \
      --header "accept: application/json" \
      --header "authorization: Bearer $API_KEY")
 
