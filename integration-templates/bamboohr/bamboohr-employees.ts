@@ -52,8 +52,6 @@ export default async function fetchData(nango: NangoSync) {
         ]
     };
 
-    let totalRecords = 0;
-
     try {
         const response = await nango.post({
             endpoint: '/v1/reports/custom',
@@ -71,7 +69,6 @@ export default async function fetchData(nango: NangoSync) {
             const chunk = employees.slice(i, i + chunkSize);
             const mappedEmployees = mapEmployee(chunk);
             const batchSize = mappedEmployees.length;
-            totalRecords += batchSize;
 
             await nango.log(`Saving batch of ${batchSize} employee(s)`);
             await nango.batchSave(mappedEmployees, 'BamboohrEmployee');
