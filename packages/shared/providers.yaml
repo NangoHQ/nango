@@ -565,6 +565,10 @@ gusto:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gusto.com
+hackerrank-work:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.hackerrank.com
 health-gorilla:
     auth_mode: OAUTH2
     authorization_url: https://api.healthgorilla.com/oauth/authorize
