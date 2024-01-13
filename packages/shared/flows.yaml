@@ -492,7 +492,7 @@ integrations:
       returns:
         - HackerRankWorkInterview
       description: |
-        Fetches test from hackerrank work.
+        Fetches interviews from hackerrank work.
         Details: incremental sync, doesn't track deletes, metadata is not required.
     hackerrank-work-teams:
       runs: every 6 hours
