@@ -27,8 +27,16 @@ class AppAuthController {
     async connect(req: Request, res: Response, _next: NextFunction) {
         const installation_id = req.query['installation_id'] as string | undefined;
         const state = req.query['state'] as string;
+        const action = req.query['setup_action'] as string;
 
-        if (!state || !installation_id) {
+        // this is an instance where an organization approved an install
+        // let them reconcile the connection
+        if ((action === 'install' && !state) || (action === 'update' && !state)) {
+            res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://nango.dev');
+            return;
+        }
+
+        if (!state) {
             res.sendStatus(400);
             return;
         }
@@ -93,6 +101,30 @@ class AppAuthController {
                 return;
             }
 
+            if (action === 'request') {
+                await createActivityLogMessage({
+                    level: 'info',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId as number,
+                    content: 'App connection was requested',
+                    timestamp: Date.now(),
+                    auth_mode: AuthModes.App,
+                    url: req.originalUrl
+                });
+
+                await connectionService.createConnection(
+                    connectionId,
+                    providerConfigKey,
+                    { app_id: config?.oauth_client_id, pending: true, pendingLog: activityLogId?.toString() as string },
+                    AuthModes.App,
+                    environmentId
+                );
+
+                await updateSuccessActivityLog(activityLogId as number, null);
+
+                return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            }
+
             const connectionConfig = {
                 installation_id: installation_id,
                 app_id: config?.oauth_client_id
@@ -119,6 +151,11 @@ class AppAuthController {
                     connectionId,
                     WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
                 );
+            }
+
+            if (!installation_id) {
+                res.sendStatus(400);
+                return;
             }
 
             const { success, error, response: credentials } = await connectionService.getAppCredentials(template, config, connectionConfig);
@@ -154,7 +191,7 @@ class AppAuthController {
                 providerConfigKey,
                 session.provider,
                 credentials as unknown as AuthCredentials,
-                connectionConfig,
+                connectionConfig as Record<string, string | boolean>,
                 environmentId,
                 accountId
             );

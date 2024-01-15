@@ -405,6 +405,32 @@ export default function IntegrationCreate() {
                                             </Prism>
                                         </div>
                                     </div>
+
+                                    {providerConfigKey && hasWebhook && (
+                                        <div>
+                                            <div>
+                                                <div className="flex">
+                                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                        Webhook Receive URL
+                                                    </label>
+                                                    <Tooltip
+                                                        text={
+                                                            <>
+                                                                <div className="flex text-black text-sm">
+                                                                    <p>{`Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks. Use this for github organizations that need app approvals.`}</p>
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    >
+                                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                    </Tooltip>
+                                                </div>
+                                                <Prism language="bash" colorScheme="dark">
+                                                    {`${webhookReceiveUrl}/${providerConfigKey}`}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                    )}
                                 </>
                             )}
 
