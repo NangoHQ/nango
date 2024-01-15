@@ -536,30 +536,38 @@ integrations:
       runs: every 6 hours
       returns:
         - HackerRankWorkInterview
-      description: |
+      description: >
         Fetches interviews from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
+
+        Details: incremental sync, doesn't track deletes, metadata is not
+        required.
     hackerrank-work-teams:
       runs: every 6 hours
       returns:
         - HackerRankWorkTeam
-      description: |
+      description: >
         Fetches teams from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
+
+        Details: incremental sync, doesn't track deletes, metadata is not
+        required.
     hackerrank-work-tests:
       runs: every 6 hours
       returns:
         - HackerRankWorkTest
-      description: |
+      description: >
         Fetches tests from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
+
+        Details: incremental sync, doesn't track deletes, metadata is not
+        required.
     hackerrank-work-users:
       runs: every 6 hours
       returns:
         - HackerRankWorkUser
-      description: |
+      description: >
         Fetches users from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
+
+        Details: incremental sync, doesn't track deletes, metadata is not
+        required.
     hackerrank-work-create-test:
       type: action
       returns: HackerRankWorkTest

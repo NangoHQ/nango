@@ -25,7 +25,7 @@ if (isCloud()) {
 }
 
 class RemoteFileService {
-    bucket = process.env['AWS_BUCKET_NAME'] as string;
+    bucket = (process.env['AWS_BUCKET_NAME'] as string) || 'nangodev-customer-integrations';
     publicRoute = 'integration-templates';
 
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
@@ -64,7 +64,11 @@ class RemoteFileService {
     }
 
     public getRemoteFileLocationForPublicTemplate(integrationName: string, fileName: string): string {
-        return `${this.publicRoute}/${integrationName}/${fileName}`;
+        return `${this.publicRoute}/${integrationName}/dist/${fileName}.js`;
+    }
+
+    public async getPublicFlowFile(filePath: string, environmentId: number): Promise<string | null> {
+        return this.getFile(filePath, environmentId);
     }
 
     /**

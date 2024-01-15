@@ -203,7 +203,7 @@ export default class SyncRun {
                 syncData = (syncObject['syncs'] ? syncObject!['syncs']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
             }
 
-            const { returns: models, track_deletes: trackDeletes } = syncData;
+            const { returns: models, track_deletes: trackDeletes, is_public: isPublic } = syncData;
 
             if (syncData.sync_config_id) {
                 if (this.debug) {
@@ -226,7 +226,7 @@ export default class SyncRun {
                 }
             }
 
-            if (!isCloud()) {
+            if (!isCloud() && !isPublic && !this.isAction) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation
