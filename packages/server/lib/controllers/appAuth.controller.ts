@@ -53,7 +53,7 @@ class AppAuthController {
 
         analytics.track(AnalyticsTypes.PRE_APP_AUTH, accountId);
 
-        const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId, connectionConfig } = session;
+        const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);
         const handle = session.connectionConfig['handle'] as string;
 
