@@ -519,6 +519,40 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
+                            {authMode === AuthModes.App && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="optional_authorization_params" className="text-text-light-gray block text-sm font-semibold">
+                                            Optional: Additional Authorization Params
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                    </div>
+                                    <div className="mt-1">
+                                        <input
+                                            id="authorization_params"
+                                            name="authorization_params"
+                                            type="text"
+                                            autoComplete="new-password"
+                                            defaultValue="{ }"
+                                            className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
+                                                authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
+                                            } focus:ring-white bg-bg-black block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            onChange={handleAuthorizationParamsChange}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {authMode === AuthModes.AppStore && (
                                 <div>
                                     <div className="flex mt-6">

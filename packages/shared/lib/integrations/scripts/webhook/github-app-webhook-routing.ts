@@ -8,15 +8,39 @@ import environmentService from '../../../services/environment.service.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessageAndEnd } from '../../../services/activity/activity.service.js';
 import configService from '../../../services/config.service.js';
 import { connectionCreated as connectionCreatedHook } from '../../../hooks/hooks.js';
+import crypto from 'crypto';
 
-export default async function route(_nango: Nango, integration: ProviderConfig, _headers: Record<string, any>, body: any) {
+function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
+    const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
+    const secret = crypto.createHash('sha256').update(hash).digest('hex');
+
+    const signature = crypto.createHmac('sha256', secret).update(JSON.stringify(body)).digest('hex');
+
+    const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
+    const untrusted = Buffer.from(headerSignature, 'ascii');
+
+    return crypto.timingSafeEqual(trusted, untrusted);
+}
+
+export default async function route(_nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {
+    const signature = headers['x-hub-signature-256'];
+
+    if (signature) {
+        console.log('Signature found, verifying...');
+        const valid = validate(integration, signature, body);
+
+        if (!valid) {
+            console.log('Github App webhook signature invalid');
+            return;
+        }
+    }
+
     if (get(body, 'action') !== 'created') {
-        console.log('Not a created action');
         return;
     }
 
     const connections = await connectionService.findConnectionsByMultipleConnectionConfigValues(
-        { app_id: get(body, 'installation.app_id'), pending: true },
+        { app_id: get(body, 'installation.app_id'), pending: true, handle: get(body, 'requester.login') },
         integration.environment_id
     );
 

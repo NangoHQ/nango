@@ -49,6 +49,7 @@ export default function IntegrationCreate() {
     const [templateLogo, setTemplateLogo] = useState<string>('');
     const [callbackUrl, setCallbackUrl] = useState('');
     const [webhookReceiveUrl, setWebhookReceiveUrl] = useState('');
+    const [webhookSecret, setWebhookSecret] = useState<string>('');
     const [hasWebhook, setHasWebhook] = useState(false);
     const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
     const getProvidersAPI = useGetProvidersAPI();
@@ -72,6 +73,7 @@ export default function IntegrationCreate() {
                         setAuthMode(currentIntegration['auth_mode']);
                     }
                     setHasWebhook(currentIntegration['has_webhook']);
+                    setWebhookSecret(currentIntegration['webhook_secret'] || '');
                 }
             } else {
                 let res = await getProvidersAPI();
@@ -407,6 +409,7 @@ export default function IntegrationCreate() {
                                     </div>
 
                                     {providerConfigKey && hasWebhook && (
+                                    <>
                                         <div>
                                             <div>
                                                 <div className="flex">
@@ -430,6 +433,32 @@ export default function IntegrationCreate() {
                                                 </Prism>
                                             </div>
                                         </div>
+                                        {webhookSecret && (
+                                        <div>
+                                            <div>
+                                                <div className="flex">
+                                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                        Webhook Secret
+                                                    </label>
+                                                    <Tooltip
+                                                        text={
+                                                            <>
+                                                                <div className="flex text-black text-sm">
+                                                                    <p>{`Input this secret into the "Webhook secret (optional)" field in the Webhook section`}</p>
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    >
+                                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                    </Tooltip>
+                                                </div>
+                                                <Prism language="bash" colorScheme="dark">
+                                                    {webhookSecret}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                        )}
+                                    </>
                                     )}
                                 </>
                             )}

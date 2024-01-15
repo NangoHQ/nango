@@ -53,8 +53,9 @@ class AppAuthController {
 
         analytics.track(AnalyticsTypes.PRE_APP_AUTH, accountId);
 
-        const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
+        const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId, connectionConfig } = session;
         const activityLogId = await findActivityLogBySession(session.id);
+        const handle = session.connectionConfig['handle'] as string;
 
         try {
             if (!providerConfigKey) {
@@ -115,7 +116,7 @@ class AppAuthController {
                 await connectionService.createConnection(
                     connectionId,
                     providerConfigKey,
-                    { app_id: config?.oauth_client_id, pending: true, pendingLog: activityLogId?.toString() as string },
+                    { app_id: config?.oauth_client_id, pending: true, pendingLog: activityLogId?.toString() as string, handle },
                     AuthModes.App,
                     environmentId
                 );
@@ -127,7 +128,8 @@ class AppAuthController {
 
             const connectionConfig = {
                 installation_id: installation_id,
-                app_id: config?.oauth_client_id
+                app_id: config?.oauth_client_id,
+                handle
             };
 
             if (missesInterpolationParam(template.token_url, connectionConfig)) {
