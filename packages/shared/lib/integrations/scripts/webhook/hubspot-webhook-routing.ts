@@ -20,7 +20,10 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     }
 
     if (Array.isArray(body)) {
-        for (const event of body) {
+        const sorted = body.sort((a, b) => {
+            return a.occurredAt - b.occurredAt;
+        });
+        for (const event of sorted) {
             await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId');
         }
     } else {

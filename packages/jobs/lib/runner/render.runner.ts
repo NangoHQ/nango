@@ -1,4 +1,5 @@
 import type { Runner } from './runner.js';
+import { RunnerType } from './runner.js';
 import { getRunnerClient } from '@nangohq/nango-runner';
 import { getEnv } from '@nangohq/shared';
 import api from 'api';
@@ -10,7 +11,19 @@ render.auth(process.env['RENDER_API_KEY']);
 const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
 
 export class RenderRunner implements Runner {
-    constructor(public readonly id: string, public readonly client: any, private readonly serviceId: string) {}
+    public client: any;
+    public runnerType: RunnerType = RunnerType.Render;
+    constructor(public readonly id: string, public readonly url: string, public readonly serviceId: string) {
+        this.client = getRunnerClient(this.url);
+    }
+
+    toJSON() {
+        return { runnerType: this.runnerType, id: this.id, url: this.url, serviceId: this.serviceId };
+    }
+
+    static fromJSON(obj: { id: string; url: string; serviceId: string }): RenderRunner {
+        return new RenderRunner(obj.id, obj.url, obj.serviceId);
+    }
 
     async suspend(): Promise<void> {
         const span = tracer.startSpan('runner.suspend').setTag('serviceId', this.serviceId).setTag('runnerId', this.id);
@@ -26,8 +39,7 @@ export class RenderRunner implements Runner {
         let res = await render.getServices({ name: runnerId, type: 'private_service', limit: '1' });
         if (res.data.length > 0) {
             svc = res.data[0].service;
-            const client = getRunnerClient(`http://${runnerId}`);
-            return new RenderRunner(runnerId, client, svc.id);
+            return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);
         }
         return undefined;
     }
@@ -69,7 +81,7 @@ export class RenderRunner implements Runner {
                 svc = res.data.service;
             }
             if (!svc) {
-                throw new Error(`Unable to create runner instance ${runnerId}`);
+                throw new Error(`Unable to get/create runner instance ${runnerId}`);
             }
             // check if runner is suspended, if so, resume it
             if (svc.suspended === 'suspended') {
@@ -80,8 +92,7 @@ export class RenderRunner implements Runner {
                     span.finish();
                 }
             }
-            const client = getRunnerClient(`http://${runnerId}`);
-            return new RenderRunner(runnerId, client, svc.id);
+            return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);
         } catch (err) {
             throw new Error(`Unable to get runner ${runnerId}: ${err}`);
         }

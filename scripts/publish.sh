@@ -29,12 +29,12 @@ npm install
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-npm install @nangohq/node@latest -w @nangohq/shared
+npm install "@nangohq/node@$VERSION" -w @nangohq/shared
 
 # Shared
 node scripts/flows.js
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-npm install @nangohq/shared@latest -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs -w @nangohq/nango-runner
+npm install "@nangohq/shared@$VERSION" -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs -w @nangohq/nango-runner
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"

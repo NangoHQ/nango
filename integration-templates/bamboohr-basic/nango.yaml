@@ -1,0 +1,47 @@
+integrations:
+  bamboohr-basic:
+    bamboohr-employees:
+      runs: every 6 hours
+      returns:
+        - BamboohrEmployee
+      description: |
+        Fetches employees from bamboohr.
+        Details: full sync, doesn't track deletes, metadata is not required.
+    bamboohr-create-employee:
+      type: action
+      returns: BamboohrCreateEmployeeResponse
+      description: |
+        Action to create a new employee.
+models:
+  BamboohrEmployee:
+    id: string
+    employeeNumber: string
+    firstName: string
+    lastName: string
+    dateOfBirth: date
+    address1: string
+    bestEmail: string
+    workEmail: string
+    jobTitle: string
+    hireDate: date
+    supervisorId: string
+    supervisor: string
+    createdByUserId: string
+    department: string
+    division: string
+    employmentHistoryStatus: string
+    gender: string
+    country: string
+    city: string
+    location: string
+    state: string
+    maritalStatus: string
+    exempt: string
+    payRate: string
+    payType: string
+    payPer: string
+    ssn: string
+    workPhone: string
+    homePhone: string
+  BamboohrCreateEmployeeResponse:
+    status: string

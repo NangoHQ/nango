@@ -8,6 +8,9 @@
 CURSOR=""
 LIMIT=50
 
+# keep a count of how many times we've tried to deploy
+COUNTER=0
+
 while true; do
   response=$(curl -s --request GET \
      --url "https://api.render.com/v1/services?suspended=not_suspended&limit=$LIMIT&ownerId=$RUNNER_OWNER_ID&cursor=$CURSOR&env=image&type=private_service" \
@@ -18,15 +21,10 @@ while true; do
     break
   fi
 
+  parsed_response=$(echo "$response" | jq -c '.[]' 2>/dev/null)
   CURSOR=$(echo "$response" | jq -r '.[-1].cursor' 2>/dev/null)
 
-  if [ -z "$CURSOR" ]; then
-    break
-  fi
-
-  json_array=$(echo "$response" | jq -c '.[]' 2>/dev/null)
-
-  for item in $json_array; do
+  for item in $parsed_response; do
     name=$(echo "$item" | jq -r '.service.name' 2>/dev/null)
     if [[ "$name" != "$ENVIRONMENT-runner-"* ]]; then
       continue
@@ -35,20 +33,25 @@ while true; do
     serviceId=$(echo "$item" | jq -r '.service.id' 2>/dev/null)
     if [ -n "$serviceId" ]; then
       echo "Deploying service with ID: $serviceId and name $name"
+      COUNTER=$((COUNTER+1))
 
-      curl --request POST \
+      curl -s --request POST \
         --url "https://api.render.com/v1/services/$serviceId/deploys" \
         --header "accept: application/json" \
         --header "authorization: Bearer $API_KEY" \
         --header "content-type: application/json"
     fi
-
-    RESPONSE_LENGTH=$(echo "$response" | jq -r '. | length' 2>/dev/null)
-    if [ "$RESPONSE_LENGTH" -lt "$LIMIT" ]; then
-      break
-    fi
-
-    sleep 1
   done
+
+  echo $CURSOR
+
+  RESPONSE_LENGTH=$(echo "$response" | jq -r '. | length' 2>/dev/null)
+
+  if [ "$RESPONSE_LENGTH" -lt "$LIMIT" ] || [ -z "$CURSOR" ]; then
+    break
+  fi
+
+  sleep 1
 done
 
+echo "Deployed $COUNTER services"

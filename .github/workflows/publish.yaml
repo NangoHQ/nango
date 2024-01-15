@@ -29,5 +29,5 @@ jobs:
                 bash ./scripts/publish.sh ${{ inputs.version }}
             - uses: stefanzweifel/git-auto-commit-action@v5
               with:
-                commit_message: Update npm packages version
+                commit_message: Update npm packages version - ${{ inputs.version }}
                 file_pattern: '*.json'
