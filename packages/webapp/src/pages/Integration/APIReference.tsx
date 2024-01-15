@@ -42,7 +42,6 @@ export default function APIReference(props: APIReferenceProps) {
     const allFlows = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.actions || []];
     // if any element in the array has elements in the endpoints array then return true
     const hasEndpoints = allFlows.some((flow) => flow.endpoints.length > 0);
-    console.log(allFlows)
 
     const endpoint = '/github/lite-issues';
     const connectionId = '<CONNECTION-ID>';

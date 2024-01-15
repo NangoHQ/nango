@@ -305,7 +305,7 @@ export function generateExampleValueForProperty(model: NangoSyncModel): Record<s
 export const parseInput = (flow: Flow) => {
     let input;
 
-    if (flow?.input) {
+    if (flow?.input && Object.keys(flow?.input).length > 0) {
         const rawInput = {} as Record<string, boolean|string|number>;
         for (const field of flow.input.fields) {
             rawInput[field.name] = field.type;
