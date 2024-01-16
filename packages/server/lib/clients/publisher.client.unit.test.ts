@@ -75,7 +75,8 @@ describe('Publisher', () => {
             JSON.stringify({
                 message_type: 'success',
                 provider_config_key: 'provider-key',
-                connection_id: 'connection-id'
+                connection_id: 'connection-id',
+                is_pending: false
             })
         );
         expect(ws.send).toHaveBeenCalledTimes(2); // connection_ack + success

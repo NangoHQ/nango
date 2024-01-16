@@ -222,7 +222,8 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 app_link: null,
                 auth_mode: 'OAUTH2',
                 syncs: [],
-                actions: []
+                actions: [],
+                webhook_secret: null
             }
         });
     });

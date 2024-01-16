@@ -90,7 +90,7 @@ export async function updateSessionId(id: number, session_id: string): Promise<v
     });
 }
 
-export async function updateSuccess(id: number, success: boolean): Promise<void> {
+export async function updateSuccess(id: number, success: boolean | null): Promise<void> {
     if (!id) {
         return;
     }

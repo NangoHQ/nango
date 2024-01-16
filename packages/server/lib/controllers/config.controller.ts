@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import crypto from 'crypto';
 import {
     AuthModes,
     errorManager,
@@ -189,9 +190,12 @@ class ConfigController {
             const authMode = providerTemplate.auth_mode;
 
             let client_secret = config.oauth_client_secret;
+            let webhook_secret = null;
 
             if (authMode === AuthModes.App) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
+                const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
+                webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
             const syncConfigs = await getUniqueSyncsByProviderConfig(environmentId, providerConfigKey);
@@ -217,7 +221,8 @@ class ConfigController {
                       created_at: config.created_at as Date,
                       syncs,
                       actions,
-                      has_webhook: Boolean(hasWebhook)
+                      has_webhook: Boolean(hasWebhook),
+                      webhook_secret
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 

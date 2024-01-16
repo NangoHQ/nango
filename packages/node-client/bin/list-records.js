@@ -3,10 +3,11 @@ const args = process.argv.slice(2);
 const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
 
 nango
-    .getRecords({
+    .listRecords({
         providerConfigKey: args[1],
         connectionId: args[2],
-        model: args[3]
+        model: args[3],
+        filter: args[4]
     })
     .then((response) => {
         console.log(response);

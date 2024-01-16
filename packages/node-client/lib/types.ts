@@ -52,7 +52,7 @@ export interface ProxyConfiguration {
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
 
-type FilterAction = 'added' | 'updated' | 'deleted';
+type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
 type CombinedFilterAction = `${FilterAction},${FilterAction}`;
 
 export interface GetRecordsRequestConfig {

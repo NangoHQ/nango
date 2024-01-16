@@ -8,7 +8,11 @@ export function validate(integration: ProviderConfig, headers: Record<string, an
     const combinedSignature = `${integration.oauth_client_secret}${JSON.stringify(body)}`;
     const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
 
-    return signature === createdHash;
+    const bufferLength = Math.max(Buffer.from(signature, 'hex').length, Buffer.from(createdHash, 'hex').length);
+    const signatureBuffer = Buffer.alloc(bufferLength, signature, 'hex');
+    const hashBuffer = Buffer.alloc(bufferLength, createdHash, 'hex');
+
+    return crypto.timingSafeEqual(signatureBuffer, hashBuffer);
 }
 
 export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {

@@ -203,12 +203,13 @@ export class Publisher {
         errorHtml(res, wsClientId, wsErr);
     }
 
-    public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string) {
+    public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string, isPending = false) {
         if (wsClientId) {
             const data = JSON.stringify({
                 message_type: MessageType.Success,
                 provider_config_key: providerConfigKey,
-                connection_id: connectionId
+                connection_id: connectionId,
+                is_pending: isPending
             });
             const published = await this.publish(wsClientId, data);
             if (published) {

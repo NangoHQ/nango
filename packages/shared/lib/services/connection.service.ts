@@ -46,6 +46,8 @@ import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
 
+type KeyValuePairs = Record<string, string | boolean>;
+
 class ConnectionService {
     private locking: Locking;
 
@@ -58,7 +60,7 @@ class ConnectionService {
         providerConfigKey: string,
         provider: string,
         parsedRawCredentials: AuthCredentials,
-        connectionConfig: Record<string, string>,
+        connectionConfig: Record<string, string | boolean>,
         environment_id: number,
         accountId: number,
         metadata?: Metadata
@@ -106,6 +108,22 @@ class ConnectionService {
         analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
         return id;
+    }
+
+    public async createConnection(
+        connectionId: string,
+        providerConfigKey: string,
+        connectionConfig: Record<string, string | boolean>,
+        type: ProviderAuthModes,
+        environment_id: number
+    ): Promise<void> {
+        await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            credentials: { type },
+            connection_config: connectionConfig,
+            environment_id: environment_id
+        });
     }
 
     public async upsertApiConnection(
@@ -467,6 +485,22 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
     }
 
+    public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<Connection[] | null> {
+        let query = db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('*').where({ environment_id: environmentId });
+
+        Object.entries(keyValuePairs).forEach(([key, value]) => {
+            query = query.andWhereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
+        });
+
+        const result = await query;
+
+        if (!result || result.length == 0) {
+            return null;
+        }
+
+        return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
+    }
+
     public async listConnections(
         environment_id: number,
         connectionId?: string
@@ -484,7 +518,7 @@ class ConnectionService {
 
     public async getAllNames(environment_id: number): Promise<string[]> {
         const connections = await this.listConnections(environment_id);
-        return connections.map((config) => config.connection_id);
+        return [...new Set(connections.map((config) => config.connection_id))];
     }
 
     public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {

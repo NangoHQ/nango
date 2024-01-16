@@ -27,8 +27,16 @@ class AppAuthController {
     async connect(req: Request, res: Response, _next: NextFunction) {
         const installation_id = req.query['installation_id'] as string | undefined;
         const state = req.query['state'] as string;
+        const action = req.query['setup_action'] as string;
 
-        if (!state || !installation_id) {
+        // this is an instance where an organization approved an install
+        // reconcile the installation id using the webhook
+        if ((action === 'install' && !state) || (action === 'update' && !state)) {
+            res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
+            return;
+        }
+
+        if (!state) {
             res.sendStatus(400);
             return;
         }
@@ -47,6 +55,7 @@ class AppAuthController {
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);
+        const handle = session.connectionConfig['handle'] as string;
 
         try {
             if (!providerConfigKey) {
@@ -93,9 +102,36 @@ class AppAuthController {
                 return;
             }
 
+            if (action === 'request') {
+                await createActivityLogMessage({
+                    level: 'info',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId as number,
+                    content: 'App connection was requested',
+                    timestamp: Date.now(),
+                    auth_mode: AuthModes.App,
+                    url: req.originalUrl
+                });
+
+                const pending = true;
+
+                await connectionService.createConnection(
+                    connectionId,
+                    providerConfigKey,
+                    { app_id: config?.oauth_client_id, pending, pendingLog: activityLogId?.toString() as string, handle },
+                    AuthModes.App,
+                    environmentId
+                );
+
+                await updateSuccessActivityLog(activityLogId as number, null);
+
+                return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId, pending);
+            }
+
             const connectionConfig = {
                 installation_id: installation_id,
-                app_id: config?.oauth_client_id
+                app_id: config?.oauth_client_id,
+                handle
             };
 
             if (missesInterpolationParam(template.token_url, connectionConfig)) {
@@ -119,6 +155,11 @@ class AppAuthController {
                     connectionId,
                     WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
                 );
+            }
+
+            if (!installation_id) {
+                res.sendStatus(400);
+                return;
             }
 
             const { success, error, response: credentials } = await connectionService.getAppCredentials(template, config, connectionConfig);
@@ -154,7 +195,7 @@ class AppAuthController {
                 providerConfigKey,
                 session.provider,
                 credentials as unknown as AuthCredentials,
-                connectionConfig,
+                connectionConfig as Record<string, string | boolean>,
                 environmentId,
                 accountId
             );

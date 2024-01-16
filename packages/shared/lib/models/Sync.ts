@@ -234,7 +234,7 @@ export interface DataRecord extends Timestamps {
     pending_delete?: boolean;
 }
 
-export type LastAction = 'added' | 'updated' | 'deleted';
+export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
 
 interface RecordMetadata {
     first_seen_at: Date;

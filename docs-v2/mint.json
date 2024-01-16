@@ -92,6 +92,7 @@
                         "integration-templates/github",
                         "integration-templates/gmail",
                         "integration-templates/google-workspace",
+                        "integration-templates/greenhouse",
                         "integration-templates/hackerrank-work",
                         "integration-templates/hubspot",
                         "integration-templates/intercom",
