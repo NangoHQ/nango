@@ -238,7 +238,7 @@ class OAuthController {
                 );
             } else if (template.auth_mode === ProviderAuthModes.App) {
                 const appCallBackUrl = getGlobalAppCallbackUrl();
-                return this.appRequest(template, config, session, res, appCallBackUrl, activityLogId as number, environmentId);
+                return this.appRequest(template, config, session, res, authorizationParams, appCallBackUrl, activityLogId as number, environmentId);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId as number, environmentId);
             }
@@ -466,6 +466,7 @@ class OAuthController {
         providerConfig: ProviderConfig,
         session: OAuthSession,
         res: Response,
+        authorizationParams: Record<string, string | undefined>,
         callbackUrl: string,
         activityLogId: number,
         environment_id: number
@@ -475,8 +476,11 @@ class OAuthController {
         const connectionId = session.connectionId;
 
         const connectionConfig = {
+            ...authorizationParams,
             appPublicLink: providerConfig.app_link
         };
+
+        session.connectionConfig = connectionConfig as Record<string, string>;
 
         try {
             if (missesInterpolationParam(template.authorization_url, connectionConfig)) {

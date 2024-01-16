@@ -20,7 +20,7 @@ export class AuthError extends Error {
     }
 }
 
-export type AuthResult = { providerConfigKey: string; connectionId: string };
+export type AuthResult = { providerConfigKey: string; connectionId: string; isPending?: boolean };
 
 export default class Nango {
     private hostBaseUrl: string;
@@ -110,7 +110,7 @@ export default class Nango {
         }
 
         return new Promise((resolve, reject) => {
-            const successHandler = (providerConfigKey: string, connectionId: string) => {
+            const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
                     return;
                 }
@@ -119,7 +119,8 @@ export default class Nango {
 
                 return resolve({
                     providerConfigKey: providerConfigKey,
-                    connectionId: connectionId
+                    connectionId: connectionId,
+                    isPending
                 });
             };
 

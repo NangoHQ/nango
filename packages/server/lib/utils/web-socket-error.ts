@@ -11,6 +11,13 @@ export class WSErrBuilder {
         };
     }
 
+    public static ConnectionNotFound(connectionId: string): WSErr {
+        return {
+            type: 'connection_not_found',
+            message: `Connection ${connectionId} not found.`
+        };
+    }
+
     public static InvalidCallbackOAuth1(): WSErr {
         return {
             type: 'callback_err',
