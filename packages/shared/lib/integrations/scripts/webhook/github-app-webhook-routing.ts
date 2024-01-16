@@ -22,7 +22,7 @@ function validate(integration: ProviderConfig, headerSignature: string, body: an
     return crypto.timingSafeEqual(trusted, untrusted);
 }
 
-export default async function route(_nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {
+export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
@@ -35,10 +35,16 @@ export default async function route(_nango: Nango, integration: ProviderConfig, 
         }
     }
 
-    if (get(body, 'action') !== 'created') {
+    if (get(body, 'action') === 'created') {
+        await handleCreateWebhook(integration, body);
+
         return;
     }
 
+    await nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
+}
+
+async function handleCreateWebhook(integration: ProviderConfig, body: any) {
     const connections = await connectionService.findConnectionsByMultipleConnectionConfigValues(
         { app_id: get(body, 'installation.app_id'), pending: true, handle: get(body, 'requester.login') },
         integration.environment_id

@@ -30,9 +30,9 @@ class AppAuthController {
         const action = req.query['setup_action'] as string;
 
         // this is an instance where an organization approved an install
-        // let them reconcile the connection
+        // reconcile the installation id using the webhook
         if ((action === 'install' && !state) || (action === 'update' && !state)) {
-            res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://nango.dev');
+            res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
             return;
         }
 
