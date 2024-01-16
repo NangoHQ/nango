@@ -1547,6 +1547,15 @@ wildix-pbx:
     docs: https://docs.wildix.com/wms/index.html
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
+whoop:
+    auth_mode: OAUTH2
+    authorization_url: https://api.prod.whoop.com/oauth/oauth2/auth
+    token_url: https://api.prod.whoop.com/oauth/oauth2/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.prod.whoop.com/
+    docs: https://developer.whoop.com/api
 workable:
     auth_mode: API_KEY
     proxy:
