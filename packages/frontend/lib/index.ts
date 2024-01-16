@@ -20,7 +20,7 @@ export class AuthError extends Error {
     }
 }
 
-export type AuthResult = { providerConfigKey: string; connectionId: string, isPending?: boolean };
+export type AuthResult = { providerConfigKey: string; connectionId: string; isPending?: boolean };
 
 export default class Nango {
     private hostBaseUrl: string;
