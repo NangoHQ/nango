@@ -113,17 +113,19 @@ class AppAuthController {
                     url: req.originalUrl
                 });
 
+                const pending = true;
+
                 await connectionService.createConnection(
                     connectionId,
                     providerConfigKey,
-                    { app_id: config?.oauth_client_id, pending: true, pendingLog: activityLogId?.toString() as string, handle },
+                    { app_id: config?.oauth_client_id, pending, pendingLog: activityLogId?.toString() as string, handle },
                     AuthModes.App,
                     environmentId
                 );
 
                 await updateSuccessActivityLog(activityLogId as number, null);
 
-                return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+                return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId, pending);
             }
 
             const connectionConfig = {
