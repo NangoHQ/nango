@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
-import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import { useModal } from '@geist-ui/core';
 
@@ -86,7 +86,11 @@ export default function FlowPage() {
                             flow = data.flowConfig.actions[0];
                             setFlow(flow);
                         }
-                        setSource(flow.pre_built ? 'Managed' : 'Custom')
+                        if (flow?.is_public) {
+                            setSource('Public');
+                        } else {
+                            setSource(flow.pre_built ? 'Managed' : 'Custom')
+                        }
                     } else {
                         setSource('Public');
                         setFlowConfig(data.unEnabledFlow)
@@ -219,8 +223,6 @@ export default function FlowPage() {
         setModalContent('This will affect potential many connections. Increased frequencies can increase your billing.');
         setVisible(true);
 
-
-
         setModalAction(() => async () => {
             setModalShowSpinner(true);
             await updateSyncFrequency(flow?.id as number, frequencyWithoutEvery);
@@ -339,16 +341,19 @@ export default function FlowPage() {
                                 <div className="w-2/3">
                                     <div className="flex text-white space-x-3">
                                         {showFrequencyEditMenu ? (
-                                            <input value={frequencyEdit}
-                                                onChange={(e) => setFrequencyEdit(e.target.value)}
-                                                className="bg-zinc-900 w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
-                                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                                                    console.log(e.key)
-                                                    if (e.key === 'Enter') {
-                                                        onSaveFrequency();
-                                                    }
-                                                }}
-                                            />
+                                            <>
+                                                <input value={frequencyEdit}
+                                                    onChange={(e) => setFrequencyEdit(e.target.value)}
+                                                    className="bg-zinc-900 w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
+                                                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                                        console.log(e.key)
+                                                        if (e.key === 'Enter') {
+                                                            onSaveFrequency();
+                                                        }
+                                                    }}
+                                                />
+                                                <XCircleIcon className="flex h-5 w-5 text-red-400 cursor-pointer hover:text-red-700" onClick={() => setShowFrequencyEditMenu(false)} />
+                                            </>
                                         ) : (
                                             <>
                                                 <span>{flow?.runs}</span>
@@ -387,7 +392,7 @@ export default function FlowPage() {
                                 <div className="mx-20 flex">
                                     <div className="flex flex-col w-full">
                                         <span className="text-gray-400 text-xs uppercase mb-2">Metadata</span>
-                                        <div className="text-sm w-full">
+                                        <div className="text-sm w-full text-[#C3E5FA]">
                                             <Info size={16} verticallyCenter={false}>
                                                 <span>To use this sync, programmatically add metadata on each connection.</span>
                                                 <div className="flex w-[700px] cursor-pointer" onClick={() => setShowMetadataCode(!showMetadataCode)}>

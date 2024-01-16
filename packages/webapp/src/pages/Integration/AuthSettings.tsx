@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
+import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
 import { useModal } from '@geist-ui/core';
 import { AuthModes, IntegrationConfig, Account } from '../../types';
-import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI } from '../../utils/api';
+import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
 import ActionModal from '../../components/ui/ActionModal';
 import SecretInput from '../../components/ui/input/SecretInput';
 import { formatDateToShortUSFormat } from '../../utils/utils';
@@ -18,6 +19,8 @@ interface AuthSettingsProps {
 }
 
 export default function AuthSettings(props: AuthSettingsProps) {
+    const { integration, account } = props;
+
     const [serverErrorMessage, setServerErrorMessage] = useState('');
 
     const [modalTitle, setModalTitle] = useState('');
@@ -26,10 +29,14 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [modalTitleColor, setModalTitleColor] = useState('text-white');
 
-    const { integration, account } = props;
+    const [showEditIntegrationIdMenu, setShowEditIntegrationIdMenu] = useState(false);
+    const [integrationIdEdit, setIntegrationIdEdit] = useState('');
+    const [integrationId, setIntegrationId] = useState(integration?.unique_key || '');
+
     const navigate = useNavigate();
     const { setVisible, bindings } = useModal();
     const editIntegrationAPI = useEditIntegrationAPI();
+    const editIntegrationNameAPI = useEditIntegrationNameAPI();
     const createIntegrationAPI = useCreateIntegrationAPI();
     const deleteIntegrationAPI = useDeleteIntegrationAPI();
 
@@ -37,7 +44,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
         if (!integration) return;
 
         setModalShowSpinner(true);
-        let res = await deleteIntegrationAPI(integration.unique_key);
+        let res = await deleteIntegrationAPI(integrationId);
 
         if (res?.status === 204) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -59,7 +66,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
         e.preventDefault();
         setServerErrorMessage('');
 
-        if (integration?.unique_key) {
+        if (integrationId) {
             if (!integration) {
                 return;
             }
@@ -74,7 +81,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
             let res = await editIntegrationAPI(
                 integration.provider,
                 integration.auth_mode,
-                integration.unique_key,
+                integrationId,
                 target.client_id?.value,
                 target.client_secret?.value,
                 target.scopes?.value,
@@ -109,6 +116,37 @@ export default function AuthSettings(props: AuthSettingsProps) {
         }
     };
 
+    const editIntegrationID = () => {
+        setShowEditIntegrationIdMenu(true);
+    };
+
+    const onSaveIntegrationID = async () => {
+        setShowEditIntegrationIdMenu(false);
+        setIntegrationIdEdit('');
+
+        if (!integration) {
+            return;
+        }
+
+        const res = await editIntegrationNameAPI(integrationId, integrationIdEdit);
+
+        if (res?.status === 200) {
+            toast.success('Integration ID updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            setIntegrationId(integrationIdEdit);
+            navigate(`/integration/${integrationIdEdit}`, { replace: true });
+        } else if (res != null) {
+            let payload = await res.json();
+            toast.error(payload.error, {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+        }
+    }
+
+    const onCancelEditIntegrationID = () => {
+        setShowEditIntegrationIdMenu(false);
+        setIntegrationIdEdit('');
+    }
+
     return (
         <form className="mx-auto space-y-12 text-sm w-[976px]" onSubmit={handleSave} autoComplete="one-time-code">
             <ActionModal
@@ -127,9 +165,34 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <span className="text-gray-400 text-xs uppercase mb-1">API Provider</span>
                     <span className="text-white">{integration?.provider}</span>
                 </div>
-                <div className="flex flex-col w-1/2">
+                <div className="flex flex-col w-1/2 relative">
                     <span className="text-gray-400 text-xs uppercase mb-1">Integration ID</span>
-                    <span className="text-white">{integration?.unique_key}</span>
+                    {showEditIntegrationIdMenu ? (
+                        <div className="flex">
+                            <input value={integrationIdEdit}
+                                onChange={(e) => setIntegrationIdEdit(e.target.value)}
+                                className="bg-zinc-900 w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
+                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                    console.log(e.key)
+                                    if (e.key === 'Enter') {
+                                        onSaveIntegrationID();
+                                    }
+                                }}
+                            />
+                            <XCircleIcon className="flex h-5 w-5 text-red-400 cursor-pointer hover:text-red-700" onClick={() => onCancelEditIntegrationID()} />
+                        </div>
+                    ) : (
+                        <div className="flex text-white">
+                            <span className="mr-2">{integrationId}</span>
+                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editIntegrationID()} />
+                        </div>
+                    )}
+                    {showEditIntegrationIdMenu && integrationIdEdit && (
+                        <div className="flex items-center border border-border-gray bg-zinc-900 text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
+                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editIntegrationID()} />
+                            <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveIntegrationID()}>Change the integration ID to: {integrationIdEdit}</span>
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="flex">
@@ -165,12 +228,12 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     </span>
                 </div>
             </div>
-            {integration?.unique_key && integration?.has_webhook && (
+            {integrationId && integration?.has_webhook && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Webhook Url</span>
                     <div className="flex text-white items-center">
-                        <span className="text-white mr-3">{`${account.webhook_receive_url}/${integration?.unique_key}`}</span>
-                        <CopyButton text={`${account.webhook_receive_url}/${integration?.unique_key}`} dark classNames="" />
+                        <span className="text-white mr-3">{`${account.webhook_receive_url}/${integrationId}`}</span>
+                        <CopyButton text={`${account.webhook_receive_url}/${integrationId}`} dark classNames="" />
                     </div>
                 </div>
             )}

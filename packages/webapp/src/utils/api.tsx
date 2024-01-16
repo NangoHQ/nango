@@ -410,6 +410,33 @@ export function useEditIntegrationAPI() {
     };
 }
 
+export function useEditIntegrationNameAPI() {
+    const signout = useSignout();
+
+    return async (providerConfigKey: string, name: string) => {
+        try {
+            const options = {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    oldProviderConfigKey: providerConfigKey,
+                    newProviderConfigKey: name
+                })
+            };
+
+            const res = await fetch(`/api/v1/integration/name`, options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useDeleteIntegrationAPI() {
     const signout = useSignout();
 

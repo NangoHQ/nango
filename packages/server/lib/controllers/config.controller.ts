@@ -147,6 +147,47 @@ class ConfigController {
         }
     }
 
+    async editProviderConfigName(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { environment } = response;
+
+            if (req.body == null) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            if (req.body['oldProviderConfigKey'] == null) {
+                errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            if (req.body['newProviderConfigKey'] == null) {
+                errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            const oldProviderConfigKey = req.body['oldProviderConfigKey'];
+            const newProviderConfigKey = req.body['newProviderConfigKey'];
+
+            const config = await configService.getProviderConfig(oldProviderConfigKey, environment.id);
+
+            if (config == null) {
+                errorManager.errRes(res, 'unknown_provider_config');
+                return;
+            }
+
+            await configService.editProviderConfigName(oldProviderConfigKey, newProviderConfigKey, environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
     /**
      * CLI
      */

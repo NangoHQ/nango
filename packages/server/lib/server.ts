@@ -163,6 +163,7 @@ app.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.g
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
+app.route('/api/v1/integration/name').put(webAuth, configController.editProviderConfigName.bind(connectionController));
 app.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
 app.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));

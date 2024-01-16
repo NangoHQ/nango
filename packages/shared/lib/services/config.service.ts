@@ -246,6 +246,14 @@ class ConfigService {
             .update(encryptionManager.encryptProviderConfig(config));
     }
 
+    async editProviderConfigName(providerConfigKey: string, newUniqueKey: string, environment_id: number) {
+        return db.knex
+            .withSchema(db.schema())
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .update({ unique_key: newUniqueKey });
+    }
+
     checkProviderTemplateExists(provider: string) {
         if (this.templates == null) {
             throw new NangoError('provider_template_loading_failed');
