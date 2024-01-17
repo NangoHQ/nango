@@ -154,7 +154,7 @@ export default class Nango {
                 { width: this.width, height: this.height },
                 this.debug
             );
-            // some provider might have cross-origin setup that prevents us to detect if the window is closed
+            // some providers might have cross-origin setup that prevents us from detecting if the window is closed
             // if so we disable the login window closing detection
             const detectClosedModal = providerOptions[providerConfigKey]?.detectClosedLoginWindow;
             if (detectClosedModal !== false) {
