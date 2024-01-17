@@ -9,8 +9,8 @@ export default async function fetchData(nango: NangoSync) {
             ...(nango.lastSyncDate ? { params: { created_after: nango.lastSyncDate?.toISOString() } } : {}),
             paginate: {
                 type: 'link',
-                link_path_in_response_body: 'links.next',
                 limit_name_in_request: 'per_page',
+                link_rel_in_response_header: 'next',
                 limit: 100
             }
         };
