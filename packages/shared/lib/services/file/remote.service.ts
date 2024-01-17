@@ -21,17 +21,19 @@ if (isCloud()) {
         }
     });
 } else {
-    client = new S3Client();
+    client = new S3Client({
+        region: (process.env['AWS_REGION'] as string) || 'us-west-2'
+    });
 }
 
 class RemoteFileService {
-    bucket = process.env['AWS_BUCKET_NAME'] as string;
+    bucket = (process.env['AWS_BUCKET_NAME'] as string) || 'nangodev-customer-integrations';
     publicRoute = 'integration-templates';
 
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
         if (isEnterprise()) {
             const fileNameOnly = fileName.split('/').slice(-1)[0];
-            localFileService.putIntegrationFile(fileNameOnly as string, fileContents, fileName.includes('dist'));
+            localFileService.putIntegrationFile(fileNameOnly as string, fileContents, fileName.endsWith('.js'));
 
             return '_LOCAL_FILE_';
         }
