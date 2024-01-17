@@ -542,10 +542,20 @@ greenhouse:
     token_url: https://api.greenhouse.io/oauth/token
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        paginate:
+            type: link
+            limit_name_in_request: per_page
+            link_rel_in_response_header: next
+    docs: https://developers.greenhouse.io
 greenhouse-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        paginate:
+            type: link
+            limit_name_in_request: per_page
+            link_rel_in_response_header: next
+    docs: https://developers.greenhouse.io
 gumroad:
     auth_mode: OAUTH2
     authorization_url: https://gumroad.com/oauth/authorize
