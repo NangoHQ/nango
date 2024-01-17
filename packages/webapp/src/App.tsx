@@ -18,8 +18,8 @@ import GettingStarted from './pages/GettingStarted';
 import IntegrationList from './pages/IntegrationList';
 import CreateIntegration from './pages/Integration/Create';
 import ShowIntegration from './pages/Integration/Show';
-import ConnectionList from './pages/ConnectionList';
-import ConnectionCreate from './pages/ConnectionCreate';
+import ConnectionList from './pages/Connection/List';
+import Connection from './pages/Connection/Show';
 import FlowCreate from './pages/FlowCreate';
 import ConnectionDetails from './pages/ConnectionDetails';
 import ProjectSettings from './pages/ProjectSettings';
@@ -97,10 +97,10 @@ const App = () => {
                     <Route path="/connections" element={<ConnectionList />} />
                 </Route>
                 <Route path="/connections/create" element={<PrivateRoute />}>
-                    <Route path="/connections/create" element={<ConnectionCreate />} />
+                    <Route path="/connections/create" element={<Connection />} />
                 </Route>
                 <Route path="/connections/create/:providerConfigKey" element={<PrivateRoute />}>
-                    <Route path="/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
+                    <Route path="/connections/create/:providerConfigKey" element={<Connection />} />
                 </Route>
                 <Route path="/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
                     <Route path="/connections/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
