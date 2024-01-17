@@ -1485,6 +1485,7 @@ integrations:
           name: string
         created_at: date
         document_variables: array
+        documents: array
         state: string
       WorkableJob:
         id: string
