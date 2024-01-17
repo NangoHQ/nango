@@ -103,6 +103,7 @@
                         "integration-templates/pipedrive",
                         "integration-templates/salesforce",
                         "integration-templates/slack",
+                        "integration-templates/workable",
                         "integration-templates/zendesk",
                         "integration-templates/zoho-crm"
                     ]
