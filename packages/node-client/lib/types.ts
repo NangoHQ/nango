@@ -112,9 +112,10 @@ export interface Connection {
 export interface ConnectionList {
     id: number;
     connection_id: string;
+    provider_config_key: string;
     provider: string;
     created: string;
-    metadata: Metadata;
+    metadata?: Metadata | null;
 }
 
 export interface IntegrationWithCreds extends Integration {
