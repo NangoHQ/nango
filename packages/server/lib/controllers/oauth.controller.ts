@@ -921,12 +921,16 @@ class OAuthController {
 
             let connectionConfig = { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata };
 
+            let pending = false;
+
             if (template.auth_mode === ProviderAuthModes.Custom && !connectionConfig['installation_id']) {
+                pending = true;
+
                 const custom = config.custom as Record<string, string>;
                 connectionConfig = {
                     ...connectionConfig,
                     app_id: custom['app_id'],
-                    pending: true,
+                    pending,
                     pendingLog: activityLogId?.toString() as string
                 };
             }
@@ -982,7 +986,7 @@ class OAuthController {
                 authMode: String(template.auth_mode)
             });
 
-            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await errorManager.report(e, {

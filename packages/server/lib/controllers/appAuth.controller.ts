@@ -55,7 +55,6 @@ class AppAuthController {
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);
-        const handle = session.connectionConfig['handle'] as string;
 
         try {
             if (!providerConfigKey) {
@@ -81,6 +80,8 @@ class AppAuthController {
                     timestamp: Date.now()
                 });
 
+                await updateSuccessActivityLog(activityLogId as number, false);
+
                 errorManager.errRes(res, 'unknown_provider_config');
 
                 return;
@@ -100,39 +101,32 @@ class AppAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
+                await updateSuccessActivityLog(activityLogId as number, false);
+
                 return;
             }
 
             if (action === 'request') {
                 await createActivityLogMessage({
-                    level: 'info',
+                    level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: 'App connection was requested',
+                    content: 'App types do not support the request flow. Please use the github-app-oauth provider for the request flow.',
                     timestamp: Date.now(),
                     auth_mode: AuthModes.App,
                     url: req.originalUrl
                 });
 
-                const pending = true;
+                await updateSuccessActivityLog(activityLogId as number, false);
 
-                await connectionService.createConnection(
-                    connectionId,
-                    providerConfigKey,
-                    { app_id: config?.oauth_client_id, pending, pendingLog: activityLogId?.toString() as string, handle },
-                    AuthModes.App,
-                    environmentId
-                );
+                errorManager.errRes(res, 'wrong_auth_mode');
 
-                await updateSuccessActivityLog(activityLogId as number, null);
-
-                return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId, pending);
+                return;
             }
 
             const connectionConfig = {
                 installation_id,
-                app_id: config?.oauth_client_id,
-                handle
+                app_id: config?.oauth_client_id
             };
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
