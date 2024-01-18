@@ -217,6 +217,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 unique_key: 'test',
                 client_id: 'abc',
                 client_secret: 'def',
+                custom: null,
                 has_webhook: false,
                 scopes: 'abc,def,efg',
                 app_link: null,
