@@ -14,7 +14,12 @@ export interface Config extends TimestampsAndDeleted {
     oauth_client_secret_iv?: string | null;
     oauth_client_secret_tag?: string | null;
     app_link?: string | null;
+    custom?: Record<string, string>;
 }
+
+type TokenUrlObject = {
+    [K in AuthModes]?: string;
+};
 
 export interface Template {
     auth_mode: AuthModes;
@@ -32,7 +37,7 @@ export interface Template {
     authorization_params?: Record<string, string>;
     scope_separator?: string;
     default_scopes?: string[];
-    token_url: string;
+    token_url: string | TokenUrlObject;
     token_params?: {
         [key: string]: string;
     };

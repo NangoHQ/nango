@@ -6,6 +6,7 @@ export enum AuthModes {
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
+    Custom = 'CUSTOM',
     App = 'APP',
     None = 'NONE'
 }

@@ -773,7 +773,7 @@ class ConnectionService {
         connectionConfig: Connection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
+        const tokenUrl = interpolateStringFromObject(template.token_url as string, { connectionConfig });
 
         const now = Math.floor(Date.now() / 1000);
         const expiration = now + 15 * 60;
@@ -824,10 +824,12 @@ class ConnectionService {
         config: ProviderConfig,
         connectionConfig: Connection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
-        const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
-        const privateKeyBase64 = config.oauth_client_secret;
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.App] as string);
 
-        const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
+        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
+        const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
+
+        const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
 
         const headers = {
             Accept: 'application/vnd.github.v3+json'
@@ -839,7 +841,7 @@ class ConnectionService {
         const payload: Record<string, string | number> = {
             iat: now,
             exp: expiration,
-            iss: config.oauth_client_id
+            iss: (config?.custom ? config.custom['app_id'] : config.oauth_client_id) as string
         };
 
         const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
@@ -915,7 +917,7 @@ class ConnectionService {
 
         let tokenExpirationCondition;
 
-        if (template.auth_mode === ProviderAuthModes.OAuth2) {
+        if (template.auth_mode === ProviderAuthModes.OAuth2 || template.auth_mode === ProviderAuthModes.Custom) {
             tokenExpirationCondition =
                 credentials.refresh_token &&
                 (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));

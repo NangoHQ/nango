@@ -129,7 +129,7 @@ class AppAuthController {
             }
 
             const connectionConfig = {
-                installation_id: installation_id,
+                installation_id,
                 app_id: config?.oauth_client_id,
                 handle
             };

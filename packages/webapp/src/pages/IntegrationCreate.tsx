@@ -30,6 +30,7 @@ interface Integration {
     client_secret: string;
     app_link?: string;
     scopes: string;
+    custom?: Record<string, string>;
 }
 
 interface Providers {
@@ -123,19 +124,30 @@ export default function IntegrationCreate() {
 
             const target = e.target as typeof e.target & {
                 client_id: { value: string };
+                app_id: { value: string }
+                private_key: { value: string };
                 client_secret: { value: string };
                 scopes: { value: string };
                 app_link: { value: string };
             };
 
+            const client_secret = authMode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
+            const client_id = authMode === AuthModes.App ? target.app_id?.value : target.client_id?.value;
+
+            const private_key = authMode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
+            const appId = authMode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
+
+            const custom = authMode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+
             let res = await editIntegrationAPI(
                 integration.provider,
                 authMode,
                 providerConfigKey,
-                target.client_id?.value,
-                target.client_secret?.value,
+                client_id,
+                client_secret,
                 target.scopes?.value,
-                target.app_link?.value
+                target.app_link?.value,
+                custom
             );
 
             if (res?.status === 200) {
@@ -146,13 +158,24 @@ export default function IntegrationCreate() {
             const target = e.target as typeof e.target & {
                 provider: { value: string };
                 unique_key: { value: string };
+                app_id: { value: string }
+                private_key: { value: string };
                 client_id: { value: string };
                 client_secret: { value: string };
                 scopes: { value: string };
                 app_link: { value: string };
             };
             const [provider] = target.provider.value.split('|');
-            const res = await createIntegrationAPI(provider, authMode, target.unique_key?.value, target.client_id?.value, target.client_secret?.value, target.scopes?.value, target.app_link?.value);
+
+            const client_secret = authMode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
+            const client_id = authMode === AuthModes.App ? target.app_id?.value : target.client_id?.value;
+
+            const private_key = authMode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
+            const appId = authMode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
+
+            const custom = authMode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+
+            const res = await createIntegrationAPI(provider, authMode, target.unique_key?.value, client_id, client_secret, target.scopes?.value, target.app_link?.value, custom);
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -292,7 +315,7 @@ export default function IntegrationCreate() {
                                 </Info>
                             )}
 
-                            {authMode === AuthModes.App && (
+                            {(authMode === AuthModes.App || authMode === AuthModes.Custom) && (
                                 <>
                                     <div>
                                         <div className="flex">
@@ -314,9 +337,9 @@ export default function IntegrationCreate() {
                                         <div className="mt-1">
                                             <input
                                                 id="app_id"
-                                                name="client_id"
+                                                name="app_id"
                                                 type="text"
-                                                defaultValue={integration ? integration.client_id : ''}
+                                                defaultValue={integration ? integration.custom?.app_id || integration.client_id : ''}
                                                 autoComplete="new-password"
                                                 required
                                                 minLength={1}
@@ -376,37 +399,39 @@ export default function IntegrationCreate() {
                                         <div className="mt-1">
                                             <SecretTextArea
                                                 copy={true}
-                                                id="client_secret"
-                                                name="client_secret"
-                                                defaultValue={integration ? integration.client_secret : ''}
+                                                id="private_key"
+                                                name="private_key"
+                                                defaultValue={integration ? integration.custom?.private_key || integration.client_secret : ''}
                                                 required
                                             />
                                         </div>
                                     </div>
 
-                                    <div>
+                                    {authMode !== AuthModes.Custom && (
                                         <div>
-                                            <div className="flex">
-                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                                    Setup URL
-                                                </label>
-                                                <Tooltip
-                                                    text={
-                                                        <>
-                                                            <div className="flex text-black text-sm">
-                                                                <p>{`Register this setup URL on the app settings page in the "Post Installation section". Check "Redirect on update" as well.`}</p>
-                                                            </div>
-                                                        </>
-                                                    }
-                                                >
-                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                                </Tooltip>
+                                            <div>
+                                                <div className="flex">
+                                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                        Setup URL
+                                                    </label>
+                                                    <Tooltip
+                                                        text={
+                                                            <>
+                                                                <div className="flex text-black text-sm">
+                                                                    <p>{`Register this setup URL on the app settings page in the "Post Installation section". Check "Redirect on update" as well.`}</p>
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    >
+                                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                    </Tooltip>
+                                                </div>
+                                                <Prism language="bash" colorScheme="dark">
+                                                    {callbackUrl.replace('oauth/callback', 'app-auth/connect')}
+                                                </Prism>
                                             </div>
-                                            <Prism language="bash" colorScheme="dark">
-                                                {callbackUrl.replace('oauth/callback', 'app-auth/connect')}
-                                            </Prism>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {providerConfigKey && hasWebhook && (
                                     <>
@@ -463,7 +488,7 @@ export default function IntegrationCreate() {
                                 </>
                             )}
 
-                            {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
+                            {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) && (
                                 <>
                                     <div>
                                         <div className="flex">
@@ -525,33 +550,35 @@ export default function IntegrationCreate() {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <div className="flex">
-                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                                Scopes
-                                            </label>
-                                            <Tooltip
-                                                text={
-                                                    <>
-                                                        <div className="flex text-black text-sm">
-                                                            <p>{`The list of scope should be found in the documentation of the external provider.`}</p>
-                                                        </div>
-                                                    </>
-                                                }
-                                            >
-                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                            </Tooltip>
+                                    {authMode !== AuthModes.Custom && (
+                                        <div>
+                                            <div className="flex">
+                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    Scopes
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p>{`The list of scope should be found in the documentation of the external provider.`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
+                                            <div className="mt-1">
+                                                <TagsInput
+                                                    id="scopes"
+                                                    name="scopes"
+                                                    type="text"
+                                                    defaultValue={integration ? integration.scopes : providerDefaultScope}
+                                                    minLength={1}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="mt-1">
-                                            <TagsInput
-                                                id="scopes"
-                                                name="scopes"
-                                                type="text"
-                                                defaultValue={integration ? integration.scopes : providerDefaultScope}
-                                                minLength={1}
-                                            />
-                                        </div>
-                                    </div>
+                                    )}
 
                                     <div>
                                         <div>
@@ -576,7 +603,7 @@ export default function IntegrationCreate() {
                                             </Prism>
                                         </div>
                                     </div>
-                                    {providerConfigKey && hasWebhook && (
+                                    {providerConfigKey && hasWebhook && authMode !== AuthModes.Custom && (
                                         <div>
                                             <div>
                                                 <div className="flex">
