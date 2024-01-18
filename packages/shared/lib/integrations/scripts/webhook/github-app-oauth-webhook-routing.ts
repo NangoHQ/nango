@@ -12,11 +12,8 @@ import crypto from 'crypto';
 
 function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
     const custom = integration.custom as Record<string, string>;
-    console.log(custom);
     const private_key = custom['private_key'];
     const hash = `${custom['app_id']}${private_key}${integration.app_link}`;
-    console.log(private_key);
-    console.log(hash);
     const secret = crypto.createHash('sha256').update(hash).digest('hex');
 
     const signature = crypto.createHmac('sha256', secret).update(JSON.stringify(body)).digest('hex');
@@ -31,11 +28,10 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
-        console.log('Signature found, verifying...');
         const valid = validate(integration, signature, body);
 
         if (!valid) {
-            console.log('Github App webhook signature invalid, but continuing');
+            console.log('Github App webhook signature invalid. Exiting');
             return;
         }
     }
@@ -63,8 +59,6 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
         if (!connection) {
             return;
         }
-
-        console.log('Finishing install for', installationId, connection?.id);
 
         const template = await configService.getTemplate(integration?.provider as string);
 
@@ -109,8 +103,8 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
                     environment_id: integration.environment_id
                 },
                 integration.provider,
-                true,
-                false
+                true, // the connection is complete so we want to initiate syncs
+                false // the post connection script has run already because we needed to get the github handle
             );
         }
 
