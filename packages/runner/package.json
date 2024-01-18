@@ -25,7 +25,8 @@
         "connect-timeout": "^1.9.0",
         "express": "^4.18.2",
         "superjson": "^2.2.1",
-        "undici": "^6.2.1"
+        "undici": "^6.2.1",
+        "zod": "^3.22.4"
     },
     "devDependencies": {
         "@types/connect-timeout": "^0.0.39",
