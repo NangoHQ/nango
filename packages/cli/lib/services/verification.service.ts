@@ -116,13 +116,6 @@ class VerificationService {
             throw new Error('Syncs missing .ts files');
         }
 
-        const extraSyncs = tsFileNames.filter((syncName) => !flows.includes(syncName));
-
-        if (extraSyncs.length > 0) {
-            console.log(chalk.red(`The following .ts files do not have a corresponding sync in the config: ${extraSyncs.join(', ')}`));
-            throw new Error('Extra .ts files');
-        }
-
         return true;
     }
 }

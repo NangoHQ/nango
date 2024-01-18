@@ -21,7 +21,9 @@ if (isCloud()) {
         }
     });
 } else {
-    client = new S3Client();
+    client = new S3Client({
+        region: (process.env['AWS_REGION'] as string) || 'us-west-2'
+    });
 }
 
 class RemoteFileService {
@@ -31,7 +33,7 @@ class RemoteFileService {
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
         if (isEnterprise()) {
             const fileNameOnly = fileName.split('/').slice(-1)[0];
-            localFileService.putIntegrationFile(fileNameOnly as string, fileContents, fileName.includes('dist'));
+            localFileService.putIntegrationFile(fileNameOnly as string, fileContents, fileName.endsWith('.js'));
 
             return '_LOCAL_FILE_';
         }
