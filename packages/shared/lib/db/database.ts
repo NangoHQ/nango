@@ -1,7 +1,7 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
 
-function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
+export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
     return {
         client: process.env['NANGO_DB_CLIENT'] || 'pg',
         connection: process.env['NANGO_DATABASE_URL'] || {
@@ -65,6 +65,6 @@ export const multipleMigrations = async (): Promise<void> => {
             console.log('Migrations completed.');
         }
     } catch (error: any) {
-        console.error(error?.message);
+        console.error(error.message || error);
     }
 };
