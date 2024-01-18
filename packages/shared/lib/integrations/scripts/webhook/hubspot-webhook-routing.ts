@@ -24,11 +24,27 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     }
 
     if (Array.isArray(body)) {
-        const sorted = body.sort((a, b) => {
-            return a.occurredAt - b.occurredAt;
-        });
-        for (const event of sorted) {
-            await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId');
+        const groupedByObjectId = body.reduce((acc, event) => {
+            (acc[event.objectId] = acc[event.objectId] || []).push(event);
+            return acc;
+        }, {});
+
+        for (const objectId in groupedByObjectId) {
+            const sorted = groupedByObjectId[objectId].sort((a: any, b: any) => {
+                const aIsCreation = a.subscriptionType.endsWith('.creation');
+                const bIsCreation = b.subscriptionType.endsWith('.creation');
+                if (aIsCreation && !bIsCreation) {
+                    return -1;
+                }
+                if (!aIsCreation && bIsCreation) {
+                    return 1;
+                }
+                return a.occurredAt - b.occurredAt;
+            });
+
+            for (const event of sorted) {
+                await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId');
+            }
         }
     } else {
         await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId');
