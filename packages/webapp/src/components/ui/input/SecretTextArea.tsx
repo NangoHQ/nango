@@ -3,10 +3,10 @@ import classNames from 'classnames';
 import CopyButton from '../button/CopyButton';
 
 interface SecretTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-    copy?: boolean; 
-    optionalvalue?: string; 
-    setoptionalvalue?: (value: string) => void; 
-    additionalclass?: string; 
+    copy?: boolean;
+    optionalvalue?: string;
+    setoptionalvalue?: (value: string) => void;
+    additionalclass?: string;
 }
 
 const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(
@@ -43,6 +43,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(
                         value={value}
                         // @ts-ignore
                         onChange={(e) => updateValue(e.currentTarget.value)}
+                        autoComplete="new-password"
                         className={classNames(
                             'border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none',
                             className
