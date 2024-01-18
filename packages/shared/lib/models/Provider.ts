@@ -17,7 +17,7 @@ export interface Config extends TimestampsAndDeleted {
     custom?: Record<string, string>;
 }
 
-type TokenUrlObject = {
+export type TokenUrlObject = {
     [K in AuthModes]?: string;
 };
 

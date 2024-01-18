@@ -42,8 +42,6 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
 
     if (get(body, 'action') === 'created') {
         await handleCreateWebhook(integration, body);
-
-        return;
     }
 
     await nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');

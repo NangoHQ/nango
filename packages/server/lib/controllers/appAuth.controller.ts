@@ -87,6 +87,7 @@ class AppAuthController {
             }
 
             const template = await configService.getTemplate(config?.provider as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[AuthModes.App] as string);
 
             if (template.auth_mode !== AuthModes.App) {
                 await createActivityLogMessageAndEnd({
@@ -134,12 +135,12 @@ class AppAuthController {
                 handle
             };
 
-            if (missesInterpolationParam(template.token_url, connectionConfig)) {
+            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig)).message,
+                    content: WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: req.originalUrl,
@@ -153,7 +154,7 @@ class AppAuthController {
                     wsClientId,
                     providerConfigKey,
                     connectionId,
-                    WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
+                    WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig))
                 );
             }
 

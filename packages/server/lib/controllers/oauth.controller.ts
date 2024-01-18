@@ -293,6 +293,7 @@ class OAuthController {
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
+        const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
 
         try {
             if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
@@ -318,12 +319,12 @@ class OAuthController {
                 );
             }
 
-            if (missesInterpolationParam(template.token_url, connectionConfig)) {
+            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig)).message,
+                    content: WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: callbackUrl,
@@ -337,7 +338,7 @@ class OAuthController {
                     channel,
                     providerConfigKey,
                     connectionId,
-                    WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
+                    WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig))
                 );
             }
 
