@@ -656,7 +656,7 @@ class OAuthController {
         const installation_id = req.query['installation_id'] as string | undefined;
         const action = req.query['setup_action'] as string;
 
-        if (!state && installation_id && action && action === 'install') {
+        if (!state && installation_id && action) {
             res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
 
             return;
@@ -797,6 +797,28 @@ class OAuthController {
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
         }
 
+        // no need to do anything here until the request is approved
+        if (session.authMode === ProviderAuthModes.Custom && req.query['setup_action'] === 'update' && req.query['installation_id']) {
+            // this means the update request was performed from the provider itself
+            if (!req.query['state']) {
+                res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
+
+                return;
+            }
+
+            await createActivityLogMessage({
+                level: 'info',
+                environment_id,
+                activity_log_id: activityLogId as number,
+                content: `Update request has been made for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
+                timestamp: Date.now()
+            });
+
+            await updateSuccessActivityLog(activityLogId, true);
+
+            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+        }
+
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
 
         let additionalTokenParams: Record<string, string> = {};
@@ -899,7 +921,7 @@ class OAuthController {
 
             let connectionConfig = { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata };
 
-            if (template.auth_mode === ProviderAuthModes.Custom) {
+            if (template.auth_mode === ProviderAuthModes.Custom && !connectionConfig['installation_id']) {
                 const custom = config.custom as Record<string, string>;
                 connectionConfig = {
                     ...connectionConfig,
