@@ -23,7 +23,7 @@
         "posthog-js": "^1.51.4",
         "query-string": "^8.1.0",
         "react": "^18.2.0",
-        "react-code-blocks": "^0.0.9-0",
+        "react-code-blocks": "^0.1.5",
         "react-dom": "^18.2.0",
         "react-helmet": "^6.1.0",
         "react-router-dom": "^6.8.2",
