@@ -224,4 +224,6 @@ export interface IntegrationConfig {
     scopes: string;
     auth_mode: AuthModes;
     created_at: string;
+    webhook_secret?: string;
+    custom?: Record<string, string>;
 }

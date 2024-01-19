@@ -6,10 +6,28 @@
             "properties": {
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2"]
+                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "CUSTOM"]
                 },
                 "authorization_url": { "type": "string" },
-                "token_url": { "type": "string" },
+                "token_url": {
+                    "oneOf": [
+                        { "type": "string" },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "API_KEY": { "type": "string" },
+                                "APP": { "type": "string" },
+                                "APP_STORE": { "type": "string" },
+                                "BASIC": { "type": "string" },
+                                "NONE": { "type": "string" },
+                                "OAUTH1": { "type": "string" },
+                                "OAUTH2": { "type": "string" },
+                                "CUSTOM": { "type": "string" }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
                 "authorization_params": { "type": "object" },
                 "token_params": { "type": "object" },
                 "refresh_params": { "type": "object" },

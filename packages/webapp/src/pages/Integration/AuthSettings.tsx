@@ -7,8 +7,10 @@ import { Tooltip } from '@geist-ui/core';
 import { useModal } from '@geist-ui/core';
 import { AuthModes, IntegrationConfig, Account } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
+import Info from '../../components/ui/Info';
 import ActionModal from '../../components/ui/ActionModal';
 import SecretInput from '../../components/ui/input/SecretInput';
+import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
@@ -74,18 +76,29 @@ export default function AuthSettings(props: AuthSettingsProps) {
             const target = e.target as typeof e.target & {
                 client_id: { value: string };
                 client_secret: { value: string };
+                private_key: { value: string };
                 scopes: { value: string };
+                app_id: { value: string };
                 app_link: { value: string };
             };
 
-            let res = await editIntegrationAPI(
+            const client_secret = integration?.auth_mode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
+            const client_id = integration?.auth_mode === AuthModes.App ? target.app_id?.value : target.client_id?.value;
+
+            const private_key = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
+            const appId = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
+
+            const custom = integration?.auth_mode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+
+            const res = await editIntegrationAPI(
                 integration.provider,
                 integration.auth_mode,
                 integrationId,
-                target.client_id?.value,
-                target.client_secret?.value,
+                client_id,
+                client_secret,
                 target.scopes?.value,
-                target.app_link?.value
+                target.app_link?.value,
+                custom
             );
 
             if (res?.status === 200) {
@@ -96,13 +109,25 @@ export default function AuthSettings(props: AuthSettingsProps) {
             const target = e.target as typeof e.target & {
                 provider: { value: string };
                 unique_key: { value: string };
+                app_id: { value: string }
+                private_key: { value: string };
                 client_id: { value: string };
                 client_secret: { value: string };
                 scopes: { value: string };
                 app_link: { value: string };
             };
+
             const [provider] = target.provider.value.split('|');
-            const res = await createIntegrationAPI(provider, integration?.auth_mode as AuthModes, target.unique_key?.value, target.client_id?.value, target.client_secret?.value, target.scopes?.value, target.app_link?.value);
+
+            const client_secret = integration?.auth_mode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
+            const client_id = integration?.auth_mode === AuthModes.App ? target.app_id?.value : target.client_id?.value;
+
+            const private_key = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
+            const appId = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
+
+            const custom = integration?.auth_mode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+
+            const res = await createIntegrationAPI(provider, integration?.auth_mode as AuthModes, target.unique_key?.value, client_id, client_secret, target.scopes?.value, target.app_link?.value, custom);
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -205,80 +230,228 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <span className="text-white">{integration?.auth_mode}</span>
                 </div>
             </div>
-            <div className="flex">
-                <div className="flex flex-col w-1/2">
-                    <div className="flex">
-                        <span className="text-gray-400 text-xs uppercase mb-1">Callback Url</span>
-                        <Tooltip
-                            type="dark"
-                            text={
-                                <>
-                                    <div className="flex text-white text-sm">
-                                        <p>{`Register this setup URL on the app settings page in the "Post Installation section". Check "Redirect on update" as well.`}</p>
-                                    </div>
-                                </>
-                            }
-                        >
-                            <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
-                        </Tooltip>
-                    </div>
-                    <span className="flex items-center">
-                        <span className="text-white mr-3">{account.callback_url}</span>
-                        <CopyButton text={account.callback_url} dark classNames="" />
-                    </span>
-                </div>
-            </div>
-            {integrationId && integration?.has_webhook && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Webhook Url</span>
-                    <div className="flex text-white items-center">
-                        <span className="text-white mr-3">{`${account.webhook_receive_url}/${integrationId}`}</span>
-                        <CopyButton text={`${account.webhook_receive_url}/${integrationId}`} dark classNames="" />
+            {(integration?.auth_mode === AuthModes.OAuth1 || integration?.auth_mode === AuthModes.OAuth2 || integration?.auth_mode === AuthModes.Custom) && (
+                <div className="flex">
+                    <div className="flex flex-col">
+                        <div className="flex items-center mb-1">
+                            <span className="text-gray-400 text-xs uppercase">Callback Url</span>
+                            <Tooltip
+                                type="dark"
+                                text={
+                                    <>
+                                        <div className="flex text-white text-sm">
+                                            <p>{`Register this callback URL on the developer portal of the Integration Provider.`}</p>
+                                        </div>
+                                    </>
+                                }
+                            >
+                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                            </Tooltip>
+                        </div>
+                        <span className="flex items-center">
+                            <span className="text-white mr-3">{account.callback_url}</span>
+                            <CopyButton text={account.callback_url} dark classNames="" />
+                        </span>
                     </div>
                 </div>
             )}
-            <div className="flex flex-col">
-                <span className="text-gray-400 text-xs mb-1">Client ID</span>
-                <div className="flex text-white items-center">
-                    <input
-                        id="client_id"
-                        name="client_id"
-                        type="text"
-                        defaultValue={integration ? integration.client_id : ''}
-                        autoComplete="one-time-code"
-                        placeholder="Find the Client ID on the developer portal of the external API provider."
-                        required
-                        minLength={1}
-                        className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
-                    />
-                    <CopyButton text={integration?.client_id as string} dark classNames="relative -ml-6" />
+            {integration?.auth_mode === AuthModes.App && (
+                <div className="flex">
+                    <div className="flex flex-col">
+                        <div className="flex items-center mb-1">
+                            <span className="text-gray-400 text-xs uppercase">Setup URL</span>
+                            <Tooltip
+                                type="dark"
+                                text={
+                                    <>
+                                        <div className="flex text-white text-sm">
+                                            <p>{`Register this setup URL on the app settings page in the "Post Installation section". Check "Redirect on update" as well.`}</p>
+                                        </div>
+                                    </>
+                                }
+                            >
+                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                            </Tooltip>
+                        </div>
+                        <span className="flex items-center">
+                            <span className="text-white mr-3">{account.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
+                            <CopyButton text={account.callback_url.replace('oauth/callback', 'app-auth/connect')} dark classNames="" />
+                        </span>
+                    </div>
                 </div>
-            </div>
-            <div className="flex flex-col">
-                <span className="text-gray-400 text-xs mb-1">Client Secret</span>
-                <div className="mt-1">
-                    <SecretInput
-                        copy={true}
-                        id="client_secret"
-                        name="client_secret"
-                        autoComplete="one-time-code"
-                        defaultValue={integration ? integration.client_secret : ''}
-                        required
-                    />
-                </div>
-            </div>
-            <div className="flex flex-col">
-                <span className="text-gray-400 text-xs mb-1">Scopes</span>
-                <div className="mt-1">
-                    <TagsInput
-                        id="scopes"
-                        name="scopes"
-                        type="text"
-                        defaultValue={integration ? integration?.scopes as string : ''}
-                        minLength={1}
-                    />
-                </div>
-            </div>
+            )}
+            {integration?.unique_key && integration?.has_webhook && (
+                <>
+                    <div className="flex flex-col">
+                        <div className="flex items-center mb-1">
+                            <span className="text-gray-400 text-xs uppercase">Webhook Url</span>
+                            <Tooltip
+                                type="dark"
+                                text={
+                                    <>
+                                        <div className="flex text-white text-sm">
+                                            <p>{`Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks.${integration?.auth_mode === AuthModes.Custom ? ' Use this for github organizations that need app approvals.' : ''}`}</p>
+                                        </div>
+                                    </>
+                                }
+                            >
+                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                            </Tooltip>
+                        </div>
+                        <div className="flex text-white items-center">
+                            <span className="text-white mr-3">{`${account.webhook_receive_url}/${integrationId}`}</span>
+                            <CopyButton text={`${account.webhook_receive_url}/${integrationId}`} dark classNames="" />
+                        </div>
+                    </div>
+                    {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && integration?.webhook_secret && (
+                        <div className="flex flex-col">
+                            <div className="flex items-center mb-1">
+                                <span className="text-gray-400 text-xs uppercase">Webhook Secret</span>
+                                <Tooltip
+                                    type="dark"
+                                    text={
+                                        <>
+                                            <div className="flex text-white text-sm">
+                                                <p>{`Input this secret into the "Webhook secret (optional)" field in the Webhook section`}</p>
+                                            </div>
+                                        </>
+                                    }
+                                >
+                                    <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                                </Tooltip>
+                            </div>
+                            <div className="flex text-white items-center">
+                                <span className="text-white mr-3">{integration?.webhook_secret}</span>
+                                <CopyButton text={integration?.webhook_secret} dark classNames="" />
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+            {(integration?.auth_mode === AuthModes.Basic || integration?.auth_mode === AuthModes.ApiKey) && (
+                <Info size={20}>
+                    The "{integration?.provider}" integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev/guides/oauth#connection-configuration" className="text-white underline hover:text-text-light-blue" rel="noreferrer" target="_blank">docs</a>).
+                </Info>
+            )}
+            {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && (
+                <>
+                    <div className="flex">
+                        <div className="flex flex-col w-1/2">
+                            <span className="text-gray-400 text-xs uppercase mb-1">App ID</span>
+                            <div className="mt-1">
+                                <input
+                                    id="app_id"
+                                    name="app_id"
+                                    type="text"
+                                    defaultValue={integration ? integration?.auth_mode === AuthModes.Custom ? integration.custom?.app_id : integration.client_id : ''}
+                                    placeholder="Obtain the app id from the app page."
+                                    autoComplete="new-password"
+                                    required
+                                    minLength={1}
+                                    className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-5/6 appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col w-1/2">
+                            <span className="text-gray-400 text-xs uppercase mb-1">App Public Link</span>
+                            <div className="mt-1">
+                                <input
+                                    id="app_link"
+                                    name="app_link"
+                                    type="text"
+                                    defaultValue={integration ? integration.app_link : ''}
+                                    placeholder="Obtain the app public link from the app page."
+                                    autoComplete="new-password"
+                                    required
+                                    minLength={1}
+                                    className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-5/6 appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="flex items-center mb-1">
+                            <span className="text-gray-400 text-xs">App Private Key</span>
+                            <Tooltip
+                                type="dark"
+                                text={
+                                    <>
+                                        <div className="flex text-white text-sm">
+                                            <p>{`Obtain the app private key from the from the app page by downloading the private key and pasting the entirety of its contents here.`}</p>
+                                        </div>
+                                    </>
+                                }
+                            >
+                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                            </Tooltip>
+                        </div>
+                        <div className="flex text-white items-center">
+                            <div className="mt-1 w-full">
+                                <SecretTextArea
+                                    copy={true}
+                                    id="private_key"
+                                    name="private_key"
+                                    defaultValue={integration ? integration?.auth_mode === AuthModes.Custom ? integration.custom?.private_key : integration.client_secret : ''}
+                                    additionalclass={`w-full`}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+            {(integration?.auth_mode === AuthModes.OAuth1 || integration?.auth_mode === AuthModes.OAuth2 || integration?.auth_mode === AuthModes.Custom) && (
+                <>
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs mb-1">Client ID</span>
+                        <div className="flex text-white mt-1 items-center">
+                            <div className="w-full relative">
+                                <input
+                                    id="client_id"
+                                    name="client_id"
+                                    type="text"
+                                    defaultValue={integration ? integration.client_id : ''}
+                                    autoComplete="one-time-code"
+                                    placeholder="Find the Client ID on the developer portal of the external API provider."
+                                    required
+                                    minLength={1}
+                                    className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                />
+                                <span className="absolute right-0.5 top-1 flex items-center">
+                                    <CopyButton text={integration?.client_id as string} dark classNames="relative -ml-6" />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs mb-1">Client Secret</span>
+                        <div className="mt-1">
+                            <SecretInput
+                                copy={true}
+                                id="client_secret"
+                                name="client_secret"
+                                autoComplete="one-time-code"
+                                defaultValue={integration ? integration.client_secret : ''}
+                                required
+                            />
+                        </div>
+                    </div>
+                    {integration?.auth_mode !== AuthModes.Custom && (
+                        <div className="flex flex-col">
+                            <span className="text-gray-400 text-xs mb-1">Scopes</span>
+                            <div className="mt-1">
+                                <TagsInput
+                                    id="scopes"
+                                    name="scopes"
+                                    type="text"
+                                    defaultValue={integration ? integration?.scopes as string : ''}
+                                    minLength={1}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
             <div className="pb-4">
                 <div className="flex justify-between">
                     {((!integration) || (integration?.auth_mode !== AuthModes.Basic && integration?.auth_mode !== AuthModes.ApiKey)) && (

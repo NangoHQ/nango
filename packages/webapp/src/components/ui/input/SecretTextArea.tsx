@@ -1,12 +1,13 @@
 import { forwardRef, useCallback, useState, ChangeEvent, TextareaHTMLAttributes } from 'react';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import CopyButton from '../button/CopyButton';
 
 interface SecretTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-    copy?: boolean; 
-    optionalvalue?: string; 
-    setoptionalvalue?: (value: string) => void; 
-    additionalclass?: string; 
+    copy?: boolean;
+    optionalvalue?: string;
+    setoptionalvalue?: (value: string) => void;
+    additionalclass?: string;
 }
 
 const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(
@@ -44,17 +45,17 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(
                         // @ts-ignore
                         onChange={(e) => updateValue(e.currentTarget.value)}
                         className={classNames(
-                            'border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none',
+                            'border-border-gray bg-zinc-900 text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.6 text-sm placeholder-gray-400 shadow-sm focus:outline-none',
                             className
                         )}
                         {...rest}
                     />
                 )}
-                <span className="absolute right-1 top-2 flex items-center bg-gray-900">
-                    <span onClick={toggleSecretVisibility} className="bg-gray-300 hover:bg-gray-400 rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
-                        {isSecretVisible ? 'hide' : 'show'}
+                <span className="absolute right-1 top-1.5 flex items-center bg-zinc-900 border-border-gray">
+                    <span onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
+                        {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
                     </span>
-                    {copy && <CopyButton text={value as string} />}
+                    {copy && <CopyButton text={value as string} dark />}
                 </span>
             </div>
         );

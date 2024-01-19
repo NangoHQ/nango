@@ -65,7 +65,7 @@ export default function ConnectionList() {
                 <div className="px-16 mx-auto">
                     <div className="flex mt-16 w-[976px] justify-between mb-8 items-center">
                         <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
-                        <Link to="/connections/create#authorization" className="flex items-center mt-auto px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                        <Link to="/connections/create" className="flex items-center mt-auto px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                             Add Connection
                         </Link>

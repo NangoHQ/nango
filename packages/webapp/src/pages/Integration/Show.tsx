@@ -9,6 +9,7 @@ import {
 } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
+import { defaultCallback } from '../../utils/utils';
 import APIReference from './APIReference';
 import Button from '../../components/ui/button/Button';
 import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
@@ -91,7 +92,10 @@ export default function ShowIntegration() {
 
             if (res?.status === 200) {
                 const account = (await res.json())['account'];
-                setAccount(account);
+                setAccount({
+                    ...account,
+                    callback_url: account.callback_url || defaultCallback()
+                });
             }
         };
 
