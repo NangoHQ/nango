@@ -11,8 +11,20 @@ import { createActivityLog, createActivityLogMessage, createActivityLogMessageAn
 const RETRY_ATTEMPTS = 10;
 
 const NON_FORWARDABLE_HEADERS = [
-    'host', 'authorization', 'connection', 'keep-alive', 'content-length', 'content-encoding', 'cookie',
-    'set-cookie', 'referer', 'user-agent', 'sec-', 'proxy-', 'www-authenticate', 'server'
+    'host',
+    'authorization',
+    'connection',
+    'keep-alive',
+    'content-length',
+    'content-encoding',
+    'cookie',
+    'set-cookie',
+    'referer',
+    'user-agent',
+    'sec-',
+    'proxy-',
+    'www-authenticate',
+    'server'
 ];
 
 class WebhookService {
@@ -60,7 +72,7 @@ class WebhookService {
         }
 
         return filteredHeaders;
-    }
+    };
 
     async send(
         nangoConnection: NangoConnection,
@@ -169,6 +181,7 @@ class WebhookService {
         payload: Record<string, any> | null,
         webhookOriginalHeaders: Record<string, any>
     ) {
+        console.log(webhookOriginalHeaders);
         const webhookInfo = await environmentService.getById(environment_id);
 
         if (!webhookInfo || !webhookInfo.webhook_url) {
