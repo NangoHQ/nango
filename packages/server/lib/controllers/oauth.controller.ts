@@ -47,8 +47,7 @@ import {
     AnalyticsTypes,
     hmacService,
     ErrorSourceEnum,
-    ConnectionConfig,
-    Connection
+    ConnectionConfig
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
