@@ -36,10 +36,6 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         await handleCreateWebhook(integration, body);
     }
 
-    //headers = {
-        //'X-Github-Event': headers['x-github-event']
-    //};
-
     await nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
 }
 
