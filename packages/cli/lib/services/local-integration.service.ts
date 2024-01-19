@@ -11,6 +11,7 @@ import {
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
+import * as zod from 'zod';
 import { Buffer } from 'buffer';
 
 class IntegrationService implements IntegrationServiceInterface {
@@ -56,6 +57,8 @@ class IntegrationService implements IntegrationServiceInterface {
                                 return url;
                             case 'crypto':
                                 return crypto;
+                            case 'zod':
+                                return zod;
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }

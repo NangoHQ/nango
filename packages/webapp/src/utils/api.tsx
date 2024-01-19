@@ -319,7 +319,7 @@ export function useGetIntegrationDetailsAPI() {
 export function useCreateIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string) => {
+    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string, custom?: Record<string, string>) => {
         try {
             const options = {
                 method: 'POST',
@@ -331,7 +331,8 @@ export function useCreateIntegrationAPI() {
                     oauth_client_id: clientId,
                     oauth_client_secret: clientSecret,
                     oauth_scopes: scopes,
-                    app_link
+                    app_link,
+                    custom
                 })
             };
 
@@ -377,7 +378,7 @@ export function useCreateEmptyIntegrationAPI() {
 export function useEditIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string) => {
+    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string, custom?: Record<string, string>) => {
         try {
             const options = {
                 method: 'PUT',
@@ -389,7 +390,8 @@ export function useEditIntegrationAPI() {
                     client_id: clientId,
                     client_secret: clientSecret,
                     scopes: scopes,
-                    app_link
+                    app_link,
+                    custom
                 })
             };
 

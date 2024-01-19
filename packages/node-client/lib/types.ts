@@ -6,6 +6,7 @@ export enum AuthModes {
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
+    Custom = 'CUSTOM',
     App = 'APP',
     None = 'NONE'
 }
@@ -112,9 +113,10 @@ export interface Connection {
 export interface ConnectionList {
     id: number;
     connection_id: string;
+    provider_config_key: string;
     provider: string;
     created: string;
-    metadata: Metadata;
+    metadata?: Metadata | null;
 }
 
 export interface IntegrationWithCreds extends Integration {

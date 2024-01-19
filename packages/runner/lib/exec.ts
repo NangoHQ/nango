@@ -4,6 +4,7 @@ import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
+import * as zod from 'zod';
 
 export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean, isWebhook: boolean, code: string, codeParams?: object): Promise<object> {
     const isAction = isInvokedImmediately && !isWebhook;
@@ -27,6 +28,8 @@ export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean
                         return url;
                     case 'crypto':
                         return crypto;
+                    case 'zod':
+                        return zod;
                     default:
                         throw new Error(`Module '${moduleName}' is not allowed`);
                 }

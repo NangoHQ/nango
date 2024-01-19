@@ -192,6 +192,11 @@ class EncryptionManager {
         encryptedConfig.oauth_client_secret_iv = iv;
         encryptedConfig.oauth_client_secret_tag = authTag;
 
+        if (config.custom) {
+            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(config.custom));
+            encryptedConfig.custom = { encryptedValue, iv: iv as string, authTag: authTag as string };
+        }
+
         return encryptedConfig;
     }
 
@@ -204,6 +209,12 @@ class EncryptionManager {
         const decryptedConfig: ProviderConfig = Object.assign({}, config);
 
         decryptedConfig.oauth_client_secret = this.decrypt(config.oauth_client_secret, config.oauth_client_secret_iv, config.oauth_client_secret_tag);
+
+        if (decryptedConfig.custom && config.custom) {
+            decryptedConfig.custom = JSON.parse(
+                this.decrypt(config.custom['encryptedValue'] as string, config.custom['iv'] as string, config.custom['authTag'] as string)
+            );
+        }
         return decryptedConfig;
     }
 

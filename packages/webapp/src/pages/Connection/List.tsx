@@ -12,10 +12,10 @@ import { useStore } from '../../store';
 
 interface Connection {
     id: number;
-    connectionId: string;
+    connection_id: string;
     provider: string;
-    providerConfigKey: number;
-    creationDate: string;
+    provider_config_key: number;
+    created: string;
 }
 
 export default function ConnectionList() {
@@ -80,7 +80,7 @@ export default function ConnectionList() {
                                         <div className="">Created</div>
                                     </td>
                                 </tr>
-                                {connections.map(({ id, connectionId, provider, providerConfigKey, creationDate }) => (
+                                {connections.map(({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate }) => (
                                     <tr key={`tr-${id}`}>
                                         <td
                                             className={`flex ${

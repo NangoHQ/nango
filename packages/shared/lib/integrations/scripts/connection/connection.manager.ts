@@ -20,6 +20,7 @@ const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as
 
 export interface InternalNango {
     proxy: ({ method, endpoint, data }: { method?: HTTP_VERB; endpoint: string; data?: unknown }) => Promise<AxiosResponse>;
+    getConnection: () => Promise<Connection>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
@@ -62,12 +63,17 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 }
                 return proxyService.routeOrConfigure(finalExternalConfig, internalConfig) as Promise<AxiosResponse>;
             },
+            getConnection: async () => {
+                const { response: connection } = await connectionService.getConnection(connection_id, provider_config_key, environment_id);
+
+                return connection as Connection;
+            },
             updateConnectionConfig: (connectionConfig: ConnectionConfig) => {
                 return connectionService.updateConnectionConfig(connection as unknown as Connection, connectionConfig);
             }
         };
 
-        const handler = handlers[`${provider}PostConnection`];
+        const handler = handlers[`${provider.replace(/-/g, '')}PostConnection`];
 
         if (handler) {
             try {

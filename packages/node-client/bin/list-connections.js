@@ -1,9 +1,10 @@
 import { Nango } from '../dist/index.js';
-const nango = new Nango({ host: 'http://localhost:3003' });
 const args = process.argv.slice(2);
 
+const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
+
 nango
-    .listConnections(args[0])
+    .listConnections(args[1])
     .then((response) => {
         console.log(response);
     })

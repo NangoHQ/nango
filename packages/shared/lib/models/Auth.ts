@@ -8,6 +8,7 @@ export enum AuthModes {
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
+    Custom = 'CUSTOM',
     App = 'APP',
     None = 'NONE'
 }
@@ -41,7 +42,7 @@ export interface OAuthSession {
 }
 
 export interface TemplateOAuth2 extends Template {
-    auth_mode: AuthModes.OAuth2;
+    auth_mode: AuthModes.OAuth2 | AuthModes.Custom;
 
     disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
 

@@ -46,7 +46,8 @@ import {
     MetricTypes,
     AnalyticsTypes,
     hmacService,
-    ErrorSourceEnum
+    ErrorSourceEnum,
+    ConnectionConfig
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
@@ -236,7 +237,7 @@ class OAuthController {
                     environmentId,
                     userScope
                 );
-            } else if (template.auth_mode === ProviderAuthModes.App) {
+            } else if (template.auth_mode === ProviderAuthModes.App || template.auth_mode === ProviderAuthModes.Custom) {
                 const appCallBackUrl = getGlobalAppCallbackUrl();
                 return this.appRequest(template, config, session, res, authorizationParams, appCallBackUrl, activityLogId as number, environmentId);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
@@ -293,6 +294,7 @@ class OAuthController {
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
+        const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
 
         try {
             if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
@@ -318,12 +320,12 @@ class OAuthController {
                 );
             }
 
-            if (missesInterpolationParam(template.token_url, connectionConfig)) {
+            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig)).message,
+                    content: WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: callbackUrl,
@@ -337,7 +339,7 @@ class OAuthController {
                     channel,
                     providerConfigKey,
                     connectionId,
-                    WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
+                    WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig))
                 );
             }
 
@@ -652,6 +654,15 @@ class OAuthController {
     public async oauthCallback(req: Request, res: Response, _: NextFunction) {
         const { state } = req.query;
 
+        const installation_id = req.query['installation_id'] as string | undefined;
+        const action = req.query['setup_action'] as string;
+
+        if (!state && installation_id && action) {
+            res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
+
+            return;
+        }
+
         if (state == null) {
             const errorMessage = 'No state found in callback';
             const e = new Error(errorMessage);
@@ -702,7 +713,7 @@ class OAuthController {
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
 
-            if (session.authMode === ProviderAuthModes.OAuth2) {
+            if (session.authMode === ProviderAuthModes.OAuth2 || session.authMode === ProviderAuthModes.Custom) {
                 return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId as number, session.environmentId);
             } else if (session.authMode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Callback(template, config, session, req, res, activityLogId as number, session.environmentId);
@@ -762,6 +773,8 @@ class OAuthController {
         const channel = session.webSocketClientId;
         const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
+        const installationId = req.query['installation_id'] as string | undefined;
+
         if (!code) {
             await createActivityLogMessage({
                 level: 'error',
@@ -785,6 +798,28 @@ class OAuthController {
             });
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
+        }
+
+        // no need to do anything here until the request is approved
+        if (session.authMode === ProviderAuthModes.Custom && req.query['setup_action'] === 'update' && installationId) {
+            // this means the update request was performed from the provider itself
+            if (!req.query['state']) {
+                res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
+
+                return;
+            }
+
+            await createActivityLogMessage({
+                level: 'info',
+                environment_id,
+                activity_log_id: activityLogId as number,
+                content: `Update request has been made for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
+                timestamp: Date.now()
+            });
+
+            await updateSuccessActivityLog(activityLogId, true);
+
+            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         }
 
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
@@ -826,8 +861,10 @@ class OAuthController {
                 }
             });
 
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
+
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, template.token_url, code as string, session.callbackUrl);
+                rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl);
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
                     {
@@ -885,12 +922,35 @@ class OAuthController {
 
             const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
 
+            let connectionConfig = { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata };
+
+            let pending = false;
+
+            if (template.auth_mode === ProviderAuthModes.Custom && !connectionConfig['installation_id'] && !installationId) {
+                pending = true;
+
+                const custom = config.custom as Record<string, string>;
+                connectionConfig = {
+                    ...connectionConfig,
+                    app_id: custom['app_id'],
+                    pending,
+                    pendingLog: activityLogId?.toString() as string
+                };
+            }
+
+            if (template.auth_mode === ProviderAuthModes.Custom && installationId) {
+                connectionConfig = {
+                    ...connectionConfig,
+                    installation_id: installationId
+                };
+            }
+
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
                 session.provider,
                 parsedRawCredentials,
-                { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata },
+                connectionConfig,
                 session.environmentId,
                 accountId
             );
@@ -901,7 +961,9 @@ class OAuthController {
                 level: 'debug',
                 environment_id,
                 activity_log_id: activityLogId as number,
-                content: `OAuth connection for ${providerConfigKey} was successful`,
+                content: `OAuth connection for ${providerConfigKey} was successful${
+                    template.auth_mode === ProviderAuthModes.Custom && !installationId ? ' and request for app approval is pending' : ''
+                }`,
                 timestamp: Date.now(),
                 auth_mode: template.auth_mode,
                 params: {
@@ -914,6 +976,10 @@ class OAuthController {
             });
 
             if (updatedConnection) {
+                // don't initiate a sync if custom because this is the first step of the oauth flow
+                const initiateSync = template.auth_mode === ProviderAuthModes.Custom ? false : true;
+                // if we have an installation id no need to run the post connection script
+                const runPostConnectionScript = template.auth_mode === ProviderAuthModes.Custom && installationId ? false : true;
                 await connectionCreatedHook(
                     {
                         id: updatedConnection.id,
@@ -921,11 +987,23 @@ class OAuthController {
                         provider_config_key: providerConfigKey,
                         environment_id
                     },
-                    session.provider
+                    session.provider,
+                    { initiateSync, runPostConnectionScript }
                 );
             }
 
-            await updateSuccessActivityLog(activityLogId, true);
+            if (template.auth_mode === ProviderAuthModes.Custom && installationId) {
+                pending = false;
+                await connectionService.getAppCredentialsAndFinishConnection(
+                    connectionId,
+                    config,
+                    template,
+                    connectionConfig as ConnectionConfig,
+                    activityLogId
+                );
+            } else {
+                await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
+            }
 
             await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
@@ -935,7 +1013,7 @@ class OAuthController {
                 authMode: String(template.auth_mode)
             });
 
-            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await errorManager.report(e, {
