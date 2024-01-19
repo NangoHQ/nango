@@ -150,7 +150,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     const webhookBodyToForward = res?.parsedBody || body;
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward);
+    await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward, headers);
 
     await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
         environmentId: String(integration.environment_id),
