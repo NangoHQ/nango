@@ -2,6 +2,8 @@
  * Copyright (c) 2023 Nango, all rights reserved.
  */
 
+import { providerOptions } from './providers.js';
+
 const prodHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
@@ -152,20 +154,25 @@ export default class Nango {
                 { width: this.width, height: this.height },
                 this.debug
             );
-            this.tm = setInterval(() => {
-                if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
-                    if (this.win?.isProcessingMessage === true) {
-                        // Modal is still processing a web socket message from the server
-                        // We ignore the window being closed for now
-                        return;
+            // some providers might have cross-origin setup that prevents us from detecting if the window is closed
+            // if so we disable the login window closing detection
+            const detectClosedModal = providerOptions[providerConfigKey]?.detectClosedLoginWindow;
+            if (detectClosedModal !== false) {
+                this.tm = setInterval(() => {
+                    if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
+                        if (this.win?.isProcessingMessage === true) {
+                            // Modal is still processing a web socket message from the server
+                            // We ignore the window being closed for now
+                            return;
+                        }
+                        clearTimeout(this.tm as unknown as number);
+                        this.win = null;
+                        this.status = AuthorizationStatus.CANCELED;
+                        const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
+                        reject(error);
                     }
-                    clearTimeout(this.tm as unknown as number);
-                    this.win = null;
-                    this.status = AuthorizationStatus.CANCELED;
-                    const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
-                    reject(error);
-                }
-            }, 500);
+                }, 500);
+            }
         });
     }
 
