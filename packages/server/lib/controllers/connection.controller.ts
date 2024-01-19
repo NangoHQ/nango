@@ -298,16 +298,16 @@ class ConnectionController {
             }
 
             const uniqueKeyToProvider: { [key: string]: string } = {};
-            const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
+            const providerConfigKeys = configs.map((config: ProviderConfig) => config.provider);
 
-            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
+            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.unique_key));
 
             const result: ConnectionList[] = connections.map((connection) => {
                 return {
                     id: connection.id,
                     connection_id: connection.connection_id,
-                    provider_config_key: connection.provider as string,
-                    provider: uniqueKeyToProvider[connection.provider] as string,
+                    provider: connection.provider as string,
+                    provider_config_key: uniqueKeyToProvider[connection.provider] as string,
                     created: connection.created,
                     metadata: connection.metadata
                 };
