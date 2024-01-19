@@ -109,7 +109,23 @@ class ConfigController {
             let oauth_client_secret = req.body['client_secret'] ?? null;
 
             if (template.auth_mode === AuthModes.App) {
+                if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
+                    errorManager.errRes(res, 'invalid_app_secret');
+                    return;
+                }
                 oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
+            }
+
+            const custom = req.body['custom'] ?? null;
+
+            if (template.auth_mode === AuthModes.Custom) {
+                const { private_key } = custom;
+
+                if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
+                    errorManager.errRes(res, 'invalid_app_secret');
+                    return;
+                }
+                custom.private_key = Buffer.from(private_key).toString('base64');
             }
 
             const newConfig: ProviderConfig = {
@@ -119,7 +135,8 @@ class ConfigController {
                 oauth_client_secret,
                 oauth_scopes: req.body['scopes'],
                 app_link: req.body['app_link'],
-                environment_id: environment.id
+                environment_id: environment.id,
+                custom
             };
 
             const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environment.id);
