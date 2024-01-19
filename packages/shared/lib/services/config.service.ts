@@ -143,21 +143,15 @@ class ConfigService {
     }
 
     async createEmptyProviderConfig(provider: string, environment_id: number): Promise<Pick<ProviderConfig, 'id' | 'unique_key'>> {
-        const configs = await this.listProviderConfigsByProvider(environment_id, provider);
-        let latestNumber = 0;
-        configs.forEach((config) => {
-            const split = config.unique_key.split('-');
-            if (split.length === 2) {
-                const number = parseInt(split[1] as string);
-                if (number > latestNumber) {
-                    latestNumber = number;
-                }
-            }
-        });
+        const existingProviders = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider, environment_id, deleted: false });
 
         const config = {
             environment_id,
-            unique_key: `${provider}-${latestNumber + 1}`,
+            unique_key: existingProviders.length === 0 ? provider : `${provider}-${existingProviders.length + 1}`,
             provider
         };
 
