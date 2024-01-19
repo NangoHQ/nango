@@ -181,7 +181,6 @@ class WebhookService {
         payload: Record<string, any> | null,
         webhookOriginalHeaders: Record<string, any>
     ) {
-        console.log(webhookOriginalHeaders);
         const webhookInfo = await environmentService.getById(environment_id);
 
         if (!webhookInfo || !webhookInfo.webhook_url) {
