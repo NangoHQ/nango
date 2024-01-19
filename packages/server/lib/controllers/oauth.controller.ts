@@ -965,16 +965,18 @@ class OAuthController {
                 }
             });
 
-            await connectionCreatedHook(
-                {
-                    id: updatedConnection?.id as number,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    environment_id
-                },
-                session.provider,
-                false // don't initiate a sync because this is the first step of the oauth flow
-            );
+            if (updatedConnection) {
+                await connectionCreatedHook(
+                    {
+                        id: updatedConnection.id,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        environment_id
+                    },
+                    session.provider,
+                    false // don't initiate a sync because this is the first step of the oauth flow
+                );
+            }
 
             await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
 
