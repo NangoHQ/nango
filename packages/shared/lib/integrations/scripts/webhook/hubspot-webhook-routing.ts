@@ -31,15 +31,9 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
 
         for (const objectId in groupedByObjectId) {
             const sorted = groupedByObjectId[objectId].sort((a: any, b: any) => {
-                const aIsCreation = a.subscriptionType.endsWith('.creation');
-                const bIsCreation = b.subscriptionType.endsWith('.creation');
-                if (aIsCreation && !bIsCreation) {
-                    return -1;
-                }
-                if (!aIsCreation && bIsCreation) {
-                    return 1;
-                }
-                return a.occurredAt - b.occurredAt;
+                const aIsCreation = a.subscriptionType.endsWith('.creation') ? 1 : 0;
+                const bIsCreation = b.subscriptionType.endsWith('.creation') ? 1 : 0;
+                return bIsCreation - aIsCreation || a.occurredAt - b.occurredAt;
             });
 
             for (const event of sorted) {
