@@ -145,7 +145,7 @@ export function parseJsonDateAware(input: string) {
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
     if (template.token_url || template.authorization_url || template.proxy?.base_url) {
-        const tokenUrlMatches = template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g);
+        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g) : null;
         const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g);
         const proxyBaseUrlMatches = template.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g);
         const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || []), ...(proxyBaseUrlMatches || [])].filter(

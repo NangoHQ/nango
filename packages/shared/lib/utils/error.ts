@@ -323,6 +323,11 @@ export class NangoError extends Error {
                 this.message = 'Invalid auth mode. The provider does not support this auth mode.';
                 break;
 
+            case 'wrong_auth_mode':
+                this.status = 400;
+                this.message = 'The provider does not support making requests. Please use the github-app-oauth provider for the request flow.';
+                break;
+
             case 'unknown_provider_template':
                 this.status = 400;
                 this.message = `No Provider Template matching the 'provider' parameter.`;

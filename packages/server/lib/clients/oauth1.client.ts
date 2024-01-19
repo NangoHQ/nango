@@ -4,6 +4,7 @@
 
 import oAuth1 from 'oauth';
 import type { Config as ProviderConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/shared';
+import { AuthModes } from '@nangohq/shared';
 
 type OAuth1RequestTokenResult = {
     request_token: string;
@@ -31,7 +32,7 @@ export class OAuth1Client {
 
         this.client = new oAuth1.OAuth(
             this.authConfig.request_url,
-            this.authConfig.token_url,
+            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url[AuthModes.OAuth1] as string),
             this.config.oauth_client_id!,
             this.config.oauth_client_secret!,
             '1.0A',

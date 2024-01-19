@@ -54,7 +54,7 @@ class ConfigController {
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
                     creationDate: config.created_at
                 };
-                if (template && template.auth_mode !== AuthModes.App) {
+                if (template && template.auth_mode !== AuthModes.App && template.auth_mode !== AuthModes.Custom) {
                     integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
                 }
                 return integration;
@@ -180,10 +180,18 @@ class ConfigController {
 
             let client_secret = config.oauth_client_secret;
             let webhook_secret = null;
+            const custom = config.custom as Record<string, string>;
 
             if (authMode === AuthModes.App) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
                 const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
+                webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
+            }
+
+            if (authMode === AuthModes.Custom) {
+                const { private_key } = custom;
+                custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
+                const hash = `${custom['app_id']}${private_key}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
@@ -204,6 +212,7 @@ class ConfigController {
                       provider: config.provider,
                       client_id: config.oauth_client_id,
                       client_secret,
+                      custom: config.custom,
                       scopes: config.oauth_scopes,
                       app_link: config.app_link,
                       auth_mode: authMode,
@@ -254,7 +263,7 @@ class ConfigController {
             const providerTemplate = configService.getTemplate(provider);
             const authMode = providerTemplate.auth_mode;
 
-            if ((authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && req.body['oauth_client_id'] == null) {
+            if ((authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_client_id');
                 return;
             }
@@ -291,6 +300,18 @@ class ConfigController {
                 oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
             }
 
+            const custom = req.body['custom'] ?? null;
+
+            if (authMode === AuthModes.Custom) {
+                const { private_key } = custom;
+
+                if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
+                    errorManager.errRes(res, 'invalid_app_secret');
+                    return;
+                }
+                custom.private_key = Buffer.from(private_key).toString('base64');
+            }
+
             const oauth_client_id = req.body['oauth_client_id'] ?? null;
             const oauth_scopes = req.body['oauth_scopes'] ?? '';
             const app_link = req.body['app_link'] ?? null;
@@ -313,7 +334,8 @@ class ConfigController {
                           .join(',')
                     : '',
                 app_link,
-                environment_id: environmentId
+                environment_id: environmentId,
+                custom
             };
 
             const result = await configService.createProviderConfig(config);
@@ -375,6 +397,18 @@ class ConfigController {
                 oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
             }
 
+            const custom = req.body['custom'] ?? null;
+
+            if (template.auth_mode === AuthModes.Custom) {
+                const { private_key } = custom;
+
+                if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
+                    errorManager.errRes(res, 'invalid_app_secret');
+                    return;
+                }
+                custom.private_key = Buffer.from(private_key).toString('base64');
+            }
+
             const newConfig: ProviderConfig = {
                 unique_key: req.body['provider_config_key'],
                 provider: req.body['provider'],
@@ -382,7 +416,8 @@ class ConfigController {
                 oauth_client_secret,
                 oauth_scopes: req.body['oauth_scopes'],
                 app_link: req.body['app_link'],
-                environment_id: environmentId
+                environment_id: environmentId,
+                custom
             };
 
             const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environmentId);

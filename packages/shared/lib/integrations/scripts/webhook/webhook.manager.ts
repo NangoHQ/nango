@@ -130,7 +130,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
         return;
     }
 
-    const handler = handlers[`${provider.replace('-', '')}Webhook`];
+    const handler = handlers[`${provider.replace(/-/g, '')}Webhook`];
 
     let res: WebhookResponse | null | void = null;
 
