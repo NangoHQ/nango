@@ -46,7 +46,9 @@ import {
     MetricTypes,
     AnalyticsTypes,
     hmacService,
-    ErrorSourceEnum
+    ErrorSourceEnum,
+    ConnectionConfig,
+    Connection
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
@@ -772,6 +774,8 @@ class OAuthController {
         const channel = session.webSocketClientId;
         const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
+        const installationId = req.query['installation_id'] as string | undefined;
+
         if (!code) {
             await createActivityLogMessage({
                 level: 'error',
@@ -798,7 +802,7 @@ class OAuthController {
         }
 
         // no need to do anything here until the request is approved
-        if (session.authMode === ProviderAuthModes.Custom && req.query['setup_action'] === 'update' && req.query['installation_id']) {
+        if (session.authMode === ProviderAuthModes.Custom && req.query['setup_action'] === 'update' && installationId) {
             // this means the update request was performed from the provider itself
             if (!req.query['state']) {
                 res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
@@ -923,7 +927,7 @@ class OAuthController {
 
             let pending = false;
 
-            if (template.auth_mode === ProviderAuthModes.Custom && !connectionConfig['installation_id']) {
+            if (template.auth_mode === ProviderAuthModes.Custom && !connectionConfig['installation_id'] && !installationId) {
                 pending = true;
 
                 const custom = config.custom as Record<string, string>;
@@ -932,6 +936,13 @@ class OAuthController {
                     app_id: custom['app_id'],
                     pending,
                     pendingLog: activityLogId?.toString() as string
+                };
+            }
+
+            if (template.auth_mode === ProviderAuthModes.Custom && installationId) {
+                connectionConfig = {
+                    ...connectionConfig,
+                    installation_id: installationId
                 };
             }
 
@@ -952,7 +963,7 @@ class OAuthController {
                 environment_id,
                 activity_log_id: activityLogId as number,
                 content: `OAuth connection for ${providerConfigKey} was successful${
-                    template.auth_mode === ProviderAuthModes.Custom ? ' and request for app approval is pending' : ''
+                    template.auth_mode === ProviderAuthModes.Custom && !installationId ? ' and request for app approval is pending' : ''
                 }`,
                 timestamp: Date.now(),
                 auth_mode: template.auth_mode,
@@ -966,6 +977,10 @@ class OAuthController {
             });
 
             if (updatedConnection) {
+                // don't initiate a sync if custom because this is the first step of the oauth flow
+                const initiateSync = template.auth_mode === ProviderAuthModes.Custom ? false : true;
+                // if we have an installation id no need to run the post connection script
+                const runPostConnectionScript = template.auth_mode === ProviderAuthModes.Custom && installationId ? false : true;
                 await connectionCreatedHook(
                     {
                         id: updatedConnection.id,
@@ -974,11 +989,22 @@ class OAuthController {
                         environment_id
                     },
                     session.provider,
-                    false // don't initiate a sync because this is the first step of the oauth flow
+                    { initiateSync, runPostConnectionScript }
                 );
             }
 
-            await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
+            if (template.auth_mode === ProviderAuthModes.Custom && installationId) {
+                pending = false;
+                await connectionService.getAppCredentialsAndFinishConnection(
+                    connectionId,
+                    config,
+                    template,
+                    connectionConfig as ConnectionConfig,
+                    activityLogId
+                );
+            } else {
+                await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
+            }
 
             await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),

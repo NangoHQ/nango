@@ -5,15 +5,14 @@ import integrationPostConnectionScript from '../integrations/scripts/connection/
 export const connectionCreated = async (
     connection: RecentlyCreatedConnection,
     provider: string,
-    initiateSync = true,
-    runPostConnectionScript = true
+    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
-    if (initiateSync) {
+    if (options.initiateSync === true) {
         const syncClient = await SyncClient.getInstance();
         syncClient?.initiate(connection.id as number);
     }
 
-    if (runPostConnectionScript) {
+    if (options.runPostConnectionScript === true) {
         integrationPostConnectionScript(connection, provider);
     }
 };

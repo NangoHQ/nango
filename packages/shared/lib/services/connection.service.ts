@@ -15,7 +15,8 @@ import {
     updateAction as updateActivityLogAction,
     createActivityLogMessage,
     createActivityLogMessageAndEnd,
-    updateProvider as updateProviderActivityLog
+    updateProvider as updateProviderActivityLog,
+    updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
@@ -818,6 +819,58 @@ class ConnectionService {
         };
 
         return { success: true, error: null, response: credentials };
+    }
+
+    public async getAppCredentialsAndFinishConnection(
+        connectionId: string,
+        integration: ProviderConfig,
+        template: ProviderTemplate,
+        connectionConfig: ConnectionConfig,
+        activityLogId: number
+    ): Promise<void> {
+        const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig as ConnectionConfig);
+
+        if (!success || !credentials) {
+            console.log(error);
+            return;
+        }
+
+        const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
+
+        const [updatedConnection] = await this.upsertConnection(
+            connectionId,
+            integration.unique_key,
+            integration.provider,
+            credentials as unknown as AuthCredentials,
+            connectionConfig,
+            integration.environment_id,
+            accountId as number
+        );
+
+        if (updatedConnection) {
+            await connectionCreatedHook(
+                {
+                    id: updatedConnection.id,
+                    connection_id: connectionId,
+                    provider_config_key: integration.unique_key,
+                    environment_id: integration.environment_id
+                },
+                integration.provider,
+                // the connection is complete so we want to initiate syncs
+                // the post connection script has run already because we needed to get the github handle
+                { initiateSync: true, runPostConnectionScript: false }
+            );
+        }
+
+        await createActivityLogMessageAndEnd({
+            level: 'info',
+            environment_id: integration.environment_id,
+            activity_log_id: Number(activityLogId),
+            content: 'App connection was approved and credentials were saved',
+            timestamp: Date.now()
+        });
+
+        await updateSuccessActivityLog(Number(activityLogId), true);
     }
 
     public async getAppCredentials(
