@@ -112,7 +112,7 @@ class SlackService {
      */
     private async sendDuplicateNotificationToNangoAdmins(
         payload: NotificationPayload,
-        originalActivityLogId: number,
+        activityLogId: number,
         environment_id: number,
         id?: number,
         ts?: string
@@ -136,9 +136,8 @@ class SlackService {
             nangoAdminConnection as NangoConnection,
             this.actionName,
             payload,
-            originalActivityLogId,
-            nangoAdminConnection?.environment_id as number,
-            false
+            activityLogId,
+            nangoAdminConnection?.environment_id as number
         )) as ServiceResponse<SlackActionResponse>;
 
         if (id && response) {
@@ -275,9 +274,8 @@ class SlackService {
             slackConnection as NangoConnection,
             this.actionName,
             payload,
-            originalActivityLogId,
-            environment_id,
-            false
+            activityLogId as number,
+            environment_id
         )) as ServiceResponse<SlackActionResponse>;
 
         await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse?.ts as string);
@@ -386,12 +384,11 @@ class SlackService {
             slackConnection as NangoConnection,
             this.actionName,
             payload,
-            originalActivityLogId,
-            environment_id,
-            false
+            activityLogId as number,
+            environment_id
         )) as ServiceResponse<SlackActionResponse>;
 
-        await this.sendDuplicateNotificationToNangoAdmins(payload, originalActivityLogId, environment_id, undefined, admin_slack_timestamp);
+        await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, undefined, admin_slack_timestamp);
 
         const content = actionSuccess
             ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`

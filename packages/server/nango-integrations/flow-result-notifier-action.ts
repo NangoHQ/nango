@@ -55,7 +55,8 @@ export default async function runAction(nango: NangoAction, input: SlackMessage)
         return response.data;
     }
 
-    await nango.log(`Error posting to the Slack channel id ${channel}: ${response.data}`);
-
-    return null;
+    throw new nango.ActionError({
+        message: `Error posting to the Slack channel id ${channel}: ${response.data}`,
+        response: response.data
+    });
 }
