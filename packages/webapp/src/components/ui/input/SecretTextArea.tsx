@@ -44,6 +44,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(
                         value={value}
                         // @ts-ignore
                         onChange={(e) => updateValue(e.currentTarget.value)}
+                        autoComplete="new-password"
                         className={classNames(
                             'border-border-gray bg-zinc-900 text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.6 text-sm placeholder-gray-400 shadow-sm focus:outline-none',
                             className

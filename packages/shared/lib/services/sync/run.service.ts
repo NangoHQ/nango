@@ -678,14 +678,30 @@ export default class SyncRun {
         }
 
         if (!this.isWebhook) {
-            await slackNotificationService.reportFailure(
-                this.nangoConnection,
-                this.syncName,
-                this.syncType,
-                this.activityLogId as number,
-                this.nangoConnection.environment_id,
-                this.provider as string
-            );
+            try {
+                await slackNotificationService.reportFailure(
+                    this.nangoConnection,
+                    this.syncName,
+                    this.syncType,
+                    this.activityLogId as number,
+                    this.nangoConnection.environment_id,
+                    this.provider as string
+                );
+            } catch (e) {
+                await errorManager.report('slack notification service reported a failure', {
+                    environmentId: this.nangoConnection.environment_id as number,
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.SYNC,
+                    metadata: {
+                        syncName: this.syncName,
+                        connectionDetails: this.nangoConnection,
+                        syncId: this.syncId,
+                        syncJobId: this.syncJobId,
+                        syncType: this.syncType,
+                        debug: this.debug
+                    }
+                });
+            }
         }
 
         if (!this.activityLogId || !this.syncJobId) {
