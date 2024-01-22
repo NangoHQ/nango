@@ -593,11 +593,6 @@ class ConnectionController {
                     return;
                 }
 
-                if (!password) {
-                    errorManager.errRes(res, 'missing_basic_password');
-                    return;
-                }
-
                 const credentials = {
                     type: template.auth_mode,
                     username,
