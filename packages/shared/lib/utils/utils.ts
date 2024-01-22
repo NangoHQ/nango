@@ -148,8 +148,8 @@ export function getBaseUrl() {
 }
 
 export function getBasePublicUrl() {
-    if (process.env['NANGO_SERVER_PUBLIC_URL']) {
-        return process.env['NANGO_SERVER_PUBLIC_URL'].replace('api.', 'app.');
+    if (process.env['NANGO_SERVER_URL']) {
+        return process.env['NANGO_SERVER_URL'].replace('api.', 'app.');
     } else {
         return getBaseUrl();
     }
