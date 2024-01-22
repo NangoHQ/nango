@@ -883,6 +883,261 @@ integrations:
         projectName: string
         createdAt: date
         updatedAt: date
+  lever-basic:
+    lever-create-note:
+      type: action
+      returns: LeverOpportunityNote
+      description: |
+        Create a note and add it to a candidate profile in your Lever account.
+        Scope(s): notes:write:admin
+    lever-create-opportunity:
+      type: action
+      returns: LeverOpportunity
+      description: |
+        Create candidates and opportunities in your Lever account.
+        Scope(s): opportunities:write:admin
+    lever-opportunities:
+      runs: every 6 hours
+      returns:
+        - LeverOpportunity
+      description: |
+        Fetch all pipeline Opportunities for Contacts in your Lever account.
+        Details: incremental sync, doesn't track deletes, metadata is not required.
+        Scope(s): opportunities:read:admin
+    lever-opportunities-applications:
+      runs: every 6 hours
+      returns:
+        - LeverOpportunityApplication
+      description: |
+        Fetch all applications for a candidate in your lever account.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): applications:read:admin
+    lever-opportunities-feedbacks:
+      runs: every 6 hours
+      returns:
+        - LeverOpportunityFeedback
+      description: |
+        Fetch all feedback forms for a candidate for a specific Opportunity in lever.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): feedback:read:admin
+    lever-opportunities-interviews:
+      runs: every 6 hours
+      returns:
+        - LeverOpportunityInterview
+      description: |
+        Fetch all interviewers for a specific Opportunity in lever.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): interviews:read:admin
+    lever-opportunities-notes:
+      runs: every 6 hours
+      returns:
+        - LeverOpportunityNote
+      description: |
+        Fetch all notes for a specific candidate in lever.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): notes:read:admin
+    lever-opportunities-offers:
+      runs: every 6 hours
+      returns:
+        - LeverOpportunityOffer
+      description: |
+        Fetch all offers for a specific candidate in lever.
+        Scope(s): offers:write:admin
+    lever-postings:
+      runs: every 6 hours
+      returns:
+        - LeverPosting
+      description: |
+        Fetch all postings in your Lever account.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): postings:read:admin
+    lever-postings-apply:
+      runs: every 6 hours
+      returns: LeverPostingApply
+      description: |
+        Fetch all questions included in a posting’s application form in your Lever account.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): postings:read:admin
+    lever-stage:
+      runs: every 6 hours
+      returns:
+        - LeverStage
+      description: |
+        Fetch all pipeline stages in your Lever account.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): stages:read:admin
+    models:
+      LeverOpportunity:
+        id: string
+        name: string
+        headline: string
+        contact: string
+        emails: []
+        phones: []
+        confidentiality: string
+        location: string
+        links: []
+        archived:
+          reason: string
+          archivedAt: number
+        createdAt: number
+        updatedAt: number
+        lastInteractionAt: number
+        lastAdvancedAt: number
+        snoozedUntil: number
+        archivedAt: number
+        archiveReason: string
+        stage: string
+        stageChanges: []
+        owner: string
+        tags: []
+        sources: []
+        origin: string
+        sourcedBy: string
+        applications: []
+        resume: string
+        followers: []
+        urls:
+          list: string
+          show: string
+        dataProtection: object
+        isAnonymized: boolean
+        opportunityLocation: string
+      LeverOpportunityApplication:
+        id: string
+        opportunityId: string
+        candidateId: string
+        createdAt: number
+        type: string
+        posting: string
+        postingHiringManager: string
+        postingOwner: string
+        user: string
+        name: string
+        email: string
+        phone:
+          type: string
+          value: string
+        requisitionForHire:
+          id: string
+          requisitionCode: string
+          hiringManagerOnHire: string
+        ownerId: string
+        hiringManager: string
+        company: string
+        links: []
+        comments: string
+        customQuestions: []
+        archived:
+          reason: string
+          archivedAt: number
+      LeverOpportunityFeedback:
+        id: string
+        type: string
+        text: string
+        instructions: string
+        fields: []
+        baseTemplateId: string
+        interview: string
+        panel: string
+        user: string
+        createdAt: number
+        completedAt: number
+        updatedAt: number
+        deletedAt: number
+      LeverOpportunityInterview:
+        id: string
+        panel: string
+        subject: string
+        note: string
+        interviewers: []
+        timezone: string
+        createdAt: number
+        date: number
+        duration: number
+        location: string
+        feedbackTemplate: string
+        feedbackForms: []
+        feedbackReminder: string
+        user: string
+        stage: string
+        canceledAt: number
+        postings: []
+        gcalEventUrl: string
+      LeverOpportunityNote:
+        id: string
+        text: string
+        fields: []
+        user: string
+        secret: boolean
+        completedAt: number
+        createdAt: number
+        deletedAt: number
+      LeverOpportunityOffer:
+        id: string
+        createdAt: number
+        status: string
+        creator: string
+        fields: []
+        sentDocument:
+          fileName: string
+          uploadedAt: number
+          downloadUrl: string
+        signedDocument:
+          fileName: string
+          uploadedAt: number
+          downloadUrl: string
+      LeverPosting:
+        id: string
+        text: string
+        createdAt: number
+        updatedAt: number
+        user: string
+        owner: string
+        hiringManager: string
+        confidentiality: string
+        categories:
+          team: string
+          department: string
+          location: string
+          allLocations: []
+          commitment: string
+          level: string
+        content:
+          description: string
+          descriptionHtml: string
+          lists: []
+          closing: string
+          closingHtml: string
+        country: string
+        followers: []
+        tags: []
+        state: string
+        distributionChannels: []
+        reqCode: string
+        requisitionCodes: []
+        salaryDescription: string
+        salaryDescriptionHtml: string
+        salaryRange:
+          max: number
+          min: number
+          currency: string
+          interval: string
+        urls:
+          list: string
+          show: string
+          apply: string
+        workplaceType: string
+      LeverPostingApply:
+        id: string
+        text: string
+        customQuestions: []
+        eeoQuestions: []
+        personalInformation: []
+        urls: []
+      LeverStage:
+        id: string
+        text: string
   linear:
     linear-issues:
       runs: every 5min
