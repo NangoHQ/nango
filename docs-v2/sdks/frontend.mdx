@@ -54,7 +54,7 @@ let nango = new Nango({ host: '<INSTANCE-URL>', publicKey: '<PUBLIC-KEY>', webso
 
 ## Collecting & storing end-user credentials
 
-You store end-user credentials with the `nango.auth` method. 
+You store end-user credentials with the `nango.auth` method.
 
 <Tabs>
 
@@ -169,3 +169,16 @@ nango.auth('zendesk', '<CONNECTION-ID>', {
     params: { subdomain: '<ZENDESK-SUBDOMAIN>' }
 });
 ```
+
+## Detect closed authorization page
+
+To fail when the authorization window is closed before the authorization flow is completed
+pass in the extra parameter `detectClosedAuthWindow` to `nango.auth()`
+
+```js
+nango.auth('zendesk', '<CONNECTION-ID>', {
+     detectClosedAuthWindow: true,
+     ...
+});
+```
+

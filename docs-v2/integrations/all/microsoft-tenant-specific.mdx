@@ -23,7 +23,7 @@ If you want to sync data from Microsoft Graph, use the [Microsoft Teams provider
 ## Getting started
 
 -   [Create an Azure app registration for the specific application](https://go.microsoft.com/fwlink/?linkid=2083908).
-    -   Add permissions for the appropriate app on the `API Permissions` tab 
+    -   Add permissions for the appropriate app on the `API Permissions` tab
 -   [OAuth-related docs](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow).
     -   See particularly the `tenant` parameter under [Request an authorization code](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#request-an-authorization-code).
         This `tenant` parameter must be provided as [extra configuration to the frontend SDK](https://docs.nango.dev/sdks/frontend#oauth-flows-requiring-extra-configuration).
@@ -36,8 +36,7 @@ This endpoint supports services authorized using an Azure App Registration in an
 
 > - Microsoft Dynamics 365 Finance and Operations
 
-<Tip>You _can_ use this provider for general Microsoft Graph access (and the major Microsoft SaaS services like Teams, OneDrive, other Office 365 services, etc.) by setting the `tenant` to `common` but we recommend using the [Microsoft Teams provider](/integrations/all/microsoft-teams) instead which includes sync capability.
-</Tip>
+<Tip>You _can_ use this provider for general Microsoft Graph access (and the major Microsoft SaaS services like Teams, OneDrive, other Office 365 services, etc.) by setting the `tenant` to `common` but we recommend using the [Microsoft Teams provider](/integrations/all/microsoft-teams) instead which includes sync capability.</Tip>
 
 
 ## API gotchas

@@ -2,8 +2,6 @@
  * Copyright (c) 2023 Nango, all rights reserved.
  */
 
-import { providerOptions } from './providers.js';
-
 const prodHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
@@ -23,6 +21,10 @@ export class AuthError extends Error {
 }
 
 export type AuthResult = { providerConfigKey: string; connectionId: string; isPending?: boolean };
+
+interface AuthOptions {
+    detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
+}
 
 export default class Nango {
     private hostBaseUrl: string;
@@ -93,17 +95,16 @@ export default class Nango {
     public auth(
         providerConfigKey: string,
         connectionId: string,
-        conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials
+        options?: (ConnectionConfig | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) & AuthOptions
     ): Promise<AuthResult> {
-        if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
-            const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
-            const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
+        if (options && 'credentials' in options && Object.keys(options.credentials).length > 0) {
+            const credentials = options.credentials as BasicApiCredentials | ApiKeyCredentials;
+            const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
             return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
-        const url =
-            this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, conectionConfigOrCredentials as ConnectionConfig)}`;
+        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
 
         try {
             new URL(url);
@@ -154,10 +155,7 @@ export default class Nango {
                 { width: this.width, height: this.height },
                 this.debug
             );
-            // some providers might have cross-origin setup that prevents us from detecting if the window is closed
-            // if so we disable the login window closing detection
-            const detectClosedModal = providerOptions[providerConfigKey]?.detectClosedLoginWindow;
-            if (detectClosedModal !== false) {
+            if (options?.detectClosedAuthWindow || false) {
                 this.tm = setInterval(() => {
                     if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
                         if (this.win?.isProcessingMessage === true) {
