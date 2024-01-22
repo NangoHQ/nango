@@ -44,9 +44,9 @@ export default function AuthLink() {
         if (username && password) {
             credentials = {
                 username,
-                password,
+                password
             };
-        };
+        }
 
         if (apiKey) {
             credentials = {

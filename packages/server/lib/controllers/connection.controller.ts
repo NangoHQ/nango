@@ -518,6 +518,8 @@ class ConnectionController {
             let oAuthCredentials: ImportedCredentials;
             let updatedConnection: { id: number } = {} as { id: number };
 
+            let runHook = false;
+
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
 
@@ -590,11 +592,6 @@ class ConnectionController {
 
                 if (!username) {
                     errorManager.errRes(res, 'missing_basic_username');
-                    return;
-                }
-
-                if (!password) {
-                    errorManager.errRes(res, 'missing_basic_password');
                     return;
                 }
 
@@ -685,13 +682,14 @@ class ConnectionController {
 
                 if (imported) {
                     updatedConnection = imported;
+                    runHook = true;
                 }
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
             }
 
-            if (updatedConnection && updatedConnection.id) {
+            if (updatedConnection && updatedConnection.id && runHook) {
                 await connectionCreatedHook(
                     {
                         id: updatedConnection.id,
