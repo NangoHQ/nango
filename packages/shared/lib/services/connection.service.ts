@@ -971,11 +971,21 @@ class ConnectionService {
 
         let tokenExpirationCondition;
 
-        if (template.auth_mode === ProviderAuthModes.OAuth2 || template.auth_mode === ProviderAuthModes.Custom) {
+        if (
+            ((template.auth_mode as ProviderAuthModes) === ProviderAuthModes.OAuth2 ||
+                (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.Custom) &&
+            providerConfig.provider !== 'facebook'
+        ) {
             tokenExpirationCondition =
                 credentials.refresh_token &&
                 (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
-        } else if (template.auth_mode === ProviderAuthModes.App || template.auth_mode === ProviderAuthModes.AppStore) {
+        } else if (
+            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.App ||
+            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.AppStore
+        ) {
+            tokenExpirationCondition =
+                refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
+        } else if ((template.auth_mode as ProviderAuthModes) === ProviderAuthModes.OAuth2 && providerConfig.provider === 'facebook') {
             tokenExpirationCondition =
                 refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
         }
