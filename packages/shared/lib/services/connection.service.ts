@@ -969,20 +969,11 @@ class ConnectionService {
             instantRefresh ||
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
 
-        const ExpirationCondition =
+        let tokenExpirationCondition =
             refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
 
-        let tokenExpirationCondition;
-
         if ((template.auth_mode === ProviderAuthModes.OAuth2 || credentials?.type === ProviderAuthModes.OAuth2) && providerConfig.provider !== 'facebook') {
-            tokenExpirationCondition = credentials.refresh_token && ExpirationCondition;
-        } else if (
-            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.Custom ||
-            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.App ||
-            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.AppStore ||
-            ((template.auth_mode as ProviderAuthModes) === ProviderAuthModes.OAuth2 && providerConfig.provider === 'facebook')
-        ) {
-            tokenExpirationCondition = ExpirationCondition;
+            tokenExpirationCondition = Boolean(credentials.refresh_token && tokenExpirationCondition);
         }
 
         return Boolean(tokenExpirationCondition);
