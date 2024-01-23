@@ -353,7 +353,9 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         environment_id: number,
         config: ApplicationConstructedProxyConfiguration,
         error: AxiosError,
-        attemptNumber: number
+        attemptNumber: number,
+        checkMode = false,
+        writeLogs = true
     ): Promise<boolean> => {
         if (
             error?.response?.status.toString().startsWith('5') ||
@@ -368,27 +370,33 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 const type = config.retryHeader.at ? 'at' : 'after';
                 const retryHeader = config.retryHeader.at ? config.retryHeader.at : config.retryHeader.after;
 
-                return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
+                if (!checkMode) {
+                    return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
+                }
             }
 
             if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
                 const type = config.template.proxy.retry.at ? 'at' : 'after';
                 const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
 
-                return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
+                if (!checkMode) {
+                    return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
+                }
             }
 
-            const content = `API received an ${
-                error?.response?.status || error?.code
-            } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
+            if (writeLogs) {
+                const content = `API received an ${
+                    error?.response?.status || error?.code
+                } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
+                await createActivityLogMessage({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content
+                });
+            }
 
             return true;
         }
@@ -483,7 +491,8 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
             const response: AxiosResponse = await backOff(
                 () => {
-                    return axios.get(url, { ...options, headers });
+                    //return axios.get(url, { ...options, headers });
+                    return axios.get(url, { ...options, headers, timeout: 10 });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
             );
@@ -749,7 +758,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number
-    ): Promise<void> {
+    ): Promise<void | AxiosResponse> {
         if (!error?.response?.data) {
             const {
                 message,
@@ -798,6 +807,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             await this.reportError(error, url, config, activityLogId, environment_id, message);
         }
 
+        const willRetry = await this.retry(activityLogId, environment_id, config, error, 1, true, false);
+
+        // in the case a retry will kick in we want to return the error instead of
+        // throwing so the sync can continue with the exponential backoffs
+        if (willRetry) {
+            return error?.response as AxiosResponse;
+        }
         throw error;
     }
 }
