@@ -41,8 +41,7 @@ import {
     findSyncByConnections,
     setFrequency,
     getEnvironmentAndAccountId,
-    getSyncAndActionConfigsBySyncNameAndConfigId,
-    getSchedule
+    getSyncAndActionConfigsBySyncNameAndConfigId
 } from '@nangohq/shared';
 
 class SyncController {
