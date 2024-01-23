@@ -734,7 +734,6 @@ class SyncController {
                 newFrequency = response.interval;
             }
 
-            // Get implicit env
             const getEnv = await getEnvironmentAndAccountId(res, req);
             if (!getEnv.success || getEnv.response === null) {
                 errorManager.errResFromNangoErr(res, getEnv.error);
@@ -742,7 +741,6 @@ class SyncController {
             }
             const envId = getEnv.response.environmentId;
 
-            // Fetch connection
             const getConnection = await connectionService.getConnection(connection_id, provider_config_key, envId);
             if (!getConnection.response || getConnection.error) {
                 res.status(400).send({ message: 'Invalid connection_id' });
@@ -750,26 +748,12 @@ class SyncController {
             }
             const connection = getConnection.response;
 
-            // Verify sync
             const syncs = await findSyncByConnections([Number(connection.id)], sync_name);
             if (syncs.length <= 0) {
                 res.status(400).send({ message: 'Invalid sync_name' });
                 return;
             }
             const syncId = syncs[0]!.id!;
-
-            // Verify schedule
-            const schedule = await getSchedule(syncId);
-            if (!schedule) {
-                res.status(400).send({ message: 'Invalid sync_name' });
-                return;
-            }
-
-            // Early return if there is nothing to do
-            if (schedule.frequency === frequency) {
-                res.status(200).send({ frequency });
-                return;
-            }
 
             // When "frequency === null" we revert the value stored in the sync config
             if (!newFrequency) {
