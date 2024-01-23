@@ -15,7 +15,8 @@ import {
     updateAction as updateActivityLogAction,
     createActivityLogMessage,
     createActivityLogMessageAndEnd,
-    updateProvider as updateProviderActivityLog
+    updateProvider as updateProviderActivityLog,
+    updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
@@ -773,7 +774,8 @@ class ConnectionService {
         connectionConfig: Connection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.AppStore] as string);
+        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
 
         const now = Math.floor(Date.now() / 1000);
         const expiration = now + 15 * 60;
@@ -819,15 +821,69 @@ class ConnectionService {
         return { success: true, error: null, response: credentials };
     }
 
+    public async getAppCredentialsAndFinishConnection(
+        connectionId: string,
+        integration: ProviderConfig,
+        template: ProviderTemplate,
+        connectionConfig: ConnectionConfig,
+        activityLogId: number
+    ): Promise<void> {
+        const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig as ConnectionConfig);
+
+        if (!success || !credentials) {
+            console.log(error);
+            return;
+        }
+
+        const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
+
+        const [updatedConnection] = await this.upsertConnection(
+            connectionId,
+            integration.unique_key,
+            integration.provider,
+            credentials as unknown as AuthCredentials,
+            connectionConfig,
+            integration.environment_id,
+            accountId as number
+        );
+
+        if (updatedConnection) {
+            await connectionCreatedHook(
+                {
+                    id: updatedConnection.id,
+                    connection_id: connectionId,
+                    provider_config_key: integration.unique_key,
+                    environment_id: integration.environment_id
+                },
+                integration.provider,
+                // the connection is complete so we want to initiate syncs
+                // the post connection script has run already because we needed to get the github handle
+                { initiateSync: true, runPostConnectionScript: false }
+            );
+        }
+
+        await createActivityLogMessageAndEnd({
+            level: 'info',
+            environment_id: integration.environment_id,
+            activity_log_id: Number(activityLogId),
+            content: 'App connection was approved and credentials were saved',
+            timestamp: Date.now()
+        });
+
+        await updateSuccessActivityLog(Number(activityLogId), true);
+    }
+
     public async getAppCredentials(
         template: ProviderTemplate,
         config: ProviderConfig,
         connectionConfig: Connection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
-        const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
-        const privateKeyBase64 = config.oauth_client_secret;
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.App] as string);
 
-        const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
+        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
+        const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
+
+        const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
 
         const headers = {
             Accept: 'application/vnd.github.v3+json'
@@ -839,7 +895,7 @@ class ConnectionService {
         const payload: Record<string, string | number> = {
             iat: now,
             exp: expiration,
-            iss: config.oauth_client_id
+            iss: (config?.custom ? config.custom['app_id'] : config.oauth_client_id) as string
         };
 
         const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
@@ -915,10 +971,13 @@ class ConnectionService {
 
         let tokenExpirationCondition;
 
-        if (template.auth_mode === ProviderAuthModes.OAuth2) {
+        if (template.auth_mode === ProviderAuthModes.OAuth2 || credentials?.type === ProviderAuthModes.OAuth2) {
             tokenExpirationCondition =
                 credentials.refresh_token &&
                 (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
+        } else if (template.auth_mode === ProviderAuthModes.Custom) {
+            tokenExpirationCondition =
+                refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
         } else if (template.auth_mode === ProviderAuthModes.App || template.auth_mode === ProviderAuthModes.AppStore) {
             tokenExpirationCondition =
                 refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
@@ -946,7 +1005,10 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (template.auth_mode === ProviderAuthModes.App) {
+        } else if (
+            template.auth_mode === ProviderAuthModes.App ||
+            (template.auth_mode === ProviderAuthModes.Custom && connection?.credentials?.type !== ProviderAuthModes.OAuth2)
+        ) {
             const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
 
             if (!success || !credentials) {

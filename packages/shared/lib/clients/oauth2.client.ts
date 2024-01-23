@@ -18,7 +18,8 @@ import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, template: ProviderTemplate, connectionConfig: Record<string, string>) {
-    const strippedTokenUrl = template.token_url.replace(/connectionConfig\./g, '');
+    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
+    const strippedTokenUrl = templateTokenUrl.replace(/connectionConfig\./g, '');
     const tokenUrl = new URL(interpolateString(strippedTokenUrl, connectionConfig));
     const strippedAuthorizeUrl = template.authorization_url.replace(/connectionConfig\./g, '');
     const authorizeUrl = new URL(interpolateString(strippedAuthorizeUrl, connectionConfig));

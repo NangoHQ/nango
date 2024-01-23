@@ -55,8 +55,9 @@ export interface NangoConnection {
 
 export interface ConnectionList {
     id: number;
-    connectionId: string;
-    providerConfigKey: string;
+    connection_id: string;
+    provider_config_key: string;
     provider: string;
-    creationDate: string;
+    created: string;
+    metadata?: Metadata | null;
 }

@@ -55,7 +55,6 @@ class AppAuthController {
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);
-        const handle = session.connectionConfig['handle'] as string;
 
         try {
             if (!providerConfigKey) {
@@ -81,12 +80,15 @@ class AppAuthController {
                     timestamp: Date.now()
                 });
 
+                await updateSuccessActivityLog(activityLogId as number, false);
+
                 errorManager.errRes(res, 'unknown_provider_config');
 
                 return;
             }
 
             const template = await configService.getTemplate(config?.provider as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[AuthModes.App] as string);
 
             if (template.auth_mode !== AuthModes.App) {
                 await createActivityLogMessageAndEnd({
@@ -99,47 +101,40 @@ class AppAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
+                await updateSuccessActivityLog(activityLogId as number, false);
+
                 return;
             }
 
             if (action === 'request') {
                 await createActivityLogMessage({
-                    level: 'info',
+                    level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: 'App connection was requested',
+                    content: 'App types do not support the request flow. Please use the github-app-oauth provider for the request flow.',
                     timestamp: Date.now(),
                     auth_mode: AuthModes.App,
                     url: req.originalUrl
                 });
 
-                const pending = true;
+                await updateSuccessActivityLog(activityLogId as number, false);
 
-                await connectionService.createConnection(
-                    connectionId,
-                    providerConfigKey,
-                    { app_id: config?.oauth_client_id, pending, pendingLog: activityLogId?.toString() as string, handle },
-                    AuthModes.App,
-                    environmentId
-                );
+                errorManager.errRes(res, 'wrong_auth_mode');
 
-                await updateSuccessActivityLog(activityLogId as number, null);
-
-                return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId, pending);
+                return;
             }
 
             const connectionConfig = {
-                installation_id: installation_id,
-                app_id: config?.oauth_client_id,
-                handle
+                installation_id,
+                app_id: config?.oauth_client_id
             };
 
-            if (missesInterpolationParam(template.token_url, connectionConfig)) {
+            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig)).message,
+                    content: WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: req.originalUrl,
@@ -153,7 +148,7 @@ class AppAuthController {
                     wsClientId,
                     providerConfigKey,
                     connectionId,
-                    WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
+                    WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig))
                 );
             }
 

@@ -287,9 +287,6 @@ class ConnectionController {
 
             if (!isWeb) {
                 analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
-                res.status(200).send({ connections });
-
-                return;
             }
 
             const configs = await configService.listProviderConfigs(environmentId);
@@ -308,17 +305,17 @@ class ConnectionController {
             const result: ConnectionList[] = connections.map((connection) => {
                 return {
                     id: connection.id,
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider as string,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider as string,
                     provider: uniqueKeyToProvider[connection.provider] as string,
-                    creationDate: connection.created,
+                    created: connection.created,
                     metadata: connection.metadata
                 };
             });
 
             res.status(200).send({
                 connections: result.sort(function (a, b) {
-                    return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
+                    return new Date(b.created).getTime() - new Date(a.created).getTime();
                 })
             });
         } catch (err) {
@@ -521,6 +518,8 @@ class ConnectionController {
             let oAuthCredentials: ImportedCredentials;
             let updatedConnection: { id: number } = {} as { id: number };
 
+            let runHook = false;
+
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
 
@@ -593,11 +592,6 @@ class ConnectionController {
 
                 if (!username) {
                     errorManager.errRes(res, 'missing_basic_username');
-                    return;
-                }
-
-                if (!password) {
-                    errorManager.errRes(res, 'missing_basic_password');
                     return;
                 }
 
@@ -688,13 +682,14 @@ class ConnectionController {
 
                 if (imported) {
                     updatedConnection = imported;
+                    runHook = true;
                 }
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
             }
 
-            if (updatedConnection && updatedConnection.id) {
+            if (updatedConnection && updatedConnection.id && runHook) {
                 await connectionCreatedHook(
                     {
                         id: updatedConnection.id,

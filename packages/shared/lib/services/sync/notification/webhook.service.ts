@@ -10,6 +10,23 @@ import { createActivityLog, createActivityLogMessage, createActivityLogMessageAn
 
 const RETRY_ATTEMPTS = 10;
 
+const NON_FORWARDABLE_HEADERS = [
+    'host',
+    'authorization',
+    'connection',
+    'keep-alive',
+    'content-length',
+    'content-encoding',
+    'cookie',
+    'set-cookie',
+    'referer',
+    'user-agent',
+    'sec-',
+    'proxy-',
+    'www-authenticate',
+    'server'
+];
+
 class WebhookService {
     private retry = async (activityLogId: number, environment_id: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
         if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
@@ -41,6 +58,20 @@ class WebhookService {
         return {
             'X-Nango-Signature': createdHash
         };
+    };
+
+    private filterHeaders = (headers: Record<string, string>): Record<string, string> => {
+        const filteredHeaders: Record<string, string> = {};
+
+        for (const [key, value] of Object.entries(headers)) {
+            if (NON_FORWARDABLE_HEADERS.some((header) => key.toLowerCase().startsWith(header))) {
+                continue;
+            }
+
+            filteredHeaders[key] = value;
+        }
+
+        return filteredHeaders;
     };
 
     async send(
@@ -143,7 +174,13 @@ class WebhookService {
         }
     }
 
-    async forward(environment_id: number, providerConfigKey: string, provider: string, payload: Record<string, any> | null) {
+    async forward(
+        environment_id: number,
+        providerConfigKey: string,
+        provider: string,
+        payload: Record<string, any> | null,
+        webhookOriginalHeaders: Record<string, any>
+    ) {
         const webhookInfo = await environmentService.getById(environment_id);
 
         if (!webhookInfo || !webhookInfo.webhook_url) {
@@ -172,7 +209,12 @@ class WebhookService {
             payload: payload
         };
 
-        const headers = this.getSignatureHeader(webhookInfo.secret_key, body);
+        const nangoHeaders = this.getSignatureHeader(webhookInfo.secret_key, body);
+
+        const headers = {
+            ...nangoHeaders,
+            ...this.filterHeaders(webhookOriginalHeaders)
+        };
 
         try {
             const response = await backOff(
