@@ -39,11 +39,10 @@ import {
     getInterval,
     updateSyncScheduleFrequency,
     findSyncByConnections,
-    findSyncConfigByName,
-    findSyncConfigByConnection,
     setFrequency,
     getEnvironmentAndAccountId,
-    getSyncAndActionConfigsBySyncNameAndConfigId
+    getSyncAndActionConfigsBySyncNameAndConfigId,
+    getSchedule
 } from '@nangohq/shared';
 
 class SyncController {
@@ -751,9 +750,22 @@ class SyncController {
                 res.status(400).send({ message: 'Invalid sync_name' });
                 return;
             }
-            const syncId = syncs[0]!.id;
+            const syncId = syncs[0]!.id!;
 
-            // Fetch configs to get the default value when "frequency === null"
+            // Verify schedule
+            const schedule = await getSchedule(syncId);
+            if (!schedule) {
+                res.status(400).send({ message: 'Invalid sync_name' });
+                return;
+            }
+
+            // Early return if there is nothing to do
+            if (schedule.frequency === frequency) {
+                res.status(200).send({ frequency });
+                return;
+            }
+
+            // When "frequency === null" we revert the value stored in the sync config
             if (!newFrequency) {
                 const providerId = await configService.getIdByProviderConfigKey(envId, provider_config_key);
                 const syncConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(envId, providerId!, sync_name);
@@ -761,8 +773,6 @@ class SyncController {
                     res.status(400).send({ message: 'Invalid sync_name' });
                     return;
                 }
-
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 newFrequency = syncConfigs[0]!.runs;
             }
 
