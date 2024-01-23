@@ -695,7 +695,7 @@ class SyncController {
     }
 
     /**
-     * PUT /sync/frequency
+     * PUT /sync/update-connection-frequency
      *
      * Allow users to change the default frequency value of a sync without losing the value.
      * The system will store the value inside `_nango_syncs.frequency` and update the relevant schedules.
@@ -765,26 +765,11 @@ class SyncController {
                 newFrequency = syncConfigs[0]!.runs;
             }
 
-            const log = {
-                level: 'info' as LogLevel,
-                success: null,
-                action: LogActionEnum.SYNC_FREQUENCY,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: null,
-                provider: null,
-                provider_config_key,
-                environment_id: connection.environment_id,
-                operation_name: LogActionEnum.SYNC_FREQUENCY
-            };
-            const activityLogId = await createActivityLog(log);
-
             // Store the value in database
             await setFrequency(syncId, frequency);
 
             // Update syncs that are already scheduled
-            const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, activityLogId as number, connection.environment_id);
+            const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, connection.environment_id);
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
                 return;

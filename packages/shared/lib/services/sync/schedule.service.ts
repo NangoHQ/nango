@@ -74,8 +74,8 @@ export const updateSyncScheduleFrequency = async (
     sync_id: string,
     interval: string,
     syncName: string,
-    activityLogId: number,
-    environmentId: number
+    environmentId: number,
+    activityLogId?: number
 ): Promise<ServiceResponse<boolean>> => {
     const existingSchedule = await getSchedule(sync_id);
 

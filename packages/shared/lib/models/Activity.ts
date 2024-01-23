@@ -19,8 +19,7 @@ export type LogAction =
     | 'sync deploy'
     | 'token'
     | 'trigger sync'
-    | 'webhook'
-    | 'sync frequency update';
+    | 'webhook';
 
 export enum LogActionEnum {
     ACCOUNT = 'account',
@@ -38,7 +37,6 @@ export enum LogActionEnum {
     SYNC = 'sync',
     SYNC_CLIENT = 'sync client',
     SYNC_DEPLOY = 'sync deploy',
-    SYNC_FREQUENCY = 'sync frequency update',
     TOKEN = 'token',
     TRIGGER_SYNC = 'trigger sync',
     WEBHOOK = 'webhook'
