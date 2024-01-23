@@ -107,6 +107,12 @@ export const clearLastSyncDate = async (id: string): Promise<void> => {
         });
 };
 
+export async function setFrequency(id: string, frequency: string | null): Promise<void> {
+    await schema().from<Sync>(TABLE).where({ id }).update({
+        frequency
+    });
+}
+
 /**
  * Set Last Sync Date
  * @desc if passed a valid date set the sync date, however if

@@ -35,7 +35,13 @@ import {
     syncOrchestrator,
     getAttributes,
     flowService,
-    getActionOrModelByEndpoint
+    getActionOrModelByEndpoint,
+    getInterval,
+    updateSyncScheduleFrequency,
+    findSyncByConnections,
+    findSyncConfigByName,
+    findSyncConfigByConnection,
+    setFrequency
 } from '@nangohq/shared';
 
 class SyncController {
@@ -683,6 +689,99 @@ class SyncController {
             await syncOrchestrator.deleteSync(syncId, environmentId);
 
             res.sendStatus(204);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async updateFrequency(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { sync_name, provider_config_key, connection_id, frequency } = req.body;
+
+            // Payload validation
+            if (!provider_config_key || typeof provider_config_key !== 'string') {
+                res.status(400).send({ message: 'provider_config_key must be a string' });
+                return;
+            }
+            if (!sync_name || typeof sync_name !== 'string') {
+                res.status(400).send({ message: 'sync_name must be a string' });
+                return;
+            }
+            if (!connection_id || typeof connection_id !== 'string') {
+                // Consistently it has been treated as string but it's a number in db
+                res.status(400).send({ message: 'connection_id must be a string' });
+                return;
+            }
+            if (typeof frequency !== 'string' || frequency !== null) {
+                res.status(400).send({ message: 'frequency must be a string or null' });
+                return;
+            }
+
+            // Validate new frequency format
+            let newFrequency: string | undefined;
+            if (frequency) {
+                const { error, response } = getInterval(frequency, new Date());
+                if (error || !response) {
+                    res.status(400).send({ message: 'frequency must have a valid format (https://github.com/vercel/ms)' });
+                    return;
+                }
+                newFrequency = response.interval;
+            }
+
+            // Verify connection
+            const connection = await connectionService.getConnectionById(Number(connection_id));
+            if (!connection) {
+                res.status(400).send({ message: 'Invalid connection_id' });
+                return;
+            }
+
+            // Verify sync
+            const syncs = await findSyncByConnections([Number(connection.id)], sync_name);
+            if (syncs.length <= 0) {
+                res.status(400).send({ message: 'Invalid sync_name' });
+                return;
+            }
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const syncId = syncs[0]!.id!;
+
+            // Fetch configs to get the default value when "frequency === null"
+            if (!newFrequency) {
+                const syncConfigs = await findSyncConfigByConnection(sync_name, connection);
+                if (syncConfigs.length <= 0) {
+                    res.status(400).send({ message: 'Invalid sync_name' });
+                    return;
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                newFrequency = syncConfigs[0]!.runs;
+            }
+
+            const log = {
+                level: 'info' as LogLevel,
+                success: null,
+                action: LogActionEnum.SYNC_FREQUENCY,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: null,
+                provider: null,
+                provider_config_key,
+                environment_id: connection.environment_id,
+                operation_name: LogActionEnum.SYNC_FREQUENCY
+            };
+            const activityLogId = await createActivityLog(log);
+
+            // Store the value in database
+            await setFrequency(syncId, frequency);
+
+            // Update sync that are already scheduled
+            const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, activityLogId as number, connection.environment_id);
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            res.status(200).send({ frequency: newFrequency });
         } catch (e) {
             next(e);
         }
