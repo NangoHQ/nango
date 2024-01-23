@@ -1,5 +1,5 @@
 import type { InternalNango as Nango } from './connection.manager.js';
-import { AuthModes, OAuthCredentials } from '../../../models/Auth.js';
+import { AuthModes, OAuth2Credentials } from '../../../models/Auth.js';
 
 export default async function execute(nango: Nango) {
     const response = await nango.proxy({
@@ -14,7 +14,7 @@ export default async function execute(nango: Nango) {
 
     const connection = await nango.getConnection();
 
-    let updatedConfig: Record<string, string | OAuthCredentials> = {
+    let updatedConfig: Record<string, string | OAuth2Credentials> = {
         handle
     };
 
