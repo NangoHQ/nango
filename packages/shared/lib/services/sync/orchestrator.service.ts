@@ -306,6 +306,7 @@ export class Orchestrator {
                     nextScheduledSyncAt,
                     name: sync?.name as string,
                     status,
+                    frequency: schedule?.frequency,
                     latestResult: latestJob?.result
                 } as ReportedSyncJobStatus;
                 if (includeJobStatus) {
@@ -345,6 +346,7 @@ export class Orchestrator {
                     nextScheduledSyncAt,
                     name: sync?.name,
                     status,
+                    frequency: schedule?.frequency,
                     latestResult: latestJob?.result
                 } as ReportedSyncJobStatus;
                 if (includeJobStatus) {
