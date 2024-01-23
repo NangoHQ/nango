@@ -969,25 +969,20 @@ class ConnectionService {
             instantRefresh ||
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
 
+        const ExpirationCondition =
+            refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
+
         let tokenExpirationCondition;
 
-        if (
-            ((template.auth_mode as ProviderAuthModes) === ProviderAuthModes.OAuth2 ||
-                (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.Custom) &&
-            providerConfig.provider !== 'facebook'
-        ) {
-            tokenExpirationCondition =
-                credentials.refresh_token &&
-                (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
+        if ((template.auth_mode === ProviderAuthModes.OAuth2 || credentials?.type === ProviderAuthModes.OAuth2) && providerConfig.provider !== 'facebook') {
+            tokenExpirationCondition = credentials.refresh_token && ExpirationCondition;
         } else if (
+            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.Custom ||
             (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.App ||
-            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.AppStore
+            (template.auth_mode as ProviderAuthModes) === ProviderAuthModes.AppStore ||
+            ((template.auth_mode as ProviderAuthModes) === ProviderAuthModes.OAuth2 && providerConfig.provider === 'facebook')
         ) {
-            tokenExpirationCondition =
-                refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
-        } else if ((template.auth_mode as ProviderAuthModes) === ProviderAuthModes.OAuth2 && providerConfig.provider === 'facebook') {
-            tokenExpirationCondition =
-                refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
+            tokenExpirationCondition = ExpirationCondition;
         }
 
         return Boolean(tokenExpirationCondition);
@@ -1012,7 +1007,10 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (template.auth_mode === ProviderAuthModes.App) {
+        } else if (
+            template.auth_mode === ProviderAuthModes.App ||
+            (template.auth_mode === ProviderAuthModes.Custom && connection?.credentials?.type !== ProviderAuthModes.OAuth2)
+        ) {
             const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
 
             if (!success || !credentials) {

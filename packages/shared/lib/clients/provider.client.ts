@@ -17,12 +17,9 @@ class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
         switch (provider) {
             case 'braintree':
-                return true;
             case 'braintree-sandbox':
-                return true;
             case 'figma':
             case 'figjam':
-                return true;
             case 'facebook':
                 return true;
             default:
@@ -43,7 +40,6 @@ class ProviderClient {
     public async getToken(config: ProviderConfig, tokenUrl: string, code: string, callBackUrl: string, codeVerifier: string): Promise<object> {
         switch (config.provider) {
             case 'braintree':
-                return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'figma':
@@ -63,30 +59,21 @@ class ProviderClient {
 
         const credentials = connection.credentials as OAuth2Credentials;
 
-        if (!credentials.refresh_token && !credentials.access_token) {
+        if (config.provider !== 'facebook' && !credentials.refresh_token) {
             throw new NangoError('missing_refresh_token');
+        } else if (config.provider === 'facebook' && !credentials.access_token) {
+            throw new NangoError('missing_facebook_access_token');
         }
 
         switch (config.provider) {
             case 'braintree':
-                return this.refreshBraintreeToken(credentials.refresh_token as string, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
-                return this.refreshBraintreeToken(credentials.refresh_token as string, config.oauth_client_id, config.oauth_client_secret);
+                return this.refreshBraintreeToken(credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'figma':
             case 'figjam':
-                return this.refreshFigmaToken(
-                    template.refresh_url as string,
-                    credentials.refresh_token as string,
-                    config.oauth_client_id,
-                    config.oauth_client_secret
-                );
+                return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
-                return this.refreshFacebookToken(
-                    template.token_url as string,
-                    credentials.access_token as string,
-                    config.oauth_client_id,
-                    config.oauth_client_secret
-                );
+                return this.refreshFacebookToken(template.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
