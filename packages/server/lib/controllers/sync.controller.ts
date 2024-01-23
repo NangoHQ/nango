@@ -41,7 +41,9 @@ import {
     findSyncByConnections,
     findSyncConfigByName,
     findSyncConfigByConnection,
-    setFrequency
+    setFrequency,
+    getEnvironmentAndAccountId,
+    getSyncAndActionConfigsBySyncNameAndConfigId
 } from '@nangohq/shared';
 
 class SyncController {
@@ -708,11 +710,10 @@ class SyncController {
                 return;
             }
             if (!connection_id || typeof connection_id !== 'string') {
-                // Consistently it has been treated as string but it's a number in db
                 res.status(400).send({ message: 'connection_id must be a string' });
                 return;
             }
-            if (typeof frequency !== 'string' || frequency !== null) {
+            if (typeof frequency !== 'string' && frequency !== null) {
                 res.status(400).send({ message: 'frequency must be a string or null' });
                 return;
             }
@@ -728,12 +729,21 @@ class SyncController {
                 newFrequency = response.interval;
             }
 
-            // Verify connection
-            const connection = await connectionService.getConnectionById(Number(connection_id));
-            if (!connection) {
+            // Get implicit env
+            const getEnv = await getEnvironmentAndAccountId(res, req);
+            if (!getEnv.success || getEnv.response === null) {
+                errorManager.errResFromNangoErr(res, getEnv.error);
+                return;
+            }
+            const envId = getEnv.response.environmentId;
+
+            // Fetch connection
+            const getConnection = await connectionService.getConnection(connection_id, provider_config_key, envId);
+            if (!getConnection.response || getConnection.error) {
                 res.status(400).send({ message: 'Invalid connection_id' });
                 return;
             }
+            const connection = getConnection.response;
 
             // Verify sync
             const syncs = await findSyncByConnections([Number(connection.id)], sync_name);
@@ -741,12 +751,12 @@ class SyncController {
                 res.status(400).send({ message: 'Invalid sync_name' });
                 return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const syncId = syncs[0]!.id!;
+            const syncId = syncs[0]!.id;
 
             // Fetch configs to get the default value when "frequency === null"
             if (!newFrequency) {
-                const syncConfigs = await findSyncConfigByConnection(sync_name, connection);
+                const providerId = await configService.getIdByProviderConfigKey(envId, provider_config_key);
+                const syncConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(envId, providerId!, sync_name);
                 if (syncConfigs.length <= 0) {
                     res.status(400).send({ message: 'Invalid sync_name' });
                     return;
@@ -774,7 +784,7 @@ class SyncController {
             // Store the value in database
             await setFrequency(syncId, frequency);
 
-            // Update sync that are already scheduled
+            // Update syncs that are already scheduled
             const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, activityLogId as number, connection.environment_id);
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);

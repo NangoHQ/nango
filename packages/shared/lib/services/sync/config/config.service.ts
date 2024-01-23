@@ -661,15 +661,15 @@ export async function getAllSyncAndActionNames(environmentId: number): Promise<s
     return result.map((syncConfig: SyncConfig) => syncConfig.sync_name);
 }
 
-export const findSyncConfigByConnection = async (sync_name: string, connection: NangoConnection): Promise<SyncConfig[]> => {
+export async function findSyncConfigByProvider(syncName: string, providerId: number): Promise<SyncConfig[]> {
     const results = await schema()
         .select(`${TABLE}.*`)
         .from<SyncConfig>(TABLE)
-        .join('_nango_configs', { [`${TABLE}.nango_config_id`]: '_nango_configs.id', provider: connection.provider_config_key })
+        .join('_nango_configs', { [`${TABLE}.nango_config_id`]: '_nango_configs.id', provider: providerId })
         .where({
             deleted: false,
             active: true,
-            sync_name
+            sync_name: syncName
         })
         .orderBy(`${TABLE}.created_at`, 'desc');
 
@@ -678,4 +678,4 @@ export const findSyncConfigByConnection = async (sync_name: string, connection: 
     }
 
     return [];
-};
+}

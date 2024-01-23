@@ -460,7 +460,7 @@ export const deleteSync = async (syncId: string): Promise<string> => {
 
 export const findSyncByConnections = async (connectionIds: number[], sync_name: string): Promise<Sync[]> => {
     const results = await schema()
-        .select('*')
+        .select(`${TABLE}.*`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .whereIn('nango_connection_id', connectionIds)
