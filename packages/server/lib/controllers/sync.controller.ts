@@ -695,7 +695,13 @@ class SyncController {
         }
     }
 
-    public async updateFrequency(req: Request, res: Response, next: NextFunction) {
+    /**
+     * PUT /sync/frequency
+     *
+     * Allow users to change the default frequency value of a sync without losing the value.
+     * The system will store the value inside `_nango_syncs.frequency` and update the relevant schedules.
+     */
+    public async updateFrequencyForConnection(req: Request, res: Response, next: NextFunction) {
         try {
             const { sync_name, provider_config_key, connection_id, frequency } = req.body;
 

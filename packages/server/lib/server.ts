@@ -112,7 +112,7 @@ app.route('/connection').post(apiAuth, connectionController.createConnection.bin
 app.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
-app.route('/sync/frequency').put(apiAuth, syncController.updateFrequency.bind(syncController));
+app.route('/sync/frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController)); //TODO: to deprecate
 app.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
