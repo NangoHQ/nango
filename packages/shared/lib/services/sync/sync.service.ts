@@ -270,6 +270,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
+            `${TABLE}.frequency as frequency_override`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,

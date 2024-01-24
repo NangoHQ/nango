@@ -571,7 +571,10 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         {interpretNextRun(sync.futureActionTimes) === '-' ? (
                                                             <li className="ml-3 w-32 text-sm text-gray-500">-</li>
                                                         ) : (
-                                                            <Tooltip text={interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[1]} type="dark">
+                                                            <Tooltip text={<div>
+                                                                {interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[1]}
+                                                                <br/>
+                                                                Frequency: {sync.frequency_override || sync.frequency}{sync.frequency_override && <> (override)</>}</div>} type="dark">
                                                                 <li className="ml-3 w-32 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</li>
                                                             </Tooltip>
                                                         )}
