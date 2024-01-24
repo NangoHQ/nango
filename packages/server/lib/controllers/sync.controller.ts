@@ -35,7 +35,13 @@ import {
     syncOrchestrator,
     getAttributes,
     flowService,
-    getActionOrModelByEndpoint
+    getActionOrModelByEndpoint,
+    getInterval,
+    updateSyncScheduleFrequency,
+    findSyncByConnections,
+    setFrequency,
+    getEnvironmentAndAccountId,
+    getSyncAndActionConfigsBySyncNameAndConfigId
 } from '@nangohq/shared';
 
 class SyncController {
@@ -683,6 +689,89 @@ class SyncController {
             await syncOrchestrator.deleteSync(syncId, environmentId);
 
             res.sendStatus(204);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    /**
+     * PUT /sync/update-connection-frequency
+     *
+     * Allow users to change the default frequency value of a sync without losing the value.
+     * The system will store the value inside `_nango_syncs.frequency` and update the relevant schedules.
+     */
+    public async updateFrequencyForConnection(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { sync_name, provider_config_key, connection_id, frequency } = req.body;
+
+            if (!provider_config_key || typeof provider_config_key !== 'string') {
+                res.status(400).send({ message: 'provider_config_key must be a string' });
+                return;
+            }
+            if (!sync_name || typeof sync_name !== 'string') {
+                res.status(400).send({ message: 'sync_name must be a string' });
+                return;
+            }
+            if (!connection_id || typeof connection_id !== 'string') {
+                res.status(400).send({ message: 'connection_id must be a string' });
+                return;
+            }
+            if (typeof frequency !== 'string' && frequency !== null) {
+                res.status(400).send({ message: 'frequency must be a string or null' });
+                return;
+            }
+
+            let newFrequency: string | undefined;
+            if (frequency) {
+                const { error, response } = getInterval(frequency, new Date());
+                if (error || !response) {
+                    res.status(400).send({ message: 'frequency must have a valid format (https://github.com/vercel/ms)' });
+                    return;
+                }
+                newFrequency = response.interval;
+            }
+
+            const getEnv = await getEnvironmentAndAccountId(res, req);
+            if (!getEnv.success || getEnv.response === null) {
+                errorManager.errResFromNangoErr(res, getEnv.error);
+                return;
+            }
+            const envId = getEnv.response.environmentId;
+
+            const getConnection = await connectionService.getConnection(connection_id, provider_config_key, envId);
+            if (!getConnection.response || getConnection.error) {
+                res.status(400).send({ message: 'Invalid connection_id' });
+                return;
+            }
+            const connection = getConnection.response;
+
+            const syncs = await findSyncByConnections([Number(connection.id)], sync_name);
+            if (syncs.length <= 0) {
+                res.status(400).send({ message: 'Invalid sync_name' });
+                return;
+            }
+            const syncId = syncs[0]!.id!;
+
+            // When "frequency === null" we revert the value stored in the sync config
+            if (!newFrequency) {
+                const providerId = await configService.getIdByProviderConfigKey(envId, provider_config_key);
+                const syncConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(envId, providerId!, sync_name);
+                if (syncConfigs.length <= 0) {
+                    res.status(400).send({ message: 'Invalid sync_name' });
+                    return;
+                }
+                newFrequency = syncConfigs[0]!.runs;
+            }
+
+            await setFrequency(syncId, frequency);
+
+            const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, connection.environment_id);
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            res.status(200).send({ frequency: newFrequency });
         } catch (e) {
             next(e);
         }

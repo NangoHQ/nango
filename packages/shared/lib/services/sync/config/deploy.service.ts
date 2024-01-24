@@ -303,7 +303,7 @@ export async function deployPreBuilt(
                 if (!runs) {
                     continue;
                 }
-                const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, sync_name, activityLogId as number, environment_id);
+                const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, sync_name, environment_id, activityLogId as number);
 
                 if (!success) {
                     return { success, error, response: null };
@@ -568,7 +568,7 @@ async function compileDeployInfo(
             if (!runs) {
                 continue;
             }
-            const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
+            const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, environment_id, activityLogId as number);
 
             if (!success) {
                 return { success, error, response: null };
