@@ -978,8 +978,7 @@ class OAuthController {
             if (updatedConnection) {
                 // don't initiate a sync if custom because this is the first step of the oauth flow
                 const initiateSync = template.auth_mode === ProviderAuthModes.Custom ? false : true;
-                // if we have an installation id no need to run the post connection script
-                const runPostConnectionScript = template.auth_mode === ProviderAuthModes.Custom && installationId ? false : true;
+                const runPostConnectionScript = true;
                 await connectionCreatedHook(
                     {
                         id: updatedConnection.id,
