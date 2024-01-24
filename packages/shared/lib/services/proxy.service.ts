@@ -483,9 +483,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
             const response: AxiosResponse = await backOff(
                 () => {
-                    //return axios.get(url, { ...options, headers });
-                    //return axios.get(url, { ...options, headers });
-                    return axios.get(url, { ...options, headers, timeout: 10 });
+                    return axios.get(url, { ...options, headers });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
             );
