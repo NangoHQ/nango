@@ -536,7 +536,7 @@ export default function ProjectSettings() {
                                     )}
                                 </div>
                             </div>
-                            {env === 'prod' && (
+                            {env !== 'dev' && (
                                 <div className="flex items-center justify-between mx-8 mt-8">
                                     <div>
                                         <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
