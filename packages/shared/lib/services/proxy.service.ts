@@ -23,7 +23,7 @@ class ProxyService {
     public async routeOrConfigure(
         externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
         internalConfig: InternalProxyConfiguration
-    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse | AxiosError | void> {
+    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse | AxiosError> {
         const { success: validationSuccess, error: validationError } = await this.validateAndLog(externalConfig, internalConfig);
 
         const { throwErrors } = internalConfig;
