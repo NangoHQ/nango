@@ -298,15 +298,20 @@ export async function deployPreBuilt(
         if (previousSyncAndActionConfig) {
             bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
-            const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, provider_config_key, sync_name);
-            for (const sync of syncs) {
-                if (!runs) {
-                    continue;
-                }
-                const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, sync_name, environment_id, activityLogId as number);
+            if (runs) {
+                const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment_id, provider_config_key, sync_name);
+                for (const syncConfig of syncsConfig) {
+                    const { success, error } = await updateSyncScheduleFrequency(
+                        syncConfig.id as string,
+                        syncConfig?.frequency || runs,
+                        sync_name,
+                        environment_id,
+                        activityLogId as number
+                    );
 
-                if (!success) {
-                    return { success, error, response: null };
+                    if (!success) {
+                        return { success, error, response: null };
+                    }
                 }
             }
         }
@@ -563,15 +568,21 @@ async function compileDeployInfo(
             });
         }
 
-        const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
-        for (const sync of syncs) {
-            if (!runs) {
-                continue;
-            }
-            const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, environment_id, activityLogId as number);
+        if (runs) {
+            const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
 
-            if (!success) {
-                return { success, error, response: null };
+            for (const syncConfig of syncsConfig) {
+                const { success, error } = await updateSyncScheduleFrequency(
+                    syncConfig.id as string,
+                    syncConfig?.frequency || runs,
+                    syncName,
+                    environment_id,
+                    activityLogId as number
+                );
+
+                if (!success) {
+                    return { success, error, response: null };
+                }
             }
         }
     }
