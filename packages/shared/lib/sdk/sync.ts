@@ -308,7 +308,13 @@ export class NangoAction {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
 
-            return proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection }) as Promise<AxiosResponse<T>>;
+            const responseOrError = await proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection });
+
+            if (responseOrError instanceof Error) {
+                throw responseOrError;
+            }
+
+            return responseOrError as unknown as Promise<AxiosResponse<T>>;
         }
     }
 

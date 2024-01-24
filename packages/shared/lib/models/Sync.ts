@@ -39,6 +39,7 @@ export interface Sync extends TimestampsAndDeleted {
         seconds?: number;
         nanos?: number;
     };
+    frequency: string | null;
 }
 
 export interface Action extends TimestampsAndDeleted {
