@@ -13,8 +13,9 @@ interface ClipboardButtonProps {
 export default function ClipboardButton({ text, icontype = 'clipboard', textPrompt = 'Copy', dark = false, classNames = '' }: ClipboardButtonProps) {
     const [tooltipText, setTooltipText] = useState(textPrompt);
 
-    const copyToClipboard = async () => {
+    const copyToClipboard = async (e: React.MouseEvent) => {
         try {
+            e.stopPropagation();
             await navigator.clipboard.writeText(text);
             setTooltipText('Copied');
         } catch (err) {

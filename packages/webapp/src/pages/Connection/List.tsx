@@ -53,7 +53,7 @@ export default function ConnectionList() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays <= 7) {
-            return `${diffDays} days ago`;
+            return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
         } else {
             return new Date(creationDate).toLocaleDateString();
         }
@@ -90,7 +90,7 @@ export default function ConnectionList() {
                                                 navigate(`/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
                                             }}
                                         >
-                                            <div className="flex w-2/3">
+                                            <div className="flex items-center w-2/3">
                                                 <span>{connectionId}</span>
                                                 <CopyButton dark text={connectionId} />
                                             </div>

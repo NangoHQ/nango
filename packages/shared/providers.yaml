@@ -554,6 +554,7 @@ github:
 github-app:
     categories:
       - dev-tools
+      - ticketing
     alias: github
     auth_mode: APP
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
@@ -561,6 +562,9 @@ github-app:
     docs: https://docs.github.com/en/apps
     webhook_routing_script: github-app-webhook-routing
 github-app-oauth:
+    categories:
+      - dev-tools
+      - ticketing
     alias: github
     auth_mode: CUSTOM
     authorization_url: ${connectionConfig.appPublicLink}/installations/new

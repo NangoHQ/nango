@@ -267,6 +267,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
+            `${SYNC_CONFIG_TABLE}.models`,
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -296,11 +297,14 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
         )
         .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
+        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
         .where({
             nango_connection_id: nangoConnection.id,
             [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
             [`${SYNC_JOB_TABLE}.deleted`]: false,
-            [`${TABLE}.deleted`]: false
+            [`${TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.active`]: true
         })
         .orderBy(`${TABLE}.name`, 'asc')
         .groupBy(
@@ -308,7 +312,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
-            `${SYNC_SCHEDULE_TABLE}.schedule_id`
+            `${SYNC_SCHEDULE_TABLE}.schedule_id`,
+            `${SYNC_CONFIG_TABLE}.models`
         );
 
     const syncsWithSchedule = result.map((sync) => {
@@ -412,6 +417,27 @@ export const verifyOwnership = async (nangoConnectionId: number, environment_id:
             environment_id,
             [`${TABLE}.id`]: syncId,
             nango_connection_id: nangoConnectionId,
+            [`_nango_connections.deleted`]: false,
+            [`${TABLE}.deleted`]: false
+        });
+
+    if (result.length === 0) {
+        return false;
+    }
+
+    return true;
+};
+
+export const isSyncValid = async (connection_id: string, provider_config_key: string, environment_id: number, sync_id: string): Promise<boolean> => {
+    const result = await schema()
+        .select('*')
+        .from<Sync>(TABLE)
+        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
+        .where({
+            environment_id,
+            [`${TABLE}.id`]: sync_id,
+            connection_id,
+            provider_config_key,
             [`_nango_connections.deleted`]: false,
             [`${TABLE}.deleted`]: false
         });

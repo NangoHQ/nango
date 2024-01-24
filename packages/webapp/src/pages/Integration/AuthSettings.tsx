@@ -198,7 +198,6 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 onChange={(e) => setIntegrationIdEdit(e.target.value)}
                                 className="bg-zinc-900 w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
                                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                                    console.log(e.key)
                                     if (e.key === 'Enter') {
                                         onSaveIntegrationID();
                                     }

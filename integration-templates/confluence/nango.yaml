@@ -1,12 +1,16 @@
----
 integrations:
   confluence:
-    confluence-spaces:
-      runs: every 4 hours
-      returns: [ConfluenceSpace]
-    confluence-pages:
-      runs: every 4 hours
-      returns: [ConfluencePage]
+    syncs:
+      confluence-spaces:
+        runs: every 4 hours
+        output: ConfluenceSpace
+        sync_type: full
+        endpoint: /confluence/spaces
+      confluence-pages:
+        runs: every 4 hours
+        output: ConfluencePage
+        sync_type: full
+        endpoint: /confluence/pages
 models:
   ConfluenceSpace:
     id: string

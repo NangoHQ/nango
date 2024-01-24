@@ -126,11 +126,10 @@ export function formatDateToShortUSFormat(dateString: string): string {
 export function formatDateToUSFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      second: 'numeric',
       hour12: true,
     };
 

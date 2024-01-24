@@ -64,6 +64,7 @@ export interface SyncResponse {
     futureActionTimes: number[];
     offset: number;
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
+    models: string[];
     schedule_id: string;
     latest_sync: {
         created_at: string;
@@ -94,6 +95,24 @@ export enum AuthModes {
     App = 'APP',
     Custom = 'CUSTOM',
     None = 'NONE'
+}
+
+export interface Connection {
+    id: number;
+    connectionId: string;
+    provider: string;
+    providerConfigKey: number;
+    creationDate: string;
+    oauthType: string;
+    connectionConfig: Record<string, string>;
+    connectionMetadata: Record<string, string>;
+    accessToken: string | null;
+    refreshToken: string | null;
+    expiresAt: string | null;
+    oauthToken: string | null;
+    oauthTokenSecret: string | null;
+    rawCredentials: object;
+    credentials: BasicApiCredentials | ApiKeyCredentials | null;
 }
 
 export interface BasicApiCredentials {

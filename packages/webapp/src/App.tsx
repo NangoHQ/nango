@@ -15,11 +15,12 @@ import Signup from './pages/Signup';
 import InviteSignup from './pages/InviteSignup';
 import Signin from './pages/Signin';
 import GettingStarted from './pages/GettingStarted';
-import IntegrationList from './pages/IntegrationList';
+import IntegrationList from './pages/Integration/List';
 import CreateIntegration from './pages/Integration/Create';
 import ShowIntegration from './pages/Integration/Show';
 import ConnectionList from './pages/Connection/List';
 import Connection from './pages/Connection/Show';
+import ConnectionCreate from './pages/Connection/Create';
 import FlowCreate from './pages/FlowCreate';
 import ConnectionDetails from './pages/ConnectionDetails';
 import ProjectSettings from './pages/ProjectSettings';
@@ -97,13 +98,16 @@ const App = () => {
                     <Route path="/connections" element={<ConnectionList />} />
                 </Route>
                 <Route path="/connections/create" element={<PrivateRoute />}>
-                    <Route path="/connections/create" element={<Connection />} />
+                    <Route path="/connections/create" element={<ConnectionCreate />} />
                 </Route>
                 <Route path="/connections/create/:providerConfigKey" element={<PrivateRoute />}>
-                    <Route path="/connections/create/:providerConfigKey" element={<Connection />} />
+                    <Route path="/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
                 </Route>
                 <Route path="/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
-                    <Route path="/connections/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
+                    <Route path="/connections/:providerConfigKey/:connectionId" element={<Connection />} />
+                </Route>
+                <Route path="/connections-old/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
+                    <Route path="/connections-old/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
                 </Route>
                 <Route path="/activity" element={<PrivateRoute />}>
                     <Route path="/activity" element={<Activity />} />

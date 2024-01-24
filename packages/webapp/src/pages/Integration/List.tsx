@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { PlusIcon, EllipsisHorizontalIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 
-import { useGetIntegrationListAPI } from '../utils/api';
-import DashboardLayout from '../layout/DashboardLayout';
-import { LeftNavBarItems } from '../components/LeftNavBar';
-import IntegrationLogo from '../components/ui/IntegrationLogo';
+import { useGetIntegrationListAPI } from '../../utils/api';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { LeftNavBarItems } from '../../components/LeftNavBar';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
 
-import { useStore } from '../store';
+import { useStore } from '../../store';
 
 interface Integration {
     uniqueKey: string;
