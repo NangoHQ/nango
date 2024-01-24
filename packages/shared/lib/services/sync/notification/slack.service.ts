@@ -140,7 +140,7 @@ class SlackService {
             nangoAdminConnection?.environment_id as number
         )) as ServiceResponse<SlackActionResponse>;
 
-        if (id && response) {
+        if (id && response && response.ts) {
             await this.updateNotificationWithAdminTimestamp(id, response.ts);
         }
     }
@@ -278,7 +278,9 @@ class SlackService {
             environment_id
         )) as ServiceResponse<SlackActionResponse>;
 
-        await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse?.ts as string);
+        if (actionSuccess && actionResponse?.ts) {
+            await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse?.ts as string);
+        }
 
         await this.sendDuplicateNotificationToNangoAdmins(
             payload,
@@ -290,7 +292,7 @@ class SlackService {
 
         const content = actionSuccess
             ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`
-            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionError} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
+            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionError?.message} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
 
         await createActivityLogMessage({
             level: actionSuccess ? 'info' : 'error',

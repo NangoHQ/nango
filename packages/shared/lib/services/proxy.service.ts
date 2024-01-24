@@ -23,7 +23,7 @@ class ProxyService {
     public async routeOrConfigure(
         externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
         internalConfig: InternalProxyConfiguration
-    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse | void> {
+    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse | AxiosError> {
         const { success: validationSuccess, error: validationError } = await this.validateAndLog(externalConfig, internalConfig);
 
         const { throwErrors } = internalConfig;
@@ -749,7 +749,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number
-    ): Promise<void> {
+    ): Promise<AxiosError> {
         if (!error?.response?.data) {
             const {
                 message,
@@ -798,7 +798,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             await this.reportError(error, url, config, activityLogId, environment_id, message);
         }
 
-        throw error;
+        return error;
     }
 }
 

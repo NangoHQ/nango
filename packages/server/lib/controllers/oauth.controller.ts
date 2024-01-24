@@ -864,7 +864,7 @@ class OAuthController {
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
 
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl);
+                rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl, session.codeVerifier);
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
                     {
@@ -978,8 +978,7 @@ class OAuthController {
             if (updatedConnection) {
                 // don't initiate a sync if custom because this is the first step of the oauth flow
                 const initiateSync = template.auth_mode === ProviderAuthModes.Custom ? false : true;
-                // if we have an installation id no need to run the post connection script
-                const runPostConnectionScript = template.auth_mode === ProviderAuthModes.Custom && installationId ? false : true;
+                const runPostConnectionScript = true;
                 await connectionCreatedHook(
                     {
                         id: updatedConnection.id,

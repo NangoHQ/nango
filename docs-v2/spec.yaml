@@ -773,7 +773,7 @@ paths:
                                     description: The ID of the connection. If omitted, the syncs will be triggered for all relevant connections.
                                 syncs:
                                     type: array
-                                    descriptions: A list of sync names that you wish to trigger.
+                                    description: A list of sync names that you wish to trigger.
                                     items:
                                         type: string
             responses:
@@ -809,7 +809,7 @@ paths:
                                     description: The ID of the connection. If omitted, the syncs will be started for all relevant connections.
                                 syncs:
                                     type: array
-                                    descriptions: A list of sync names that you wish to start.
+                                    description: A list of sync names that you wish to start.
                                     items:
                                         type: string
             responses:
@@ -844,7 +844,7 @@ paths:
                                     description: The ID of the connection. If omitted, the syncs will be paused for all relevant connections.
                                 syncs:
                                     type: array
-                                    descriptions: A list of sync names that you wish to pause.
+                                    description: A list of sync names that you wish to pause.
                                     items:
                                         type: string
             responses:
@@ -915,6 +915,9 @@ paths:
                                                 nextScheduledSyncAt:
                                                     type: string
                                                     description: ISO string of the next scheduled sync time
+                                                frequency:
+                                                    type: string
+                                                    description: The execution frequency of the sync
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records

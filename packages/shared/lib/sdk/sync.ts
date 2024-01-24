@@ -308,7 +308,13 @@ export class NangoAction {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
 
-            return proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection }) as Promise<AxiosResponse<T>>;
+            const responseOrError = await proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection });
+
+            if (responseOrError instanceof Error) {
+                throw responseOrError;
+            }
+
+            return responseOrError as unknown as Promise<AxiosResponse<T>>;
         }
     }
 
@@ -355,7 +361,7 @@ export class NangoAction {
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
-    public async updateMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 

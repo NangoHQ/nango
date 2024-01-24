@@ -9,6 +9,7 @@ import {
     TemplateOAuth2 as ProviderTemplateOAuth2
 } from '../models/index.js';
 import axios from 'axios';
+import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 
@@ -16,11 +17,10 @@ class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
         switch (provider) {
             case 'braintree':
-                return true;
             case 'braintree-sandbox':
-                return true;
             case 'figma':
             case 'figjam':
+            case 'facebook':
                 return true;
             default:
                 return false;
@@ -37,15 +37,16 @@ class ProviderClient {
         }
     }
 
-    public async getToken(config: ProviderConfig, tokenUrl: string, code: string, callBackUrl: string): Promise<object> {
+    public async getToken(config: ProviderConfig, tokenUrl: string, code: string, callBackUrl: string, codeVerifier: string): Promise<object> {
         switch (config.provider) {
             case 'braintree':
-                return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'figma':
             case 'figjam':
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'facebook':
+                return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -58,18 +59,21 @@ class ProviderClient {
 
         const credentials = connection.credentials as OAuth2Credentials;
 
-        if (!credentials.refresh_token) {
+        if (config.provider !== 'facebook' && !credentials.refresh_token) {
             throw new NangoError('missing_refresh_token');
+        } else if (config.provider === 'facebook' && !credentials.access_token) {
+            throw new NangoError('missing_facebook_access_token');
         }
 
         switch (config.provider) {
             case 'braintree':
-                return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
-                return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
+                return this.refreshBraintreeToken(credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'figma':
             case 'figjam':
-                return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
+                return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'facebook':
+                return this.refreshFacebookToken(template.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -124,6 +128,34 @@ class ProviderClient {
         throw new NangoError('figma_token_request_error');
     }
 
+    private async createFacebookToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        callBackUrl: string,
+        codeVerifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        const params = new URLSearchParams();
+        params.set('redirect_uri', callBackUrl);
+        const body = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            code: code,
+            redirect_uri: callBackUrl,
+            code_verifier: codeVerifier
+        };
+        const url = `${tokenUrl}?${params.toString()}`;
+        const response = await axios.post(url, body);
+        if (response.status === 200 && response.data !== null) {
+            return {
+                access_token: response.data['access_token'],
+                expires_in: response.data['expires_in']
+            };
+        }
+        throw new NangoError('facebook_token_request_error');
+    }
+
     private async refreshFigmaToken(refreshTokenUrl: string, refreshToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
         const body = {
             client_id: clientId,
@@ -139,6 +171,24 @@ class ProviderClient {
             };
         }
         throw new NangoError('figma_refresh_token_request_error');
+    }
+
+    private async refreshFacebookToken(refreshTokenUrl: string, accessToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
+        const queryParams = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            grant_type: 'fb_exchange_token',
+            fb_exchange_token: accessToken
+        };
+        const urlWithParams = `${refreshTokenUrl}?${qs.stringify(queryParams)}`;
+        const response = await axios.post(urlWithParams);
+        if (response.status === 200 && response.data !== null) {
+            return {
+                access_token: response.data['access_token'],
+                expires_in: response.data['expires_in']
+            };
+        }
+        throw new NangoError('facebook_refresh_token_request_error');
     }
 
     private async createBraintreeToken(code: string, clientId: string, clientSecret: string): Promise<object> {

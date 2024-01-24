@@ -61,6 +61,7 @@ export interface SyncResponse {
     nango_connection_id: number;
     name: string;
     frequency: string;
+    frequency_override: string | null;
     futureActionTimes: number[];
     offset: number;
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
