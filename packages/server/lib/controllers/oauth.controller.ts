@@ -864,7 +864,7 @@ class OAuthController {
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
 
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl);
+                rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl, session.codeVerifier);
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
                     {
