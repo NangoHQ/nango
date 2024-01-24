@@ -33,7 +33,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                     {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
                 </span>
                 {copy && <CopyButton text={value as string} dark />}
-                {props.refresh && <ArrowPathIcon className="flex h-4 w-4 ml-2 cursor-pointer text-gray-500" onClick={props.refresh} />}
+                {props.refresh && <ArrowPathIcon className="flex h-4 w-4 mr-2 ml-2 cursor-pointer text-gray-500" onClick={props.refresh} />}
             </span>
         </div>
     );

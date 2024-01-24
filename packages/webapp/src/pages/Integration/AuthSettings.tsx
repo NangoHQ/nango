@@ -103,7 +103,6 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
             if (res?.status === 200) {
                 toast.success('Integration updated!', { position: toast.POSITION.BOTTOM_CENTER });
-                navigate('/integrations', { replace: true });
             }
         } else {
             const target = e.target as typeof e.target & {

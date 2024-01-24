@@ -32,10 +32,10 @@ export default function ConnectionList() {
 
     useEffect(() => {
         const getConnections = async () => {
-            let res = await getConnectionListAPI();
+            const res = await getConnectionListAPI();
 
             if (res?.status === 200) {
-                let data = await res.json();
+                const data = await res.json();
                 setConnections(data['connections']);
             }
         };
@@ -47,15 +47,28 @@ export default function ConnectionList() {
     }, [getConnectionListAPI, loaded, setLoaded]);
 
     function formatDate(creationDate: string): string {
-        const date = new Date(creationDate).getTime();
-        const now = new Date().getTime();
-        const diffTime = Math.abs(now - date);
+        const inputDate = new Date(creationDate);
+        const now = new Date();
+
+        const inputDateOnly = new Date(inputDate.getFullYear(), inputDate.getMonth(), inputDate.getDate());
+        const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (inputDateOnly.getTime() === nowDateOnly.getTime()) {
+            const hours = inputDate.getHours();
+            const minutes = inputDate.getMinutes();
+            const amPm = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12; // Convert to 12-hour format and handle 0 as 12
+
+            return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${amPm}`;
+        }
+
+        const diffTime = Math.abs(now.getTime() - inputDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays <= 7) {
             return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
         } else {
-            return new Date(creationDate).toLocaleDateString();
+            return inputDate.toLocaleDateString();
         }
     }
 

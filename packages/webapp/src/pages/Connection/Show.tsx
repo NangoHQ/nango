@@ -1,10 +1,11 @@
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useModal } from '@geist-ui/core';
 
-import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI, useRunSyncAPI } from '../../utils/api';
+import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import ActionModal from '../../components/ui/ActionModal';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -32,7 +33,6 @@ export default function ShowIntegration() {
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
     const deleteConnectionAPI = useDeleteConnectionAPI();
     const getSyncAPI = useGetSyncAPI();
-    const runCommandSyncAPI = useRunSyncAPI();
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -131,7 +131,7 @@ We could not retrieve and/or refresh your access token due to the following erro
         }, 400);
     };
 
-    console.log(serverErrorMessage, runCommandSyncAPI, fetchingRefreshToken);
+    console.log(serverErrorMessage, fetchingRefreshToken);
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
@@ -148,7 +148,9 @@ We could not retrieve and/or refresh your access token due to the following erro
                 <div className="mx-auto">
                     <div className="flex mx-20 w-[976px] mt-12 justify-between items-center">
                         <div className="flex">
-                            <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2" />
+                            <Link to={`/integration/${connection?.providerConfigKey}`}>
+                                <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer" />
+                            </Link>
                             <div className="mt-3 ml-6">
                                 <span className="text-left text-2xl font-semibold tracking-tight text-gray-400 mb-12">
                                     Connection
@@ -180,7 +182,7 @@ We could not retrieve and/or refresh your access token due to the following erro
             </section>
             <section className="mx-20 mt-10">
                 {activeTab === Tabs.Models && (
-                    <Syncs syncs={syncs} />
+                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} />
                 )}
                 {activeTab === Tabs.Authorization && (
                     <Authorization connection={connection} forceRefresh={forceRefresh} />
