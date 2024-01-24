@@ -704,7 +704,6 @@ class SyncController {
         try {
             const { sync_name, provider_config_key, connection_id, frequency } = req.body;
 
-            // Payload validation
             if (!provider_config_key || typeof provider_config_key !== 'string') {
                 res.status(400).send({ message: 'provider_config_key must be a string' });
                 return;
@@ -722,7 +721,6 @@ class SyncController {
                 return;
             }
 
-            // Validate new frequency format
             let newFrequency: string | undefined;
             if (frequency) {
                 const { error, response } = getInterval(frequency, new Date());
@@ -765,10 +763,8 @@ class SyncController {
                 newFrequency = syncConfigs[0]!.runs;
             }
 
-            // Store the value in database
             await setFrequency(syncId, frequency);
 
-            // Update syncs that are already scheduled
             const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, connection.environment_id);
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
