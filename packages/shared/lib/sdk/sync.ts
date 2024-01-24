@@ -361,7 +361,7 @@ export class NangoAction {
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
-    public async updateMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
