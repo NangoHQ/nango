@@ -531,6 +531,18 @@ google-sheet:
 google-drive:
     alias: google
     docs: https://developers.google.com/drive/api/reference/rest/v3
+google-ads:
+    alias: google
+    token_url: https://www.googleapis.com/oauth2/v3/token
+    proxy:
+        base_url: https://googleads.googleapis.com
+        paginate:
+            type: cursor
+            cursor_path_in_response: nextPageToken
+            limit_name_in_request: pageSize
+            cursor_name_in_request: pageToken
+            response_path: results
+    docs: https://developers.google.com/google-ads/api/rest/overview
 gorgias:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
