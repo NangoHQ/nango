@@ -63,6 +63,7 @@ export interface ReportedSyncJobStatus {
     status: SyncStatus;
     latestResult?: SyncResultByModel;
     jobStatus?: SyncStatus;
+    frequency: string;
 }
 
 export interface SyncModelSchema {

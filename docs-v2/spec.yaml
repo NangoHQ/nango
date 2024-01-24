@@ -915,6 +915,9 @@ paths:
                                                 nextScheduledSyncAt:
                                                     type: string
                                                     description: ISO string of the next scheduled sync time
+                                                frequency:
+                                                    type: string
+                                                    description: The execution frequency of the sync
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
