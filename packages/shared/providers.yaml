@@ -58,7 +58,7 @@ amazon:
         grant_type: refresh_token
     proxy:
         base_url: https://api.amazon.com
-amazoncognito:
+aws:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
     token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
