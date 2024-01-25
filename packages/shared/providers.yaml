@@ -1067,8 +1067,8 @@ okta:
         grant_type: refresh_token
 one-drive:
     categories:
-      - knowledge-base
-      - storage
+        - knowledge-base
+        - storage
     alias: microsoft-teams
 osu:
     categories:
