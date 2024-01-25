@@ -182,6 +182,7 @@
                         "integrations/all/ashby",
                         "integrations/all/atlassian",
                         "integrations/all/auth0",
+                        "integrations/all/amazoncognito",
                         "integrations/all/bamboohr",
                         "integrations/all/battlenet",
                         "integrations/all/bitbucket",
