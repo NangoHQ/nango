@@ -10,6 +10,7 @@ import {
     errorManager,
     userService
 } from '@nangohq/shared';
+import tracer from '../apm.js';
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -45,6 +46,7 @@ export class AccessMiddleware {
 
         setAccount(accountId, res);
         setEnvironmentId(environmentId, res);
+        tracer.setUser({ id: accountId.toString(), environmentId: environmentId.toString() });
         next();
     }
 
@@ -76,6 +78,7 @@ export class AccessMiddleware {
 
         setAccount(accountId, res);
         setEnvironmentId(environmentId, res);
+        tracer.setUser({ id: accountId.toString(), environmentId: environmentId.toString() });
         next();
     }
 
