@@ -718,6 +718,10 @@ lever:
         audience: https://api.lever.co/v1
     proxy:
         base_url: https://api.lever.co
+lever-basic:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lever.co
 lever-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://sandbox-lever.auth0.com/authorize
