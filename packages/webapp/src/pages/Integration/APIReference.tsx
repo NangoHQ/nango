@@ -10,7 +10,7 @@ import Info from '../../components/ui/Info'
 import EndpointLabel from './components/EndpointLabel';
 import HelpFooter from './components/HelpFooter';
 import { IntegrationConfig, Account, FlowEndpoint, Flow } from '../../types';
-import { nodeSnippet, nodeActionSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../../utils/language-snippets';
+import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
 import { parseInput, generateResponseModel } from '../../utils/utils';
 
 interface APIReferenceProps {
@@ -167,58 +167,6 @@ export default function APIReference(props: APIReferenceProps) {
                                                 }}
                                             >
                                                 cURL
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.Python ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.Python) {
-                                                    setSyncSnippet(pythonSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
-                                                    setLanguage(Language.Python);
-                                                  }
-                                                }}
-                                            >
-                                                Python
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.PHP ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.PHP) {
-                                                    setSyncSnippet(phpSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
-                                                    setLanguage(Language.PHP);
-                                                  }
-                                                }}
-                                            >
-                                                PHP
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.Go ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.Go) {
-                                                    setSyncSnippet(goSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
-                                                    setLanguage(Language.Go);
-                                                  }
-                                                }}
-                                            >
-                                                Go
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.Java ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.Java) {
-                                                    setSyncSnippet(javaSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
-                                                    setLanguage(Language.Java);
-                                                  }
-                                                }}
-                                            >
-                                                Java
                                             </Button>
                                         </div>
                                         <CopyButton dark text={syncSnippet} />

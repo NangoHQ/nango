@@ -117,7 +117,7 @@ export default function Syncs(props: SyncsProps) {
                                                 sync.schedule_status !== 'PAUSED' &&
                                                 (sync.latest_sync.activity_log_id && sync.latest_sync.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className={errorBubbleStyles}
                                                     >
                                                         <ErrorBubble />
@@ -130,7 +130,7 @@ export default function Syncs(props: SyncsProps) {
                                             {sync.latest_sync?.status === 'RUNNING' &&
                                                 (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className={runningBubbleStyles}
                                                     >
                                                         <RunningBubble />
@@ -144,7 +144,7 @@ export default function Syncs(props: SyncsProps) {
                                                 sync.schedule_status !== 'PAUSED' &&
                                                 (sync.latest_sync?.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className={successBubbleStyles}
                                                     >
                                                         <SuccessBubble />
@@ -175,7 +175,7 @@ export default function Syncs(props: SyncsProps) {
                                             <>
                                                 {sync.latest_sync?.activity_log_id? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className=""
                                                     >
                                                         {formatDateToUSFormat(sync.latest_sync?.updated_at)}

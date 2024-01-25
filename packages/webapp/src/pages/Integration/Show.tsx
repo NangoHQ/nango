@@ -107,52 +107,54 @@ export default function ShowIntegration() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-            {integration && (
-                <div className="mx-auto">
-                    <div className="flex mx-20 w-[976px] mt-12 justify-between items-center">
-                        <div className="flex">
-                            <IntegrationLogo provider={integration?.provider} height={24} width={24} classNames="mr-2" />
-                            <div className="mt-3 ml-6">
-                                <span className="text-left text-2xl font-semibold tracking-tight text-gray-400 mb-12">
-                                    Integration
-                                </span>
-                                <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
-                                    {providerConfigKey}
-                                </h2>
+            <div>
+                {integration && (
+                    <div className="mx-auto">
+                        <div className="flex justify-between items-center">
+                            <div className="flex">
+                                <IntegrationLogo provider={integration?.provider} height={24} width={24} classNames="mr-2" />
+                                <div className="mt-3 ml-6">
+                                    <span className="text-left text-2xl font-semibold tracking-tight text-gray-400 mb-12">
+                                        Integration
+                                    </span>
+                                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
+                                        {providerConfigKey}
+                                    </h2>
+                                </div>
                             </div>
+                            <Button
+                                variant="zinc"
+                                size="sm"
+                                className="flex cursor-pointer text-gray-400 neutral-700 items-center"
+                                onClick={() => {
+                                    navigate(`/connections/create/${providerConfigKey}`);
+                                }}
+                                >
+                                <BuildingOfficeIcon className="flex h-5 w-5" />
+                                <span className="px-1">Connect</span>
+                            </Button>
                         </div>
-                        <Button
-                            variant="zinc"
-                            size="sm"
-                            className="flex cursor-pointer text-gray-400 neutral-700 items-center"
-                            onClick={() => {
-                                navigate(`/connections/create/${providerConfigKey}`);
-                            }}
-                            >
-                            <BuildingOfficeIcon className="flex h-5 w-5" />
-                            <span className="px-1">Connect</span>
-                        </Button>
                     </div>
-                </div>
-            )}
-            <section className="mx-20 mt-20">
-                <ul className="flex text-gray-400 space-x-8 text-sm cursor-pointer">
-                    <li className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.API)}>API Reference</li>
-                    <li className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Scripts)}>Scripts</li>
-                    <li className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Auth)}>Settings</li>
-                </ul>
-            </section>
-            <section className="mx-20 mt-10">
-                {activeTab === Tabs.API && integration && endpoints && account && (
-                    <APIReference integration={integration} setActiveTab={setActiveTab} endpoints={endpoints} account={account} />
                 )}
-                {activeTab === Tabs.Scripts && integration && endpoints && (
-                    <Scripts integration={integration} endpoints={endpoints} setLoaded={setLoaded} />
-                )}
-                {activeTab === Tabs.Auth && integration && account && (
-                    <AuthSettings integration={integration} account={account} />
-                )}
-            </section>
+                <section className="mt-20">
+                    <ul className="flex text-gray-400 space-x-8 text-sm cursor-pointer">
+                        <li className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.API)}>API Reference</li>
+                        <li className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Scripts)}>Scripts</li>
+                        <li className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Auth)}>Settings</li>
+                    </ul>
+                </section>
+                <section className="mt-10">
+                    {activeTab === Tabs.API && integration && endpoints && account && (
+                        <APIReference integration={integration} setActiveTab={setActiveTab} endpoints={endpoints} account={account} />
+                    )}
+                    {activeTab === Tabs.Scripts && integration && endpoints && (
+                        <Scripts integration={integration} endpoints={endpoints} setLoaded={setLoaded} />
+                    )}
+                    {activeTab === Tabs.Auth && integration && account && (
+                        <AuthSettings integration={integration} account={account} />
+                    )}
+                </section>
+            </div>
         </DashboardLayout>
     );
 }

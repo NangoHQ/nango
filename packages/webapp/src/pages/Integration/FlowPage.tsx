@@ -246,7 +246,7 @@ export default function FlowPage() {
             />
             {provider && flow && (
                 <div className="mx-auto space-y-12 text-sm">
-                    <div className="flex mx-20 mt-12 justify-between">
+                    <div className="flex justify-between">
                         <div className="flex">
                             <img src={`/images/template-logos/${provider}.svg`} alt="" className="h-24 w-24" />
                             <div className="mt-3 ml-6">
@@ -269,19 +269,19 @@ export default function FlowPage() {
                         </div>
                     </div>
                     {flow?.nango_yaml_version === 'v1' && (
-                        <div className="mx-20 my-5">
+                        <div className="my-5">
                             <Info size={18} padding="px-4 py-1.5">
                                 This {flow?.type} is using the legacy nango.yaml schema. <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">Migrate to the new schema</a> to unlock capabilities, including auto-generated API documentation.
                             </Info>
                         </div>
                     )}
-                    <div className="mx-20 flex flex-col">
+                    <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Description</span>
                         <div className="text-white">
                             {flow?.description}
                         </div>
                     </div>
-                    <div className="mx-20 flex">
+                    <div className="flex">
                         {flow?.type === 'sync' && (
                             <div className="flex flex-col w-1/2">
                                 <span className="text-gray-400 text-xs uppercase mb-1">Enabled</span>
@@ -303,7 +303,7 @@ export default function FlowPage() {
                         </div>
                     </div>
                     {(flow?.version || flow?.last_deployed) && (
-                        <div className="mx-20 flex">
+                        <div className="flex">
                             {flow?.version &&  (
                                 <div className="flex flex-col w-1/2">
                                     <span className="text-gray-400 text-xs uppercase mb-1">Version</span>
@@ -318,7 +318,7 @@ export default function FlowPage() {
                             )}
                         </div>
                     )}
-                    <div className="mx-20 flex">
+                    <div className="flex">
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Source</span>
                             <div className="text-white">
@@ -335,7 +335,7 @@ export default function FlowPage() {
                         )}
                     </div>
                     {flow?.type === 'sync' && (
-                        <div className="mx-20 flex">
+                        <div className="flex">
                             <div className="flex flex-col w-1/2 relative">
                                 <span className="text-gray-400 text-xs uppercase mb-1">Frequency</span>
                                 <div className="w-2/3">
@@ -380,7 +380,7 @@ export default function FlowPage() {
                     {flow?.type === 'sync' && (
                         <>
                             {(!flow?.input || Object.keys(flow?.input).length === 0) ? (
-                                <div className="mx-20 flex">
+                                <div className="flex">
                                     <div className="flex flex-col">
                                         <span className="text-gray-400 text-xs uppercase mb-1">Metadata</span>
                                         <div className="text-white">
@@ -389,7 +389,7 @@ export default function FlowPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="mx-20 flex">
+                                <div className="flex">
                                     <div className="flex flex-col w-full">
                                         <span className="text-gray-400 text-xs uppercase mb-2">Metadata</span>
                                         <div className="text-sm w-full text-[#C3E5FA]">
@@ -437,7 +437,7 @@ export default function FlowPage() {
                     {flow?.type === 'sync' && (
                         <>
                             {(flow?.auto_start === true) ? (
-                                <div className="mx-20 flex">
+                                <div className="flex">
                                     <div className="flex flex-col">
                                         <span className="text-gray-400 text-xs uppercase mb-1">Auto Starts</span>
                                         <div className="text-white">
@@ -446,7 +446,7 @@ export default function FlowPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="mx-20 flex">
+                                <div className="flex">
                                     <div className="flex flex-col w-full">
                                         <span className="text-gray-400 text-xs uppercase mb-2">Auto Starts</span>
                                         <div className="text-sm w-full">
@@ -494,7 +494,7 @@ export default function FlowPage() {
                     {flow?.type === 'sync' && (
                         <>
                             {flow?.returns && (
-                                <div className="mx-20 flex">
+                                <div className="flex">
                                     <div className="flex flex-col w-full">
                                         <span className="text-gray-400 text-xs uppercase mb-2">Output Models</span>
                                         {((Array.isArray(flow?.returns as string[]) ? flow?.returns : [flow?.returns]) as string[]).map((model: string, index: number) => (

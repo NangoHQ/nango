@@ -247,4 +247,5 @@ export interface IntegrationConfig {
     webhook_secret?: string;
     custom?: Record<string, string>;
     connectionCount: number;
+    openAPISpec: string;
 }

@@ -12,7 +12,11 @@ export default function DashboardLayout({ children, selectedItem }: DashboardLay
             <TopNavBar />
             <div className="flex h-full">
                 <LeftNavBar selectedItem={selectedItem} />
-                <div className="ml-60 pt-14 mx-auto w-[976px]">{children}</div>
+                <div className="flex justify-center mt-8 w-full mx-auto overflow-auto">
+                    <div className="w-[976px] mt-16">
+                        {children}
+                    </div>
+                </div>
             </div>
         </div>
     );

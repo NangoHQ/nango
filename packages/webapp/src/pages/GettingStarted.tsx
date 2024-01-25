@@ -323,9 +323,9 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                     <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
                 </Modal.Action>
             </Modal>
-            <div className="px-16 w-fit mx-auto text-white ">
+            <div className="text-white">
                 <div>
-                    <h1 className="mt-16 text-left text-4xl font-semibold tracking-tight text-white">How integrations work with <span onDoubleClick={resetOnboarding}>Nango</span></h1>
+                    <h1 className="text-left text-4xl font-semibold tracking-tight text-white">How integrations work with <span onDoubleClick={resetOnboarding}>Nango</span></h1>
                     <h2 className="mt-4 text-xl text-text-light-gray">Using GitHub as an example, follow these steps to synchronize external data with the Nango API.</h2>
                 </div>
                 <div className="border-l border-border-gray">

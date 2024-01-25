@@ -146,7 +146,7 @@ We could not retrieve and/or refresh your access token due to the following erro
             />
             {connection?.provider && (
                 <div className="mx-auto">
-                    <div className="flex mx-20 w-[976px] mt-12 justify-between items-center">
+                    <div className="flex justify-between items-center">
                         <div className="flex">
                             <Link to={`/integration/${connection?.providerConfigKey}`}>
                                 <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer" />
@@ -174,13 +174,13 @@ We could not retrieve and/or refresh your access token due to the following erro
                     </div>
                 </div>
             )}
-            <section className="mx-20 mt-20">
+            <section className="mt-20">
                 <ul className="flex text-gray-400 space-x-8 text-sm cursor-pointer">
                     <li className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Models)}>Models</li>
                     <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
                 </ul>
             </section>
-            <section className="mx-20 mt-10">
+            <section className="mt-10">
                 {activeTab === Tabs.Models && (
                     <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} />
                 )}

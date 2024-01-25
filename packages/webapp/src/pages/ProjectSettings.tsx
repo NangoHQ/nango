@@ -404,9 +404,9 @@ export default function ProjectSettings() {
                 <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>Activate</Modal.Action>
             </Modal>
             {secretKey && (
-                <div className="mx-auto w-largebox">
-                    <div className="mx-20 h-full mb-20">
-                        <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Project Settings</h2>
+                <div className="">
+                    <div className="h-full mb-20">
+                        <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Project Settings</h2>
                         <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
                             <div>
                                 <div className="mx-8 mt-8">

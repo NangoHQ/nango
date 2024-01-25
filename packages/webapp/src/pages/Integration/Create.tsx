@@ -85,13 +85,13 @@ export default function Create() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             {(providers) && (
-                <div className="mx-auto w-largebox w-[976px]">
-                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-8">
+                <div className="w-full">
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-8">
                         Create Integration
                     </h2>
                     <div className="relative">
-                        <div className="mx-20 h-fit rounded-md text-white text-sm">
-                            <MagnifyingGlassIcon className="absolute top-2 left-24 h-5 w-5 text-gray-400" />
+                        <div className="h-fit rounded-md text-white text-sm">
+                            <MagnifyingGlassIcon className="absolute top-2 left-4 h-5 w-5 text-gray-400" />
                             <input
                                 id="search"
                                 name="search"
@@ -103,7 +103,7 @@ export default function Create() {
                             />
                         </div>
                     </div>
-                    <div className="mx-20 flex flex-wrap text-white">
+                    <div className="flex flex-wrap text-white">
                         {providers.map((provider) => (
                             <div
                                 className="flex justify-between mr-10 p-2 mt-4 mb-5 w-52 border border-transparent rounded cursor-pointer text-sm hover:border-border-gray hover:bg-neutral-800"
