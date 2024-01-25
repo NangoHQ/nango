@@ -15,8 +15,7 @@ import {
     connectionService,
     getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey,
-    getSyncConfigsByParams,
-    getOpenApiSpec
+    getSyncConfigsByParams
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -245,8 +244,6 @@ class ConfigController {
                 return;
             }
 
-            const openAPISpec = await getOpenApiSpec(environmentId);
-
             const providerTemplate = configService.getTemplate(config?.provider);
             const authMode = providerTemplate.auth_mode;
 
@@ -294,8 +291,7 @@ class ConfigController {
                       actions,
                       has_webhook: Boolean(hasWebhook),
                       webhook_secret,
-                      connectionCount,
-                      openAPISpec
+                      connectionCount
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 

@@ -211,22 +211,25 @@ describe('Should verify the config controller HTTP API calls', async () => {
         };
 
         await configController.getProviderConfig(req as unknown as Request, getRes, next as NextFunction);
-        expect(sendMock).toHaveBeenCalledWith({
-            config: {
-                provider: 'notion',
-                unique_key: 'test',
-                client_id: 'abc',
-                client_secret: 'def',
-                custom: null,
-                has_webhook: false,
-                scopes: 'abc,def,efg',
-                app_link: null,
-                auth_mode: 'OAUTH2',
-                syncs: [],
-                actions: [],
-                webhook_secret: null
-            }
-        });
+        expect(sendMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                config: {
+                    provider: 'notion',
+                    unique_key: 'test',
+                    client_id: 'abc',
+                    client_secret: 'def',
+                    conectionCount: 0,
+                    custom: null,
+                    has_webhook: false,
+                    scopes: 'abc,def,efg',
+                    app_link: null,
+                    auth_mode: 'OAUTH2',
+                    syncs: [],
+                    actions: [],
+                    webhook_secret: null
+                }
+            })
+        );
     });
 
     it('DELETE a provider config successfully', async () => {
