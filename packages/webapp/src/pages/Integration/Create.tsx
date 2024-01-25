@@ -116,7 +116,9 @@ export default function Create() {
                                         <span className="flex text-xs text-gray-400">{provider.categories.join(', ')}</span>
                                     )}
                                 </div>
-                                <BookOpenIcon onClick={(e) => showDocs(e, provider)} className="h-5 w-5 text-gray-400 hover:text-white" />
+                                {!provider.name.includes('sandbox') && (
+                                    <BookOpenIcon onClick={(e) => showDocs(e, provider)} className="h-5 w-5 text-gray-400 hover:text-white" />
+                                )}
                             </div>
                         ))}
                     </div>

@@ -1,4 +1,5 @@
 import { Prism } from '@mantine/prism';
+import { Loading } from '@geist-ui/core';
 
 import PrismPlus from '../../components/ui/prism/PrismPlus';
 import { Connection, AuthModes } from '../../types';
@@ -9,10 +10,16 @@ import CopyButton from '../../components/ui/button/CopyButton';
 interface AuthorizationProps {
     connection: Connection | null;
     forceRefresh: () => void;
+    loaded: boolean;
+    syncLoaded: boolean;
 }
 
 export default function Authorization(props: AuthorizationProps) {
-    const { connection, forceRefresh } = props;
+    const { connection, forceRefresh, loaded } = props;
+
+    if (!loaded) return (
+        <Loading spaceRatio={2.5} className="top-24" />
+    );
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">

@@ -1,6 +1,6 @@
-import { Tooltip } from '@geist-ui/core';
+import { Loading, Tooltip } from '@geist-ui/core';
 import { Link } from 'react-router-dom';
-import { EllipsisHorizontalIcon, PlayCircleIcon, PauseCircleIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsHorizontalIcon, EllipsisHorizontalIcon, PlayCircleIcon, PauseCircleIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import { SyncResponse, RunSyncCommand } from '../../types';
 import {
     calculateTotalRuntime,
@@ -16,11 +16,13 @@ import { useRunSyncAPI } from '../../utils/api';
 interface SyncsProps {
     syncs: SyncResponse[] | null;
     connection: Connection | null;
+    loaded: boolean;
+    syncLoaded: boolean;
     setSyncLoaded: (loaded: boolean) => void;
 }
 
 export default function Syncs(props: SyncsProps) {
-    const { syncs, connection, setSyncLoaded } = props;
+    const { syncs, connection, setSyncLoaded, loaded, syncLoaded } = props;
     const runCommandSyncAPI = useRunSyncAPI();
 
     const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: number, syncName: string) => {
@@ -56,11 +58,22 @@ export default function Syncs(props: SyncsProps) {
     );
     const runningBubbleStyles = 'inline-flex justify-center items-center rounded py-1 px-2 bg-blue-400 bg-opacity-20';
 
+    if (!loaded || !syncLoaded || syncs === null) return (
+        <Loading spaceRatio={2.5} className="top-24" />
+    );
+
     return (
         <div className="h-fit rounded-md text-white">
             {!syncs || syncs.length === 0 ? (
-                <div className="flex flex-col border border-border-gray rounded-md text-white text-center p-10">
-                    <h2 className="text-xl text-center w-full">No active syncs</h2>
+                <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
+                    <h2 className="text-xl text-center w-full">No models are syncing for <span className="capitalize">{connection?.provider}</span></h2>
+                    <div className="mt-4 text-gray-400">Start syncing models for <span className="capitalize">{connection?.provider}</span> on the Sync Configuration tab.</div>
+                    <Link to={`/integration/${connection?.providerConfigKey}#scripts`} className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                        <span className="flex">
+                        <AdjustmentsHorizontalIcon className="flex h-5 w-5 mr-3" />
+                        Script Configuration
+                        </span>
+                    </Link>
                 </div>
             ) : (
                 <table className="w-[976px]">
@@ -209,7 +222,7 @@ export default function Syncs(props: SyncsProps) {
                                             className="hidden group-hover:flex text-gray-400 absolute z-10 -top-15 left-1 bg-black rounded border border-neutral-700 items-center"
                                         >
                                             <div className="flex flex-col w-full">
-                                                <div 
+                                                <div
                                                     className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
                                                     onClick={() =>
                                                                 syncCommand(
@@ -223,7 +236,7 @@ export default function Syncs(props: SyncsProps) {
                                                     >
                                                     {sync.schedule_status !== 'RUNNING' ? (
                                                         <>
-                                                            <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" /> 
+                                                            <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
                                                             <span className="pl-2">Start Schedule</span>
                                                         </>
                                                     ) : (
@@ -233,7 +246,7 @@ export default function Syncs(props: SyncsProps) {
                                                         </>
                                                     )}
                                                 </div>
-                                                <div 
+                                                <div
                                                     className="flex items-center hover:bg-neutral-800 px-4 py-4"
                                                     onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                 >

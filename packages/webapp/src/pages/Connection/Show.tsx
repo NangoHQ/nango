@@ -14,7 +14,7 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
-import { Connection } from '../../types';
+import { SyncResponse, Connection } from '../../types';
 
 export enum Tabs {
     Models,
@@ -24,7 +24,7 @@ export enum Tabs {
 export default function ShowIntegration() {
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
-    const [syncs, setSyncs] = useState([]);
+    const [syncs, setSyncs] = useState<SyncResponse[] | null>(null);
     const [syncLoaded, setSyncLoaded] = useState(false);
     const [fetchingRefreshToken, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -182,10 +182,10 @@ We could not retrieve and/or refresh your access token due to the following erro
             </section>
             <section className="mx-20 mt-10">
                 {activeTab === Tabs.Models && (
-                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} />
+                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} />
                 )}
                 {activeTab === Tabs.Authorization && (
-                    <Authorization connection={connection} forceRefresh={forceRefresh} />
+                    <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={syncLoaded} />
                 )}
             </section>
         </DashboardLayout>

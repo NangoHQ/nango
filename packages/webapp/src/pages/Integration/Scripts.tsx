@@ -23,8 +23,8 @@ export default function Scripts(props: ScriptProps) {
         <div className="h-fit rounded-md text-white text-sm">
             {!hasScripts ? (
                 <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
-                    <h2 className="text-xl text-center w-full">Sync models from {integration?.provider}</h2>
-                    <div className="mt-4 text-gray-400">{integration?.provider} does not yet have publicly available models to sync. Create your own or request some from Nango.</div>
+                    <h2 className="text-xl text-center w-full">Sync models from <span className="capitalize">{integration?.provider}</span></h2>
+                    <div className="mt-4 text-gray-400"><span className="capitalize">{integration?.provider}</span> does not yet have publicly available models to sync. Create your own or request some from Nango.</div>
                     <HelpFooter type="" />
                 </div>
             ) : (

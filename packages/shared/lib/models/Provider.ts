@@ -66,6 +66,7 @@ export interface IntegrationWithCreds extends Integration {
     syncs: SyncConfig[];
     actions: Action[];
     created_at: Date;
+    connectionCount: number;
 }
 
 export interface Integration {

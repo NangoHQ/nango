@@ -29,6 +29,8 @@ adobe:
     refresh_params:
         grant_type: refresh_token
 affinity:
+    categories:
+      - crm
     auth_mode: BASIC
     proxy:
         base_url: https://api.affinity.co
