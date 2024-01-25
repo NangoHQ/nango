@@ -121,8 +121,8 @@ export interface NangoSyncConfig {
     endpoints: NangoSyncEndpoint[];
     is_public?: boolean;
     pre_built?: boolean;
-    version?: string | undefined;
-    last_deployed?: string | undefined;
+    version?: string | null;
+    last_deployed?: string | null;
     id?: number;
 
     // v2 additions
