@@ -930,6 +930,55 @@ paths:
                                 properties:
                                     message:
                                         type: string
+
+    /sync/update-connection-frequency:
+        get:
+            description: Update a sync's connection frequency or revert to the default frequency
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - connection_id
+                                - sync
+                                - frequency
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The ID of the integration you established within Nango
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection
+                                sync:
+                                    type: string
+                                    description: The name of the sync you want to update
+                                frequency:
+                                    type: string
+                                    nullable: true
+                                    description: The frequency you want to set. Set null to revert to the default frequency
+            responses:
+                '200':
+                    description: Successfully updated the frequency
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    frequency:
+                                        type: string
+                                        description: The updated frequency value
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
     /action/trigger:
         post:
             description: Triggers an action for a connection

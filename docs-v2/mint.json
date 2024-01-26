@@ -10,7 +10,10 @@
         "primary": "#1A43DB",
         "light": "#C7D3FE",
         "dark": "#000000",
-        "anchors": { "from": "#3F68FF", "to": "#012AC3" }
+        "anchors": {
+            "from": "#3F68FF",
+            "to": "#012AC3"
+        }
     },
     "analytics": {
         "gtm": {
@@ -18,7 +21,10 @@
         }
     },
     "api": {
-        "baseUrl": ["https://api.nango.dev", "http://localhost:3003"],
+        "baseUrl": [
+            "https://api.nango.dev",
+            "http://localhost:3003"
+        ],
         "auth": {
             "method": "bearer"
         }
@@ -68,9 +74,9 @@
         {
             "group": "Getting Started",
             "pages": [
-                    "introduction",
-                    "guides/integrate"
-                ]
+                "introduction",
+                "guides/integrate"
+            ]
         },
         {
             "group": "Step-By-Step Guides",
@@ -81,8 +87,18 @@
                 "guides/action",
                 {
                     "group": "Other Guides",
-                    "pages": ["guides/proxy", "guides/webhooks", "guides/custom", "guides/advanced-auth", "guides/field-mapping", "guides/api-key", "guides/env-vars", "contribute"]
-                }, {
+                    "pages": [
+                        "guides/proxy",
+                        "guides/webhooks",
+                        "guides/custom",
+                        "guides/advanced-auth",
+                        "guides/field-mapping",
+                        "guides/api-key",
+                        "guides/env-vars",
+                        "contribute"
+                    ]
+                },
+                {
                     "group": "Integration Templates",
                     "pages": [
                         "integration-templates/overview",
@@ -318,23 +334,40 @@
         },
         {
             "group": "Overview",
-            "pages": ["sdks/overview"]
+            "pages": [
+                "sdks/overview"
+            ]
         },
         {
             "group": "Frontend SDK",
-            "pages": ["sdks/frontend"]
+            "pages": [
+                "sdks/frontend"
+            ]
         },
         {
             "group": "CLI",
-            "pages": ["sdks/cli"]
+            "pages": [
+                "sdks/cli"
+            ]
         },
         {
             "group": "Backend SDKs",
-            "pages": ["sdks/node", "sdks/python", "sdks/java", "sdks/ruby", "sdks/go", "sdks/rust", "sdks/php"]
+            "pages": [
+                "sdks/node",
+                "sdks/python",
+                "sdks/java",
+                "sdks/ruby",
+                "sdks/go",
+                "sdks/rust",
+                "sdks/php"
+            ]
         },
         {
             "group": "Overview",
-            "pages": ["api-reference/overview", "api-reference/authentication"]
+            "pages": [
+                "api-reference/overview",
+                "api-reference/authentication"
+            ]
         },
         {
             "group": "Integrations",
@@ -359,11 +392,22 @@
         },
         {
             "group": "Syncs",
-            "pages": ["api-reference/sync/records-list", "api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause", "api-reference/sync/status", "api-reference/sync/environment-variables"]
+            "pages": [
+                "api-reference/sync/records-list",
+                "api-reference/sync/records-get",
+                "api-reference/sync/trigger",
+                "api-reference/sync/start",
+                "api-reference/sync/pause",
+                "api-reference/sync/status",
+                "api-reference/sync/update-connection-frequency",
+                "api-reference/sync/environment-variables"
+            ]
         },
         {
             "group": "Actions",
-            "pages": ["api-reference/action/trigger"]
+            "pages": [
+                "api-reference/action/trigger"
+            ]
         },
         {
             "group": "Proxy",
