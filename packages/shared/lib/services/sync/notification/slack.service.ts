@@ -253,8 +253,10 @@ class SlackService {
         const count = slackNotificationStatus.connectionCount;
         const connection = count === 1 ? 'connection' : 'connections';
         const flowType = syncType === SyncType.ACTION ? SyncConfigType.ACTION : SyncConfigType.SYNC;
+        const date = new Date();
+        const dateString = date.toISOString().split('T')[0];
         const payload: NotificationPayload = {
-            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${getBasePublicUrl()}/activity?env=${envName}&activity_log_id=${originalActivityLogId}|logs>.`,
+            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${getBasePublicUrl()}/activity?env=${envName}&activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
