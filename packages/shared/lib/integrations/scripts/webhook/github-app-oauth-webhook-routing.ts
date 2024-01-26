@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from './webhook.manager.js';
+import type { InternalNango as Nango } from './internal-nango.js';
 import get from 'lodash-es/get.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { Connection, ConnectionConfig } from '../../../models/Connection.js';
