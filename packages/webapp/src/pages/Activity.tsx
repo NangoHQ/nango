@@ -399,6 +399,41 @@ export default function Activity() {
         navigate(updatedUrl);
     }
 
+    const copyActivityLogUrl = (activity: ActivityResponse): string => {
+        const baseUrl = `${window.location.protocol}//${window.location.host}/activity`;
+        const url = new URL(baseUrl);
+        const params = new URLSearchParams({ env, activity_log_id: activity.id.toString() });
+
+        if (activity.connection_id) {
+            params.append('connection', activity.connection_id);
+        }
+
+        if (activity.provider_config_key) {
+            params.append('integration', activity.provider_config_key);
+        }
+
+        if (activity.operation_name) {
+            params.append('script', activity.operation_name);
+        }
+
+        if (activity.success !== null) {
+            const status = activity.success ? 'success' : 'failure';
+            params.append('status', status);
+        } else {
+            params.append('status', 'in_progress');
+        }
+
+        if (activity.timestamp) {
+            const date = new Date(Number(activity.timestamp));
+            const dateString = date.toISOString().split('T')[0];
+            params.append('date', dateString);
+        }
+
+        url.search = params.toString();
+
+        return url.toString();
+    };
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="max-w-screen-xl px-16 w-fit mx-auto">
@@ -741,7 +776,7 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${Object.entries(queryParams).length > 0 ? '&' + queryString.stringify(queryParams) : ''}`} />}
+                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={copyActivityLogUrl(activity)} />}
                                             </div>
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
