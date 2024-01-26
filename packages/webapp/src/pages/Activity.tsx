@@ -400,38 +400,39 @@ export default function Activity() {
     }
 
     const copyActivityLogUrl = (activity: ActivityResponse): string => {
-        let url = `${window.location.protocol}//${window.location.host}/activity?env=${env}`;
-        if (queryParams.activity_log_id) {
-            url = url.replace(`activity_log_id=${queryParams.activity_log_id}`, `activity_log_id=${activity.id}`);
-        } else {
-            url = url.concat(`&activity_log_id=${activity.id}`);
-        }
+        const baseUrl = `${window.location.protocol}//${window.location.host}/activity`;
+        const url = new URL(baseUrl);
+        const params = new URLSearchParams({ env, activity_log_id: activity.id.toString() });
 
         if (activity.connection_id) {
-            url = url.concat(`&connection=${activity.connection_id}`);
+            params.append('connection', activity.connection_id);
         }
 
         if (activity.provider_config_key) {
-            url = url.concat(`&integration=${activity.provider_config_key}`);
+            params.append('integration', activity.provider_config_key);
         }
 
         if (activity.operation_name) {
-            url = url.concat(`&script=${activity.operation_name}`);
+            params.append('script', activity.operation_name);
         }
 
-        if (activity.success) {
-            const status = activity.success === null ? 'in_progress' : activity.success ? 'success' : 'failure';
-            url = url.concat(`&status=${status}`);
+        if (activity.success !== null) {
+            const status = activity.success ? 'success' : 'failure';
+            params.append('status', status);
+        } else {
+            params.append('status', 'in_progress');
         }
 
         if (activity.timestamp) {
             const date = new Date(Number(activity.timestamp));
-            const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            url = url.concat(`&date=${dateString}`);
+            const dateString = date.toISOString().split('T')[0];
+            params.append('date', dateString);
         }
 
-        return url;
-    }
+        url.search = params.toString();
+
+        return url.toString();
+    };
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
