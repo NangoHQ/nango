@@ -399,6 +399,40 @@ export default function Activity() {
         navigate(updatedUrl);
     }
 
+    const copyActivityLogUrl = (activity: ActivityResponse): string => {
+        let url = `${window.location.protocol}//${window.location.host}/activity?env=${env}`;
+        if (queryParams.activity_log_id) {
+            url = url.replace(`activity_log_id=${queryParams.activity_log_id}`, `activity_log_id=${activity.id}`);
+        } else {
+            url = url.concat(`&activity_log_id=${activity.id}`);
+        }
+
+        if (activity.connection_id) {
+            url = url.concat(`&connection=${activity.connection_id}`);
+        }
+
+        if (activity.provider_config_key) {
+            url = url.concat(`&integration=${activity.provider_config_key}`);
+        }
+
+        if (activity.operation_name) {
+            url = url.concat(`&script=${activity.operation_name}`);
+        }
+
+        if (activity.success) {
+            const status = activity.success === null ? 'in_progress' : activity.success ? 'success' : 'failure';
+            url = url.concat(`&status=${status}`);
+        }
+
+        if (activity.timestamp) {
+            const date = new Date(Number(activity.timestamp));
+            const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            url = url.concat(`&date=${dateString}`);
+        }
+
+        return url;
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="max-w-screen-xl px-16 w-fit mx-auto">
@@ -741,7 +775,7 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${Object.entries(queryParams).length > 0 ? '&' + queryString.stringify(queryParams) : ''}`} />}
+                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={copyActivityLogUrl(activity)} />}
                                             </div>
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
