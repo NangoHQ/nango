@@ -48,7 +48,8 @@ export default async function runAction(nango: NangoAction, input: SlackMessage)
         headers: {
             'Content-Type': 'application/json; charset=utf-8'
         },
-        data: payload
+        data: payload,
+        retries: 10
     });
 
     if (response.data.ok === true) {

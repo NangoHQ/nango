@@ -1475,6 +1475,8 @@ zendesk:
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
