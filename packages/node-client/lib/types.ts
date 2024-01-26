@@ -175,3 +175,7 @@ export interface StatusAction {
 export interface SyncStatusResponse {
     syncs: SyncStatus[];
 }
+
+export interface UpdateSyncFrequencyResponse {
+    frequency: string;
+}

@@ -416,3 +416,22 @@ console.log(vars);
 ]
 */
 ```
+
+### Override a sync's frequency for a specific connection
+
+To override a sync's frequency for a specific connection, or revert to the default frequency, use:
+
+```ts
+const vars = await nango.updateSyncConnectionFrequency(
+    '<INTEGRATION-ID>',
+    '<SYNC NAME>',
+    '<CONNECTION-ID>',
+    '<FREQUENCY>'
+);
+
+/*
+    {
+        "frequency": "<NEW_FREQUENCY>",
+    }
+*/
+```
