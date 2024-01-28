@@ -1,7 +1,7 @@
 node_modules/*
 .DS_Store
 logs/*
-nango-data/*
+**/nango-data/*
 .idea/*
 .env
 nango-integrations/*

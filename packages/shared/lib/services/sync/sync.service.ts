@@ -64,7 +64,8 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
     const sync: Sync = {
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
-        name
+        name,
+        frequency: null
     };
 
     const result = await schema().from<Sync>(TABLE).insert(sync).returning('*');
@@ -106,6 +107,12 @@ export const clearLastSyncDate = async (id: string): Promise<void> => {
             last_sync_date: null
         });
 };
+
+export async function setFrequency(id: string, frequency: string | null): Promise<void> {
+    await schema().from<Sync>(TABLE).where({ id }).update({
+        frequency
+    });
+}
 
 /**
  * Set Last Sync Date
@@ -263,6 +270,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
+            `${TABLE}.frequency as frequency_override`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
@@ -454,7 +462,7 @@ export const deleteSync = async (syncId: string): Promise<string> => {
 
 export const findSyncByConnections = async (connectionIds: number[], sync_name: string): Promise<Sync[]> => {
     const results = await schema()
-        .select('*')
+        .select(`${TABLE}.*`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .whereIn('nango_connection_id', connectionIds)

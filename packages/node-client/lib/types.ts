@@ -162,6 +162,7 @@ export interface SyncStatus {
     nextScheduledSyncAt: string;
     name: string;
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
+    frequency: string;
     latestResult: Record<string, StatusAction>;
 }
 
@@ -173,4 +174,8 @@ export interface StatusAction {
 
 export interface SyncStatusResponse {
     syncs: SyncStatus[];
+}
+
+export interface UpdateSyncFrequencyResponse {
+    frequency: string;
 }

@@ -23,7 +23,7 @@ class ProxyService {
     public async routeOrConfigure(
         externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
         internalConfig: InternalProxyConfiguration
-    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse | void> {
+    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse | AxiosError> {
         const { success: validationSuccess, error: validationError } = await this.validateAndLog(externalConfig, internalConfig);
 
         const { throwErrors } = internalConfig;
@@ -378,9 +378,11 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
             }
 
-            const content = `API received an ${
-                error?.response?.status || error?.code
-            } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
+            const content = `API received an ${error?.response?.status || error?.code} error, ${
+                config.retries && config.retries > 0
+                    ? `retrying with exponential backoffs for a total of ${attemptNumber} out of ${config.retries} times`
+                    : 'but no retries will occur because retries defaults to 0 or were set to 0'
+            }`;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -749,7 +751,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number
-    ): Promise<void> {
+    ): Promise<AxiosError> {
         if (!error?.response?.data) {
             const {
                 message,
@@ -798,7 +800,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             await this.reportError(error, url, config, activityLogId, environment_id, message);
         }
 
-        throw error;
+        return error;
     }
 }
 

@@ -313,6 +313,7 @@ console.log(syncStatuses);
             "type": "INCREMENTAL",
             "finishedAt": "2023-11-09T12:58:06.205Z",
             "nextScheduledSyncAt": "2023-11-10T00:58:04.000Z"
+            "frequency": "2d"
         },
         {
             "id": "3463bfdd-3fa2-418c-9e53-09f59416fe5f",
@@ -321,6 +322,7 @@ console.log(syncStatuses);
             "status": "SUCCESS",
             "finishedAt": "2023-11-04T12:58:06.205Z",
             "nextScheduledSyncAt": "2023-11-10T01:58:04.000Z",
+            "frequency": "1d"
             "latestResult": {
                 "SalesforceTicket": {
                     "added": 27,
@@ -412,5 +414,24 @@ console.log(vars);
 [
     { "name": "BOT_TOKEN", "value": "abcdefg" }
 ]
+*/
+```
+
+### Override a sync's frequency for a specific connection
+
+To override a sync's frequency for a specific connection, or revert to the default frequency, use:
+
+```ts
+const vars = await nango.updateSyncConnectionFrequency(
+    '<INTEGRATION-ID>',
+    '<SYNC NAME>',
+    '<CONNECTION-ID>',
+    '<FREQUENCY>'
+);
+
+/*
+    {
+        "frequency": "<NEW_FREQUENCY>",
+    }
 */
 ```

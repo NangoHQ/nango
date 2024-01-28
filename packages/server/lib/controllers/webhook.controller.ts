@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { routeWebhook, featureFlags, environmentService } from '@nangohq/shared';
+import { routeWebhook, featureFlags, environmentService, metricsManager, MetricTypes, LogActionEnum } from '@nangohq/shared';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
@@ -28,7 +28,19 @@ class WebhookController {
             let responsePayload = null;
 
             if (areWebhooksEnabled) {
+                const startTime = Date.now();
                 responsePayload = await routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
+                const endTime = Date.now();
+                const totalRunTime = (endTime - startTime) / 1000;
+
+                await metricsManager.captureMetric(
+                    MetricTypes.WEBHOOK_TRACK_RUNTIME,
+                    `${new Date().toISOString()}-${providerConfigKey}`,
+                    `webhook-${providerConfigKey}`,
+                    totalRunTime,
+                    LogActionEnum.WEBHOOK,
+                    [`account_uuid:${accountUUID}`, `environment_uuid:${environmentUuid}`, `providerConfigKey:${providerConfigKey}`]
+                );
             } else {
                 res.status(404).send();
 

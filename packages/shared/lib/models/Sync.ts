@@ -39,6 +39,7 @@ export interface Sync extends TimestampsAndDeleted {
         seconds?: number;
         nanos?: number;
     };
+    frequency: string | null;
 }
 
 export interface Action extends TimestampsAndDeleted {
@@ -62,6 +63,7 @@ export interface ReportedSyncJobStatus {
     status: SyncStatus;
     latestResult?: SyncResultByModel;
     jobStatus?: SyncStatus;
+    frequency: string;
 }
 
 export interface SyncModelSchema {
