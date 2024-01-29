@@ -502,16 +502,27 @@ class ConnectionService {
 
     public async listConnections(
         environment_id: number,
-        connectionId?: string
+        limit = 20,
+        offset = 0,
+        connection?: string,
+        integration?: string
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata }[]> {
         const queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' }, 'metadata')
-            .where({ environment_id, deleted: false });
-        if (connectionId) {
-            queryBuilder.where({ connection_id: connectionId });
+            .where({ environment_id, deleted: false })
+            .offset(offset)
+            .limit(limit);
+
+        if (connection) {
+            queryBuilder.where({ connection_id: connection });
         }
+
+        if (integration) {
+            queryBuilder.where({ provider_config_key: integration });
+        }
+
         return queryBuilder;
     }
 
