@@ -26,6 +26,7 @@ export enum MetricTypes {
     SYNC_GET_RECORDS_QUERY_TIMEOUT = 'sync_get_records_query_timeout',
     FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure',
     POST_CONNECTION_SCRIPT_FAILURE = 'post_connection_script_failure',
+    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
     INCOMING_WEBHOOK_RECEIVED = 'incoming_webhook_received',
     INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER = 'incoming_webhook_issue_wrong_connection_identifier',
     INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND = 'incoming_webhook_issue_connection_not_found',

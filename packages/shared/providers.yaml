@@ -880,6 +880,10 @@ lever:
         audience: https://api.lever.co/v1
     proxy:
         base_url: https://api.lever.co
+lever-basic:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lever.co
 lever-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://sandbox-lever.auth0.com/authorize
@@ -1403,6 +1407,16 @@ smartrecruiters-api-key:
         base_url: https://api.smartrecruiters.com
         headers:
             X-SmartToken: ${apiKey}
+smartsheet:
+    auth_mode: OAUTH2
+    authorization_url: https://app.smartsheet.com/b/authorize
+    token_url: https://api.smartsheet.com/2.0/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.smartsheet.com
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
@@ -1771,6 +1785,8 @@ zendesk:
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page

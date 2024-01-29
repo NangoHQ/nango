@@ -378,9 +378,11 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
             }
 
-            const content = `API received an ${
-                error?.response?.status || error?.code
-            } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
+            const content = `API received an ${error?.response?.status || error?.code} error, ${
+                config.retries && config.retries > 0
+                    ? `retrying with exponential backoffs for a total of ${attemptNumber} out of ${config.retries} times`
+                    : 'but no retries will occur because retries defaults to 0 or were set to 0'
+            }`;
 
             await createActivityLogMessage({
                 level: 'error',
