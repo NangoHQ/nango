@@ -932,7 +932,7 @@ paths:
                                         type: string
 
     /sync/update-connection-frequency:
-        get:
+        put:
             description: Update a sync's connection frequency or revert to the default frequency
             requestBody:
                 required: true
@@ -952,13 +952,13 @@ paths:
                                 connection_id:
                                     type: string
                                     description: The ID of the connection
-                                sync:
+                                sync_name:
                                     type: string
                                     description: The name of the sync you want to update
                                 frequency:
                                     type: string
                                     nullable: true
-                                    description: The frequency you want to set. Set null to revert to the default frequency
+                                    description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency"
             responses:
                 '200':
                     description: Successfully updated the frequency
