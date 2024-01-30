@@ -943,7 +943,7 @@ paths:
                             required:
                                 - provider_config_key
                                 - connection_id
-                                - sync
+                                - sync_name
                                 - frequency
                             properties:
                                 provider_config_key:
