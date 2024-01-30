@@ -180,14 +180,12 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             </ul>
                         </div>
                     )}
-                    {version && (
-                        <div>
-                            <hr className="border-border-gray border my-1" />
-                            <span className="flex py-1 items-center text-center text-gray-500 justify-center text-sm">
-                                v{version}
-                            </span>
-                        </div>
-                    )}
+                    <div>
+                        <hr className="border-border-gray border my-1" />
+                        <span className="flex py-1 items-center text-center text-gray-500 justify-center text-sm">
+                            {version ? `v${version}` : '-'}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
