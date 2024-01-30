@@ -8,7 +8,6 @@ import proxyService from '../../../services/proxy.service.js';
 import connectionService from '../../../services/connection.service.js';
 import environmentService from '../../../services/environment.service.js';
 import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
-import { getGlobalWebhookReceiveUrl } from '../../../utils/utils.js';
 
 import * as postConnectionHandlers from './index.js';
 
@@ -22,7 +21,6 @@ const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as
 
 export interface InternalNango {
     getConnection: () => Promise<Connection>;
-    getWebhookURL: () => Promise<string>;
     proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
@@ -63,13 +61,6 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 const { response: connection } = await connectionService.getConnection(connection_id, provider_config_key, environment_id);
 
                 return connection as Connection;
-            },
-            getWebhookURL: async () => {
-                const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
-                const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(internalConfig.environmentId);
-                const webhookURL = `${webhookBaseUrl}/${environmentUuid}/${provider}`;
-
-                return webhookURL;
             },
             proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig = { ...externalConfig, method: method || externalConfig.method, endpoint };
