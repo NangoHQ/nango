@@ -933,7 +933,7 @@ paths:
 
     /sync/update-connection-frequency:
         put:
-            description: Update a sync's connection frequency or revert to the default frequency
+            description: Override a sync's default frequency for a specific connection, or revert to the default frequency.
             requestBody:
                 required: true
                 content:
@@ -943,7 +943,7 @@ paths:
                             required:
                                 - provider_config_key
                                 - connection_id
-                                - sync
+                                - sync_name
                                 - frequency
                             properties:
                                 provider_config_key:
