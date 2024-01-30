@@ -3,10 +3,12 @@ import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '..
 import { LogLevel, LogActionEnum } from '../../../models/Activity.js';
 import { createActivityLogAndLogMessage } from '../../../services/activity/activity.service.js';
 import type { HTTP_VERB } from '../../../models/Generic.js';
+import type { UserProvidedProxyConfiguration } from '../../../models/Proxy.js';
 import proxyService from '../../../services/proxy.service.js';
 import connectionService from '../../../services/connection.service.js';
 import environmentService from '../../../services/environment.service.js';
 import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import { getGlobalWebhookReceiveUrl } from '../../../utils/utils.js';
 
 import * as postConnectionHandlers from './index.js';
 
@@ -19,8 +21,9 @@ type PostConnectionHandlersMap = { [key: string]: PostConnectionHandler };
 const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as PostConnectionHandlersMap;
 
 export interface InternalNango {
-    proxy: ({ method, endpoint, data }: { method?: HTTP_VERB; endpoint: string; data?: unknown }) => Promise<AxiosResponse>;
     getConnection: () => Promise<Connection>;
+    getWebhookURL: () => Promise<string>;
+    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
@@ -56,17 +59,24 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
         };
 
         const internalNango: InternalNango = {
-            proxy: ({ method, endpoint, data }: { endpoint: string; method?: HTTP_VERB; data?: unknown }) => {
+            getConnection: async () => {
+                const { response: connection } = await connectionService.getConnection(connection_id, provider_config_key, environment_id);
+
+                return connection as Connection;
+            },
+            getWebhookURL: async () => {
+                const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
+                const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(internalConfig.environmentId);
+                const webhookURL = `${webhookBaseUrl}/${environmentUuid}/${provider}`;
+
+                return webhookURL;
+            },
+            proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig = { ...externalConfig, method: method || externalConfig.method, endpoint };
                 if (data) {
                     finalExternalConfig.data = data;
                 }
                 return proxyService.routeOrConfigure(finalExternalConfig, internalConfig) as Promise<AxiosResponse>;
-            },
-            getConnection: async () => {
-                const { response: connection } = await connectionService.getConnection(connection_id, provider_config_key, environment_id);
-
-                return connection as Connection;
             },
             updateConnectionConfig: (connectionConfig: ConnectionConfig) => {
                 return connectionService.updateConnectionConfig(connection as unknown as Connection, connectionConfig);
@@ -95,7 +105,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     end: Date.now(),
                     timestamp: Date.now(),
                     connection_id: connection_id,
-                    provider: '',
+                    provider,
                     provider_config_key: provider_config_key,
                     environment_id
                 };

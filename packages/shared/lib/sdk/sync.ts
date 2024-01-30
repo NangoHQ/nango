@@ -1,11 +1,13 @@
 import { getSyncConfigByJobId } from '../services/sync/config/config.service.js';
 import { updateRecord, upsert } from '../services/sync/data/data.service.js';
 import { formatDataRecords } from '../services/sync/data/records.service.js';
+import environmentService from '../services/environment.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
+import { getGlobalWebhookReceiveUrl } from '../utils/utils.js';
 
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
@@ -120,6 +122,11 @@ enum AuthModes {
     App = 'APP',
     Custom = 'CUSTOM',
     None = 'NONE'
+}
+
+interface OAuth1Token {
+    oAuthToken: string;
+    oAuthTokenSecret: string;
 }
 
 interface AppCredentials extends CredentialsCommon {
@@ -353,6 +360,10 @@ export class NangoAction {
         });
     }
 
+    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials> {
+        return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
+    }
+
     public async getConnection(): Promise<Connection> {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
@@ -372,6 +383,19 @@ export class NangoAction {
 
     public async getMetadata<T = Metadata>(): Promise<T> {
         return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+    }
+
+    public async getWebhookURL(): Promise<string> {
+        const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
+        const providerConfigKey: string = this.providerConfigKey as string;
+        const response = await this.nango.getIntegration(providerConfigKey);
+        if (!response || !response.config || !response.config.provider) {
+            throw Error(`There was no provider found for the provider config key: ${providerConfigKey}`);
+        }
+        const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(this.environmentId as number);
+        const webhookURL = `${webhookBaseUrl}/${environmentUuid}/${response.config.provider}`;
+
+        return webhookURL;
     }
 
     public async getFieldMapping(): Promise<Metadata> {
