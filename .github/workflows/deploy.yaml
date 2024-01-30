@@ -20,6 +20,7 @@ on:
                     - server
                     - jobs
                     - runner
+                    - persist
 
 jobs:
     deploy_server:
@@ -76,4 +77,20 @@ jobs:
                 RUNNER_OWNER_ID: ${{ secrets.RENDER_RUNNER_OWNER_ID }}
               run: |
                 bash ./scripts/deploy/runners.bash
-
+    depoy_persist:
+        if: inputs.service == 'persist'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - uses: docker/login-action@v3
+              with:
+                username: ${{ secrets.DOCKER_USERNAME }}
+                password: ${{ secrets.DOCKER_PASSWORD }}
+            - name: Push tag
+              run: |
+                docker buildx imagetools create nangohq/nango-persist:${{ github.sha }} --tag nangohq/nango-persist:${{ inputs.stage }}
+            - name: Deploy persist
+              run: |
+                SERVICE_ID=${{ fromJson('{ production: "srv-cmt150ol6cac73apstq0", staging: "srv-cmsfiqqcn0vc73bhcod0" }')[inputs.stage] }}
+                curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
