@@ -22,6 +22,7 @@ import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
+import type { Job as SyncJob, Schedule as SyncSchedule } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic';
@@ -272,7 +273,6 @@ export class Orchestrator {
         includeJobStatus = false
     ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
-        const syncClient = await SyncClient.getInstance();
 
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
@@ -286,32 +286,10 @@ export class Orchestrator {
                 if (!sync) {
                     continue;
                 }
-                const latestJob = await getLatestSyncJob(sync?.id as string);
-                const schedule = await getSchedule(sync?.id as string);
-                const status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
 
-                let nextScheduledSyncAt = null;
-                if (status !== SyncStatus.PAUSED) {
-                    const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
+                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id as string, environmentId);
+                const reportedStatus = await this.buildReportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
-                    if (syncSchedule && syncSchedule?.info && syncSchedule?.info?.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
-                        const futureRun = syncSchedule?.info?.futureActionTimes[0];
-                        nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
-                    }
-                }
-                const reportedStatus: ReportedSyncJobStatus = {
-                    id: sync?.id as string,
-                    type: latestJob?.type as SyncType,
-                    finishedAt: latestJob?.updated_at,
-                    nextScheduledSyncAt,
-                    name: sync?.name as string,
-                    status,
-                    frequency: schedule?.frequency,
-                    latestResult: latestJob?.result
-                } as ReportedSyncJobStatus;
-                if (includeJobStatus) {
-                    reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
-                }
                 syncsWithStatus.push(reportedStatus);
             }
         } else {
@@ -325,33 +303,9 @@ export class Orchestrator {
             }
 
             for (const sync of syncs) {
-                const schedule = await getSchedule(sync?.id as string);
-                const latestJob = await getLatestSyncJob(sync?.id as string);
-                const status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
+                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id as string, environmentId);
+                const reportedStatus = await this.buildReportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
-                let nextScheduledSyncAt = null;
-                if (status !== SyncStatus.PAUSED) {
-                    const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
-
-                    if (syncSchedule && syncSchedule?.info && syncSchedule?.info?.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
-                        const futureRun = syncSchedule?.info?.futureActionTimes[0];
-                        nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
-                    }
-                }
-
-                const reportedStatus: ReportedSyncJobStatus = {
-                    id: sync?.id,
-                    type: latestJob?.type as SyncType,
-                    finishedAt: latestJob?.updated_at,
-                    nextScheduledSyncAt,
-                    name: sync?.name,
-                    status,
-                    frequency: schedule?.frequency,
-                    latestResult: latestJob?.result
-                } as ReportedSyncJobStatus;
-                if (includeJobStatus) {
-                    reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
-                }
                 syncsWithStatus.push(reportedStatus);
             }
         }
@@ -403,6 +357,59 @@ export class Orchestrator {
                 false
             );
         }
+    }
+    private async fetchSyncData(syncId: string, environmentId: number) {
+        const syncClient = await SyncClient.getInstance();
+        const schedule = await getSchedule(syncId);
+        const latestJob = await getLatestSyncJob(syncId);
+        let status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
+
+        const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
+        if (syncSchedule) {
+            if (syncSchedule?.schedule?.state?.paused && status !== SyncStatus.PAUSED) {
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
+                status = SyncStatus.PAUSED;
+            } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
+                status = SyncStatus.STOPPED;
+            }
+        }
+
+        let nextScheduledSyncAt = null;
+        if (status !== SyncStatus.PAUSED) {
+            if (syncSchedule && syncSchedule?.info && syncSchedule?.info.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
+                const futureRun = syncSchedule.info.futureActionTimes[0];
+                nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
+            }
+        }
+
+        return { schedule, latestJob, status, nextScheduledSyncAt };
+    }
+
+    private async buildReportedStatus(
+        sync: Sync,
+        latestJob: SyncJob | null,
+        schedule: SyncSchedule | null,
+        status: SyncStatus,
+        nextScheduledSyncAt?: string | Date | null,
+        includeJobStatus = false
+    ) {
+        const reportedStatus: ReportedSyncJobStatus = {
+            id: sync?.id,
+            type: latestJob?.type as SyncType,
+            finishedAt: latestJob?.updated_at,
+            nextScheduledSyncAt,
+            name: sync?.name,
+            status,
+            frequency: schedule?.frequency,
+            latestResult: latestJob?.result
+        } as ReportedSyncJobStatus;
+
+        if (includeJobStatus) {
+            reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
+        }
+
+        return reportedStatus;
     }
 }
 
