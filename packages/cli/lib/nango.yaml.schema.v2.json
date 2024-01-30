@@ -7,6 +7,15 @@
             "additionalProperties": {
                 "type": "object",
                 "properties": {
+                    "post-connection-scripts": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "errorMessage": {
+                            "_": "nango yaml schema validation error: post-connection-scripts must be an array of strings."
+                        }
+                    },
                     "syncs": {
                         "errorMessage": {
                             "_": " "

@@ -38,6 +38,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
+    const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
@@ -74,7 +75,27 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const allSyncNames: Record<string, boolean> = {};
 
     for (const standardConfig of config) {
-        const { syncs, actions } = standardConfig;
+        const { syncs, actions, postConnectionScripts } = standardConfig;
+
+        if (postConnectionScripts) {
+            for (const name of postConnectionScripts) {
+                const rendered = ejs.render(postConnectionTemplateContents, {
+                    interfaceFileName: TYPES_FILE_NAME.replace('.ts', '')
+                });
+                const stripped = rendered.replace(/^\s+/, '');
+
+                if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
+                    fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
+                    if (debug) {
+                        printDebug(`Created ${name}.ts file`);
+                    }
+                } else {
+                    if (debug) {
+                        printDebug(`${name}.ts file already exists, so will not overwrite it.`);
+                    }
+                }
+            }
+        }
 
         for (const flow of [...syncs, ...actions]) {
             const { name, type, returns: models, input } = flow;

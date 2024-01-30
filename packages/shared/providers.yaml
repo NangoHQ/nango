@@ -1074,6 +1074,8 @@ salesforce:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://developer.salesforce.com/docs/api
+    webhook_routing_script: salesforce-webhook-routing
+    post_connection_script: salesforce-post-connection
 salesforce-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://test.salesforce.com/services/oauth2/authorize
