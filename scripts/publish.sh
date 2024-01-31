@@ -34,7 +34,7 @@ npm install "@nangohq/node@$VERSION" -w @nangohq/shared
 # Shared
 node scripts/flows.js
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-npm install "@nangohq/shared@$VERSION" -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs -w @nangohq/nango-runner
+npm install "@nangohq/shared@$VERSION" -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs -w @nangohq/nango-runner -w @nangohq/persist
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"

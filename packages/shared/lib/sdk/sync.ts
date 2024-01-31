@@ -13,8 +13,9 @@ import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
-
-type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+import axios from 'axios';
+import { getPersistAPIUrl } from '../utils/utils.js';
+import type { LogLevel } from '../models/Activity.js';
 
 interface ParamEncoder {
     (value: any, defaultEncoder: (value: any) => any): any;
@@ -214,9 +215,9 @@ export interface NangoProps {
     dryRun?: boolean;
     track_deletes?: boolean;
     attributes?: object | undefined;
-
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
+    usePersistAPI?: boolean;
 }
 
 interface UserLogParameters {
@@ -237,6 +238,7 @@ export class NangoAction {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
+    usePersistAPI: boolean;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -284,6 +286,8 @@ export class NangoAction {
         if (config.attributes) {
             this.attributes = config.attributes;
         }
+
+        this.usePersistAPI = config.usePersistAPI || false;
     }
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -414,6 +418,22 @@ export class NangoAction {
             throw new Error('There is no current activity log stream to log to');
         }
 
+        if (this.usePersistAPI) {
+            const response = await persistApi({
+                method: 'POST',
+                url: `/environment/${this.environmentId}/log`,
+                data: {
+                    activityLogId: this.activityLogId,
+                    level: userDefinedLevel?.level ?? 'info',
+                    msg: content
+                }
+            });
+            if (response.status > 299) {
+                throw new Error(`cannot write log with activityLogId '${this.activityLogId}'`);
+            }
+            return;
+        }
+
         await createActivityLogMessage(
             {
                 level: userDefinedLevel?.level ?? 'info',
@@ -511,6 +531,8 @@ export class NangoSync extends NangoAction {
     logMessages?: unknown[] | undefined = [];
     stubbedMetadata?: Metadata | undefined = undefined;
 
+    private batchSize = 1000;
+
     constructor(config: NangoProps) {
         super(config);
 
@@ -540,9 +562,18 @@ export class NangoSync extends NangoAction {
         if (date.toString() === 'Invalid Date') {
             throw new Error('Invalid Date');
         }
-        const result = await setLastSyncDate(this.syncId as string, date);
-
-        return result;
+        if (this.usePersistAPI) {
+            const response = await persistApi({
+                method: 'PUT',
+                url: `/sync/${this.syncId}`,
+                data: {
+                    lastSyncDate: date
+                }
+            });
+            return response.status <= 299;
+        } else {
+            return await setLastSyncDate(this.syncId as string, date);
+        }
     }
 
     /**
@@ -561,8 +592,37 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        }
+
+        if (this.dryRun) {
+            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:`);
+            this.logMessages?.push(...results);
+            return null;
+        }
+
+        if (this.usePersistAPI) {
+            for (let i = 0; i < results.length; i += this.batchSize) {
+                const batch = results.slice(i, i + this.batchSize);
+                const response = await persistApi({
+                    method: 'POST',
+                    url: `/environment/${this.environmentId}/connection/${this.connectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                    data: {
+                        model,
+                        records: batch,
+                        providerConfigKey: this.providerConfigKey,
+                        nangoConnectionId: this.nangoConnectionId,
+                        activityLogId: this.activityLogId,
+                        lastSyncDate: this.lastSyncDate,
+                        trackDeletes: this.track_deletes
+                    }
+                });
+                if (response.status > 299) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         const {
@@ -591,12 +651,6 @@ export class NangoSync extends NangoAction {
             }
 
             throw error;
-        }
-
-        if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:`);
-            this.logMessages?.push(...results);
-            return null;
         }
 
         const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
@@ -675,8 +729,37 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        }
+
+        if (this.dryRun) {
+            this.logMessages?.push(`A batch delete call would delete the following data:`);
+            this.logMessages?.push(...results);
+            return null;
+        }
+
+        if (this.usePersistAPI) {
+            for (let i = 0; i < results.length; i += this.batchSize) {
+                const batch = results.slice(i, i + this.batchSize);
+                const response = await persistApi({
+                    method: 'DELETE',
+                    url: `/environment/${this.environmentId}/connection/${this.connectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                    data: {
+                        model,
+                        records: batch,
+                        providerConfigKey: this.providerConfigKey,
+                        nangoConnectionId: this.nangoConnectionId,
+                        activityLogId: this.activityLogId,
+                        lastSyncDate: this.lastSyncDate,
+                        trackDeletes: this.track_deletes
+                    }
+                });
+                if (response.status > 299) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         const {
@@ -706,12 +789,6 @@ export class NangoSync extends NangoAction {
             }
 
             throw error;
-        }
-
-        if (this.dryRun) {
-            this.logMessages?.push(`A batch delete call would delete the following data:`);
-            this.logMessages?.push(...results);
-            return null;
         }
 
         const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
@@ -791,8 +868,37 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.nangoConnectionId || !this.activityLogId) {
-            throw new Error('Nango Connection Id, and Activity Log Id both required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        }
+
+        if (this.dryRun) {
+            this.logMessages?.push(`A batch update call would update the following data to the ${model} model:`);
+            this.logMessages?.push(...results);
+            return null;
+        }
+
+        if (this.usePersistAPI) {
+            for (let i = 0; i < results.length; i += this.batchSize) {
+                const batch = results.slice(i, i + this.batchSize);
+                const response = await persistApi({
+                    method: 'PUT',
+                    url: `/environment/${this.environmentId}/connection/${this.connectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                    data: {
+                        model,
+                        records: batch,
+                        providerConfigKey: this.providerConfigKey,
+                        nangoConnectionId: this.nangoConnectionId,
+                        activityLogId: this.activityLogId,
+                        lastSyncDate: this.lastSyncDate,
+                        trackDeletes: this.track_deletes
+                    }
+                });
+                if (response.status > 299) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         const {
@@ -821,12 +927,6 @@ export class NangoSync extends NangoAction {
             }
 
             throw error;
-        }
-
-        if (this.dryRun) {
-            this.logMessages?.push(`A batch update call would update the following data to the ${model} model:`);
-            this.logMessages?.push(...results);
-            return null;
         }
 
         const responseResults = await updateRecord(
@@ -898,3 +998,10 @@ export class NangoSync extends NangoAction {
         return super.getMetadata<T>();
     }
 }
+
+const persistApi = axios.create({
+    baseURL: getPersistAPIUrl(),
+    validateStatus: (_status) => {
+        return true;
+    }
+});
