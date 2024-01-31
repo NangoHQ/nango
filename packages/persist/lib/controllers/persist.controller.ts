@@ -270,16 +270,16 @@ class PersistController {
                 content: `There was an issue with the batch ${persistType}. ${error?.message}`,
                 timestamp: Date.now()
             });
-            const errMsg = `Failed to ${persistType} records ${activityLogId}`;
-            span.setTag('error', errMsg).finish();
-            return err(errMsg);
+            const res = err(`Failed to ${persistType} records ${activityLogId}`);
+            span.setTag('error', res.error).finish();
+            return res;
         }
         const syncConfig = await getSyncConfigByJobId(syncJobId);
 
         if (syncConfig && !syncConfig?.models.includes(model)) {
-            const errMsg = `The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`;
-            span.setTag('error', errMsg).finish();
-            return err(errMsg);
+            const res = err(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            span.setTag('error', res.error).finish();
+            return res;
         }
 
         const persistResult = await persistFunction(formattedRecords);
@@ -333,9 +333,9 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            const errMsg = persistResult?.error!;
-            span.setTag('error', errMsg).finish();
-            return err(errMsg);
+            const res = err(persistResult?.error!);
+            span.setTag('error', res.error).finish();
+            return res;
         }
     }
 }
