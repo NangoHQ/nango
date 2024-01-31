@@ -2,11 +2,11 @@ import axios, { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
-import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Connection';
+import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Connection.js';
 import type { Environment } from '../../models/Environment';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { SyncResult } from '../../models/Sync';
-import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Webhook';
+import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 
