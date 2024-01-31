@@ -429,6 +429,7 @@ export class NangoAction {
                 }
             });
             if (response.status > 299) {
+                console.log(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`);
                 throw new Error(`cannot write log with activityLogId '${this.activityLogId}'`);
             }
             return;
@@ -570,7 +571,11 @@ export class NangoSync extends NangoAction {
                     lastSyncDate: date
                 }
             });
-            return response.status <= 299;
+            if (response.status > 299) {
+                console.log(`Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`);
+                return false;
+            }
+            return true;
         } else {
             return await setLastSyncDate(this.syncId as string, date);
         }
@@ -619,6 +624,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
+                    console.log(`Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`);
                     return false;
                 }
             }
@@ -756,6 +762,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
+                    console.log(`Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`);
                     return false;
                 }
             }
@@ -895,6 +902,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
+                    console.log(`Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`);
                     return false;
                 }
             }
