@@ -1,6 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
+import type { AuthModes } from './Auth.js';
 import type { NangoProps } from '../sdk/sync.js';
 import type { NangoIntegrationData, NangoSyncEndpoint } from './NangoConfig.js';
 
@@ -272,8 +273,15 @@ export const SyncCommandToScheduleStatus = {
     RUN_FULL: ScheduleStatus.RUNNING
 };
 
+export enum WebhookType {
+    SYNC = 'sync',
+    AUTH = 'auth',
+    FORWARD = 'forward'
+}
+
 export interface NangoSyncWebhookBody {
     from: string;
+    type: WebhookType.SYNC;
     connectionId: string;
     providerConfigKey: string;
     syncName: string;
@@ -281,6 +289,18 @@ export interface NangoSyncWebhookBody {
     responseResults: SyncResult;
     syncType: SyncType;
     queryTimeStamp: string | null;
+}
+
+export interface NangoAuthWebhookBody {
+    from: string;
+    type: WebhookType.AUTH;
+    connectionId: string;
+    authMode: AuthModes;
+    providerConfigKey: string;
+    provider: string;
+    environment: string;
+    success: boolean;
+    error?: string;
 }
 
 export interface SyncConfigWithProvider {

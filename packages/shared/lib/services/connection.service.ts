@@ -111,22 +111,6 @@ class ConnectionService {
         return id;
     }
 
-    public async createConnection(
-        connectionId: string,
-        providerConfigKey: string,
-        connectionConfig: Record<string, string | boolean>,
-        type: ProviderAuthModes,
-        environment_id: number
-    ): Promise<void> {
-        await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert({
-            connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            credentials: { type },
-            connection_config: connectionConfig,
-            environment_id: environment_id
-        });
-    }
-
     public async upsertApiConnection(
         connectionId: string,
         providerConfigKey: string,
@@ -233,9 +217,11 @@ class ConnectionService {
                     id: importedConnection[0]?.id as number,
                     connection_id,
                     provider_config_key,
-                    environment_id: environmentId
+                    environment_id: environmentId,
+                    auth_mode: ProviderAuthModes.OAuth2
                 },
-                provider
+                provider,
+                null
             );
         }
 
@@ -264,9 +250,11 @@ class ConnectionService {
                     id: importedConnection[0].id,
                     connection_id,
                     provider_config_key,
-                    environment_id: environmentId
+                    environment_id: environmentId,
+                    auth_mode: ProviderAuthModes.ApiKey
                 },
-                provider
+                provider,
+                null
             );
         }
 
@@ -853,9 +841,11 @@ class ConnectionService {
                     id: updatedConnection.id,
                     connection_id: connectionId,
                     provider_config_key: integration.unique_key,
-                    environment_id: integration.environment_id
+                    environment_id: integration.environment_id,
+                    auth_mode: ProviderAuthModes.App
                 },
                 integration.provider,
+                activityLogId,
                 // the connection is complete so we want to initiate syncs
                 // the post connection script has run already because we needed to get the github handle
                 { initiateSync: true, runPostConnectionScript: false }

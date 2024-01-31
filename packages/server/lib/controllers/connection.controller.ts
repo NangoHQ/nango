@@ -695,9 +695,11 @@ class ConnectionController {
                         id: updatedConnection.id,
                         connection_id,
                         provider_config_key,
-                        environment_id: environmentId
+                        environment_id: environmentId,
+                        auth_mode: template.auth_mode
                     },
-                    provider
+                    provider,
+                    null
                 );
             }
 

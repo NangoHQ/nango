@@ -356,6 +356,10 @@ class EnvironmentService {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ always_send_webhook }, ['id']);
     }
 
+    async editSendAuthWebhook(send_auth_webhook: boolean, id: number): Promise<Environment | null> {
+        return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ send_auth_webhook }, ['id']);
+    }
+
     async editSlackNotifications(slack_notifications: boolean, id: number): Promise<Environment | null> {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ slack_notifications }, ['id']);
     }

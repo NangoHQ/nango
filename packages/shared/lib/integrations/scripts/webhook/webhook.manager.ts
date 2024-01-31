@@ -1,7 +1,7 @@
 import configService from '../../../services/config.service.js';
 import type { Config as ProviderConfig } from './../../../models/Provider.js';
 import environmentService from '../../../services/environment.service.js';
-import webhookService from '../../../services/sync/notification/webhook.service.js';
+import webhookService from '../../../services/notification/webhook.service.js';
 import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { internalNango, InternalNango } from './internal-nango.js';

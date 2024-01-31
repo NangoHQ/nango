@@ -8,6 +8,7 @@ import {
     analytics,
     AnalyticsTypes,
     connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     AuthCredentials,
@@ -182,9 +183,11 @@ class AppStoreAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environmentId
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.AppStore
                     },
-                    config?.provider as string
+                    config?.provider as string,
+                    activityLogId
                 );
             }
 
@@ -209,6 +212,20 @@ class AppStoreAuthController {
                     connectionId
                 }
             });
+
+            await connectionCreationFailedHook(
+                {
+                    id: -1,
+                    connection_id: connectionId as string,
+                    provider_config_key: providerConfigKey as string,
+                    environment_id: environmentId,
+                    auth_mode: AuthModes.AppStore,
+                    error: `Error during App store auth: ${prettyError}`
+                },
+                'unknown',
+                activityLogId
+            );
+
             next(err);
         }
     }
