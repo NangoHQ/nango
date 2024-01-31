@@ -82,6 +82,10 @@ export function getServerPort() {
     }
 }
 
+export function getPersistAPIUrl() {
+    return process.env['PERSIST_SERVICE_URL'] || 'http://localhost:3007';
+}
+
 export function isDev() {
     return process.env['NODE_ENV'] === NodeEnv.Dev;
 }

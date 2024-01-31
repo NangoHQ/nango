@@ -40,6 +40,7 @@ export interface NangoV2IntegrationContents {
     provider?: string;
     syncs?: NangoIntegrationDataV2[];
     actions?: NangoIntegrationDataV2[];
+    'post-connection-scripts'?: string[];
 }
 
 export interface NangoV2Integration {
@@ -138,4 +139,5 @@ export interface StandardNangoConfig {
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];
+    postConnectionScripts?: string[];
 }

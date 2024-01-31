@@ -42,6 +42,7 @@ models:
 
     LinearProject:
         id: string
+        url: string
         name: string
         description: string | null
         createdAt: date

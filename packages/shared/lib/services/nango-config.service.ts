@@ -270,6 +270,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
         const syncs = integration['syncs'] as NangoV2Integration;
         const actions = integration['actions'] as NangoV2Integration;
+        const postConnectionScripts: string[] = (integration['post-connection-scripts'] || []) as string[];
 
         for (const syncName in syncs) {
             const sync: NangoIntegrationDataV2 = syncs[syncName] as NangoIntegrationDataV2;
@@ -480,7 +481,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
         const simplifiedIntegration: StandardNangoConfig = {
             providerConfigKey,
             syncs: builtSyncs,
-            actions: builtActions
+            actions: builtActions,
+            postConnectionScripts
         };
 
         output.push(simplifiedIntegration);

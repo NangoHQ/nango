@@ -9,12 +9,13 @@ import {
     SyncStatus,
     SyncWithSchedule,
     SlimSync,
-    SlimAction
+    SlimAction,
+    SyncCommand
 } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
-import { markAllAsStopped } from './schedule.service.js';
+import { updateScheduleStatus, markAllAsStopped } from './schedule.service.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -324,9 +325,23 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
             `${SYNC_CONFIG_TABLE}.models`
         );
 
-    const syncsWithSchedule = result.map((sync) => {
+    const syncsWithSchedule = result.map(async (sync) => {
         const { schedule_id } = sync;
         const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
+        // if a disagreement trust temporal
+        if (schedule?.info?.paused && sync.schedule_status !== SyncStatus.PAUSED) {
+            sync = {
+                ...sync,
+                schedule_status: SyncStatus.PAUSED
+            };
+            await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
+        } else if (!schedule?.info?.paused && sync.schedule_status === SyncStatus.PAUSED) {
+            sync = {
+                ...sync,
+                schedule_status: SyncStatus.RUNNING
+            };
+            await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
+        }
         const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber()) || [];
 
         return {
@@ -336,7 +351,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
     });
 
     if (Array.isArray(syncsWithSchedule) && syncsWithSchedule.length > 0) {
-        return syncsWithSchedule;
+        return Promise.all(syncsWithSchedule);
     }
 
     return [];

@@ -1,6 +1,7 @@
 [
     {
         "providerConfigKey": "demo-github-integration",
+        "postConnectionScripts": [],
         "syncs": [
             {
                 "name": "github-issue-example",

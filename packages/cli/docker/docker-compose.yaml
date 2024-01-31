@@ -68,6 +68,24 @@ services:
         networks:
             - nango
 
+    nango-persist:
+        image: nangohq/nango-persist:production
+        container_name: nango-persist
+        restart: always
+        ports:
+            - '${PERSIST_PORT:-3007}:${PERSIST_PORT:-3007}'
+        environment:
+            - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
+            - NANGO_DB_USER=${NANGO_DB_USER}
+            - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
+            - NANGO_DB_HOST=${NANGO_DB_HOST}
+            - NANGO_DB_NAME=${NANGO_DB_NAME}
+            - NANGO_DB_SSL=${NANGO_DB_SSL}
+        depends_on:
+            - nango-db
+        networks:
+            - nango
+
     temporal:
         image: temporalio/auto-setup
         container_name: temporal

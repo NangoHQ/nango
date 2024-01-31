@@ -21,6 +21,7 @@ export default async function fetchData(nango: NangoSync) {
                 nodes {
                     id
                     name
+                    url
                     description
                     teams {
                         nodes {
@@ -60,6 +61,7 @@ function mapProjects(records: any[]): LinearProject[] {
         return {
             id: record.id,
             name: record.name,
+            url: record.url,
             description: record.description,
             createdAt: new Date(record.createdAt),
             updatedAt: new Date(record.updatedAt),

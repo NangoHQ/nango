@@ -846,6 +846,22 @@ jira:
             link_path_in_response_body: _links.next
     post_connection_script: jira-post-connection
     webhook_routing_script: jira-webhook-routing
+helpscout-docs:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://docsapi.helpscout.net
+helpscout-mailbox:
+    auth_mode: OAUTH2
+    authorization_url: https://secure.helpscout.net/authentication/authorizeClientApplication
+    token_url: https://api.helpscout.net/v2/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.helpscout.net
 keap:
     categories:
         - marketing
@@ -1306,6 +1322,8 @@ salesforce:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://developer.salesforce.com/docs/api
+    webhook_routing_script: salesforce-webhook-routing
+    post_connection_script: salesforce-post-connection
 salesforce-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://test.salesforce.com/services/oauth2/authorize
