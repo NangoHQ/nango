@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import {
     setLastSyncDate,
     createActivityLogMessage,
@@ -41,7 +41,7 @@ type RecordRequest = Request<
 >;
 
 class PersistController {
-    public async saveLastSyncDate(req: Request<{ syncId: string }, any, { lastSyncDate: Date }, any, Record<string, any>>, res: Response) {
+    public async saveLastSyncDate(req: Request<{ syncId: string }, any, { lastSyncDate: Date }, any, Record<string, any>>, res: Response, next: NextFunction) {
         const {
             params: { syncId },
             body: { lastSyncDate }
@@ -50,13 +50,14 @@ class PersistController {
         if (result) {
             res.status(201).send();
         } else {
-            res.status(500).json({ error: `Failed to save last sync date '${lastSyncDate}' for sync '${syncId}'` });
+            next(new Error(`Failed to save last sync date '${lastSyncDate}' for sync '${syncId}'`));
         }
     }
 
     public async saveActivityLog(
         req: Request<{ environmentId: number }, any, { activityLogId: number; level: LogLevel; msg: string }, any, Record<string, any>>,
-        res: Response
+        res: Response,
+        next: NextFunction
     ) {
         const {
             params: { environmentId },
@@ -75,11 +76,11 @@ class PersistController {
         if (result) {
             res.status(201).send();
         } else {
-            res.status(500).json({ error: `Failed to save log ${activityLogId}` });
+            next(new Error(`Failed to save log ${activityLogId}`));
         }
     }
 
-    public async saveRecords(req: RecordRequest, res: Response) {
+    public async saveRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
             params: { environmentId, connectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
@@ -113,10 +114,14 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        PersistController.sendRes(res, result, 'Failed to save records');
+        if (result.ok) {
+            res.status(201).send();
+        } else {
+            next(new Error(`'Failed to save records': ${result.error.message}`));
+        }
     }
 
-    public async deleteRecords(req: RecordRequest, res: Response) {
+    public async deleteRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
             params: { environmentId, connectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
@@ -150,10 +155,14 @@ class PersistController {
             softDelete: true,
             persistFunction: persist
         });
-        PersistController.sendRes(res, result, 'Failed to delete records');
+        if (result.ok) {
+            res.status(201).send();
+        } else {
+            next(new Error(`'Failed to delete records': ${result.error.message}`));
+        }
     }
 
-    public async updateRecords(req: RecordRequest, res: Response) {
+    public async updateRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
             params: { environmentId, connectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
@@ -185,7 +194,11 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        PersistController.sendRes(res, result, 'Failed to update records');
+        if (result.ok) {
+            res.status(201).send();
+        } else {
+            next(new Error(`'Failed to update records': ${result.error.message}`));
+        }
     }
 
     private static async persistRecords({
@@ -323,16 +336,6 @@ class PersistController {
             const errMsg = persistResult?.error!;
             span.setTag('error', errMsg).finish();
             return err(errMsg);
-        }
-    }
-
-    private static sendRes(res: Response, result: Result<void>, errorMsg: string) {
-        if (result.ok) {
-            res.status(201).send();
-        } else {
-            res.status(500).json({
-                error: `${errorMsg}: ${result.error.message}`
-            });
         }
     }
 }

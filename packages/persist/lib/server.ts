@@ -10,8 +10,18 @@ export const server = express();
 server.use(express.json());
 
 server.use((req: Request, res: Response, next: NextFunction) => {
+    const originalSend = res.send;
+    res.send = function (body: any) {
+        if (res.statusCode >= 400) {
+            console.log(`[Persist] [Error] ${req.method} ${req.path} ${res.statusCode} '${body}'`);
+        }
+        originalSend.call(this, body) as any;
+        return this;
+    };
     next();
-    console.log(`[Persist] ${req.method} ${req.path} ${res.statusCode}`);
+    if (res.statusCode < 400) {
+        console.log(`[Persist] ${req.method} ${req.path} ${res.statusCode}`);
+    }
 });
 
 server.get('/health', (_req: Request, res: Response) => {
@@ -77,6 +87,11 @@ server.delete(
     persistController.deleteRecords
 );
 server.put('/environment/:environmentId/connection/:connectionId/sync/:syncId/job/:syncJobId/records', validateRecordsRequest, persistController.updateRecords);
+
+server.use((_req: Request, res: Response, next: NextFunction) => {
+    res.status(404);
+    next();
+});
 
 server.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
     if (err) {
