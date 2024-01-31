@@ -13,7 +13,7 @@ server.use((req: Request, res: Response, next: NextFunction) => {
     const originalSend = res.send;
     res.send = function (body: any) {
         if (res.statusCode >= 400) {
-            console.log(`[Persist] [Error] ${req.method} ${req.path} ${res.statusCode} '${body}'`);
+            console.log(`[Persist] [Error] ${req.method} ${req.path} ${res.statusCode} '${JSON.stringify(body)}'`);
         }
         originalSend.call(this, body) as any;
         return this;
@@ -62,7 +62,7 @@ server.post(
 const validateRecordsRequest = validateRequest({
     params: z.object({
         environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber,
-        connectionId: z.string(),
+        nangoConnectionId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber,
         syncId: z.string(),
         syncJobId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
     }),
@@ -70,7 +70,7 @@ const validateRecordsRequest = validateRequest({
         model: z.string(),
         records: z.any().array().nonempty(),
         providerConfigKey: z.string(),
-        nangoConnectionId: z.number(),
+        connectionId: z.string(),
         activityLogId: z.number(),
         lastSyncDate: z
             .string()
@@ -80,13 +80,10 @@ const validateRecordsRequest = validateRequest({
         trackDeletes: z.boolean()
     })
 });
-server.post('/environment/:environmentId/connection/:connectionId/sync/:syncId/job/:syncJobId/records', validateRecordsRequest, persistController.saveRecords);
-server.delete(
-    '/environment/:environmentId/connection/:connectionId/sync/:syncId/job/:syncJobId/records',
-    validateRecordsRequest,
-    persistController.deleteRecords
-);
-server.put('/environment/:environmentId/connection/:connectionId/sync/:syncId/job/:syncJobId/records', validateRecordsRequest, persistController.updateRecords);
+const recordPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
+server.post(recordPath, validateRecordsRequest, persistController.saveRecords);
+server.delete(recordPath, validateRecordsRequest, persistController.deleteRecords);
+server.put(recordPath, validateRecordsRequest, persistController.updateRecords);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);

@@ -607,12 +607,12 @@ export class NangoSync extends NangoAction {
                 const batch = results.slice(i, i + this.batchSize);
                 const response = await persistApi({
                     method: 'POST',
-                    url: `/environment/${this.environmentId}/connection/${this.connectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
                     data: {
                         model,
                         records: batch,
                         providerConfigKey: this.providerConfigKey,
-                        nangoConnectionId: this.nangoConnectionId,
+                        connectionId: this.connectionId,
                         activityLogId: this.activityLogId,
                         lastSyncDate: this.lastSyncDate || new Date(),
                         trackDeletes: this.track_deletes
@@ -744,12 +744,12 @@ export class NangoSync extends NangoAction {
                 const batch = results.slice(i, i + this.batchSize);
                 const response = await persistApi({
                     method: 'DELETE',
-                    url: `/environment/${this.environmentId}/connection/${this.connectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
                     data: {
                         model,
                         records: batch,
                         providerConfigKey: this.providerConfigKey,
-                        nangoConnectionId: this.nangoConnectionId,
+                        connectionId: this.connectionId,
                         activityLogId: this.activityLogId,
                         lastSyncDate: this.lastSyncDate || new Date(),
                         trackDeletes: this.track_deletes
@@ -883,12 +883,12 @@ export class NangoSync extends NangoAction {
                 const batch = results.slice(i, i + this.batchSize);
                 const response = await persistApi({
                     method: 'PUT',
-                    url: `/environment/${this.environmentId}/connection/${this.connectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
                     data: {
                         model,
                         records: batch,
                         providerConfigKey: this.providerConfigKey,
-                        nangoConnectionId: this.nangoConnectionId,
+                        connectionId: this.connectionId,
                         activityLogId: this.activityLogId,
                         lastSyncDate: this.lastSyncDate || new Date(),
                         trackDeletes: this.track_deletes

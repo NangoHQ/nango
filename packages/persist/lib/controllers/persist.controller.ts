@@ -22,7 +22,7 @@ type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
     {
         environmentId: number;
-        connectionId: string;
+        nangoConnectionId: number;
         syncId: string;
         syncJobId: number;
     },
@@ -31,7 +31,7 @@ type RecordRequest = Request<
         model: string;
         records: Record<string, any>[];
         providerConfigKey: string;
-        nangoConnectionId: number;
+        connectionId: string;
         activityLogId: number;
         trackDeletes: boolean;
         lastSyncDate: Date;
@@ -82,8 +82,8 @@ class PersistController {
 
     public async saveRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
-            params: { environmentId, connectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
+            params: { environmentId, nangoConnectionId, syncId, syncJobId },
+            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
             return await dataService.upsert(
@@ -123,8 +123,8 @@ class PersistController {
 
     public async deleteRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
-            params: { environmentId, connectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
+            params: { environmentId, nangoConnectionId, syncId, syncJobId },
+            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
             return await dataService.upsert(
@@ -164,8 +164,8 @@ class PersistController {
 
     public async updateRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
-            params: { environmentId, connectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
+            params: { environmentId, nangoConnectionId, syncId, syncJobId },
+            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
             return await dataService.updateRecord(
