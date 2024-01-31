@@ -4,6 +4,7 @@ import {
     AuthCredentials,
     NangoError,
     connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
     findActivityLogBySession,
     errorManager,
     analytics,
@@ -15,6 +16,7 @@ import {
     LogActionEnum,
     createActivityLogMessageAndEnd,
     metricsManager,
+    AuthOperation,
     MetricTypes,
     AuthModes
 } from '@nangohq/shared';
@@ -180,6 +182,20 @@ class AppAuthController {
                     }
                 );
 
+                await connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.App,
+                        error: `Error during app token retrieval call: ${error?.message}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    session.provider,
+                    activityLogId
+                );
+
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
 
@@ -201,9 +217,12 @@ class AppAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environmentId
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.App,
+                        operation: updatedConnection.operation
                     },
-                    session.provider
+                    session.provider,
+                    activityLogId
                 );
             }
 
@@ -244,6 +263,20 @@ class AppAuthController {
                 providerConfigKey: String(providerConfigKey),
                 connectionId: String(connectionId)
             });
+
+            await connectionCreationFailedHook(
+                {
+                    id: -1,
+                    connection_id: connectionId as string,
+                    provider_config_key: providerConfigKey as string,
+                    environment_id: environmentId,
+                    auth_mode: AuthModes.App,
+                    error: content,
+                    operation: AuthOperation.UNKNOWN
+                },
+                'unknown',
+                activityLogId
+            );
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }

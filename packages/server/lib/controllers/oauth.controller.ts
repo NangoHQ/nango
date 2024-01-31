@@ -12,6 +12,7 @@ import {
 import {
     getConnectionConfig,
     connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
     interpolateStringFromObject,
     getOauthCallbackUrl,
     getGlobalAppCallbackUrl,
@@ -22,6 +23,7 @@ import {
     updateSuccess as updateSuccessActivityLog,
     findActivityLogBySession,
     updateProviderConfigAndConnectionId as updateProviderConfigAndConnectionIdActivityLog,
+    AuthOperation,
     updateSessionId as updateSessionIdActivityLog,
     addEndTime as addEndTimeActivityLog,
     LogLevel,
@@ -797,6 +799,20 @@ class OAuthController {
                 authMode: String(template.auth_mode)
             });
 
+            await connectionCreationFailedHook(
+                {
+                    id: -1,
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    environment_id,
+                    auth_mode: template.auth_mode,
+                    error: WSErrBuilder.InvalidCallbackOAuth2().message,
+                    operation: AuthOperation.UNKNOWN
+                },
+                session.provider,
+                activityLogId
+            );
+
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
         }
 
@@ -917,6 +933,20 @@ class OAuthController {
                     }
                 );
 
+                await connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        environment_id,
+                        auth_mode: template.auth_mode,
+                        error: 'OAuth2 token request failed, response from the server could not be parsed',
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    session.provider,
+                    activityLogId
+                );
+
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
             }
 
@@ -984,9 +1014,12 @@ class OAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id
+                        environment_id,
+                        auth_mode: template.auth_mode,
+                        operation: updatedConnection.operation
                     },
                     session.provider,
+                    activityLogId,
                     { initiateSync, runPostConnectionScript }
                 );
             }
@@ -1041,6 +1074,20 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
+            await connectionCreationFailedHook(
+                {
+                    id: -1,
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    environment_id,
+                    auth_mode: template.auth_mode,
+                    error: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                    operation: AuthOperation.UNKNOWN
+                },
+                session.provider,
+                activityLogId
+            );
+
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
@@ -1069,6 +1116,20 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
+            await connectionCreationFailedHook(
+                {
+                    id: -1,
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    environment_id,
+                    auth_mode: template.auth_mode,
+                    error: WSErrBuilder.InvalidCallbackOAuth1().message,
+                    operation: AuthOperation.UNKNOWN
+                },
+                session.provider,
+                activityLogId
+            );
+
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
         }
 
@@ -1082,7 +1143,7 @@ class OAuthController {
             .then(async (accessTokenResult) => {
                 const parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, ProviderAuthModes.OAuth1);
 
-                connectionService.upsertConnection(
+                const [updatedConnection] = await connectionService.upsertConnection(
                     connectionId,
                     providerConfigKey,
                     session.provider,
@@ -1111,6 +1172,25 @@ class OAuthController {
                     connectionId: String(connectionId),
                     authMode: String(template.auth_mode)
                 });
+
+                if (updatedConnection) {
+                    // syncs not support for oauth1
+                    const initiateSync = false;
+                    const runPostConnectionScript = true;
+                    await connectionCreatedHook(
+                        {
+                            id: updatedConnection.id,
+                            connection_id: connectionId,
+                            provider_config_key: providerConfigKey,
+                            environment_id,
+                            auth_mode: template.auth_mode,
+                            operation: updatedConnection.operation
+                        },
+                        session.provider,
+                        activityLogId,
+                        { initiateSync, runPostConnectionScript }
+                    );
+                }
 
                 return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
             })
@@ -1142,6 +1222,20 @@ class OAuthController {
                     content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
                     timestamp: Date.now()
                 });
+
+                await connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        environment_id,
+                        auth_mode: template.auth_mode,
+                        error: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    session.provider,
+                    activityLogId
+                );
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
             });
