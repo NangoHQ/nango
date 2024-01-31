@@ -11,6 +11,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
+    AuthOperation,
     AuthCredentials,
     updateProvider as updateProviderActivityLog,
     configService,
@@ -153,6 +154,20 @@ class AppStoreAuthController {
             const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
 
             if (!success || !credentials) {
+                await connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.AppStore,
+                        error: `Error during App store credentials auth: ${error?.message}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    config?.provider as string,
+                    activityLogId
+                );
+
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
@@ -184,7 +199,8 @@ class AppStoreAuthController {
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
                         environment_id: environmentId,
-                        auth_mode: AuthModes.AppStore
+                        auth_mode: AuthModes.AppStore,
+                        operation: updatedConnection.operation
                     },
                     config?.provider as string,
                     activityLogId
@@ -220,7 +236,8 @@ class AppStoreAuthController {
                     provider_config_key: providerConfigKey as string,
                     environment_id: environmentId,
                     auth_mode: AuthModes.AppStore,
-                    error: `Error during App store auth: ${prettyError}`
+                    error: `Error during App store auth: ${prettyError}`,
+                    operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
                 activityLogId

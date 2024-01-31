@@ -16,6 +16,7 @@ import {
     LogActionEnum,
     createActivityLogMessageAndEnd,
     metricsManager,
+    AuthOperation,
     MetricTypes,
     AuthModes
 } from '@nangohq/shared';
@@ -181,6 +182,20 @@ class AppAuthController {
                     }
                 );
 
+                await connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.App,
+                        error: `Error during app token retrieval call: ${error?.message}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    session.provider,
+                    activityLogId
+                );
+
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
 
@@ -203,7 +218,8 @@ class AppAuthController {
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
                         environment_id: environmentId,
-                        auth_mode: AuthModes.App
+                        auth_mode: AuthModes.App,
+                        operation: updatedConnection.operation
                     },
                     session.provider,
                     activityLogId
@@ -255,7 +271,8 @@ class AppAuthController {
                     provider_config_key: providerConfigKey as string,
                     environment_id: environmentId,
                     auth_mode: AuthModes.App,
-                    error: content
+                    error: content,
+                    operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
                 activityLogId

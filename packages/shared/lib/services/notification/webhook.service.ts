@@ -5,7 +5,8 @@ import { SyncType } from '../../models/Sync.js';
 import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Connection';
 import type { Environment } from '../../models/Environment';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
-import { WebhookType, SyncResult, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Sync';
+import type { SyncResult } from '../../models/Sync';
+import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Webhook';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 
@@ -84,7 +85,7 @@ class WebhookService {
             return { send: false, webhookInfo: null };
         }
 
-        if (!webhookInfo.always_send_webhook) {
+        if (!auth && !webhookInfo.always_send_webhook) {
             return { send: false, webhookInfo };
         }
 
@@ -216,7 +217,8 @@ class WebhookService {
             authMode: connection.auth_mode,
             provider,
             environment: environment as string,
-            success
+            success,
+            operation: connection.operation
         };
 
         if (connection.error) {

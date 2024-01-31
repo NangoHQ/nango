@@ -1,4 +1,4 @@
-import type { AuthModes, AppStoreCredentials, AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials } from './Auth.js';
+import type { AuthModes, AppStoreCredentials, AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials, AuthOperation } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 
 export interface Metadata {
@@ -32,6 +32,7 @@ export interface Connection extends BaseConnection {
 export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'> & {
     auth_mode: AuthModes;
     error?: string;
+    operation: AuthOperation;
 };
 
 export interface ApiConnection {

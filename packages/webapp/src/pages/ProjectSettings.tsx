@@ -86,6 +86,7 @@ export default function ProjectSettings() {
                 setCallbackUrl(account.callback_url || defaultCallback());
 
                 setWebhookUrl(account.webhook_url || '');
+                setSendAuthWebhook(account.send_auth_webhook);
                 setHostUrl(account.host);
                 setAccountUUID(account.uuid);
 

@@ -7,6 +7,7 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
+    AuthOperation,
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     createActivityLogMessage,
@@ -163,7 +164,8 @@ class ApiAuthController {
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
                         environment_id: environmentId,
-                        auth_mode: AuthModes.ApiKey
+                        auth_mode: AuthModes.ApiKey,
+                        operation: updatedConnection.operation
                     },
                     config?.provider as string,
                     activityLogId
@@ -199,7 +201,8 @@ class ApiAuthController {
                     provider_config_key: providerConfigKey as string,
                     environment_id: environmentId,
                     auth_mode: AuthModes.ApiKey,
-                    error: `Error during API key auth: ${prettyError}`
+                    error: `Error during API key auth: ${prettyError}`,
+                    operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
                 activityLogId
@@ -343,7 +346,8 @@ class ApiAuthController {
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
                         environment_id: environmentId,
-                        auth_mode: AuthModes.Basic
+                        auth_mode: AuthModes.Basic,
+                        operation: updatedConnection.operation
                     },
                     config?.provider as string,
                     activityLogId
@@ -379,7 +383,8 @@ class ApiAuthController {
                     provider_config_key: providerConfigKey as string,
                     environment_id: environmentId,
                     auth_mode: AuthModes.ApiKey,
-                    error: `Error during basic API key auth: ${prettyError}`
+                    error: `Error during basic API key auth: ${prettyError}`,
+                    operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
                 activityLogId

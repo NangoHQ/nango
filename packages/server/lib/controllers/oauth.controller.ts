@@ -23,6 +23,7 @@ import {
     updateSuccess as updateSuccessActivityLog,
     findActivityLogBySession,
     updateProviderConfigAndConnectionId as updateProviderConfigAndConnectionIdActivityLog,
+    AuthOperation,
     updateSessionId as updateSessionIdActivityLog,
     addEndTime as addEndTimeActivityLog,
     LogLevel,
@@ -805,7 +806,8 @@ class OAuthController {
                     provider_config_key: providerConfigKey,
                     environment_id,
                     auth_mode: template.auth_mode,
-                    error: WSErrBuilder.InvalidCallbackOAuth2().message
+                    error: WSErrBuilder.InvalidCallbackOAuth2().message,
+                    operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
                 activityLogId
@@ -938,7 +940,8 @@ class OAuthController {
                         provider_config_key: providerConfigKey,
                         environment_id,
                         auth_mode: template.auth_mode,
-                        error: 'OAuth2 token request failed, response from the server could not be parsed'
+                        error: 'OAuth2 token request failed, response from the server could not be parsed',
+                        operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
                     activityLogId
@@ -1012,7 +1015,8 @@ class OAuthController {
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
                         environment_id,
-                        auth_mode: template.auth_mode
+                        auth_mode: template.auth_mode,
+                        operation: updatedConnection.operation
                     },
                     session.provider,
                     activityLogId,
@@ -1077,7 +1081,8 @@ class OAuthController {
                     provider_config_key: providerConfigKey,
                     environment_id,
                     auth_mode: template.auth_mode,
-                    error: WSErrBuilder.UnkownError().message + '\n' + prettyError
+                    error: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                    operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
                 activityLogId
@@ -1118,7 +1123,8 @@ class OAuthController {
                     provider_config_key: providerConfigKey,
                     environment_id,
                     auth_mode: template.auth_mode,
-                    error: WSErrBuilder.InvalidCallbackOAuth1().message
+                    error: WSErrBuilder.InvalidCallbackOAuth1().message,
+                    operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
                 activityLogId
@@ -1177,7 +1183,8 @@ class OAuthController {
                             connection_id: connectionId,
                             provider_config_key: providerConfigKey,
                             environment_id,
-                            auth_mode: template.auth_mode
+                            auth_mode: template.auth_mode,
+                            operation: updatedConnection.operation
                         },
                         session.provider,
                         activityLogId,
@@ -1223,7 +1230,8 @@ class OAuthController {
                         provider_config_key: providerConfigKey,
                         environment_id,
                         auth_mode: template.auth_mode,
-                        error: WSErrBuilder.UnkownError().message + '\n' + prettyError
+                        error: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                        operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
                     activityLogId
