@@ -464,12 +464,11 @@ export function useGetProvidersAPI() {
 export function useGetConnectionListAPI() {
     const signout = useSignout();
 
-    return async (limit: number, offset: number, integration?: string, connection?: string) => {
+    return async (limit: number, offset: number, integration?: string) => {
         try {
             const res = await fetch(
                 `/api/v1/connection?limit=${limit}&offset=${offset}` +
-                    `${integration ? `&integration=${integration}` : ''}` +
-                    `${connection ? `&connection=${connection}` : ''}`,
+                    `${integration ? `&integration=${integration}` : ''}`,
                 {
                     method: 'GET',
                     headers: getHeaders()

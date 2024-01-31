@@ -23,19 +23,16 @@ export default function ConnectionList() {
     const [limit] = useState(20);
     const [offset, setOffset] = useState(0);
     const [selectedIntegration, setSelectedIntegration] = useState<string>('');
-    const [selectedConnection, setSelectedConnection] = useState<string>('');
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
     const [filtersFetched, setFiltersFetched] = useState(false);
     const [integrations, setIntegrations] = useState<string[]>([]);
     const [connections, setConnections] = useState<Connection[]>([]);
-    const [filterconnections, setFilterConnections] = useState<string[]>([]);
     const initialOffset: string | (string | null)[] | null = queryParams.offset;
     const initialIntegration: string | (string | null)[] | null = queryParams.integration;
-    const initialConnection: string | (string | null)[] | null = queryParams.connection;
     const getConnectionListAPI = useGetConnectionListAPI();
 
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
         setLoaded(false);
@@ -53,13 +50,7 @@ export default function ConnectionList() {
                 setSelectedIntegration(initialIntegration);
                 queryIntegration = initialIntegration;
             }
-            let queryConnection = selectedConnection;
-            if (initialConnection && typeof initialConnection === 'string') {
-                setSelectedConnection(initialConnection);
-                queryConnection = initialConnection;
-            }
-
-            let res = await getConnectionListAPI(limit, queryOffset, queryIntegration, queryConnection);
+            let res = await getConnectionListAPI(limit, queryOffset, queryIntegration);
 
             if (res?.status === 200) {
                 let data = await res.json();
@@ -71,7 +62,7 @@ export default function ConnectionList() {
             setLoaded(true);
             getConnections();
         }
-    }, [getConnectionListAPI, loaded, setLoaded, limit, offset, selectedIntegration, selectedConnection, initialConnection, initialIntegration, initialOffset]);
+    }, [getConnectionListAPI, loaded, setLoaded, limit, offset, selectedIntegration, initialIntegration, initialOffset]);
 
     useEffect(() => {
         const getFilters = async () => {
@@ -92,11 +83,6 @@ export default function ConnectionList() {
                             if (filters.integrations.length > 0) {
                                 filters.integrations.sort((a: string, b: string) => a.localeCompare(b));
                                 setIntegrations(filters.integrations);
-                            }
-
-                            if (filters.connections.length > 0) {
-                                filters.connections.sort((a: string, b: string) => a.localeCompare(b));
-                                setFilterConnections(filters.connections);
                             }
                         }
                         setFiltersFetched(true);
@@ -141,14 +127,6 @@ export default function ConnectionList() {
         navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: 0 }));
     };
 
-    const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = e.target.value;
-        setSelectedConnection(value);
-        setLoaded(false);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value }));
-    };
-
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
         action('');
         setLoaded(false);
@@ -178,35 +156,9 @@ export default function ConnectionList() {
                             Add New
                         </Link>
                     </div>
-                    {loaded && connections.length === 0 && !selectedIntegration && !selectedConnection ? null : (
+                    {loaded && connections.length === 0 && !selectedIntegration ? null : (
                         <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md min-w-[1150px]">
                             <div className="flex space-x-10 justify-between px-2 w-full">
-                                {filterconnections.length > 0 && (
-                                    <div className="flex w-full items-center">
-                                        <select
-                                            id="filterconnection"
-                                            name="filterconnection"
-                                            className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
-                                            onChange={handleConnectionChange}
-                                            value={selectedConnection}
-                                        >
-                                            <option value="" disabled>
-                                                Connection
-                                            </option>
-                                            {filterconnections.map((filterconnection: string) => (
-                                                <option key={filterconnection} value={filterconnection}>
-                                                    {filterconnection}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {selectedConnection && (
-                                            <XCircleIcon
-                                                onClick={() => onRemoveFilter(setSelectedConnection, 'connection')}
-                                                className="flex h-7 h-7 cursor-pointer text-blue-400"
-                                            />
-                                        )}
-                                    </div>
-                                )}
                                 {integrations.length > 0 && (
                                     <div className="flex w-full items-center">
                                         <select

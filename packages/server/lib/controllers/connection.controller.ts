@@ -280,7 +280,6 @@ class ConnectionController {
             const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 20;
             const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;
             const integration = req.query['integration']?.toString();
-            const connection = req.query['connection']?.toString();
             const { success, error, response } = await getEnvironmentAndAccountId(res, req);
             if (!success || response === null) {
                 errorManager.errResFromNangoErr(res, error);
@@ -288,7 +287,7 @@ class ConnectionController {
             }
             const { accountId, environmentId, isWeb } = response;
 
-            const connections = await connectionService.listConnections(environmentId, limit, offset, connection as string, integration as string);
+            const connections = await connectionService.listConnections(environmentId, limit, offset, integration as string);
 
             if (!isWeb) {
                 analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
@@ -724,8 +723,7 @@ class ConnectionController {
             const { environment } = response;
 
             const integrations = await configService.getAllNames(environment.id);
-            const connections = await connectionService.getAllNames(environment.id);
-            res.send({ integrations, connections });
+            res.send({ integrations });
         } catch (error) {
             next(error);
         }

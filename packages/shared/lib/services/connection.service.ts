@@ -504,7 +504,6 @@ class ConnectionService {
         environment_id: number,
         limit = 20,
         offset = 0,
-        connection?: string,
         integration?: string
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata }[]> {
         const queryBuilder = db.knex
@@ -514,10 +513,6 @@ class ConnectionService {
             .where({ environment_id, deleted: false })
             .offset(offset)
             .limit(limit);
-
-        if (connection) {
-            queryBuilder.where({ connection_id: connection });
-        }
 
         if (integration) {
             queryBuilder.where({ provider_config_key: integration });
