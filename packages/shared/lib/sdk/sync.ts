@@ -614,7 +614,7 @@ export class NangoSync extends NangoAction {
                         providerConfigKey: this.providerConfigKey,
                         nangoConnectionId: this.nangoConnectionId,
                         activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate,
+                        lastSyncDate: this.lastSyncDate || new Date(),
                         trackDeletes: this.track_deletes
                     }
                 });
@@ -751,7 +751,7 @@ export class NangoSync extends NangoAction {
                         providerConfigKey: this.providerConfigKey,
                         nangoConnectionId: this.nangoConnectionId,
                         activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate,
+                        lastSyncDate: this.lastSyncDate || new Date(),
                         trackDeletes: this.track_deletes
                     }
                 });
@@ -890,7 +890,7 @@ export class NangoSync extends NangoAction {
                         providerConfigKey: this.providerConfigKey,
                         nangoConnectionId: this.nangoConnectionId,
                         activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate,
+                        lastSyncDate: this.lastSyncDate || new Date(),
                         trackDeletes: this.track_deletes
                     }
                 });
