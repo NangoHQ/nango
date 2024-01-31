@@ -699,7 +699,7 @@ class ConnectionController {
                         provider_config_key,
                         environment_id: environmentId,
                         auth_mode: template.auth_mode,
-                        operation: updatedConnection?.operation ? updatedConnection.operation : AuthOperation.UNKNOWN
+                        operation: updatedConnection?.operation || AuthOperation.UNKNOWN
                     },
                     provider,
                     null
