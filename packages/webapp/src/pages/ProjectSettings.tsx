@@ -162,9 +162,9 @@ export default function ProjectSettings() {
     const handleWebookSendAuth = async (checked: boolean) => {
         setSendAuthWebhook(checked);
         editSendAuthWebhook(checked).then((_) => {
-            toast.success(checked ? 'Send webhooks on authorization creation and failure.' : 'Do not send webhooks on authorization creation and failure.', { position: toast.POSITION.BOTTOM_CENTER });
+            toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', { position: toast.POSITION.BOTTOM_CENTER });
         });
-    }
+    };
 
     const handleHmacSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -718,7 +718,7 @@ export default function ProjectSettings() {
                                 <div className="mx-8 mt-8">
                                     <div className="flex items-center mb-2">
                                         <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
-                                            Always Send Webhooks
+                                            Send Webhooks For Empty Sync Responses
                                         </label>
                                         <Tooltip
                                             text={
@@ -744,13 +744,13 @@ export default function ProjectSettings() {
                                 <div className="mx-8 mt-8">
                                     <div className="flex items-center mb-2">
                                         <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
-                                            Send Authorization Created/Failed Webhooks
+                                            Send New Connection Creation Webhooks
                                         </label>
                                         <Tooltip
                                             text={
                                                 <>
                                                     <div className="flex text-black text-sm">
-                                                        {`If checked, a webhook wil be sent on an authorization connection success or failure.`}
+                                                        {`If checked, a webhook will be sent on connection creation success or failure.`}
                                                     </div>
                                                 </>
                                             }
