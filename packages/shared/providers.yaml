@@ -1234,7 +1234,6 @@ squareup:
     authorization_url: https://connect.squareup.com/oauth2/authorize
     token_url: https://connect.squareup.com/oauth2/token
     disable_pkce: true
-    scope_separator: '+'
     decode_url: true
     authorization_params:
         response_type: code
@@ -1249,7 +1248,6 @@ squareup-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
     token_url: https://connect.squareupsandbox.com/oauth2/token
-    scope_separator: '+'
     disable_pkce: true
     authorization_params:
         response_type: code
