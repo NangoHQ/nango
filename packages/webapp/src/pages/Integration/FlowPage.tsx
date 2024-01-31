@@ -1,7 +1,8 @@
+import { useNavigate } from 'react-router';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
-import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import { useModal } from '@geist-ui/core';
 
@@ -39,8 +40,9 @@ export default function FlowPage() {
     const getProjectInfoAPI = useGetProjectInfoAPI()
     const updateSyncFrequency = useUpdateSyncFrequency();
     const { setVisible, bindings } = useModal();
+    const navigate = useNavigate();
 
-    const [source, setSource] = useState<'Public' | 'Custom' | 'Managed'>();
+    const [source, setSource] = useState<'Public' | 'Custom'>();
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState<string | React.ReactNode>('');
     const [modalAction, setModalAction] = useState<(() => void) | null>(null);
@@ -89,15 +91,17 @@ export default function FlowPage() {
                         if (flow?.is_public) {
                             setSource('Public');
                         } else {
-                            setSource(flow.pre_built ? 'Managed' : 'Custom')
+                            setSource('Custom')
                         }
                     } else {
                         setSource('Public');
                         setFlowConfig(data.unEnabledFlow)
                         if (data.unEnabledFlow.syncs.length > 0){
-                            setFlow(data.unEnabledFlow.syncs[0]);
+                            const { version, ...rest } = data.unEnabledFlow.syncs[0];
+                            setFlow(rest);
                         } else {
-                            setFlow(data.unEnabledFlow.actions[0]);
+                            const { version, ...rest } = data.unEnabledFlow.actions[0];
+                            setFlow(rest);
                         }
                     }
                 }
@@ -161,13 +165,6 @@ export default function FlowPage() {
         if (source === 'Custom') {
             setModalTitle('Cannot edit frequency for custom syncs');
             setModalContent('If you want to edit the frequency of this sync, edit it in your `nango.yaml` configuration file.');
-            setVisible(true);
-            return;
-        }
-
-        if (source === 'Managed') {
-            setModalTitle('Cannot edit frequency for managed syncs');
-            setModalContent(<>If you want to edit the frequency of this sync, ask the Nango team or download the code and <a rel="noreferrer" href="https://docs.nango.dev/guides/custom#step-3-deploy-a-sync-action" target="_blank" className="underline">deploy it as a custom sync</a>.</>);
             setVisible(true);
             return;
         }
@@ -245,6 +242,8 @@ export default function FlowPage() {
                 setVisible={setVisible}
             />
             {provider && flow && (
+                <>
+                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/integration/${provider}#scripts`)} />
                 <div className="mx-auto space-y-12 text-sm">
                     <div className="flex justify-between">
                         <div className="flex">
@@ -282,17 +281,15 @@ export default function FlowPage() {
                         </div>
                     </div>
                     <div className="flex">
-                        {flow?.type === 'sync' && (
-                            <div className="flex flex-col w-1/2">
-                                <span className="text-gray-400 text-xs uppercase mb-1">Enabled</span>
-                                    <EnableDisableSync
-                                        flow={flow as Flow}
-                                        provider={provider}
-                                        setLoaded={setLoaded}
-                                        rawName={flowConfig?.rawName}
-                                    />
-                            </div>
-                        )}
+                        <div className="flex flex-col w-1/2">
+                            <span className="text-gray-400 text-xs uppercase mb-1">Enabled</span>
+                                <EnableDisableSync
+                                    flow={flow as Flow}
+                                    provider={provider}
+                                    setLoaded={setLoaded}
+                                    rawName={flowConfig?.rawName}
+                                />
+                        </div>
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Endpoints</span>
                             {flow?.endpoints.map((endpoint, index) => (
@@ -344,7 +341,7 @@ export default function FlowPage() {
                                             <>
                                                 <input value={frequencyEdit}
                                                     onChange={(e) => setFrequencyEdit(e.target.value)}
-                                                    className="bg-zinc-900 w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
+                                                    className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
                                                     onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                                         console.log(e.key)
                                                         if (e.key === 'Enter') {
@@ -362,7 +359,7 @@ export default function FlowPage() {
                                         )}
                                     </div>
                                     {showFrequencyEditMenu && frequencyEdit && (
-                                        <div className="flex items-center border border-border-gray bg-zinc-900 text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
+                                        <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
                                             <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editFrequency()} />
                                             <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveFrequency()}>Change frequency to: {frequencyEdit}</span>
                                         </div>
@@ -511,7 +508,7 @@ export default function FlowPage() {
                                                                 JSON
                                                             </Button>
                                                         </div>
-                                                        <CopyButton dark text={JSON.stringify([generateResponseModel(flow.models, model)], null, 2)} />
+                                                        <CopyButton dark text={JSON.stringify([generateResponseModel(flow.models, model, true)], null, 2)} />
                                                     </div>
                                                     <Prism
                                                         noCopy
@@ -519,7 +516,7 @@ export default function FlowPage() {
                                                         className="p-3 transparent-code"
                                                         colorScheme="dark"
                                                     >
-                                                        {JSON.stringify([generateResponseModel(flow.models, model)], null, 2)}
+                                                        {JSON.stringify({"records": [generateResponseModel(flow.models, model, true)]}, null, 2)}
                                                     </Prism>
                                                 </div>
                                             </div>
@@ -530,6 +527,7 @@ export default function FlowPage() {
                         </>
                     )}
                 </div>
+                </>
             )}
         </DashboardLayout>
     );

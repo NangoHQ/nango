@@ -26,8 +26,10 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
     const enableSync = (flow: Flow) => {
         setModalTitle('Enable sync?');
         setModalTitleColor('text-white')
-        // TODO
-        setModalContent('Records will start syncing potentially for multiple connections. This will impact your billing.');
+        const content = flow?.type === 'sync' ?
+            'Records will start syncing potentially for multiple connections. This will impact your billing.' :
+            'This will make the action available for immediate use.';
+        setModalContent(content);
         setModalAction(() => () => onEnableSync(flow));
         setVisible(true);
     }
@@ -35,7 +37,7 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
     const onEnableSync = async (flow: Flow) => {
         const flowPayload = {
             provider,
-            type: 'sync',
+            type: flow.type,
             name: flow.name,
             runs: flow.runs as string,
             auto_start: flow.auto_start === true,
@@ -73,9 +75,7 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
 
     const disableSync = (flow: Flow) => {
         if (!flow.is_public) {
-            const title = flow.pre_built ?
-                'Managed syncs cannot be disabled from the UI' :
-                'Custom syncs cannot be disabled from the UI';
+            const title = 'Custom syncs cannot be disabled from the UI';
             const message = flow.pre_built ?
                 'If you want to disable this sync, ask the Nango team or download the code and deploy it as a custom sync.' :
                 'If you want to disable this sync, remove it from your `nango.yaml` configuration file.';
@@ -88,10 +88,12 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
             return;
         }
 
-        setModalTitle('Disable sync? (destructive action)');
+        setModalTitle(`Disable ${flow?.type === 'sync' ? 'sync? (destructive action)' : 'action?'}`);
         setModalTitleColor('text-pink-600')
-        // TODO
-        setModalContent('Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.');
+        const content = flow?.type === 'sync' ?
+            'Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.' :
+            'This will make the action unavailable for immediate use.'
+        setModalContent(content);
         setModalAction(() => () => onDisableSync(flow));
         setVisible(true);
     }
@@ -117,7 +119,7 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
     }
 
     const toggleSync = async (flow: Flow) => {
-        const active = 'version' in flow;
+        const active = 'version' in flow && flow.version !== null;
         if (active) {
             await disableSync(flow);
         } else {
@@ -136,7 +138,7 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
                 modalTitleColor={modalTitleColor}
                 setVisible={setVisible}
             />
-            <ToggleButton enabled={Boolean('version' in flow)} onChange={() => toggleSync(flow)} />
+            <ToggleButton enabled={Boolean('version' in flow && flow.version !== null)} onChange={() => toggleSync(flow)} />
         </>
     );
 }

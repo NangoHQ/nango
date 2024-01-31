@@ -21,14 +21,14 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 type={isSecretVisible ? 'text' : 'password'}
                 ref={ref}
                 className={classNames(
-                    'border-border-gray bg-zinc-900 text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none',
+                    'border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none',
                     className
                 )}
                 value={value}
                 onChange={(e) => updateValue(e.currentTarget.value)}
                 {...props}
             />
-            <span className="absolute right-0.5 top-0.5 flex items-center bg-zinc-900 border-border-gray">
+            <span className="absolute right-0.5 top-0.5 flex items-center bg-active-gray border-border-gray">
                 <span onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
                 </span>

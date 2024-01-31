@@ -79,7 +79,7 @@ export default function Syncs(props: SyncsProps) {
                 <table className="w-[976px]">
                     <tbody className="flex flex-col space-y-2">
                         <tr>
-                            <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
+                            <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
                                 <div className="w-48">Models</div>
                                 <div className="w-16">Status</div>
                                 <div className="w-8">Frequency</div>
@@ -97,9 +97,7 @@ export default function Syncs(props: SyncsProps) {
                                     className="flex items-center px-2 py-3 text-[13px] cursor-pointer justify-between border-b border-border-gray"
                                 >
                                     <div className="flex items-center w-52">
-                                        <Tooltip text={Array.isArray(sync.models) ? sync.models.join(', ') : sync.models} type="dark">
-                                            <div className="w-36 max-w-3xl truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
-                                        </Tooltip>
+                                        <div className="w-36 max-w-3xl truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
                                     </div>
                                     <div className="flex w-20 -ml-2">
                                         <span className="">

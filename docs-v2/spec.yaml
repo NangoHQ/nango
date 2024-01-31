@@ -572,7 +572,7 @@ paths:
                   required: false
                   schema:
                       type: integer
-                  description: The maximum number of records to return. If not passed, all records are returned.
+                  description: The maximum number of records to return. Defaults to 100.
                 - name: cursor
                   in: query
                   required: false

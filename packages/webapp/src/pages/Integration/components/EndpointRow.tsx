@@ -1,5 +1,4 @@
 import { BoltIcon } from '@heroicons/react/24/outline';
-import { Tooltip } from '@geist-ui/core';
 import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import EndpointLabel from './EndpointLabel';
 import { Flow, FlowEndpoint } from '../../../types';
@@ -9,20 +8,18 @@ export interface EndpointRowProps {
     flow: Flow;
     openAPIDocModal: (flow: Flow) => void;
     endpoint: string | FlowEndpoint;
-    source: 'Public' | 'Managed' | 'Custom';
+    source: 'Public' | 'Custom';
     output: string;
 }
 
 export default function EndpointRow({ flow, openAPIDocModal, endpoint, source, output }: EndpointRowProps) {
     return (
-        <td className="flex items-center p-3 justify-between border-b border-border-gray cursor-pointer" onClick={() => openAPIDocModal({ ...flow, endpoint: endpoint as string, output })}>
+        <td className="flex items-center p-3 py-4 justify-between border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={() => openAPIDocModal({ ...flow, endpoint: endpoint as string, output })}>
             <div className="flex items-center px-2 w-48">
                 <EndpointLabel endpoint={endpoint} type={flow.type} />
             </div>
             <div className="flex items-center ml-3">
-                <Tooltip text={<span className="text-sm">{flow.description}</span>} type="dark">
-                    <div className="text-gray-400 w-64 max-w-3xl truncate">{flow.description}</div>
-                </Tooltip>
+                <div className="text-gray-400 w-64 max-w-3xl truncate">{flow.description}</div>
             </div>
             <div className="w-48 ml-3">
                 <div className="w-48 text-gray-400">

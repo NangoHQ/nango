@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'react-toastify';
 import _ from 'lodash';
 import { useNavigate } from 'react-router';
 import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
@@ -50,6 +51,7 @@ export default function Create() {
         const res = await createIntegrationAPI(provider);
 
         if (res?.status === 200) {
+            toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
             const data = await res.json();
             navigate(`/integration/${data.config.unique_key}#auth`);
         }
@@ -61,18 +63,18 @@ export default function Create() {
         window.open(documentationUrl, '_blank');
     }
 
-        const filterProviders = useCallback((value: string) => {
+    const filterProviders = useCallback((value: string) => {
         if (!value.trim()) {
             setProviders(initialProviders);
             return;
         }
         const lowercaseValue = value.toLowerCase();
-        const filtered = providers?.filter((provider) =>
+        const filtered = initialProviders?.filter((provider) =>
             provider.name.toLowerCase().includes(lowercaseValue) ||
             provider.categories?.some(category => category.toLowerCase().includes(lowercaseValue))
         );
         setProviders(filtered as Providers[]);
-    }, [providers, initialProviders]);
+    }, [initialProviders]);
 
     const debouncedFilterProviders = useMemo(() =>
         _.debounce(filterProviders, 300)
@@ -97,7 +99,7 @@ export default function Create() {
                                 name="search"
                                 type="text"
                                 placeholder="Search APIs or category"
-                                className="border-border-gray bg-zinc-900 indent-8 text-white block w-full appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                className="border-border-gray bg-active-gray indent-8 text-white block w-full appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 onChange={handleInputChange}
                                 onKeyUp={handleInputChange}
                             />

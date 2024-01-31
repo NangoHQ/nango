@@ -287,13 +287,16 @@ export function createExampleForType(type: string): any {
         case 'array':
             return [{ "isExample": true }];
         case 'date':
-            return '2020-01-01';
+            return new Date().toISOString();
         default:
             return '';
     }
 }
 
 export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean|string|number> {
+    if (!Array.isArray(model.fields)) {
+        return createExampleForType(model.name);
+    }
     const example = {} as Record<string, boolean|string|number>;
     for (const field of model.fields) {
         example[field.name] = createExampleForType(field.type);
@@ -304,7 +307,9 @@ export function generateExampleValueForProperty(model: NangoSyncModel): Record<s
 export const parseInput = (flow: Flow) => {
     let input;
 
-    if (flow?.input && Object.keys(flow?.input).length > 0) {
+    if (flow?.input && Object.keys(flow?.input).length > 0 && !flow.input.fields) {
+        input = flow.input.name;
+    } else if (flow?.input && Object.keys(flow?.input).length > 0) {
         const rawInput = {} as Record<string, boolean|string|number>;
         for (const field of flow.input.fields) {
             rawInput[field.name] = field.type;
@@ -317,9 +322,12 @@ export const parseInput = (flow: Flow) => {
     return input;
 };
 
-export function generateResponseModel(models: NangoSyncModel[], output: string): Record<string, any> {
+export function generateResponseModel(models: NangoSyncModel[], output: string, isSync: boolean): Record<string, any> {
     const model = models.find((model) => model.name === output);
     const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
+    if (!isSync) {
+        return jsonResponse;
+    }
     const metadata = {
         _nango_metadata: {
             deleted_at: null,
@@ -336,7 +344,7 @@ export function getSimpleDate(dateString: string | undefined): string {
 
     const date = new Date(dateString);
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
 
     return `${year}-${month}-${day}`;

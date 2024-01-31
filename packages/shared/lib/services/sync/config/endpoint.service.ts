@@ -1,6 +1,5 @@
 import { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
-import flowService from '../../flow.service.js';
 import { SyncConfig, SyncConfigType } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { HTTP_VERB } from '../../../models/Generic.js';
@@ -35,16 +34,6 @@ export async function getActionOrModelByEndpoint(nangoConnection: NangoConnectio
         })
         .first()
         .orderBy(`${SYNC_CONFIG_TABLE}.id`, 'desc');
-
-    // check if it is an existing public action that are automatically enabled
-    if (!result) {
-        const provider = await configService.getProviderName(nangoConnection.provider_config_key);
-        const publicAction = flowService.getPublicActionByPathAndMethod(provider as string, path, method);
-
-        if (publicAction) {
-            return { action: publicAction };
-        }
-    }
 
     if (!result) {
         return {};

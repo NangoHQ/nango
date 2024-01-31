@@ -32,17 +32,20 @@ export interface LeftNavBarProps {
 }
 
 const navTextColor = 'text-gray-400';
-const navActiveBg = 'bg-zinc-900';
-const navHoverBg = 'hover:bg-neutral-800';
+const navActiveBg = 'bg-active-gray';
+const navHoverBg = 'hover:bg-hover-gray';
 
 export default function LeftNavBar(props: LeftNavBarProps) {
-    const [envs, setEnvs] = useState<{ name: string; }[]>([]);
     const [version, setVersion] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
 
     const signout = useSignout();
+
+    const storedEnvs = useStore(state => state.envs);
+    const [envs, setEnvs] = useState<{ name: string; }[]>(storedEnvs);
+    const setStoredEnvs = useStore(state => state.setEnvs);
 
     useEffect(() => {
         fetch('/api/v1/meta')
@@ -54,7 +57,10 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             })
             .then(data => {
                 if(!data) return;
-                setEnvs(data.environments);
+                if(JSON.stringify(data.environments) !== JSON.stringify(envs)) {
+                    setEnvs(data.environments);
+                    setStoredEnvs(data.environments);
+                }
                 setVersion(data.version);
                 setEmail(data.email);
             })
@@ -104,7 +110,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 <div className="mt-8 px-6">
                     {envs.length === 0 && (
                         <div className="mb-8">
-                            <select className="border-border-gray bg-bg-black text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
+                            <select className="border-border-gray bg-active-gray text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
                         </div>
                     )}
                     {envs.length > 0 && (
@@ -112,7 +118,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <select
                                 id="environment"
                                 name="env"
-                                className="border-border-gray bg-bg-black text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                                className="border-border-gray bg-active-gray text-white block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
                                 onChange={handleEnvChange}
                                 value={env}
                             >
@@ -176,7 +182,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 </div>
                 <div className='px-6'>
                     {email && (
-                        <div className="flex mb-8 py-2 user-settings px-2 relative rounded items-center hover:bg-neutral-800 cursor-pointer" onClick={() => setShowUserSettings(!showUserSettings)}>
+                        <div className="flex mb-8 py-2 user-settings px-2 relative rounded items-center hover:bg-hover-gray cursor-pointer" onClick={() => setShowUserSettings(!showUserSettings)}>
                             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
                                 {email.slice(0, 1).toUpperCase()}
                             </div>
@@ -188,21 +194,21 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <div className="absolute -top-[130px] text-sm left-0 group-hover:block border border-neutral-700 h-32 w-[190px] bg-black opacity-50 z-10 rounded">
                                 <ul className="text-gray-400 p-3 space-y-2">
                                     <li
-                                        className={`flex items-center w-full hover:text-white hover:bg-neutral-800 rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white' : ''}`}
+                                        className={`flex items-center w-full hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white' : ''}`}
                                         onClick={() => navigate('/user-settings')}
                                     >
                                         <UserCircleIcon className="h-5 w-5 mr-2" />
                                         <span>Profile</span>
                                     </li>
                                     <li
-                                        className={`flex items-center w-full hover:text-white hover:bg-neutral-800 rounded p-1 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'text-white' : ''}`}
+                                        className={`flex items-center w-full hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'text-white' : ''}`}
                                         onClick={() => navigate('/account-settings')}
                                     >
                                         <UserGroupIcon className="h-5 w-5 mr-2" />
                                         <span>Team</span>
                                     </li>
                                     <li
-                                        className="flex items-center w-full hover:text-white hover:bg-neutral-800 rounded p-1"
+                                        className="flex items-center w-full hover:text-white hover:bg-hover-gray rounded p-1"
                                         onClick={async () => await signout()}
                                     >
                                         <LogoutIcon className="h-5 w-5 mr-2" />

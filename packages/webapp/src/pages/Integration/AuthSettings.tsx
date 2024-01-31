@@ -195,7 +195,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         <div className="flex">
                             <input value={integrationIdEdit}
                                 onChange={(e) => setIntegrationIdEdit(e.target.value)}
-                                className="bg-zinc-900 w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
+                                className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
                                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                     if (e.key === 'Enter') {
                                         onSaveIntegrationID();
@@ -213,7 +213,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                     )}
                     {showEditIntegrationIdMenu && integrationIdEdit && (
-                        <div className="flex items-center border border-border-gray bg-zinc-900 text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
+                        <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
                             <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editIntegrationID()} />
                             <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveIntegrationID()}>Change the integration ID to: {integrationIdEdit}</span>
                         </div>
@@ -348,7 +348,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     autoComplete="new-password"
                                     required
                                     minLength={1}
-                                    className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-5/6 appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                    className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-5/6 appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
                             </div>
                         </div>
@@ -364,7 +364,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     autoComplete="new-password"
                                     required
                                     minLength={1}
-                                    className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-5/6 appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                    className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-5/6 appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
                             </div>
                         </div>
@@ -415,7 +415,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     placeholder="Find the Client ID on the developer portal of the external API provider."
                                     required
                                     minLength={1}
-                                    className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                    className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
                                 <span className="absolute right-0.5 top-1 flex items-center">
                                     <CopyButton text={integration?.client_id as string} dark classNames="relative -ml-6" />

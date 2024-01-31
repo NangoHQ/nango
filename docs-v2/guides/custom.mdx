@@ -6,16 +6,17 @@ description: 'Extend & create your own custom syncs & actions.'
 
 # Step 1: Setup the Nango CLI & nango-integrations folder
 
-Install the Nango CLI globally: 
+Install the Nango CLI globally:
 ```bash
 npm install -g nango
 ```
 
 Your Nango _syncs_ & _actions_ live in your repo in a folder called `nango-integrations`. You can place this folder anywhere in your file tree, but we recommend you place it at the root level of your project.
 
-In the folder where you want your integrations folder (e.g. root of your project), run:
+In the folder where you want your integrations folder (e.g. root of your project), which
+will create './nango-integrations' with initial config, run:
 ```bash
-nango init # Creates `./nango-integrations` with initial config
+nango init
 ```
 
 <Tip>
@@ -66,7 +67,7 @@ integrations:
             type: action
 			returns: SlackAlertResponse # Optional data model (defined below) as returned by your action script
 
-models: 
+models:
 	AsanaTask: # Data model referenced above
 		id: string # Required unique ID
         project_id: string
@@ -113,12 +114,12 @@ This lets you easily **create your own unified API** with standard data models t
 
 ### Write your _sync_
 
-Modify the configuration of `nango.yaml` as you need and run (in `./nango-integrations`): 
+Modify the configuration of `nango.yaml` as you need and run (in `./nango-integrations`):
 ```
 nango generate
 ```
 
-This will generate the scaffold for your _sync_ script(s). Open any _sync_ script (named `[sync-name].ts`) which contains the following template (for the Asana example above): 
+This will generate the scaffold for your _sync_ script(s). Open any _sync_ script (named `[sync-name].ts`) which contains the following template (for the Asana example above):
 
 ```typescript asana-tasks.ts
 import { NangoSync, AsanaTask } from './models';
@@ -127,7 +128,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
 	// Integration code goes here.
 }
 ```
-_Sync_ scripts mostly do 2 things. They: 
+_Sync_ scripts mostly do 2 things. They:
 - incrementally fetch data from external APIs (with HTTP requests)
 - transform the external data into the models that you defined in `nango.yaml`
 
@@ -140,10 +141,11 @@ Because your scripts run in Nango's cloud, you cannot import additional modules 
 </Tip>
 
 To develop syncs locally and test them run the following within `./nango-integrations`:
+which will continuously watch integration files for changes:
 ```bash
-nango dev # Continuously watches integration files for changes.
+nango dev
 ```
-Nango now watches your `nango-integrations` folder for changes and compiles the sync scripts & data models as needed. If there are any compilation errors (e.g. due to type issues), you can see them in the terminal where `nango dev` runs. 
+Nango now watches your `nango-integrations` folder for changes and compiles the sync scripts & data models as needed. If there are any compilation errors (e.g. due to type issues), you can see them in the terminal where `nango dev` runs.
 
 Fill in the `fetchData` method with your integration code (in the example here, we fetch tasks from Asana):
 
@@ -243,12 +245,12 @@ Use `await nango.log()` to log data from within integration scripts.
 
 ### Write your _action_
 
-Modify the configuration of `nango.yaml` as you need and run (in `./nango-integrations`): 
+Modify the configuration of `nango.yaml` as you need and run (in `./nango-integrations`):
 ```
 nango generate
 ```
 
-This will generate the scaffold for your _action_ script(s). Open any _action_ script (named `[action-name].ts`) which contains the following template (for the Slack example above): 
+This will generate the scaffold for your _action_ script(s). Open any _action_ script (named `[action-name].ts`) which contains the following template (for the Slack example above):
 
 ```typescript slack-alert.ts
 import { NangoSync, SlackAlertResponse } from './models';
@@ -267,9 +269,9 @@ Because your scripts run in Nango's cloud, you cannot import additional modules 
 
 To develop _actions_ locally and test them, run the following within `./nango-integrations`:
 ```bash
-nango dev # Continuously watches integration files for changes.
+nango dev
 ```
-Nango now watches your `nango-integrations` folder for changes and compiles the _action_ scripts & data models as needed. If there are any compilation errors (e.g. due to type issues), you can see them in the terminal where `nango dev` runs. 
+Nango now watches your `nango-integrations` folder for changes and compiles the _action_ scripts & data models as needed. If there are any compilation errors (e.g. due to type issues), you can see them in the terminal where `nango dev` runs.
 
 Fill in the `runAction` method with your integration code:
 
@@ -324,7 +326,7 @@ Because this is a dry run, the fetched data will not be stored in Nango. Instead
 <Tip>
 By default, the _connection_ ID is fetched from your `Dev` environment. You can fetch _connections_ from your `Prod` environment with the `-e prod` flag.
 
-To test incremental _sync_ runs, add the `-l` flag (which will populate the `nango.lastSyncDate` value in your script): 
+To test incremental _sync_ runs, add the `-l` flag (which will populate the `nango.lastSyncDate` value in your script):
 ```bash
 nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 ```
@@ -333,7 +335,7 @@ nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 # Step 3: Deploy a _sync/action_
 
 **1. Deploy to the `Dev` environment**
-    
+
     When your _sync_ script is ready, you can deploy it to your `Dev` environment in Nango:
 
     ```bash
@@ -344,16 +346,16 @@ nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 
     <Tip>
         When you deploy your _sync_, Nango automatically adds it to all the existing _connections_ of the _integration_, and starts syncing their data.
-        
+
         It will also add the _sync_ to any new _connection_ that is created (OAuth flow completes) for the _integration_.
-        
+
         You can see all _syncs_ (and their status) for a _connection_ in the dashboard:
 
         ![View syncs in Dashboard](/images/connection-syncs.png)
     </Tip>
 
 **2. Deploy to the `Prod` environment**
-    
+
     Once you are ready to deploy to production, run:
 
     ```bash
@@ -364,15 +366,15 @@ nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 
 ### Handling API rate-limits
 
-Nango has currently two approaches to handle rate limits, a generic/naive one and an API-specific one. 
+Nango has currently two approaches to handle rate limits, a generic/naive one and an API-specific one.
 
 The **generic & naive approach** is based on retries & exponential-backoff. When you make network requests with the _proxy_ in a _sync_ with a high number of retries, exponential back-off will increase the delay between retries, augmenting the chances to go back under the rate-limit. But this "blind" approach is inefficient both in terms of optimising the time between requests and avoiding complex rate-limits.
 
-The **API-specific approach** is based on reading the rate-limit headers returned by the external APIs. Nango observes these headers and pauses the _sync_ job until the rate-limit is passed. This approach has the benefit of being more efficient both for minimizing _sync_ durations and avoid failures due to rate-limiting. 
+The **API-specific approach** is based on reading the rate-limit headers returned by the external APIs. Nango observes these headers and pauses the _sync_ job until the rate-limit is passed. This approach has the benefit of being more efficient both for minimizing _sync_ durations and avoid failures due to rate-limiting.
 
 This second approach requires to edit Nango's [providers.yaml](https://nango.dev/providers.yaml) file to indicate the rate-limit header name for a specific API (in the `retry` entry, under `at` or `after` fields):
 
-Github example: 
+Github example:
 ```yaml
 github:
     auth_mode: OAUTH2
@@ -385,7 +387,7 @@ github:
     docs: https://docs.github.com/en/rest
 ```
 
-Discord example: 
+Discord example:
 ```yaml
 discord:
     auth_mode: OAUTH2

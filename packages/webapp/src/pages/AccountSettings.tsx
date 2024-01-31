@@ -219,7 +219,7 @@ export default function AccountSettings() {
                                                 </Prism>
                                                 <button
                                                     onClick={handleAccountNameEdit}
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                    className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                                 >
                                                     Edit
                                                 </button>

@@ -322,7 +322,7 @@ class SyncController {
 
             const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_VERB, path);
             if (action) {
-                const input = req.body;
+                const input = req.body || req.params[1];
                 req.body = {};
                 req.body['action_name'] = action;
                 req.body['input'] = input;

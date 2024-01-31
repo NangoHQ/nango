@@ -20,7 +20,7 @@ export default function NavBar() {
                         href="https://nango.dev/slack"
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center h-8 rounded-md ml-4 pl-2 pr-3 text-sm border border-transparent hover:border-white hover:bg-gray-700 text-white"
+                        className="flex items-center h-8 rounded-md ml-4 pl-2 pr-3 text-sm border border-transparent hover:border-white hover:bg-hover-gray text-white"
                     >
                         <ChatBubbleBottomCenterIcon className="h-5 mr-2" />
                         <p>Help</p>
@@ -29,7 +29,7 @@ export default function NavBar() {
                         href="https://docs.nango.dev/quickstart"
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center h-8 rounded-md ml-4 pl-2 pr-3 text-sm hover:border border border-transparent hover:border-white hover:bg-gray-700 text-white"
+                        className="flex items-center h-8 rounded-md ml-4 pl-2 pr-3 text-sm hover:border border border-transparent hover:border-white hover:bg-hover-gray text-white"
                     >
                         <p>Docs</p>
                         <ArrowTopRightOnSquareIcon className="h-5 ml-2" />
@@ -37,7 +37,7 @@ export default function NavBar() {
                     {(isCloud() || isEnterprise()) && (
                         <button
                             onClick={logoutButtonClicked}
-                            className="flex h-8 rounded-md ml-4 px-3 text-sm hover:bg-gray-700 text-red-600 font-semibold"
+                            className="flex h-8 rounded-md ml-4 px-3 text-sm hover:bg-hover-gray text-red-600 font-semibold"
                         >
                             <p>Log Out</p>
                         </button>

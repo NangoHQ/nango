@@ -43,7 +43,6 @@ export default function APIReference(props: APIReferenceProps) {
     // if any element in the array has elements in the endpoints array then return true
     const hasEndpoints = allFlows.some((flow) => flow.endpoints.length > 0);
 
-    const endpoint = '/github/lite-issues';
     const connectionId = '<CONNECTION-ID>';
 
     const openAPIDocModal = (flow: Flow) => {
@@ -51,11 +50,15 @@ export default function APIReference(props: APIReferenceProps) {
 
         setSyncSnippet(
             flow?.type === 'sync'
-                ? nodeSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string)
-                : nodeActionSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string, parseInput(flow))
+                ? nodeSnippet(flow?.models, account.secret_key, connectionId, integration?.unique_key as string)
+                : nodeActionSnippet(flow?.name, account.secret_key, connectionId, integration?.unique_key as string, parseInput(flow))
         );
-        const jsonModel = generateResponseModel(flow.models, flow.output as string);
-        setJsonResponseSnippet(JSON.stringify([{...jsonModel}], null, 2));
+        const jsonModel = generateResponseModel(flow.models, flow.output as string, flow.type === 'sync');
+        if (flow.type === 'sync') {
+            setJsonResponseSnippet(JSON.stringify({"records": [{...jsonModel}]}, null, 2));
+        } else {
+            setJsonResponseSnippet(JSON.stringify(jsonModel, null, 2));
+        }
         setModalInfo(flow);
     }
 
@@ -67,6 +70,7 @@ export default function APIReference(props: APIReferenceProps) {
     useEffect(() => {
         const closeAPIDocModal = () => {
             setShowDocModal(false);
+            setLanguage(Language.Node);
         }
 
         if (showDocModal) {
@@ -87,6 +91,7 @@ export default function APIReference(props: APIReferenceProps) {
             document.removeEventListener('click', closeAPIDocModal);
         }
     }, [showDocModal]);
+    console.log(modalInfo)
 
     return (
         <div className="h-fit rounded-md text-white text-sm">
@@ -127,7 +132,7 @@ export default function APIReference(props: APIReferenceProps) {
                                 <EndpointLabel endpoint={modalInfo?.endpoint as string | FlowEndpoint} type={modalInfo?.type as string} />
                                 <span className="text-gray-400 mt-2">{modalInfo?.description}</span>
                             </div>
-                            {modalInfo?.type === 'sync' && (
+                            {modalInfo?.type === 'sync' && (!modalInfo.version && modalInfo.version === null) && (
                                 <Info size={18} classNames="mt-5 z-10" padding="px-4 py-1.5" color="orange">
                                     To use this endpoint, enable file synchronization in the <span className="cursor-pointer underline" onClick={() => showScriptsTab()}>scripts</span>.
                                 </Info>
@@ -146,8 +151,8 @@ export default function APIReference(props: APIReferenceProps) {
                                                   if (language !== Language.Node) {
                                                     setSyncSnippet(
                                                         modalInfo?.type === 'sync'
-                                                            ? nodeSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string)
-                                                            : nodeActionSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
+                                                            ? nodeSnippet(modalInfo?.models, account.secret_key, connectionId, integration?.unique_key as string)
+                                                            : nodeActionSnippet(modalInfo?.name as string, account.secret_key, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
                                                     );
                                                     setLanguage(Language.Node);
                                                   }
@@ -161,7 +166,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.cURL) {
-                                                    setSyncSnippet(curlSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
+                                                    setSyncSnippet(curlSnippet(modalInfo?.endpoint as string, account.secret_key, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow)));
                                                     setLanguage(Language.cURL);
                                                   }
                                                 }}
@@ -180,62 +185,52 @@ export default function APIReference(props: APIReferenceProps) {
                                         {syncSnippet}
                                     </Prism>
                                 </div>
-                                <div className="flex flex-col mt-4 text-gray-400 border border-border-gray rounded-md p-3 mb-5">
-                                    <div className="flex w-full cursor-pointer" onClick={() => setShowParametersOpen(!showParametersOpen)}>
-                                        {showParametersOpen ? <ChevronDownIcon className="flex h-5 w-5 text-gray-400" /> : <ChevronUpIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" /> }
-                                        <span className="ml-2">{showParametersOpen ? 'Hide Optional Parameters' : 'Show Parameters'}</span>
-                                    </div>
-                                    {showParametersOpen && (
-                                        <div className="flex flex-col mt-4">
-                                            <span>The following parameters can be added to the <i>getRecords</i> request:</span>
-                                            <div className="border-t border-neutral-700 mt-4 py-4">
-                                                <div className="flex">
-                                                    <span className="text-indigo-200">delta</span>
-                                                    <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">string</span>
-                                                </div>
-                                                <span className="text-gray-400 mt-2">Only return records added, updated or deleted since this timestmap, e.g. ‘2023-05-31T11:46:13.390Z’</span>
+                                {modalInfo?.type === 'sync' && (
+                                    <>
+                                        <div className="flex flex-col mt-4 text-gray-400 border border-border-gray rounded-md p-3 mb-5">
+                                            <div className="flex w-full cursor-pointer" onClick={() => setShowParametersOpen(!showParametersOpen)}>
+                                                {showParametersOpen ? <ChevronDownIcon className="flex h-5 w-5 text-gray-400" /> : <ChevronUpIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" /> }
+                                                <span className="ml-2">{showParametersOpen ? 'Hide Optional Parameters' : 'Show Parameters'}</span>
                                             </div>
-                                            <div className="border-t border-neutral-700 mt-4 py-4">
-                                                <div className="flex">
-                                                    <span className="text-indigo-200">limit</span>
-                                                    <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">number</span>
+                                            {showParametersOpen && (
+                                                <div className="flex flex-col mt-4">
+                                                    <span>The following parameters can be added to the <i>listRecords</i> request:</span>
+                                                    <div className="border-t border-neutral-700 mt-4 py-4">
+                                                        <div className="flex">
+                                                            <span className="text-indigo-200">delta</span>
+                                                            <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">string</span>
+                                                        </div>
+                                                        <span className="text-gray-400 mt-2">Only return records added, updated or deleted since this timestmap, e.g. ‘2023-05-31T11:46:13.390Z’</span>
+                                                    </div>
+                                                    <div className="border-t border-neutral-700 mt-4 py-4">
+                                                        <div className="flex">
+                                                            <span className="text-indigo-200">limit</span>
+                                                            <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">number</span>
+                                                        </div>
+                                                        <span className="text-gray-400 mt-2">The maximum number of records to return. If not passed, defaults to 100.</span>
+                                                    </div>
+                                                    <div className="border-t border-neutral-700 mt-4 py-4">
+                                                        <div className="flex">
+                                                            <span className="text-indigo-200">cursor</span>
+                                                            <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">string</span>
+                                                        </div>
+                                                        <span className="text-gray-400 mt-2">For pagination: obtained from the "next_cursor" property in the response to fetch the next page of results. The cursor will be included until there are no more results to paginate through.</span>
+                                                    </div>
+                                                    <div className="border-t border-neutral-700 mt-4 py-4">
+                                                        <div className="flex">
+                                                            <span className="text-indigo-200">filter</span>
+                                                            <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">'added' | 'updated' | 'deleted'</span>
+                                                        </div>
+                                                        <span className="text-gray-400 mt-2">Only return records with the specified change. Accepts comma separated combinations e.g., 'added,updated'.</span>
+                                                    </div>
                                                 </div>
-                                                <span className="text-gray-400 mt-2">Only return records added, updated or deleted since this timestmap, e.g. ‘2023-05-31T11:46:13.390Z’</span>
-                                            </div>
-                                            <div className="border-t border-neutral-700 mt-4 py-4">
-                                                <div className="flex">
-                                                    <span className="text-indigo-200">offset</span>
-                                                    <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">number</span>
-                                                </div>
-                                                <span className="text-gray-400 mt-2">For pagination: The number of records to skip. If not passed, no records are skipped.</span>
-                                            </div>
-                                            <div className="border-t border-neutral-700 mt-4 py-4">
-                                                <div className="flex">
-                                                    <span className="text-indigo-200">sortBy</span>
-                                                    <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">'id' | 'createdAt' | 'updatedAt'</span>
-                                                </div>
-                                                <span className="text-gray-400 mt-2">Set how the records are sorted. The default is by 'id'. 'createdAt' and 'updatedAt' refer to creation/update date within Nango, not the external system.</span>
-                                            </div>
-                                            <div className="border-t border-neutral-700 mt-4 py-4">
-                                                <div className="flex">
-                                                    <span className="text-indigo-200">order</span>
-                                                    <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">'asc' | 'desc'</span>
-                                                </div>
-                                                <span className="text-gray-400 mt-2">Set the order of results. The default is 'desc'.</span>
-                                            </div>
-                                            <div className="border-t border-neutral-700 mt-4 py-4">
-                                                <div className="flex">
-                                                    <span className="text-indigo-200">filter</span>
-                                                    <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">'added' | 'updated' | 'deleted'</span>
-                                                </div>
-                                                <span className="text-gray-400 mt-2">Only return records with the specified change. Accepts comma separated combinations e.g., ‘added,updated’.</span>
-                                            </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                <Info size={16} padding="px-4 py-1.5">
-                                    <a href="https://docs.nango.dev/guides/webhooks#webhooks-from-nango-to-your-app" target="_blank" className="text-white underline" rel="noreferrer">Register webhooks</a> to be notified when new data is available without polling.
-                                </Info>
+                                        <Info size={16} padding="px-4 py-1.5">
+                                            <a href="https://docs.nango.dev/guides/webhooks#webhooks-from-nango-to-your-app" target="_blank" className="text-white underline" rel="noreferrer">Register webhooks</a> to be notified when new data is available without polling.
+                                        </Info>
+                                    </>
+                                )}
                                 <div className="flex flex-col mt-8">
                                     <h2 className="text-base">Response</h2>
                                     <span className="text-gray-400 mb-4">This endpoint returns the following response:</span>
@@ -250,8 +245,8 @@ export default function APIReference(props: APIReferenceProps) {
                                                       if (language !== Language.Node) {
                                                           setSyncSnippet(
                                                               modalInfo?.type === 'sync'
-                                                                  ? nodeSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string)
-                                                                  : nodeActionSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
+                                                                  ? nodeSnippet(modalInfo?.models, account.secret_key, connectionId, integration?.unique_key as string)
+                                                                  : nodeActionSnippet(modalInfo?.name as string, account.secret_key, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
 
                                                           );
                                                         setLanguage(Language.Node);
@@ -287,9 +282,9 @@ export default function APIReference(props: APIReferenceProps) {
             ) : (
                 <>
                     <table className="w-[976px]">
-                        <tbody className="flex flex-col space-y-2">
+                        <tbody className="flex flex-col">
                             <tr>
-                                <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
+                                <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
                                     <div className="w-48">Endpoint</div>
                                     <div className="w-64">Description</div>
                                     <div className="w-48">Source</div>
@@ -306,9 +301,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                 output={Array.isArray(flow.returns) ? flow.returns[index] : flow.returns}
                                                 openAPIDocModal={openAPIDocModal}
                                                 source={
-                                                    flow.is_public ? 'Public' :
-                                                    flow.pre_built ? 'Managed' :
-                                                    'Custom'
+                                                    flow.is_public ? 'Public' : 'Custom'
                                                 }
                                             />
                                         </tr>

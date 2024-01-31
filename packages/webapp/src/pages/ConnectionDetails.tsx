@@ -596,7 +596,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 }
                                                 <li className="flex ml-8">
                                                     <button
-                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-hover-gray"
                                                         onClick={() =>
                                                             syncCommand(
                                                                 sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
@@ -610,14 +610,14 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         <p>{sync.schedule_status === 'RUNNING' ? 'Pause' : 'Start'}</p>
                                                     </button>
                                                     <button
-                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-hover-gray"
                                                         onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
                                                         <p>Trigger</p>
                                                     </button>
                                                     {/*
                                                     <button
-                                                        className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
+                                                        className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-hover-gray leading-none"
                                                         onClick={() => syncCommand('RUN_FULL', sync.nango_connection_id, sync.id, sync.name)}
                                                     >
                                                         Full Resync

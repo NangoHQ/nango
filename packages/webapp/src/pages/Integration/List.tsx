@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-import { PlusIcon, EllipsisHorizontalIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/24/outline'
 
 import { useGetIntegrationListAPI } from '../../utils/api';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -14,7 +14,7 @@ interface Integration {
     uniqueKey: string;
     provider: string;
     connectionCount: number;
-    syncScripts: number;
+    scripts: number;
 }
 
 export default function IntegrationList() {
@@ -63,24 +63,24 @@ export default function IntegrationList() {
                         <table className="w-full">
                             <tbody className="">
                                 <tr>
-                                    <td className="flex items-center px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
-                                        <div className="w-96">Name</div>
+                                    <td className="flex items-center px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
+                                        <div className="w-[34rem]">Name</div>
                                         <div className="w-52">Connections</div>
-                                        <div className="">Enabled Syncs</div>
+                                        <div className="">Enabled Scripts</div>
                                     </td>
                                 </tr>
-                                {integrations.map(({ uniqueKey, provider, connectionCount, syncScripts }) => (
+                                {integrations.map(({ uniqueKey, provider, connectionCount, scripts }) => (
                                     <tr key={`tr-${uniqueKey}`}>
                                         <td
                                             className={`flex ${
                                                 uniqueKey !== integrations.at(-1)?.uniqueKey ? 'border-b border-border-gray' : ''
-                                            } h-16 px-2 justify-between items-center hover:bg-neutral-800 cursor-pointer`}
+                                            } h-16 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                             onClick={() => {
                                                 navigate(`/integration/${uniqueKey}`);
                                             }}
                                         >
                                             <div className="flex">
-                                                <div className="flex w-96 flex items-center">
+                                                <div className="flex w-[34rem] flex items-center">
                                                     <IntegrationLogo provider={provider} height={7} width={7} classNames="mr-0.5 mt-0.5" />
                                                     <p className="mt-1.5 mr-4 ml-0.5">{uniqueKey}</p>
                                                 </div>
@@ -88,20 +88,7 @@ export default function IntegrationList() {
                                                     <p className="">{connectionCount}</p>
                                                 </div>
                                                 <div className="flex items-center pl-20 flex w-40">
-                                                    <p className="">{syncScripts}</p>
-                                                </div>
-                                            </div>
-                                            <div className="group relative">
-                                                <EllipsisHorizontalIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
-                                                <div
-                                                    className="hidden group-hover:flex p-3 hover:bg-neutral-800 text-gray-400 absolute z-10 -top-10 left-1 bg-black rounded border border-neutral-700 items-center"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/connections/create/${uniqueKey}`);
-                                                    }}
-                                                >
-                                                    <BuildingOfficeIcon className="flex h-5 w-5 text-gray-400" />
-                                                    <span className="pl-2">Connect</span>
+                                                    <p className="">{scripts}</p>
                                                 </div>
                                             </div>
                                         </td>

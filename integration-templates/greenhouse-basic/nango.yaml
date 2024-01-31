@@ -1,26 +1,39 @@
 integrations:
   greenhouse-basic:
-    greenhouse-applications:
-      runs: every 6 hours
-      returns:
-        - GreenhouseApplication
-      description: |
-        Fetches all organization's applications from greenhouse.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-    greenhouse-candidates:
-      runs: every 6 hours
-      returns:
-        - GreenhouseCandidate
-      description: |
-        Fetches all organization's candidates from greenhouse.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-    greenhouse-jobs:
-      runs: every 6 hours
-      returns:
-        - GreenhouseJob
-      description: |
-        Fetches all organization's jobs from greenhouse.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
+    syncs:
+      greenhouse-applications:
+        runs: every 6 hours
+        description: |
+          Fetches all organization's applications from greenhouse.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: GreenhouseApplication
+        sync_type: incremental
+        endpoint: /greenhouse-basic/applications
+        scopes:
+          - default
+      greenhouse-candidates:
+        runs: every 6 hours
+        description: |
+          Fetches all organization's candidates from greenhouse.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: GreenhouseCandidate
+        sync_type: incremental
+        endpoint: /greenhouse-basic/candidates
+        scopes:
+          - default
+      greenhouse-jobs:
+        runs: every 6 hours
+        description: |
+          Fetches all organization's jobs from greenhouse.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: GreenhouseJob
+        sync_type: incremental
+        endpoint: /greenhouse-basic/jobs
+        scopes:
+          - default
 models:
   GreenhouseApplication:
     id: string

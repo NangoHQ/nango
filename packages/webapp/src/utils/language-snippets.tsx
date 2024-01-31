@@ -1,36 +1,62 @@
-export const nodeSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
+import { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types';
+
+export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secretKey: string, connectionId: string, providerConfigKey: string) => {
+    const model = Array.isArray(models) ? models[0].name : models;
         return `import Nango from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
 const issues = await nango.listRecords({
     proivderConfigKey: '${providerConfigKey}',
     connectionId: '${connectionId}',
-    endpoint: '${endpoint}'
+    model: '${model}'
 });
 
 console.log(issues);
 `};
 
-export const nodeActionSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any>) => {
-        return `import Nango from '@nangohq/node';
+export const nodeActionSnippet = (actionName: string, secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string) => {
+    let formattedInput = '';
+    if (typeof input === 'string') {
+        formattedInput = input;
+    } else if (input && typeof input === 'object') {
+        formattedInput = `{\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}`;
+    }
+
+    return `import Nango from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
-const issues = await nango.triggerAction({
-    proivderConfigKey: '${providerConfigKey}',
-    connectionId: '${connectionId}',
-    endpoint: '${endpoint}'${input ? ',\n    ' : ''}${input ? `input: {\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}}` : ''}
-});
+const issues = await nango.triggerAction(
+    '${providerConfigKey}',
+    '${connectionId}',
+    '${actionName}',
+    ${formattedInput}
+);
 
 console.log(issues);
-`};
+`;
+};
 
-export const curlSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string, method = 'GET') => {
+export const curlSnippet = (endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[], secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string, method = 'GET') => {
+    let curlMethod: HTTP_VERB = method as HTTP_VERB;
+    if (typeof endpoint !== 'string') {
+        curlMethod = (Object.keys(endpoint)[0]) as HTTP_VERB;
+        endpoint = (Array.isArray(endpoint) ? endpoint[0][curlMethod] : endpoint[curlMethod]) as string;
+    }
+
+    let formattedInput = '';
+    if (typeof input === 'string') {
+        formattedInput = input;
+    } else if (input && typeof input === 'object') {
+        formattedInput = `{\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}`;
+    }
+
         return `
-    curl --request ${method} \\
+    curl --request ${curlMethod} \\
     --url https://api.nango.dev/v1${endpoint} \\
     --header 'Authorization: Bearer ${secretKey}' \\
     --header 'Connection-Id: ${connectionId}' \\
     --header 'Provider-Config-Key: ${providerConfigKey}'
+    ${formattedInput ? `--data '${formattedInput}'` : ''}
         `;
     };
 

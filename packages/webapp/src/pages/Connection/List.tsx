@@ -88,7 +88,7 @@ export default function ConnectionList() {
                     <table className="w-full">
                         <tbody className="">
                             <tr>
-                                <td className="flex items-center px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
+                                <td className="flex items-center px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
                                     <div className="w-2/3">ID</div>
                                     <div className="w-96">Integration</div>
                                     <div className="">Created</div>
@@ -99,7 +99,7 @@ export default function ConnectionList() {
                                     <td
                                         className={`flex ${
                                             id !== connections.at(-1)?.id ? 'border-b border-border-gray' : ''
-                                        } h-16 px-2 justify-between items-center hover:bg-neutral-800 cursor-pointer`}
+                                        } h-16 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                         onClick={() => {
                                             navigate(`/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
                                         }}

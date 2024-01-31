@@ -175,7 +175,7 @@ export interface NangoSyncModel {
     fields: NangoSyncModelField[];
 }
 
-type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export type NangoSyncEndpoint = {
     [key in HTTP_VERB]?: string;

@@ -443,13 +443,13 @@ export default function ProjectSettings() {
                                             <>
                                                 <button
                                                     onClick={() => hasPendingPublicKey ? onRevertKey() : onRotateKey()}
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                    className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                                 >
                                                     {hasPendingPublicKey ? 'Revert' : 'Rotate'}
                                                 </button>
                                                 <button
                                                     onClick={handleActivatePublicKey}
-                                                    className={`${hasPendingPublicKey ? 'hover:bg-gray-700 bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
+                                                    className={`${hasPendingPublicKey ? 'hover:bg-hover-gray bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
                                                     disabled={!hasPendingPublicKey}
                                                 >
                                                     Activate
@@ -515,13 +515,13 @@ export default function ProjectSettings() {
                                             <>
                                                 <button
                                                     onClick={() => hasPendingSecretKey ? onRevertKey(false) : onRotateKey(false)}
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                    className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                                 >
                                                     {hasPendingSecretKey ? 'Revert' : 'Rotate'}
                                                 </button>
                                                 <button
                                                     onClick={handleActivateSecretKey}
-                                                    className={`${hasPendingSecretKey ? 'hover:bg-gray-700 bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
+                                                    className={`${hasPendingSecretKey ? 'hover:bg-hover-gray bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
                                                     disabled={!hasPendingSecretKey}
                                                 >
                                                     Activate
@@ -633,7 +633,7 @@ export default function ProjectSettings() {
                                             </Prism>
                                             <button
                                                 onClick={handleCallbackEdit}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
                                                 Edit
                                             </button>
@@ -696,7 +696,7 @@ export default function ProjectSettings() {
                                             </Prism>
                                             <button
                                                 onClick={() => setWebhookEditMode(!webhookEditMode)}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
                                                 Edit
                                             </button>
@@ -766,7 +766,7 @@ export default function ProjectSettings() {
                                             <SecretInput disabled optionalvalue={hmacKey} setoptionalvalue={setHmacKey} additionalclass="w-full" />
                                             <button
                                                 onClick={() => setHmacEditMode(!hmacEditMode)}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
                                                 Edit
                                             </button>
@@ -860,7 +860,7 @@ export default function ProjectSettings() {
                                                 />
                                                 <button
                                                     onClick={() => handleRemoveEnvVariable(index)}
-                                                    className="flex hover:bg-gray-700 border border-border-gray text-white h-11 ml-4 px-4 pt-3 text-sm"
+                                                    className="flex hover:bg-hover-gray border border-border-gray text-white h-11 ml-4 px-4 pt-3 text-sm"
                                                     type="button"
                                                 >
                                                     <TrashIcon className="flex h-5 w-5 text-white" />
@@ -870,7 +870,7 @@ export default function ProjectSettings() {
                                         <div className="flex justify-end mt-4">
                                             <button
                                                 onClick={handleAddEnvVariable}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm mr-4"
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm mr-4"
                                                 type="button"
                                             >
                                                 Add Environment Variable

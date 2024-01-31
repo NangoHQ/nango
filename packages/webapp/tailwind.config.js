@@ -10,6 +10,8 @@ module.exports = {
             colors: {
                 'bg-black': '#0E1014',
                 'bg-dark-gray': '#181B20',
+                'hover-gray': '#171720',
+                'active-gray': '#1D1F28',
                 'text-light-gray': '#A9A9A9',
                 'text-dark-gray': '#5F5F5F',
                 'bg-cta-green': '#75E270',

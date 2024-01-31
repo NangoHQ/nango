@@ -31,9 +31,9 @@ export default function Scripts(props: ScriptProps) {
                 <>
                     <table className="w-[976px]">
                         {syncs.length > 0 && (
-                            <tbody className="flex flex-col space-y-2">
+                            <tbody className="flex flex-col">
                                 <tr>
-                                    <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
+                                    <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
                                         <div className="flex w-18 items-center">
                                             <ArrowPathRoundedSquareIcon className="flex h-4 w-4 mr-1" />
                                             Sync Scripts
@@ -48,7 +48,7 @@ export default function Scripts(props: ScriptProps) {
                                 {syncs.map((flow) => (
                                     <td
                                         key={flow.name}
-                                        className="flex items-center p-3 py-5 cursor-pointer justify-between border-b border-border-gray"
+                                        className="flex items-center p-3 py-6 hover:bg-hover-gray cursor-pointer justify-between border-b border-border-gray"
                                         onClick={() => navigate(`/integration/${integration.unique_key}/${flow.name}`)}
                                     >
                                         <div className="flex items-center w-36">
@@ -60,14 +60,10 @@ export default function Scripts(props: ScriptProps) {
                                             </Tooltip>
                                         </div>
                                         <div className="flex items-center w-[22rem] -ml-8">
-                                            <Tooltip text={flow.description} type="dark">
-                                                <div className="w-72 max-w-3xl truncate">{flow.description}</div>
-                                            </Tooltip>
+                                            <div className="w-72 max-w-3xl truncate">{flow.description}</div>
                                         </div>
                                         <div className="flex items-center w-32">
-                                            {flow.is_public ? 'Public' :
-                                                flow.pre_built ? 'Managed' :
-                                                'Custom'
+                                            {flow.is_public ? 'Public' : 'Custom'
                                             }
                                         </div>
                                         <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
@@ -84,37 +80,42 @@ export default function Scripts(props: ScriptProps) {
                             </tbody>
                         )}
                         {actions.length > 0 && (
-                            <tbody className="flex mt-16 flex-col space-y-2">
+                            <tbody className="flex mt-16 flex-col">
                                 <tr>
-                                    <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
-                                        <div className="flex w-18 items-center">
+                                    <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
+                                        <div className="flex w-36 items-center">
                                             <BoltIcon className="flex h-4 w-4 mr-1" />
                                             Action Scripts
                                         </div>
-                                        <div className="w-[670px]">Description</div>
-                                        <div className="">Source</div>
+                                        <div className="w-[36rem]">Description</div>
+                                        <div className="w-12">Source</div>
+                                        <div className="">Enabled</div>
                                     </td>
                                 </tr>
                                 <tr>
                                 {actions.map((flow) => (
                                     <td
                                         key={flow.name}
-                                        className="flex items-center cursor-pointer p-3 py-5 justify-between border-b border-border-gray"
+                                        className="flex items-center cursor-pointer p-3 py-6 hover:bg-hover-gray justify-between border-b border-border-gray"
                                         onClick={() => navigate(`/integration/${integration.unique_key}/${flow.name}`)}
                                     >
                                         <div className="flex items-center w-36">
                                             <span className="w-48">{flow.name}</span>
                                         </div>
-                                        <div className="flex items-center w-[720px]">
-                                            <Tooltip text={<span className="text-sm">{flow.description}</span>} type="dark">
-                                                <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
-                                            </Tooltip>
+                                        <div className="flex items-center w-[36rem]">
+                                            <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
                                         </div>
-                                        <div className="flex items-center">
-                                            {flow.is_public ? 'Public' :
-                                                flow.pre_built ? 'Managed' :
-                                                'Custom'
+                                        <div className="flex items-center w-16">
+                                            {flow.is_public ? 'Public' : 'Custom'
                                             }
+                                        </div>
+                                        <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                                            <EnableDisableSync
+                                                flow={flow}
+                                                provider={integration.provider}
+                                                setLoaded={setLoaded}
+                                                rawName={endpoints?.unEnabledFlows?.rawName}
+                                            />
                                         </div>
                                     </td>
                                 ))}

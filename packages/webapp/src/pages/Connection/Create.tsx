@@ -321,9 +321,9 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             {integrations && !!integrations.length && publicKey && hostUrl && (
-                <div className="mx-auto w-largebox pb-40">
-                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
-                    <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
+                <div className="pb-40">
+                    <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
+                    <div className="h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
                         <form className="space-y-6" onSubmit={handleCreate}>
                             <div>
                                 <div>
@@ -336,7 +336,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                         <select
                                             id="integration_unique_key"
                                             name="integration_unique_key"
-                                            className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleIntegrationUniqueKeyChange}
                                             defaultValue={integration?.uniqueKey}
                                         >
@@ -371,7 +371,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             defaultValue={connectionId}
                                             autoComplete="new-password"
                                             required
-                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleConnectionIdChange}
                                         />
                                     </div>
@@ -434,7 +434,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             type="text"
                                             required
                                             autoComplete="new-password"
-                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleConnectionConfigParamsChange}
                                         />
                                     </div>
@@ -546,7 +546,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
                                                 authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
-                                            } focus:ring-white bg-bg-black block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            } focus:ring-white bg-active-gray block focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
@@ -668,7 +668,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
                                                 authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
-                                            } focus:ring-white bg-bg-black block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            } focus:ring-white bg-active-gray block focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>

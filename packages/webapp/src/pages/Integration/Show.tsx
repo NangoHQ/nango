@@ -138,9 +138,9 @@ export default function ShowIntegration() {
                 )}
                 <section className="mt-20">
                     <ul className="flex text-gray-400 space-x-8 text-sm cursor-pointer">
-                        <li className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.API)}>API Reference</li>
-                        <li className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Scripts)}>Scripts</li>
-                        <li className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Auth)}>Settings</li>
+                        <li className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.API)}>API Reference</li>
+                        <li className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Scripts)}>Scripts</li>
+                        <li className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Auth)}>Settings</li>
                     </ul>
                 </section>
                 <section className="mt-10">

@@ -67,6 +67,7 @@ class ConnectionService {
         metadata?: Metadata
     ): Promise<{ id: number }[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
@@ -75,6 +76,7 @@ class ConnectionService {
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig,
                 environment_id: environment_id,
+                nango_config_id: nango_config_id as number,
                 metadata: metadata || storedConnection.metadata || null
             });
 
@@ -98,6 +100,7 @@ class ConnectionService {
                 encryptionManager.encryptConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
+                    nango_config_id: nango_config_id as number,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
                     environment_id: environment_id,
@@ -118,13 +121,19 @@ class ConnectionService {
         type: ProviderAuthModes,
         environment_id: number
     ): Promise<void> {
-        await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert({
-            connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            credentials: { type },
-            connection_config: connectionConfig,
-            environment_id: environment_id
-        });
+        const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
+
+        await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .insert({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                nango_config_id: nango_config_id as number,
+                credentials: { type },
+                connection_config: connectionConfig,
+                environment_id: environment_id
+            });
     }
 
     public async upsertApiConnection(
@@ -137,10 +146,12 @@ class ConnectionService {
         accountId: number
     ) {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
+                nango_config_id: nango_config_id as number,
                 provider_config_key: providerConfigKey,
                 credentials,
                 connection_config: connectionConfig,
@@ -164,6 +175,7 @@ class ConnectionService {
                 encryptionManager.encryptApiConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
+                    nango_config_id: nango_config_id as number,
                     credentials,
                     connection_config: connectionConfig,
                     environment_id
@@ -178,28 +190,38 @@ class ConnectionService {
 
     public async upsertUnauthConnection(connectionId: string, providerConfigKey: string, provider: string, environment_id: number, accountId: number) {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
-            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update({
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                updated_at: new Date()
-            });
+            await db.knex
+                .withSchema(db.schema())
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
+                .update({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    nango_config_id: nango_config_id as number,
+                    updated_at: new Date()
+                });
 
             analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id }];
         }
-        const id = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert(
-            {
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                credentials: {},
-                connection_config: {},
-                environment_id
-            },
-            ['id']
-        );
+        const id = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                {
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    nango_config_id: nango_config_id as number,
+                    credentials: {},
+                    connection_config: {},
+                    environment_id
+                },
+                ['id']
+            );
 
         analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, accountId, { provider });
 

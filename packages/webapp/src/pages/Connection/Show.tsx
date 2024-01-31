@@ -176,8 +176,8 @@ We could not retrieve and/or refresh your access token due to the following erro
             )}
             <section className="mt-20">
                 <ul className="flex text-gray-400 space-x-8 text-sm cursor-pointer">
-                    <li className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Models)}>Models</li>
-                    <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
+                    <li className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Models)}>Models</li>
+                    <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
                 </ul>
             </section>
             <section className="mt-10">

@@ -15,7 +15,7 @@ import {
     connectionService,
     getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey,
-    getSyncConfigsByParams
+    getFlowConfigsByParams
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -24,7 +24,7 @@ interface Integration {
     uniqueKey: string;
     provider: string;
     connectionCount: number;
-    syncScripts: number;
+    scripts: number;
     creationDate: Date | undefined;
     connectionConfigParams?: string[];
 }
@@ -50,13 +50,13 @@ class ConfigController {
             const integrations = await Promise.all(
                 configs.map(async (config: ProviderConfig) => {
                     const template = configService.getTemplates()[config.provider];
-                    const activeSyncs = await getSyncConfigsByParams(environment.id, config.unique_key);
+                    const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
 
                     const integration: Integration = {
                         authMode: template?.auth_mode || AuthModes.App,
                         uniqueKey: config.unique_key,
                         provider: config.provider,
-                        syncScripts: activeSyncs?.length || 0,
+                        scripts: activeFlows?.length,
                         connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
                         creationDate: config.created_at
                     };

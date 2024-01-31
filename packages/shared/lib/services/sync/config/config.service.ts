@@ -67,6 +67,7 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
             }
             flowObject['sync_type'] = syncConfig.sync_type as SyncType;
             nangoConfig['integrations'][uniqueKey]!['syncs'] = {
+                ...nangoConfig['integrations'][uniqueKey]!['syncs'],
                 [syncName]: flowObject
             };
         } else {
@@ -74,6 +75,7 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
                 nangoConfig['integrations'][uniqueKey]!['actions'] = {} as Record<string, NangoIntegrationDataV2>;
             }
             nangoConfig['integrations'][uniqueKey]!['actions'] = {
+                ...nangoConfig['integrations'][uniqueKey]!['actions'],
                 [syncName]: flowObject
             };
         }
@@ -240,6 +242,29 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     }
 
     return null;
+}
+
+export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<SyncConfig[]> {
+    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
+
+    if (!config) {
+        throw new Error('Provider config not found');
+    }
+
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({
+            environment_id,
+            nango_config_id: config.id as number,
+            active: true,
+            deleted: false
+        });
+
+    if (result) {
+        return result;
+    }
+
+    return [];
 }
 
 export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
@@ -715,7 +740,6 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
     if (syncConfigs.length === 0) {
         return null;
     }
-
     const standardConfig = convertSyncConfigToStandardConfig(syncConfigs);
 
     const [config] = standardConfig;
