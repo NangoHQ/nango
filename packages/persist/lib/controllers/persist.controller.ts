@@ -244,9 +244,12 @@ class PersistController {
                 syncId,
                 syncJobId,
                 model,
-                activityLogId
+                activityLogId,
+                'records.count': records.length,
+                'records.sizeInBytes': Buffer.byteLength(JSON.stringify(records), 'utf8')
             }
         });
+
         const {
             success,
             error,
@@ -293,11 +296,6 @@ class PersistController {
                     deleted: summary?.deletedKeys?.length as number
                 }
             };
-
-            span.addTags({
-                'records.count': records.length,
-                'records.sizeInBytes': Buffer.byteLength(JSON.stringify(records), 'utf8')
-            });
 
             await createActivityLogMessage({
                 level: 'info',
