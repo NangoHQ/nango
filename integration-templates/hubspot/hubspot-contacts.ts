@@ -1,8 +1,7 @@
 import type { NangoSync, HubspotContact } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    //handle query properties well
-    const query = `firstname,lastname`;
+    const properties = ['firstname', 'lastname', 'email'];
 
     let totalRecords = 0;
 
@@ -10,7 +9,7 @@ export default async function fetchData(nango: NangoSync) {
         const endpoint = '/crm/v3/objects/contacts';
         const config = {
             params: {
-                properties: query
+                properties: properties.join(',')
             },
             paginate: {
                 type: 'cursor',
