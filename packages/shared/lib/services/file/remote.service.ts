@@ -2,7 +2,7 @@ import type { Response } from 'express';
 import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
-import { isCloud, isEnterprise } from '../../utils/utils.js';
+import { isCloud, isEnterprise, isLocal } from '../../utils/utils.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -12,7 +12,7 @@ import localFileService from './local.service.js';
 
 let client: S3Client | null = null;
 
-if (isCloud()) {
+if (isCloud() || isLocal()) {
     client = new S3Client({
         region: process.env['AWS_REGION'] as string,
         credentials: {
