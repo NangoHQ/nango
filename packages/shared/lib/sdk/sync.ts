@@ -429,7 +429,16 @@ export class NangoAction {
                 }
             });
             if (response.status > 299) {
-                throw new Error(`cannot write log with activityLogId '${this.activityLogId}'`);
+                console.log(
+                    `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    JSON.stringify(this, (key, value) => {
+                        if (key === 'secretKey') {
+                            return '********';
+                        }
+                        return value;
+                    })
+                );
+                throw new Error(`cannot save log for activityLogId '${this.activityLogId}'`);
             }
             return;
         }
@@ -570,7 +579,19 @@ export class NangoSync extends NangoAction {
                     lastSyncDate: date
                 }
             });
-            return response.status <= 299;
+            if (response.status > 299) {
+                console.log(
+                    `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    JSON.stringify(this, (key, value) => {
+                        if (key === 'secretKey') {
+                            return '********';
+                        }
+                        return value;
+                    })
+                );
+                throw new Error(`cannot set lastSyncDate for sync '${this.syncId}'`);
+            }
+            return true;
         } else {
             return await setLastSyncDate(this.syncId as string, date);
         }
@@ -619,7 +640,16 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    return false;
+                    console.log(
+                        `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                        JSON.stringify(this, (key, value) => {
+                            if (key === 'secretKey') {
+                                return '********';
+                            }
+                            return value;
+                        })
+                    );
+                    throw new Error(`cannot save records for sync '${this.syncId}'`);
                 }
             }
             return true;
@@ -756,7 +786,16 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    return false;
+                    console.log(
+                        `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                        JSON.stringify(this, (key, value) => {
+                            if (key === 'secretKey') {
+                                return '********';
+                            }
+                            return value;
+                        })
+                    );
+                    throw new Error(`cannot delete records for sync '${this.syncId}'`);
                 }
             }
             return true;
@@ -895,7 +934,16 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    return false;
+                    console.log(
+                        `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                        JSON.stringify(this, (key, value) => {
+                            if (key === 'secretKey') {
+                                return '********';
+                            }
+                            return value;
+                        })
+                    );
+                    throw new Error(`cannot update records for sync '${this.syncId}'`);
                 }
             }
             return true;
