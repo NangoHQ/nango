@@ -92,7 +92,7 @@ export async function upsert(
         let errorDetail = '';
         switch (error.code) {
             case '22001': {
-                errorDetail = 'Payload too big. Limit = 256MB';
+                errorDetail = 'String length exceeds the column’s maximum length (string_data_right_truncation)';
                 break;
             }
         }
