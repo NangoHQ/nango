@@ -772,7 +772,7 @@ integrations:
         Retrieves a list of contacts from an account.
         Details: full sync, doesn't track deletes, metadata is not required.
         Scope(s): crm.objects.contacts.read
-    hubspot-owner:
+    hubspot-owners:
       runs: every day
       returns:
         - HubspotOwner
@@ -781,7 +781,7 @@ integrations:
         specific people in your organization.
         Details: full sync, doesn't track deletes, metadata is not required.
         Scope(s): crm.objects.owners.read
-    hubspot-user:
+    hubspot-users:
       runs: every day
       returns:
         - HubspotUser
