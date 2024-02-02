@@ -46,6 +46,10 @@ export function getEnv() {
     }
 }
 
+export function isLocal() {
+    return getBaseUrl() === localhostUrl;
+}
+
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }
