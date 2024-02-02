@@ -109,9 +109,9 @@ class WebhookService {
         activityLogId: number,
         environment_id: number
     ) {
-        const { send, webhookInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
+        const { webhookInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
 
-        if (!send || !webhookInfo) {
+        if (!webhookInfo) {
             return;
         }
 
