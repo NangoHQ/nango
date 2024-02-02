@@ -93,7 +93,7 @@ class WebhookService {
         const notAlwaysSend = !options?.auth && !webhookInfo?.always_send_webhook;
 
         if (noWebhookUrl || authNotSelected || notAlwaysSend) {
-            return { send: false, webhookInfo: noWebhookUrl ? null : webhookInfo };
+            return { send: false, webhookInfo };
         }
 
         return { send: true, webhookInfo };
