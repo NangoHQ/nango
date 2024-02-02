@@ -620,7 +620,7 @@ export class NangoSync extends NangoAction {
                 }
             });
             if (response.status > 299) {
-                console.log(
+                console.error(
                     `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     JSON.stringify(this, (key, value) => {
                         if (key === 'secretKey') {
@@ -680,7 +680,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    console.log(
+                    console.error(
                         `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                         JSON.stringify(this, (key, value) => {
                             if (key === 'secretKey') {
@@ -826,7 +826,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    console.log(
+                    console.error(
                         `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                         JSON.stringify(this, (key, value) => {
                             if (key === 'secretKey') {
@@ -974,7 +974,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    console.log(
+                    console.error(
                         `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                         JSON.stringify(this, (key, value) => {
                             if (key === 'secretKey') {
