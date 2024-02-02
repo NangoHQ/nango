@@ -359,6 +359,14 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     </label>
                                                     <SecretInput disabled defaultValue={connection.credentials.apiKey} copy={true} />
                                                 </div>
+                                            {connection.credentials.apiSecret && (
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="apiSecret" className="text-text-light-gray block text-sm font-semibold">
+                                                        API Secret
+                                                    </label>
+                                                    <SecretInput disabled defaultValue={connection.credentials.apiSecret} copy={true} />
+                                                </div>
+                                            )}
                                             </div>
                                         )}
                                         {connection.credentials && connection.oauthType === AuthModes.Basic && (

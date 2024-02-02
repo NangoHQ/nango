@@ -47,6 +47,7 @@ export default function IntegrationCreate() {
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI()
     const [apiKey, setApiKey] = useState('');
+    const [apiSecret, setApiSecret] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
@@ -141,6 +142,13 @@ export default function IntegrationCreate() {
         if (authMode === AuthModes.ApiKey) {
             credentials = {
                 apiKey
+            };
+        }
+
+        if (authMode === AuthModes.ApiKey && integration?.provider === 'clari-copilot') {
+            credentials = {
+                apiKey,
+                apiSecret
             };
         }
 
@@ -282,6 +290,13 @@ export default function IntegrationCreate() {
 }`;
         }
 
+if (integration?.authMode === AuthModes.ApiKey && integration?.provider === 'clari-copilot') {
+            apiAuthString = `
+    credentials: {
+      apiKey: '${apiKey}',
+      apiSecret: '${apiSecret}'
+}`;
+        }
         if (integration?.authMode === AuthModes.Basic) {
             apiAuthString = `
     credentials: {
@@ -511,6 +526,36 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                                     name="api_key"
                                                     optionalvalue={apiKey}
                                                     setoptionalvalue={setApiKey}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                    {integration?.provider === 'clari-copilot' && (
+                                        <div>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    API Secret
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p>{`The API Secret to authenticate requests`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
+                                            <div className="mt-1">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id="api_secret"
+                                                    name="api_secret"
+                                                    optionalvalue={apiSecret}
+                                                    setoptionalvalue={setApiSecret}
                                                     required
                                                 />
                                             </div>

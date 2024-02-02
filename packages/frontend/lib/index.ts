@@ -185,6 +185,9 @@ export default class Nango {
         }
         if ('apiKey' in credentials) {
             params['apiKey'] = credentials.apiKey || '';
+            if (credentials.apiSecret) {
+                params['apiSecret'] = credentials.apiSecret;
+            }
         }
 
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
@@ -336,6 +339,7 @@ interface BasicApiCredentials {
 
 interface ApiKeyCredentials {
     apiKey?: string;
+    apiSecret?: string;
 }
 
 interface AppStoreCredentials {

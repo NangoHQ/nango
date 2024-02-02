@@ -130,9 +130,13 @@ class ApiAuthController {
                 errorManager.errRes(res, 'missing_api_key');
 
                 return;
+            } else if (config.provider === 'clari-copilot' && !req.body.apiSecret) {
+                errorManager.errRes(res, 'missing_api_secret');
+
+                return;
             }
 
-            const { apiKey } = req.body;
+            const { apiKey, apiSecret } = req.body;
 
             await createActivityLogMessage({
                 level: 'info',
@@ -150,7 +154,8 @@ class ApiAuthController {
                 config?.provider as string,
                 {
                     type: AuthModes.ApiKey,
-                    apiKey
+                    apiKey,
+                    apiSecret
                 },
                 connectionConfig,
                 environmentId,

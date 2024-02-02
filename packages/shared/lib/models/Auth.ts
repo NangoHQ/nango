@@ -104,6 +104,7 @@ export interface BasicApiCredentials {
 export interface ApiKeyCredentials {
     type?: AuthModes.ApiKey;
     apiKey: string;
+    apiSecret?: string;
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
