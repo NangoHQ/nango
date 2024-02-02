@@ -15,6 +15,8 @@ import { formatDateToShortUSFormat } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
 
+import { useStore } from '../../store';
+
 interface AuthSettingsProps {
     integration: IntegrationConfig | null;
     account: Account;
@@ -36,6 +38,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const [integrationId, setIntegrationId] = useState(integration?.unique_key || '');
 
     const navigate = useNavigate();
+    const env = useStore(state => state.cookieValue);
+
     const { setVisible, bindings } = useModal();
     const editIntegrationAPI = useEditIntegrationAPI();
     const editIntegrationNameAPI = useEditIntegrationNameAPI();
@@ -50,7 +54,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
         if (res?.status === 204) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
-            navigate('/integrations', { replace: true });
+            navigate(`/${env}/integrations`, { replace: true });
         }
         setModalShowSpinner(false);
         setVisible(false);
@@ -130,7 +134,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
-                navigate('/integrations', { replace: true });
+                navigate(`/${env}/integrations`, { replace: true });
             } else if (res != null) {
                 let payload = await res.json();
                 toast.error(payload.type === 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
@@ -157,7 +161,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
         if (res?.status === 200) {
             toast.success('Integration ID updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setIntegrationId(integrationIdEdit);
-            navigate(`/integration/${integrationIdEdit}`, { replace: true });
+            navigate(`/${env}/integration/${integrationIdEdit}`, { replace: true });
         } else if (res != null) {
             let payload = await res.json();
             toast.error(payload.error, {

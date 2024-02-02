@@ -1,6 +1,6 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import Spinner from '../components/ui/Spinner';
 import {
     ChevronsLeft,
@@ -76,6 +76,7 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
 
 export default function Activity() {
     const navigate = useNavigate();
+    const { env: initialEnv } = useParams();
 
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState<ActivityResponse[]>([]);
@@ -98,7 +99,6 @@ export default function Activity() {
     const queryParams = queryString.parse(location.search);
     const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
     const initialOffset: string | (string | null)[] | null = queryParams.offset;
-    const initialEnv: string | (string | null)[] | null = queryParams.env;
     const initialStatus: string | (string | null)[] | null = queryParams.status;
     const initialScript: string | (string | null)[] | null = queryParams.script;
     const initialIntegration: string | (string | null)[] | null = queryParams.integration;
@@ -400,9 +400,9 @@ export default function Activity() {
     }
 
     const copyActivityLogUrl = (activity: ActivityResponse): string => {
-        const baseUrl = `${window.location.protocol}//${window.location.host}/activity`;
+        const baseUrl = `${window.location.protocol}//${window.location.host}/${env}/activity`;
         const url = new URL(baseUrl);
-        const params = new URLSearchParams({ env, activity_log_id: activity.id.toString() });
+        const params = new URLSearchParams({ activity_log_id: activity.id.toString() });
 
         if (activity.connection_id) {
             params.append('connection', activity.connection_id);

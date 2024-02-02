@@ -5,6 +5,7 @@ import { EndpointResponse } from './Show';
 import { IntegrationConfig } from '../../types';
 import EnableDisableSync from './components/EnableDisableSync';
 import HelpFooter from './components/HelpFooter';
+import { useStore } from '../../store';
 
 interface ScriptProps {
     endpoints: EndpointResponse;
@@ -18,6 +19,7 @@ export default function Scripts(props: ScriptProps) {
     const syncs = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.syncs || []];
     const actions = [...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.actions || []];
     const hasScripts = syncs.length || actions.length;
+    const env = useStore(state => state.cookieValue);
 
     return (
         <div className="h-fit rounded-md text-white text-sm">
@@ -49,7 +51,7 @@ export default function Scripts(props: ScriptProps) {
                                     <td
                                         key={flow.name}
                                         className="flex items-center p-3 py-6 hover:bg-hover-gray cursor-pointer justify-between border-b border-border-gray"
-                                        onClick={() => navigate(`/integration/${integration.unique_key}/${flow.name}`)}
+                                        onClick={() => navigate(`/${env}/integration/${integration.unique_key}/${flow.name}`)}
                                     >
                                         <div className="flex items-center w-36">
                                             <span className="w-48">{flow.name}</span>
@@ -97,7 +99,7 @@ export default function Scripts(props: ScriptProps) {
                                     <td
                                         key={flow.name}
                                         className="flex items-center cursor-pointer p-3 py-6 hover:bg-hover-gray justify-between border-b border-border-gray"
-                                        onClick={() => navigate(`/integration/${integration.unique_key}/${flow.name}`)}
+                                        onClick={() => navigate(`/${env}/integration/${integration.unique_key}/${flow.name}`)}
                                     >
                                         <div className="flex items-center w-36">
                                             <span className="w-48">{flow.name}</span>

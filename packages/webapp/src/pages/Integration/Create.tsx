@@ -13,6 +13,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { AuthModes } from '../../types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { useStore } from '../../store';
 
 interface Providers {
     name: string;
@@ -29,6 +30,7 @@ export default function Create() {
     const getProvidersAPI = useGetProvidersAPI();
     const createIntegrationAPI = useCreateEmptyIntegrationAPI();
     const navigate = useNavigate();
+    const env = useStore(state => state.cookieValue);
 
     useEffect(() => {
         const getProviders = async () => {
@@ -53,7 +55,7 @@ export default function Create() {
         if (res?.status === 200) {
             toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
             const data = await res.json();
-            navigate(`/integration/${data.config.unique_key}#auth`);
+            navigate(`/${env}/integration/${data.config.unique_key}#auth`);
         }
     }
 

@@ -16,6 +16,8 @@ import Syncs from './Syncs';
 import Authorization from './Authorization';
 import { SyncResponse, Connection } from '../../types';
 
+import { useStore } from '../../store';
+
 export enum Tabs {
     Models,
     Authorization
@@ -34,6 +36,7 @@ export default function ShowIntegration() {
     const deleteConnectionAPI = useDeleteConnectionAPI();
     const getSyncAPI = useGetSyncAPI();
 
+    const env = useStore(state => state.cookieValue);
     const navigate = useNavigate();
     const location = useLocation();
     const { setVisible, bindings } = useModal();
@@ -103,7 +106,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
         if (res?.status === 204) {
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
-            navigate('/connections', { replace: true });
+            navigate(`/${env}/connections`, { replace: true });
         }
     };
 

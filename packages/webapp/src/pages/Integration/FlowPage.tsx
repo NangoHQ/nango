@@ -25,6 +25,8 @@ import { parseEndpoint, parseInput, generateResponseModel, formatDateToShortUSFo
 import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippets';
 
+import { useStore } from '../../store';
+
 export default function FlowPage() {
     const [accountLoaded, setAccountLoaded] = useState(false);
     const [loaded, setLoaded] = useState(false);
@@ -41,6 +43,7 @@ export default function FlowPage() {
     const updateSyncFrequency = useUpdateSyncFrequency();
     const { setVisible, bindings } = useModal();
     const navigate = useNavigate();
+    const env = useStore(state => state.cookieValue);
 
     const [source, setSource] = useState<'Public' | 'Custom'>();
     const [modalTitle, setModalTitle] = useState('');
@@ -243,7 +246,7 @@ export default function FlowPage() {
             />
             {provider && flow && (
                 <>
-                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/integration/${providerConfigKey}#scripts`)} />
+                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/${env}/integration/${providerConfigKey}#scripts`)} />
                 <div className="mx-auto space-y-12 text-sm">
                     <div className="flex justify-between">
                         <div className="flex">

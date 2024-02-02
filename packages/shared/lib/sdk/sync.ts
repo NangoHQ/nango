@@ -15,7 +15,16 @@ import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
-import type { LogLevel } from '../models/Activity.js';
+
+/*
+ *
+ * NOTICE!!
+ * This file is imported from the cli so any type needs to be explicitly
+ * specified in this file because imports won't resolve when copying
+ * over this file to the cli
+ *
+ */
+type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
 interface ParamEncoder {
     (value: any, defaultEncoder: (value: any) => any): any;

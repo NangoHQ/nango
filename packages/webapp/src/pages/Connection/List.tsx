@@ -101,7 +101,7 @@ export default function ConnectionList() {
                                             id !== connections.at(-1)?.id ? 'border-b border-border-gray' : ''
                                         } h-16 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                         onClick={() => {
-                                            navigate(`/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
+                                            navigate(`/${env}/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
                                         }}
                                     >
                                         <div className="flex items-center w-2/3">

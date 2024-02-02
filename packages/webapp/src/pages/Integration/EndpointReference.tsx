@@ -18,6 +18,7 @@ import EndpointLabel from './components/EndpointLabel';
 import { NangoSyncModel, NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow, Account } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
 import { parseEndpoint, parseInput, generateResponseModel } from '../../utils/utils';
+import { useStore } from '../../store';
 
 enum Language {
     Node = 0,
@@ -45,9 +46,10 @@ export default function EndpointReference() {
 
     const connectionId = '<CONNECTION-ID>';
 
+    const env = useStore(state => state.cookieValue);
     const { providerConfigKey } = useParams();
     const location = useLocation();
-    const basePath = `/integration/${providerConfigKey}/reference/`;
+    const basePath = `/${env}/integration/${providerConfigKey}/reference/`;
     const wildcardPath = location.pathname.replace(basePath, '');
 
 
@@ -125,7 +127,7 @@ export default function EndpointReference() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-            <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/integration/${providerConfigKey}`)} />
+            <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/${env}/integration/${providerConfigKey}`)} />
             <div className="text-white mb-16" aria-hidden="true">
                 <div className="">
                     <div className="flex w-full justify-between ">
@@ -135,7 +137,7 @@ export default function EndpointReference() {
                                 variant="zinc"
                                 size="sm"
                                 className="flex cursor-pointer items-center relative rounded ml-3"
-                                onClick={() => navigate(`/integration/${providerConfigKey}#scripts`)}
+                                onClick={() => navigate(`/${env}/integration/${providerConfigKey}#scripts`)}
                             >
                                 <AdjustmentsHorizontalIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
                             </Button>

@@ -76,7 +76,7 @@ export default function IntegrationList() {
                                                 uniqueKey !== integrations.at(-1)?.uniqueKey ? 'border-b border-border-gray' : ''
                                             } h-16 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                             onClick={() => {
-                                                navigate(`/integration/${uniqueKey}`);
+                                                navigate(`/${env}/integration/${uniqueKey}`);
                                             }}
                                         >
                                             <div className="flex">

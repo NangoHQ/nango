@@ -55,11 +55,39 @@ Sentry.init({
   tracesSampleRate: 0.1,
 });
 
+const VALID_PATHS = [
+    'getting-started',
+    'integration',
+    'integrations',
+    'syncs',
+    'connections',
+    'activity',
+    'project-settings',
+    'user-settings',
+    'account-settings',
+];
+
 const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
     const env = useStore(state => state.cookieValue);
 
-    const landingPage = env === 'dev' ? '/dev/getting-started' : '/prod/integrations';
+    const correctPage = (): string => {
+        const url = new URL(window.location.href);
+        const pathSegments = url.pathname.split('/').filter(Boolean); // Remove any leading/trailing slashes and empty segments
+
+        const rawUrl = window.location.href;
+
+        console.log(VALID_PATHS.some(path => rawUrl.includes(path)));
+        if (VALID_PATHS.some(path => rawUrl.includes(path))) {
+            console.log(pathSegments);
+            const newPathSegments = [env, ...pathSegments];
+            url.pathname = '/' + newPathSegments.join('/');
+
+            return url.pathname;
+        }
+
+        return env === 'dev' ? '/dev/getting-started' : '/prod/integrations';
+    };
 
     return (
         <MantineProvider
@@ -79,7 +107,7 @@ const App = () => {
             }}
         >
             <SentryRoutes>
-                <Route path="/" element={<Navigate to={landingPage} replace />} />
+                <Route path="/" element={<Navigate to={correctPage()} replace />} />
                 <Route path="/dev/getting-started" element={<PrivateRoute />}>
                     <Route path="/dev/getting-started" element={<GettingStarted />} />
                 </Route>
