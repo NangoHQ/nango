@@ -84,20 +84,16 @@ class WebhookService {
     ): Promise<{ send: boolean; webhookInfo: Environment | null }> {
         const webhookInfo = await environmentService.getById(environment_id);
 
-        if (options && options.forward) {
+        if (options?.forward) {
             return { send: true, webhookInfo };
         }
 
-        if (!webhookInfo || !webhookInfo.webhook_url) {
-            return { send: false, webhookInfo: null };
-        }
+        const noWebhookUrl = !webhookInfo?.webhook_url;
+        const authNotSelected = options?.auth && !webhookInfo?.send_auth_webhook;
+        const notAlwaysSend = !options?.auth && !webhookInfo?.always_send_webhook;
 
-        if (options && !options.auth && !webhookInfo.always_send_webhook) {
-            return { send: false, webhookInfo };
-        }
-
-        if (options && options.auth && !webhookInfo.send_auth_webhook) {
-            return { send: false, webhookInfo };
+        if (noWebhookUrl || authNotSelected || notAlwaysSend) {
+            return { send: false, webhookInfo: noWebhookUrl ? null : webhookInfo };
         }
 
         return { send: true, webhookInfo };
