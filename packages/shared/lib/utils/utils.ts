@@ -389,3 +389,22 @@ export function packageJsonFile(): PackageJson {
     const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/shared/package.json' : '../shared/package.json';
     return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
 }
+
+export function safeStringify(obj: unknown, indent = 2): string {
+    const cache = new Set();
+    const jsonString = JSON.stringify(
+        obj,
+        (_key, value) => {
+            if (typeof value === 'object' && value !== null) {
+                if (cache.has(value)) {
+                    return;
+                }
+                cache.add(value);
+            }
+            return value;
+        },
+        indent
+    );
+    cache.clear();
+    return jsonString;
+}

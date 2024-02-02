@@ -14,7 +14,7 @@ import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
-import { getPersistAPIUrl } from '../utils/utils.js';
+import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 
 /*
  *
@@ -24,7 +24,6 @@ import { getPersistAPIUrl } from '../utils/utils.js';
  * over this file to the cli
  *
  */
-type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
 interface ParamEncoder {
     (value: any, defaultEncoder: (value: any) => any): any;
@@ -229,10 +228,6 @@ export interface NangoProps {
     usePersistAPI?: boolean;
 }
 
-interface UserLogParameters {
-    level?: LogLevel;
-}
-
 interface EnvironmentVariable {
     name: string;
     value: string;
@@ -417,9 +412,24 @@ export class NangoAction {
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 
-    public async log(content: string, userDefinedLevel?: UserLogParameters): Promise<void> {
+    /**
+     * Log
+     * @desc Log a message to the activity log which shows up in the Nango Dashboard
+     * note that the last argument can be an object with a level property to specify the log level
+     * example: await nango.log('This is a log message', { level: 'error' })
+     */
+    public async _log(...args: any[]): Promise<void> {
+        const lastArg = args[args.length - 1];
+        const userDefinedLevel = typeof lastArg === 'object' && lastArg.level ? lastArg : undefined;
+
+        if (userDefinedLevel) {
+            args.pop();
+        }
+
+        const content = args.map((arg) => (typeof arg === 'object' ? safeStringify(arg) : String(arg))).join(' ');
+
         if (this.dryRun) {
-            console.log(content);
+            console.log(...args);
             return;
         }
 
@@ -437,8 +447,9 @@ export class NangoAction {
                     msg: content
                 }
             });
+
             if (response.status > 299) {
-                console.log(
+                console.error(
                     `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     JSON.stringify(this, (key, value) => {
                         if (key === 'secretKey') {
@@ -447,7 +458,7 @@ export class NangoAction {
                         return value;
                     })
                 );
-                throw new Error(`cannot save log for activityLogId '${this.activityLogId}'`);
+                throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
             }
             return;
         }
