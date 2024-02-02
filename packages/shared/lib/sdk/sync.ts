@@ -418,7 +418,7 @@ export class NangoAction {
      * note that the last argument can be an object with a level property to specify the log level
      * example: await nango.log('This is a log message', { level: 'error' })
      */
-    public async _log(...args: any[]): Promise<void> {
+    public async log(...args: any[]): Promise<void> {
         const lastArg = args[args.length - 1];
         const userDefinedLevel = typeof lastArg === 'object' && lastArg.level ? lastArg : undefined;
 
