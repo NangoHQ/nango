@@ -78,18 +78,25 @@ class WebhookService {
         return filteredHeaders;
     };
 
-    async shouldSendWebhook(environment_id: number, auth = false): Promise<{ send: boolean; webhookInfo: Environment | null }> {
+    async shouldSendWebhook(
+        environment_id: number,
+        options?: { auth?: boolean; forward?: boolean }
+    ): Promise<{ send: boolean; webhookInfo: Environment | null }> {
         const webhookInfo = await environmentService.getById(environment_id);
+
+        if (options && options.forward) {
+            return { send: true, webhookInfo };
+        }
 
         if (!webhookInfo || !webhookInfo.webhook_url) {
             return { send: false, webhookInfo: null };
         }
 
-        if (!auth && !webhookInfo.always_send_webhook) {
+        if (options && !options.auth && !webhookInfo.always_send_webhook) {
             return { send: false, webhookInfo };
         }
 
-        if (auth && !webhookInfo.send_auth_webhook) {
+        if (options && options.auth && !webhookInfo.send_auth_webhook) {
             return { send: false, webhookInfo };
         }
 
@@ -198,7 +205,7 @@ class WebhookService {
     }
 
     async sendAuthUpdate(connection: RecentlyCreatedConnection, provider: string, success: boolean, activityLogId: number | null): Promise<void> {
-        const { send, webhookInfo } = await this.shouldSendWebhook(connection.environment_id, true);
+        const { send, webhookInfo } = await this.shouldSendWebhook(connection.environment_id, { auth: true });
 
         if (!send || !webhookInfo) {
             return;
@@ -276,7 +283,7 @@ class WebhookService {
         payload: Record<string, any> | null,
         webhookOriginalHeaders: Record<string, any>
     ) {
-        const { send, webhookInfo } = await this.shouldSendWebhook(environment_id);
+        const { send, webhookInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
         if (!send || !webhookInfo) {
             return;
