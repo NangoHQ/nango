@@ -4,6 +4,8 @@
 
 // Import environment variables (if running server locally).
 import './apm.js';
+import bodyParser from 'body-parser';
+import multer from 'multer';
 import _ from './utils/config.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
@@ -66,8 +68,11 @@ const webAuth =
         : [authMiddleware.noAuth.bind(authMiddleware)];
 
 app.use(express.json({ limit: '75mb' }));
+app.use(bodyParser.raw({ type: 'text/xml' }));
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Set to 'false' to disable migration at startup. Appropriate when you
 // have multiple replicas of the service running and you do not want them
@@ -129,8 +134,7 @@ app.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController
 
 app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 
-// Proxy Route
-app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
+app.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
 // Webapp routes (no auth).
 if (isCloud() || isEnterprise()) {
@@ -154,6 +158,7 @@ app.route('/api/v1/environment/webhook').post(webAuth, environmentController.upd
 app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
 app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
 app.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
+app.route('/api/v1/environment/webhook-auth-send').post(webAuth, environmentController.updateSendAuthWebhook.bind(environmentController));
 app.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
 app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));

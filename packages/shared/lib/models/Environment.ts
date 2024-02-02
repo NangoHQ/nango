@@ -14,6 +14,7 @@ export interface Environment extends Timestamps {
     websockets_path?: string | null;
     hmac_enabled: boolean;
     always_send_webhook: boolean;
+    send_auth_webhook: boolean;
     hmac_key: string | null;
     hmac_digest?: string | null;
 

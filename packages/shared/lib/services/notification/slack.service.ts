@@ -1,15 +1,15 @@
-import { schema, dbNamespace } from '../../../db/database.js';
-import type { SlackNotification } from '../../../models/SlackNotification';
-import type { NangoConnection } from '../../../models/Connection';
-import type { ServiceResponse } from '../../../models/Generic';
-import { SyncType, SyncConfigType } from '../../../models/Sync.js';
-import environmentService from '../../environment.service.js';
-import { LogActionEnum, LogLevel } from '../../../models/Activity.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../../activity/activity.service.js';
-import { getBasePublicUrl } from '../../../utils/utils.js';
-import connectionService from '../../connection.service.js';
-import accountService from '../../account.service.js';
-import SyncClient from '../../../clients/sync.client.js';
+import { schema, dbNamespace } from '../../db/database.js';
+import type { SlackNotification } from '../../models/SlackNotification';
+import type { NangoConnection } from '../../models/Connection';
+import type { ServiceResponse } from '../../models/Generic';
+import { SyncType, SyncConfigType } from '../../models/Sync.js';
+import environmentService from '../environment.service.js';
+import { LogActionEnum, LogLevel } from '../../models/Activity.js';
+import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
+import { getBasePublicUrl } from '../../utils/utils.js';
+import connectionService from '../connection.service.js';
+import accountService from '../account.service.js';
+import SyncClient from '../../clients/sync.client.js';
 
 const TABLE = dbNamespace + 'slack_notifications';
 

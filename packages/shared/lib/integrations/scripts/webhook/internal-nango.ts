@@ -1,5 +1,6 @@
 import get from 'lodash-es/get.js';
 import environmentService from '../../../services/environment.service.js';
+import type { Connection } from './../../../models/Connection.js';
 import type { Config as ProviderConfig } from './../../../models/Provider.js';
 import SyncClient from '../../../clients/sync.client.js';
 import type { SyncConfig } from './../../../models/Sync.js';
@@ -50,11 +51,24 @@ export const internalNango: InternalNango = {
             return;
         }
 
-        const connections = await connectionService.findConnectionsByConnectionConfigValue(
-            propName || connectionIdentifier,
-            get(body, connectionIdentifier),
-            integration.environment_id
-        );
+        let connections: Connection[] | null = null;
+        if (propName === 'connectionId') {
+            const { success, response: connection } = await connectionService.getConnection(
+                get(body, connectionIdentifier),
+                integration.unique_key,
+                integration.environment_id
+            );
+
+            if (success && connection) {
+                connections = [connection];
+            }
+        } else {
+            connections = await connectionService.findConnectionsByConnectionConfigValue(
+                propName || connectionIdentifier,
+                get(body, connectionIdentifier),
+                integration.environment_id
+            );
+        }
 
         if (!connections || connections.length === 0) {
             await metricsManager.capture(

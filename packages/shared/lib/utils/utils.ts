@@ -46,6 +46,10 @@ export function getEnv() {
     }
 }
 
+export function isLocal() {
+    return getBaseUrl() === localhostUrl;
+}
+
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }
@@ -80,6 +84,10 @@ export function getServerPort() {
     } else {
         return 3003;
     }
+}
+
+export function getPersistAPIUrl() {
+    return process.env['PERSIST_SERVICE_URL'] || 'http://localhost:3007';
 }
 
 export function isDev() {

@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import { backOff } from 'exponential-backoff';
+import FormData from 'form-data';
 
 import type { Connection } from '../models/Connection.js';
 import { ApiKeyCredentials, BasicApiCredentials, AuthModes, OAuth2Credentials } from '../models/Auth.js';
@@ -36,7 +37,8 @@ class ProxyService {
             }
         }
 
-        const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, data, headers, baseUrlOverride } = externalConfig;
+        let data = externalConfig.data;
+        const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride } = externalConfig;
         const { environmentId: environment_id, accountId: optionalAccountId, isFlow, existingActivityLogId: activityLogId, isDryRun } = internalConfig;
         const accountId = optionalAccountId ?? ((await environmentService.getAccountIdFromEnvironment(environment_id)) as number);
         const logAction: LogAction = isFlow ? LogActionEnum.SYNC : LogActionEnum.PROXY;
@@ -177,6 +179,16 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 timestamp: Date.now(),
                 content: `Endpoint set to ${endpoint} with retries set to ${retries}`
             });
+        }
+
+        if (headers && headers['Content-Type'] === 'multipart/form-data') {
+            const formData = new FormData();
+
+            Object.keys(data as any).forEach((key) => {
+                formData.append(key, (data as any)[key]);
+            });
+
+            data = formData;
         }
 
         const configBody: ApplicationConstructedProxyConfiguration = {

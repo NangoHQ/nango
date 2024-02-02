@@ -21,6 +21,8 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
+    AuthOperation,
+    ConnectionUpsertResponse,
     NangoError,
     createActivityLogAndLogMessage,
     environmentService,
@@ -516,7 +518,7 @@ class ConnectionController {
             const template = await configService.getTemplate(provider as string);
 
             let oAuthCredentials: ImportedCredentials;
-            let updatedConnection: { id: number } = {} as { id: number };
+            let updatedConnection: ConnectionUpsertResponse = {} as ConnectionUpsertResponse;
 
             let runHook = false;
 
@@ -695,9 +697,12 @@ class ConnectionController {
                         id: updatedConnection.id,
                         connection_id,
                         provider_config_key,
-                        environment_id: environmentId
+                        environment_id: environmentId,
+                        auth_mode: template.auth_mode,
+                        operation: updatedConnection?.operation || AuthOperation.UNKNOWN
                     },
-                    provider
+                    provider,
+                    null
                 );
             }
 

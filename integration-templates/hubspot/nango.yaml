@@ -4,23 +4,43 @@ integrations:
       runs: every half hour
       returns:
         - HubspotServiceTicket
+      description: |
+        Retrieves a list of service tickets.
+        Details: incremental sync, doesn't track deletes, metadata is not required.
+        Scope(s): tickets
     hubspot-contacts:
       runs: every day
       returns:
         - HubspotContact
-    hubspot-owner:
+      description: |
+        Retrieves a list of contacts from an account.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): crm.objects.contacts.read
+    hubspot-owners:
       runs: every day
       returns:
         - HubspotOwner
-    hubspot-user:
+      description: |
+        Retrieves a list of owners from an account who can assign CRM objects to
+        specific people in your organization.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): crm.objects.owners.read
+    hubspot-users:
       runs: every day
       returns:
         - HubspotUser
+      description: |
+        Retrieves a list of users from an account.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): settings.users.read
     hubspot-knowledge-base:
       runs: every day
       returns:
         - HubspotKnowledgeBase
-
+      description: |
+        Retrieves a list of content related to a search term from your HubSpot hosted site.
+        Details: full sync, doesn't track deletes, metadata is not required.
+        Scope(s): content
 models:
   HubspotServiceTicket:
     id: integer

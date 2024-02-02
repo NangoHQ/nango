@@ -37,7 +37,9 @@ import {
     OAuth2Credentials,
     ImportedCredentials,
     ApiKeyCredentials,
-    BasicApiCredentials
+    BasicApiCredentials,
+    AuthOperation,
+    ConnectionUpsertResponse
 } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
@@ -65,7 +67,7 @@ class ConnectionService {
         environment_id: number,
         accountId: number,
         metadata?: Metadata
-    ): Promise<{ id: number }[]> {
+    ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
         if (storedConnection) {
@@ -88,10 +90,10 @@ class ConnectionService {
 
             analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ id: storedConnection.id }];
+            return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
 
-        const id = await db.knex
+        const [id] = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .insert(
@@ -108,23 +110,7 @@ class ConnectionService {
 
         analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
-        return id;
-    }
-
-    public async createConnection(
-        connectionId: string,
-        providerConfigKey: string,
-        connectionConfig: Record<string, string | boolean>,
-        type: ProviderAuthModes,
-        environment_id: number
-    ): Promise<void> {
-        await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert({
-            connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            credentials: { type },
-            connection_config: connectionConfig,
-            environment_id: environment_id
-        });
+        return [{ id: id.id, operation: AuthOperation.CREATION }];
     }
 
     public async upsertApiConnection(
@@ -135,7 +121,7 @@ class ConnectionService {
         connectionConfig: Record<string, string>,
         environment_id: number,
         accountId: number
-    ) {
+    ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
         if (storedConnection) {
@@ -155,9 +141,9 @@ class ConnectionService {
 
             analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ id: storedConnection.id }];
+            return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
-        const id = await db.knex
+        const [id] = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .insert(
@@ -173,10 +159,16 @@ class ConnectionService {
 
         analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, accountId, { provider });
 
-        return id;
+        return [{ id: id.id, operation: AuthOperation.CREATION }];
     }
 
-    public async upsertUnauthConnection(connectionId: string, providerConfigKey: string, provider: string, environment_id: number, accountId: number) {
+    public async upsertUnauthConnection(
+        connectionId: string,
+        providerConfigKey: string,
+        provider: string,
+        environment_id: number,
+        accountId: number
+    ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
         if (storedConnection) {
@@ -188,9 +180,9 @@ class ConnectionService {
 
             analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ id: storedConnection.id }];
+            return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
-        const id = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert(
+        const [id] = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert(
             {
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -203,7 +195,7 @@ class ConnectionService {
 
         analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, accountId, { provider });
 
-        return id;
+        return [{ id: id.id, operation: AuthOperation.CREATION }];
     }
 
     public async importOAuthConnection(
@@ -216,7 +208,7 @@ class ConnectionService {
     ) {
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
-        const importedConnection = await this.upsertConnection(
+        const [importedConnection] = await this.upsertConnection(
             connection_id,
             provider_config_key,
             provider,
@@ -230,16 +222,19 @@ class ConnectionService {
         if (importedConnection) {
             await connectionCreatedHook(
                 {
-                    id: importedConnection[0]?.id as number,
+                    id: importedConnection?.id as number,
                     connection_id,
                     provider_config_key,
-                    environment_id: environmentId
+                    environment_id: environmentId,
+                    auth_mode: ProviderAuthModes.OAuth2,
+                    operation: importedConnection?.operation as AuthOperation
                 },
-                provider
+                provider,
+                null
             );
         }
 
-        return importedConnection;
+        return [importedConnection];
     }
 
     public async importApiAuthConnection(
@@ -256,21 +251,24 @@ class ConnectionService {
             throw new NangoError('connection_already_exists');
         }
 
-        const importedConnection = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
+        const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
             await connectionCreatedHook(
                 {
-                    id: importedConnection[0].id,
+                    id: importedConnection.id,
                     connection_id,
                     provider_config_key,
-                    environment_id: environmentId
+                    environment_id: environmentId,
+                    auth_mode: ProviderAuthModes.ApiKey,
+                    operation: importedConnection.operation
                 },
-                provider
+                provider,
+                null
             );
         }
 
-        return importedConnection;
+        return [importedConnection];
     }
 
     public async getConnectionById(
@@ -853,9 +851,12 @@ class ConnectionService {
                     id: updatedConnection.id,
                     connection_id: connectionId,
                     provider_config_key: integration.unique_key,
-                    environment_id: integration.environment_id
+                    environment_id: integration.environment_id,
+                    auth_mode: ProviderAuthModes.App,
+                    operation: updatedConnection.operation
                 },
                 integration.provider,
+                activityLogId,
                 // the connection is complete so we want to initiate syncs
                 // the post connection script has run already because we needed to get the github handle
                 { initiateSync: true, runPostConnectionScript: false }
