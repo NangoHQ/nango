@@ -24,6 +24,7 @@ import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
  * over this file to the cli
  *
  */
+type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
 interface ParamEncoder {
     (value: any, defaultEncoder: (value: any) => any): any;
@@ -66,6 +67,10 @@ export interface AxiosResponse<T = any, D = any> {
     headers: any;
     config: D;
     request?: any;
+}
+
+interface UserLogParameters {
+    level?: LogLevel;
 }
 
 interface DataResponse {
@@ -419,14 +424,23 @@ export class NangoAction {
      * example: await nango.log('This is a log message', { level: 'error' })
      */
     public async log(...args: any[]): Promise<void> {
+        if (args.length === 0) {
+            throw new Error('No arguments provided to nango.log');
+        }
+
         const lastArg = args[args.length - 1];
-        const userDefinedLevel = typeof lastArg === 'object' && lastArg.level ? lastArg : undefined;
+
+        const isUserDefinedLevel = (object: UserLogParameters | any): boolean => {
+            return typeof lastArg === 'object' && 'level' in object;
+        };
+
+        const userDefinedLevel: UserLogParameters | undefined = isUserDefinedLevel(lastArg) ? lastArg : undefined;
 
         if (userDefinedLevel) {
             args.pop();
         }
 
-        const content = args.map((arg) => (typeof arg === 'object' ? safeStringify(arg) : String(arg))).join(' ');
+        const content = safeStringify(args);
 
         if (this.dryRun) {
             console.log(...args);
