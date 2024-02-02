@@ -422,6 +422,12 @@ export class NangoAction {
      * @desc Log a message to the activity log which shows up in the Nango Dashboard
      * note that the last argument can be an object with a level property to specify the log level
      * example: await nango.log('This is a log message', { level: 'error' })
+     * error = red
+     * warn = orange
+     * info = white
+     * debug = grey
+     * http = green
+     * silly = light green
      */
     public async log(...args: any[]): Promise<void> {
         if (args.length === 0) {
