@@ -14,6 +14,8 @@ const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 round
             zombieGray: 'bg-transparent text-gray-500 hover:bg-hover-gray border border-gray-500',
             yellow: 'bg-yellow-500 text-white hover:bg-yellow-400',
             black: 'bg-black text-white hover:bg-hover-gray',
+            active: 'bg-active-gray text-white',
+            hover: 'hover:bg-hover-gray text-white',
             zinc: 'bg-active-gray hover:bg-neutral-800 text-gray-400 border border-neutral-700'
         },
         size: {

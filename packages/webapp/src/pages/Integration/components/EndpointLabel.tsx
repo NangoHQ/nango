@@ -1,7 +1,7 @@
 import { FlowEndpoint } from '../../../types';
 import { HttpLabel, GET, POST } from '../../../components/ui/label/http';
 
-export default function EndpointRow({ type, endpoint }: {type: string; endpoint : string | FlowEndpoint}) {
+export default function EndpointLabel({ type, endpoint }: {type: string; endpoint : string | FlowEndpoint}) {
     return (
         <>
             {typeof endpoint === 'object' ? (

@@ -21,7 +21,7 @@ import type { Flow } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info'
-import { parseInput, generateResponseModel, formatDateToShortUSFormat } from '../../utils/utils';
+import { parseEndpoint, parseInput, generateResponseModel, formatDateToShortUSFormat } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippets';
 
@@ -243,7 +243,7 @@ export default function FlowPage() {
             />
             {provider && flow && (
                 <>
-                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/integration/${provider}#scripts`)} />
+                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/integration/${providerConfigKey}#scripts`)} />
                 <div className="mx-auto space-y-12 text-sm">
                     <div className="flex justify-between">
                         <div className="flex">
@@ -267,6 +267,13 @@ export default function FlowPage() {
                             </Button>
                         </div>
                     </div>
+                    {source === 'Public' && (
+                        <div className="my-5">
+                            <Info size={18} padding="px-4 py-1.5">
+                                This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">(learn more)</a>.
+                            </Info>
+                        </div>
+                    )}
                     {flow?.nango_yaml_version === 'v1' && (
                         <div className="my-5">
                             <Info size={18} padding="px-4 py-1.5">
@@ -293,7 +300,7 @@ export default function FlowPage() {
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Endpoints</span>
                             {flow?.endpoints.map((endpoint, index) => (
-                                <div key={index} className="flex flex-col space-y-2">
+                               <div key={index} onClick={() => navigate(`/integration/${providerConfigKey}/reference${parseEndpoint(endpoint)}`)} className="flex flex-col space-y-2 cursor-pointer">
                                     <EndpointLabel endpoint={endpoint} type={flow.type} />
                                 </div>
                             ))}

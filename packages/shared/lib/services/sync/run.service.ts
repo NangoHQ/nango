@@ -12,9 +12,9 @@ import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import slackNotificationService from './notification/slack.service.js';
 import flowService from '../flow.service.js';
-import webhookService from './notification/webhook.service.js';
+import slackNotificationService from '../notification/slack.service.js';
+import webhookService from '../notification/webhook.service.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
@@ -625,7 +625,7 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.send(
+        await webhookService.sendSyncUpdate(
             this.nangoConnection,
             this.syncName,
             model,

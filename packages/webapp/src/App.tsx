@@ -18,6 +18,7 @@ import GettingStarted from './pages/GettingStarted';
 import IntegrationList from './pages/Integration/List';
 import CreateIntegration from './pages/Integration/Create';
 import ShowIntegration from './pages/Integration/Show';
+import EndpointReference from './pages/Integration/EndpointReference';
 import ConnectionList from './pages/Connection/List';
 import Connection from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
@@ -58,7 +59,7 @@ const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
     const env = useStore(state => state.cookieValue);
 
-    const landingPage = env === 'dev' ? '/getting-started' : '/integrations';
+    const landingPage = env === 'dev' ? '/dev/getting-started' : '/prod/integrations';
 
     return (
         <MantineProvider
@@ -79,53 +80,56 @@ const App = () => {
         >
             <SentryRoutes>
                 <Route path="/" element={<Navigate to={landingPage} replace />} />
-                <Route path="/getting-started" element={<PrivateRoute />}>
-                    <Route path="/getting-started" element={<GettingStarted />} />
+                <Route path="/dev/getting-started" element={<PrivateRoute />}>
+                    <Route path="/dev/getting-started" element={<GettingStarted />} />
                 </Route>
-                <Route path="/integrations" element={<PrivateRoute />}>
-                    <Route path="/integrations" element={<IntegrationList />} />
+                <Route path="/:env/integrations" element={<PrivateRoute />}>
+                    <Route path="/:env/integrations" element={<IntegrationList />} />
                 </Route>
-                <Route path="/integration/create" element={<PrivateRoute />}>
-                    <Route path="/integration/create" element={<CreateIntegration />} />
+                <Route path="/:env/integration/create" element={<PrivateRoute />}>
+                    <Route path="/:env/integration/create" element={<CreateIntegration />} />
                 </Route>
-                <Route path="/integration/:providerConfigKey" element={<PrivateRoute />}>
-                    <Route path="/integration/:providerConfigKey" element={<ShowIntegration />} />
+                <Route path="/:env/integration/:providerConfigKey" element={<PrivateRoute />}>
+                    <Route path="/:env/integration/:providerConfigKey" element={<ShowIntegration />} />
                 </Route>
-                <Route path="/syncs" element={<PrivateRoute />}>
-                    <Route path="/syncs" element={<Syncs />} />
+                <Route path="/:env/integration/:providerConfigKey/reference" element={<PrivateRoute />}>
+                    <Route path="/:env/integration/:providerConfigKey/reference/*" element={<EndpointReference />} />
                 </Route>
-                <Route path="/connections" element={<PrivateRoute />}>
-                    <Route path="/connections" element={<ConnectionList />} />
+                <Route path="/:env/syncs" element={<PrivateRoute />}>
+                    <Route path="/:env/syncs" element={<Syncs />} />
                 </Route>
-                <Route path="/connections/create" element={<PrivateRoute />}>
-                    <Route path="/connections/create" element={<ConnectionCreate />} />
+                <Route path="/:env/connections" element={<PrivateRoute />}>
+                    <Route path="/:env/connections" element={<ConnectionList />} />
                 </Route>
-                <Route path="/connections/create/:providerConfigKey" element={<PrivateRoute />}>
-                    <Route path="/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
+                <Route path="/:env/connections/create" element={<PrivateRoute />}>
+                    <Route path="/:env/connections/create" element={<ConnectionCreate />} />
                 </Route>
-                <Route path="/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
-                    <Route path="/connections/:providerConfigKey/:connectionId" element={<Connection />} />
+                <Route path="/:env/connections/create/:providerConfigKey" element={<PrivateRoute />}>
+                    <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
                 </Route>
-                <Route path="/connections-old/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
-                    <Route path="/connections-old/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
+                <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
+                    <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
                 </Route>
-                <Route path="/activity" element={<PrivateRoute />}>
-                    <Route path="/activity" element={<Activity />} />
+                <Route path="/:env/connections-old/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
+                    <Route path="/:env/connections-old/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
                 </Route>
-                <Route path="/project-settings" element={<PrivateRoute />}>
-                    <Route path="/project-settings" element={<ProjectSettings />} />
+                <Route path="/:env/activity" element={<PrivateRoute />}>
+                    <Route path="/:env/activity" element={<Activity />} />
+                </Route>
+                <Route path="/:env/project-settings" element={<PrivateRoute />}>
+                    <Route path="/:env/project-settings" element={<ProjectSettings />} />
                 </Route>
                 <Route path="/auth-link" element={<AuthLink />} />
-                <Route path="/flow/create" element={<PrivateRoute />}>
-                    <Route path="/flow/create" element={<FlowCreate />} />
+                <Route path="/:env/flow/create" element={<PrivateRoute />}>
+                    <Route path="/:env/flow/create" element={<FlowCreate />} />
                 </Route>
-                <Route path="/integration/:providerConfigKey/:flowName" element={<PrivateRoute />}>
-                    <Route path="/integration/:providerConfigKey/:flowName" element={<FlowPage />} />
+                <Route path="/:env/integration/:providerConfigKey/:flowName" element={<PrivateRoute />}>
+                    <Route path="/:env/integration/:providerConfigKey/:flowName" element={<FlowPage />} />
                 </Route>
                 {(isCloud() || isEnterprise()) && (
                     <>
-                        <Route path="/account-settings" element={<AccountSettings />} />
-                        <Route path="/user-settings" element={<UserSettings />} />
+                        <Route path="/:env/account-settings" element={<AccountSettings />} />
+                        <Route path="/:env/user-settings" element={<UserSettings />} />
                         <Route path="/signin" element={<Signin />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/signup/:token" element={<InviteSignup />} />

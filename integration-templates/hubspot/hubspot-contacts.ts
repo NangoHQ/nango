@@ -1,9 +1,9 @@
 import type { NangoSync, HubspotContact } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    const query = `properties=firstname,lastname,email`;
+    const properties = ['firstname', 'lastname', 'email'];
 
-    for await (const records of nango.paginate({ endpoint: '/crm/v3/objects/contacts', params: { query } })) {
+    for await (const records of nango.paginate({ endpoint: '/crm/v3/objects/contacts', params: { properties: properties.join(',') } })) {
         const mappedRecords = mapHubspotContacts(records);
 
         await nango.batchSave(mappedRecords, 'HubspotContact');

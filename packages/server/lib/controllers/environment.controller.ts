@@ -189,6 +189,28 @@ class EnvironmentController {
         }
     }
 
+    async updateSendAuthWebhook(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
+            await environmentService.editSendAuthWebhook(req.body['send_auth_webhook'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async updateHmacEnabled(req: Request, res: Response, next: NextFunction) {
         try {
             if (!req.body) {

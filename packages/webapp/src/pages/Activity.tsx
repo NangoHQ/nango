@@ -455,7 +455,7 @@ export default function Activity() {
                                 <select
                                     id="status"
                                     name="status"
-                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                    className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                     onChange={handleStatusChange}
                                     value={status}
                                 >
@@ -473,7 +473,7 @@ export default function Activity() {
                                     <select
                                         id="script"
                                         name="script"
-                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleScriptChange}
                                         value={selectedScript}
                                     >
@@ -492,7 +492,7 @@ export default function Activity() {
                                     <select
                                         id="connection"
                                         name="connection"
-                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleConnectionChange}
                                         value={selectedConnection}
                                     >
@@ -511,7 +511,7 @@ export default function Activity() {
                                     <select
                                         id="integration"
                                         name="integration"
-                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleIntegrationChange}
                                         value={selectedIntegration}
                                     >
@@ -530,7 +530,7 @@ export default function Activity() {
                                     type="date"
                                     id="date-filter"
                                     name="date-filter"
-                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm hide-calendar-icon"
+                                    className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm hide-calendar-icon"
                                     style={{ WebkitAppearance: 'none' }}
                                     onChange={handleDateChange}
                                     value={selectedDate}

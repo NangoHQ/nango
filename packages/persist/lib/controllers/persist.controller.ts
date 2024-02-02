@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import {
     setLastSyncDate,
     createActivityLogMessage,
@@ -22,7 +22,7 @@ type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
     {
         environmentId: number;
-        connectionId: string;
+        nangoConnectionId: number;
         syncId: string;
         syncJobId: number;
     },
@@ -31,7 +31,7 @@ type RecordRequest = Request<
         model: string;
         records: Record<string, any>[];
         providerConfigKey: string;
-        nangoConnectionId: number;
+        connectionId: string;
         activityLogId: number;
         trackDeletes: boolean;
         lastSyncDate: Date;
@@ -41,7 +41,7 @@ type RecordRequest = Request<
 >;
 
 class PersistController {
-    public async saveLastSyncDate(req: Request<{ syncId: string }, any, { lastSyncDate: Date }, any, Record<string, any>>, res: Response) {
+    public async saveLastSyncDate(req: Request<{ syncId: string }, any, { lastSyncDate: Date }, any, Record<string, any>>, res: Response, next: NextFunction) {
         const {
             params: { syncId },
             body: { lastSyncDate }
@@ -50,13 +50,14 @@ class PersistController {
         if (result) {
             res.status(201).send();
         } else {
-            res.status(500).json({ error: `Failed to save last sync date '${lastSyncDate}' for sync '${syncId}'` });
+            next(new Error(`Failed to save last sync date '${lastSyncDate}' for sync '${syncId}'`));
         }
     }
 
     public async saveActivityLog(
         req: Request<{ environmentId: number }, any, { activityLogId: number; level: LogLevel; msg: string }, any, Record<string, any>>,
-        res: Response
+        res: Response,
+        next: NextFunction
     ) {
         const {
             params: { environmentId },
@@ -75,14 +76,14 @@ class PersistController {
         if (result) {
             res.status(201).send();
         } else {
-            res.status(500).json({ error: `Failed to save log ${activityLogId}` });
+            next(new Error(`Failed to save log ${activityLogId}`));
         }
     }
 
-    public async saveRecords(req: RecordRequest, res: Response) {
+    public async saveRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
-            params: { environmentId, connectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
+            params: { environmentId, nangoConnectionId, syncId, syncJobId },
+            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
             return await dataService.upsert(
@@ -113,13 +114,17 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        PersistController.sendRes(res, result, 'Failed to save records');
+        if (result.ok) {
+            res.status(201).send();
+        } else {
+            next(new Error(`'Failed to save records': ${result.error.message}`));
+        }
     }
 
-    public async deleteRecords(req: RecordRequest, res: Response) {
+    public async deleteRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
-            params: { environmentId, connectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
+            params: { environmentId, nangoConnectionId, syncId, syncJobId },
+            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
             return await dataService.upsert(
@@ -150,13 +155,17 @@ class PersistController {
             softDelete: true,
             persistFunction: persist
         });
-        PersistController.sendRes(res, result, 'Failed to delete records');
+        if (result.ok) {
+            res.status(201).send();
+        } else {
+            next(new Error(`'Failed to delete records': ${result.error.message}`));
+        }
     }
 
-    public async updateRecords(req: RecordRequest, res: Response) {
+    public async updateRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
-            params: { environmentId, connectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, nangoConnectionId, trackDeletes, lastSyncDate, activityLogId }
+            params: { environmentId, nangoConnectionId, syncId, syncJobId },
+            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
             return await dataService.updateRecord(
@@ -185,7 +194,11 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        PersistController.sendRes(res, result, 'Failed to update records');
+        if (result.ok) {
+            res.status(201).send();
+        } else {
+            next(new Error(`'Failed to update records': ${result.error.message}`));
+        }
     }
 
     private static async persistRecords({
@@ -257,16 +270,16 @@ class PersistController {
                 content: `There was an issue with the batch ${persistType}. ${error?.message}`,
                 timestamp: Date.now()
             });
-            const errMsg = `Failed to ${persistType} records ${activityLogId}`;
-            span.setTag('error', errMsg).finish();
-            return err(errMsg);
+            const res = err(`Failed to ${persistType} records ${activityLogId}`);
+            span.setTag('error', res.error).finish();
+            return res;
         }
         const syncConfig = await getSyncConfigByJobId(syncJobId);
 
         if (syncConfig && !syncConfig?.models.includes(model)) {
-            const errMsg = `The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`;
-            span.setTag('error', errMsg).finish();
-            return err(errMsg);
+            const res = err(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            span.setTag('error', res.error).finish();
+            return res;
         }
 
         const persistResult = await persistFunction(formattedRecords);
@@ -320,19 +333,9 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            const errMsg = persistResult?.error!;
-            span.setTag('error', errMsg).finish();
-            return err(errMsg);
-        }
-    }
-
-    private static sendRes(res: Response, result: Result<void>, errorMsg: string) {
-        if (result.ok) {
-            res.status(201).send();
-        } else {
-            res.status(500).json({
-                error: `${errorMsg}: ${result.error.message}`
-            });
+            const res = err(persistResult?.error!);
+            span.setTag('error', res.error).finish();
+            return res;
         }
     }
 }

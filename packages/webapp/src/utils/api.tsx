@@ -186,6 +186,34 @@ export function useEditAlwaysSendWebhookAPI() {
     };
 }
 
+export function useEditSendAuthWebhookAPI() {
+    const signout = useSignout();
+
+    return async (sendAuthWebhook: boolean) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ send_auth_webhook: sendAuthWebhook })
+            };
+
+            let res = await fetch('/api/v1/environment/webhook-auth-send', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useEditHmacKeyAPI() {
     const signout = useSignout();
 

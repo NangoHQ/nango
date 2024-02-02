@@ -1,20 +1,25 @@
 import { BoltIcon } from '@heroicons/react/24/outline';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import EndpointLabel from './EndpointLabel';
-import { Flow, FlowEndpoint } from '../../../types';
+import { Flow, FlowEndpoint, IntegrationConfig } from '../../../types';
 import FlowCard from './FlowCard';
+import { parseEndpoint } from '../../../utils/utils';
 
 export interface EndpointRowProps {
     flow: Flow;
-    openAPIDocModal: (flow: Flow) => void;
+    integration: IntegrationConfig | null;
     endpoint: string | FlowEndpoint;
     source: 'Public' | 'Custom';
-    output: string;
 }
 
-export default function EndpointRow({ flow, openAPIDocModal, endpoint, source, output }: EndpointRowProps) {
+export default function EndpointRow({ flow, endpoint, source, integration }: EndpointRowProps) {
+    const navigate = useNavigate();
+    const endpointRoute = parseEndpoint(endpoint);
+    const { env } = useParams();
+
     return (
-        <td className="flex items-center p-3 py-4 justify-between border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={() => openAPIDocModal({ ...flow, endpoint: endpoint as string, output })}>
+        <td className="flex items-center p-3 py-4 justify-between border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={() => navigate(`/${env}/integration/${integration?.unique_key}/reference${endpointRoute}`)}>
             <div className="flex items-center px-2 w-48">
                 <EndpointLabel endpoint={endpoint} type={flow.type} />
             </div>

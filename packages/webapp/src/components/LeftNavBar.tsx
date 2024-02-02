@@ -93,20 +93,26 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         const newEnv = e.target.value;
         Cookies.set('env', newEnv);
         setCookieValue(newEnv);
-        // if on certain subpages redirect to the parent page since the entity
-        // is environment specific
-        if (window.location.pathname.includes('integration') && window.location.pathname.split('/').length > 2) {
-            window.location.href = '/integrations';
+
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+
+        pathSegments[0] = newEnv;
+
+        let newPath = `/${pathSegments.join('/')}`;
+
+        // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
+        if (pathSegments[1] === 'integration' && pathSegments.length > 2) {
+            newPath = `/${newEnv}/integrations`;
+        } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
+            newPath = `/${newEnv}/connections`;
         }
 
-        if (window.location.pathname.includes('connections') && window.location.pathname.split('/').length > 2) {
-            window.location.href = '/connections';
-        }
-    }
+        window.location.href = newPath;
+    };
 
     return (
         <div>
-            <div className="flex-1 h-full pt-14 border-r-2 border-t-2 border-border-gray flex flex-col w-60 bg-bg-black z-20 justify-between">
+            <div className="flex-1 h-full pt-14 border-r-2 border-t-2 border-border-gray flex flex-col w-60 bg-pure-black z-20 justify-between">
                 <div className="mt-8 px-6">
                     {envs.length === 0 && (
                         <div className="mb-8">
@@ -133,7 +139,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     <div className="space-y-1">
                         {env === 'dev' && (
                             <Link
-                                to="/getting-started"
+                                to="/dev/getting-started"
                                 className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                     props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                 }`}
@@ -143,7 +149,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             </Link>
                         )}
                         <Link
-                            to="/integrations"
+                            to={`/${env}/integrations`}
                             className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Integrations ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
@@ -152,7 +158,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <p>Integrations</p>
                         </Link>
                         <Link
-                            to="/connections"
+                            to={`/${env}/connections`}
                             className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Connections ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
@@ -161,7 +167,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <p>Connections</p>
                         </Link>
                         <Link
-                            to="/activity"
+                            to={`/${env}/activity`}
                             className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Activity ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
@@ -170,7 +176,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <p>Activity</p>
                         </Link>
                         <Link
-                            to="/project-settings"
+                            to={`/${env}/project-settings`}
                             className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.ProjectSettings ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
@@ -195,14 +201,14 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 <ul className="text-gray-400 p-3 space-y-2">
                                     <li
                                         className={`flex items-center w-full hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white' : ''}`}
-                                        onClick={() => navigate('/user-settings')}
+                                        onClick={() => navigate(`/${env}/user-settings`)}
                                     >
                                         <UserCircleIcon className="h-5 w-5 mr-2" />
                                         <span>Profile</span>
                                     </li>
                                     <li
                                         className={`flex items-center w-full hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'text-white' : ''}`}
-                                        onClick={() => navigate('/account-settings')}
+                                        onClick={() => navigate(`/${env}/account-settings`)}
                                     >
                                         <UserGroupIcon className="h-5 w-5 mr-2" />
                                         <span>Team</span>

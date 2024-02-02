@@ -65,13 +65,13 @@ describe('Persist API', () => {
 
     describe('save records', () => {
         it('should error if no records', async () => {
-            const response = await fetch(`${serverUrl}/environment/123/connection/myconn/sync/abc/job/101/records`, {
+            const response = await fetch(`${serverUrl}/environment/123/connection/456/sync/abc/job/101/records`, {
                 method: 'POST',
                 body: JSON.stringify({
                     model: 'MyModel',
                     records: [],
                     providerConfigKey: 'provider',
-                    nangoConnectionId: 456,
+                    connectionId: 'myconn',
                     lastSyncDate: new Date(),
                     trackDeletes: false,
                     softDelete: true
@@ -93,13 +93,13 @@ describe('Persist API', () => {
                 { id: 2, name: 'r2' }
             ];
             dbTracker.on('query', DBTracker.persistQueries(model));
-            const response = await fetch(`${serverUrl}/environment/123/connection/myconn/sync/abc/job/101/records`, {
+            const response = await fetch(`${serverUrl}/environment/123/connection/456/sync/abc/job/101/records`, {
                 method: 'POST',
                 body: JSON.stringify({
                     model,
                     records: records,
                     providerConfigKey: 'provider',
-                    nangoConnectionId: 456,
+                    connectionId: 'myconn',
                     activityLogId: 12,
                     lastSyncDate: new Date(),
                     trackDeletes: false
@@ -119,13 +119,13 @@ describe('Persist API', () => {
             { id: 2, name: 'r2' }
         ];
         dbTracker.on('query', DBTracker.persistQueries(model));
-        const response = await fetch(`${serverUrl}/environment/123/connection/myconn/sync/abc/job/101/records`, {
+        const response = await fetch(`${serverUrl}/environment/123/connection/456/sync/abc/job/101/records`, {
             method: 'DELETE',
             body: JSON.stringify({
                 model,
                 records: records,
                 providerConfigKey: 'provider',
-                nangoConnectionId: 456,
+                connectionId: 'myconn',
                 activityLogId: 12,
                 lastSyncDate: new Date(),
                 trackDeletes: false
@@ -144,13 +144,13 @@ describe('Persist API', () => {
             { id: 2, name: 'r2' }
         ];
         dbTracker.on('query', DBTracker.persistQueries(model));
-        const response = await fetch(`${serverUrl}/environment/123/connection/myconn/sync/abc/job/101/records`, {
+        const response = await fetch(`${serverUrl}/environment/123/connection/456/sync/abc/job/101/records`, {
             method: 'PUT',
             body: JSON.stringify({
                 model,
                 records: records,
                 providerConfigKey: 'provider',
-                nangoConnectionId: 456,
+                connectionId: 'myconn',
                 activityLogId: 12,
                 lastSyncDate: new Date(),
                 trackDeletes: false,

@@ -1,5 +1,5 @@
 import parser from 'cron-parser';
-import type { Flow, SyncResult, NangoSyncModel } from '../types';
+import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -350,3 +350,10 @@ export function getSimpleDate(dateString: string | undefined): string {
     return `${year}-${month}-${day}`;
 }
 
+export function parseEndpoint(endpoint: string | FlowEndpoint): string {
+    if (typeof endpoint === 'string') {
+        return endpoint;
+    }
+
+    return Object.values(endpoint)[0];
+}
