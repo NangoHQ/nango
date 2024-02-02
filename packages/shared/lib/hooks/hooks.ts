@@ -14,9 +14,7 @@ export const connectionCreated = async (
 
     if (options.initiateSync === true && !hosted) {
         const syncClient = await SyncClient.getInstance();
-        if (syncClient) {
-            syncClient?.initiate(connection.id as number);
-        }
+        syncClient?.initiate(connection.id as number);
     }
 
     if (options.runPostConnectionScript === true) {
