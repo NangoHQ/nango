@@ -5,10 +5,13 @@ import url, { UrlWithParsedQuery } from 'url';
 import querystring from 'querystring';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
+import { NangoError } from '@nangohq/shared';
+import { updateProvider as updateProviderActivityLog, updateEndpoint as updateEndpointActivityLog } from '@nangohq/shared';
 
 import {
     createActivityLog,
     createActivityLogMessageAndEnd,
+    createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     HTTP_VERB,
     LogLevel,
@@ -21,8 +24,9 @@ import {
     InternalProxyConfiguration,
     ApplicationConstructedProxyConfiguration,
     ErrorSourceEnum,
-    ServiceResponse,
-    proxyService
+    proxyService,
+    connectionService,
+    configService
 } from '@nangohq/shared';
 
 interface ForwardedHeaders {
@@ -45,8 +49,8 @@ class ProxyController {
             const retries = req.get('Retries') as string;
             const baseUrlOverride = req.get('Base-Url-Override') as string;
             const decompress = req.get('Decompress') as string;
-            const isSync = req.get('Nango-Is-Sync') as string;
-            const isDryRun = req.get('Nango-Is-Dry-Run') as string;
+            const isSync = (req.get('Nango-Is-Sync') as string) == 'true';
+            const isDryRun = (req.get('Nango-Is-Dry-Run') as string) == 'true';
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
             const environment_id = getEnvironmentId(res);
             const accountId = getAccount(res);
@@ -93,28 +97,55 @@ class ProxyController {
                 method: method.toUpperCase() as HTTP_VERB
             };
 
+            const {
+                success: connSuccess,
+                error: connError,
+                response: connection
+            } = await connectionService.getConnectionCredentials(accountId, environment_id, connectionId, providerConfigKey, activityLogId, logAction, false);
+
+            if (!connSuccess || !connection) {
+                throw new Error(`Failed to get connection credentials: '${connError}'`);
+            }
+            const providerConfig = await configService.getProviderConfig(providerConfigKey, environment_id);
+
+            if (!providerConfig) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: 'Provider configuration not found'
+                });
+                throw new NangoError('unknown_provider_config');
+            }
+            await updateProviderActivityLog(activityLogId as number, providerConfig.provider);
+
             const internalConfig: InternalProxyConfiguration = {
                 existingActivityLogId: activityLogId as number,
-                environmentId: environment_id,
-                accountId,
-                throwErrors: false,
-                isFlow: isSync === 'true',
-                isDryRun: isDryRun === 'true'
+                connection,
+                provider: providerConfig.provider
             };
 
-            const {
-                success,
-                error,
-                response: configBody
-            } = (await proxyService.routeOrConfigure(externalConfig, internalConfig)) as ServiceResponse<ApplicationConstructedProxyConfiguration>;
-
-            if (!success || !configBody) {
+            const { success, error, response: proxyConfig, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+            if (activityLogId) {
+                await updateEndpointActivityLog(activityLogId, externalConfig.endpoint);
+                for (const log of activityLogs) {
+                    switch (log.level) {
+                        case 'error':
+                            await createActivityLogMessageAndEnd(log);
+                            break;
+                        default:
+                            await createActivityLogMessage(log);
+                            break;
+                    }
+                }
+            }
+            if (!success || !proxyConfig || error) {
                 errorManager.errResFromNangoErr(res, error);
-
                 return;
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, environment_id, isSync, isDryRun);
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, proxyConfig, activityLogId as number, environment_id, isSync, isDryRun);
         } catch (error) {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
@@ -149,8 +180,8 @@ class ProxyController {
         configBody: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
-        isSync?: string,
-        isDryRun?: string
+        isSync?: boolean,
+        isDryRun?: boolean
     ) {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
@@ -179,8 +210,8 @@ class ProxyController {
         activityLogId: number,
         environment_id: number,
         url: string,
-        isSync?: string,
-        isDryRun?: string
+        isSync?: boolean,
+        isDryRun?: boolean
     ) {
         if (!isSync) {
             await updateSuccessActivityLog(activityLogId, true);
@@ -286,8 +317,8 @@ class ProxyController {
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
-        isSync?: string,
-        isDryRun?: string
+        isSync?: boolean,
+        isDryRun?: boolean
     ) {
         try {
             const headers = proxyService.constructHeaders(config);
@@ -326,8 +357,8 @@ class ProxyController {
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
-        isSync?: string,
-        isDryRun?: string
+        isSync?: boolean,
+        isDryRun?: boolean
     ) {
         try {
             const headers = proxyService.constructHeaders(config);
@@ -366,8 +397,8 @@ class ProxyController {
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
-        isSync?: string,
-        isDryRun?: string
+        isSync?: boolean,
+        isDryRun?: boolean
     ) {
         try {
             const headers = proxyService.constructHeaders(config);
@@ -406,8 +437,8 @@ class ProxyController {
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
-        isSync?: string,
-        isDryRun?: string
+        isSync?: boolean,
+        isDryRun?: boolean
     ) {
         try {
             const headers = proxyService.constructHeaders(config);
@@ -446,8 +477,8 @@ class ProxyController {
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
-        isSync?: string,
-        isDryRun?: string
+        isSync?: boolean,
+        isDryRun?: boolean
     ) {
         try {
             const headers = proxyService.constructHeaders(config);

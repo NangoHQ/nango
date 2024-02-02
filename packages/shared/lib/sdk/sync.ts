@@ -5,6 +5,7 @@ import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
+import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 
 /*
  *
@@ -289,42 +290,57 @@ export class NangoAction {
         });
     }
 
-    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        const internalConfig = {
-            environmentId: this.environmentId as number,
-            isFlow: true,
-            isDryRun: this.dryRun as boolean,
-            existingActivityLogId: this.activityLogId as number,
-            throwErrors: true
-        };
-
-        let connection = undefined;
-
+    private proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;
         }
-
         if (!config.providerConfigKey && this.providerConfigKey) {
             config.providerConfigKey = this.providerConfigKey;
         }
+        if (!config.connectionId) {
+            throw new Error('Missing connection id');
+        }
+        if (!config.providerConfigKey) {
+            throw new Error('Missing provider config key');
+        }
+        return {
+            ...config,
+            providerConfigKey: config.providerConfigKey,
+            connectionId: config.connectionId
+        };
+    }
 
+    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
-            const { connectionId, providerConfigKey } = config;
-            connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
-
+            const proxyConfig = this.proxyConfig(config);
+            const connection = await this.nango.getConnection(proxyConfig.providerConfigKey, proxyConfig.connectionId);
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
+            const {
+                config: { provider }
+            } = await this.nango.getIntegration(proxyConfig.providerConfigKey);
 
-            const responseOrError = await proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection });
+            const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
+                existingActivityLogId: this.activityLogId as number,
+                connection: connection,
+                provider
+            });
 
-            if (responseOrError instanceof Error) {
-                throw responseOrError;
+            if (activityLogs) {
+                for (const log of activityLogs) {
+                    if (log.level == 'debug') continue;
+                    this.log(log.content, { level: log.level });
+                }
             }
 
-            return responseOrError as unknown as Promise<AxiosResponse<T>>;
+            if (response instanceof Error) {
+                throw response;
+            }
+
+            return response;
         }
     }
 
@@ -509,20 +525,21 @@ export class NangoAction {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
+        const proxyConfig = this.proxyConfig(config);
         switch (paginationConfig.type.toLowerCase()) {
             case PaginationType.CURSOR:
                 return yield* paginateService.cursor<T>(
-                    config,
+                    proxyConfig,
                     paginationConfig as CursorPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,
                     this.proxy.bind(this)
                 );
             case PaginationType.LINK:
-                return yield* paginateService.link<T>(config, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                return yield* paginateService.link<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
             case PaginationType.OFFSET:
                 return yield* paginateService.offset<T>(
-                    config,
+                    proxyConfig,
                     paginationConfig as OffsetPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,

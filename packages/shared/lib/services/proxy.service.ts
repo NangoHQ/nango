@@ -1,80 +1,100 @@
 import axios, { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-
-import type { Connection } from '../models/Connection.js';
 import { ApiKeyCredentials, BasicApiCredentials, AuthModes, OAuth2Credentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
-import { LogAction, LogActionEnum } from '../models/Activity.js';
 
-import {
-    createActivityLogMessageAndEnd,
-    createActivityLogMessage,
-    updateProvider as updateProviderActivityLog,
-    updateEndpoint as updateEndpointActivityLog
-} from './activity/activity.service.js';
-import environmentService from './environment.service.js';
+import { createActivityLogMessageAndEnd, createActivityLogMessage } from './activity/activity.service.js';
 import configService from './config.service.js';
-import connectionService from './connection.service.js';
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
+import type { ActivityLogMessage } from '../models/Activity.js';
+import type { Template as ProviderTemplate } from '../models/Provider.js';
+
+interface Activities {
+    activityLogs: ActivityLogMessage[];
+}
+
+interface RouteResponse {
+    response: AxiosResponse | AxiosError;
+}
 
 class ProxyService {
-    public async routeOrConfigure(
+    public async route(
         externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
         internalConfig: InternalProxyConfiguration
-    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse | AxiosError> {
-        const { success: validationSuccess, error: validationError } = await this.validateAndLog(externalConfig, internalConfig);
-
-        const { throwErrors } = internalConfig;
-
-        if (!validationSuccess) {
-            if (throwErrors) {
-                throw validationError;
-            } else {
-                return { success: false, error: validationError, response: null };
-            }
+    ): Promise<RouteResponse & Activities> {
+        const { success, error, response: proxyConfig, activityLogs } = this.configure(externalConfig, internalConfig);
+        if (!success || error || !proxyConfig) {
+            throw new Error(`Proxy configuration is missing: ${error}`);
         }
+        return {
+            response: await this.sendToHttpMethod(proxyConfig, internalConfig),
+            activityLogs
+        };
+    }
 
+    public configure(
+        externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
+        internalConfig: InternalProxyConfiguration
+    ): ServiceResponse<ApplicationConstructedProxyConfiguration> & Activities {
+        const activityLogs: ActivityLogMessage[] = [];
         let data = externalConfig.data;
         const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride } = externalConfig;
-        const { environmentId: environment_id, accountId: optionalAccountId, isFlow, existingActivityLogId: activityLogId, isDryRun } = internalConfig;
-        const accountId = optionalAccountId ?? ((await environmentService.getAccountIdFromEnvironment(environment_id)) as number);
-        const logAction: LogAction = isFlow ? LogActionEnum.SYNC : LogActionEnum.PROXY;
+        const { connection, provider, existingActivityLogId: activityLogId } = internalConfig;
 
-        let endpoint = passedEndpoint;
-        let connection: Connection | null = null;
-
-        // if this is a proxy call coming from a flow then the connection lookup
-        // is done before coming here. Otherwise we need to do it here.
-        if (!internalConfig.connection) {
-            const { success, error, response } = await connectionService.getConnectionCredentials(
-                accountId as number,
-                environment_id as number,
-                connectionId as string,
-                providerConfigKey as string,
-                activityLogId as number,
-                logAction,
-                false
-            );
-
-            if (!success) {
-                if (throwErrors) {
-                    throw error;
-                } else {
-                    return { success: false, error, response: null };
-                }
+        if (!passedEndpoint && !baseUrlOverride) {
+            if (activityLogId) {
+                activityLogs.push({
+                    level: 'error',
+                    environment_id: connection.environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content: 'Proxy: a API URL endpoint is missing.'
+                });
             }
-
-            connection = response;
-        } else {
-            connection = internalConfig.connection;
+            return { success: false, error: new NangoError('missing_endpoint'), response: null, activityLogs };
+        }
+        if (!connectionId) {
+            if (activityLogId) {
+                activityLogs.push({
+                    level: 'error',
+                    environment_id: connection.environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
+                });
+            }
+            return { success: false, error: new NangoError('missing_connection_id'), response: null, activityLogs };
+        }
+        if (!providerConfigKey) {
+            if (activityLogId) {
+                activityLogs.push({
+                    level: 'error',
+                    environment_id: connection.environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
+                });
+            }
+            return { success: false, error: new NangoError('missing_provider_config_key'), response: null, activityLogs };
         }
 
-        let token;
+        if (activityLogId) {
+            activityLogs.push({
+                level: 'debug',
+                environment_id: connection.environment_id,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
+            });
+        }
 
-        switch (connection?.credentials?.type) {
+        let endpoint = passedEndpoint;
+
+        let token;
+        switch (connection.credentials?.type) {
             case AuthModes.OAuth2:
                 {
                     const credentials = connection.credentials as OAuth2Credentials;
@@ -83,85 +103,59 @@ class ProxyService {
                 break;
             case AuthModes.OAuth1: {
                 const error = new Error('OAuth1 is not supported yet in the proxy.');
-                if (throwErrors) {
-                    throw error;
-                } else {
-                    const nangoError = new NangoError('pass_through_error', error);
-                    return { success: false, error: nangoError, response: null };
-                }
+                const nangoError = new NangoError('pass_through_error', error);
+                return { success: false, error: nangoError, response: null, activityLogs };
             }
             case AuthModes.Basic:
-                token = connection?.credentials;
+                token = connection.credentials;
                 break;
             case AuthModes.ApiKey:
-                token = connection?.credentials;
+                token = connection.credentials;
                 break;
             case AuthModes.App:
                 {
-                    const credentials = connection?.credentials;
+                    const credentials = connection.credentials;
                     token = credentials?.access_token;
                 }
                 break;
         }
 
-        if (!isFlow) {
-            await createActivityLogMessage({
+        if (activityLogId) {
+            activityLogs.push({
                 level: 'debug',
-                environment_id,
+                environment_id: connection.environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: 'Proxy: token retrieved successfully'
             });
         }
 
-        const providerConfig = await configService.getProviderConfig(providerConfigKey as string, environment_id);
+        let template: ProviderTemplate | undefined;
+        try {
+            template = configService.getTemplate(provider);
+        } catch (error) {}
 
-        if (!providerConfig) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Provider configuration not found'
-            });
-
-            if (throwErrors) {
-                throw new Error('Provider configuration not found');
-            } else {
-                return { success: false, error: new NangoError('unknown_provider_config'), response: null };
+        if (!template || ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride)) {
+            if (activityLogId) {
+                activityLogs.push({
+                    level: 'error',
+                    environment_id: connection.environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `${Date.now()} The proxy is not supported for this provider ${provider}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
+            You can also use the baseUrlOverride to get started right away.
+            See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
+                });
             }
+
+            return { success: false, error: new NangoError('missing_base_api_url'), response: null, activityLogs };
         }
 
-        await updateProviderActivityLog(activityLogId as number, String(providerConfig?.provider));
-
-        const template = configService.getTemplate(String(providerConfig?.provider));
-
-        if ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `${Date.now()} The proxy is not supported for this provider ${String(
-                    providerConfig?.provider
-                )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
-You can also use the baseUrlOverride to get started right away.
-See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
-            });
-
-            const error = new NangoError('missing_base_api_url');
-            if (throwErrors) {
-                throw error;
-            } else {
-                return { success: false, error, response: null };
-            }
-        }
-
-        if (!isFlow) {
-            await createActivityLogMessage({
+        if (activityLogId) {
+            activityLogs.push({
                 level: 'debug',
-                environment_id,
-                activity_log_id: activityLogId as number,
+                environment_id: connection.environment_id,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
             });
@@ -171,11 +165,11 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             endpoint = endpoint.replace(template.proxy.base_url, '');
         }
 
-        if (!isFlow) {
-            await createActivityLogMessage({
+        if (activityLogId) {
+            activityLogs.push({
                 level: 'debug',
-                environment_id,
-                activity_log_id: activityLogId as number,
+                environment_id: connection.environment_id,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Endpoint set to ${endpoint} with retries set to ${retries}`
             });
@@ -192,107 +186,28 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
 
         const configBody: ApplicationConstructedProxyConfiguration = {
-            endpoint: endpoint as string,
+            endpoint: endpoint,
             method: method?.toUpperCase() as HTTP_VERB,
             template,
             token: token || '',
-            provider: String(providerConfig?.provider),
-            providerConfigKey: String(providerConfigKey),
-            connectionId: String(connectionId),
+            provider: provider,
+            providerConfigKey: providerConfigKey,
+            connectionId: connectionId,
             headers: headers as Record<string, string>,
             data,
-            retries: retries ? Number(retries) : 0,
+            retries: retries || 0,
             baseUrlOverride: baseUrlOverride as string,
             // decompress is used only when the call is truly a proxy call
             // Coming from a flow it is not a proxy call since the worker
             // makes the request so we don't allow an override in that case
             decompress: (externalConfig as UserProvidedProxyConfiguration).decompress === 'true' || externalConfig.decompress === true,
-            connection: connection as Connection,
+            connection: connection,
             params: externalConfig.params as Record<string, string>,
             paramsSerializer: externalConfig.paramsSerializer as ParamsSerializerOptions,
             responseType: externalConfig.responseType as ResponseType
         };
 
-        if (isFlow && !isDryRun) {
-            return this.sendToHttpMethod(configBody, internalConfig);
-        } else {
-            return { success: true, error: null, response: configBody };
-        }
-    }
-
-    public async validateAndLog(
-        externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
-        internalConfig: InternalProxyConfiguration
-    ): Promise<ServiceResponse<null>> {
-        const { existingActivityLogId: activityLogId, environmentId: environment_id } = internalConfig;
-        if (!externalConfig.endpoint && !externalConfig.baseUrlOverride) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Proxy: a API URL endpoint is missing.'
-            });
-
-            const error = new NangoError('missing_endpoint');
-
-            if (internalConfig.throwErrors) {
-                throw error;
-            } else {
-                return { success: false, error, response: null };
-            }
-        }
-        await updateEndpointActivityLog(activityLogId as number, externalConfig.endpoint);
-
-        if (!externalConfig.connectionId) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
-            });
-
-            const error = new NangoError('missing_connection_id');
-
-            if (internalConfig.throwErrors) {
-                throw error;
-            } else {
-                return { success: false, error, response: null };
-            }
-        }
-
-        if (!externalConfig.providerConfigKey) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
-            });
-
-            const error = new NangoError('missing_provider_config_key');
-
-            if (internalConfig.throwErrors) {
-                throw error;
-            } else {
-                return { success: false, error, response: null };
-            }
-        }
-
-        const { connectionId, providerConfigKey } = externalConfig;
-
-        if (!internalConfig.isFlow) {
-            await createActivityLogMessage({
-                level: 'debug',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
-            });
-        }
-
-        return { success: true, error: null, response: null };
+        return { success: true, error: null, response: configBody, activityLogs };
     }
 
     public retryHandler = async (
@@ -438,19 +353,19 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
         const url = this.constructUrl(configBody);
 
-        const { existingActivityLogId: activityLogId, environmentId: environment_id } = internalConfig;
+        const { existingActivityLogId: activityLogId, connection } = internalConfig;
         const { method } = configBody;
 
         if (method === 'POST') {
-            return this.post(url, configBody, activityLogId as number, environment_id, options);
+            return this.post(url, configBody, activityLogId as number, connection.environment_id, options);
         } else if (method === 'PATCH') {
-            return this.patch(url, configBody, activityLogId as number, environment_id, options);
+            return this.patch(url, configBody, activityLogId as number, connection.environment_id, options);
         } else if (method === 'PUT') {
-            return this.put(url, configBody, activityLogId as number, environment_id, options);
+            return this.put(url, configBody, activityLogId as number, connection.environment_id, options);
         } else if (method === 'DELETE') {
-            return this.delete(url, configBody, activityLogId as number, environment_id, options);
+            return this.delete(url, configBody, activityLogId as number, connection.environment_id, options);
         } else {
-            return this.get(url, configBody, activityLogId as number, environment_id, options);
+            return this.get(url, configBody, activityLogId as number, connection.environment_id, options);
         }
     }
 
