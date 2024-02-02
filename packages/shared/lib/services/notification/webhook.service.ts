@@ -78,18 +78,21 @@ class WebhookService {
         return filteredHeaders;
     };
 
-    async shouldSendWebhook(environment_id: number, auth = false): Promise<{ send: boolean; webhookInfo: Environment | null }> {
+    async shouldSendWebhook(
+        environment_id: number,
+        options?: { auth?: boolean; forward?: boolean }
+    ): Promise<{ send: boolean; webhookInfo: Environment | null }> {
         const webhookInfo = await environmentService.getById(environment_id);
 
-        if (!webhookInfo || !webhookInfo.webhook_url) {
-            return { send: false, webhookInfo: null };
+        if (options?.forward) {
+            return { send: true, webhookInfo };
         }
 
-        if (!auth && !webhookInfo.always_send_webhook) {
-            return { send: false, webhookInfo };
-        }
+        const noWebhookUrl = !webhookInfo?.webhook_url;
+        const authNotSelected = options?.auth && !webhookInfo?.send_auth_webhook;
+        const notAlwaysSend = !options?.auth && !webhookInfo?.always_send_webhook;
 
-        if (auth && !webhookInfo.send_auth_webhook) {
+        if (noWebhookUrl || authNotSelected || notAlwaysSend) {
             return { send: false, webhookInfo };
         }
 
@@ -106,9 +109,9 @@ class WebhookService {
         activityLogId: number,
         environment_id: number
     ) {
-        const { send, webhookInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
+        const { webhookInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
 
-        if (!send || !webhookInfo) {
+        if (!webhookInfo) {
             return;
         }
 
@@ -198,7 +201,7 @@ class WebhookService {
     }
 
     async sendAuthUpdate(connection: RecentlyCreatedConnection, provider: string, success: boolean, activityLogId: number | null): Promise<void> {
-        const { send, webhookInfo } = await this.shouldSendWebhook(connection.environment_id, true);
+        const { send, webhookInfo } = await this.shouldSendWebhook(connection.environment_id, { auth: true });
 
         if (!send || !webhookInfo) {
             return;
@@ -276,7 +279,7 @@ class WebhookService {
         payload: Record<string, any> | null,
         webhookOriginalHeaders: Record<string, any>
     ) {
-        const { send, webhookInfo } = await this.shouldSendWebhook(environment_id);
+        const { send, webhookInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
         if (!send || !webhookInfo) {
             return;
