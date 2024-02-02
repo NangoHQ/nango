@@ -16,7 +16,8 @@ import {
     ConnectionList,
     Integration,
     IntegrationWithCreds,
-    SyncStatusResponse
+    SyncStatusResponse,
+    UpdateSyncFrequencyResponse
 } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
@@ -491,6 +492,42 @@ export class Nango {
         };
 
         const response = await axios.get(url, { headers: this.enrichHeaders(), params });
+
+        return response.data;
+    }
+
+    public async updateSyncConnectionFrequency(
+        providerConfigKey: string,
+        sync: string,
+        connectionId: string,
+        frequency: string | null
+    ): Promise<UpdateSyncFrequencyResponse> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (typeof sync === 'string') {
+            throw new Error('Sync must be a string.');
+        }
+
+        if (typeof connectionId === 'string') {
+            throw new Error('ConnectionId must be a string.');
+        }
+
+        if (typeof frequency !== 'string' && frequency !== null) {
+            throw new Error('Frequency must be a string or null.');
+        }
+
+        const url = `${this.serverUrl}/sync/update-connection-frequency`;
+
+        const params = {
+            sync,
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId,
+            frequency
+        };
+
+        const response = await axios.put(url, { headers: this.enrichHeaders(), params });
 
         return response.data;
     }

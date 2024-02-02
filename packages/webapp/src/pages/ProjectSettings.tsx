@@ -13,7 +13,8 @@ import {
     useEditHmacEnabledAPI,
     useEditHmacKeyAPI,
     useEditEnvVariablesAPI,
-    useEditAlwaysSendWebhookAPI
+    useEditAlwaysSendWebhookAPI,
+    useEditSendAuthWebhookAPI
 } from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
@@ -45,6 +46,7 @@ export default function ProjectSettings() {
     const [hmacEnabled, setHmacEnabled] = useState(false);
     const [accountUUID, setAccountUUID] = useState<number>();
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
+    const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ id?: number, name: string; value: string }[]>([]);
     const getProjectInfoAPI = useGetProjectInfoAPI();
@@ -52,6 +54,7 @@ export default function ProjectSettings() {
     const editWebhookUrlAPI = useEditWebhookUrlAPI();
     const editHmacEnabled = useEditHmacEnabledAPI();
     const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI();
+    const editSendAuthWebhook = useEditSendAuthWebhookAPI();
     const editHmacKey = useEditHmacKeyAPI();
     const editEnvVariables = useEditEnvVariablesAPI();
 
@@ -83,6 +86,7 @@ export default function ProjectSettings() {
                 setCallbackUrl(account.callback_url || defaultCallback());
 
                 setWebhookUrl(account.webhook_url || '');
+                setSendAuthWebhook(account.send_auth_webhook);
                 setHostUrl(account.host);
                 setAccountUUID(account.uuid);
 
@@ -153,6 +157,13 @@ export default function ProjectSettings() {
         setAlwaysSendWebhook(checked);
         editAlwaysSendWebhook(checked).then((_) => {
             toast.success(checked ? 'Always send webhooks.' : 'Only send webhhoks on added, updated, or deleted.', { position: toast.POSITION.BOTTOM_CENTER });
+        });
+    };
+
+    const handleWebookSendAuth = async (checked: boolean) => {
+        setSendAuthWebhook(checked);
+        editSendAuthWebhook(checked).then((_) => {
+            toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', { position: toast.POSITION.BOTTOM_CENTER });
         });
     };
 
@@ -708,7 +719,7 @@ export default function ProjectSettings() {
                                 <div className="mx-8 mt-8">
                                     <div className="flex items-center mb-2">
                                         <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
-                                            Always Send Webhooks
+                                            Send Webhooks For Empty Sync Responses
                                         </label>
                                         <Tooltip
                                             text={
@@ -726,6 +737,32 @@ export default function ProjectSettings() {
                                             className="flex ml-3 bg-black"
                                             checked={alwaysSendWebhook}
                                             onChange={(event) => handleWebookSendUpdate(event.target.checked)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="mx-8 mt-8">
+                                    <div className="flex items-center mb-2">
+                                        <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
+                                            Send New Connection Creation Webhooks
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        {`If checked, a webhook will be sent on connection creation success or failure.`}
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                        <input
+                                            type="checkbox"
+                                            className="flex ml-3 bg-black"
+                                            checked={sendAuthWebhook}
+                                            onChange={(event) => handleWebookSendAuth(event.target.checked)}
                                         />
                                     </div>
                                 </div>

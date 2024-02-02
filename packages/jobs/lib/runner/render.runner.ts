@@ -1,7 +1,7 @@
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import { getEnv } from '@nangohq/shared';
+import { getEnv, getPersistAPIUrl } from '@nangohq/shared';
 import api from 'api';
 import tracer from '../tracer.js';
 
@@ -74,8 +74,9 @@ export class RenderRunner implements Runner {
                         { key: 'NANGO_ENCRYPTION_KEY', value: process.env['NANGO_ENCRYPTION_KEY'] },
                         { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
                         { key: 'RUNNER_ID', value: runnerId },
-                        { key: 'NOTIFY_IDLE_ENDPOINT', value: `${{ jobsServiceUrl }}/idle` },
-                        { key: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` } // 25 hours
+                        { key: 'NOTIFY_IDLE_ENDPOINT', value: `${jobsServiceUrl}/idle` },
+                        { key: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
+                        { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() }
                     ]
                 });
                 svc = res.data.service;

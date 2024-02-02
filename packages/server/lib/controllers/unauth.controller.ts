@@ -8,8 +8,10 @@ import {
     analytics,
     AnalyticsTypes,
     connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
+    AuthOperation,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
@@ -146,9 +148,12 @@ class UnAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environmentId
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.None,
+                        operation: updatedConnection.operation
                     },
-                    config?.provider as string
+                    config?.provider as string,
+                    activityLogId
                 );
             }
 
@@ -173,6 +178,21 @@ class UnAuthController {
                     connectionId
                 }
             });
+
+            await connectionCreationFailedHook(
+                {
+                    id: -1,
+                    connection_id: connectionId as string,
+                    provider_config_key: providerConfigKey as string,
+                    environment_id: environmentId,
+                    auth_mode: AuthModes.None,
+                    error: `Error during Unauth create: ${prettyError}`,
+                    operation: AuthOperation.UNKNOWN
+                },
+                'unknown',
+                activityLogId
+            );
+
             next(err);
         }
     }

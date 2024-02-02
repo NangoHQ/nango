@@ -399,6 +399,41 @@ export default function Activity() {
         navigate(updatedUrl);
     }
 
+    const copyActivityLogUrl = (activity: ActivityResponse): string => {
+        const baseUrl = `${window.location.protocol}//${window.location.host}/activity`;
+        const url = new URL(baseUrl);
+        const params = new URLSearchParams({ env, activity_log_id: activity.id.toString() });
+
+        if (activity.connection_id) {
+            params.append('connection', activity.connection_id);
+        }
+
+        if (activity.provider_config_key) {
+            params.append('integration', activity.provider_config_key);
+        }
+
+        if (activity.operation_name) {
+            params.append('script', activity.operation_name);
+        }
+
+        if (activity.success !== null) {
+            const status = activity.success ? 'success' : 'failure';
+            params.append('status', status);
+        } else {
+            params.append('status', 'in_progress');
+        }
+
+        if (activity.timestamp) {
+            const date = new Date(Number(activity.timestamp));
+            const dateString = date.toISOString().split('T')[0];
+            params.append('date', dateString);
+        }
+
+        url.search = params.toString();
+
+        return url.toString();
+    };
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="max-w-screen-xl px-16 w-fit mx-auto">
@@ -424,7 +459,7 @@ export default function Activity() {
                                     onChange={handleStatusChange}
                                     value={status}
                                 >
-                                    <option key="" value="" disabled selected>Status</option>
+                                    <option key="" value="" disabled>Status</option>
                                     <option key="success" value="success">Success</option>
                                     <option key="progress" value="in_progress">In Progress</option>
                                     <option key="failure" value="failure">Failure</option>
@@ -442,32 +477,13 @@ export default function Activity() {
                                         onChange={handleScriptChange}
                                         value={selectedScript}
                                     >
-                                        <option key="" value="" disabled selected>Script</option>
+                                        <option key="" value="" disabled>Script</option>
                                         {scripts.map((script: string) => (
                                             <option key={script} value={script}>{script}</option>
                                         ))}
                                     </select>
                                     {selectedScript && (
                                         <XCircleIcon onClick={() => onRemoveFilter(setSelectedScript, 'script')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
-                                    )}
-                                </div>
-                            )}
-                            {integrations.length > 0 && (
-                                <div className="flex w-full items-center">
-                                    <select
-                                        id="integration"
-                                        name="integration"
-                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
-                                        onChange={handleIntegrationChange}
-                                        value={selectedIntegration}
-                                    >
-                                        <option key="" value="" disabled selected>Integration</option>
-                                        {integrations.map((integration: string) => (
-                                            <option key={integration} value={integration}>{integration}</option>
-                                        ))}
-                                    </select>
-                                    {selectedIntegration && (
-                                        <XCircleIcon onClick={() => onRemoveFilter(setSelectedIntegration, 'integration')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
                                     )}
                                 </div>
                             )}
@@ -480,13 +496,32 @@ export default function Activity() {
                                         onChange={handleConnectionChange}
                                         value={selectedConnection}
                                     >
-                                        <option key="" value="" disabled selected>Connection</option>
+                                        <option key="" value="" disabled>Connection</option>
                                         {connections.map((connection: string) => (
                                             <option key={connection} value={connection}>{connection}</option>
                                         ))}
                                     </select>
                                     {selectedConnection && (
                                         <XCircleIcon onClick={() => onRemoveFilter(setSelectedConnection, 'connection')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
+                                    )}
+                                </div>
+                            )}
+                            {integrations.length > 0 && (
+                                <div className="flex w-full items-center">
+                                    <select
+                                        id="integration"
+                                        name="integration"
+                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        onChange={handleIntegrationChange}
+                                        value={selectedIntegration}
+                                    >
+                                        <option key="" value="" disabled>Integration</option>
+                                        {integrations.map((integration: string) => (
+                                            <option key={integration} value={integration}>{integration}</option>
+                                        ))}
+                                    </select>
+                                    {selectedIntegration && (
+                                        <XCircleIcon onClick={() => onRemoveFilter(setSelectedIntegration, 'integration')} className="flex h-7 h-7 cursor-pointer text-blue-400" />
                                     )}
                                 </div>
                             )}
@@ -512,10 +547,10 @@ export default function Activity() {
                                 <ChevronsLeft onClick={resetOffset} className="flex stroke-white cursor-pointer mr-3" size="16" />
                             )}
                             <span onClick={decrementPage} className={`flex ${offset - limit >= 0 ? 'cursor-pointer hover:bg-gray-700' : ''} h-8 mr-2 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
-                              <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
+                              <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd"></path></svg>
                             </span>
                             <span onClick={incrementPage} className={`flex ${activities.length < limit ? '' : 'cursor-pointer hover:bg-gray-700'} h-8 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
-                              <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                              <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
                             </span>
                         </div>
                     </div>
@@ -741,7 +776,7 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${Object.entries(queryParams).length > 0 ? '&' + queryString.stringify(queryParams) : ''}`} />}
+                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={copyActivityLogUrl(activity)} />}
                                             </div>
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>

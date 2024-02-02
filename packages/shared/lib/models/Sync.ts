@@ -272,17 +272,6 @@ export const SyncCommandToScheduleStatus = {
     RUN_FULL: ScheduleStatus.RUNNING
 };
 
-export interface NangoSyncWebhookBody {
-    from: string;
-    connectionId: string;
-    providerConfigKey: string;
-    syncName: string;
-    model: string;
-    responseResults: SyncResult;
-    syncType: SyncType;
-    queryTimeStamp: string | null;
-}
-
 export interface SyncConfigWithProvider {
     id: number;
     sync_name: string;

@@ -7,6 +7,7 @@
         { "path": "packages/server" },
         { "path": "packages/frontend" },
         { "path": "packages/runner" },
-        { "path": "packages/jobs" }
+        { "path": "packages/jobs" },
+        { "path": "packages/persist" }
     ]
 }

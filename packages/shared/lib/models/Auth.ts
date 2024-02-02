@@ -13,6 +13,12 @@ export enum AuthModes {
     None = 'NONE'
 }
 
+export enum AuthOperation {
+    CREATION = 'creation',
+    OVERRIDE = 'override',
+    UNKNOWN = 'unknown'
+}
+
 export enum OAuthAuthorizationMethod {
     BODY = 'body',
     HEADER = 'header'
@@ -21,6 +27,11 @@ export enum OAuthAuthorizationMethod {
 export enum OAuthBodyFormat {
     FORM = 'form',
     JSON = 'json'
+}
+
+export interface ConnectionUpsertResponse {
+    id: number;
+    operation: AuthOperation;
 }
 
 export interface OAuthSession {

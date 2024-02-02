@@ -1,0 +1,34 @@
+{
+    "name": "@nangohq/nango-persist",
+    "version": "1.0.0",
+    "description": "Write customers data like records and activity logs",
+    "type": "module",
+    "main": "dist/app.js",
+    "typings": "dist/index.d.ts",
+    "scripts": {
+        "build": "rimraf ./dist && tsc",
+        "start": "node dist/app.js",
+        "dev": "nodemon"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/persist"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "@nangohq/shared": "^0.37.8",
+        "dd-trace": "^5.2.0",
+        "express": "^4.18.2",
+        "zod": "^3.22.4",
+        "zod-express": "^0.0.8"
+    },
+    "devDependencies": {
+        "@types/mock-knex": "^0.4.8",
+        "@types/node": "^18.7.6",
+        "mock-knex": "^0.4.13",
+        "node-fetch": "^3.3.2",
+        "typescript": "^5.3.3"
+    }
+}

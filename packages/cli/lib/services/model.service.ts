@@ -69,6 +69,9 @@ class ModelService {
                 .map((fieldName: string) => {
                     const fieldModel = fields[fieldName] as string | NangoModel;
                     const fieldType = this.getFieldType(fieldModel, debug, modelName);
+                    if (fieldName === '__string') {
+                        return ` [key: string]: ${fields[fieldName]};`;
+                    }
                     return `  ${fieldName}: ${fieldType};`;
                 })
                 .join('\n');

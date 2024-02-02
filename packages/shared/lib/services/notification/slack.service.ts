@@ -1,15 +1,15 @@
-import { schema, dbNamespace } from '../../../db/database.js';
-import type { SlackNotification } from '../../../models/SlackNotification';
-import type { NangoConnection } from '../../../models/Connection';
-import type { ServiceResponse } from '../../../models/Generic';
-import { SyncType, SyncConfigType } from '../../../models/Sync.js';
-import environmentService from '../../environment.service.js';
-import { LogActionEnum, LogLevel } from '../../../models/Activity.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../../activity/activity.service.js';
-import { getBasePublicUrl } from '../../../utils/utils.js';
-import connectionService from '../../connection.service.js';
-import accountService from '../../account.service.js';
-import SyncClient from '../../../clients/sync.client.js';
+import { schema, dbNamespace } from '../../db/database.js';
+import type { SlackNotification } from '../../models/SlackNotification';
+import type { NangoConnection } from '../../models/Connection';
+import type { ServiceResponse } from '../../models/Generic';
+import { SyncType, SyncConfigType } from '../../models/Sync.js';
+import environmentService from '../environment.service.js';
+import { LogActionEnum, LogLevel } from '../../models/Activity.js';
+import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
+import { getBasePublicUrl } from '../../utils/utils.js';
+import connectionService from '../connection.service.js';
+import accountService from '../account.service.js';
+import SyncClient from '../../clients/sync.client.js';
 
 const TABLE = dbNamespace + 'slack_notifications';
 
@@ -253,8 +253,10 @@ class SlackService {
         const count = slackNotificationStatus.connectionCount;
         const connection = count === 1 ? 'connection' : 'connections';
         const flowType = syncType === SyncType.ACTION ? SyncConfigType.ACTION : SyncConfigType.SYNC;
+        const date = new Date();
+        const dateString = date.toISOString().split('T')[0];
         const payload: NotificationPayload = {
-            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${getBasePublicUrl()}/activity?env=${envName}&activity_log_id=${originalActivityLogId}|logs>.`,
+            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${getBasePublicUrl()}/activity?env=${envName}&activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
