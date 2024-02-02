@@ -15,7 +15,8 @@ import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
-import type { LogLevel } from '../models/Activity.js';
+
+type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
 interface ParamEncoder {
     (value: any, defaultEncoder: (value: any) => any): any;
