@@ -77,7 +77,7 @@ models:
     thumbs_up: boolean
     resume_url: string
     interviewers: string[]
-    candidate: CandidateInformation;
+    candidate: CandidateInformation
     result_url: string
     report_url: string
   CandidateInformation:
