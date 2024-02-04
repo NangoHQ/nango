@@ -981,6 +981,13 @@ paypal-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+pendo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.pendo.io
+        headers:
+            x-pendo-integration-key: ${apiKey}
+    docs: https://engageapi.pendo.io
 pennylane:
     auth_mode: OAUTH2
     authorization_url: https://app.pennylane.com/oauth/authorize
