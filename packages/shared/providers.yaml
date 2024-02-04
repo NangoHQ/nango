@@ -234,6 +234,14 @@ calendly:
         response_type: code
     proxy:
         base_url: https://api.calendly.com
+clari-copilot:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://rest-api.copilot.clari.com
+        headers:
+            X-Api-Key: ${apiKey}
+            X-Api-Password: ${apiSecret}
+    docs: https://api-doc.copilot.clari.com/
 clickup:
     auth_mode: OAUTH2
     authorization_url: https://app.clickup.com/api
