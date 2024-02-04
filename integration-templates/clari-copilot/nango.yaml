@@ -3,7 +3,7 @@ integrations:
     clari-copilot-call:
       runs: every hour
       returns:
-      - ClariCopilotCall
+        - ClariCopilotCall
       description: |
         Fetches calls from your account. For the first sync, it will go back to the past one year.
         Details: incremental sync, doesn't track deletes, metadata is not required.
