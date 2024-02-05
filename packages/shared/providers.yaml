@@ -240,7 +240,7 @@ clari-copilot:
         base_url: https://rest-api.copilot.clari.com
         headers:
             X-Api-Key: ${apiKey}
-            X-Api-Password: ${apiSecret}
+            X-Api-Password: ${connectionConfig.API_PASSWORD}
     docs: https://api-doc.copilot.clari.com/
 clickup:
     auth_mode: OAUTH2
