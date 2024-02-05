@@ -47,7 +47,7 @@ class ErrorManager {
         }
     }
 
-    public report(e: any, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }, tracer: Tracer): void {
+    public report(e: unknown, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }, tracer?: Tracer): void {
         sentry.withScope(async function (scope) {
             if (config.environmentId || config.accountId) {
                 let accountId: number | undefined;
@@ -109,15 +109,17 @@ class ErrorManager {
 
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
 
-        // Log to datadog manually
-        // https://github.com/DataDog/dd-trace-js/issues/1944
-        const span = tracer.scope().active();
-        if (span) {
-            span.addTags({
-                'error.msg': e.message,
-                'error.stack': e.stack,
-                'error.type': e.name
-            });
+        if (e instanceof Error && tracer) {
+            // Log to datadog manually
+            // https://github.com/DataDog/dd-trace-js/issues/1944
+            const span = tracer.scope().active();
+            if (span) {
+                span.addTags({
+                    'error.msg': e.message,
+                    'error.stack': e.stack,
+                    'error.type': e.name
+                });
+            }
         }
     }
 
@@ -148,14 +150,14 @@ class ErrorManager {
 
         if (isApiAuthenticated(res)) {
             const environmentId = getEnvironmentId(res);
-            await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
+            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
         } else if (isUserAuthenticated(req)) {
             const { response, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
             if (!success || response === null) {
                 this.report(error, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
             } else {
                 const { environmentId } = response;
-                await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
+                this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
             }
         } else {
             this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
