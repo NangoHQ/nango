@@ -114,11 +114,7 @@ class ErrorManager {
             // https://github.com/DataDog/dd-trace-js/issues/1944
             const span = tracer.scope().active();
             if (span) {
-                span.addTags({
-                    'error.msg': e.message,
-                    'error.stack': e.stack,
-                    'error.type': e.name
-                });
+                span.setTag('error', e);
             }
         }
     }
