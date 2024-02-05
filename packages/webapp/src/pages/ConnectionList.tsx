@@ -80,14 +80,14 @@ export default function ConnectionList() {
                         const filters = await res.json();
 
                         if (filters) {
-                            if (filters.integrations.length > 0) {
+                            if (filters?.integrations.length > 0) {
                                 filters.integrations.sort((a: string, b: string) => a.localeCompare(b));
                                 setIntegrations(filters.integrations);
                             }
                         }
                         setFiltersFetched(true);
                     } catch (e) {
-                        console.log(e);
+                        console.error(e);
                     }
                 }
             }
