@@ -5,5 +5,5 @@
         "outDir": "dist"
     },
     "references": [{ "path": "../shared" }, { "path": "../node-client" }],
-    "include": ["lib/**/*"]
+    "include": ["lib/**/*", "../shared/lib/express.d.ts"]
 }
