@@ -303,7 +303,7 @@ export default function FlowPage() {
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Endpoints</span>
                             {flow?.endpoints.map((endpoint, index) => (
-                               <div key={index} onClick={() => navigate(`/integration/${providerConfigKey}/reference${parseEndpoint(endpoint)}`)} className="flex flex-col space-y-2 cursor-pointer">
+                                <div key={index} onClick={() => navigate(`/${env}/integration/${providerConfigKey}/reference${parseEndpoint(endpoint)}`)} className="flex flex-col space-y-2 cursor-pointer">
                                     <EndpointLabel endpoint={endpoint} type={flow.type} />
                                 </div>
                             ))}

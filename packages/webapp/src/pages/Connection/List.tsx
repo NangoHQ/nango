@@ -77,7 +77,7 @@ export default function ConnectionList() {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 {connections && connections.length > 0 && (
-                    <Link to="/connections/create" className="flex items-center mt-auto px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                    <Link to={`/${env}/connections/create`} className="flex items-center mt-auto px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                         <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                         Add Connection
                     </Link>
@@ -126,7 +126,7 @@ export default function ConnectionList() {
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-xl text-center w-full">Connect to an external API</h2>
                     <div className="mt-4 text-gray-400">Connections can be created in code from your app, or manually on current tab.</div>
-                    <Link to="/connections/create" className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                    <Link to={`/${env}/connections/create`} className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                         <span className="flex">
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                             Add Connection

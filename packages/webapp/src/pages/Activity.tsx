@@ -453,7 +453,7 @@ export default function Activity() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
-            <div className="max-w-screen-xl w-fit mx-auto">
+            <div className="relative -left-24">
                 <div className="flex items-center mb-6">
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
@@ -581,7 +581,7 @@ export default function Activity() {
                 )}
                 {activities.length > 0 && (
                     <>
-                    <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden">
+                    <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden min-w-[1150px]">
                         <table className="table-auto">
                             <tbody className="px-4">
                                 {activities.filter((activity: ActivityResponse) => typeof activity?.action === 'string').map((activity: ActivityResponse, index: number) => (
@@ -594,21 +594,21 @@ export default function Activity() {
                                             <div className="flex items-center px-2">
                                                 {activity?.success === null && (
                                                     <Link
-                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? `/${env}/integrations` : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`}
                                                     >
                                                         <Clock className="stroke-yellow-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === true && (
                                                     <Link
-                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? `/${env}/integrations` : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`}
                                                     >
                                                         <CheckInCircle className="stroke-green-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === false && (
                                                     <Link
-                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? `/${env}/integrations` : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`}
                                                     >
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     </Link>
@@ -667,7 +667,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-green-500">sync</p>
                                                             </div>
                                                             <Link
-                                                                to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                                to={`/${env}/connections/${activity.provider_config_key}/${activity.connection_id}`}
                                                                 className="flex items-center"
                                                             >
                                                                 {activity.operation_name && (
@@ -685,7 +685,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-[#8247FF]">sync deploy</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                             </Link>
                                                         </span>
@@ -697,7 +697,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-gray-500">pause sync</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
@@ -712,7 +712,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-gray-500">restart sync</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
@@ -727,7 +727,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-gray-500">trigger sync</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                                 {activity.operation_name && (
                                                                     <Tooltip text={activity.operation_name} type="dark">
@@ -755,7 +755,7 @@ export default function Activity() {
                                                 </div>
                                                 <Tooltip text={activity?.connection_id} type="dark">
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={`/${env}/connections/${activity.provider_config_key}/${activity.connection_id}`}
                                                         className={`block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate ${activity.connection_id === null ? 'cursor-default' : ''}`}
                                                         onClick={(e) => {
                                                             if (activity.connection_id === null) {
@@ -767,7 +767,7 @@ export default function Activity() {
                                                     </Link>
                                                 </Tooltip>
                                                 <Link
-                                                    to={activity.provider === null ? '/syncs' : `/integration/${activity.provider_config_key}`}
+                                                    to={activity.provider === null ? `/${env}/integrations` : `/${env}/integration/${activity.provider_config_key}`}
                                                     className={`block w-48 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
                                                     onClick={(e) => {
                                                         if (activity.provider === null && activity.action !== 'sync deploy') {

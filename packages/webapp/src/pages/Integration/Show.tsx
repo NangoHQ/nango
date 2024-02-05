@@ -17,6 +17,7 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
 import { IntegrationConfig, Flow, Account } from '../../types';
+import { useStore } from '../../store';
 
 export enum Tabs {
     API,
@@ -50,6 +51,7 @@ export default function ShowIntegration() {
     const getProjectInfoAPI = useGetProjectInfoAPI()
     const navigate = useNavigate();
     const location = useLocation();
+    const env = useStore(state => state.cookieValue);
 
     useEffect(() => {
         if (location.hash === '#api') {
@@ -127,7 +129,7 @@ export default function ShowIntegration() {
                                 size="sm"
                                 className="flex cursor-pointer text-gray-400 neutral-700 items-center"
                                 onClick={() => {
-                                    navigate(`/connections/create/${providerConfigKey}`);
+                                    navigate(`/${env}/connections/create/${providerConfigKey}`);
                                 }}
                                 >
                                 <BuildingOfficeIcon className="flex h-5 w-5" />

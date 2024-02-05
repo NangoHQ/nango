@@ -685,7 +685,7 @@ export function useGetAllSyncsAPI() {
 }
 
 export function useRunSyncAPI() {
-    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: number, sync_name: string, provider?: string) => {
+    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: string, sync_name: string, provider?: string) => {
         try {
             const res = await fetch(`/api/v1/sync/command`, {
                 method: 'POST',

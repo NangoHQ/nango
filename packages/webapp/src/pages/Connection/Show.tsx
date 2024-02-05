@@ -151,7 +151,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                 <div className="mx-auto">
                     <div className="flex justify-between items-center">
                         <div className="flex">
-                            <Link to={`/integration/${connection?.providerConfigKey}`}>
+                            <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
                                 <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer" />
                             </Link>
                             <div className="mt-3 ml-6">
@@ -185,7 +185,7 @@ We could not retrieve and/or refresh your access token due to the following erro
             </section>
             <section className="mt-10">
                 {activeTab === Tabs.Models && (
-                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} />
+                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} env={env} />
                 )}
                 {activeTab === Tabs.Authorization && (
                     <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={syncLoaded} />

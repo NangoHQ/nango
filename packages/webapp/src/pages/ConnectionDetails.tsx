@@ -139,7 +139,7 @@ We could not retrieve and/or refresh your access token due to the following erro
         }
     }, [getSyncAPI, syncLoaded, setLoaded, connectionId, providerConfigKey]);
 
-    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: number, syncName: string) => {
+    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: string, syncName: string) => {
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
 
         if (res?.status === 200) {

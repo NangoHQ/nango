@@ -73,13 +73,11 @@ const App = () => {
 
     const correctPage = (): string => {
         const url = new URL(window.location.href);
-        const pathSegments = url.pathname.split('/').filter(Boolean); // Remove any leading/trailing slashes and empty segments
+        const pathSegments = url.pathname.split('/').filter(Boolean);
 
         const rawUrl = window.location.href;
 
-        console.log(VALID_PATHS.some(path => rawUrl.includes(path)));
         if (VALID_PATHS.some(path => rawUrl.includes(path))) {
-            console.log(pathSegments);
             const newPathSegments = [env, ...pathSegments];
             url.pathname = '/' + newPathSegments.join('/');
 

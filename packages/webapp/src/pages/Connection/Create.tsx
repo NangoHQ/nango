@@ -163,7 +163,7 @@ export default function IntegrationCreate() {
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
-                navigate('/connections', { replace: true });
+                navigate(`/${env}/connections`, { replace: true });
             })
             .catch((err: { message: string; type: string }) => {
                 setServerErrorMessage(`${err.type} error: ${err.message}`);
@@ -691,7 +691,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism language="typescript" colorScheme="dark">
+                                        <Prism className="transparent-code" language="typescript" colorScheme="dark">
                                             {snippet()}
                                         </Prism>
                                     </div>
@@ -708,7 +708,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                         <div className="text-sm w-largebox h-40">
                             <p className="text-white text-sm">
                                 You have not created any Integrations yet. Please create an{' '}
-                                <Link to="/integrations" className="text-text-blue">
+                                <Link to={`/${env}/integrations`} className="text-text-blue">
                                     Integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}

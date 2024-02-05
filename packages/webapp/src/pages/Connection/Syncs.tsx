@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Loading, Tooltip } from '@geist-ui/core';
 import { Link } from 'react-router-dom';
 import { AdjustmentsHorizontalIcon, EllipsisHorizontalIcon, PlayCircleIcon, PauseCircleIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
@@ -19,13 +20,37 @@ interface SyncsProps {
     loaded: boolean;
     syncLoaded: boolean;
     setSyncLoaded: (loaded: boolean) => void;
+    env: string
 }
 
 export default function Syncs(props: SyncsProps) {
-    const { syncs, connection, setSyncLoaded, loaded, syncLoaded } = props;
+    const { syncs, connection, setSyncLoaded, loaded, syncLoaded, env } = props;
+    const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const runCommandSyncAPI = useRunSyncAPI();
 
-    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: number, syncName: string) => {
+    const toggleDropdown = (id: string) => {
+        if (openDropdownId === id) {
+            setOpenDropdownId(null);
+        } else {
+            setOpenDropdownId(id);
+        }
+    };
+
+    useEffect(() => {
+        const closeSyncWindow = (e: MouseEvent) => {
+            if (!(e.target as HTMLElement).closest('.interact-with-sync')) {
+                setOpenDropdownId(null);
+            }
+        };
+
+        document.addEventListener('click', closeSyncWindow);
+
+        return () => {
+            document.removeEventListener('click', closeSyncWindow);
+        };
+    }, []);
+
+    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: string, syncName: string) => {
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
 
         if (res?.status === 200) {
@@ -68,7 +93,7 @@ export default function Syncs(props: SyncsProps) {
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-xl text-center w-full">No models are syncing for <span className="capitalize">{connection?.provider}</span></h2>
                     <div className="mt-4 text-gray-400">Start syncing models for <span className="capitalize">{connection?.provider}</span> on the Sync Configuration tab.</div>
-                    <Link to={`/integration/${connection?.providerConfigKey}#scripts`} className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                    <Link to={`/${env}/integration/${connection?.providerConfigKey}#scripts`} className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                         <span className="flex">
                         <AdjustmentsHorizontalIcon className="flex h-5 w-5 mr-3" />
                         Script Configuration
@@ -115,7 +140,7 @@ export default function Syncs(props: SyncsProps) {
                                                 sync.schedule_status !== 'PAUSED' &&
                                                 (sync.latest_sync.activity_log_id && sync.latest_sync.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className={errorBubbleStyles}
                                                     >
                                                         <ErrorBubble />
@@ -128,7 +153,7 @@ export default function Syncs(props: SyncsProps) {
                                             {sync.latest_sync?.status === 'RUNNING' &&
                                                 (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className={runningBubbleStyles}
                                                     >
                                                         <RunningBubble />
@@ -142,7 +167,7 @@ export default function Syncs(props: SyncsProps) {
                                                 sync.schedule_status !== 'PAUSED' &&
                                                 (sync.latest_sync?.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className={successBubbleStyles}
                                                     >
                                                         <SuccessBubble />
@@ -160,7 +185,7 @@ export default function Syncs(props: SyncsProps) {
                                             <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
                                                 {sync.latest_sync?.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className="block w-32 ml-1"
                                                     >
                                                         {formatDateToUSFormat(sync.latest_sync?.updated_at)}
@@ -173,7 +198,7 @@ export default function Syncs(props: SyncsProps) {
                                             <>
                                                 {sync.latest_sync?.activity_log_id? (
                                                     <Link
-                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className=""
                                                     >
                                                         {formatDateToUSFormat(sync.latest_sync?.updated_at)}
@@ -214,45 +239,47 @@ export default function Syncs(props: SyncsProps) {
                                             )
                                         }
                                     </div>
-                                    <div className="group relative">
-                                        <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" />
-                                        <div
-                                            className="hidden group-hover:flex text-gray-400 absolute z-10 -top-15 left-1 bg-black rounded border border-neutral-700 items-center"
-                                        >
-                                            <div className="flex flex-col w-full">
-                                                <div
-                                                    className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
-                                                    onClick={() =>
-                                                                syncCommand(
-                                                                    sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
-                                                                    sync.nango_connection_id,
-                                                                    sync.schedule_id,
-                                                                    sync.id,
-                                                                    sync.name
-                                                                )
-                                                            }
+                                    <div className="relative interact-with-sync">
+                                        <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" onClick={() => toggleDropdown(sync.id)}/>
+                                        {openDropdownId === sync.id && (
+                                            <div
+                                                className="text-gray-400 absolute z-10 -top-15 left-1 bg-black rounded border border-neutral-700 items-center"
+                                            >
+                                                <div className="flex flex-col w-full">
+                                                    <div
+                                                        className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
+                                                        onClick={() =>
+                                                                    syncCommand(
+                                                                        sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
+                                                                        sync.nango_connection_id,
+                                                                        sync.schedule_id,
+                                                                        sync.id,
+                                                                        sync.name
+                                                                    )
+                                                                }
+                                                        >
+                                                        {sync.schedule_status !== 'RUNNING' ? (
+                                                            <>
+                                                                <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
+                                                                <span className="pl-2">Start Schedule</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <PauseCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
+                                                                <span className="pl-2">Pause Schedule</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    <div
+                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
+                                                        onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
-                                                    {sync.schedule_status !== 'RUNNING' ? (
-                                                        <>
-                                                            <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                            <span className="pl-2">Start Schedule</span>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <PauseCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                            <span className="pl-2">Pause Schedule</span>
-                                                        </>
-                                                    )}
-                                                </div>
-                                                <div
-                                                    className="flex items-center hover:bg-neutral-800 px-4 py-4"
-                                                    onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
-                                                >
-                                                    <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                    <span className="pl-2">Trigger Once</span>
+                                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
+                                                        <span className="pl-2">Trigger Once</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 </td>
                             ))}

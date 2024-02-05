@@ -56,7 +56,7 @@ export interface Sync {
 }
 
 export interface SyncResponse {
-    id: number;
+    id: string;
     created_at: string;
     nango_connection_id: number;
     name: string;
