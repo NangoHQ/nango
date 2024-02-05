@@ -431,7 +431,7 @@ export class NangoAction {
      */
     public async log(...args: any[]): Promise<void> {
         if (args.length === 0) {
-            throw new Error('No arguments provided to nango.log');
+            return;
         }
 
         const lastArg = args[args.length - 1];
