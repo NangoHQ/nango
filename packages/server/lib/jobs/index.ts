@@ -1,14 +1,17 @@
 import * as cron from 'node-cron';
-import type { ActivityLog } from '@nangohq/shared';
 import { isCloud, db, encryptionManager } from '@nangohq/shared';
 
 export async function deleteOldActivityLogs(): Promise<void> {
     /**
      * Delete all activity logs older than 15 days
      */
-    cron.schedule('0 * * * *', async () => {
+    cron.schedule('*/15 * * * *', async () => {
         const activityLogTableName = '_nango_activity_logs';
-        await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where('created_at', '<', db.knex.raw("now() - interval '15 days'")).del();
+
+        // Postgres do not allow DELETE LIMIT so we batch ourself to limit the memory footprint of this query.
+        await db.knex.raw(
+            `DELETE FROM ${activityLogTableName} WHERE id IN (SELECT id FROM ${activityLogTableName} WHERE created_at < NOW() - interval '15 days' LIMIT 5000)`
+        );
     });
 }
 
