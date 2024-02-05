@@ -111,7 +111,7 @@ class WebhookService {
     ) {
         const { webhookInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
 
-        if (!webhookInfo) {
+        if (!webhookInfo || !webhookInfo.webhook_url) {
             return;
         }
 

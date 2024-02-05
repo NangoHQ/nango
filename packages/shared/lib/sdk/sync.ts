@@ -14,7 +14,7 @@ import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
-import { getPersistAPIUrl } from '../utils/utils.js';
+import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 
 /*
  *
@@ -67,6 +67,10 @@ export interface AxiosResponse<T = any, D = any> {
     headers: any;
     config: D;
     request?: any;
+}
+
+interface UserLogParameters {
+    level?: LogLevel;
 }
 
 interface DataResponse {
@@ -227,10 +231,6 @@ export interface NangoProps {
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
     usePersistAPI?: boolean;
-}
-
-interface UserLogParameters {
-    level?: LogLevel;
 }
 
 interface EnvironmentVariable {
@@ -417,9 +417,39 @@ export class NangoAction {
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 
-    public async log(content: string, userDefinedLevel?: UserLogParameters): Promise<void> {
+    /**
+     * Log
+     * @desc Log a message to the activity log which shows up in the Nango Dashboard
+     * note that the last argument can be an object with a level property to specify the log level
+     * example: await nango.log('This is a log message', { level: 'error' })
+     * error = red
+     * warn = orange
+     * info = white
+     * debug = grey
+     * http = green
+     * silly = light green
+     */
+    public async log(...args: any[]): Promise<void> {
+        if (args.length === 0) {
+            return;
+        }
+
+        const lastArg = args[args.length - 1];
+
+        const isUserDefinedLevel = (object: UserLogParameters | any): boolean => {
+            return typeof lastArg === 'object' && 'level' in object;
+        };
+
+        const userDefinedLevel: UserLogParameters | undefined = isUserDefinedLevel(lastArg) ? lastArg : undefined;
+
+        if (userDefinedLevel) {
+            args.pop();
+        }
+
+        const content = safeStringify(args);
+
         if (this.dryRun) {
-            console.log(content);
+            console.log(...args);
             return;
         }
 
@@ -437,8 +467,9 @@ export class NangoAction {
                     msg: content
                 }
             });
+
             if (response.status > 299) {
-                console.log(
+                console.error(
                     `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     JSON.stringify(this, (key, value) => {
                         if (key === 'secretKey') {
@@ -447,7 +478,7 @@ export class NangoAction {
                         return value;
                     })
                 );
-                throw new Error(`cannot save log for activityLogId '${this.activityLogId}'`);
+                throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
             }
             return;
         }
@@ -589,7 +620,7 @@ export class NangoSync extends NangoAction {
                 }
             });
             if (response.status > 299) {
-                console.log(
+                console.error(
                     `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     JSON.stringify(this, (key, value) => {
                         if (key === 'secretKey') {
@@ -649,7 +680,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    console.log(
+                    console.error(
                         `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                         JSON.stringify(this, (key, value) => {
                             if (key === 'secretKey') {
@@ -795,7 +826,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    console.log(
+                    console.error(
                         `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                         JSON.stringify(this, (key, value) => {
                             if (key === 'secretKey') {
@@ -943,7 +974,7 @@ export class NangoSync extends NangoAction {
                     }
                 });
                 if (response.status > 299) {
-                    console.log(
+                    console.error(
                         `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                         JSON.stringify(this, (key, value) => {
                             if (key === 'secretKey') {
