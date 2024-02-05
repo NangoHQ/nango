@@ -188,6 +188,34 @@ describe('Proxy Controller Construct Header Tests', () => {
             'y-custom-header': 'custom values'
         });
     });
+
+    it('Should construct headers for an api key', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.ApiKey,
+                proxy: {
+                    headers: {
+                        'X-Api-Key': '${apiKey}',
+                        'X-Api-Password': '${connectionConfig.API_PASSWORD}'
+                    }
+                }
+            },
+            token: { apiKey: 'api-key-value' },
+            connection: {
+                connection_config: {
+                    API_PASSWORD: 'api-password-value'
+                }
+            }
+        };
+
+        // @ts-ignore
+        const result = proxyService.constructHeaders(config);
+
+        expect(result).toEqual({
+            'X-Api-Key': 'api-key-value',
+            'X-Api-Password': 'api-password-value'
+        });
+    });
 });
 
 describe('Proxy Controller Construct URL Tests', () => {

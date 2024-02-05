@@ -686,7 +686,23 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 (acc: Record<string, string>, [key, value]: [string, string]) => {
                     // allows oauth2 acessToken key to be interpolated and injected
                     // into the header in addition to api key values
-                    const tokenPair = config.template.auth_mode === AuthModes.OAuth2 ? { accessToken: config.token } : config.token;
+                    let tokenPair;
+                    switch (config.template.auth_mode) {
+                        case AuthModes.OAuth2:
+                            tokenPair = { accessToken: config.token };
+                            break;
+                        case AuthModes.ApiKey:
+                            if (value.includes('connectionConfig')) {
+                                value = value.replace(/connectionConfig\./g, '');
+                                tokenPair = config.connection.connection_config;
+                            } else {
+                                tokenPair = config.token;
+                            }
+                            break;
+                        default:
+                            tokenPair = config.token;
+                            break;
+                    }
                     acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
                     return acc;
                 },
