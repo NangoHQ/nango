@@ -207,6 +207,7 @@
                         "integrations/all/braintree",
                         "integrations/all/brex",
                         "integrations/all/calendly",
+                        "integrations/all/chorus",
                         "integrations/all/clickup",
                         "integrations/all/close",
                         "integrations/all/coda",
