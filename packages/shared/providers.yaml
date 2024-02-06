@@ -1564,6 +1564,8 @@ zoho-inventory:
     alias: zoho
 zoho-invoice:
     alias: zoho
+zoho-bigin:
+    alias: zoho
 zoom:
     auth_mode: OAUTH2
     authorization_url: https://zoom.us/oauth/authorize

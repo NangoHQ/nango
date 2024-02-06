@@ -327,11 +327,12 @@
                         "integrations/all/zapier-nla",
                         "integrations/all/zendesk",
                         "integrations/all/zenefits",
+                        "integrations/all/zoho-bigin",
+                        "integrations/all/zoho-books",
                         "integrations/all/zoho-crm",
                         "integrations/all/zoho-desk",
                         "integrations/all/zoho-inventory",
                         "integrations/all/zoho-invoice",
-                        "integrations/all/zoho-books",
                         "integrations/all/zoom"
                     ]
                 }
