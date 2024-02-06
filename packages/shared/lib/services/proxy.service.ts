@@ -120,15 +120,13 @@ class ProxyService {
                 break;
         }
 
-        if (activityLogId) {
-            activityLogs.push({
-                level: 'debug',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Proxy: token retrieved successfully'
-            });
-        }
+        activityLogs.push({
+            level: 'debug',
+            environment_id: connection.environment_id,
+            activity_log_id: activityLogId as number,
+            timestamp: Date.now(),
+            content: 'Proxy: token retrieved successfully'
+        });
 
         let template: ProviderTemplate | undefined;
         try {
@@ -136,44 +134,38 @@ class ProxyService {
         } catch (error) {}
 
         if (!template || ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride)) {
-            if (activityLogId) {
-                activityLogs.push({
-                    level: 'error',
-                    environment_id: connection.environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `${Date.now()} The proxy is not supported for this provider ${provider}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
+            activityLogs.push({
+                level: 'error',
+                environment_id: connection.environment_id,
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `${Date.now()} The proxy is not supported for this provider ${provider}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
             You can also use the baseUrlOverride to get started right away.
             See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
-                });
-            }
+            });
 
             return { success: false, error: new NangoError('missing_base_api_url'), response: null, activityLogs };
         }
 
-        if (activityLogId) {
-            activityLogs.push({
-                level: 'debug',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
-            });
-        }
+        activityLogs.push({
+            level: 'debug',
+            environment_id: connection.environment_id,
+            activity_log_id: activityLogId as number,
+            timestamp: Date.now(),
+            content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
+        });
 
         if (!baseUrlOverride && template.proxy.base_url && endpoint.includes(template.proxy.base_url)) {
             endpoint = endpoint.replace(template.proxy.base_url, '');
         }
 
-        if (activityLogId) {
-            activityLogs.push({
-                level: 'debug',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Endpoint set to ${endpoint} with retries set to ${retries}`
-            });
-        }
+        activityLogs.push({
+            level: 'debug',
+            environment_id: connection.environment_id,
+            activity_log_id: activityLogId as number,
+            timestamp: Date.now(),
+            content: `Endpoint set to ${endpoint} with retries set to ${retries}`
+        });
 
         if (headers && headers['Content-Type'] === 'multipart/form-data') {
             const formData = new FormData();
