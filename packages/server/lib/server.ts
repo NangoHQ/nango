@@ -51,6 +51,7 @@ import {
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
+import tracer from './apm.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
@@ -218,7 +219,7 @@ if (!isCloud() && !isEnterprise()) {
 
 // Error handling.
 app.use(async (e: any, req: Request, res: Response, __: any) => {
-    await errorManager.handleGenericError(e, req, res);
+    await errorManager.handleGenericError(e, req, res, tracer);
 });
 
 // Webapp assets, static files and build.
