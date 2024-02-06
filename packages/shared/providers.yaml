@@ -796,6 +796,7 @@ linear:
         base_url: https://api.linear.app
     disable_pkce: true
     webhook_routing_script: linear-webhook-routing
+    post_connection_script: linear-post-connection
 linkedin:
     auth_mode: OAUTH2
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
