@@ -9,13 +9,15 @@ import {
     analytics,
     AnalyticsTypes,
     configService,
+    environmentService,
     Config as ProviderConfig,
     IntegrationWithCreds,
     Integration as ProviderIntegration,
     connectionService,
     getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey,
-    Config
+    Config,
+    getGlobalWebhookReceiveUrl
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -197,6 +199,7 @@ class ConfigController {
             }
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
+            const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(environmentId);
 
             if (config == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -233,6 +236,10 @@ class ConfigController {
             });
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = providerTemplate.webhook_routing_script;
+            let webhookUrl: string | null = null;
+            if (hasWebhook) {
+                webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environmentUuid}/${config.provider}`;
+            }
 
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
                 ? ({
@@ -248,6 +255,7 @@ class ConfigController {
                       actions,
                       has_webhook: Boolean(hasWebhook),
                       has_webhook_user_defined_secret: providerTemplate.webhook_user_defined_secret,
+                      webhook_url: webhookUrl,
                       webhook_secret
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);

@@ -63,6 +63,8 @@ export interface IntegrationWithCreds extends Integration {
     scopes: string;
     auth_mode: AuthModes;
     app_link?: string;
+    has_webhook: boolean;
+    webhook_url?: string;
     syncs: SyncConfig[];
     actions: Action[];
 }
