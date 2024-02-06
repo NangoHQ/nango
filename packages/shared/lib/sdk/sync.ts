@@ -332,7 +332,7 @@ export class NangoAction {
             if (activityLogs) {
                 for (const log of activityLogs) {
                     if (log.level === 'debug') continue;
-                    this.log(log.content, { level: log.level });
+                    await this.log(log.content, { level: log.level });
                 }
             }
 
