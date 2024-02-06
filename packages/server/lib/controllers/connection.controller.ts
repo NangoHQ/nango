@@ -722,7 +722,7 @@ class ConnectionController {
             }
             const { environment } = response;
 
-            const integrations = await configService.getAllNames(environment.id);
+            const integrations = await connectionService.getAllIntegrations(environment.id);
             res.send({ integrations });
         } catch (error) {
             next(error);

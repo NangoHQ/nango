@@ -142,8 +142,8 @@ export default function ConnectionList() {
         const value = e.target.value;
         setSelectedIntegration(value);
         setLoaded(false);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value }));
+        setOffset(0);
+        navigate(location.pathname + '?' + queryString.stringify({ integration: value }));
     };
 
     return (
