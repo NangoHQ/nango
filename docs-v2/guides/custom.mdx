@@ -251,9 +251,9 @@ nango generate
 This will generate the scaffold for your _action_ script(s). Open any _action_ script (named `[action-name].ts`) which contains the following template (for the Slack example above): 
 
 ```typescript slack-alert.ts
-import { NangoSync, SlackAlertResponse } from './models';
+import { NangoAction, SlackAlertResponse } from './models';
 
-export default async function runAction(nango: NangoSync, input: any): Promise<SlackAlertResponse> {
+export default async function runAction(nango: NangoAction, input: any): Promise<SlackAlertResponse> {
 	// Integration code goes here.
 }
 ```
@@ -274,13 +274,13 @@ Nango now watches your `nango-integrations` folder for changes and compiles the 
 Fill in the `runAction` method with your integration code:
 
 ```ts slack-alert.ts
-import { NangoSync, SlackAlertResponse } from './models';
+import { NangoAction, SlackAlertResponse } from './models';
 
 interface SlackAlertParams {
     channel: string
 }
 
-export default async function runAction(nango: NangoSync, input: SlackAlertParams): Promise<SlackAlertResponse> {
+export default async function runAction(nango: NangoAction, input: SlackAlertParams): Promise<SlackAlertResponse> {
     const res = await nango.post({
         endpoint: '/chat.postMessage',
         params: {

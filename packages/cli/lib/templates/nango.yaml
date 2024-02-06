@@ -7,7 +7,7 @@ integrations:
       type: sync
       scopes: public_repo
       sync_type: full
-      tracks_deletes: false
+      track_deletes: false
       runs: every half hour
       auto_start: true
       returns:

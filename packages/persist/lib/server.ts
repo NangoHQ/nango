@@ -7,7 +7,7 @@ import './tracer.js';
 import { logLevelValues } from '@nangohq/shared';
 
 export const server = express();
-server.use(express.json());
+server.use(express.json({ limit: '100mb' }));
 
 server.use((req: Request, res: Response, next: NextFunction) => {
     const originalSend = res.send;
