@@ -100,6 +100,32 @@ class ParserService {
                         }
                     }
                 }
+            },
+            ExportDefaultDeclaration(path: NodePath<t.ExportDefaultDeclaration>) {
+                const declaration = path.node.declaration;
+                function functionReturnsValue(funcNode: t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression): boolean {
+                    let returnsValue = false;
+
+                    traverseFn(funcNode.body, {
+                        ReturnStatement(path: NodePath<t.ReturnStatement>) {
+                            if (path.node.argument !== null) {
+                                returnsValue = true;
+                                path.stop();
+                            }
+                        },
+                        noScope: true
+                    });
+
+                    return returnsValue;
+                }
+
+                if (t.isFunctionDeclaration(declaration) || t.isFunctionExpression(declaration) || t.isArrowFunctionExpression(declaration)) {
+                    if (functionReturnsValue(declaration) && type === SyncConfigType.SYNC) {
+                        const lineNumber = declaration.loc?.start.line || 'unknown';
+                        console.log(chalk.red(`The default exported function fetchData at "${filePath}:${lineNumber}" must not return a value.`));
+                        usedCorrectly = false;
+                    }
+                }
             }
         });
 
