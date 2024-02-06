@@ -16,7 +16,7 @@ function validate(integration: ProviderConfig, headerSignature: string, rawBody:
     }
 
     const signature = crypto.createHmac('sha256', integration.custom['webhookSecret']).update(rawBody).digest('hex');
-    return signature === headerSignature;
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
 }
 
 const route: WebhookHandler = async (nango, integration, headers, body, rawBody) => {
