@@ -277,6 +277,7 @@
                         "integrations/all/pandadoc",
                         "integrations/all/payfit",
                         "integrations/all/paypal",
+                        "integrations/all/pendo",
                         "integrations/all/pennylane",
                         "integrations/all/pipedrive",
                         "integrations/all/qualtrics",
