@@ -14,7 +14,8 @@ import {
     Integration as ProviderIntegration,
     connectionService,
     getUniqueSyncsByProviderConfig,
-    getActionsByProviderConfigKey
+    getActionsByProviderConfigKey,
+    Config
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -119,16 +120,21 @@ class ConfigController {
                 oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
             }
 
-            const custom = req.body['custom'] ?? null;
+            const custom: Config['custom'] = req.body['custom'] ?? null;
 
             if (template.auth_mode === AuthModes.Custom) {
+                if (!custom || !custom['private_key']) {
+                    errorManager.errRes(res, 'missing_custom');
+                    return;
+                }
+
                 const { private_key } = custom;
 
                 if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
                 }
-                custom.private_key = Buffer.from(private_key).toString('base64');
+                custom['private_key'] = Buffer.from(private_key).toString('base64');
             }
 
             const newConfig: ProviderConfig = {
@@ -138,9 +144,11 @@ class ConfigController {
                 oauth_client_secret,
                 oauth_scopes: req.body['scopes'],
                 app_link: req.body['app_link'],
-                environment_id: environment.id,
-                custom
+                environment_id: environment.id
             };
+            if (custom) {
+                newConfig.custom = custom;
+            }
 
             const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environment.id);
 
@@ -200,7 +208,7 @@ class ConfigController {
 
             let client_secret = config.oauth_client_secret;
             let webhook_secret = null;
-            const custom = config.custom as Record<string, string>;
+            const custom = config.custom;
 
             if (authMode === AuthModes.App) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
@@ -208,7 +216,7 @@ class ConfigController {
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
-            if (authMode === AuthModes.Custom) {
+            if (authMode === AuthModes.Custom && custom) {
                 const { private_key } = custom;
                 custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
                 const hash = `${custom['app_id']}${private_key}${config.app_link}`;

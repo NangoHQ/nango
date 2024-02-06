@@ -129,6 +129,7 @@ export default function IntegrationCreate() {
                 client_secret: { value: string };
                 scopes: { value: string };
                 app_link: { value: string };
+                incoming_webhook_secret: { value: string };
             };
 
             const client_secret = authMode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
@@ -137,7 +138,10 @@ export default function IntegrationCreate() {
             const private_key = authMode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
             const appId = authMode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
 
-            const custom = authMode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+            let custom: Record<string, string> | undefined = authMode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+            if (target.incoming_webhook_secret.value) {
+                custom = { webhookSecret: target.incoming_webhook_secret.value };
+            }
 
             let res = await editIntegrationAPI(
                 integration.provider,
@@ -326,7 +330,7 @@ export default function IntegrationCreate() {
                                                 text={
                                                     <>
                                                         <div className="flex text-black text-sm">
-                                                            <p>{`Obtain the app id from the from the app page.`}</p>
+                                                            <p>{`Obtain the app id from the app page.`}</p>
                                                         </div>
                                                     </>
                                                 }
@@ -388,7 +392,7 @@ export default function IntegrationCreate() {
                                                 text={
                                                     <>
                                                         <div className="flex text-black text-sm">
-                                                            <p>{`Obtain the app private key from the from the app page by downloading the private key and pasting the entirety of its contents here.`}</p>
+                                                            <p>{`Obtain the app private key from the app page by downloading the private key and pasting the entirety of its contents here.`}</p>
                                                         </div>
                                                     </>
                                                 }
@@ -630,6 +634,38 @@ export default function IntegrationCreate() {
                                     )}
                                 </>
                             )}
+                            {(integration?.provider === 'linear' || integration?.custom?.webhookSecret) && (
+                                <div>
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                Webhook Receive Secret
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`Obtain the Webhook Secret from on the developer portal of the Integration Provider.`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        <SecretInput
+                                            copy={true}
+                                            id="incoming_webhook_secret"
+                                            name="incoming_webhook_secret"
+                                            autoComplete="one-time-code"
+                                            defaultValue={integration ? integration.custom?.webhookSecret : ''}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+
 
                             <div>
                                 <div className="flex justify-between">
