@@ -49,8 +49,8 @@ class ProxyController {
             const retries = req.get('Retries') as string;
             const baseUrlOverride = req.get('Base-Url-Override') as string;
             const decompress = req.get('Decompress') as string;
-            const isSync = (req.get('Nango-Is-Sync') as string) == 'true';
-            const isDryRun = (req.get('Nango-Is-Dry-Run') as string) == 'true';
+            const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
+            const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
             const environment_id = getEnvironmentId(res);
             const accountId = getAccount(res);
