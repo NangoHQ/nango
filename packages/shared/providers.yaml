@@ -247,6 +247,18 @@ calendly:
         response_type: code
     proxy:
         base_url: https://api.calendly.com
+chorus:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://chorus.ai
+clari-copilot:
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            X-Api-Key: ${apiKey}
+            X-Api-Password: ${connectionConfig.API_PASSWORD}
+        base_url: https://rest-api.copilot.clari.com
+    docs: https://api-doc.copilot.clari.com
 clickup:
     auth_mode: OAUTH2
     authorization_url: https://app.clickup.com/api
@@ -994,6 +1006,13 @@ paypal-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+pendo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.pendo.io
+        headers:
+            x-pendo-integration-key: ${apiKey}
+    docs: https://engageapi.pendo.io
 pennylane:
     auth_mode: OAUTH2
     authorization_url: https://app.pennylane.com/oauth/authorize
@@ -1557,6 +1576,8 @@ zoho-desk:
 zoho-inventory:
     alias: zoho
 zoho-invoice:
+    alias: zoho
+zoho-bigin:
     alias: zoho
 zoom:
     auth_mode: OAUTH2

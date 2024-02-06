@@ -81,22 +81,22 @@ class WebhookService {
     async shouldSendWebhook(
         environment_id: number,
         options?: { auth?: boolean; forward?: boolean }
-    ): Promise<{ send: boolean; webhookInfo: Environment | null }> {
-        const webhookInfo = await environmentService.getById(environment_id);
+    ): Promise<{ send: boolean; environmentInfo: Environment | null }> {
+        const environmentInfo = await environmentService.getById(environment_id);
+        const hasWebhookUrl = environmentInfo?.webhook_url;
 
-        if (options?.forward) {
-            return { send: true, webhookInfo };
+        if (options?.forward && hasWebhookUrl) {
+            return { send: true, environmentInfo };
         }
 
-        const noWebhookUrl = !webhookInfo?.webhook_url;
-        const authNotSelected = options?.auth && !webhookInfo?.send_auth_webhook;
-        const notAlwaysSend = !options?.auth && !webhookInfo?.always_send_webhook;
+        const authNotSelected = options?.auth && !environmentInfo?.send_auth_webhook;
+        const notAlwaysSend = !options?.auth && !environmentInfo?.always_send_webhook;
 
-        if (noWebhookUrl || authNotSelected || notAlwaysSend) {
-            return { send: false, webhookInfo };
+        if (!hasWebhookUrl || authNotSelected || notAlwaysSend) {
+            return { send: false, environmentInfo };
         }
 
-        return { send: true, webhookInfo };
+        return { send: true, environmentInfo };
     }
 
     async sendSyncUpdate(
@@ -109,13 +109,13 @@ class WebhookService {
         activityLogId: number,
         environment_id: number
     ) {
-        const { webhookInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
+        const { environmentInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
 
-        if (!webhookInfo) {
+        if (!environmentInfo || !environmentInfo.webhook_url) {
             return;
         }
 
-        const { webhook_url: webhookUrl, always_send_webhook: alwaysSendWebhook } = webhookInfo;
+        const { webhook_url: webhookUrl, always_send_webhook: alwaysSendWebhook } = environmentInfo;
 
         const noChanges =
             responseResults.added === 0 && responseResults.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
@@ -161,7 +161,7 @@ class WebhookService {
             : `with the following data: ${JSON.stringify(body, null, 2)}`;
 
         try {
-            const headers = this.getSignatureHeader(webhookInfo.secret_key, body);
+            const headers = this.getSignatureHeader(environmentInfo.secret_key, body);
 
             const response = await backOff(
                 () => {
@@ -201,13 +201,13 @@ class WebhookService {
     }
 
     async sendAuthUpdate(connection: RecentlyCreatedConnection, provider: string, success: boolean, activityLogId: number | null): Promise<void> {
-        const { send, webhookInfo } = await this.shouldSendWebhook(connection.environment_id, { auth: true });
+        const { send, environmentInfo } = await this.shouldSendWebhook(connection.environment_id, { auth: true });
 
-        if (!send || !webhookInfo) {
+        if (!send || !environmentInfo) {
             return;
         }
 
-        const { webhook_url: webhookUrl } = webhookInfo;
+        const { webhook_url: webhookUrl } = environmentInfo;
 
         const environment_id = connection.environment_id;
         const environment = await environmentService.getEnvironmentName(environment_id);
@@ -229,7 +229,7 @@ class WebhookService {
         }
 
         try {
-            const headers = this.getSignatureHeader(webhookInfo.secret_key, body);
+            const headers = this.getSignatureHeader(environmentInfo.secret_key, body);
 
             const response = await backOff(
                 () => {
@@ -279,13 +279,13 @@ class WebhookService {
         payload: Record<string, any> | null,
         webhookOriginalHeaders: Record<string, any>
     ) {
-        const { send, webhookInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
+        const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
-        if (!send || !webhookInfo) {
+        if (!send || !environmentInfo) {
             return;
         }
 
-        const { webhook_url: webhookUrl } = webhookInfo;
+        const { webhook_url: webhookUrl } = environmentInfo;
 
         const log = {
             level: 'info' as LogLevel,
@@ -308,7 +308,7 @@ class WebhookService {
             payload: payload
         };
 
-        const nangoHeaders = this.getSignatureHeader(webhookInfo.secret_key, body);
+        const nangoHeaders = this.getSignatureHeader(environmentInfo.secret_key, body);
 
         const headers = {
             ...nangoHeaders,
@@ -318,7 +318,7 @@ class WebhookService {
         try {
             const response = await backOff(
                 () => {
-                    return axios.post(webhookInfo.webhook_url as string, body, { headers });
+                    return axios.post(environmentInfo.webhook_url as string, body, { headers });
                 },
                 { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId as number, environment_id) }
             );
