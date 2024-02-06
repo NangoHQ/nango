@@ -58,6 +58,19 @@ amazon:
         grant_type: refresh_token
     proxy:
         base_url: https://api.amazon.com
+aws:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
+    token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - openid
+    docs: https://docs.aws.amazon.com/cognito
 amplitude:
     auth_mode: BASIC
     proxy:
@@ -1563,6 +1576,8 @@ zoho-desk:
 zoho-inventory:
     alias: zoho
 zoho-invoice:
+    alias: zoho
+zoho-bigin:
     alias: zoho
 zoom:
     auth_mode: OAUTH2
