@@ -1,6 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import proxyService from './proxy.service.js';
 import { HTTP_VERB, AuthModes } from '../models/index.js';
+import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 describe('Proxy Controller Construct Header Tests', () => {
@@ -31,8 +32,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const headers = proxyService.constructHeaders(config);
+        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(headers).toEqual({
             'My-Token': 'sweet-secret-token',
@@ -51,8 +51,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const result = proxyService.constructHeaders(config);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64')
@@ -69,8 +68,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const result = proxyService.constructHeaders(config);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:').toString('base64')
@@ -93,8 +91,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const result = proxyService.constructHeaders(config);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64'),
@@ -116,8 +113,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const result = proxyService.constructHeaders(config);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toEqual({
             Authorization: 'Bearer testtoken'
@@ -132,8 +128,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             token: 'testtoken'
         };
 
-        // @ts-ignore
-        const result = proxyService.constructHeaders(config);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toEqual({
             Authorization: 'Bearer testtoken'
@@ -153,8 +148,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             token: 'some-oauth-access-token'
         };
 
-        // @ts-ignore
-        const result = proxyService.constructHeaders(config);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toEqual({
             Authorization: 'Bearer some-oauth-access-token',
@@ -179,13 +173,39 @@ describe('Proxy Controller Construct Header Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const result = proxyService.constructHeaders(config);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toEqual({
             'My-Token': 'some-abc-token',
             'x-custom-header': 'custom value',
             'y-custom-header': 'custom values'
+        });
+    });
+
+    it('Should construct headers for an api key', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.ApiKey,
+                proxy: {
+                    headers: {
+                        'X-Api-Key': '${apiKey}',
+                        'X-Api-Password': '${connectionConfig.API_PASSWORD}'
+                    }
+                }
+            },
+            token: { apiKey: 'api-key-value' },
+            connection: {
+                connection_config: {
+                    API_PASSWORD: 'api-password-value'
+                }
+            }
+        };
+
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+
+        expect(result).toEqual({
+            'X-Api-Key': 'api-key-value',
+            'X-Api-Password': 'api-password-value'
         });
     });
 });
@@ -202,8 +222,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             connection: {}
         };
 
-        // @ts-ignore
-        const result = proxyService.constructUrl(config);
+        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toBe('https://example.com/api/test');
     });
@@ -219,8 +238,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             connection: {}
         };
 
-        // @ts-ignore
-        const result = proxyService.constructUrl(config);
+        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toBe('https://example.com/api/test');
     });
@@ -237,8 +255,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             connection: {}
         };
 
-        // @ts-ignore
-        const result = proxyService.constructUrl(config);
+        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
@@ -256,8 +273,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             connection: {}
         };
 
-        // @ts-ignore
-        const result = proxyService.constructUrl(config);
+        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
@@ -280,8 +296,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             connection: {}
         };
 
-        // @ts-ignore
-        const result = proxyService.constructUrl(config);
+        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test?api_key=sweet-secret-token');
@@ -304,8 +319,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             connection: {}
         };
 
-        // @ts-ignore
-        const result = proxyService.constructUrl(config);
+        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toBe('https://override.com/api/test?key=sweet-secret-token');
     });
@@ -327,8 +341,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             connection: {}
         };
 
-        // @ts-ignore
-        const result = proxyService.constructUrl(config);
+        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(result).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
     });
@@ -354,13 +367,11 @@ describe('Proxy Controller Construct URL Tests', () => {
             baseUrlOverride: 'https://override.com',
             connection: {}
         };
-        // @ts-ignore
-        const url = proxyService.constructUrl(config);
+        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(url).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
 
-        // @ts-ignore
-        const headers = proxyService.constructHeaders(config);
+        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(headers).toEqual({
             'x-custom-header': 'custom value',
@@ -384,8 +395,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const url = proxyService.constructUrl(config);
+        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(url).toBe('https://www.zohoapis.eu/api/test');
     });
@@ -405,8 +415,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             }
         };
 
-        // @ts-ignore
-        const url = proxyService.constructUrl(config);
+        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(url).toBe('https://myinstanceurl.com/api/test');
     });
@@ -424,8 +433,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             headers: headers
         };
 
-        // @ts-ignore
-        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config);
+        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(strippedHeaders).toEqual({
             Accept: 'application/json',
@@ -447,8 +455,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             headers: headers
         };
 
-        // @ts-ignore
-        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config);
+        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(strippedHeaders).toEqual({
             Accept: 'application/json',
