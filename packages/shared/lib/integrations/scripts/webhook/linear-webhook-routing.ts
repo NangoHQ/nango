@@ -11,27 +11,28 @@ interface LinearBody {
 }
 
 function validate(integration: ProviderConfig, headerSignature: string, rawBody: string): boolean {
-    const custom = integration.custom as Record<string, string>;
-    const webhookSecret = custom['webhook_secret'];
-    if (!webhookSecret) {
+    if (!integration.custom?.['webhookSecret']) {
         return false;
     }
 
-    const signature = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
-    return signature !== headerSignature;
+    const signature = crypto.createHmac('sha256', integration.custom['webhookSecret']).update(rawBody).digest('hex');
+    return signature === headerSignature;
 }
 
 const route: WebhookHandler = async (nango, integration, headers, body, rawBody) => {
     const signature = headers['linear-signature'];
 
+    console.log('[webhook/linear] received', { configId: integration.id });
+
     if (!validate(integration, signature, rawBody)) {
-        console.error('Linear webhook signature invalid');
+        console.log('[webhook/linear] invalid signature', { configId: integration.id });
         return;
     }
 
     const parsedBody = body as LinearBody;
+    console.log(`[webhook/linear] valid ${parsedBody.type}`, { configId: integration.id });
 
-    await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'team.id');
+    await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'organizationId', 'organizationId');
 
     return { parsedBody };
 };
