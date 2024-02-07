@@ -488,6 +488,7 @@ class SyncClient {
             // Errors received from temporal are raw objects not classes
             const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
 
+
             if (writeLogs && (success === false || error)) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
