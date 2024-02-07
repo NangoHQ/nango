@@ -52,6 +52,7 @@ export default function IntegrationCreate() {
     const [webhookReceiveUrl, setWebhookReceiveUrl] = useState('');
     const [webhookSecret, setWebhookSecret] = useState<string>('');
     const [hasWebhook, setHasWebhook] = useState(false);
+    const [hasWebhookUserDefinedSecret, setHasWebhookUserDefinedSecret] = useState(false);
     const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
     const getProvidersAPI = useGetProvidersAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
@@ -74,6 +75,7 @@ export default function IntegrationCreate() {
                         setAuthMode(currentIntegration['auth_mode']);
                     }
                     setHasWebhook(currentIntegration['has_webhook']);
+                    setHasWebhookUserDefinedSecret(currentIntegration['has_webhook_user_defined_secret']);
                     setWebhookSecret(currentIntegration['webhook_secret'] || '');
                 }
             } else {
@@ -634,7 +636,7 @@ export default function IntegrationCreate() {
                                     )}
                                 </>
                             )}
-                            {(integration?.provider === 'linear' || integration?.custom?.webhookSecret) && (
+                            {hasWebhookUserDefinedSecret && (
                                 <div>
                                     <div>
                                         <div className="flex">

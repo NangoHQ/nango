@@ -46,6 +46,7 @@ export interface Template {
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
+    webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
 }
 

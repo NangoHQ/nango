@@ -9,7 +9,6 @@ export default async function execute(nango: Nango) {
         }`;
 
     const response = await nango.proxy({
-        baseUrlOverride: 'https://api.linear.app',
         endpoint: '/graphql',
         data: { query },
         method: 'POST'
