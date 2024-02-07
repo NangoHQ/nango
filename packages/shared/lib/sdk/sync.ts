@@ -1,12 +1,3 @@
-import { getSyncConfigByJobId } from '../services/sync/config/config.service.js';
-import { updateRecord, upsert } from '../services/sync/data/data.service.js';
-import { formatDataRecords } from '../services/sync/data/records.service.js';
-import { createActivityLogMessage } from '../services/activity/activity.service.js';
-import { setLastSyncDate } from '../services/sync/sync.service.js';
-import { updateSyncJobResult } from '../services/sync/job.service.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { LogActionEnum } from '../models/Activity.js';
-
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
@@ -70,11 +61,6 @@ export interface AxiosResponse<T = any, D = any> {
 
 interface UserLogParameters {
     level?: LogLevel;
-}
-
-interface DataResponse {
-    id?: string;
-    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 
 enum PaginationType {
@@ -229,7 +215,6 @@ export interface NangoProps {
     attributes?: object | undefined;
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
-    usePersistAPI?: boolean;
 }
 
 interface EnvironmentVariable {
@@ -246,7 +231,6 @@ export class NangoAction {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
-    usePersistAPI: boolean;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -294,8 +278,15 @@ export class NangoAction {
         if (config.attributes) {
             this.attributes = config.attributes;
         }
+    }
 
-        this.usePersistAPI = config.usePersistAPI || false;
+    protected stringify(): string {
+        return JSON.stringify(this, (key, value) => {
+            if (key === 'secretKey') {
+                return '********';
+            }
+            return value;
+        });
     }
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -451,42 +442,21 @@ export class NangoAction {
             throw new Error('There is no current activity log stream to log to');
         }
 
-        if (this.usePersistAPI) {
-            const response = await persistApi({
-                method: 'POST',
-                url: `/environment/${this.environmentId}/log`,
-                data: {
-                    activityLogId: this.activityLogId,
-                    level: userDefinedLevel?.level ?? 'info',
-                    msg: content
-                }
-            });
-
-            if (response.status > 299) {
-                console.error(
-                    `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    JSON.stringify(this, (key, value) => {
-                        if (key === 'secretKey') {
-                            return '********';
-                        }
-                        return value;
-                    })
-                );
-                throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
-            }
-            return;
-        }
-
-        await createActivityLogMessage(
-            {
+        const response = await persistApi({
+            method: 'POST',
+            url: `/environment/${this.environmentId}/log`,
+            data: {
+                activityLogId: this.activityLogId,
                 level: userDefinedLevel?.level ?? 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content,
-                timestamp: Date.now()
-            },
-            false
-        );
+                msg: content
+            }
+        });
+
+        if (response.status > 299) {
+            console.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
+        }
+        return;
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -605,30 +575,21 @@ export class NangoSync extends NangoAction {
         if (date.toString() === 'Invalid Date') {
             throw new Error('Invalid Date');
         }
-        if (this.usePersistAPI) {
-            const response = await persistApi({
-                method: 'PUT',
-                url: `/sync/${this.syncId}`,
-                data: {
-                    lastSyncDate: date
-                }
-            });
-            if (response.status > 299) {
-                console.error(
-                    `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    JSON.stringify(this, (key, value) => {
-                        if (key === 'secretKey') {
-                            return '********';
-                        }
-                        return value;
-                    })
-                );
-                throw new Error(`cannot set lastSyncDate for sync '${this.syncId}'`);
+        const response = await persistApi({
+            method: 'PUT',
+            url: `/sync/${this.syncId}`,
+            data: {
+                lastSyncDate: date
             }
-            return true;
-        } else {
-            return await setLastSyncDate(this.syncId as string, date);
+        });
+        if (response.status > 299) {
+            console.error(
+                `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                this.stringify()
+            );
+            throw new Error(`cannot set lastSyncDate for sync '${this.syncId}'`);
         }
+        return true;
     }
 
     /**
@@ -657,132 +618,30 @@ export class NangoSync extends NangoAction {
             return null;
         }
 
-        if (this.usePersistAPI) {
-            for (let i = 0; i < results.length; i += this.batchSize) {
-                const batch = results.slice(i, i + this.batchSize);
-                const response = await persistApi({
-                    method: 'POST',
-                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                    data: {
-                        model,
-                        records: batch,
-                        providerConfigKey: this.providerConfigKey,
-                        connectionId: this.connectionId,
-                        activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate || new Date(),
-                        trackDeletes: this.track_deletes
-                    }
-                });
-                if (response.status > 299) {
-                    console.error(
-                        `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                        JSON.stringify(this, (key, value) => {
-                            if (key === 'secretKey') {
-                                return '********';
-                            }
-                            return value;
-                        })
-                    );
-                    throw new Error(`cannot save records for sync '${this.syncId}'`);
+        for (let i = 0; i < results.length; i += this.batchSize) {
+            const batch = results.slice(i, i + this.batchSize);
+            const response = await persistApi({
+                method: 'POST',
+                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                data: {
+                    model,
+                    records: batch,
+                    providerConfigKey: this.providerConfigKey,
+                    connectionId: this.connectionId,
+                    activityLogId: this.activityLogId,
+                    lastSyncDate: this.lastSyncDate || new Date(),
+                    trackDeletes: this.track_deletes
                 }
-            }
-            return true;
-        }
-
-        const {
-            success,
-            error,
-            response: formattedResults
-        } = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId,
-            this.lastSyncDate,
-            this.track_deletes
-        );
-
-        if (!success || formattedResults === null) {
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch save. ${error?.message}`,
-                    timestamp: Date.now()
-                });
-            }
-
-            throw error;
-        }
-
-        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
-
-        if (syncConfig && !syncConfig?.models.includes(model)) {
-            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
-        }
-
-        const responseResults = await upsert(
-            formattedResults,
-            '_nango_sync_data_records',
-            'external_id',
-            this.nangoConnectionId as number,
-            model,
-            this.activityLogId as number,
-            this.environmentId as number,
-            this.track_deletes
-        );
-
-        if (responseResults.success) {
-            const { summary } = responseResults;
-            const updatedResults = {
-                [model]: {
-                    added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number,
-                    deleted: summary?.deletedKeys?.length as number
-                }
-            };
-
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
             });
-
-            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
-
-            return true;
-        } else {
-            const content = `There was an issue with the batch save. ${responseResults?.error}`;
-
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content,
-                    timestamp: Date.now()
-                });
-
-                await errorManager.report(content, {
-                    environmentId: this.environmentId as number,
-                    source: ErrorSourceEnum.CUSTOMER,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        connectionId: this.connectionId,
-                        providerConfigKey: this.providerConfigKey,
-                        syncId: this.syncId,
-                        nangoConnectionId: this.nangoConnectionId,
-                        syncJobId: this.syncJobId
-                    }
-                });
+            if (response.status > 299) {
+                console.error(
+                    `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    this.stringify()
+                );
+                throw new Error(`cannot save records for sync '${this.syncId}'`);
             }
-
-            throw new Error(responseResults?.error);
         }
+        return true;
     }
 
     public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
@@ -803,134 +662,30 @@ export class NangoSync extends NangoAction {
             return null;
         }
 
-        if (this.usePersistAPI) {
-            for (let i = 0; i < results.length; i += this.batchSize) {
-                const batch = results.slice(i, i + this.batchSize);
-                const response = await persistApi({
-                    method: 'DELETE',
-                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                    data: {
-                        model,
-                        records: batch,
-                        providerConfigKey: this.providerConfigKey,
-                        connectionId: this.connectionId,
-                        activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate || new Date(),
-                        trackDeletes: this.track_deletes
-                    }
-                });
-                if (response.status > 299) {
-                    console.error(
-                        `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                        JSON.stringify(this, (key, value) => {
-                            if (key === 'secretKey') {
-                                return '********';
-                            }
-                            return value;
-                        })
-                    );
-                    throw new Error(`cannot delete records for sync '${this.syncId}'`);
+        for (let i = 0; i < results.length; i += this.batchSize) {
+            const batch = results.slice(i, i + this.batchSize);
+            const response = await persistApi({
+                method: 'DELETE',
+                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                data: {
+                    model,
+                    records: batch,
+                    providerConfigKey: this.providerConfigKey,
+                    connectionId: this.connectionId,
+                    activityLogId: this.activityLogId,
+                    lastSyncDate: this.lastSyncDate || new Date(),
+                    trackDeletes: this.track_deletes
                 }
-            }
-            return true;
-        }
-
-        const {
-            success,
-            error,
-            response: formattedResults
-        } = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId,
-            this.lastSyncDate,
-            this.track_deletes,
-            true
-        );
-
-        if (!success || formattedResults === null) {
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch delete. ${error?.message}`,
-                    timestamp: Date.now()
-                });
-            }
-
-            throw error;
-        }
-
-        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
-
-        if (syncConfig && !syncConfig?.models.includes(model)) {
-            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
-        }
-
-        const responseResults = await upsert(
-            formattedResults,
-            '_nango_sync_data_records',
-            'external_id',
-            this.nangoConnectionId as number,
-            model,
-            this.activityLogId as number,
-            this.environmentId as number,
-            this.track_deletes,
-            true
-        );
-
-        if (responseResults.success) {
-            const { summary } = responseResults;
-            const updatedResults: Record<string, { added: number; updated: number; deleted: number }> = {
-                [model]: {
-                    added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number,
-                    deleted: summary?.deletedKeys?.length as number
-                }
-            };
-
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
             });
-
-            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
-
-            return true;
-        } else {
-            const content = `There was an issue with the batch delete. ${responseResults?.error}`;
-
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content,
-                    timestamp: Date.now()
-                });
-
-                await errorManager.report(content, {
-                    environmentId: this.environmentId as number,
-                    source: ErrorSourceEnum.CUSTOMER,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        connectionId: this.connectionId,
-                        providerConfigKey: this.providerConfigKey,
-                        syncId: this.syncId,
-                        nangoConnectionId: this.nangoConnectionId,
-                        syncJobId: this.syncJobId
-                    }
-                });
+            if (response.status > 299) {
+                console.error(
+                    `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    this.stringify()
+                );
+                throw new Error(`cannot delete records for sync '${this.syncId}'`);
             }
-
-            throw new Error(responseResults?.error);
         }
+        return true;
     }
 
     public async batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null> {
@@ -951,125 +706,30 @@ export class NangoSync extends NangoAction {
             return null;
         }
 
-        if (this.usePersistAPI) {
-            for (let i = 0; i < results.length; i += this.batchSize) {
-                const batch = results.slice(i, i + this.batchSize);
-                const response = await persistApi({
-                    method: 'PUT',
-                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                    data: {
-                        model,
-                        records: batch,
-                        providerConfigKey: this.providerConfigKey,
-                        connectionId: this.connectionId,
-                        activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate || new Date(),
-                        trackDeletes: this.track_deletes
-                    }
-                });
-                if (response.status > 299) {
-                    console.error(
-                        `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                        JSON.stringify(this, (key, value) => {
-                            if (key === 'secretKey') {
-                                return '********';
-                            }
-                            return value;
-                        })
-                    );
-                    throw new Error(`cannot update records for sync '${this.syncId}'`);
+        for (let i = 0; i < results.length; i += this.batchSize) {
+            const batch = results.slice(i, i + this.batchSize);
+            const response = await persistApi({
+                method: 'PUT',
+                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                data: {
+                    model,
+                    records: batch,
+                    providerConfigKey: this.providerConfigKey,
+                    connectionId: this.connectionId,
+                    activityLogId: this.activityLogId,
+                    lastSyncDate: this.lastSyncDate || new Date(),
+                    trackDeletes: this.track_deletes
                 }
-            }
-            return true;
-        }
-
-        const {
-            success,
-            error,
-            response: formattedResults
-        } = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId || 0,
-            this.lastSyncDate,
-            false
-        );
-
-        if (!success || formattedResults === null) {
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch save. ${error?.message}`,
-                    timestamp: Date.now()
-                });
-            }
-
-            throw error;
-        }
-
-        const responseResults = await updateRecord(
-            formattedResults,
-            '_nango_sync_data_records',
-            'external_id',
-            this.nangoConnectionId as number,
-            model,
-            this.activityLogId as number,
-            this.environmentId as number
-        );
-
-        if (responseResults.success) {
-            const { summary } = responseResults;
-            const updatedResults = {
-                [model]: {
-                    added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number,
-                    deleted: summary?.deletedKeys?.length as number
-                }
-            };
-
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content: `Batch update was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
             });
-
-            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
-
-            return true;
-        } else {
-            const content = `There was an issue with the batch update. ${responseResults?.error}`;
-
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content,
-                    timestamp: Date.now()
-                });
-
-                await errorManager.report(content, {
-                    environmentId: this.environmentId as number,
-                    source: ErrorSourceEnum.CUSTOMER,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        connectionId: this.connectionId,
-                        providerConfigKey: this.providerConfigKey,
-                        syncId: this.syncId,
-                        nangoConnectionId: this.nangoConnectionId,
-                        syncJobId: this.syncJobId
-                    }
-                });
+            if (response.status > 299) {
+                console.error(
+                    `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    this.stringify()
+                );
+                throw new Error(`cannot update records for sync '${this.syncId}'`);
             }
-
-            throw new Error(responseResults?.error);
         }
+        return true;
     }
 
     public override async getMetadata<T = Metadata>(): Promise<T> {
