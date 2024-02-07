@@ -1,10 +1,11 @@
 integrations:
   wildix-pbx:
-    wildix-pbx-colleagues:
-      runs: every 1 hour
-      returns:
-        - WildixPbxColleague
-
+    syncs:
+      wildix-pbx-colleagues:
+        runs: every 1 hour
+        output: WildixPbxColleague
+        sync_type: full
+        endpoint: /wildix-pbx/colleagues
 models:
   WildixPbxColleague:
     id: string

@@ -1,32 +1,42 @@
 integrations:
   zoho-crm:
-    zoho-crm-accounts:
-      runs: every half hour
-      auto_start: false
-      returns:
-        - ZohoCRMAccount
-      description: |
-        Fetches accounts from zoho crm.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
-    zoho-crm-contacts:
-      runs: every half hour
-      auto_start: false
-      returns:
-        - ZohoCRMContact
-      description: |
-        Fetches contacts from zoho crm.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
-    zoho-crm-deals:
-      runs: every half hour
-      auto_start: false
-      returns:
-        - ZohoCRMDeal
-      description: |
-        Fetches deals/opportunities from zoho crm.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
+    syncs:
+      zoho-crm-accounts:
+        runs: every half hour
+        auto_start: false
+        description: |
+          Fetches accounts from zoho crm.
+          Details: full sync, doesn't track deletes, metadata is not required.
+          Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
+        output: ZohoCRMAccount
+        sync_type: incremental
+        endpoint: /zoho-crm/accounts
+        scopes:
+          - ZohoCRM.modules.accounts.READ
+      zoho-crm-contacts:
+        runs: every half hour
+        auto_start: false
+        description: |
+          Fetches contacts from zoho crm.
+          Details: full sync, doesn't track deletes, metadata is not required.
+          Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
+        output: ZohoCRMContact
+        sync_type: incremental
+        endpoint: /zoho-crm/contacts
+        scopes:
+          - ZohoCRM.modules.contacts.READ
+      zoho-crm-deals:
+        runs: every half hour
+        auto_start: false
+        description: |
+          Fetches deals/opportunities from zoho crm.
+          Details: full sync, doesn't track deletes, metadata is not required.
+          Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
+        output: ZohoCRMDeal
+        sync_type: incremental
+        endpoint: /zoho-crm/deals
+        scopes:
+          - ZohoCRM.modules.deals.READ
 models:
   ZohoCRMAccount:
     Owner:

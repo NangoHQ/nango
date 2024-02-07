@@ -1,37 +1,46 @@
 integrations:
   pipedrive:
-    pipedrive-activities:
-      runs: every hour
-      returns:
-        - PipeDriveActivity
-      description: |
-        Fetches activities from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): activities:read
-    pipedrive-deals:
-      runs: every hour
-      returns:
-        - PipeDriveDeal
-      description: |
-        Fetches deals from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): deals:read
-    pipedrive-organizations:
-      runs: every hour
-      returns:
-        - PipeDriveOrganization
-      description: |
-        Fetches organizations from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): contacts:read
-    pipedrive-persons:
-      runs: every half hour
-      returns:
-        - PipeDrivePerson
-      description: |
-        Fetches persons from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): contacts:read
+    syncs:
+      pipedrive-activities:
+        runs: every hour
+        description: |
+          Fetches activities from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDriveActivity
+        sync_type: incremental
+        endpoint: /pipedrive/activities
+        scopes:
+          - activities:read
+      pipedrive-deals:
+        runs: every hour
+        description: |
+          Fetches deals from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDriveDeal
+        sync_type: incremental
+        endpoint: /pipedrive/deals
+        scopes:
+          - deals:read
+      pipedrive-organizations:
+        runs: every hour
+        description: |
+          Fetches organizations from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDriveOrganization
+        sync_type: incremental
+        endpoint: /pipedrive/organizations
+        scopes:
+          - contacts:read
+      pipedrive-persons:
+        runs: every half hour
+        description: |
+          Fetches persons from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDrivePerson
+        sync_type: incremental
+        endpoint: /pipedrive/persons
+        scopes:
+          - contacts:read
 models:
   PipeDriveActivity:
     id: integer
