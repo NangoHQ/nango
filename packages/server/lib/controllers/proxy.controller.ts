@@ -318,7 +318,7 @@ class ProxyController {
             const activityLogs: ActivityLogMessage[] = [];
             const headers = proxyService.constructHeaders(config);
             const requestConfig: AxiosRequestConfig = {
-                method: method,
+                method,
                 url,
                 responseType: 'stream',
                 headers,
