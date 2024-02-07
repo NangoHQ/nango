@@ -819,7 +819,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `${method.toUpperCase()} request to ${url} failed`,
-                    params: JSON.stringify(errorData, null, 2) as any
+                    params: JSON.stringify((errorData as any).error || errorData, null, 2) as any
                 });
             } else {
                 console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorData)}`);
