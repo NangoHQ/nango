@@ -460,7 +460,7 @@ class SyncClient {
                 await createActivityLogMessage({
                     level: 'info',
                     environment_id,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
                     params: {
                         input: JSON.stringify(input, null, 2)
@@ -482,13 +482,19 @@ class SyncClient {
                 ]
             });
 
-            const { success, error, response } = actionHandler;
+            const { success, error: rawError, response } = actionHandler;
+
+            // Errors received from temporal are raw objects not classes
+            const error =
+                !(rawError instanceof NangoError) && rawError.type && rawError.status
+                    ? new NangoError(rawError.type, rawError.payload, rawError.status)
+                    : rawError;
 
             if (writeLogs && (success === false || error)) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `The action workflow ${workflowId} did not complete successfully`
                 });
@@ -500,7 +506,7 @@ class SyncClient {
                 await createActivityLogMessageAndEnd({
                     level: 'info',
                     environment_id,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
                         0,
@@ -508,7 +514,7 @@ class SyncClient {
                     )}`
                 });
 
-                await updateSuccessActivityLog(activityLogId as number, true);
+                await updateSuccessActivityLog(activityLogId, true);
             }
 
             return { success, error, response };
@@ -520,13 +526,13 @@ class SyncClient {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `The action workflow ${workflowId} failed with error: ${e}`
                 });
             }
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: connection.environment_id,
