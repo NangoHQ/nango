@@ -61,8 +61,8 @@ export function getAdditionalAuthorizationParams(params: any): Record<string, st
         return {};
     }
 
-    let arr = Object.entries(params).filter(([_, v]) => typeof v === 'string'); // Filter strings
-    let obj = Object.fromEntries(arr) as Record<string, string | undefined>;
+    const arr = Object.entries(params).filter(([_, v]) => typeof v === 'string'); // Filter strings
+    const obj = Object.fromEntries(arr) as Record<string, string | undefined>;
     Object.keys(obj).forEach((key) => (obj[key] = obj[key] === 'undefined' ? undefined : obj[key])); // Detect undefined values to override template auth params.
     return obj;
 }

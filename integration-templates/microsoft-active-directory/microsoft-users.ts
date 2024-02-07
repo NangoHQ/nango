@@ -45,7 +45,7 @@ export default async function fetchData(nango: NangoSync) {
     const baseEndpoint = '/v1.0/groups';
 
     for (const orgId of orgsToSync) {
-        let endpoint = `${baseEndpoint}/${orgId}/transitiveMembers?$top=500`;
+        const endpoint = `${baseEndpoint}/${orgId}/transitiveMembers?$top=500`;
 
         await nango.log(`Fetching users for org ID: ${orgId}`);
         await fetchAndUpdateUsers(nango, endpoint);

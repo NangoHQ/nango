@@ -3,7 +3,7 @@ import type { WorkableJobQuestion, NangoSync } from './models';
 const CHUNK_SIZE = 100;
 
 export default async function fetchData(nango: NangoSync) {
-    let totalRecords = 0;
+    const totalRecords = 0;
 
     try {
         const jobs: any[] = await getAllJobs(nango);
