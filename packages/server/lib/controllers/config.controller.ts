@@ -9,13 +9,16 @@ import {
     analytics,
     AnalyticsTypes,
     configService,
+    environmentService,
     Config as ProviderConfig,
     IntegrationWithCreds,
     Integration as ProviderIntegration,
     connectionService,
     getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey,
-    getFlowConfigsByParams
+    getFlowConfigsByParams,
+    Config,
+    getGlobalWebhookReceiveUrl
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -130,16 +133,21 @@ class ConfigController {
                 oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
             }
 
-            const custom = req.body['custom'] ?? null;
+            const custom: Config['custom'] = req.body['custom'] ?? null;
 
             if (template.auth_mode === AuthModes.Custom) {
+                if (!custom || !custom['private_key']) {
+                    errorManager.errRes(res, 'missing_custom');
+                    return;
+                }
+
                 const { private_key } = custom;
 
                 if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
                 }
-                custom.private_key = Buffer.from(private_key).toString('base64');
+                custom['private_key'] = Buffer.from(private_key).toString('base64');
             }
 
             const newConfig: ProviderConfig = {
@@ -149,9 +157,11 @@ class ConfigController {
                 oauth_client_secret,
                 oauth_scopes: req.body['scopes'],
                 app_link: req.body['app_link'],
-                environment_id: environment.id,
-                custom
+                environment_id: environment.id
             };
+            if (custom) {
+                newConfig.custom = custom;
+            }
 
             const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environment.id);
 
@@ -241,6 +251,7 @@ class ConfigController {
             }
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
+            const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(environmentId);
 
             if (config == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -252,7 +263,7 @@ class ConfigController {
 
             let client_secret = config.oauth_client_secret;
             let webhook_secret = null;
-            const custom = config.custom as Record<string, string>;
+            const custom = config.custom;
 
             if (authMode === AuthModes.App) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
@@ -278,6 +289,10 @@ class ConfigController {
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = providerTemplate.webhook_routing_script;
             const connectionCount = (await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey)).length;
+            let webhookUrl: string | null = null;
+            if (hasWebhook) {
+                webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environmentUuid}/${config.provider}`;
+            }
 
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
                 ? ({
@@ -294,7 +309,10 @@ class ConfigController {
                       actions,
                       has_webhook: Boolean(hasWebhook),
                       webhook_secret,
-                      connectionCount
+                      connectionCount,
+                      has_webhook_user_defined_secret: providerTemplate.webhook_user_defined_secret,
+                      webhook_url: webhookUrl,
+                      webhook_secret
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
@@ -414,16 +432,21 @@ class ConfigController {
                 oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
             }
 
-            const custom = req.body['custom'] ?? null;
+            const custom: ProviderConfig['custom'] = req.body['custom'];
 
             if (authMode === AuthModes.Custom) {
+                if (!custom || !custom['private_key']) {
+                    errorManager.errRes(res, 'missing_custom');
+                    return;
+                }
+
                 const { private_key } = custom;
 
                 if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
                 }
-                custom.private_key = Buffer.from(private_key).toString('base64');
+                custom['private_key'] = Buffer.from(private_key).toString('base64');
             }
 
             const oauth_client_id = req.body['oauth_client_id'] ?? null;
@@ -448,9 +471,11 @@ class ConfigController {
                           .join(',')
                     : '',
                 app_link,
-                environment_id: environmentId,
-                custom
+                environment_id: environmentId
             };
+            if (custom) {
+                config.custom = custom;
+            }
 
             const result = await configService.createProviderConfig(config);
 

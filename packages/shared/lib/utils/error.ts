@@ -155,6 +155,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'app_id'.`;
                 break;
 
+            case 'missing_custom':
+                this.status = 400;
+                this.message = `Missing param 'custom'.`;
+                break;
+
             case 'missing_installation_id':
                 this.status = 400;
                 this.message = `Missing param 'installation_id'.`;

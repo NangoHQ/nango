@@ -124,6 +124,8 @@ export interface IntegrationWithCreds extends Integration {
     client_secret: string;
     scopes: string;
     created_at: Date;
+    has_webhook: boolean;
+    webhook_url?: string;
 }
 
 interface Timestamps {

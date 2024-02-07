@@ -68,7 +68,14 @@ const webAuth =
         ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
         : [authMiddleware.noAuth.bind(authMiddleware)];
 
-app.use(express.json({ limit: '75mb' }));
+app.use(
+    express.json({
+        limit: '75mb',
+        verify: (req: Request, _, buf) => {
+            req.rawBody = buf.toString();
+        }
+    })
+);
 app.use(bodyParser.raw({ type: 'text/xml' }));
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));

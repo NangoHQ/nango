@@ -46,6 +46,7 @@ export interface Template {
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
+    webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
     categories?: string[];
 }
@@ -63,6 +64,8 @@ export interface IntegrationWithCreds extends Integration {
     scopes: string;
     auth_mode: AuthModes;
     app_link?: string;
+    has_webhook: boolean;
+    webhook_url?: string;
     syncs: SyncConfig[];
     actions: Action[];
     created_at: Date;

@@ -227,7 +227,8 @@ describe('Should verify the config controller HTTP API calls', async () => {
                     created_at: expect.any(Date),
                     syncs: [],
                     actions: [],
-                    webhook_secret: null
+                    webhook_secret: null,
+                    has_webhook_user_defined_secret: undefined
                 }
             })
         );
