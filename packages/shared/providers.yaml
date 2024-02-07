@@ -897,6 +897,12 @@ netsuite:
     token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
         - restlets
+next-cloud-ocs:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.domain}/ocs/v1.php
+        headers:
+            'OCS-APIRequest': 'true'
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
