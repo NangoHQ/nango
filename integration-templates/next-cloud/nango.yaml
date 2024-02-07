@@ -51,7 +51,7 @@ models:
     groups: string[]
     language: string
     locale: string
-    notify_email:
+    notify_email: boolean
     backendCapabilities:
       setDisplayName: boolean
       setPassword: boolean
