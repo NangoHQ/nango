@@ -5,7 +5,6 @@ import { ApiKeyCredentials, BasicApiCredentials, AuthModes, OAuth2Credentials } 
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
-import { createActivityLogMessageAndEnd, createActivityLogMessage } from './activity/activity.service.js';
 import configService from './config.service.js';
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
@@ -19,20 +18,22 @@ interface Activities {
 interface RouteResponse {
     response: AxiosResponse | AxiosError;
 }
+interface RetryHandlerResponse {
+    shouldRetry: boolean;
+}
 
 class ProxyService {
     public async route(
         externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
         internalConfig: InternalProxyConfiguration
     ): Promise<RouteResponse & Activities> {
-        const { success, error, response: proxyConfig, activityLogs } = this.configure(externalConfig, internalConfig);
+        const { success, error, response: proxyConfig, activityLogs: configureActivityLogs } = this.configure(externalConfig, internalConfig);
         if (!success || error || !proxyConfig) {
             throw new Error(`Proxy configuration is missing: ${error}`);
         }
-        return {
-            response: await this.sendToHttpMethod(proxyConfig, internalConfig),
-            activityLogs
-        };
+        return await this.sendToHttpMethod(proxyConfig, internalConfig).then((resp) => {
+            return { response: resp.response, activityLogs: [...configureActivityLogs, ...resp.activityLogs] };
+        });
     }
 
     public configure(
@@ -208,7 +209,7 @@ class ProxyService {
         error: AxiosError,
         type: 'at' | 'after',
         retryHeader: string
-    ): Promise<boolean> => {
+    ): Promise<RetryHandlerResponse & Activities> => {
         if (type === 'at') {
             const resetTimeEpoch = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
 
@@ -221,17 +222,19 @@ class ProxyService {
 
                     const content = `Rate limit reset time was parsed successfully, retrying after ${waitDuration} seconds`;
 
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content
-                    });
+                    const activityLogs: ActivityLogMessage[] = [
+                        {
+                            level: 'error',
+                            environment_id,
+                            activity_log_id: activityLogId,
+                            timestamp: Date.now(),
+                            content
+                        }
+                    ];
 
                     await new Promise((resolve) => setTimeout(resolve, waitDuration * 1000));
 
-                    return true;
+                    return { shouldRetry: true, activityLogs: activityLogs };
                 }
             }
         }
@@ -243,21 +246,23 @@ class ProxyService {
                 const retryAfter = Number(retryHeaderVal);
                 const content = `Retry header was parsed successfully, retrying after ${retryAfter} seconds`;
 
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
+                const activityLogs: ActivityLogMessage[] = [
+                    {
+                        level: 'error',
+                        environment_id,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content
+                    }
+                ];
 
                 await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
 
-                return true;
+                return { shouldRetry: true, activityLogs: activityLogs };
             }
         }
 
-        return true;
+        return { shouldRetry: true, activityLogs: [] };
     };
 
     /**
@@ -271,6 +276,7 @@ class ProxyService {
         activityLogId: number,
         environment_id: number,
         config: ApplicationConstructedProxyConfiguration,
+        activityLogs: ActivityLogMessage[],
         error: AxiosError,
         attemptNumber: number
     ): Promise<boolean> => {
@@ -287,14 +293,30 @@ class ProxyService {
                 const type = config.retryHeader.at ? 'at' : 'after';
                 const retryHeader = config.retryHeader.at ? config.retryHeader.at : config.retryHeader.after;
 
-                return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
+                const { shouldRetry, activityLogs: retryActivityLogs } = await this.retryHandler(
+                    activityLogId,
+                    environment_id,
+                    error,
+                    type,
+                    retryHeader as string
+                );
+                retryActivityLogs.forEach((a: ActivityLogMessage) => activityLogs.push(a));
+                return shouldRetry;
             }
 
             if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
                 const type = config.template.proxy.retry.at ? 'at' : 'after';
                 const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
 
-                return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
+                const { shouldRetry, activityLogs: retryActivityLogs } = await this.retryHandler(
+                    activityLogId,
+                    environment_id,
+                    error,
+                    type,
+                    retryHeader as string
+                );
+                retryActivityLogs.forEach((a: ActivityLogMessage) => activityLogs.push(a));
+                return shouldRetry;
             }
 
             const content = `API received an ${error?.response?.status || error?.code} error, ${
@@ -303,7 +325,7 @@ class ProxyService {
                     : 'but no retries will occur because retries defaults to 0 or were set to 0'
             }`;
 
-            await createActivityLogMessage({
+            activityLogs.push({
                 level: 'error',
                 environment_id,
                 activity_log_id: activityLogId,
@@ -326,7 +348,10 @@ class ProxyService {
      * @param {HTTP_VERB} method
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
-    private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration, internalConfig: InternalProxyConfiguration) {
+    private sendToHttpMethod(
+        configBody: ApplicationConstructedProxyConfiguration,
+        internalConfig: InternalProxyConfiguration
+    ): Promise<RouteResponse & Activities> {
         const options: AxiosRequestConfig = {
             headers: configBody.headers as Record<string, string | number | boolean>
         };
@@ -343,22 +368,20 @@ class ProxyService {
             options.responseType = configBody.responseType;
         }
 
-        const url = this.constructUrl(configBody);
+        if (configBody.data) {
+            options.data = configBody.data;
+        }
 
         const { existingActivityLogId: activityLogId, connection } = internalConfig;
         const { method } = configBody;
 
-        if (method === 'POST') {
-            return this.post(url, configBody, activityLogId as number, connection.environment_id, options);
-        } else if (method === 'PATCH') {
-            return this.patch(url, configBody, activityLogId as number, connection.environment_id, options);
-        } else if (method === 'PUT') {
-            return this.put(url, configBody, activityLogId as number, connection.environment_id, options);
-        } else if (method === 'DELETE') {
-            return this.delete(url, configBody, activityLogId as number, connection.environment_id, options);
-        } else {
-            return this.get(url, configBody, activityLogId as number, connection.environment_id, options);
-        }
+        options.url = this.constructUrl(configBody);
+        options.method = method;
+
+        const headers = this.constructHeaders(configBody);
+        options.headers = { ...options.headers, ...headers };
+
+        return this.request(configBody, activityLogId as number, connection.environment_id, options);
     }
 
     public stripSensitiveHeaders(headers: ApplicationConstructedProxyConfiguration['headers'], config: ApplicationConstructedProxyConfiguration) {
@@ -385,149 +408,27 @@ class ProxyService {
         return safeHeaders;
     }
 
-    /**
-     * Get
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {string} url
-     * @param {ApplicationConstructedProxyConfiguration} config
-     */
-    private async get(
-        url: string,
+    private async request(
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         options: AxiosRequestConfig
-    ) {
+    ): Promise<RouteResponse & Activities> {
+        const activityLogs: ActivityLogMessage[] = [];
         try {
-            const headers = this.constructHeaders(config);
-
             const response: AxiosResponse = await backOff(
                 () => {
-                    return axios.get(url, { ...options, headers });
+                    return axios.request(options);
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config, activityLogs) }
             );
-
-            return this.handleResponse(response, config, activityLogId, environment_id, url);
+            return this.handleResponse(response, config, activityLogId, environment_id, options.url!).then((resp) => {
+                return { response: resp.response, activityLogs: [...activityLogs, ...resp.activityLogs] };
+            });
         } catch (e: unknown) {
-            return this.handleErrorResponse(e as AxiosError, url, config, activityLogId, environment_id);
-        }
-    }
-
-    /**
-     * Post
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {string} url
-     * @param {ApplicationConstructedProxyConfiguration} config
-     */
-    private async post(
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        options: AxiosRequestConfig
-    ) {
-        try {
-            const headers = this.constructHeaders(config);
-            const response: AxiosResponse = await backOff(
-                () => {
-                    return axios.post(url, config.data ?? {}, { ...options, headers });
-                },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
-            );
-
-            return this.handleResponse(response, config, activityLogId, environment_id, url);
-        } catch (e: unknown) {
-            return this.handleErrorResponse(e as AxiosError, url, config, activityLogId, environment_id);
-        }
-    }
-
-    /**
-     * Patch
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {string} url
-     * @param {ApplicationConstructedProxyConfiguration} config
-     */
-    private async patch(
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        options: AxiosRequestConfig
-    ) {
-        try {
-            const headers = this.constructHeaders(config);
-            const response: AxiosResponse = await backOff(
-                () => {
-                    return axios.patch(url, config.data ?? {}, { ...options, headers });
-                },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
-            );
-
-            return this.handleResponse(response, config, activityLogId, environment_id, url);
-        } catch (e: unknown) {
-            return this.handleErrorResponse(e as AxiosError, url, config, activityLogId, environment_id);
-        }
-    }
-
-    /**
-     * Put
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {string} url
-     * @param {pplicationConstructedProxyConfiguration} config
-     */
-    private async put(
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        options: AxiosRequestConfig
-    ) {
-        try {
-            const headers = this.constructHeaders(config);
-            const response: AxiosResponse = await backOff(
-                () => {
-                    return axios.put(url, config.data ?? {}, { ...options, headers });
-                },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
-            );
-
-            return this.handleResponse(response, config, activityLogId, environment_id, url);
-        } catch (e: unknown) {
-            return this.handleErrorResponse(e as AxiosError, url, config, activityLogId, environment_id);
-        }
-    }
-
-    /**
-     * Delete
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {string} url
-     * @param {ApplicationConstructedProxyConfiguration} config
-     */
-    private async delete(
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        options: AxiosRequestConfig
-    ) {
-        try {
-            const headers = this.constructHeaders(config);
-            const response: AxiosResponse = await backOff(
-                () => {
-                    return axios.delete(url, { ...options, headers });
-                },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
-            );
-
-            return this.handleResponse(response, config, activityLogId, environment_id, url);
-        } catch (e: unknown) {
-            return this.handleErrorResponse(e as AxiosError, url, config, activityLogId, environment_id);
+            return this.handleErrorResponse(e as AxiosError, options.url!, config, activityLogId, environment_id).then((resp) => {
+                return { response: resp.response, activityLogs: [...activityLogs, ...resp.activityLogs] };
+            });
         }
     }
 
@@ -631,10 +532,10 @@ class ProxyService {
         activityLogId: number,
         environment_id: number,
         url: string
-    ): Promise<AxiosResponse> {
+    ): Promise<RouteResponse & Activities> {
         const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
 
-        await createActivityLogMessageAndEnd({
+        const activityLog: ActivityLogMessage = {
             level: 'info',
             environment_id,
             activity_log_id: activityLogId,
@@ -643,22 +544,26 @@ class ProxyService {
             params: {
                 headers: JSON.stringify(safeHeaders)
             }
-        });
+        };
 
-        return response;
+        return {
+            response,
+            activityLogs: [activityLog]
+        };
     }
 
-    private async reportError(
+    private reportError(
         error: AxiosError,
         url: string,
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         errorMessage: string
-    ) {
+    ): ActivityLogMessage[] {
+        const activities: ActivityLogMessage[] = [];
         if (activityLogId) {
             const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
-            await createActivityLogMessageAndEnd({
+            activities.push({
                 level: 'error',
                 environment_id,
                 activity_log_id: activityLogId,
@@ -678,6 +583,7 @@ class ProxyService {
             }`;
             console.error(content);
         }
+        return activities;
     }
 
     private async handleErrorResponse(
@@ -686,7 +592,8 @@ class ProxyService {
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number
-    ): Promise<AxiosError> {
+    ): Promise<RouteResponse & Activities> {
+        const activityLogs: ActivityLogMessage[] = [];
         if (!error?.response?.data) {
             const {
                 message,
@@ -699,7 +606,7 @@ class ProxyService {
             const errorObject = { message, stack, code, status, url, method };
 
             if (activityLogId) {
-                await createActivityLogMessageAndEnd({
+                activityLogs.push({
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId,
@@ -711,7 +618,7 @@ class ProxyService {
                 console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorObject)}`);
             }
 
-            await this.reportError(error, url, config, activityLogId, environment_id, message);
+            activityLogs.push(...this.reportError(error, url, config, activityLogId, environment_id, message));
         } else {
             const {
                 message,
@@ -720,7 +627,7 @@ class ProxyService {
             const errorData = error?.response?.data;
 
             if (activityLogId) {
-                await createActivityLogMessageAndEnd({
+                activityLogs.push({
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId,
@@ -732,10 +639,13 @@ class ProxyService {
                 console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorData)}`);
             }
 
-            await this.reportError(error, url, config, activityLogId, environment_id, message);
+            activityLogs.push(...this.reportError(error, url, config, activityLogId, environment_id, message));
         }
 
-        return error;
+        return {
+            response: error,
+            activityLogs
+        };
     }
 }
 

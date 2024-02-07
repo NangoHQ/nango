@@ -4,7 +4,7 @@ import { HTTP_VERB, AuthModes, UserProvidedProxyConfiguration, InternalProxyConf
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-describe('Proxy Controller Construct Header Tests', () => {
+describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
         const config = {
             endpoint: 'https://api.nangostarter.com',
@@ -210,7 +210,7 @@ describe('Proxy Controller Construct Header Tests', () => {
     });
 });
 
-describe('Proxy Controller Construct URL Tests', () => {
+describe('Proxy service Construct URL Tests', () => {
     it('should correctly construct url with no trailing slash and no leading slash', () => {
         const config = {
             template: {
@@ -481,7 +481,7 @@ describe('Proxy Controller Construct URL Tests', () => {
         await proxyService.retryHandler(1, 1, mockAxiosError, 'after', 'x-rateLimit-reset-after');
         const after = Date.now();
         const diff = after - before;
-        expect(diff).toBeGreaterThan(1000);
+        expect(diff).toBeGreaterThanOrEqual(1000);
         expect(diff).toBeLessThan(2000);
     });
 
