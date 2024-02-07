@@ -30,7 +30,7 @@ export default async function runAction(nango: NangoSync, input: FileActionInput
 
     await nango.log(fileSha ? 'File exists, updating.' : 'File does not exist, creating new file.');
 
-    let resp = await nango.proxy({
+    const resp = await nango.proxy({
         method: 'PUT',
         endpoint: endpoint,
         data: {

@@ -32,7 +32,7 @@ export default async function fetchData(nango: NangoSync) {
     while (!finished) {
         // This API endpoint has an annoying bug: If you pass "starting_after" with no value you get a 500 server error
         // Because of this we only set it here when we are fetching page >= 2, otherwise we don't pass it.
-        let queryParams: Record<string, string> = {
+        const queryParams: Record<string, string> = {
             per_page: '150'
         };
 
@@ -53,9 +53,9 @@ export default async function fetchData(nango: NangoSync) {
 
         // Let's iterate over the received conversations
         // Then get the details for each.
-        let intercomConversationsPage: IntercomConversation[] = [];
-        let intercomMessagesPage: IntercomConversationMessage[] = [];
-        for (let conversation of resp.data.conversations) {
+        const intercomConversationsPage: IntercomConversation[] = [];
+        const intercomMessagesPage: IntercomConversationMessage[] = [];
+        for (const conversation of resp.data.conversations) {
             // For incremential syncs: Skip conversations that have not been updated since we last synced
             // updated_at is a unix timestamp of the last change to the conversation (e.g. new message from customer, attribute changed)
             if (conversation.updated_at < lastSyncDateTimestamp) {
@@ -109,7 +109,7 @@ export default async function fetchData(nango: NangoSync) {
                 }
             });
 
-            for (let conversationPart of conversationResp.data.conversation_parts.conversation_parts) {
+            for (const conversationPart of conversationResp.data.conversation_parts.conversation_parts) {
                 // Conversation parts can be messages, notes etc. but also actions, such as "closed conversation", "assigned conversation" etc.
                 // We only care about the conversation parts where admins and users send a message.
                 // For a full list of possible part types see here: https://developers.intercom.com/intercom-api-reference/reference/the-conversation-model#conversation-part-types

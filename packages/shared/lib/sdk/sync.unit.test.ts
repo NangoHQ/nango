@@ -143,7 +143,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }
@@ -183,7 +183,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }
@@ -210,7 +210,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }
@@ -249,7 +249,7 @@ describe('Pagination', () => {
 
             const generator = nangoAction.paginate({ endpoint });
 
-            let actualRecords: any[] = [];
+            const actualRecords: any[] = [];
             for await (const batch of generator) {
                 actualRecords.push(...batch);
             }
@@ -292,7 +292,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }

@@ -7,7 +7,7 @@ export default async function fetchData(nango: NangoSync) {
     };
     const users = await paginate(nango, '/admin/directory/v1/users', 'users', params);
 
-    for (let user of users) {
+    for (const user of users) {
         // Get the access tokens
         const tokens = await paginate(nango, `/admin/directory/v1/users/${user.id}/tokens`, 'items');
         const mappedTokens: GoogleWorkspaceUserToken[] = tokens.map((token) => ({
@@ -26,7 +26,7 @@ async function paginate(nango: NangoSync, endpoint: string, resultsKey: string, 
     const MAX_PAGE = 100;
     let results: any[] = [];
     let page = null;
-    let callParams = queryParams || {};
+    const callParams = queryParams || {};
     while (true) {
         if (page) {
             callParams['pageToken'] = `${page}`;

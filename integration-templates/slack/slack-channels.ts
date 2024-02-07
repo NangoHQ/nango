@@ -3,7 +3,7 @@ import type { SlackChannel, NangoSync } from './models';
 export default async function fetchData(nango: NangoSync) {
     const responses = await getAllPages(nango, 'conversations.list');
 
-    let metadata = (await nango.getMetadata()) || {};
+    const metadata = (await nango.getMetadata()) || {};
 
     const mappedChannels: SlackChannel[] = responses.map((record: any) => {
         return {
@@ -57,8 +57,8 @@ async function joinPublicChannels(nango: NangoSync, channels: SlackChannel[]) {
 }
 
 async function getAllPages(nango: NangoSync, endpoint: string) {
-    var nextCursor = 'x';
-    var responses: any[] = [];
+    let nextCursor = 'x';
+    let responses: any[] = [];
 
     while (nextCursor !== '') {
         const response = await nango.get({

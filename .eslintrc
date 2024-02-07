@@ -13,6 +13,8 @@
     ],
     "rules": {
       "no-console": 1,       // Means warning
-      "prettier/prettier": 2 // Means error
+      "prettier/prettier": 2,
+
+      "@typescript-eslint/no-inferrable-types": "off"
     }
-  }
+}
