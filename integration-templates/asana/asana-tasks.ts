@@ -16,7 +16,7 @@ export default async function fetchData(nango: NangoSync) {
     };
     const tasks = await paginate(nango, '/api/1.0/tasks', filters);
     let mappedTasks: AsanaTask[] = [];
-    for (let task of tasks) {
+    for (const task of tasks) {
         mappedTasks.push({
             id: task.gid,
             project_id: project.gid,
@@ -38,7 +38,7 @@ async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record
     const MAX_PAGE = 100;
     let results: any[] = [];
     let page = null;
-    let callParams = queryParams || {};
+    const callParams = queryParams || {};
     while (true) {
         if (page) {
             callParams['offset'] = `${page}`;
