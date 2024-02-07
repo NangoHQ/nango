@@ -8,8 +8,6 @@ import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '..
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
-import { formatDataRecords } from './data/records.service.js';
-import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
@@ -19,7 +17,7 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import metricsManager, { MetricTypes } from '../../utils/metrics.manager.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
-import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
+import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 import type { Metadata } from '../../models/Connection';
@@ -383,101 +381,10 @@ export default class SyncRun {
                     await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                     return { success: true, error: null, response: true };
-                }
+                } else {
+                    const error = new NangoError('sync_script_failure', 'The sync script did not return a void response', 500);
 
-                let i = 0;
-                for (const model of models) {
-                    if (userDefinedResults[model]) {
-                        if (!this.syncId) {
-                            continue;
-                        }
-
-                        const {
-                            success,
-                            error,
-                            response: formattedResults
-                        } = formatDataRecords(
-                            userDefinedResults[model],
-                            this.nangoConnection.id as number,
-                            model,
-                            this.syncId,
-                            this.syncJobId as number,
-                            lastSyncDate as Date,
-                            trackDeletes
-                        );
-
-                        if (!success || formattedResults === null) {
-                            await this.reportFailureForResults(error?.message as string);
-
-                            return { success: false, error, response: false };
-                        }
-
-                        if (this.writeToDb && this.activityLogId) {
-                            if (formattedResults.length === 0) {
-                                await this.reportResults(
-                                    model,
-                                    { addedKeys: [], updatedKeys: [], deletedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
-                                    i,
-                                    models.length,
-                                    syncStartDate,
-                                    syncData.version as string,
-                                    totalRunTime,
-                                    trackDeletes
-                                );
-                            }
-
-                            if (formattedResults.length > 0) {
-                                await metricsManager.capture(
-                                    MetricTypes.SYNC_SCRIPT_RETURN_USED,
-                                    'Data was sent at the end of the integration script instead of using batchSave',
-                                    LogActionEnum.SYNC,
-                                    {
-                                        environmentId: String(this.nangoConnection.environment_id),
-                                        syncName: this.syncName,
-                                        connectionDetails: JSON.stringify(this.nangoConnection),
-                                        syncId: this.syncId,
-                                        syncJobId: String(this.syncJobId),
-                                        syncType: this.syncType,
-                                        debug: String(this.debug)
-                                    }
-                                );
-
-                                const upsertResult: UpsertResponse = await upsert(
-                                    formattedResults,
-                                    '_nango_sync_data_records',
-                                    'external_id',
-                                    this.nangoConnection.id as number,
-                                    model,
-                                    this.activityLogId,
-                                    this.nangoConnection.environment_id
-                                );
-
-                                if (upsertResult.success) {
-                                    const { summary } = upsertResult;
-
-                                    await this.reportResults(
-                                        model,
-                                        summary as UpsertSummary,
-                                        i,
-                                        models.length,
-                                        syncStartDate,
-                                        syncData.version as string,
-                                        totalRunTime
-                                    );
-                                }
-
-                                if (!upsertResult.success) {
-                                    const message = `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`;
-                                    await this.reportFailureForResults(message);
-
-                                    const errorType = this.determineErrorType();
-
-                                    return { success: false, error: new NangoError(errorType, message), response: result };
-                                }
-                            }
-                        }
-                    }
-                    i++;
+                    return { success: false, error, response: null };
                 }
             } catch (e) {
                 result = false;

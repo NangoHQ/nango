@@ -1,13 +1,11 @@
 import { getSyncConfigByJobId } from '../services/sync/config/config.service.js';
 import { updateRecord, upsert } from '../services/sync/data/data.service.js';
 import { formatDataRecords } from '../services/sync/data/records.service.js';
-import environmentService from '../services/environment.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
-import { getGlobalWebhookReceiveUrl } from '../utils/utils.js';
 
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
@@ -15,6 +13,7 @@ import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
+import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
 
 /*
  *
@@ -398,17 +397,12 @@ export class NangoAction {
         return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async getWebhookURL(): Promise<string> {
-        const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
-        const providerConfigKey: string = this.providerConfigKey as string;
-        const response = await this.nango.getIntegration(providerConfigKey);
-        if (!response || !response.config || !response.config.provider) {
-            throw Error(`There was no provider found for the provider config key: ${providerConfigKey}`);
+    public async getWebhookURL(): Promise<string | undefined> {
+        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey!, true);
+        if (!integration || !integration.provider) {
+            throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
-        const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(this.environmentId as number);
-        const webhookURL = `${webhookBaseUrl}/${environmentUuid}/${response.config.provider}`;
-
-        return webhookURL;
+        return (integration as IntegrationWithCreds).webhook_url;
     }
 
     public async getFieldMapping(): Promise<Metadata> {
