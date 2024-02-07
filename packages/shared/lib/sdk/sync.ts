@@ -187,9 +187,9 @@ interface Connection {
 
 export class ActionError extends Error {
     type: string;
-    payload: unknown;
+    payload?: Record<string, unknown>;
 
-    constructor(payload?: unknown) {
+    constructor(payload?: Record<string, unknown>) {
         super();
         this.type = 'action_script_runtime_error';
         if (payload) {

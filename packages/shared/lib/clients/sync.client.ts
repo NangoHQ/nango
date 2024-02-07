@@ -24,6 +24,7 @@ import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import { isProd } from '../utils/utils.js';
+import type { RunnerOutput } from '../models/Runner.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
@@ -482,13 +483,10 @@ class SyncClient {
                 ]
             });
 
-            const { success, error: rawError, response } = actionHandler;
+            const { success, error: rawError, response }: RunnerOutput = actionHandler;
 
             // Errors received from temporal are raw objects not classes
-            const error =
-                !(rawError instanceof NangoError) && rawError.type && rawError.status
-                    ? new NangoError(rawError.type, rawError.payload, rawError.status)
-                    : rawError;
+            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
 
             if (writeLogs && (success === false || error)) {
                 await createActivityLogMessageAndEnd({
