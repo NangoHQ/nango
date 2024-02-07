@@ -179,7 +179,7 @@ export default function Syncs(props: SyncsProps) {
                                             ))}
                                         </span>
                                     </div>
-                                    <div className="flex items-center w-6">{sync.frequency}</div>
+                                    <div className="flex items-center w-10">{sync.frequency}</div>
                                     <div className="flex items-center w-28">
                                         {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                                             <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
@@ -229,7 +229,7 @@ export default function Syncs(props: SyncsProps) {
                                     <div className="w-12">
                                         {getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}
                                     </div>
-                                    <div className="w-16">
+                                    <div className="w-16 ml-4">
                                         {sync.thirty_day_timestamps ? (
                                                 <span className="w-24 ml-[0.25rem]">
                                                     {calculateTotalRuntime(sync.thirty_day_timestamps)}

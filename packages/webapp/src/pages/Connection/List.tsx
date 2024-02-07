@@ -32,7 +32,7 @@ export default function ConnectionList() {
 
     useEffect(() => {
         const getConnections = async () => {
-            const res = await getConnectionListAPI(0,0);
+            const res = await getConnectionListAPI(100, 0);
 
             if (res?.status === 200) {
                 const data = await res.json();

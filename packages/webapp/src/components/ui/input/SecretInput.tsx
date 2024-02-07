@@ -3,7 +3,7 @@ import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/outlin
 import classNames from 'classnames';
 import CopyButton from '../button/CopyButton';
 
-type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string, optionalvalue?: string; setoptionalvalue?: (value: string) => void; additionalclass?: string; refresh?: () => void };
+type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string, optionalvalue?: string; setoptionalvalue?: (value: string) => void; additionalclass?: string; tall?: boolean; refresh?: () => void };
 
 const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField({ className, copy, ...props }, ref) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
@@ -12,6 +12,8 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
 
     const value = props.optionalvalue === null ? '' : props.optionalvalue || changedValue;
     const updateValue = props.setoptionalvalue || setChangedValue;
+
+    const top = props.tall ? 'top-2.5' : 'top-0.5';
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible, setIsSecretVisible]);
 
@@ -28,7 +30,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 onChange={(e) => updateValue(e.currentTarget.value)}
                 {...props}
             />
-            <span className="absolute right-0.5 top-0.5 flex items-center bg-active-gray border-border-gray">
+            <span className={`absolute right-0.5 ${top} flex items-center bg-active-gray border-border-gray`}>
                 <span onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
                 </span>

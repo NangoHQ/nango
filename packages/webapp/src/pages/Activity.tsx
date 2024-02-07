@@ -452,12 +452,12 @@ export default function Activity() {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
+        <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
             <div className="relative -left-24">
                 <div className="flex items-center mb-6">
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
-                            <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
+                            <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Logs</h2>
                             {!loaded && <Spinner size={1.5} />}
                         </span>
                         <span>

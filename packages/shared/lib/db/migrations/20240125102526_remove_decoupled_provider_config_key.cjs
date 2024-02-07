@@ -13,7 +13,6 @@ exports.up = async function(knex) {
         const config = await knex.select('id').from(`${CONFIGS_TABLE}`).where({ unique_key: provider_config_key, environment_id }).first();
         await knex(`${CONNECTIONS_TABLE}`).where({ id }).update({ nango_config_id: config.id });
     }
-
 };
 
 exports.down = function(knex) {

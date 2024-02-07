@@ -113,12 +113,14 @@ export default function Create() {
                                 className="flex justify-between mr-6 p-2 mt-4 mb-5 w-52 border border-transparent rounded cursor-pointer items-center text-sm hover:bg-hover-gray"
                                 onClick={() => onCreateIntegration(provider.name)}
                             >
-                                <IntegrationLogo provider={provider.name} height={12} width={12} classNames="mr-2" />
-                                <div className="flex-col">
-                                    <span className="flex capitalize">{provider.name.replace(/-/g, ' ')}</span>
-                                    {provider.categories && (
-                                        <span className="flex text-xs text-gray-400">{provider.categories.join(', ')}</span>
-                                    )}
+                                <div className="flex items-center">
+                                    <IntegrationLogo provider={provider.name} height={12} width={12} classNames="mr-2" />
+                                    <div className="flex flex-col flex-start">
+                                        <span className="flex capitalize">{provider.name.replace(/-/g, ' ')}</span>
+                                        {provider.categories && (
+                                            <span className="flex text-xs text-gray-400">{provider.categories.join(', ')}</span>
+                                        )}
+                                    </div>
                                 </div>
                                 {!provider.name.includes('sandbox') && (
                                     <BookOpenIcon onClick={(e) => showDocs(e, provider)} className="h-5 w-5 text-gray-400 hover:text-white hover:bg-hover-gray" />

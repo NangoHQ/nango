@@ -1,15 +1,17 @@
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { useModal } from '@geist-ui/core';
+import { useModal, Modal } from '@geist-ui/core';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import ActionModal from '../../components/ui/ActionModal';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
+import Info from '../../components/ui/Info'
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import Syncs from './Syncs';
@@ -28,7 +30,7 @@ export default function ShowIntegration() {
     const [connection, setConnection] = useState<Connection | null>(null);
     const [syncs, setSyncs] = useState<SyncResponse[] | null>(null);
     const [syncLoaded, setSyncLoaded] = useState(false);
-    const [fetchingRefreshToken, setFetchingRefreshToken] = useState(false);
+    const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Models);
@@ -40,6 +42,7 @@ export default function ShowIntegration() {
     const navigate = useNavigate();
     const location = useLocation();
     const { setVisible, bindings } = useModal();
+    const { setVisible: setErrorVisible, bindings: errorBindings } = useModal()
     const { connectionId, providerConfigKey } = useParams();
 
     useEffect(() => {
@@ -134,8 +137,6 @@ We could not retrieve and/or refresh your access token due to the following erro
         }, 400);
     };
 
-    console.log(serverErrorMessage, fetchingRefreshToken);
-
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <ActionModal
@@ -147,6 +148,18 @@ We could not retrieve and/or refresh your access token due to the following erro
                 modalTitleColor="text-red-500"
                 setVisible={setVisible}
             />
+            <Modal {...errorBindings} wrapClassName="!h-[600px] !w-[550px] !max-w-[550px] !bg-[#0E1014] no-border-modal">
+                <div className="flex justify-between text-sm">
+                    <div>
+                        <Modal.Content className="overflow-scroll max-w-[550px] !text-sm text-white">
+                            {serverErrorMessage}
+                        </Modal.Content>
+                    </div>
+                </div>
+                <Modal.Action passive className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]" onClick={() => setErrorVisible(false)}>
+                    <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
+                </Modal.Action>
+            </Modal>
             {connection?.provider && (
                 <div className="mx-auto">
                     <div className="flex justify-between items-center">
@@ -177,12 +190,22 @@ We could not retrieve and/or refresh your access token due to the following erro
                     </div>
                 </div>
             )}
-            <section className="mt-20">
+
+            <section className="mt-14">
                 <ul className="flex text-gray-400 space-x-8 text-sm cursor-pointer">
                     <li className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Models)}>Models</li>
                     <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
                 </ul>
             </section>
+
+            {serverErrorMessage && (
+                <div className="flex text-[13px] my-12">
+                    <Info size={14} padding="px-4 py-1.5" color="red">
+                        There was an error refreshing the credentials <span onClick={() => setErrorVisible(true)} className="cursor-pointer text-white underline">(show details)</span>.
+                    </Info>
+                </div>
+            )}
+
             <section className="mt-10">
                 {activeTab === Tabs.Models && (
                     <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} env={env} />
@@ -191,6 +214,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                     <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={syncLoaded} />
                 )}
             </section>
+            <Helmet>
+                <style>
+                    {'.no-border-modal footer { border-top: none !important; }'}
+                </style>
+            </Helmet>
         </DashboardLayout>
     );
 }

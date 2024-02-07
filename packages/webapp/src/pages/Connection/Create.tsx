@@ -322,7 +322,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             {integrations && !!integrations.length && publicKey && hostUrl && (
                 <div className="pb-40">
-                    <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
                     <div className="h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
                         <form className="space-y-6" onSubmit={handleCreate}>
                             <div>
