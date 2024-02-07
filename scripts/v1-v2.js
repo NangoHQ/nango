@@ -12,23 +12,37 @@ function extractScopes(description) {
 function convertYAML(inputYAML) {
     let data = yaml.load(inputYAML);
     const location = args[0].replace('nango.yaml', '');
+    let changeLog = []; // Initialize an array to hold changes
 
     if (data.integrations) {
         for (const integration in data.integrations) {
             if (data.integrations[integration]) {
                 for (const taskName in data.integrations[integration]) {
                     const task = data.integrations[integration][taskName];
+                    let change = { integration, taskName, changes: [] }; // Track changes for each task
 
                     if (task.type === 'action') {
                         if (task.returns) {
                             task.output = task.returns;
+                            change.changes.push({
+                                action: `Set output from returns for ${taskName}`,
+                                explanation: `The returns field has been deprecated in v2 as it is potentially confusing. Syncs and actions now have an 'output' field. A sync's output is assumed to be an array.`
+                            });
                         }
                         task.endpoint = `/${integration}/${taskName.replace(`${integration}-`, '')}`;
+                        change.changes.push({
+                            action: `Set endpoint for ${taskName}`,
+                            explanation: `Syncs and actions now have a REST endpoint which is user defined and can be called directly. A sync's HTTP method is assumed to be a GET and an action's HTTP method is assumed to be a POST.`
+                        });
 
                         delete task.returns;
                         delete task.type;
+                        change.changes.push({
+                            action: 'Removed the type property',
+                            explanation: `The type property has been deprecated in v2. Syncs and actions are now differentiated by a top level property at the integration level.`
+                        });
 
-                        if (!data.actions) {
+                        if (!data.integrations[integration].actions) {
                             data.integrations[integration].actions = {};
                         }
                         data.integrations[integration].actions[taskName] = task;
@@ -36,17 +50,33 @@ function convertYAML(inputYAML) {
                         delete data.integrations[integration][taskName];
                     } else if (task.runs) {
                         task.output = task.returns ? task.returns[0] : null;
+                        change.changes.push({
+                            action: `Set output from returns for ${taskName}`,
+                            explanation: `The returns field has been deprecated in v2 as it is potentially confusing. Syncs and actions now have an 'output' field. A sync's output is assumed to be an array.`
+                        });
                         const contents = readFileSync(`./${location}${taskName}.ts`, 'utf8');
                         task.sync_type = contents.includes('lastSyncDate') ? 'incremental' : 'full';
                         task.endpoint = `/${integration}/${taskName.replace(`${integration}-`, '')}`;
+                        change.changes.push({
+                            action: `Set endpoint for ${taskName}`,
+                            explanation: `Syncs and actions now have a REST endpoint which is user defined and can be called directly. A sync's HTTP method is assumed to be a GET and an action's HTTP method is assumed to be a POST.`
+                        });
 
                         if (task.description) {
                             task.scopes = extractScopes(task.description);
+                            change.changes.push({
+                                action: 'Extracted scopes from description',
+                                explanation: `Scopes are now extracted from the description field and can be set as an array on the script`
+                            });
                         }
 
                         delete task.type;
                         delete task.returns;
 
+                        change.changes.push({
+                            action: 'Removed the type property',
+                            explanation: `The type property has been deprecated in v2. Syncs and actions are now differentiated by a top level property at the integration level.`
+                        });
                         if (!data.integrations[integration].syncs) {
                             data.integrations[integration].syncs = {};
                         }
@@ -54,10 +84,23 @@ function convertYAML(inputYAML) {
 
                         delete data.integrations[integration][taskName];
                     }
+                    if (change.changes.length > 0) {
+                        changeLog.push(change);
+                    }
                 }
             }
         }
     }
+
+    changeLog.forEach((log) => {
+        console.log(`Integration: ${log.integration}, Task: ${log.taskName}`);
+        log.changes.forEach((change) => {
+            console.log(`- Action: ${change.action}`);
+            console.log(`  Reason: ${change.explanation}`);
+        });
+        console.log();
+    });
+
     return yaml.dump(data);
 }
 
