@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/frontend",
-    "version": "0.37.19",
+    "version": "0.37.20",
     "description": "Nango's frontend library for OAuth handling.",
     "type": "module",
     "main": "dist/index.js",
