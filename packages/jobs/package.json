@@ -42,11 +42,6 @@
         "@tsconfig/node16": "^1.0.0",
         "@types/md5": "^2.3.2",
         "@types/node": "^18.7.6",
-        "@typescript-eslint/eslint-plugin": "^5.0.0",
-        "@typescript-eslint/parser": "^5.0.0",
-        "eslint": "^7.32.0",
-        "eslint-config-prettier": "^8.3.0",
-        "eslint-plugin-deprecation": "^1.2.1",
         "nodemon": "^3.0.1",
         "typescript": "^5.3.3"
     }

@@ -46,12 +46,6 @@
         "build:staging": "env-cmd -f .env.staging npm run build",
         "build:prod": "env-cmd -f .env.prod npm run build"
     },
-    "eslintConfig": {
-        "extends": [
-            "react-app",
-            "react-app/jest"
-        ]
-    },
     "browserslist": {
         "production": [
             ">0.2%",
@@ -72,7 +66,6 @@
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
         "@types/react-helmet": "^6.1.8",
-        "prettier-plugin-tailwindcss": "^0.2.3",
         "tailwindcss": "^3.2.7"
     },
     "proxy": "http://localhost:3003"

@@ -89,14 +89,17 @@ class ErrorManager {
             }
 
             if (config.metadata) {
-                const metadata = Object.entries(config.metadata).reduce((acc, [key, value]) => {
-                    if (typeof value === 'object') {
-                        acc[key] = JSON.stringify(value);
-                    } else {
-                        acc[key] = value;
-                    }
-                    return acc;
-                }, {} as Record<string, unknown>);
+                const metadata = Object.entries(config.metadata).reduce(
+                    (acc, [key, value]) => {
+                        if (typeof value === 'object') {
+                            acc[key] = JSON.stringify(value);
+                        } else {
+                            acc[key] = value;
+                        }
+                        return acc;
+                    },
+                    {} as Record<string, unknown>
+                );
                 scope.setContext('metadata', metadata);
             }
 
