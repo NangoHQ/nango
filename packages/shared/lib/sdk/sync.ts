@@ -280,6 +280,15 @@ export class NangoAction {
         }
     }
 
+    protected stringify(): string {
+        return JSON.stringify(this, (key, value) => {
+            if (key === 'secretKey') {
+                return '********';
+            }
+            return value;
+        });
+    }
+
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         const internalConfig = {
             environmentId: this.environmentId as number,
@@ -444,15 +453,7 @@ export class NangoAction {
         });
 
         if (response.status > 299) {
-            console.error(
-                `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                JSON.stringify(this, (key, value) => {
-                    if (key === 'secretKey') {
-                        return '********';
-                    }
-                    return value;
-                })
-            );
+            console.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
             throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
         }
         return;
@@ -584,12 +585,7 @@ export class NangoSync extends NangoAction {
         if (response.status > 299) {
             console.error(
                 `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                JSON.stringify(this, (key, value) => {
-                    if (key === 'secretKey') {
-                        return '********';
-                    }
-                    return value;
-                })
+                this.stringify()
             );
             throw new Error(`cannot set lastSyncDate for sync '${this.syncId}'`);
         }
@@ -640,12 +636,7 @@ export class NangoSync extends NangoAction {
             if (response.status > 299) {
                 console.error(
                     `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    JSON.stringify(this, (key, value) => {
-                        if (key === 'secretKey') {
-                            return '********';
-                        }
-                        return value;
-                    })
+                    this.stringify()
                 );
                 throw new Error(`cannot save records for sync '${this.syncId}'`);
             }
@@ -689,12 +680,7 @@ export class NangoSync extends NangoAction {
             if (response.status > 299) {
                 console.error(
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    JSON.stringify(this, (key, value) => {
-                        if (key === 'secretKey') {
-                            return '********';
-                        }
-                        return value;
-                    })
+                    this.stringify()
                 );
                 throw new Error(`cannot delete records for sync '${this.syncId}'`);
             }
@@ -738,12 +724,7 @@ export class NangoSync extends NangoAction {
             if (response.status > 299) {
                 console.error(
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    JSON.stringify(this, (key, value) => {
-                        if (key === 'secretKey') {
-                            return '********';
-                        }
-                        return value;
-                    })
+                    this.stringify()
                 );
                 throw new Error(`cannot update records for sync '${this.syncId}'`);
             }
