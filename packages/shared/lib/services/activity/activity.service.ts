@@ -40,7 +40,7 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
             return result[0].id;
         }
     } catch (e) {
-        await errorManager.report(e, {
+        errorManager.report(e, {
             source: ErrorSourceEnum.PLATFORM,
             environmentId: log.environment_id,
             operation: LogActionEnum.DATABASE,

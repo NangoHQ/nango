@@ -307,7 +307,7 @@ export function getAccount(res: Response): number {
 }
 
 export function getEnvironmentId(res: Response): number {
-    if (res.locals == null || !(environmentIdLocalsKey in res.locals)) {
+    if (res.locals === null || !(environmentIdLocalsKey in res.locals)) {
         throw new NangoError('environment_not_set_in_locals');
     }
 
