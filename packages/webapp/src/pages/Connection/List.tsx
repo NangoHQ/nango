@@ -32,7 +32,7 @@ export default function ConnectionList() {
 
     useEffect(() => {
         const getConnections = async () => {
-            const res = await getConnectionListAPI();
+            const res = await getConnectionListAPI(0,0);
 
             if (res?.status === 200) {
                 const data = await res.json();
@@ -77,7 +77,7 @@ export default function ConnectionList() {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 {connections && connections.length > 0 && (
-                    <Link to={`/${env}/connections/create`} className="flex items-center mt-auto px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                    <Link to={`/${env}/connections/create`} className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                         <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                         Add Connection
                     </Link>
@@ -88,9 +88,9 @@ export default function ConnectionList() {
                     <table className="w-full">
                         <tbody className="">
                             <tr>
-                                <td className="flex items-center px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
+                                <td className="flex items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md">
                                     <div className="w-2/3">ID</div>
-                                    <div className="w-96">Integration</div>
+                                    <div className="w-96 ml-2">Integration</div>
                                     <div className="">Created</div>
                                 </td>
                             </tr>
@@ -99,7 +99,7 @@ export default function ConnectionList() {
                                     <td
                                         className={`flex ${
                                             id !== connections.at(-1)?.id ? 'border-b border-border-gray' : ''
-                                        } h-16 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
+                                        } h-14 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                         onClick={() => {
                                             navigate(`/${env}/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
                                         }}
@@ -108,8 +108,8 @@ export default function ConnectionList() {
                                             <span>{connectionId}</span>
                                             <CopyButton dark text={connectionId} />
                                         </div>
-                                        <div className="flex items-center w-1/3 mr-10">
-                                            <img src={`images/template-logos/${provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
+                                        <div className="flex items-center w-1/3 mr-8">
+                                            <img src={`/images/template-logos/${provider}.svg`} alt="" className="h-7 w-7 mt-0.5 mr-0.5" />
                                             <p className="ml-2">{providerConfigKey}</p>
                                         </div>
                                         <div className="flex w-20">
@@ -124,8 +124,8 @@ export default function ConnectionList() {
             )}
             {connections && connections.length === 0 && (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
-                    <h2 className="text-xl text-center w-full">Connect to an external API</h2>
-                    <div className="mt-4 text-gray-400">Connections can be created in code from your app, or manually on current tab.</div>
+                    <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
+                    <div className="my-2 text-gray-400">Connections can be created in code from your app, or manually on current tab.</div>
                     <Link to={`/${env}/connections/create`} className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                         <span className="flex">
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />

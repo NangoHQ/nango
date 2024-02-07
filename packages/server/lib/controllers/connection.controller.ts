@@ -277,6 +277,9 @@ class ConnectionController {
 
     async listConnections(req: Request, res: Response, next: NextFunction) {
         try {
+            const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 20;
+            const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;
+            const integration = req.query['integration']?.toString();
             const { success, error, response } = await getEnvironmentAndAccountId(res, req);
             if (!success || response === null) {
                 errorManager.errResFromNangoErr(res, error);
@@ -284,8 +287,7 @@ class ConnectionController {
             }
             const { accountId, environmentId, isWeb } = response;
 
-            const { connectionId } = req.query;
-            const connections = await connectionService.listConnections(environmentId, connectionId as string);
+            const connections = await connectionService.listConnections(environmentId, limit, offset, integration as string);
 
             if (!isWeb) {
                 analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
@@ -710,6 +712,21 @@ class ConnectionController {
             res.status(201).send(req.body);
         } catch (err) {
             next(err);
+        }
+    }
+    public async getPossibleFilters(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
+            const integrations = await connectionService.getAllIntegrations(environment.id);
+            res.send({ integrations });
+        } catch (error) {
+            next(error);
         }
     }
 }

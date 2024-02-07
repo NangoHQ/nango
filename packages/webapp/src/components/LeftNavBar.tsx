@@ -111,20 +111,24 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     };
 
     return (
-        <div>
-            <div className="flex-1 h-full pt-14 border-r-2 border-t-2 border-border-gray flex flex-col w-60 bg-pure-black z-20 justify-between">
-                <div className="mt-8 px-6">
+        <div className="bg-pure-black">
+            <div className="flex-1 ml-3 pr-4 h-full border-r border-border-gray flex flex-col w-60 bg-pure-black z-20 justify-between">
+                <div className="mt-4">
+                    <div className="flex items-center mb-8">
+                        <img className="h-8" src="/logo-dark.svg" alt="Nango" />
+                        <img className="mt-1 h-6 ml-2" src="/logo-text.svg" alt="Nango" />
+                    </div>
                     {envs.length === 0 && (
                         <div className="mb-8">
                             <select className="border-border-gray bg-active-gray text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
                         </div>
                     )}
                     {envs.length > 0 && (
-                        <div className="mb-8">
+                        <div className="mb-6">
                             <select
                                 id="environment"
                                 name="env"
-                                className="border-border-gray bg-active-gray text-white block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                                className="border-border-gray bg-active-gray text-white block w-full appearance-none rounded-md border px-3 py-1 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
                                 onChange={handleEnvChange}
                                 value={env}
                             >
@@ -140,7 +144,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         {env === 'dev' && (
                             <Link
                                 to="/dev/getting-started"
-                                className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                     props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                 }`}
                             >
@@ -150,45 +154,45 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         )}
                         <Link
                             to={`/${env}/integrations`}
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Integrations ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <SquaresPlusIcon className="flex h-5 w-5 text-white" />
+                            <SquaresPlusIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Integrations ? 'text-white' : 'text-gray-400'}`} />
                             <p>Integrations</p>
                         </Link>
                         <Link
                             to={`/${env}/connections`}
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Connections ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <BuildingOfficeIcon className="flex h-5 w-5 text-white" />
+                            <BuildingOfficeIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Connections ? 'text-white' : 'text-gray-400'}`} />
                             <p>Connections</p>
                         </Link>
                         <Link
                             to={`/${env}/activity`}
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Activity ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <QueueListIcon className="flex h-5 w-5 text-white" />
-                            <p>Activity</p>
+                            <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Activity ? 'text-white' : 'text-gray-400'}`} />
+                            <p>Logs</p>
                         </Link>
                         <Link
                             to={`/${env}/project-settings`}
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.ProjectSettings ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <AdjustmentsHorizontalIcon className="flex h-5 w-5 text-white" />
+                            <AdjustmentsHorizontalIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.ProjectSettings ? 'text-white' : 'text-gray-400'}`} />
                             <p>Settings</p>
                         </Link>
                     </div>
                 </div>
-                <div className='px-6'>
+                <div>
                     {email && (
-                        <div className="flex mb-8 py-2 user-settings px-2 relative rounded items-center hover:bg-hover-gray cursor-pointer" onClick={() => setShowUserSettings(!showUserSettings)}>
+                        <div className="flex mb-8 py-2 user-settings px-2 justify-between relative rounded items-center hover:bg-hover-gray cursor-pointer" onClick={() => setShowUserSettings(!showUserSettings)}>
                             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
                                 {email.slice(0, 1).toUpperCase()}
                             </div>
@@ -196,7 +200,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 {email}
                             </span>
                             <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
-                            {isCloud() && showUserSettings && (
+                            {!isCloud() && showUserSettings && (
                             <div className="absolute -top-[130px] text-sm left-0 group-hover:block border border-neutral-700 h-32 w-[190px] bg-black opacity-50 z-10 rounded">
                                 <ul className="text-gray-400 p-3 space-y-2">
                                     <li
