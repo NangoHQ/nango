@@ -44,7 +44,6 @@ export default async function runAction(nango: NangoAction, input: AshbyCreateNo
         const { id, createdAt, content, author } = resp.data.results;
 
         return { id, createdAt, content, author };
-
     } catch (error: any) {
         throw new Error(`Error in runAction: ${error.message}`);
     }

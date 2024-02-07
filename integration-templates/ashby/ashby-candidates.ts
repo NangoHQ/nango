@@ -43,7 +43,7 @@ async function saveAllCandidates(nango: NangoSync, candidatelastsyncToken: strin
 }
 
 function mapCandidate(candidates: any[]): AshbyCandidate[] {
-    return candidates.map(candidate => ({
+    return candidates.map((candidate) => ({
         id: candidate.id,
         createdAt: candidate.createdAt,
         name: candidate.name,

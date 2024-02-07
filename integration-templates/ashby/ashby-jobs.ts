@@ -43,7 +43,7 @@ async function saveAllJobs(nango: NangoSync, jobslastsyncToken: string) {
 }
 
 function mapJob(jobs: any[]): AshbyJob[] {
-    return jobs.map(job => ({
+    return jobs.map((job) => ({
         id: job.id,
         title: job.title,
         confidential: job.confidential,

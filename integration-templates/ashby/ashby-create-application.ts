@@ -35,10 +35,37 @@ export default async function runAction(nango: NangoAction, input: AshbyCreateCa
             data: postData
         });
 
-        const { id, createdAt, updatedAt, status, customFields, candidate, currentInterviewStage, source, archiveReason, job, creditedToUser, hiringTeam, appliedViaJobPostingId } = resp.data.results;
+        const {
+            id,
+            createdAt,
+            updatedAt,
+            status,
+            customFields,
+            candidate,
+            currentInterviewStage,
+            source,
+            archiveReason,
+            job,
+            creditedToUser,
+            hiringTeam,
+            appliedViaJobPostingId
+        } = resp.data.results;
 
-        return { id, createdAt, updatedAt, status, customFields, candidate, currentInterviewStage, source, archiveReason, job, creditedToUser, hiringTeam, appliedViaJobPostingId };
-
+        return {
+            id,
+            createdAt,
+            updatedAt,
+            status,
+            customFields,
+            candidate,
+            currentInterviewStage,
+            source,
+            archiveReason,
+            job,
+            creditedToUser,
+            hiringTeam,
+            appliedViaJobPostingId
+        };
     } catch (error: any) {
         throw new Error(`Error in runAction: ${error.message}`);
     }
