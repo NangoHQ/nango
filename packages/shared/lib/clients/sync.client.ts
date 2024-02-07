@@ -482,7 +482,13 @@ class SyncClient {
                 ]
             });
 
-            const { success, error, response } = actionHandler;
+            const { success, error: rawError, response } = actionHandler;
+
+            // Errors received from temporal are raw objects not classes
+            const error =
+                !(rawError instanceof NangoError) && rawError.type && rawError.status
+                    ? new NangoError(rawError.type, rawError.payload, rawError.status)
+                    : rawError;
 
             if (writeLogs && (success === false || error)) {
                 await createActivityLogMessageAndEnd({
@@ -492,10 +498,6 @@ class SyncClient {
                     timestamp: Date.now(),
                     content: `The action workflow ${workflowId} did not complete successfully`
                 });
-
-                if (!(error instanceof NangoError)) {
-                    return { success, error: new NangoError(error.type, error.payload, error.status), response };
-                }
 
                 return { success, error, response };
             }
