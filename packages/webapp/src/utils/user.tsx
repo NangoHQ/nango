@@ -41,10 +41,10 @@ export function useSignout() {
 }
 
 export function getUser(): User | null {
-    let email = storage.getItem(LocalStorageKeys.UserEmail);
-    let name = storage.getItem(LocalStorageKeys.UserName);
-    let userId = storage.getItem(LocalStorageKeys.UserId);
-    let accountId = storage.getItem(LocalStorageKeys.AccountId);
+    const email = storage.getItem(LocalStorageKeys.UserEmail);
+    const name = storage.getItem(LocalStorageKeys.UserName);
+    const userId = storage.getItem(LocalStorageKeys.UserId);
+    const accountId = storage.getItem(LocalStorageKeys.AccountId);
 
     if (email && name && userId && accountId) {
         return {

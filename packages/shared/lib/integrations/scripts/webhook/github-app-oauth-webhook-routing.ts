@@ -62,7 +62,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
             return;
         }
 
-        const template = await configService.getTemplate(integration?.provider as string);
+        const template = configService.getTemplate(integration?.provider as string);
 
         const activityLogId = connection.connection_config['pendingLog'];
         delete connection.connection_config['pendingLog'];

@@ -110,6 +110,7 @@ class PaginationService {
                 const url: URL = new URL(nextPageLink);
                 config.endpoint = url.pathname + url.search;
             }
+
             delete config.params;
         }
     }

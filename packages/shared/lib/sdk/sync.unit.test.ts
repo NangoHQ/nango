@@ -14,6 +14,7 @@ vi.mock('@nangohq/node', () => {
 
 describe('Pagination', () => {
     const providerConfigKey = 'github';
+    const connectionId = 'connection-1';
 
     const cursorPagination: CursorPagination = {
         type: 'cursor',
@@ -45,6 +46,7 @@ describe('Pagination', () => {
             secretKey: 'encrypted',
             serverUrl: 'https://example.com',
             providerConfigKey,
+            connectionId,
             dryRun: true
         };
         nangoAction = new NangoAction(config);
@@ -124,7 +126,8 @@ describe('Pagination', () => {
             endpoint,
             params: { offset: '3', per_page: 3 },
             paginate: paginationConfigOverride,
-            providerConfigKey: 'github'
+            providerConfigKey,
+            connectionId
         });
     });
 
