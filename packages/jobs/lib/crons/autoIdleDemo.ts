@@ -31,7 +31,8 @@ async function exec() {
             '_nango_configs.provider': 'github',
             '_nango_sync_configs.deleted': false,
             '_nango_sync_configs.active': true
-        });
+        })
+        .where(db.knex.raw("_nango_sync_configs.created_at <  NOW() - INTERVAL '25h'"));
 
     console.log(res);
 

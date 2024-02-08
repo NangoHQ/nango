@@ -52,7 +52,6 @@ import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
 import tracer from './apm.js';
-import { cronAutoIdleDemo } from '../../jobs/lib/crons/autoIdleDemo.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
@@ -242,7 +241,6 @@ wss.on('connection', async (ws: WebSocket) => {
 
 // kick off any job
 deleteOldActivityLogs();
-cronAutoIdleDemo();
 
 const port = getPort();
 server.listen(port, () => {
