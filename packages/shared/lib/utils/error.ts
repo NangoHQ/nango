@@ -491,7 +491,7 @@ export class NangoError extends Error {
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error ${this.payload} has occurred: ${type}`;
+                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occured`;
         }
     }
 

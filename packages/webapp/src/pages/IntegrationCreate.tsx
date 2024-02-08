@@ -141,7 +141,7 @@ export default function IntegrationCreate() {
             const appId = authMode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
 
             let custom: Record<string, string> | undefined = authMode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
-            if (target.incoming_webhook_secret.value) {
+            if (target.incoming_webhook_secret?.value) {
                 custom = { webhookSecret: target.incoming_webhook_secret.value };
             }
 

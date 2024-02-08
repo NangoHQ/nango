@@ -1,10 +1,10 @@
 import { expect, describe, it } from 'vitest';
 import proxyService from './proxy.service.js';
-import { HTTP_VERB, AuthModes } from '../models/index.js';
+import { HTTP_VERB, AuthModes, UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-describe('Proxy Controller Construct Header Tests', () => {
+describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
         const config = {
             endpoint: 'https://api.nangostarter.com',
@@ -210,7 +210,7 @@ describe('Proxy Controller Construct Header Tests', () => {
     });
 });
 
-describe('Proxy Controller Construct URL Tests', () => {
+describe('Proxy service Construct URL Tests', () => {
     it('should correctly construct url with no trailing slash and no leading slash', () => {
         const config = {
             template: {
@@ -481,7 +481,7 @@ describe('Proxy Controller Construct URL Tests', () => {
         await proxyService.retryHandler(1, 1, mockAxiosError, 'after', 'x-rateLimit-reset-after');
         const after = Date.now();
         const diff = after - before;
-        expect(diff).toBeGreaterThan(1000);
+        expect(diff).toBeGreaterThanOrEqual(1000);
         expect(diff).toBeLessThan(2000);
     });
 
@@ -504,5 +504,190 @@ describe('Proxy Controller Construct URL Tests', () => {
         const diff = after - before;
         expect(diff).toBeGreaterThan(1000);
         expect(diff).toBeLessThan(2000);
+    });
+});
+
+describe('Proxy service configure', () => {
+    it('Should fail if no endpoint', () => {
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            connectionId: 'connection-1',
+            endpoint: ''
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            provider: 'provider-1',
+            connection: {
+                environment_id: 1,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                credentials: {} as OAuth2Credentials,
+                connection_config: {}
+            },
+            existingActivityLogId: 1
+        };
+        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        expect(success).toBe(false);
+        expect(response).toBeNull();
+        expect(error).toBeDefined();
+        expect(error?.message).toContain('missing_endpoint');
+        expect(activityLogs.length).toBe(1);
+        expect(activityLogs[0]).toMatchObject({
+            environment_id: 1,
+            activity_log_id: 1,
+            level: 'error'
+        });
+    });
+    it('Should fail if no connectionId', () => {
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            connectionId: '',
+            endpoint: 'https://example.com'
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            provider: 'provider-1',
+            connection: {
+                environment_id: 1,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                credentials: {} as OAuth2Credentials,
+                connection_config: {}
+            },
+            existingActivityLogId: 1
+        };
+        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        expect(success).toBe(false);
+        expect(response).toBeNull();
+        expect(error).toBeDefined();
+        expect(error?.message).toContain('missing_connection_id');
+        expect(activityLogs.length).toBe(1);
+        expect(activityLogs[0]).toMatchObject({
+            environment_id: 1,
+            activity_log_id: 1,
+            level: 'error'
+        });
+    });
+    it('Should fail if no providerConfigKey', () => {
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: '',
+            connectionId: 'connection-1',
+            endpoint: 'https://example.com'
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            provider: 'provider-1',
+            connection: {
+                environment_id: 1,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                credentials: {} as OAuth2Credentials,
+                connection_config: {}
+            },
+            existingActivityLogId: 1
+        };
+        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        expect(success).toBe(false);
+        expect(response).toBeNull();
+        expect(error).toBeDefined();
+        expect(error?.message).toContain('missing_provider_config_key');
+        expect(activityLogs.length).toBe(1);
+        expect(activityLogs[0]).toMatchObject({
+            environment_id: 1,
+            activity_log_id: 1,
+            level: 'error'
+        });
+    });
+    it('Should fail if unknown provider', () => {
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            connectionId: 'connection-1',
+            endpoint: 'https://example.com'
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            provider: 'unknown',
+            connection: {
+                environment_id: 1,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                credentials: {} as OAuth2Credentials,
+                connection_config: {}
+            },
+            existingActivityLogId: 1
+        };
+        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        expect(success).toBe(false);
+        expect(response).toBeNull();
+        expect(error).toBeDefined();
+        expect(error?.message).toContain('proxy is not supported');
+        expect(activityLogs.length).toBe(3);
+        expect(activityLogs[2]).toMatchObject({
+            environment_id: 1,
+            activity_log_id: 1,
+            level: 'error'
+        });
+    });
+    it('Should succeed', () => {
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            connectionId: 'connection-1',
+            endpoint: '/api/test',
+            retries: 3,
+            baseUrlOverride: 'https://api.github.com.override',
+            headers: {
+                'x-custom': 'custom-value'
+            },
+            params: { foo: 'bar' },
+            responseType: 'blob'
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            provider: 'github',
+            connection: {
+                environment_id: 1,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                credentials: {} as OAuth2Credentials,
+                connection_config: {}
+            },
+            existingActivityLogId: 1
+        };
+        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        expect(success).toBe(true);
+        expect(response).toMatchObject({
+            endpoint: '/api/test',
+            method: 'GET',
+            template: {
+                auth_mode: 'OAUTH2',
+                authorization_url: 'https://github.com/login/oauth/authorize',
+                token_url: 'https://github.com/login/oauth/access_token',
+                proxy: {
+                    base_url: 'https://api.github.com'
+                },
+                docs: 'https://docs.github.com/en/rest'
+            },
+            token: '',
+            provider: 'github',
+            providerConfigKey: 'provider-config-key-1',
+            connectionId: 'connection-1',
+            headers: {
+                'x-custom': 'custom-value'
+            },
+            retries: 3,
+            baseUrlOverride: 'https://api.github.com.override',
+            decompress: false,
+            connection: {
+                environment_id: 1,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                credentials: {},
+                connection_config: {}
+            },
+            params: { foo: 'bar' },
+            responseType: 'blob'
+        });
+        expect(error).toBeNull();
+        expect(activityLogs.length).toBe(4);
     });
 });

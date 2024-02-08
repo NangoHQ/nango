@@ -5,6 +5,8 @@ import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
+import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
+import logger from '../logger/console.js';
 
 /*
  *
@@ -289,42 +291,70 @@ export class NangoAction {
         });
     }
 
-    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        const internalConfig = {
-            environmentId: this.environmentId as number,
-            isFlow: true,
-            isDryRun: this.dryRun as boolean,
-            existingActivityLogId: this.activityLogId as number,
-            throwErrors: true
-        };
-
-        let connection = undefined;
-
+    private proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;
         }
-
         if (!config.providerConfigKey && this.providerConfigKey) {
             config.providerConfigKey = this.providerConfigKey;
         }
+        if (!config.connectionId) {
+            throw new Error('Missing connection id');
+        }
+        if (!config.providerConfigKey) {
+            throw new Error('Missing provider config key');
+        }
+        return {
+            ...config,
+            providerConfigKey: config.providerConfigKey,
+            connectionId: config.connectionId
+        };
+    }
 
+    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
-            const { connectionId, providerConfigKey } = config;
-            connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
-
+            const proxyConfig = this.proxyConfig(config);
+            const connection = await this.nango.getConnection(proxyConfig.providerConfigKey, proxyConfig.connectionId);
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
+            const {
+                config: { provider }
+            } = await this.nango.getIntegration(proxyConfig.providerConfigKey);
 
-            const responseOrError = await proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection });
+            const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
+                existingActivityLogId: this.activityLogId as number,
+                connection: connection,
+                provider
+            });
 
-            if (responseOrError instanceof Error) {
-                throw responseOrError;
+            if (activityLogs) {
+                for (const log of activityLogs) {
+                    if (log.level === 'debug') continue;
+                    await this.log(log.content, { level: log.level });
+                    switch (log.level) {
+                        case 'error':
+                            logger.error(log.content);
+                            break;
+                        case 'warn':
+                            logger.warn(log.content);
+                            break;
+                        case 'info':
+                            logger.info(log.content);
+                            break;
+                        default:
+                            logger.debug(log.content);
+                    }
+                }
             }
 
-            return responseOrError as unknown as Promise<AxiosResponse<T>>;
+            if (response instanceof Error) {
+                throw response;
+            }
+
+            return response;
         }
     }
 
@@ -380,7 +410,7 @@ export class NangoAction {
     }
 
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
-        console.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
+        logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
     }
 
@@ -397,7 +427,7 @@ export class NangoAction {
     }
 
     public async getFieldMapping(): Promise<Metadata> {
-        console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
+        logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
         const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
         return (metadata['fieldMapping'] as Metadata) || {};
     }
@@ -434,7 +464,7 @@ export class NangoAction {
         const content = safeStringify(args);
 
         if (this.dryRun) {
-            console.log(...args);
+            logger.info([...args]);
             return;
         }
 
@@ -453,7 +483,7 @@ export class NangoAction {
         });
 
         if (response.status > 299) {
-            console.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
             throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
         }
         return;
@@ -509,20 +539,21 @@ export class NangoAction {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
+        const proxyConfig = this.proxyConfig(config);
         switch (paginationConfig.type.toLowerCase()) {
             case PaginationType.CURSOR:
                 return yield* paginateService.cursor<T>(
-                    config,
+                    proxyConfig,
                     paginationConfig as CursorPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,
                     this.proxy.bind(this)
                 );
             case PaginationType.LINK:
-                return yield* paginateService.link<T>(config, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                return yield* paginateService.link<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
             case PaginationType.OFFSET:
                 return yield* paginateService.offset<T>(
-                    config,
+                    proxyConfig,
                     paginationConfig as OffsetPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,
@@ -583,7 +614,7 @@ export class NangoSync extends NangoAction {
             }
         });
         if (response.status > 299) {
-            console.error(
+            logger.error(
                 `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                 this.stringify()
             );
@@ -596,14 +627,14 @@ export class NangoSync extends NangoAction {
      * Deprecated, please use batchSave
      */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
-        console.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
+        logger.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
         return this.batchSave(results, model);
     }
 
     public async batchSave<T = any>(results: T[], model: string): Promise<boolean | null> {
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchSave received an empty array. No records to save.');
+                logger.info('batchSave received an empty array. No records to save.');
             }
             return true;
         }
@@ -634,7 +665,7 @@ export class NangoSync extends NangoAction {
                 }
             });
             if (response.status > 299) {
-                console.error(
+                logger.error(
                     `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
@@ -647,7 +678,7 @@ export class NangoSync extends NangoAction {
     public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchDelete received an empty array. No records to delete.');
+                logger.info('batchDelete received an empty array. No records to delete.');
             }
             return true;
         }
@@ -678,7 +709,7 @@ export class NangoSync extends NangoAction {
                 }
             });
             if (response.status > 299) {
-                console.error(
+                logger.error(
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
@@ -691,7 +722,7 @@ export class NangoSync extends NangoAction {
     public async batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null> {
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchUpdate received an empty array. No records to update.');
+                logger.info('batchUpdate received an empty array. No records to update.');
             }
             return true;
         }
@@ -722,7 +753,7 @@ export class NangoSync extends NangoAction {
                 }
             });
             if (response.status > 299) {
-                console.error(
+                logger.error(
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );

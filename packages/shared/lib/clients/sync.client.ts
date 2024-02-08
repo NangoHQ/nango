@@ -486,8 +486,8 @@ class SyncClient {
 
             // Errors received from temporal are raw objects not classes
             const error =
-                !(rawError instanceof NangoError) && rawError.type && rawError.status
-                    ? new NangoError(rawError.type, rawError.payload, rawError.status)
+                !(rawError instanceof NangoError) && rawError?.type && rawError.status
+                    ? new NangoError(rawError?.type, rawError?.payload, rawError.status)
                     : rawError;
 
             if (writeLogs && (success === false || error)) {
