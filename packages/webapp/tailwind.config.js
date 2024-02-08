@@ -9,11 +9,12 @@ module.exports = {
         extend: {
             colors: {
                 'bg-black': '#0E1014',
-                'pure-black': '#000000',
+                'pure-black': '#05050a',
                 'bg-dark-gray': '#181B20',
-                'hover-gray': '#171720',
-                'active-gray': '#1D1F28',
+                'active-gray': '#171720',
+                'hover-gray': '#1D1F28',
                 'text-light-gray': '#A9A9A9',
+                'off-black': '#05050a',
                 'text-dark-gray': '#5F5F5F',
                 'bg-cta-green': '#75E270',
                 'text-cta-green1': '#224421',

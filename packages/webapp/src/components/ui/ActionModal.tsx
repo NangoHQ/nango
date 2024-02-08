@@ -15,7 +15,7 @@ interface ModalProps {
 
 export default function ActionModal({ bindings, modalTitleColor, modalShowSpinner, modalContent, modalTitle, modalAction, setVisible }: ModalProps) {
     return (
-        <Modal {...bindings} wrapClassName="!h-[200px] !w-[550px] !max-w-[550px] !bg-black no-border-modal !border !border-neutral-700">
+        <Modal {...bindings} wrapClassName="!h-[200px] !w-[550px] !max-w-[550px] !bg-off-black no-border-modal !border !border-neutral-700">
             <div className="flex justify-between text-sm">
                 <div>
                     <Modal.Content className="overflow-scroll !h-[190px] max-w-[550px] flex flex-col justify-between h-full">

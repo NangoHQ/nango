@@ -63,7 +63,7 @@ export default function IntegrationList() {
                         <table className="w-full">
                             <tbody className="">
                                 <tr>
-                                    <td className="flex items-center text-[12px] px-2 py-1 bg-hover-gray border border-neutral-800 rounded-md justify-between">
+                                    <td className="flex items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md justify-between">
                                         <div className="w-[33rem]">Name</div>
                                         <div className="w-52">Connections</div>
                                         <div className="">Active Scripts</div>
