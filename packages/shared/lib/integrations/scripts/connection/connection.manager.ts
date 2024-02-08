@@ -1,4 +1,4 @@
-import type { AxiosResponse } from 'axios';
+import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '../../../models/Connection.js';
 import { LogLevel, LogActionEnum } from '../../../models/Activity.js';
 import { createActivityLogAndLogMessage } from '../../../services/activity/activity.service.js';
@@ -21,7 +21,7 @@ const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as
 
 export interface InternalNango {
     getConnection: () => Promise<Connection>;
-    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse>;
+    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
@@ -41,11 +41,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
         }
 
         const internalConfig = {
-            environmentId: createdConnection.environment_id,
-            isFlow: true,
-            isDryRun: false,
-            throwErrors: false,
-            connection
+            connection,
+            provider
         };
 
         const externalConfig = {
@@ -62,12 +59,13 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
                 return connection as Connection;
             },
-            proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => {
+            proxy: async ({ method, endpoint, data }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig = { ...externalConfig, method: method || externalConfig.method, endpoint };
                 if (data) {
                     finalExternalConfig.data = data;
                 }
-                return proxyService.routeOrConfigure(finalExternalConfig, internalConfig) as Promise<AxiosResponse>;
+                const { response } = await proxyService.route(finalExternalConfig, internalConfig);
+                return response;
             },
             updateConnectionConfig: (connectionConfig: ConnectionConfig) => {
                 return connectionService.updateConnectionConfig(connection as unknown as Connection, connectionConfig);

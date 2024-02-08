@@ -5,6 +5,8 @@ import type { Connection } from './Connection.js';
 import type { Template as ProviderTemplate } from './Provider.js';
 
 interface BaseProxyConfiguration {
+    providerConfigKey: string;
+    connectionId: string;
     endpoint: string;
     retries?: number;
     data?: unknown;
@@ -17,20 +19,13 @@ interface BaseProxyConfiguration {
 }
 
 export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
-    providerConfigKey?: string;
-    connectionId?: string;
-    retries?: number;
     decompress?: boolean | string;
-
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
 }
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
-    providerConfigKey: string;
-    connectionId: string;
     decompress?: boolean;
-
     method: HTTP_VERB;
     provider: string;
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
@@ -41,13 +36,9 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
-    environmentId: number;
-    accountId?: number;
-    isFlow?: boolean;
-    isDryRun?: boolean;
+    provider: string;
+    connection: Connection;
     existingActivityLogId?: number;
-    throwErrors?: boolean;
-    connection?: Connection;
 }
 
 export interface RetryHeaderConfig {
