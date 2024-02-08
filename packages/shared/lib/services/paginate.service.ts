@@ -82,8 +82,7 @@ class PaginationService {
         paginationConfig: LinkPagination,
         updatedBodyOrParams: Record<string, any>,
         passPaginationParamsInBody: boolean,
-        proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>,
-        template: ProviderTemplate
+        proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
         const linkPagination: LinkPagination = paginationConfig as LinkPagination;
 
@@ -113,10 +112,6 @@ class PaginationService {
                 config.endpoint = url.pathname + url.search;
             }
 
-            const apiBase = config.baseUrlOverride || template.proxy?.base_url;
-            if (config.endpoint.includes(apiBase)) {
-                config.endpoint = config.endpoint.replace(apiBase, '');
-            }
             delete config.params;
         }
     }
