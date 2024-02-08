@@ -12,11 +12,14 @@ import {
     syncDataService,
     getSyncConfigByJobId,
     DataRecord,
-    UpsertResponse
+    UpsertResponse,
+    ok,
+    err,
+    isOk,
+    Result
 } from '@nangohq/shared';
 import tracer from '../tracer.js';
 import type { Span } from 'dd-trace';
-import { Result, ok, err } from '../utils/result.js';
 
 type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
@@ -114,7 +117,7 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        if (result.ok) {
+        if (isOk(result)) {
             res.status(201).send();
         } else {
             next(new Error(`'Failed to save records': ${result.error.message}`));
@@ -155,7 +158,7 @@ class PersistController {
             softDelete: true,
             persistFunction: persist
         });
-        if (result.ok) {
+        if (isOk(result)) {
             res.status(201).send();
         } else {
             next(new Error(`'Failed to delete records': ${result.error.message}`));
@@ -194,7 +197,7 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        if (result.ok) {
+        if (isOk(result)) {
             res.status(201).send();
         } else {
             next(new Error(`'Failed to update records': ${result.error.message}`));
@@ -274,14 +277,14 @@ class PersistController {
                 timestamp: Date.now()
             });
             const res = err(`Failed to ${persistType} records ${activityLogId}`);
-            span.setTag('error', res.error).finish();
+            span.setTag('error', res.err).finish();
             return res;
         }
         const syncConfig = await getSyncConfigByJobId(syncJobId);
 
         if (syncConfig && !syncConfig?.models.includes(model)) {
             const res = err(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
-            span.setTag('error', res.error).finish();
+            span.setTag('error', res.err).finish();
             return res;
         }
 
@@ -332,7 +335,7 @@ class PersistController {
                 }
             });
             const res = err(persistResult?.error!);
-            span.setTag('error', res.error).finish();
+            span.setTag('error', res.err).finish();
             return res;
         }
     }
