@@ -13,8 +13,8 @@ import {
     getSyncConfigByJobId,
     DataRecord,
     UpsertResponse,
-    ok,
-    err,
+    resultOk,
+    resultErr,
     isOk,
     Result
 } from '@nangohq/shared';
@@ -120,7 +120,7 @@ class PersistController {
         if (isOk(result)) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to save records': ${result.error.message}`));
+            next(new Error(`'Failed to save records': ${result.err.message}`));
         }
     }
 
@@ -161,7 +161,7 @@ class PersistController {
         if (isOk(result)) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to delete records': ${result.error.message}`));
+            next(new Error(`'Failed to delete records': ${result.err.message}`));
         }
     }
 
@@ -200,7 +200,7 @@ class PersistController {
         if (isOk(result)) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to update records': ${result.error.message}`));
+            next(new Error(`'Failed to update records': ${result.err.message}`));
         }
     }
 
@@ -276,14 +276,14 @@ class PersistController {
                 content: `There was an issue with the batch ${persistType}. ${error?.message}`,
                 timestamp: Date.now()
             });
-            const res = err(`Failed to ${persistType} records ${activityLogId}`);
+            const res = resultErr(`Failed to ${persistType} records ${activityLogId}`);
             span.setTag('error', res.err).finish();
             return res;
         }
         const syncConfig = await getSyncConfigByJobId(syncJobId);
 
         if (syncConfig && !syncConfig?.models.includes(model)) {
-            const res = err(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            const res = resultErr(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
             span.setTag('error', res.err).finish();
             return res;
         }
@@ -310,7 +310,7 @@ class PersistController {
 
             await updateSyncJobResult(syncJobId, updatedResults, model);
             span.finish();
-            return ok(void 0);
+            return resultOk(void 0);
         } else {
             const content = `There was an issue with the batch ${persistType}. ${persistResult?.error}`;
 
@@ -322,7 +322,7 @@ class PersistController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(content, {
+            errorManager.report(content, {
                 environmentId: environmentId,
                 source: ErrorSourceEnum.CUSTOMER,
                 operation: LogActionEnum.SYNC,
@@ -334,7 +334,7 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            const res = err(persistResult?.error!);
+            const res = resultErr(persistResult?.error!);
             span.setTag('error', res.err).finish();
             return res;
         }
