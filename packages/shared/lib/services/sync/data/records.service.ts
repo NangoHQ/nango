@@ -503,12 +503,11 @@ export async function getAllDataRecords(
 
 export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKey?: string | number): { isUnique: boolean; nonUniqueKeys: string[] } {
     const uniqueKey = optionalUniqueKey ?? 'id';
-    const idMap: { [key: string]: boolean } = {};
+    const idMap: Record<string, boolean> = {};
     let isUnique = true;
     const nonUniqueKeys: string[] = [];
 
-    for (let i = 0; i < data.length; i++) {
-        const item = data[i] as DataResponse;
+    for (const item of data) {
         const id = item[uniqueKey] as string | number;
 
         if (idMap[id]) {

@@ -1,7 +1,7 @@
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
-    public payload: { [key: string]: unknown };
+    public payload: Record<string, unknown>;
     public override readonly message: string;
 
     constructor(type: string, payload = {}, status?: number) {
