@@ -20,7 +20,7 @@ export default function EndpointRow({ flow, endpoint, source, integration }: End
 
     return (
         <td className="flex items-center p-3 py-4 justify-between border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={() => navigate(`/${env}/integration/${integration?.unique_key}/reference${endpointRoute}`)}>
-            <div className="flex items-center px-2 w-48">
+            <div className="flex items-center w-48">
                 <EndpointLabel endpoint={endpoint} type={flow.type} />
             </div>
             <div className="flex items-center ml-3">

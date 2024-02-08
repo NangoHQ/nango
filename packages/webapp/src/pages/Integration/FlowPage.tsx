@@ -247,7 +247,7 @@ export default function FlowPage() {
             {provider && flow && (
                 <>
                 <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/${env}/integration/${providerConfigKey}#scripts`)} />
-                <div className="mx-auto space-y-12 text-sm">
+                <div className="mx-auto space-y-10 text-sm">
                     <div className="flex justify-between">
                         <div className="flex">
                             <img src={`/images/template-logos/${provider}.svg`} alt="" className="h-24 w-24" />
@@ -271,7 +271,7 @@ export default function FlowPage() {
                         </div>
                     </div>
                     {source === 'Public' && (
-                        <div className="my-5">
+                        <div className="my-1">
                             <Info size={18} padding="px-4 py-1.5">
                                 This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">(learn more)</a>.
                             </Info>
@@ -284,12 +284,14 @@ export default function FlowPage() {
                             </Info>
                         </div>
                     )}
-                    <div className="flex flex-col">
-                        <span className="text-gray-400 text-xs uppercase mb-1">Description</span>
-                        <div className="text-white">
-                            {flow?.description}
+                    {flow?.description && (
+                        <div className="flex flex-col">
+                            <span className="text-gray-400 text-xs uppercase mb-1">Description</span>
+                            <div className="text-white">
+                                {flow?.description}
+                            </div>
                         </div>
-                    </div>
+                    )}
                     <div className="flex">
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Enabled</span>
@@ -380,6 +382,16 @@ export default function FlowPage() {
                                 <span className="text-gray-400 text-xs uppercase mb-1">Track Deletes</span>
                                 <div className="text-white">
                                     {flow?.track_deletes === true ? 'Yes' : 'No'}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {flow?.type === 'sync' && flow?.webhookSubscriptions.length > 0 && (
+                        <div className="flex">
+                            <div className="flex flex-col w-1/2 relative">
+                                <span className="text-gray-400 text-xs uppercase mb-1">Webhook Subscriptions</span>
+                                <div className="text-white">
+                                    {flow.webhookSubscriptions.join(', ')}
                                 </div>
                             </div>
                         </div>

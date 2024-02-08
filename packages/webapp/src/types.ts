@@ -203,6 +203,7 @@ export interface Flow {
     endpoint?: string;
     models: NangoSyncModel[];
     nango_yaml_version: 'v1' | 'v2';
+    webhookSubscriptions: string[];
 }
 
 export interface Account {

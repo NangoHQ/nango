@@ -168,7 +168,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer" />
                             </Link>
                             <div className="mt-3 ml-6">
-                                <span className="text-left text-2xl font-semibold tracking-tight text-gray-400 mb-12">
+                                <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">
                                     Connection
                                 </span>
                                 <h2 className="text-left text-3xl font-semibold tracking-tight text-white">

@@ -58,7 +58,8 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
                 !syncConfig.endpoints_object || syncConfig?.endpoints_object?.length === 0
                     ? null
                     : syncConfig.endpoints_object.map((endpoint) => `${endpoint.method} ${endpoint.path}`),
-            input: syncConfig.input
+            input: syncConfig.input,
+            'webhook-subscriptions': syncConfig.webhook_subscriptions
         } as NangoIntegrationDataV2;
 
         if (syncConfig.type === SyncConfigType.SYNC) {
@@ -770,6 +771,7 @@ export async function getConfigWithEndpointsByProviderConfigKeyAndName(
             `${TABLE}.sync_type`,
             `${TABLE}.track_deletes`,
             `${TABLE}.auto_start`,
+            `${TABLE}.webhook_subscriptions`,
             '_nango_configs.unique_key',
             '_nango_configs.provider',
             db.knex.raw(

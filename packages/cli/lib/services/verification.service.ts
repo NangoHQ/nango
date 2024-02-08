@@ -105,7 +105,7 @@ class VerificationService {
         }
 
         const version = determineVersion(localConfig);
-        if (version === 'v1') {
+        if (version === 'v1' && localConfig.integrations) {
             const autoMigrate = await promptly.confirm(
                 `You are using the v1 version of the Nango yaml. Would you like to us to automatically upgrade you to v2? This won't change your code but rather just make some minor adjustments to your yaml structure. A list of changes and explanations will also be outputted (yes/no)`
             );

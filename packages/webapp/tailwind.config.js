@@ -11,7 +11,7 @@ module.exports = {
                 'bg-black': '#0E1014',
                 'pure-black': '#05050a',
                 'bg-dark-gray': '#181B20',
-                'active-gray': '#171720',
+                'active-gray': '#161720',
                 'hover-gray': '#1D1F28',
                 'text-light-gray': '#A9A9A9',
                 'off-black': '#05050a',
@@ -30,7 +30,8 @@ module.exports = {
                 largecell: '480px'
             },
             fontSize: {
-                sm: '13px'
+                sm: '13px',
+                '3xl': '28px'
             }
         }
     },

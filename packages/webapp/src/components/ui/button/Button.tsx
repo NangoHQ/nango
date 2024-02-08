@@ -3,7 +3,7 @@ import { cva, VariantProps } from 'class-variance-authority';
 import classNames from 'classnames';
 import React, { forwardRef } from 'react';
 
-const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded-md', {
+const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded-md text-sm', {
     variants: {
         variant: {
             primary: 'bg-white text-black hover:bg-gray-300',
