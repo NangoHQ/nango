@@ -84,6 +84,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 scopes: { value: string };
                 app_id: { value: string };
                 app_link: { value: string };
+                incoming_webhook_secret: { value: string };
             };
 
             const client_secret = integration?.auth_mode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
@@ -92,7 +93,11 @@ export default function AuthSettings(props: AuthSettingsProps) {
             const private_key = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
             const appId = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
 
-            const custom = integration?.auth_mode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+            let custom: Record<string, string> | undefined = integration?.auth_mode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+
+            if (target.incoming_webhook_secret?.value) {
+                custom = { webhookSecret: target.incoming_webhook_secret.value };
+            }
 
             const res = await editIntegrationAPI(
                 integration.provider,
@@ -330,6 +335,36 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             </div>
                         </div>
                     )}
+                    {integration.has_webhook_user_defined_secret && (
+                        <div className="flex flex-col w-full">
+                            <div className="flex items-center mb-1">
+                                <span className="text-gray-400 text-xs uppercase">Webhook Secret</span>
+                                <Tooltip
+                                    type="dark"
+                                    text={
+                                        <>
+                                            <div className="flex text-white text-sm">
+                                                <p>{`Obtain the Webhook Secret from on the developer portal of the Integration Provider.`}</p>
+                                            </div>
+                                        </>
+                                    }
+                                >
+                                    <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                                </Tooltip>
+                            </div>
+                            <div className="flex text-white w-full">
+                                <SecretInput
+                                    copy={true}
+                                    id="incoming_webhook_secret"
+                                    name="incoming_webhook_secret"
+                                    autoComplete="one-time-code"
+                                    defaultValue={integration ? integration.custom?.webhookSecret : ''}
+                                    additionalclass={`w-full`}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
             {(integration?.auth_mode === AuthModes.Basic || integration?.auth_mode === AuthModes.ApiKey) && (
@@ -381,7 +416,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 text={
                                     <>
                                         <div className="flex text-white text-sm">
-                                            <p>{`Obtain the app private key from the from the app page by downloading the private key and pasting the entirety of its contents here.`}</p>
+                                            <p>{`Obtain the app private key from the app page by downloading the private key and pasting the entirety of its contents here.`}</p>
                                         </div>
                                     </>
                                 }

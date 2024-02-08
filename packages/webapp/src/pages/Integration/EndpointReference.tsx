@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Loading } from '@geist-ui/core';
 import { useParams } from 'react-router-dom';
 import { ArrowLeftIcon, AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
@@ -124,6 +125,12 @@ export default function EndpointReference() {
             }
         }
     }, [accountLoaded, loaded, activeFlow, account, integration?.unique_key]);
+
+    if (!loaded || !accountLoaded) return (
+        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <Loading spaceRatio={2.5} className="-top-36" />
+        </DashboardLayout>
+    );
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>

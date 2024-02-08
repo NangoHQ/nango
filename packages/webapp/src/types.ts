@@ -241,6 +241,7 @@ export interface IntegrationConfig {
     client_secret: string;
     app_link?: string;
     has_webhook: boolean;
+    has_webhook_user_defined_secret?: boolean;
     scopes: string;
     auth_mode: AuthModes;
     created_at: string;

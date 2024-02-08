@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
+import { Loading } from '@geist-ui/core';
 import { useState, useEffect } from 'react';
 
 import {
@@ -106,6 +107,12 @@ export default function ShowIntegration() {
             getAccount();
         }
     }, [accountLoaded, setAccountLoaded, getProjectInfoAPI, setAccount]);
+
+    if (!loaded || !accountLoaded) return (
+        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <Loading spaceRatio={2.5} className="-top-36" />
+        </DashboardLayout>
+    );
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>

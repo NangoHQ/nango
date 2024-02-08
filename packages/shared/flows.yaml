@@ -76,9 +76,12 @@ integrations:
       runs: every hour
       returns:
         - ClariCopilotCall
-      description: |
-        Fetches calls from your account. For the first sync, it will go back to the past one year.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
+      description: >
+        Fetches calls from your account. For the first sync, it will go back to
+        the past one year.
+
+        Details: incremental sync, doesn't track deletes, metadata is not
+        required.
     models:
       ClariCopilotCall:
         id: string
@@ -841,7 +844,7 @@ integrations:
         thumbs_up: boolean
         resume_url: string
         interviewers: string[]
-        candidate: CandidateInformation;
+        candidate: CandidateInformation
         result_url: string
         report_url: string
       HackerRankWorkInterview:
@@ -864,7 +867,7 @@ integrations:
         thumbs_up: boolean
         resume_url: string
         interviewers: string[]
-        candidate: CandidateInformation;
+        candidate: CandidateInformation
         result_url: string
         report_url: string
       CandidateInformation:
@@ -1001,15 +1004,17 @@ integrations:
         last_name: string
         email: string
   intercom:
-    intercom-conversations:
-      runs: every 6 hours
-      returns:
-        - IntercomConversation
-        - IntercomConversationMessage
-    intercom-contacts:
-      runs: every 6 hours
-      returns:
-        - IntercomContact
+    syncs:
+      intercom-conversations:
+        runs: every 6 hours
+        output: IntercomConversation
+        sync_type: incremental
+        endpoint: /intercom/conversations
+      intercom-contacts:
+        runs: every 6 hours
+        output: IntercomContact
+        sync_type: full
+        endpoint: /intercom/contacts
     models:
       IntercomContact:
         id: string
@@ -1048,10 +1053,12 @@ integrations:
           name: string
           id: string
   jira:
-    jira-issues:
-      runs: every 5mins
-      returns:
-        - JiraIssue
+    syncs:
+      jira-issues:
+        runs: every 5mins
+        output: JiraIssue
+        sync_type: incremental
+        endpoint: /jira/issues
     models:
       JiraIssue:
         id: integer
@@ -1238,22 +1245,27 @@ integrations:
         id: string
         text: string
   linear:
-    linear-issues:
-      runs: every 5min
-      returns:
-        - LinearIssue
-    linear-projects:
-      runs: every 5min
-      returns:
-        - LinearProject
-    linear-teams:
-      runs: every 5min
-      returns:
-        - LinearTeam
-    linear-roadmaps:
-      runs: every 5min
-      returns:
-        - LinearRoadmap
+    syncs:
+      linear-issues:
+        runs: every 5min
+        output: LinearIssue
+        sync_type: incremental
+        endpoint: /linear/issues
+      linear-projects:
+        runs: every 5min
+        output: LinearProject
+        sync_type: incremental
+        endpoint: /linear/projects
+      linear-teams:
+        runs: every 5min
+        output: LinearTeam
+        sync_type: incremental
+        endpoint: /linear/teams
+      linear-roadmaps:
+        runs: every 5min
+        output: LinearRoadmap
+        sync_type: incremental
+        endpoint: /linear/roadmaps
     models:
       LinearIssue:
         id: string
@@ -1289,34 +1301,33 @@ integrations:
         teamId: string
         projectIds: string
   microsoft-teams:
-    microsoft-org-unit:
-      runs: every 6 hours
-      returns:
-        - OrganizationalUnit
-      description: >
-        Continuously fetches groups from either Microsoft 365 or Azure Active
-        Directory.
-
-        Details: full refresh, support deletes, goes back all time, metadata is
-        not required.
-
-        Required scope(s): GroupMember.Read.All
-    microsoft-users:
-      runs: every hour
-      returns:
-        - User
-      description: >
-        Continuously fetches users from either Microsoft 365 or Azure Active
-        Directory given specified
-
-        groups to sync. Expects an `orgsToSync` metadata property with an array
-
-        of organization ids.
-
-        Details: full refresh, doesn't support deletes, goes back all time,
-        metadata is required.
-
-        Required scope(s): User.Read.All
+    syncs:
+      microsoft-org-unit:
+        runs: every 6 hours
+        description: |
+          Continuously fetches groups from either Microsoft 365 or Azure Active
+          Directory.
+          Details: full refresh, support deletes, goes back all time, metadata
+          is not required.
+        output: OrganizationalUnit
+        sync_type: full
+        endpoint: /microsoft-teams/microsoft-org-unit
+        scopes:
+          - GroupMember.Read.All
+      microsoft-users:
+        runs: every hour
+        description: |
+          Continuously fetches users from either Microsoft 365 or Azure Active
+          Directory given specified
+          groups to sync. Expects an `orgsToSync` metadata property with an
+          array of organization ids.
+          Details: full refresh, doesn't support deletes, goes back all time,
+          metadata is required.
+        output: User
+        sync_type: full
+        endpoint: /microsoft-teams/microsoft-users
+        scopes:
+          - User.Read.All
     models:
       OrganizationalUnit:
         id: string
@@ -1346,39 +1357,35 @@ integrations:
         department: string | null
     rawName: microsoft-active-directory
   notion:
-    notion-pages:
-      runs: every 6 hours
-      returns:
-        - NotionPage
-      description: >
-        Sync pages, subpages, database entries, entries of
-
-        sub-databases and retrieve only the text content and ignores
-
-        images, files and other blocks that do not have
-
-        a `rich_text` property.
-
-        Details: incremental sync, doesn't support deletes, sync goes to all
-        time, metadata is not required.
-
-        Required scope(s): none
-    notion-rich-pages:
-      runs: every 6 hours
-      track_deletes: true
-      returns:
-        - NotionRichPage
-      description: >
-        Sync pages, subpages, database entries, entries of
-
-        sub-databases and maps to full markdown. It transforms
-
-        images, tables, uploaded files, etc into their markdown counterparts.
-
-        Details: full sync, tracks deletes, sync goes to all time, metadata is
-        not required.
-
-        Required scope(s): none
+    syncs:
+      notion-pages:
+        runs: every 6 hours
+        description: |
+          Sync pages, subpages, database entries, entries of
+          sub-databases and retrieve only the text content and ignores
+          images, files and other blocks that do not have
+          a `rich_text` property.
+          Details: incremental sync, doesn't support deletes, sync goes to all
+          time, metadata is not required.
+          Required scope(s): none
+        output: NotionPage
+        sync_type: incremental
+        endpoint: /notion/pages
+        scopes: ''
+      notion-rich-pages:
+        runs: every 6 hours
+        track_deletes: true
+        description: |
+          Sync pages, subpages, database entries, entries of
+          sub-databases and maps to full markdown. It transforms
+          images, tables, uploaded files, etc into their markdown counterparts.
+          Details: full sync, tracks deletes, sync goes to all time, metadata is
+          not required.
+          Required scope(s): none
+        output: NotionRichPage
+        sync_type: incremental
+        endpoint: /notion/rich-pages
+        scopes: ''
     models:
       NotionPage:
         id: string
@@ -1394,38 +1401,47 @@ integrations:
         meta: object
         last_modified: string
   pipedrive:
-    pipedrive-activities:
-      runs: every hour
-      returns:
-        - PipeDriveActivity
-      description: |
-        Fetches activities from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): activities:read
-    pipedrive-deals:
-      runs: every hour
-      returns:
-        - PipeDriveDeal
-      description: |
-        Fetches deals from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): deals:read
-    pipedrive-organizations:
-      runs: every hour
-      returns:
-        - PipeDriveOrganization
-      description: |
-        Fetches organizations from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): contacts:read
-    pipedrive-persons:
-      runs: every half hour
-      returns:
-        - PipeDrivePerson
-      description: |
-        Fetches persons from pipedrive.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): contacts:read
+    syncs:
+      pipedrive-activities:
+        runs: every hour
+        description: |
+          Fetches activities from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDriveActivity
+        sync_type: incremental
+        endpoint: /pipedrive/activities
+        scopes:
+          - activities:read
+      pipedrive-deals:
+        runs: every hour
+        description: |
+          Fetches deals from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDriveDeal
+        sync_type: incremental
+        endpoint: /pipedrive/deals
+        scopes:
+          - deals:read
+      pipedrive-organizations:
+        runs: every hour
+        description: |
+          Fetches organizations from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDriveOrganization
+        sync_type: incremental
+        endpoint: /pipedrive/organizations
+        scopes:
+          - contacts:read
+      pipedrive-persons:
+        runs: every half hour
+        description: |
+          Fetches persons from pipedrive.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: PipeDrivePerson
+        sync_type: incremental
+        endpoint: /pipedrive/persons
+        scopes:
+          - contacts:read
     models:
       PipeDriveActivity:
         id: integer
@@ -1524,26 +1540,32 @@ integrations:
         label: integer
         cc_email: string
   salesforce:
-    salesforce-accounts:
-      runs: every hour
-      returns:
-        - SalesforceAccount
-    salesforce-contacts:
-      runs: every hour
-      returns:
-        - SalesforceContact
-    salesforce-deals:
-      runs: every hour
-      returns:
-        - SalesforceDeal
-    salesforce-articles:
-      runs: every day
-      returns:
-        - SalesforceArticle
-    salesforce-tickets:
-      runs: every day
-      returns:
-        - SalesforceTicket
+    syncs:
+      salesforce-accounts:
+        runs: every hour
+        output: SalesforceAccount
+        sync_type: incremental
+        endpoint: /salesforce/accounts
+      salesforce-contacts:
+        runs: every hour
+        output: SalesforceContact
+        sync_type: incremental
+        endpoint: /salesforce/contacts
+      salesforce-deals:
+        runs: every hour
+        output: SalesforceDeal
+        sync_type: incremental
+        endpoint: /salesforce/deals
+      salesforce-articles:
+        runs: every day
+        output: SalesforceArticle
+        sync_type: incremental
+        endpoint: /salesforce/articles
+      salesforce-tickets:
+        runs: every day
+        output: SalesforceTicket
+        sync_type: incremental
+        endpoint: /salesforce/tickets
     models:
       SalesforceAccount:
         id: string
@@ -1597,37 +1619,47 @@ integrations:
           created_by: string
         last_modified_date: string
   slack:
-    slack-users:
-      runs: every hour
-      description: >-
-        Syncs information about all Users on the Slack workspace. Scopes:
-        users:read
-      returns:
-        - SlackUser
-    slack-channels:
-      runs: every hour
-      description: >-
-        Syncs information about all Slack channels. Which channels get synced
-        (public, private, IMs, group DMs) dependson the scopes. If
-        joinPublicChannels is set to true, the bot will automatically join all
-        public channels as well. Scopes: At least one of channels:read,
-        groups:read, mpim:read, im:read. To also join public channels:
-        channels:join
-      returns:
-        - SlackChannel
-    slack-messages:
-      runs: every hour
-      description: >-
-        Syncs Slack messages, thread replies and reactions from messages &
-        thread replies for all channels, group dms and dms the bot is a part of.
-        For every channel it will do an initial full sync on first detection of
-        the channel. For subsequent runs it will sync messages, threads &
-        reactions from the last 10 days. Scopes required: channels:read, and at
-        least one of channels:history,groups:history,mpim:history,im:history
-      returns:
-        - SlackMessage
-        - SlackMessageReply
-        - SlackMessageReaction
+    syncs:
+      slack-users:
+        runs: every hour
+        description: |
+          Syncs information about all Users on the Slack workspace.
+        output: SlackUser
+        sync_type: full
+        endpoint: /slack/users
+        scopes:
+          - users:read
+      slack-channels:
+        runs: every hour
+        description: |
+          Syncs information about all Slack channels. Which channels get synced
+          (public, private, IMs, group DMs) dependson the scopes. If
+          joinPublicChannels is set to true, the bot will automatically join all
+          public channels as well. Scopes: At least one of channels:read,
+          groups:read, mpim:read, im:read. To also join public channels:
+          channels:join
+        output: SlackChannel
+        sync_type: full
+        endpoint: /slack/channels
+        scopes:
+          - channels:read
+          - channels:join
+      slack-messages:
+        runs: every hour
+        description: |
+          Syncs Slack messages, thread replies and reactions from messages &
+          thread replies for all channels, group dms and dms the bot is a part
+          of. For every channel it will do an initial full sync on first
+          detection of the channel. For subsequent runs it will sync messages,
+          threads & reactions from the last 10 days. Scopes required:
+          channels:read, and at least one of
+          channels:history,groups:history,mpim:history,im:history
+        output: SlackMessage
+        sync_type: full
+        endpoint: /slack/messages
+        scopes:
+          - channels:read
+          - channels:history
     models:
       SlackUser:
         id: string
@@ -1716,10 +1748,12 @@ integrations:
         user_id: string
         reaction_name: string
   wildix-pbx:
-    wildix-pbx-colleagues:
-      runs: every 1 hour
-      returns:
-        - WildixPbxColleague
+    syncs:
+      wildix-pbx-colleagues:
+        runs: every 1 hour
+        output: WildixPbxColleague
+        sync_type: full
+        endpoint: /wildix-pbx/colleagues
     models:
       WildixPbxColleague:
         id: string
@@ -1730,80 +1764,86 @@ integrations:
         licenseType: string
         language: string
   workable:
-    workable-candidates:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidate
-      description: >
-        Fetches candidates from workable.
-
-        Details: incremental sync, doesn't track deletes, metadata is not
-        required.
-
-        Scope(s): r_candidates
-    workable-candidates-activities:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidateActivity
-      description: |
-        Fetches activity stream of the given candidate
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_candidates
-    workable-candidates-offer:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidateOffer
-      description: |
-        Fetches candidate's latest offer from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_candidates
-    workable-create-candidate:
-      type: action
-      returns: WorkableCreateCandidateResponse
-      description: |
-        Action to create a candidate at the specified job.
-        Scope(s): w_candidates
-    workable-create-comment:
-      type: action
-      returns: WorkableCreateCommentResponse
-      description: |
-        Action to create a comment on the applicant's timeline.
-        Scope(s): w_candidates or w_comments
-    workable-jobs:
-      runs: every 6 hours
-      returns:
-        - WorkableJob
-      description: >
-        Fetches jobs from workable.
-
-        Details: incremental sync, doesn't track deletes, metadata is not
-        required.
-
-        Scope(s): r_jobs
-    workable-jobs-candidates:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidate
-      description: |
-        Fetches candidates for the specified job from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_jobs
-    workable-jobs-questions:
-      runs: every 6 hours
-      returns:
-        - WorkableJobQuestion
-      description: |
-        Fetches questions for the specified job from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_jobs
-    workable-members:
-      runs: every 6 hours
-      returns:
-        - WorkableMember
-      description: |
-        Fetches account members from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_jobs
+    syncs:
+      workable-candidates:
+        runs: every 6 hours
+        description: |
+          Fetches candidates from workable.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: WorkableCandidate
+        sync_type: incremental
+        endpoint: /workable/candidates
+        scopes:
+          - r_candidates
+      workable-candidates-activities:
+        runs: every 6 hours
+        description: |
+          Fetches activity stream of the given candidate
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableCandidateActivity
+        sync_type: full
+        endpoint: /workable/candidates-activities
+        scopes:
+          - r_candidates
+      workable-candidates-offer:
+        runs: every 6 hours
+        description: |
+          Fetches candidate's latest offer from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableCandidateOffer
+        sync_type: full
+        endpoint: /workable/candidates-offer
+        scopes:
+          - r_candidates
+      workable-jobs:
+        runs: every 6 hours
+        description: |
+          Fetches jobs from workable.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: WorkableJob
+        sync_type: incremental
+        endpoint: /workable/jobs
+        scopes:
+          - r_jobs
+      workable-jobs-candidates:
+        runs: every 6 hours
+        description: |
+          Fetches candidates for the specified job from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableCandidate
+        sync_type: full
+        endpoint: /workable/jobs-candidates
+        scopes:
+          - r_jobs
+      workable-jobs-questions:
+        runs: every 6 hours
+        description: |
+          Fetches questions for the specified job from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableJobQuestion
+        sync_type: full
+        endpoint: /workable/jobs-questions
+        scopes:
+          - r_jobs
+      workable-members:
+        runs: every 6 hours
+        description: |
+          Fetches account members from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableMember
+        sync_type: full
+        endpoint: /workable/members
+        scopes:
+          - r_jobs
+    actions:
+      workable-create-comment:
+        description: |
+          Action to create a comment on the applicant's timeline.
+          Scope(s): w_candidates or w_comments
+        output: WorkableCreateCommentResponse
+        endpoint: /workable/create-comment
     models:
       WorkableCandidate:
         id: string
@@ -1920,14 +1960,17 @@ integrations:
       WorkableCreateCommentResponse:
         id: string
   zendesk:
-    zendesk-tickets:
-      runs: every 1 hour
-      returns:
-        - ZendeskTicket
-    zendesk-articles:
-      runs: every 6 hours
-      returns:
-        - ZendeskArticle
+    syncs:
+      zendesk-tickets:
+        runs: every 1 hour
+        output: ZendeskTicket
+        sync_type: full
+        endpoint: /zendesk/tickets
+      zendesk-articles:
+        runs: every 6 hours
+        output: ZendeskArticle
+        sync_type: full
+        endpoint: /zendesk/articles
     models:
       ZendeskArticle:
         title: string
@@ -2013,33 +2056,43 @@ integrations:
         via_id: number
         voice_comment: object
   zoho-crm:
-    zoho-crm-accounts:
-      runs: every half hour
-      auto_start: false
-      returns:
-        - ZohoCRMAccount
-      description: |
-        Fetches accounts from zoho crm.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
-    zoho-crm-contacts:
-      runs: every half hour
-      auto_start: false
-      returns:
-        - ZohoCRMContact
-      description: |
-        Fetches contacts from zoho crm.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
-    zoho-crm-deals:
-      runs: every half hour
-      auto_start: false
-      returns:
-        - ZohoCRMDeal
-      description: |
-        Fetches deals/opportunities from zoho crm.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
+    syncs:
+      zoho-crm-accounts:
+        runs: every half hour
+        auto_start: false
+        description: |
+          Fetches accounts from zoho crm.
+          Details: full sync, doesn't track deletes, metadata is not required.
+          Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
+        output: ZohoCRMAccount
+        sync_type: incremental
+        endpoint: /zoho-crm/accounts
+        scopes:
+          - ZohoCRM.modules.accounts.READ
+      zoho-crm-contacts:
+        runs: every half hour
+        auto_start: false
+        description: |
+          Fetches contacts from zoho crm.
+          Details: full sync, doesn't track deletes, metadata is not required.
+          Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
+        output: ZohoCRMContact
+        sync_type: incremental
+        endpoint: /zoho-crm/contacts
+        scopes:
+          - ZohoCRM.modules.contacts.READ
+      zoho-crm-deals:
+        runs: every half hour
+        auto_start: false
+        description: |
+          Fetches deals/opportunities from zoho crm.
+          Details: full sync, doesn't track deletes, metadata is not required.
+          Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
+        output: ZohoCRMDeal
+        sync_type: incremental
+        endpoint: /zoho-crm/deals
+        scopes:
+          - ZohoCRM.modules.deals.READ
     models:
       ZohoCRMAccount:
         Owner:
