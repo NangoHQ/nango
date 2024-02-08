@@ -10,26 +10,30 @@ export default async function fetchData(nango: NangoSync) {
 }
 
 async function saveAllCandidates(nango: NangoSync, candidatelastsyncToken: string) {
+    let totalRecords = 0;
     try {
         while (true) {
             const payload = {
                 endpoint: '/candidate.list',
                 data: {
-                    syncToken: candidatelastsyncToken,
-                    cursor: nextCursor
+                    ...(candidatelastsyncToken && { syncToken: candidatelastsyncToken }),
+                    cursor: nextCursor,
+                    limit: 100
                 }
             };
             const response = await nango.post(payload);
             const pageData = response.data.results;
             const mappedCandidates: AshbyCandidate[] = mapCandidate(pageData);
             if (mappedCandidates.length > 0) {
+                const batchSize: number = mappedCandidates.length;
+                totalRecords += batchSize;
                 await nango.batchSave<AshbyCandidate>(mappedCandidates, 'AshbyCandidate');
-                await nango.log(`Sent ${mappedCandidates.length} candidate(s)`);
+                await nango.log(`Saving batch of ${batchSize} candidate(s) (total candidate(s): ${totalRecords})`);
             }
             if (response.data.moreDataAvailable) {
                 nextCursor = response.data.nextCursor;
-                candidatelastsyncToken = response.data.syncToken;
             } else {
+                candidatelastsyncToken = response.data.syncToken;
                 break;
             }
         }

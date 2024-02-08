@@ -10,26 +10,30 @@ export default async function fetchData(nango: NangoSync) {
 }
 
 async function saveAllJobs(nango: NangoSync, jobslastsyncToken: string) {
+    let totalRecords = 0;
     try {
         while (true) {
             const payload = {
                 endpoint: '/job.list',
                 data: {
-                    syncToken: jobslastsyncToken,
-                    cursor: nextCursor
+                    ...(jobslastsyncToken && { syncToken: jobslastsyncToken }),
+                    cursor: nextCursor,
+                    limit: 100
                 }
             };
             const response = await nango.post(payload);
             const pageData = response.data.results;
             const mappedJobs: AshbyJob[] = mapJob(pageData);
             if (mappedJobs.length > 0) {
+                const batchSize: number = mappedJobs.length;
+                totalRecords += batchSize;
                 await nango.batchSave<AshbyJob>(mappedJobs, 'AshbyJob');
-                await nango.log(`Sent ${mappedJobs.length} job(s)`);
+                await nango.log(`Saving batch of ${batchSize} job(s) (total jobs(s): ${totalRecords})`);
             }
             if (response.data.moreDataAvailable) {
                 nextCursor = response.data.nextCursor;
-                jobslastsyncToken = response.data.syncToken;
             } else {
+                jobslastsyncToken = response.data.syncToken;
                 break;
             }
         }
