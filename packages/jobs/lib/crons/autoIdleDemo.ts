@@ -17,7 +17,7 @@ import {
 import tracer from 'dd-trace';
 
 export async function cronAutoIdleDemo(): Promise<void> {
-    schedule('*/1 * * * *', () => {
+    schedule('1 * * * *', () => {
         const span = tracer.startSpan('cron.syncs.idleDemo');
         tracer.scope().activate(span, async () => {
             try {
