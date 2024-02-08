@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { isCloud, db, encryptionManager, errorManager, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
+import { isCloud, db, encryptionManager, errorManager, ErrorSourceEnum } from '@nangohq/shared';
 import tracer from 'dd-trace';
 
 export async function deleteOldActivityLogs(): Promise<void> {
@@ -16,15 +16,8 @@ export async function deleteOldActivityLogs(): Promise<void> {
                     `DELETE FROM ${activityLogTableName} WHERE id IN (SELECT id FROM ${activityLogTableName} WHERE created_at < NOW() - interval '15 days' LIMIT 5000)`
                 );
             } catch (err: unknown) {
-                const e = new Error('failed_to_clean_activity_logs_table');
-                errorManager.report(
-                    e,
-                    {
-                        source: ErrorSourceEnum.PLATFORM,
-                        operation: LogActionEnum.DATABASE
-                    },
-                    tracer
-                );
+                const e = new Error('failed_to_clean_activity_logs_table', { cause: err instanceof Error ? err.message : err });
+                errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
             }
             span.finish();
         });

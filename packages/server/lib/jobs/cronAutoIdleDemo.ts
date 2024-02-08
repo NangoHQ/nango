@@ -1,12 +1,18 @@
 import { schedule } from 'node-cron';
-import { SyncConfig, db } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, SyncConfig, db, errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 
 export async function cronAutoIdleDemo(): Promise<void> {
     schedule('*/1 * * * *', () => {
         const span = tracer.startSpan('cron.syncs.idleDemo');
         tracer.scope().activate(span, async () => {
-            exec();
+            try {
+                await exec();
+            } catch (err: unknown) {
+                const e = new Error('failed_to_clean_activity_logs_table', { cause: err instanceof Error ? err.message : err });
+                errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
+            }
+            span.finish();
         });
     });
 }
