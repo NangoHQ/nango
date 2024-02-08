@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.37.20",
+    "version": "0.37.21",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
@@ -20,7 +20,7 @@
         "@aws-sdk/client-s3": "^3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "^0.37.20",
+        "@nangohq/node": "^0.37.21",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "@types/fs-extra": "^11.0.1",
