@@ -10,9 +10,9 @@ import userService from '../services/user.service.js';
 import type { Connection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 
-type PackageJson = {
+interface PackageJson {
     version: string;
-};
+}
 
 const PORT = process.env['SERVER_PORT'] || 3003;
 export const localhostUrl = `http://localhost:${PORT}`;
@@ -254,7 +254,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
 
     const parsedConfig: Record<string, string> = {};
 
-    Object.keys(rawConfig).forEach(function (key, _) {
+    Object.keys(rawConfig).forEach(function (key) {
         const newKey = key.replace('connectionConfig.', '');
         const value = rawConfig[key];
 
@@ -377,7 +377,7 @@ export function isUserAuthenticated(req: Request): boolean {
 }
 
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    const arr = Object.entries(queryParams).filter(([_, v]) => typeof v === 'string'); // Filter strings
+    const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
 }
 
