@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import path from 'path';
 import promptly from 'promptly';
 import axios, { AxiosResponse } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
@@ -6,7 +7,7 @@ import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost }
 import configService from './config.service.js';
 import compileService from './compile.service.js';
 import verificationService from './verification.service.js';
-import { printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
+import { NANGO_INTEGRATIONS_LOCATION, printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
 import type { DeployOptions } from '../types.js';
 
 class DeployService {
@@ -83,6 +84,7 @@ class DeployService {
     public async prep(options: DeployOptions, environment: string, debug = false) {
         const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
         await verificationService.necessaryFilesExist(autoConfirm);
+        await verificationService.checkForMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
 
         await parseSecretKey(environment, debug);
 

@@ -3,11 +3,12 @@ import glob from 'glob';
 import chalk from 'chalk';
 import path from 'path';
 import promptly from 'promptly';
+import { exec } from 'child_process';
 
-import { nangoConfigFile } from '@nangohq/shared';
+import { nangoConfigFile, loadLocalNangoConfig, determineVersion } from '@nangohq/shared';
 import configService from './config.service.js';
 import compileService from './compile.service.js';
-import { printDebug } from '../utils.js';
+import { printDebug, getNangoRootPath } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
 
@@ -89,6 +90,37 @@ class VerificationService {
                     }
                     await compileService.run(debug);
                 }
+            }
+        }
+    }
+
+    public async checkForMigration(loadLocation: string): Promise<void> {
+        if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
+            return;
+        }
+        const localConfig = await loadLocalNangoConfig(loadLocation);
+
+        if (!localConfig) {
+            return;
+        }
+
+        const version = determineVersion(localConfig);
+        if (version === 'v1') {
+            const autoMigrate = await promptly.confirm(
+                `You are using the v1 version of the Nango yaml. Would you like to us to automatically upgrade you to v2? This won't change your code but rather just make some minor adjustments to your yaml structure. A list of changes and explanations will also be outputted (yes/no)`
+            );
+
+            if (autoMigrate) {
+                exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error, stdout) => {
+                    if (error) {
+                        console.log(chalk.red(`There was an issue migrating your Nango yaml to v2.`));
+                        console.error(error);
+                        return;
+                    }
+                    console.log(chalk.blue(`Migrated to v2 of Nango yaml.`));
+                    console.log(chalk.yellow(`----------------------------------------`));
+                    console.log(chalk.blue(stdout));
+                });
             }
         }
     }

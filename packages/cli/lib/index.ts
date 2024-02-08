@@ -96,6 +96,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts();
         await generate(debug);
+        await verificationService.checkForMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
     });
 
 program
@@ -118,6 +119,7 @@ program
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
+        await verificationService.checkForMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
         dryrunService.run({ ...this.opts(), sync, connectionId }, environment, debug);
     });
 
@@ -127,6 +129,7 @@ program
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const { compileInterfaces, autoConfirm, debug } = this.opts();
+        await verificationService.checkForMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
         await verificationService.necessaryFilesExist(autoConfirm, debug, false);
 
         if (compileInterfaces) {
@@ -188,6 +191,7 @@ program
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
+        await verificationService.checkForMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
         await verificationService.filesMatchConfig();
         const success = await compileService.run(debug);
         if (!success) {
@@ -202,6 +206,7 @@ program
     .action(async function (this: Command) {
         const { compileInterfaces, autoConfirm, debug } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
+        await verificationService.checkForMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
         if (compileInterfaces) {
             configWatch(debug);
         }
@@ -224,8 +229,9 @@ program
     .description('Verify the parsed sync config and output the object for verification')
     .action(async function (this: Command) {
         const { autoConfirm } = this.opts();
-        await verificationService.necessaryFilesExist(autoConfirm);
         const cwd = process.cwd();
+        await verificationService.necessaryFilesExist(autoConfirm);
+        await verificationService.checkForMigration(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
         const { success, error, response: config } = await configService.load(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
         if (!success || !config) {

@@ -311,8 +311,7 @@ class ConfigController {
                       webhook_secret,
                       connectionCount,
                       has_webhook_user_defined_secret: providerTemplate.webhook_user_defined_secret,
-                      webhook_url: webhookUrl,
-                      webhook_secret
+                      webhook_url: webhookUrl
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
