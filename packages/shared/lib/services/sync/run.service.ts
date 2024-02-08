@@ -337,14 +337,7 @@ export default class SyncRun {
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 
-                await metricsManager.captureMetric(MetricTypes.SYNC_TRACK_RUNTIME, this.syncId as string, this.syncType, totalRunTime, LogActionEnum.SYNC, [
-                    `environmentId:${this.nangoConnection.environment_id}`,
-                    `syncId:${this.syncId}`,
-                    `syncName:${this.syncName}`,
-                    `syncJobId:${this.syncJobId}`,
-                    `syncVersion:${syncData.version}`,
-                    `provider:${this.provider}`
-                ]);
+                await metricsManager.captureMetric(MetricTypes.SYNC_TRACK_RUNTIME, this.syncId as string, this.syncType, totalRunTime);
 
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
