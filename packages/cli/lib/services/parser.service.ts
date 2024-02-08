@@ -10,7 +10,7 @@ class ParserService {
         const code = fs.readFileSync(filePath, 'utf-8');
         let areAwaited = true;
         let usedCorrectly = true;
-        let noReturnUsed = true;
+        //let noReturnUsed = true;
 
         const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
 
@@ -128,7 +128,7 @@ class ParserService {
                         //`The default exported function fetchData at "${filePath}:${lineNumber}" must not return a value. Sync scripts should not return but rather use batchSave to save data.`
                         //)
                         //);
-                        noReturnUsed = false;
+                        //noReturnUsed = false;
                     }
                 }
             }
