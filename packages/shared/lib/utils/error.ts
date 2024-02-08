@@ -15,6 +15,11 @@ export class NangoError extends Error {
         }
 
         switch (type) {
+            case 'failed_to_get_sync_client':
+                this.status = 500;
+                this.message = 'Failed to get the sync client.';
+                break;
+
             case 'missing_auth_header':
                 this.status = 401;
                 this.message = 'Authentication failed. The request is missing the Authorization header.';
@@ -381,6 +386,11 @@ export class NangoError extends Error {
             case 'missing_id_field':
                 this.status = 400;
                 this.message = `Missing id field in the "${this.payload}" model. Make sure every single element in the array has an id property.`;
+                break;
+
+            case 'failed_to_create_activity_log':
+                this.status = 500;
+                this.message = 'Failed to create the activity log. Please try again.';
                 break;
 
             case 'sync_interval_too_short':
