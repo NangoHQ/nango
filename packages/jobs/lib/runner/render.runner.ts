@@ -13,7 +13,11 @@ const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005
 export class RenderRunner implements Runner {
     public client: any;
     public runnerType: RunnerType = RunnerType.Render;
-    constructor(public readonly id: string, public readonly url: string, public readonly serviceId: string) {
+    constructor(
+        public readonly id: string,
+        public readonly url: string,
+        public readonly serviceId: string
+    ) {
         this.client = getRunnerClient(this.url);
     }
 
