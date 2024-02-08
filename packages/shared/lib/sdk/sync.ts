@@ -536,7 +536,14 @@ export class NangoAction {
                     this.proxy.bind(this)
                 );
             case PaginationType.LINK:
-                return yield* paginateService.link<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                return yield* paginateService.link<T>(
+                    proxyConfig,
+                    paginationConfig,
+                    updatedBodyOrParams,
+                    passPaginationParamsInBody,
+                    this.proxy.bind(this),
+                    template
+                );
             case PaginationType.OFFSET:
                 return yield* paginateService.offset<T>(
                     proxyConfig,

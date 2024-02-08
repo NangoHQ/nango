@@ -2,6 +2,7 @@ import type { AxiosResponse } from 'axios';
 import parseLinksHeader from 'parse-link-header';
 import get from 'lodash-es/get.js';
 import type { Pagination, UserProvidedProxyConfiguration, CursorPagination, OffsetPagination, LinkPagination } from '../models/Proxy.js';
+import type { Template as ProviderTemplate } from '../models/Provider.js';
 import { PaginationType } from '../models/Proxy.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 
@@ -81,7 +82,8 @@ class PaginationService {
         paginationConfig: LinkPagination,
         updatedBodyOrParams: Record<string, any>,
         passPaginationParamsInBody: boolean,
-        proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
+        proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>,
+        template: ProviderTemplate
     ): AsyncGenerator<T[], undefined, void> {
         const linkPagination: LinkPagination = paginationConfig as LinkPagination;
 
@@ -109,6 +111,11 @@ class PaginationService {
             } else {
                 const url: URL = new URL(nextPageLink);
                 config.endpoint = url.pathname + url.search;
+            }
+
+            const apiBase = config.baseUrlOverride || template.proxy?.base_url;
+            if (config.endpoint.includes(apiBase)) {
+                config.endpoint = config.endpoint.replace(apiBase, '');
             }
             delete config.params;
         }
