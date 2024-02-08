@@ -115,17 +115,12 @@ export function getRedisUrl() {
 }
 
 export function isValidHttpUrl(str: string) {
-    const pattern = new RegExp(
-        '^(https?:\\/\\/)?' + // protocol
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-            'localhost|' + // OR localhost
-            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-            '(\\:\\d+)?(\\/[-a-z\\d%_.~+@]*)*' + // port and path
-            '(\\?[;&a-z\\d%_.~+=-@,]*)?' + // query string, including commas
-            '(\\#[-a-z\\d_]*)?$', // fragment locator
-        'i'
-    );
-    return !!pattern.test(str);
+    try {
+        new URL(str);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 export function dirname() {
