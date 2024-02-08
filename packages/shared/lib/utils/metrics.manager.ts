@@ -9,6 +9,8 @@ export enum MetricTypes {
     AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED = 'auth_token_request_callback_received',
     AUTH_TOKEN_REQUEST_SUCCESS = 'auth_token_request_success',
     AUTH_TOKEN_REQUEST_FAILURE = 'auth_token_request_failure',
+    ACTION_SUCCESS = 'action_success',
+    ACTION_FAILURE = 'action_failure',
     SYNC_OVERLAP = 'sync_overlap',
     SYNC_FAILURE = 'sync_failure',
     SYNC_SUCCESS = 'sync_success',
