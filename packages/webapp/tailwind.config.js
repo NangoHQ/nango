@@ -27,6 +27,9 @@ module.exports = {
             width: {
                 largebox: '1200px',
                 largecell: '480px'
+            },
+            fontSize: {
+                sm: '13px'
             }
         }
     },

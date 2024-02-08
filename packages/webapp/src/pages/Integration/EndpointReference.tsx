@@ -135,7 +135,7 @@ export default function EndpointReference() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/${env}/integration/${providerConfigKey}`)} />
-            <div className="text-white mb-16" aria-hidden="true">
+            <div className="text-white text-sm mb-16 pb-24" aria-hidden="true">
                 <div className="">
                     <div className="flex w-full justify-between ">
                         <h1 className="flex text-2xl text-white font-bold">Endpoint Reference</h1>

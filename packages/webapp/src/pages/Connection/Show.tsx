@@ -199,7 +199,7 @@ We could not retrieve and/or refresh your access token due to the following erro
             </section>
 
             {serverErrorMessage && (
-                <div className="flex text-[13px] my-12">
+                <div className="flex my-12">
                     <Info size={14} padding="px-4 py-1.5" color="red">
                         There was an error refreshing the credentials <span onClick={() => setErrorVisible(true)} className="cursor-pointer text-white underline">(show details)</span>.
                     </Info>

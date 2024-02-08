@@ -110,7 +110,7 @@ export default function Create() {
                     <div className="flex flex-wrap text-white">
                         {providers.map((provider) => (
                             <div
-                                className="flex justify-between mr-6 p-2 mt-4 mb-5 w-52 border border-transparent rounded cursor-pointer items-center text-sm hover:bg-hover-gray"
+                                className="flex justify-between mr-9 p-2 mt-4 mb-5 w-52 border border-transparent rounded cursor-pointer items-center text-sm hover:bg-hover-gray"
                                 onClick={() => onCreateIntegration(provider.name)}
                             >
                                 <div className="flex items-center">
