@@ -6,8 +6,8 @@ export default async function fetchData(nango: NangoSync) {
     let batchMessageReply: SlackMessageReply[] = [];
 
     let metadata = (await nango.getMetadata()) || {};
-    let channelsLastSyncDate = (metadata['channelsLastSyncDate'] as Record<string, string>) || {};
-    let unseenChannels = Object.keys(channelsLastSyncDate);
+    const channelsLastSyncDate = (metadata['channelsLastSyncDate'] as Record<string, string>) || {};
+    const unseenChannels = Object.keys(channelsLastSyncDate);
 
     const channelsRequestConfig = {
         endpoint: 'users.conversations',
@@ -156,10 +156,10 @@ export default async function fetchData(nango: NangoSync) {
 }
 
 async function saveReactions(nango: NangoSync, currentChannelId: string, message: any) {
-    let batchReactions: SlackMessageReaction[] = [];
+    const batchReactions: SlackMessageReaction[] = [];
 
-    for (let reaction of message.reactions) {
-        for (let user of reaction.users) {
+    for (const reaction of message.reactions) {
+        for (const user of reaction.users) {
             const mappedReaction: SlackMessageReaction = {
                 id: createHash('sha256').update(`${message.ts}${reaction.name}${currentChannelId}${user}`).digest('hex'),
                 message_ts: message.ts,

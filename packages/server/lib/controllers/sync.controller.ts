@@ -23,7 +23,6 @@ import {
     getProviderConfigBySyncAndAccount,
     SyncCommand,
     CommandToActivityLog,
-    ServiceResponse,
     errorManager,
     analytics,
     AnalyticsTypes,
@@ -341,12 +340,12 @@ class SyncController {
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
         try {
             const environmentId = getEnvironmentId(res);
-            const connectionId = req.get('Connection-Id') as string;
-            const providerConfigKey = req.get('Provider-Config-Key') as string;
+            const connectionId = req.get('Connection-Id');
+            const providerConfigKey = req.get('Provider-Config-Key');
 
             const { input, action_name } = req.body;
 
-            if (!action_name) {
+            if (!action_name || typeof action_name !== 'string') {
                 res.status(400).send({ error: 'Missing action name' });
 
                 return;
@@ -364,19 +363,15 @@ class SyncController {
                 return;
             }
 
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
-            if (!success) {
+            if (!success || !connection) {
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
 
-            const provider = await configService.getProviderName(providerConfigKey as string);
+            const provider = await configService.getProviderName(providerConfigKey);
 
             const log = {
                 level: 'info' as LogLevel,
@@ -385,14 +380,17 @@ class SyncController {
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
-                connection_id: connection?.connection_id as string,
+                connection_id: connection.connection_id,
                 provider,
-                provider_config_key: connection?.provider_config_key as string,
+                provider_config_key: connection.provider_config_key,
                 environment_id: environmentId,
                 operation_name: action_name
             };
 
             const activityLogId = await createActivityLog(log);
+            if (!activityLogId) {
+                throw new NangoError('failed_to_create_activity_log');
+            }
 
             const syncClient = await SyncClient.getInstance();
 
@@ -400,13 +398,7 @@ class SyncController {
                 success: actionSuccess,
                 error: actionError,
                 response: actionResponse
-            } = (await syncClient?.triggerAction(
-                connection as Connection,
-                action_name as string,
-                input,
-                activityLogId as number,
-                environmentId
-            )) as ServiceResponse;
+            } = await syncClient!.triggerAction(connection, action_name, input, activityLogId, environmentId);
 
             if (!actionSuccess) {
                 errorManager.errResFromNangoErr(res, actionError);

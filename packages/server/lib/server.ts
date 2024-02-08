@@ -187,7 +187,6 @@ app.route('/api/v1/integration/:providerConfigKey/endpoints').get(webAuth, flowC
 app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
 
 app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
-app.route('/api/v1/connection-filters').get(webAuth, connectionController.getPossibleFilters.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));

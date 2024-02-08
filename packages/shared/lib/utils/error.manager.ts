@@ -142,7 +142,7 @@ class ErrorManager {
             err = new NangoError(err.message, errorId);
         }
 
-        const nangoErr = err as NangoError;
+        const nangoErr: NangoError = err;
 
         if (isApiAuthenticated(res)) {
             const environmentId = getEnvironmentId(res);

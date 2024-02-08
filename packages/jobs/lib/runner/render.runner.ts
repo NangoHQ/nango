@@ -36,7 +36,7 @@ export class RenderRunner implements Runner {
 
     static async get(runnerId: string): Promise<RenderRunner | undefined> {
         let svc = null;
-        let res = await render.getServices({ name: runnerId, type: 'private_service', limit: '1' });
+        const res = await render.getServices({ name: runnerId, type: 'private_service', limit: '1' });
         if (res.data.length > 0) {
             svc = res.data[0].service;
             return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);

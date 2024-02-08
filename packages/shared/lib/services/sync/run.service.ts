@@ -22,7 +22,6 @@ import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 import type { Metadata } from '../../models/Connection';
-import featureflags from '../../utils/featureflags.js';
 
 interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
@@ -268,8 +267,6 @@ export default class SyncRun {
                 }
             }
 
-            const usePersistAPIGlobally = await featureflags.isEnabled('use-persist-api', 'global', false);
-            const usePersistAPI = await featureflags.isEnabled('use-persist-api', `${environment?.account_id}`, false);
             const nangoProps = {
                 host: optionalHost || getApiUrl(),
                 accountId: environment?.account_id as number,
@@ -286,8 +283,7 @@ export default class SyncRun {
                 attributes: syncData.attributes,
                 track_deletes: trackDeletes as boolean,
                 logMessages: this.logMessages,
-                stubbedMetadata: this.stubbedMetadata,
-                usePersistAPI: usePersistAPIGlobally || usePersistAPI
+                stubbedMetadata: this.stubbedMetadata
             };
 
             if (this.debug) {
