@@ -410,7 +410,7 @@ class SyncController {
             const content = e.message || 'Unknown error';
 
             await metricsManager.capture(
-                MetricTypes.ACTION_SUCCESS,
+                MetricTypes.ACTION_FAILURE,
                 `Action: ${action_name} failed with error: ${content}`,
                 LogActionEnum.ACTION,
                 {

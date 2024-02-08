@@ -286,7 +286,7 @@ class SlackService {
         );
 
         if (isOk(actionResponse) && actionResponse.res.ts) {
-            await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse.res.ts as string);
+            await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse.res.ts);
         }
 
         await this.sendDuplicateNotificationToNangoAdmins(
@@ -299,7 +299,7 @@ class SlackService {
 
         const content = isOk(actionResponse)
             ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`
-            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.err?.message} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
+            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.err.message} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
 
         await createActivityLogMessage({
             level: isOk(actionResponse) ? 'info' : 'error',
