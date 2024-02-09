@@ -85,7 +85,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     }, [showUserSettings]);
 
     const env = useStore(state => state.cookieValue);
-    console.log(version)
 
     const setCookieValue = useStore(state => state.setCookieValue);
 
@@ -117,6 +116,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     <div className="flex items-center mb-8">
                         <img className="h-6" src="/logo-dark.svg" alt="Nango" />
                         <img className="mt-1 h-5 ml-1" src="/logo-text.svg" alt="Nango" />
+                        <span className="ml-3 text-xs text-black mono">{version}</span>
                     </div>
                     {envs.length === 0 && (
                         <div className="mb-8">

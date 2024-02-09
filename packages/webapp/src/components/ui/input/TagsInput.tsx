@@ -21,7 +21,9 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
   }
 
   function handleInputBlur() {
-      setIsInputFocused(false);
+      setTimeout(() => {
+          setIsInputFocused(false);
+      }, 100);
   }
 
   const [scopes, setScopes] = useState(selectedScopes);
@@ -54,7 +56,6 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     }
 
     function handleAdd() {
-        console.log('on add')
         if (enteredValue.trim()) {
             if (enteredValue.includes(',')) {
                 const enteredScopes = enteredValue.split(',');
