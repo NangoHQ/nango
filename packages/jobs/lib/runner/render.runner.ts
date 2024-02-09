@@ -70,12 +70,6 @@ export class RenderRunner implements Runner {
                     envVars: [
                         { key: 'NODE_ENV', value: process.env['NODE_ENV'] },
                         { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] },
-                        { key: 'NANGO_DB_HOST', value: process.env['NANGO_DB_HOST'] },
-                        { key: 'NANGO_DB_NAME', value: process.env['NANGO_DB_NAME'] },
-                        { key: 'NANGO_DB_PASSWORD', value: process.env['NANGO_DB_PASSWORD'] },
-                        { key: 'NANGO_DB_PORT', value: process.env['NANGO_DB_PORT'] },
-                        { key: 'NANGO_DB_SSL', value: process.env['NANGO_DB_SSL'] },
-                        { key: 'NANGO_ENCRYPTION_KEY', value: process.env['NANGO_ENCRYPTION_KEY'] },
                         { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
                         { key: 'RUNNER_ID', value: runnerId },
                         { key: 'NOTIFY_IDLE_ENDPOINT', value: `${jobsServiceUrl}/idle` },
