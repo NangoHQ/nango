@@ -39,7 +39,7 @@ export enum MetricTypes {
 
 export enum SpanTypes {
     JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos',
-    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs2'
+    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs'
 }
 
 class MetricsManager {
