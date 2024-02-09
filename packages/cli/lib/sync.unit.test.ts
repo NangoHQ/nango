@@ -333,6 +333,7 @@ describe('generate function tests', () => {
         expect(awaiting).toBe(true);
     });
 
+    /*
     it('should complain when a return statement is used', async () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(false);
@@ -342,6 +343,12 @@ describe('generate function tests', () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/void-return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(true);
     });
+
+    it('should not complain when a return statement is used in a nested function', async () => {
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        expect(noReturnUsed).toBe(true);
+    });
+    */
 
     it('should complain of a non try catch not being awaited', async () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);

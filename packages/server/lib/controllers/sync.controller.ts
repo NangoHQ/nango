@@ -42,7 +42,10 @@ import {
     findSyncByConnections,
     setFrequency,
     getEnvironmentAndAccountId,
-    getSyncAndActionConfigsBySyncNameAndConfigId
+    getSyncAndActionConfigsBySyncNameAndConfigId,
+    isOk,
+    metricsManager,
+    MetricTypes
 } from '@nangohq/shared';
 
 class SyncController {
@@ -338,13 +341,11 @@ class SyncController {
     }
 
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
+        const { input, action_name } = req.body;
+        const environmentId = getEnvironmentId(res);
+        const connectionId = req.get('Connection-Id');
+        const providerConfigKey = req.get('Provider-Config-Key');
         try {
-            const environmentId = getEnvironmentId(res);
-            const connectionId = req.get('Connection-Id');
-            const providerConfigKey = req.get('Provider-Config-Key');
-
-            const { input, action_name } = req.body;
-
             if (!action_name || typeof action_name !== 'string') {
                 res.status(400).send({ error: 'Missing action name' });
 
@@ -394,20 +395,33 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
 
-            const {
-                success: actionSuccess,
-                error: actionError,
-                response: actionResponse
-            } = await syncClient!.triggerAction(connection, action_name, input, activityLogId, environmentId);
+            if (!syncClient) {
+                throw new NangoError('failed_to_get_sync_client');
+            }
 
-            if (!actionSuccess) {
-                errorManager.errResFromNangoErr(res, actionError);
+            const actionResponse = await syncClient.triggerAction(connection, action_name, input, activityLogId, environmentId);
+
+            if (isOk(actionResponse)) {
+                res.send(actionResponse.res);
                 return;
             } else {
-                res.send(actionResponse);
+                errorManager.errResFromNangoErr(res, actionResponse.err);
                 return;
             }
-        } catch (e) {
+        } catch (e: any) {
+            const content = e.message || 'Unknown error';
+
+            await metricsManager.capture(
+                MetricTypes.ACTION_FAILURE,
+                `Action: ${action_name} failed with error: ${content}`,
+                LogActionEnum.ACTION,
+                {
+                    input: JSON.stringify(input, null, 2),
+                    actionName: action_name
+                },
+                `actionName:${action_name}`
+            );
+
             next(e);
         }
     }

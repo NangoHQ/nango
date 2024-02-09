@@ -24,6 +24,8 @@ import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import { isProd } from '../utils/utils.js';
+import { Result, resultErr, resultOk } from '../utils/result.js';
+import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
@@ -452,7 +454,7 @@ class SyncClient {
         activityLogId: number,
         environment_id: number,
         writeLogs = true
-    ): Promise<ServiceResponse<T>> {
+    ): Promise<Result<T, NangoError>> {
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
 
         try {
@@ -499,8 +501,13 @@ class SyncClient {
                     content: `The action workflow ${workflowId} did not complete successfully`
                 });
 
-                return { success, error, response };
+                return resultErr(error);
             }
+
+            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
+                0,
+                100
+            )}`;
 
             if (writeLogs) {
                 await createActivityLogMessageAndEnd({
@@ -508,19 +515,31 @@ class SyncClient {
                     environment_id,
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
-                        0,
-                        100
-                    )}`
+                    content
                 });
 
                 await updateSuccessActivityLog(activityLogId, true);
             }
 
-            return { success, error, response };
+            await metricsManager.capture(
+                MetricTypes.ACTION_SUCCESS,
+                content,
+                LogActionEnum.ACTION,
+                {
+                    workflowId,
+                    input: JSON.stringify(input, null, 2),
+                    connection: JSON.stringify(connection),
+                    actionName
+                },
+                `actionName:${actionName}`
+            );
+
+            return resultOk(response);
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
             const error = new NangoError('action_failure', { errorMessage });
+
+            const content = `The action workflow ${workflowId} failed with error: ${e}`;
 
             if (writeLogs) {
                 await createActivityLogMessageAndEnd({
@@ -528,7 +547,7 @@ class SyncClient {
                     environment_id,
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} failed with error: ${e}`
+                    content
                 });
             }
 
@@ -543,7 +562,20 @@ class SyncClient {
                 }
             });
 
-            return { success: false, error, response: null };
+            await metricsManager.capture(
+                MetricTypes.ACTION_FAILURE,
+                content,
+                LogActionEnum.ACTION,
+                {
+                    workflowId,
+                    input: JSON.stringify(input, null, 2),
+                    connection: JSON.stringify(connection),
+                    actionName
+                },
+                `actionName:${actionName}`
+            );
+
+            return resultErr(error);
         }
     }
 
