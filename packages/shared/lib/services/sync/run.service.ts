@@ -364,17 +364,9 @@ export default class SyncRun {
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
-                // means a void response from the sync script which is expected
-                // and means that they're using batchSave or batchDelete
-                if (userDefinedResults === undefined) {
-                    await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+                await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
-                    return { success: true, error: null, response: true };
-                } else {
-                    const error = new NangoError('sync_script_failure', 'The sync script did not return a void response', 500);
-
-                    return { success: false, error, response: null };
-                }
+                return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
                 // if it fails then restore the sync date
