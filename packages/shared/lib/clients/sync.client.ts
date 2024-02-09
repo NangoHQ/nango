@@ -23,7 +23,7 @@ import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
-import { isProd } from '../utils/utils.js';
+import { isTest, isProd } from '../utils/utils.js';
 import { resultOk, type Result, resultErr } from '../utils/result.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
@@ -53,6 +53,10 @@ class SyncClient {
     }
 
     private static async create(): Promise<SyncClient | null> {
+        if (isTest()) {
+            return new SyncClient(true as any);
+        }
+
         try {
             const connection = await Connection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
