@@ -6,7 +6,7 @@ import { routeWebhook, featureFlags, environmentService, metricsManager, MetricT
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
         const active = tracer.scope().active();
-        const span = tracer.startSpan('sync.receiveWebhook', {
+        const span = tracer.startSpan('server.sync.receiveWebhook', {
             childOf: active as Span
         });
 
@@ -30,9 +30,9 @@ class WebhookController {
                 return;
             }
 
-            span.setTag('accountUUID', accountUUID);
-            span.setTag('environmentUUID', environmentUuid);
-            span.setTag('providerConfigKey', providerConfigKey);
+            span.setTag('nango.accountUUID', accountUUID);
+            span.setTag('nango.environmentUUID', environmentUuid);
+            span.setTag('nango.providerConfigKey', providerConfigKey);
 
             const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true, true);
 
@@ -64,7 +64,7 @@ class WebhookController {
                 return;
             }
         } catch (err) {
-            span.setTag('error', err);
+            span.setTag('nango.error', err);
 
             next(err);
         } finally {

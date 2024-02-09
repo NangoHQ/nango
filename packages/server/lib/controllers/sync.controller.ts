@@ -340,7 +340,7 @@ class SyncController {
 
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
         const active = tracer.scope().active();
-        const span = tracer.startSpan('sync.triggerAction', {
+        const span = tracer.startSpan('server.sync.triggerAction', {
             childOf: active as Span
         });
 
@@ -391,10 +391,10 @@ class SyncController {
                 operation_name: action_name
             };
 
-            span.setTag('actionName', action_name)
-                .setTag('connectionId', connectionId)
-                .setTag('environmentId', environmentId)
-                .setTag('providerConfigKey', providerConfigKey);
+            span.setTag('nango.actionName', action_name)
+                .setTag('nango.connectionId', connectionId)
+                .setTag('nango.environmentId', environmentId)
+                .setTag('nango.providerConfigKey', providerConfigKey);
 
             const activityLogId = await createActivityLog(log);
             if (!activityLogId) {
@@ -414,13 +414,13 @@ class SyncController {
 
                 return;
             } else {
-                span.setTag('error', actionResponse.err);
+                span.setTag('nango.error', actionResponse.err);
                 errorManager.errResFromNangoErr(res, actionResponse.err);
 
                 return;
             }
         } catch (e) {
-            span.setTag('error', e);
+            span.setTag('nango.error', e);
 
             next(e);
         } finally {

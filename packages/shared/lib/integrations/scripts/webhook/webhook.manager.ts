@@ -10,7 +10,7 @@ import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 
 const handlers: WebhookHandlersMap = webhookHandlers as unknown as WebhookHandlersMap;
 
-async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string): Promise<any> {
+async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string): Promise<void|any> {
     if (!body) {
         return;
     }
