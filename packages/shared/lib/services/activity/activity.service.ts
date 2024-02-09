@@ -255,6 +255,33 @@ export async function getTopLevelLogByEnvironment(
     return logs || [];
 }
 
+export async function activityFilter(environment_id: number, filterType: string): Promise<string[]> {
+    const logsQuery = db.knex.withSchema(db.schema()).from<ActivityLog>('_nango_activity_logs').where({ environment_id });
+
+    let columnToGroupBy: string;
+    let distinctColumn: string;
+
+    if (filterType === 'connection') {
+        logsQuery.whereNotNull('connection_id');
+        columnToGroupBy = 'connection_id';
+        distinctColumn = 'connection_id';
+    } else if (filterType === 'integration') {
+        logsQuery.whereNotNull('provider');
+        columnToGroupBy = 'provider';
+        distinctColumn = 'provider';
+    } else {
+        return [];
+    }
+
+    const logs = await logsQuery.groupBy(columnToGroupBy).select(distinctColumn).orderBy(columnToGroupBy, 'asc');
+
+    const distinctValues: string[] = logs
+        .map((log: { [key: string]: string }) => log[distinctColumn] as string)
+        .filter((value: string | undefined): value is string => typeof value === 'string');
+
+    return distinctValues;
+}
+
 /**
  * Retrieves log messages and organizes them by log ID using raw SQL.
  * @desc Iterates over an array of log IDs, fetching the corresponding log messages
