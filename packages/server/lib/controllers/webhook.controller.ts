@@ -1,10 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { Span } from 'dd-trace';
 import tracer from '../tracer.js';
 import { routeWebhook, featureFlags, environmentService, metricsManager, MetricTypes } from '@nangohq/shared';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
-        const span = tracer.startSpan('sync.receiveWebhook');
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('sync.receiveWebhook', {
+            childOf: active as Span
+        });
 
         const { environmentUuid, providerConfigKey } = req.params;
         const headers = req.headers;
