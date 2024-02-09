@@ -42,9 +42,7 @@ import {
     setFrequency,
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    isOk,
-    metricsManager,
-    MetricTypes
+    isOk
 } from '@nangohq/shared';
 
 class SyncController {
