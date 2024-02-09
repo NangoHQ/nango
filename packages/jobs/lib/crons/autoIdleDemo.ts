@@ -2,23 +2,22 @@ import { schedule } from 'node-cron';
 import {
     CommandToActivityLog,
     ErrorSourceEnum,
-    ScheduleStatus,
     SyncClient,
     SyncCommand,
-    SyncConfig,
     createActivityLog,
     createActivityLogMessageAndEnd,
-    db,
     errorManager,
     updateSuccess as updateSuccessActivityLog,
     updateScheduleStatus,
-    isErr
+    isErr,
+    findPausableDemoSyncs
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
+import { SpanTypes } from '@nangohq/shared/lib/utils/metrics.manager';
 
 export async function cronAutoIdleDemo(): Promise<void> {
     schedule('1 * * * *', () => {
-        const span = tracer.startSpan('cron.syncs.idleDemo');
+        const span = tracer.startSpan(SpanTypes.JOBS_IDLE_DEMO);
         tracer.scope().activate(span, async () => {
             try {
                 await exec();
@@ -31,50 +30,10 @@ export async function cronAutoIdleDemo(): Promise<void> {
     });
 }
 
-interface ResQuery {
-    id: string;
-    name: string;
-    environment_id: number;
-    provider: string;
-    connection_id: number;
-    unique_key: string;
-    schedule_id: string;
-}
-async function exec() {
+async function exec(): Promise<void> {
     console.log('[autoidle] starting');
 
-    const q = db.knex
-        .queryBuilder()
-        .withSchema(db.schema())
-        .from<SyncConfig>('_nango_syncs')
-        .select(
-            '_nango_syncs.id',
-            '_nango_syncs.name',
-            '_nango_connections.environment_id',
-            '_nango_configs.provider',
-            '_nango_configs.unique_key',
-            '_nango_connections.connection_id',
-            '_nango_sync_schedules.schedule_id'
-        )
-        .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
-        .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
-        .join('_nango_configs', function () {
-            this.on('_nango_configs.environment_id', '_nango_connections.environment_id').on(
-                '_nango_configs.unique_key',
-                '_nango_connections.provider_config_key'
-            );
-        })
-        .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
-        .where({
-            '_nango_syncs.name': 'github-issues-lite',
-            '_nango_environments.name': 'dev',
-            '_nango_configs.unique_key': 'demo-github-integration',
-            '_nango_configs.provider': 'github',
-            '_nango_syncs.deleted': false,
-            '_nango_sync_schedules.status': ScheduleStatus.RUNNING
-        })
-        .where(db.knex.raw("_nango_syncs.created_at <  NOW() - INTERVAL '25h'"));
-    const syncs: ResQuery[] = await q;
+    const syncs = await findPausableDemoSyncs();
 
     console.log(`[autoidle] found ${syncs.length} syncs`);
 
@@ -119,7 +78,7 @@ async function exec() {
             environment_id: sync.environment_id,
             activity_log_id: activityLogId,
             timestamp: Date.now(),
-            content: `Sync was updated with command: "${action}" for sync: ${sync.id}`
+            content: `Demo sync was automatically paused after being idle for a day`
         });
         await updateSuccessActivityLog(activityLogId, true);
     }

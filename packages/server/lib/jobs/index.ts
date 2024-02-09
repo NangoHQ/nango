@@ -1,6 +1,7 @@
 import * as cron from 'node-cron';
 import { isCloud, db, encryptionManager, errorManager, ErrorSourceEnum } from '@nangohq/shared';
 import tracer from 'dd-trace';
+import { SpanTypes } from '@nangohq/shared/lib/utils/metrics.manager';
 
 export async function deleteOldActivityLogs(): Promise<void> {
     /**
@@ -8,7 +9,7 @@ export async function deleteOldActivityLogs(): Promise<void> {
      */
     cron.schedule('*/1 * * * *', async () => {
         const activityLogTableName = '_nango_activity_logs';
-        const span = tracer.startSpan('cron.activityLogs.clean');
+        const span = tracer.startSpan(SpanTypes.JOBS_CLEAN_ACTIVITY_LOGS);
         tracer.scope().activate(span, async () => {
             try {
                 // Postgres does not allow DELETE LIMIT so we batch ourself to limit the memory footprint of this query.
