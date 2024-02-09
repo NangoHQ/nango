@@ -1,5 +1,3 @@
-// @packages: jobs, server
-
 import axios, { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';

@@ -1,5 +1,3 @@
-// @packages: jobs, cli
-
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
