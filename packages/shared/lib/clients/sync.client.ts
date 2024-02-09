@@ -25,7 +25,6 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import { isProd } from '../utils/utils.js';
 import { resultOk, type Result, resultErr } from '../utils/result.js';
-import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
@@ -525,19 +524,6 @@ class SyncClient {
                 await updateSuccessActivityLog(activityLogId, true);
             }
 
-            await metricsManager.capture(
-                MetricTypes.ACTION_SUCCESS,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
-
             return resultOk(response);
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
@@ -565,19 +551,6 @@ class SyncClient {
                     input
                 }
             });
-
-            await metricsManager.capture(
-                MetricTypes.ACTION_FAILURE,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
 
             return resultErr(error);
         }

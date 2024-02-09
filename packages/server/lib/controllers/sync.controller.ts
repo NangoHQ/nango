@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
+import type { Span } from 'dd-trace';
 import type { LogLevel, Connection, NangoConnection, HTTP_VERB } from '@nangohq/shared';
+import tracer from '../tracer.js';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
@@ -41,9 +43,7 @@ import {
     setFrequency,
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    isOk,
-    metricsManager,
-    MetricTypes
+    isOk
 } from '@nangohq/shared';
 
 class SyncController {
@@ -339,6 +339,11 @@ class SyncController {
     }
 
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('server.sync.triggerAction', {
+            childOf: active as Span
+        });
+
         const { input, action_name } = req.body;
         const environmentId = getEnvironmentId(res);
         const connectionId = req.get('Connection-Id');
@@ -386,6 +391,11 @@ class SyncController {
                 operation_name: action_name
             };
 
+            span.setTag('nango.actionName', action_name)
+                .setTag('nango.connectionId', connectionId)
+                .setTag('nango.environmentId', environmentId)
+                .setTag('nango.providerConfigKey', providerConfigKey);
+
             const activityLogId = await createActivityLog(log);
             if (!activityLogId) {
                 throw new NangoError('failed_to_create_activity_log');
@@ -401,26 +411,20 @@ class SyncController {
 
             if (isOk(actionResponse)) {
                 res.send(actionResponse.res);
+
                 return;
             } else {
+                span.setTag('nango.error', actionResponse.err);
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+
                 return;
             }
-        } catch (e: any) {
-            const content = e.message || 'Unknown error';
-
-            await metricsManager.capture(
-                MetricTypes.ACTION_FAILURE,
-                `Action: ${action_name} failed with error: ${content}`,
-                LogActionEnum.ACTION,
-                {
-                    input: JSON.stringify(input, null, 2),
-                    actionName: action_name
-                },
-                `actionName:${action_name}`
-            );
+        } catch (e) {
+            span.setTag('nango.error', e);
 
             next(e);
+        } finally {
+            span.finish();
         }
     }
 
