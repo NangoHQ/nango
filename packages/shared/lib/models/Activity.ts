@@ -1,7 +1,7 @@
 import type { HTTP_VERB, Timestamps } from './Generic.js';
 
 export const logLevelValues = ['info', 'debug', 'error', 'warn', 'http', 'verbose', 'silly'] as const;
-export type LogLevel = (typeof logLevelValues)[number];
+export type LogLevel = typeof logLevelValues[number];
 export type LogAction =
     | 'account'
     | 'action'

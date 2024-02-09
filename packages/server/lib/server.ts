@@ -65,8 +65,8 @@ const webAuth =
     isCloud() || isEnterprise()
         ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
         : isBasicAuthEnabled()
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
-          : [authMiddleware.noAuth.bind(authMiddleware)];
+        ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
+        : [authMiddleware.noAuth.bind(authMiddleware)];
 
 app.use(
     express.json({
