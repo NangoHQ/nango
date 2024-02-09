@@ -24,7 +24,7 @@ export default function APIReference(props: APIReferenceProps) {
                 <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
                     <h2 className="text-xl text-center w-full">Integrate with {integration?.provider}</h2>
                     <div className="mt-4 text-gray-400">{integration?.provider} does not yet have publicly available endpoints on Nango.</div>
-                    <HelpFooter type="Endpoints" />
+                    <HelpFooter provider={integration?.provider} />
                 </div>
             ) : (
                 <>
@@ -34,8 +34,8 @@ export default function APIReference(props: APIReferenceProps) {
                                 <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
                                     <div className="w-48">Endpoint</div>
                                     <div className="w-64">Description</div>
-                                    <div className="w-48">Source</div>
-                                    <div className="">Sync/Action Info</div>
+                                    <div className="w-[14rem]">Source</div>
+                                    <div className="">Enabled</div>
                                 </td>
                             </tr>
                             {allFlows.map((flow, flowIndex) => (
@@ -56,7 +56,7 @@ export default function APIReference(props: APIReferenceProps) {
                             ))}
                         </tbody>
                     </table>
-                    <HelpFooter />
+                    <HelpFooter provider={integration?.provider} />
                 </>
             )}
         </div>

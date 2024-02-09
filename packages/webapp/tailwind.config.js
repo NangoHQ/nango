@@ -30,7 +30,6 @@ module.exports = {
                 largecell: '480px'
             },
             fontSize: {
-                sm: '13px',
                 '3xl': '28px'
             }
         }

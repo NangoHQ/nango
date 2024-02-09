@@ -27,7 +27,7 @@ export default function Scripts(props: ScriptProps) {
                 <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
                     <h2 className="text-xl text-center w-full">Sync models from <span className="capitalize">{integration?.provider}</span></h2>
                     <div className="mt-4 text-gray-400"><span className="capitalize">{integration?.provider}</span> does not yet have publicly available models to sync. Create your own or request some from Nango.</div>
-                    <HelpFooter type="" />
+                    <HelpFooter provider={integration?.provider} />
                 </div>
             ) : (
                 <>
@@ -50,7 +50,7 @@ export default function Scripts(props: ScriptProps) {
                                 {syncs.map((flow) => (
                                     <td
                                         key={flow.name}
-                                        className="flex items-center p-3 py-6 hover:bg-hover-gray cursor-pointer justify-between border-b border-border-gray"
+                                        className="flex items-center p-3 py-4 hover:bg-hover-gray cursor-pointer justify-between border-b border-border-gray"
                                         onClick={() => navigate(`/${env}/integration/${integration.unique_key}/${flow.name}`)}
                                     >
                                         <div className="flex items-center w-36">
@@ -125,7 +125,7 @@ export default function Scripts(props: ScriptProps) {
                             </tbody>
                         )}
                     </table>
-                    <HelpFooter />
+                    <HelpFooter provider={integration?.provider} />
                 </>
             )}
         </div>

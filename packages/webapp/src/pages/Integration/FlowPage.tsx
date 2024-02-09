@@ -246,7 +246,7 @@ export default function FlowPage() {
             />
             {provider && flow && (
                 <>
-                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/${env}/integration/${providerConfigKey}#scripts`)} />
+                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-4" onClick={() => navigate(`/${env}/integration/${providerConfigKey}#scripts`)} />
                 <div className="mx-auto space-y-10 text-sm">
                     <div className="flex justify-between">
                         <div className="flex">
@@ -519,12 +519,12 @@ export default function FlowPage() {
                                         {((Array.isArray(flow?.returns as string[]) ? flow?.returns : [flow?.returns]) as string[]).map((model: string, index: number) => (
                                             <div key={index}>
                                                 <span className="text-white">{model}</span>
-                                                <div className="border border-border-gray rounded-md text-white text-sm py-2 mt-3">
-                                                    <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
-                                                        <div className="space-x-4">
+                                                <div className="border border-border-gray rounded-md text-white text-sm mt-3">
+                                                    <div className="flex justify-between items-center px-4 py-3 border-b border-border-gray">
+                                                        <div className="flex items-center space-x-4">
                                                             <Button
                                                                 type="button"
-                                                                variant="black"
+                                                                variant="active"
                                                                 className="pointer-events-none"
                                                             >
                                                                 JSON

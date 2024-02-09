@@ -21,7 +21,7 @@ const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 round
         size: {
             xs: 'h-8 py-1 px-2',
             sm: 'h-9 px-2 ',
-            md: 'h-10 py-2 px-4',
+            md: 'h-9 py-2 px-4',
             lg: 'h-11 px-8'
         }
     },

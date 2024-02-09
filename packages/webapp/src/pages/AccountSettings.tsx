@@ -184,170 +184,168 @@ export default function AccountSettings() {
                 <Modal.Action passive onClick={() => setInviteVisible(false)}>Cancel</Modal.Action>
                 <Modal.Action onClick={handleSubmit}>Submit</Modal.Action>
             </Modal>
-            <div className="mx-auto w-largebox">
-                <div className="mx-20 h-full mb-20">
-                    <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Account Settings</h2>
-                    <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
-                        <div>
-                            <div className="mx-8 mt-8">
-                                <div className="flex flex-col">
-                                    <label htmlFor="public_key" className="text-text-light-gray block text-sm font-semibold mb-2">
-                                        Account Name
-                                    </label>
-                                    <div className="flex">
-                                        {accountEditMode && (
-                                            <form className="mt-2 w-full flex" onSubmit={handleAccountNameSave}>
-                                                <input
-                                                    id="account_name"
-                                                    name="account_name"
-                                                    defaultValue={accountName}
-                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
-                                                    required
-                                                />
-                                                <button
-                                                    type="submit"
-                                                    className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
-                                                >
-                                                    Save
-                                                </button>
-                                            </form>
-                                        )}
-                                        {!accountEditMode && (
-                                            <div className="flex w-full">
-                                                <Prism language="bash" colorScheme="dark" className="w-full">
-                                                    {accountName}
-                                                </Prism>
-                                                <button
-                                                    onClick={handleAccountNameEdit}
-                                                    className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                >
-                                                    Edit
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
+            <div className="h-full mb-20">
+                <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Account Settings</h2>
+                <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
+                    <div>
+                        <div className="mx-8 mt-8">
+                            <div className="flex flex-col">
+                                <label htmlFor="public_key" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                    Account Name
+                                </label>
+                                <div className="flex">
+                                    {accountEditMode && (
+                                        <form className="mt-2 w-full flex" onSubmit={handleAccountNameSave}>
+                                            <input
+                                                id="account_name"
+                                                name="account_name"
+                                                defaultValue={accountName}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                                required
+                                            />
+                                            <button
+                                                type="submit"
+                                                className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                            >
+                                                Save
+                                            </button>
+                                        </form>
+                                    )}
+                                    {!accountEditMode && (
+                                        <div className="flex w-full">
+                                            <Prism language="bash" colorScheme="dark" className="w-full">
+                                                {accountName}
+                                            </Prism>
+                                            <button
+                                                onClick={handleAccountNameEdit}
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                            <div className="mx-8 mt-8">
-                                <div className="flex flex-col">
-                                    <label htmlFor="public_key" className="flex text-text-light-gray block text-sm font-semibold mb-2">
-                                        Account Members
-                                        <Tooltip text="Invite a new member" type="dark">
-                                            <span
-                                                className="bg-blue-500 cursor-pointer ml-2 text-white h-5 pb-0.5 w-5 flex items-center justify-center rounded-full"
-                                                onClick={() => {
-                                                    setInviteVisible(true);
-                                                }}
-                                            >
-                                                +
-                                            </span>
-                                        </Tooltip>
-                                    </label>
-                                    <div className="flex flex-col mt-2">
-                                        <ul className="flex flex-col w-full space-y-4 text-white text-sm">
-                                            {members.filter((m) => !m.suspended).map((member) => (
-                                                <li key={member.id} className={`flex w-full py-2 ${members.filter((m) => !m.suspended).length > 1 ?'border-b border-border-gray': ''} justify-between items-center`}>
-                                                    <div className="flex space-x-12">
-                                                        <span className="w-28">{member['name']}</span>
-                                                        <Tooltip text={member['email']} type="dark">
-                                                            <div className="w-48 overflow-hidden truncate">
-                                                                <span className="">{member['email']}</span>
-                                                            </div>
-                                                        </Tooltip>
-                                                    </div>
-                                                    {!member.suspended && !member.currentUser && (
-                                                        <Tooltip text="Remove member" type="dark">
-                                                            <span
-                                                                className="bg-red-500 cursor-pointer pb-0.5 text-white h-5 w-5 flex items-center justify-center rounded-full"
-                                                                onClick={() => {
-                                                                    onSuspendMember(member)
-                                                                }}
-                                                            >
-                                                                x
-                                                            </span>
-                                                        </Tooltip>
-                                                    )}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        {invitedMembers.filter((m) => !m.accepted).length > 0 && (
-                                            <>
-                                                <h3 className="mt-8 text-text-light-gray text-sm font-semibold mt-4 mb-2">Invited Members</h3>
-                                                <ul className="flex flex-col w-full space-y-4 text-white text-sm">
-                                                    {invitedMembers.filter((m) => !m.accepted).map((member) => (
-                                                        <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
-                                                            <div className="flex space-x-12">
-                                                                <span className="w-28">{member['name']}</span>
-                                                                <Tooltip text={member['email']} type="dark">
-                                                                    <div className="w-48 overflow-hidden truncate">
-                                                                        <span className="">{member['email']}</span>
-                                                                    </div>
-                                                                </Tooltip>
-                                                                <Tooltip text="The invite expires on this date" type="dark">
-                                                                    <span>{formatDateToUSFormat(member['expires_at'])}</span>
-                                                                </Tooltip>
-                                                            </div>
-                                                            <CopyButton icontype="link" textPrompt="Copy Invite Link" dark text={`${window.location.host}/signup/${member.token}`} />
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        )}
-                                        {members.filter((m) => !m.suspended).length === 0 && (
-                                            <>
-                                                <h3 className="mt-8 text-text-light-gray text-sm font-semibold mt-4 mb-2">Suspended Members</h3>
-                                                <ul className="flex flex-col w-full space-y-4 text-white text-sm">
-                                                    {members.filter((m) => m.suspended).map((member) => (
-                                                        <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
-                                                            <div className="flex space-x-12 text-gray-500">
-                                                                <span className="w-28">{member['name']}</span>
-                                                                <Tooltip text={member['email']} type="dark">
-                                                                    <div className="w-48 overflow-hidden truncate">
-                                                                        <span className="">{member['email']}</span>
-                                                                    </div>
-                                                                </Tooltip>
-                                                            </div>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        )}
-                                    </div>
+                        </div>
+                        <div className="mx-8 mt-8">
+                            <div className="flex flex-col">
+                                <label htmlFor="public_key" className="flex text-text-light-gray block text-sm font-semibold mb-2">
+                                    Account Members
+                                    <Tooltip text="Invite a new member" type="dark">
+                                        <span
+                                            className="bg-blue-500 cursor-pointer ml-2 text-white h-5 pb-0.5 w-5 flex items-center justify-center rounded-full"
+                                            onClick={() => {
+                                                setInviteVisible(true);
+                                            }}
+                                        >
+                                            +
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className="flex flex-col mt-2">
+                                    <ul className="flex flex-col w-full space-y-4 text-white text-sm">
+                                        {members.filter((m) => !m.suspended).map((member) => (
+                                            <li key={member.id} className={`flex w-full py-2 ${members.filter((m) => !m.suspended).length > 1 ?'border-b border-border-gray': ''} justify-between items-center`}>
+                                                <div className="flex space-x-12">
+                                                    <span className="w-28">{member['name']}</span>
+                                                    <Tooltip text={member['email']} type="dark">
+                                                        <div className="w-48 overflow-hidden truncate">
+                                                            <span className="">{member['email']}</span>
+                                                        </div>
+                                                    </Tooltip>
+                                                </div>
+                                                {!member.suspended && !member.currentUser && (
+                                                    <Tooltip text="Remove member" type="dark">
+                                                        <span
+                                                            className="bg-red-500 cursor-pointer pb-0.5 text-white h-5 w-5 flex items-center justify-center rounded-full"
+                                                            onClick={() => {
+                                                                onSuspendMember(member)
+                                                            }}
+                                                        >
+                                                            x
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {invitedMembers.filter((m) => !m.accepted).length > 0 && (
+                                        <>
+                                            <h3 className="mt-8 text-text-light-gray text-sm font-semibold mt-4 mb-2">Invited Members</h3>
+                                            <ul className="flex flex-col w-full space-y-4 text-white text-sm">
+                                                {invitedMembers.filter((m) => !m.accepted).map((member) => (
+                                                    <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
+                                                        <div className="flex space-x-12">
+                                                            <span className="w-28">{member['name']}</span>
+                                                            <Tooltip text={member['email']} type="dark">
+                                                                <div className="w-48 overflow-hidden truncate">
+                                                                    <span className="">{member['email']}</span>
+                                                                </div>
+                                                            </Tooltip>
+                                                            <Tooltip text="The invite expires on this date" type="dark">
+                                                                <span>{formatDateToUSFormat(member['expires_at'])}</span>
+                                                            </Tooltip>
+                                                        </div>
+                                                        <CopyButton icontype="link" textPrompt="Copy Invite Link" dark text={`${window.location.host}/signup/${member.token}`} />
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </>
+                                    )}
+                                    {members.filter((m) => !m.suspended).length === 0 && (
+                                        <>
+                                            <h3 className="mt-8 text-text-light-gray text-sm font-semibold mt-4 mb-2">Suspended Members</h3>
+                                            <ul className="flex flex-col w-full space-y-4 text-white text-sm">
+                                                {members.filter((m) => m.suspended).map((member) => (
+                                                    <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
+                                                        <div className="flex space-x-12 text-gray-500">
+                                                            <span className="w-28">{member['name']}</span>
+                                                            <Tooltip text={member['email']} type="dark">
+                                                                <div className="w-48 overflow-hidden truncate">
+                                                                    <span className="">{member['email']}</span>
+                                                                </div>
+                                                            </Tooltip>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {isAdmin && (
-                        <div className="border border-border-gray rounded-md h-fit mt-4 pt-6 pb-14 text-white">
-                            <div className="px-8">
-                                <div className="mt-4">
-                                    <span>Login as a different user</span>
-                                    <div className="flex flex-col mt-2">
-                                        <form onSubmit={redirectToAccount}>
-                                        <input
-                                            type="text"
-                                            placeholder="Account UUID"
-                                            name="account_uuid"
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-1/2 mb-3 appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Login reason"
-                                            name="login_reason"
-                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
-                                        />
-                                        <button
-                                            className="border-border-blue bg-bg-dark-blue text-black active:ring-border-blue flex h-11 rounded-md border mt-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
-                                        >
-                                            Login To Account
-                                        </button>
-                                        </form>
-                                    </div>
+                </div>
+                {isAdmin && (
+                    <div className="border border-border-gray rounded-md h-fit mt-4 pt-6 pb-14 text-white">
+                        <div className="px-8">
+                            <div className="mt-4">
+                                <span>Login as a different user</span>
+                                <div className="flex flex-col mt-2">
+                                    <form onSubmit={redirectToAccount}>
+                                    <input
+                                        type="text"
+                                        placeholder="Account UUID"
+                                        name="account_uuid"
+                                    className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-1/2 mb-3 appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Login reason"
+                                        name="login_reason"
+                                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                    />
+                                    <button
+                                        className="border-border-blue bg-bg-dark-blue text-black active:ring-border-blue flex h-11 rounded-md border mt-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                    >
+                                        Login To Account
+                                    </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

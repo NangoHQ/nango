@@ -122,7 +122,7 @@ export default function Syncs(props: SyncsProps) {
                                     className="flex items-center px-2 py-3 text-[13px] cursor-pointer justify-between border-b border-border-gray"
                                 >
                                     <div className="flex items-center w-52">
-                                        <div className="w-36 max-w-3xl truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
+                                        <div className="w-36 max-w-3xl ml-1 truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
                                     </div>
                                     <div className="flex w-20 -ml-2">
                                         <span className="">

@@ -68,6 +68,10 @@ export default function ShowIntegration() {
 We could not retrieve and/or refresh your access token due to the following error:
 \n\n${(await res.json()).error}
 `);
+            setConnection({
+                providerConfigKey,
+                connectionId
+            } as Connection);
             }
         };
 
@@ -151,7 +155,7 @@ We could not retrieve and/or refresh your access token due to the following erro
             <Modal {...errorBindings} wrapClassName="!h-[600px] !w-[550px] !max-w-[550px] !bg-[#0E1014] no-border-modal">
                 <div className="flex justify-between text-sm">
                     <div>
-                        <Modal.Content className="overflow-scroll max-w-[550px] !text-sm text-white">
+                        <Modal.Content className="overflow-scroll max-w-[550px] !text-sm text-white font-mono">
                             {serverErrorMessage}
                         </Modal.Content>
                     </div>
@@ -160,39 +164,39 @@ We could not retrieve and/or refresh your access token due to the following erro
                     <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
                 </Modal.Action>
             </Modal>
-            {connection?.provider && (
-                <div className="mx-auto">
-                    <div className="flex justify-between items-center">
-                        <div className="flex">
-                            <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
+            <div className="mx-auto">
+                <div className="flex justify-between items-center">
+                    <div className="flex">
+                        <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
+                            {connection?.provider && (
                                 <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer" />
-                            </Link>
-                            <div className="mt-3 ml-6">
-                                <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">
-                                    Connection
-                                </span>
-                                <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
-                                    {connectionId}
-                                </h2>
-                            </div>
+                            )}
+                        </Link>
+                        <div className="mt-3 ml-6">
+                            <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">
+                                Connection
+                            </span>
+                            <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
+                                {connectionId}
+                            </h2>
                         </div>
-                        <Button
-                            variant="zinc"
-                            size="sm"
-                            className="flex cursor-pointer text-gray-400 neutral-700 items-center"
-                            onClick={() => {
-                                setVisible(true)
-                            }}
-                            >
-                            <TrashIcon  className="flex h-5 w-5" />
-                            <span className="px-1">Delete</span>
-                        </Button>
                     </div>
+                    <Button
+                        variant="zinc"
+                        size="sm"
+                        className="flex cursor-pointer text-gray-400 neutral-700 items-center"
+                        onClick={() => {
+                            setVisible(true)
+                        }}
+                        >
+                        <TrashIcon  className="flex h-5 w-5" />
+                        <span className="px-1">Delete</span>
+                    </Button>
                 </div>
-            )}
+            </div>
 
             <section className="mt-14">
-                <ul className="flex text-gray-400 space-x-8 text-sm cursor-pointer">
+                <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
                     <li className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Models)}>Models</li>
                     <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
                 </ul>

@@ -17,9 +17,15 @@ console.log(issues);
 export const nodeActionSnippet = (actionName: string, secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string) => {
     let formattedInput = '';
     if (typeof input === 'string') {
-        formattedInput = input;
+        formattedInput = `'<${input}>'`;
     } else if (input && typeof input === 'object') {
-        formattedInput = `{\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}`;
+        formattedInput = `{
+${JSON.stringify(input, null, 2)
+  .split('\n')
+  .slice(1)
+  .join('\n')
+  .replace(/^/gm, '    ')
+  .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
     }
 
     return `import Nango from '@nangohq/node';

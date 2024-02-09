@@ -275,19 +275,19 @@ export function createExampleForType(type: string): any {
 
     switch (rawType) {
         case 'string':
-            return 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+            return '<string>'
         case 'integer':
-            return 123;
+            return '<number>';
         case 'boolean':
-            return true;
+            return '<boolean>';
         case 'number':
-            return 23;
+            return '<number>';
         case 'object':
-            return {"isExample": true};
+            return '<object>';
         case 'array':
-            return [{ "isExample": true }];
+            return '<array>';
         case 'date':
-            return new Date().toISOString();
+            return '<date>';
         default:
             return '';
     }
@@ -330,10 +330,10 @@ export function generateResponseModel(models: NangoSyncModel[], output: string, 
     }
     const metadata = {
         _nango_metadata: {
-            deleted_at: null,
-            last_action: 'ADDED',
-            first_seen_at: '2023-09-18T15:20:35.941305+00:00',
-            last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+            deleted_at: '<date-string | null>',
+            last_action: 'ADDED|UPDATED|DELETED',
+            first_seen_at: '<date-string>',
+            last_modified_at: '<date-string>'
         }
     };
     return {...jsonResponse, ...metadata};

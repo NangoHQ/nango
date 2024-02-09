@@ -134,7 +134,7 @@ export default function EndpointReference() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-            <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-8" onClick={() => navigate(`/${env}/integration/${providerConfigKey}`)} />
+            <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-4" onClick={() => navigate(`/${env}/integration/${providerConfigKey}`)} />
             <div className="text-white text-sm mb-16 pb-24" aria-hidden="true">
                 <div className="">
                     <div className="flex w-full justify-between ">
@@ -144,7 +144,7 @@ export default function EndpointReference() {
                                 variant="zinc"
                                 size="sm"
                                 className="flex cursor-pointer items-center relative rounded ml-3"
-                                onClick={() => navigate(`/${env}/integration/${providerConfigKey}#scripts`)}
+                                onClick={() => navigate(`/${env}/integration/${providerConfigKey}/${activeFlow?.name}`)}
                             >
                                 <AdjustmentsHorizontalIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
                             </Button>
@@ -155,16 +155,16 @@ export default function EndpointReference() {
                         <span className="mt-2">{activeFlow?.description}</span>
                     </div>
                     {activeFlow?.type === 'sync' && (!activeFlow.version && activeFlow.version === null) && (
-                        <Info size={18} classNames="mt-5 z-10" padding="px-4 py-1.5" color="orange">
+                        <Info size={18} classNames="mt-3 z-10" padding="px-4 py-1.5" color="orange">
                             To use this endpoint, enable file synchronization in the <span className="cursor-pointer underline" onClick={() => navigate(`/integration/${providerConfigKey}#scripts`)}>scripts</span>.
                         </Info>
                     )}
                     <div className="flex flex-col z-10 mt-8">
                         <h2 className="text-base">Request</h2>
                         <span className="text-gray-400 mb-4">Use the following code snippet to call this endpoint: </span>
-                        <div className="border border-border-gray rounded-md text-white text-sm py-2">
-                            <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
-                                <div className="space-x-4">
+                        <div className="border border-border-gray rounded-md text-white text-sm">
+                            <div className="flex justify-between items-center px-4 py-3 border-b border-border-gray">
+                                <div className="flex items-center space-x-4">
                                     <Button
                                         type="button"
                                         variant={`${language === Language.Node ? 'active' : 'hover'}`}
@@ -256,8 +256,8 @@ export default function EndpointReference() {
                         <div className="flex flex-col mt-8">
                             <h2 className="text-base">Response</h2>
                             <span className="text-gray-400 mb-4">This endpoint returns the following response:</span>
-                            <div className="border border-border-gray rounded-md text-white text-sm py-2">
-                                <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
+                            <div className="border border-border-gray rounded-md text-white text-sm">
+                                <div className="flex justify-between items-center px-4 py-3 border-b border-border-gray">
                                     <div className="space-x-4">
                                         <Button
                                             type="button"

@@ -102,7 +102,7 @@ export interface Connection {
     id: number;
     connectionId: string;
     provider: string;
-    providerConfigKey: number;
+    providerConfigKey: string;
     creationDate: string;
     oauthType: string;
     connectionConfig: Record<string, string>;
