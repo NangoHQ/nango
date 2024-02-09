@@ -344,7 +344,7 @@ describe('generate function tests', () => {
     });
 
     it('should not complain when a return statement is used in a nested function', async () => {
-        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GreenhouseEeoc']);
         expect(noReturnUsed).toBe(true);
     });
 
