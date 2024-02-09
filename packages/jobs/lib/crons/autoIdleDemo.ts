@@ -30,7 +30,7 @@ export async function cronAutoIdleDemo(): Promise<void> {
     });
 }
 
-async function exec(): Promise<void> {
+export async function exec(): Promise<void> {
     console.log('[autoidle] starting');
 
     const syncs = await findPausableDemoSyncs();
