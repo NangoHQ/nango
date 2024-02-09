@@ -442,7 +442,21 @@ export default function AuthSettings(props: AuthSettingsProps) {
             {(integration?.auth_mode === AuthModes.OAuth1 || integration?.auth_mode === AuthModes.OAuth2 || integration?.auth_mode === AuthModes.Custom) && (
                 <>
                     <div className="flex flex-col">
-                        <span className="text-gray-400 text-xs mb-1">Client ID</span>
+                        <div className="flex items-center mb-1">
+                            <span className="text-gray-400 text-xs">Client ID</span>
+                            <Tooltip
+                                type="dark"
+                                text={
+                                    <>
+                                        <div className="flex text-white text-sm">
+                                            <p>{`Obtain the Client ID on the developer portal of the Integration Provider.`}</p>
+                                        </div>
+                                    </>
+                                }
+                            >
+                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                            </Tooltip>
+                        </div>
                         <div className="flex text-white mt-1 items-center">
                             <div className="w-full relative">
                                 <input
@@ -463,7 +477,21 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-gray-400 text-xs mb-1">Client Secret</span>
+                        <div className="flex items-center mb-1">
+                            <span className="text-gray-400 text-xs">Client Secret</span>
+                            <Tooltip
+                                type="dark"
+                                text={
+                                    <>
+                                        <div className="flex text-white text-sm">
+                                            <p>{`Obtain the Client Secret on the developer portal of the Integration Provider.`}</p>
+                                        </div>
+                                    </>
+                                }
+                            >
+                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                            </Tooltip>
+                        </div>
                         <div className="mt-1">
                             <SecretInput
                                 copy={true}
@@ -477,7 +505,21 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     </div>
                     {integration?.auth_mode !== AuthModes.Custom && (
                         <div className="flex flex-col">
-                            <span className="text-gray-400 text-xs mb-1">Scopes</span>
+                            <div className="flex items-center mb-1">
+                                <span className="text-gray-400 text-xs">Scopes</span>
+                                <Tooltip
+                                    type="dark"
+                                    text={
+                                        <>
+                                            <div className="flex text-white text-sm">
+                                                <p>{`The list of scopes should be found in the documentation of the external provider.`}</p>
+                                            </div>
+                                        </>
+                                    }
+                                >
+                                    <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                                </Tooltip>
+                            </div>
                             <div className="mt-1">
                                 <TagsInput
                                     id="scopes"

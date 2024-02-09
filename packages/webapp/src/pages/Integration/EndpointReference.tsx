@@ -119,7 +119,7 @@ export default function EndpointReference() {
 
             const jsonModel = generateResponseModel(activeFlow?.models as NangoSyncModel[], Array.isArray(activeFlow?.returns) ? activeFlow?.returns[0] as string : activeFlow.returns, activeFlow?.type === 'sync');
             if (activeFlow?.type === 'sync') {
-                setJsonResponseSnippet(JSON.stringify({"records": [{...jsonModel}]}, null, 2));
+                setJsonResponseSnippet(JSON.stringify({"records": [{...jsonModel}], "nextCursor": 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...'}, null, 2));
             } else {
                 setJsonResponseSnippet(JSON.stringify(jsonModel, null, 2));
             }
