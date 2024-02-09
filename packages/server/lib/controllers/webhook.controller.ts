@@ -1,8 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { Span } from 'dd-trace';
+import tracer from '../tracer.js';
 import { routeWebhook, featureFlags, environmentService, metricsManager, MetricTypes } from '@nangohq/shared';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('server.sync.receiveWebhook', {
+            childOf: active as Span
+        });
+
         const { environmentUuid, providerConfigKey } = req.params;
         const headers = req.headers;
         try {
@@ -22,6 +29,10 @@ class WebhookController {
                 res.status(404).send();
                 return;
             }
+
+            span.setTag('nango.accountUUID', accountUUID);
+            span.setTag('nango.environmentUUID', environmentUuid);
+            span.setTag('nango.providerConfigKey', providerConfigKey);
 
             const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true, true);
 
@@ -53,7 +64,11 @@ class WebhookController {
                 return;
             }
         } catch (err) {
+            span.setTag('nango.error', err);
+
             next(err);
+        } finally {
+            span.finish();
         }
     }
 }
