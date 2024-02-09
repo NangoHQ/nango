@@ -1,3 +1,5 @@
+// @packages: jobs, cli
+
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
@@ -364,17 +366,19 @@ export default class SyncRun {
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
-                // means a void response from the sync script which is expected
-                // and means that they're using batchSave or batchDelete
-                if (userDefinedResults === undefined) {
-                    await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
-
-                    return { success: true, error: null, response: true };
-                } else {
-                    const error = new NangoError('sync_script_failure', 'The sync script did not return a void response', 500);
-
-                    return { success: false, error, response: null };
+                if (userDefinedResults !== undefined) {
+                    await createActivityLogMessage({
+                        level: 'error',
+                        environment_id: this.nangoConnection.environment_id,
+                        activity_log_id: this.activityLogId as number,
+                        timestamp: Date.now(),
+                        content: `The sync attempts to return a response at the end of the script but it should not. Any results returned at the end of the script will be ignored. If you wish to save data please use batchSave`
+                    });
                 }
+
+                await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+
+                return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
                 // if it fails then restore the sync date

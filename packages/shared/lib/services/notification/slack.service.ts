@@ -1,3 +1,5 @@
+// @packages: jobs
+
 import { schema, dbNamespace } from '../../db/database.js';
 import type { SlackNotification } from '../../models/SlackNotification';
 import type { NangoConnection } from '../../models/Connection';
