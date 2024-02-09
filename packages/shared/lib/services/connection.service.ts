@@ -502,15 +502,26 @@ class ConnectionService {
 
     public async listConnections(
         environment_id: number,
-        connectionId?: string
+        connectionId?: string,
+        limit: number | null = 20,
+        offset = 0,
+        integration?: string
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata }[]> {
         const queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' }, 'metadata')
-            .where({ environment_id, deleted: false });
+            .where({ environment_id, deleted: false })
+            .offset(offset);
         if (connectionId) {
             queryBuilder.where({ connection_id: connectionId });
+        }
+        if (limit !== null) {
+            queryBuilder.limit(limit);
+        }
+
+        if (integration) {
+            queryBuilder.where({ provider_config_key: integration });
         }
         return queryBuilder;
     }
@@ -518,6 +529,11 @@ class ConnectionService {
     public async getAllNames(environment_id: number): Promise<string[]> {
         const connections = await this.listConnections(environment_id);
         return [...new Set(connections.map((config) => config.connection_id))];
+    }
+
+    public async getAllIntegrations(environment_id: number): Promise<string[]> {
+        const integrations = await this.listConnections(environment_id, undefined, null);
+        return [...new Set(integrations.map((config) => config.provider))];
     }
 
     public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
