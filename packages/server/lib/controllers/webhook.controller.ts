@@ -1,8 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
+import tracer from '../tracer.js';
 import { routeWebhook, featureFlags, environmentService, metricsManager, MetricTypes } from '@nangohq/shared';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
+        const span = tracer.startSpan('sync.receiveWebhook');
+
         const { environmentUuid, providerConfigKey } = req.params;
         const headers = req.headers;
         try {
@@ -23,13 +26,17 @@ class WebhookController {
                 return;
             }
 
+            span.setTag('accountUUID', accountUUID);
+            span.setTag('environmentUUID', environmentUuid);
+            span.setTag('providerConfigKey', providerConfigKey);
+
             const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true, true);
 
             let responsePayload = null;
 
             if (areWebhooksEnabled) {
                 const startTime = Date.now();
-                responsePayload = await routeWebhook(environmentUuid, providerConfigKey, headers, req.body, req.rawBody!);
+                responsePayload = await routeWebhook(environmentUuid, providerConfigKey, headers, req.body, req.rawBody!, span);
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 
@@ -53,7 +60,11 @@ class WebhookController {
                 return;
             }
         } catch (err) {
+            span.setTag('error', err);
+
             next(err);
+        } finally {
+            span.finish();
         }
     }
 }

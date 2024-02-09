@@ -3,7 +3,7 @@
  */
 
 // Import environment variables (if running server locally).
-import './apm.js';
+import './tracer.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import _ from './utils/config.js';
@@ -51,7 +51,7 @@ import {
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
-import tracer from './apm.js';
+import tracer from './tracer.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 

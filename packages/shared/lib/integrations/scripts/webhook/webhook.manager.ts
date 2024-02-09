@@ -1,3 +1,4 @@
+import type { Span } from 'dd-trace';
 import configService from '../../../services/config.service.js';
 import environmentService from '../../../services/environment.service.js';
 import webhookService from '../../../services/notification/webhook.service.js';
@@ -10,7 +11,7 @@ import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 
 const handlers: WebhookHandlersMap = webhookHandlers as unknown as WebhookHandlersMap;
 
-async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string): Promise<void | any> {
+async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string, span: Span): Promise<any> {
     if (!body) {
         return;
     }
@@ -33,6 +34,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
             res = await handler(internalNango, integration, headers, body, rawBody);
         }
     } catch (e) {
+        span.setTag('error', e);
         await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
             accountId: String(accountId),
             environmentId: String(integration.environment_id),

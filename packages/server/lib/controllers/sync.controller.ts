@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { LogLevel, Connection, NangoConnection, HTTP_VERB } from '@nangohq/shared';
+import tracer from '../tracer.js';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
@@ -339,6 +340,8 @@ class SyncController {
     }
 
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
+        const span = tracer.startSpan('sync.triggerAction');
+
         const { input, action_name } = req.body;
         const environmentId = getEnvironmentId(res);
         const connectionId = req.get('Connection-Id');
@@ -386,6 +389,11 @@ class SyncController {
                 operation_name: action_name
             };
 
+            span.setTag('actionName', action_name)
+                .setTag('connectionId', connectionId)
+                .setTag('environmentId', environmentId)
+                .setTag('providerConfigKey', providerConfigKey);
+
             const activityLogId = await createActivityLog(log);
             if (!activityLogId) {
                 throw new NangoError('failed_to_create_activity_log');
@@ -401,26 +409,20 @@ class SyncController {
 
             if (isOk(actionResponse)) {
                 res.send(actionResponse.res);
+
                 return;
             } else {
+                span.setTag('error', actionResponse.err);
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+
                 return;
             }
-        } catch (e: any) {
-            const content = e.message || 'Unknown error';
-
-            await metricsManager.capture(
-                MetricTypes.ACTION_FAILURE,
-                `Action: ${action_name} failed with error: ${content}`,
-                LogActionEnum.ACTION,
-                {
-                    input: JSON.stringify(input, null, 2),
-                    actionName: action_name
-                },
-                `actionName:${action_name}`
-            );
+        } catch (e) {
+            span.setTag('error', e);
 
             next(e);
+        } finally {
+            span.finish();
         }
     }
 
