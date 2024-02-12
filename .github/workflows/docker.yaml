@@ -2,7 +2,7 @@ name: Docker Check
 
 on:
   push:
-    branches: '**'
+    branches: master
   pull_request:
 
 concurrency:

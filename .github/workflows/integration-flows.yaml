@@ -2,7 +2,7 @@ name: Nango Integration Flows Compile
 
 on:
     push:
-      branches: '**'
+      branches: master
     pull_request:
 
 concurrency:
