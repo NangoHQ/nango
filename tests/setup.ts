@@ -3,7 +3,7 @@ import { GenericContainer, StartedTestContainer, TestContainer, Wait } from 'tes
 let startedContainer: StartedTestContainer;
 
 export const setup = async () => {
-    const container: TestContainer = await new GenericContainer('postgres');
+    const container: TestContainer = new GenericContainer('postgres');
     startedContainer = await container
         .withEnvironment({ POSTGRES_USER: 'postgres' })
         .withEnvironment({ POSTGRES_PASSWORD: 'nango_test' })
