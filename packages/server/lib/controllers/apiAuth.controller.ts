@@ -150,6 +150,7 @@ class ApiAuthController {
                 credentials,
                 connectionId,
                 providerConfigKey,
+                environmentId,
                 connectionConfig,
                 tracer
             );
@@ -356,6 +357,7 @@ class ApiAuthController {
                 credentials,
                 connectionId,
                 providerConfigKey,
+                environmentId,
                 connectionConfig,
                 tracer
             );

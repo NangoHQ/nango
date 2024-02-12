@@ -44,6 +44,7 @@ export const connectionTest = async (
     credentials: ApiKeyCredentials | BasicApiCredentials,
     connectionId: string,
     providerConfigKey: string,
+    environment_id: number,
     connection_config: ConnectionConfig,
     tracer: Tracer
 ): Promise<Result<boolean, NangoError>> => {
@@ -62,13 +63,13 @@ export const connectionTest = async (
 
     const { method, endpoint } = providerVerification;
 
-    const connection = {
+    const connection: Connection = {
         id: -1,
-        providerConfigKey,
-        provider,
-        connectionId,
+        provider_config_key: providerConfigKey,
+        connection_id: connectionId,
         credentials,
-        connection_config
+        connection_config,
+        environment_id
     };
 
     const configBody: ApplicationConstructedProxyConfiguration = {
@@ -82,12 +83,12 @@ export const connectionTest = async (
         headers: {
             'Content-Type': 'application/json'
         },
-        connection: connection as unknown as Connection
+        connection
     };
 
     const internalConfig: InternalProxyConfiguration = {
         provider,
-        connection: connection as unknown as Connection
+        connection
     };
 
     try {
