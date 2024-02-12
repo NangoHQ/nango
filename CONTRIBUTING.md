@@ -22,7 +22,7 @@ Set your envs
 cp .env.example .env
 ```
 
-Launch the services
+Launch the databases and queue
 
 ```sh
 npm run dev:docker
@@ -58,14 +58,10 @@ nango init
 ```
 
 Change the .env file `NANGO_SECRET_KEY_DEV` and `NANGO_HOSTPORT`.
-And compile the files.
-
-```sh
-nango dev
-```
-
-Deploy your changes
+And deploy your changes
 
 ```sh
 nango deploy dev
 ```
+
+To know more about the CLI, check the [documentation](https://docs.nango.dev/sdks/cli).
