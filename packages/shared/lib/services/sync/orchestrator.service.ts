@@ -10,7 +10,8 @@ import {
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
     getSyncByIdAndName,
-    getSyncNamesByConnectionId
+    getSyncNamesByConnectionId,
+    clearLastSyncDate
 } from './sync.service.js';
 import {
     createActivityLogMessageAndEnd,
@@ -174,7 +175,8 @@ export class Orchestrator {
         providerConfigKey: string,
         syncNames: string[],
         command: SyncCommand,
-        connectionId?: string
+        connectionId?: string,
+        fullResync?: boolean
     ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderName(providerConfigKey as string);
@@ -215,7 +217,12 @@ export class Orchestrator {
                 if (!sync) {
                     continue;
                 }
-                const schedule = await getSchedule(sync?.id as string);
+
+                if (fullResync) {
+                    await clearLastSyncDate(sync.id!);
+                }
+
+                const schedule = await getSchedule(sync.id as string);
 
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
@@ -244,13 +251,19 @@ export class Orchestrator {
             }
 
             for (const sync of syncs) {
-                const schedule = await getSchedule(sync?.id as string);
+                const schedule = await getSchedule(sync.id as string);
+
+                if (fullResync) {
+                    await clearLastSyncDate(sync.id!);
+                }
+
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
                 }
             }
+
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id: environmentId,
