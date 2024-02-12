@@ -2,7 +2,8 @@ name: Run Unit & Integration Tests
 
 on:
     push:
-        branches: [ master ]
+        branches:
+            - '*'
     pull_request:
 
 concurrency:
