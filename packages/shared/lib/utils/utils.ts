@@ -99,7 +99,7 @@ export function isProd() {
 }
 
 export function isTest(): boolean {
-    return Boolean(process.env['CI'] !== 'undefined' || process.env['VITEST']);
+    return Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
 }
 
 export function isBasicAuthEnabled() {
