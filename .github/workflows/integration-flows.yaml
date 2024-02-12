@@ -1,10 +1,9 @@
 name: Nango Integration Flows Compile
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    types: [opened, synchronize]
+    push:
+        branches: [ master ]
+    pull_request:
 
 concurrency:
     group: flows-compile--${{ github.event.pull_request.number || github.ref }}

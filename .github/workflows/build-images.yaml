@@ -3,7 +3,6 @@ on:
     push:
       branches: [ master ]
     pull_request:
-      types: [opened, synchronize]
 
 concurrency:
     group: pulls/${{ github.event.pull_request.number || github.ref }}

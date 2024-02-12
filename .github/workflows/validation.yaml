@@ -1,10 +1,9 @@
 name: Yaml Validation
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    types: [opened, synchronize]
+    push:
+        branches: [ master ]
+    pull_request:
 
 concurrency:
     group: validation-${{ github.event.pull_request.number || github.ref }}

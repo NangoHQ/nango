@@ -2,9 +2,8 @@ name: Run Unit & Integration Tests
 
 on:
     push:
-      branches: [ master ]
+        branches: [ master ]
     pull_request:
-      types: [opened, synchronize]
 
 concurrency:
     group: tests-${{ github.event.pull_request.number || github.ref }}
