@@ -10,7 +10,8 @@ import {
     updateSuccess as updateSuccessActivityLog,
     updateScheduleStatus,
     isErr,
-    findPausableDemoSyncs
+    findPausableDemoSyncs,
+    logger
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { SpanTypes } from '@nangohq/shared/lib/utils/metrics.manager';
@@ -31,11 +32,11 @@ export async function cronAutoIdleDemo(): Promise<void> {
 }
 
 export async function exec(): Promise<void> {
-    console.log('[autoidle] starting');
+    logger.info('[autoidle] starting');
 
     const syncs = await findPausableDemoSyncs();
 
-    console.log(`[autoidle] found ${syncs.length} syncs`);
+    logger.info(`[autoidle] found ${syncs.length} syncs`);
 
     const action = CommandToActivityLog['PAUSE'];
     for (const sync of syncs) {
@@ -61,7 +62,7 @@ export async function exec(): Promise<void> {
             continue;
         }
 
-        console.log('[autoidle] pausing', { sync });
+        logger.info('[autoidle] pausing', { sync });
 
         const resTemporal = await syncClient.runSyncCommand(sync.schedule_id, sync.id, SyncCommand.PAUSE, activityLogId, sync.environment_id);
         if (isErr(resTemporal)) {
@@ -83,5 +84,5 @@ export async function exec(): Promise<void> {
         await updateSuccessActivityLog(activityLogId, true);
     }
 
-    console.log(`[autoidle] done`);
+    logger.info(`[autoidle] done`);
 }
