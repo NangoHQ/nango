@@ -776,6 +776,10 @@ paths:
                                     description: A list of sync names that you wish to trigger.
                                     items:
                                         type: string
+                                full_resync:
+                                    type: boolean
+                                    description: Reset the "lastSyncDate" associated with the sync before triggering the sync.
+
             responses:
                 '200':
                     description: Successfully triggered the sync
