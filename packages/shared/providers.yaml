@@ -110,8 +110,8 @@ ashby:
     proxy:
         base_url: https://api.ashbyhq.com
         verification:
-          method: POST
-          endpoint: apiKey.info
+            method: POST
+            endpoint: apiKey.info
     docs: https://developers.ashbyhq.com/reference/introduction
 atlassian:
     auth_mode: OAUTH2
@@ -157,8 +157,8 @@ bamboohr-basic:
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
         verification:
-          method: GET
-          endpoint: /v1/meta/fields
+            method: GET
+            endpoint: /v1/meta/fields
     docs: https://documentation.bamboohr.com/reference
 battlenet:
     auth_mode: OAUTH2
@@ -668,8 +668,8 @@ hibob-service-user:
     proxy:
         base_url: https://api.hibob.com
         verification:
-          method: GET
-          endpoint: /v1/company/named-lists
+            method: GET
+            endpoint: /v1/company/named-lists
     docs: https://apidocs.hibob.com/
 highlevel:
     auth_mode: OAUTH2
