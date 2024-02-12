@@ -4,6 +4,7 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
+import { resultOk, type Result, resultErr } from '../../utils/result.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
@@ -57,10 +58,16 @@ export const markAllAsStopped = async (): Promise<void> => {
     await schema().update({ status: ScheduleStatus.STOPPED }).from<SyncSchedule>(TABLE);
 };
 
-export const updateScheduleStatus = async (schedule_id: string, status: SyncCommand, activityLogId: number | null, environment_id: number): Promise<void> => {
+export const updateScheduleStatus = async (
+    schedule_id: string,
+    status: SyncCommand,
+    activityLogId: number | null,
+    environment_id: number
+): Promise<Result<boolean>> => {
     try {
         await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
-    } catch (error: any) {
+        return resultOk(true);
+    } catch (error) {
         if (activityLogId) {
             await createActivityLogDatabaseErrorMessageAndEnd(
                 `Failed to update schedule status to ${status} for schedule_id: ${schedule_id}.`,
@@ -69,6 +76,8 @@ export const updateScheduleStatus = async (schedule_id: string, status: SyncComm
                 environment_id
             );
         }
+
+        return resultErr(error as Error);
     }
 };
 
