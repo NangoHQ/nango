@@ -179,13 +179,13 @@ class ProxyService {
         }
 
         const configBody: ApplicationConstructedProxyConfiguration = {
-            endpoint: endpoint,
+            endpoint,
             method: method?.toUpperCase() as HTTP_VERB,
             template,
             token: token || '',
             provider: provider,
-            providerConfigKey: providerConfigKey,
-            connectionId: connectionId,
+            providerConfigKey,
+            connectionId,
             headers: headers as Record<string, string>,
             data,
             retries: retries || 0,
@@ -194,7 +194,7 @@ class ProxyService {
             // Coming from a flow it is not a proxy call since the worker
             // makes the request so we don't allow an override in that case
             decompress: (externalConfig as UserProvidedProxyConfiguration).decompress === 'true' || externalConfig.decompress === true,
-            connection: connection,
+            connection,
             params: externalConfig.params as Record<string, string>,
             paramsSerializer: externalConfig.paramsSerializer as ParamsSerializerOptions,
             responseType: externalConfig.responseType as ResponseType
