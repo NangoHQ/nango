@@ -50,10 +50,13 @@ export const connectionTest = async (
 ): Promise<Result<boolean, NangoError>> => {
     const active = tracer.scope().active();
     const span = tracer.startSpan(SpanTypes.CONNECTION_TEST, {
-        childOf: active as Span
+        childOf: active as Span,
+        tags: {
+            'nango.provider': provider,
+            'nango.providerConfigKey': providerConfigKey,
+            'nango.connectionId': connectionId
+        }
     });
-
-    span.setTag('nango.provider', provider).setTag('nango.providerConfigKey', providerConfigKey).setTag('nango.connectionId', connectionId);
 
     const providerVerification = template?.proxy?.verification;
 

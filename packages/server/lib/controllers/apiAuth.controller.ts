@@ -14,7 +14,7 @@ import {
     ApiKeyCredentials,
     BasicApiCredentials,
     connectionTest as connectionTestHook,
-    isOk,
+    isErr,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
@@ -155,7 +155,7 @@ class ApiAuthController {
                 tracer
             );
 
-            if (!isOk(connectionResponse)) {
+            if (isErr(connectionResponse)) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
@@ -362,7 +362,7 @@ class ApiAuthController {
                 tracer
             );
 
-            if (!isOk(connectionResponse)) {
+            if (isErr(connectionResponse)) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
