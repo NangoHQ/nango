@@ -1,6 +1,7 @@
 name: "[Release] Build service images"
 on:
     push:
+        branches: '**'
     pull_request:
 
 concurrency:

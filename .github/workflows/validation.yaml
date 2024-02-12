@@ -2,6 +2,7 @@ name: Yaml Validation
 
 on:
     push:
+      branches: '**'
     pull_request:
 
 concurrency:
