@@ -1,7 +1,7 @@
 import * as cron from 'node-cron';
 import { isCloud, db, encryptionManager, errorManager, ErrorSourceEnum } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { SpanTypes } from '@nangohq/shared/lib/utils/metrics.manager';
+import { SpanTypes } from '@nangohq/shared';
 
 export async function deleteOldActivityLogs(): Promise<void> {
     /**
