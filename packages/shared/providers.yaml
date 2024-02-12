@@ -109,6 +109,10 @@ ashby:
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
+        verification:
+          method: POST
+          endpoint: apiKey.info
+    docs: https://developers.ashbyhq.com/reference/introduction
 atlassian:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
@@ -152,6 +156,10 @@ bamboohr-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+        verification:
+          method: GET
+          endpoint: /v1/meta/fields
+    docs: https://documentation.bamboohr.com/reference
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
@@ -659,6 +667,10 @@ hibob-service-user:
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
+        verification:
+          method: GET
+          endpoint: /v1/company/named-lists
+    docs: https://apidocs.hibob.com/
 highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
