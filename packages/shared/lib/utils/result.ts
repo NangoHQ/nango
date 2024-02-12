@@ -1,6 +1,13 @@
-export type ResultRes<T> = { ok: true; res: T };
-export type ResultErr<E extends Error> = { ok: false; err: E };
+export interface ResultRes<T> {
+    ok: true;
+    res: T;
+}
+export interface ResultErr<E extends Error> {
+    ok: false;
+    err: E;
+}
 export type Result<T, E extends Error = Error> = ResultRes<T> | ResultErr<E>;
+
 export function resultOk<T>(res: T): ResultRes<T> {
     return { ok: true, res };
 }
