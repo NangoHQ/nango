@@ -1,7 +1,7 @@
 import tracer from './tracer.js';
-import './utils/config.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
+import _ from './utils/config.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
 import providerController from './controllers/provider.controller.js';

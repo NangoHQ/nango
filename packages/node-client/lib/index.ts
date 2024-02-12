@@ -51,7 +51,9 @@ interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes.OAuth2;
 }
 
-type CustomHeaders = Record<string, string | number | boolean>;
+interface CustomHeaders {
+    [key: string]: string | number | boolean;
+}
 
 export enum SyncType {
     INITIAL = 'INITIAL',
@@ -404,7 +406,7 @@ export class Nango {
         return response.data;
     }
 
-    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string, fullResync?: boolean): Promise<void> {
+    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
         if (typeof syncs === 'string') {
@@ -414,8 +416,7 @@ export class Nango {
         const body = {
             syncs: syncs || [],
             provider_config_key: providerConfigKey,
-            connection_id: connectionId,
-            full_resync: fullResync
+            connection_id: connectionId
         };
 
         return axios.post(url, body, { headers: this.enrichHeaders() });
