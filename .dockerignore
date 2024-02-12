@@ -1,7 +1,6 @@
 node_modules
 **/node_modules
 npm-debug.log
-**/dist
 
 # Private keys can be in there
 **/.env
