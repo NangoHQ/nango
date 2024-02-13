@@ -255,28 +255,19 @@ export async function getTopLevelLogByEnvironment(
     return logs || [];
 }
 
-export async function activityFilter(environment_id: number, filterType: string): Promise<string[]> {
-    const logsQuery = db.knex.withSchema(db.schema()).from<ActivityLog>('_nango_activity_logs').where({ environment_id });
+export async function activityFilter(environment_id: number, filterColumn: 'connection_id' | 'provider'): Promise<string[]> {
+    const logsQuery = db.knex.withSchema(db.schema())
+        .from<ActivityLog>('_nango_activity_logs')
+        .where({ environment_id })
+        .whereNotNull(filterColumn)
+        .groupBy(filterColumn)
+        .select(filterColumn)
+        .orderBy(filterColumn, 'asc');
 
-    let columnToGroupBy: string;
-    let distinctColumn: string;
-
-    if (filterType === 'connection') {
-        logsQuery.whereNotNull('connection_id');
-        columnToGroupBy = 'connection_id';
-        distinctColumn = 'connection_id';
-    } else if (filterType === 'integration') {
-        logsQuery.whereNotNull('provider');
-        columnToGroupBy = 'provider';
-        distinctColumn = 'provider';
-    } else {
-        return [];
-    }
-
-    const logs = await logsQuery.groupBy(columnToGroupBy).select(distinctColumn).orderBy(columnToGroupBy, 'asc');
+    const logs = await logsQuery;
 
     const distinctValues: string[] = logs
-        .map((log: { [key: string]: string }) => log[distinctColumn] as string)
+        .map((log: { [key: string]: string }) => log[filterColumn] as string)
         .filter((value: string | undefined): value is string => typeof value === 'string');
 
     return distinctValues;

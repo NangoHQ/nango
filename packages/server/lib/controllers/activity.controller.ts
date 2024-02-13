@@ -56,8 +56,8 @@ class ActivityController {
             const { environment } = response;
 
             const scripts = await getAllSyncAndActionNames(environment.id);
-            const integrations = await activityFilter(environment.id, 'integration');
-            const connections = await activityFilter(environment.id, 'connection');
+            const integrations = await activityFilter(environment.id, 'connection_id');
+            const connections = await activityFilter(environment.id, 'provider');
             res.send({ scripts, integrations, connections });
         } catch (error) {
             next(error);
