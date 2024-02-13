@@ -7,7 +7,13 @@ import { NangoProps, isTest, RunnerOutput } from '@nangohq/shared';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean, isWebhook: boolean, code: string, codeParams?: object): Promise<RunnerOutput> {
+export async function exec(
+    nangoProps: NangoProps,
+    isInvokedImmediately: boolean,
+    isWebhook: boolean,
+    code: string,
+    codeParams?: object
+): Promise<RunnerOutput> {
     return new Promise((resolve, reject) => {
         const childPath = isTest() ? path.resolve(__dirname, '../dist/child.js') : path.resolve(__dirname, './child.js');
         const child = fork(childPath);
