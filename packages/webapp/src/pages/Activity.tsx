@@ -25,7 +25,7 @@ import { useActivityAPI } from '../utils/api';
 import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import type { ActivityResponse } from '../types';
+import type { ActivityMessageResponse, ActivityResponse } from '../types';
 
 import { useStore } from '../store';
 
@@ -216,11 +216,11 @@ export default function Activity() {
 
                 if (res?.status === 200) {
                     try {
-                        const allMessages = await res.json();
+                        const allMessages: ActivityMessageResponse = await res.json();
                         const logsWithMessages = activities.map((activity: ActivityResponse) => {
                             const logMessages = allMessages[activity.id];
                             if (logMessages) {
-                                activity.messages = logMessages;
+                                activity.messages = logMessages.reverse();
                             }
                             return activity;
                         });

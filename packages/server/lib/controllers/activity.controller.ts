@@ -30,7 +30,11 @@ class ActivityController {
 
     public async getMessages(req: Request, res: Response, next: NextFunction) {
         try {
-            const logIds = req.query['logIds'] ? (req.query['logIds'] as string).split(',').map((logId) => parseInt(logId)) : [];
+            const logIds: number[] = req.query['logIds'] ? (req.query['logIds'] as string).split(',').map((logId) => parseInt(logId)) : [];
+            if (logIds.length <= 0) {
+                res.send([]);
+                return;
+            }
 
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
