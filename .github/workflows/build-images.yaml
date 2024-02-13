@@ -10,9 +10,6 @@ concurrency:
     group: pulls/${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
-env:
-    # Do not use GITHUB_SHA it's incorrect in PRs
-    COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
     nango-persist:
@@ -21,28 +18,29 @@ jobs:
         with:
             package: persist
             run-cmd: ts-build
-            tags: -t nangohq/nango-persist:$COMMIT_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-persist:enterprise-$COMMIT_SHA -t nangohq/nango-persist:enterprise -t nangohq/nango-persist:hosted-$COMMIT_SHA -t nangohq/nango-persist:hosted' || '' }}
+            tags: -t nangohq/nango-persist:${{ env.COMMIT_SHA }} ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-persist:enterprise-${{ env.COMMIT_SHA }} -t nangohq/nango-persist:enterprise -t nangohq/nango-persist:hosted-${{ env.COMMIT_SHA }} -t nangohq/nango-persist:hosted' || '' }}
     nango-jobs:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: jobs
             run-cmd: ts-build
-            tags: -t nangohq/nango-jobs:$COMMIT_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-jobs:enterprise-$COMMIT_SHA -t nangohq/nango-jobs:enterprise -t nangohq/nango-jobs:hosted-$COMMIT_SHA -t nangohq/nango-jobs:hosted' || '' }}
+            tags: -t nangohq/nango-jobs:${{ env.COMMIT_SHA }} ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-jobs:enterprise-${{ env.COMMIT_SHA }} -t nangohq/nango-jobs:enterprise -t nangohq/nango-jobs:hosted-${{ env.COMMIT_SHA }} -t nangohq/nango-jobs:hosted' || '' }}
     nango-runner:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: runner
             run-cmd: ts-build
-            tags: -t nangohq/nango-runner:$COMMIT_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-runner:enterprise-$COMMIT_SHA -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-$COMMIT_SHA -t nangohq/nango-runner:hosted' || '' }}
+            tags: -t nangohq/nango-runner:${{ env.COMMIT_SHA }} ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-runner:enterprise-${{ env.COMMIT_SHA }} -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-${{ env.COMMIT_SHA }} -t nangohq/nango-runner:hosted' || '' }}
     nango-server-staging:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: server
             run-cmd: build:staging
-            tags: -t nangohq/nango-server:staging-$COMMIT_SHA
+            tags: -t nangohq/nango-server:staging-${{ env.COMMIT_SHA }}
+
     nango-server-prod:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -50,7 +48,7 @@ jobs:
         with:
             package: server
             run-cmd: build:prod
-            tags: -t nangohq/nango-server:production-$COMMIT_SHA
+            tags: -t nangohq/nango-server:production-${{ env.COMMIT_SHA }}
     nango-server-self-hosted:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -58,7 +56,7 @@ jobs:
         with:
             package: server
             run-cmd: build:hosted
-            tags: -t nangohq/nango-server:hosted -t nangohq/nango-server:hosted-$COMMIT_SHA
+            tags: -t nangohq/nango-server:hosted -t nangohq/nango-server:hosted-${{ env.COMMIT_SHA }}
     nango-server-enterprise:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -66,4 +64,4 @@ jobs:
         with:
             package: server
             run-cmd: build:enterprise
-            tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-$COMMIT_SHA
+            tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-${{ env.COMMIT_SHA }}
