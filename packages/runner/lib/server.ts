@@ -7,7 +7,6 @@ import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { exec } from './exec.js';
 import superjson from 'superjson';
 import { fetch } from 'undici';
-import type { CreateTRPCProxyClient } from '@trpc/client';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -30,7 +29,6 @@ const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
-export type ProxyAppRouter = CreateTRPCProxyClient<AppRouter>;
 
 function healthProcedure() {
     return publicProcedure
