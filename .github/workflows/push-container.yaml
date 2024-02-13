@@ -33,8 +33,8 @@ jobs:
               env:
                 PUSH: ${{ (env.CAN_PUSH == 'true') && '--push' || '' }}
               run: |
-                Building: '${{ inputs.package }}'
-                Tags: ${{ inputs.tags }}
+                echo "Building: '${{ inputs.package }}'"
+                echo "Tags: ${{ inputs.tags }}"
 
                 npm run i
                 npm run ${{ inputs.run-cmd }}
