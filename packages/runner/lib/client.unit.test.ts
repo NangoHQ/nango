@@ -52,6 +52,6 @@ describe('Runner client', () => {
 
     it('should cancel a sync', async () => {
         const result = await client.cancel.mutate({ syncId: 'sync-id' });
-        expect(result).toEqual('ok');
+        expect(result).toEqual({ ok: true, res: 'cancelled' });
     });
 });
