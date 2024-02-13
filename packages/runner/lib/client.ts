@@ -3,7 +3,9 @@ import type { AppRouter } from './server.js';
 import superjson from 'superjson';
 import { fetch, Agent } from 'undici';
 
-export function getRunnerClient(url: string): CreateTRPCProxyClient<AppRouter> {
+export type ProxyAppRouter = CreateTRPCProxyClient<AppRouter>;
+
+export function getRunnerClient(url: string): ProxyAppRouter {
     return createTRPCProxyClient<AppRouter>({
         transformer: superjson,
         links: [
