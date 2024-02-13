@@ -1,4 +1,4 @@
-import type { NangoProps } from '@nangohq/shared';
+import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
@@ -6,7 +6,13 @@ import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
 
-export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean, isWebhook: boolean, code: string, codeParams?: object): Promise<object> {
+export async function exec(
+    nangoProps: NangoProps,
+    isInvokedImmediately: boolean,
+    isWebhook: boolean,
+    code: string,
+    codeParams?: object
+): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
     const wrappedCode = `
@@ -64,7 +70,8 @@ export async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean
                 success: false,
                 error: {
                     type,
-                    payload
+                    payload: payload || {},
+                    status: 500
                 },
                 response: null
             };
