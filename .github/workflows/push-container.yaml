@@ -13,10 +13,6 @@ on:
                 required: true
                 type: string
 
-env:
-  # Do not use GITHUB_SHA it's incorrect in PRs
-  COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-
 jobs:
     push-container:
         runs-on: ubuntu-latest
@@ -37,6 +33,7 @@ jobs:
               env:
                 PUSH: ${{ (env.CAN_PUSH == 'true') && '--push' || '' }}
               run: |
+                echo "Building ${{ inputs.package }}, ${{ inputs.tags }}"
                 npm run i
                 npm run ${{ inputs.run-cmd }}
                 node scripts/flows.js
