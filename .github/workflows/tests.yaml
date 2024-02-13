@@ -2,8 +2,11 @@ name: Run Unit & Integration Tests
 
 on:
     push:
-        branches: master
+        branches:
+            - master
+            - staging/**
     pull_request:
+
 
 concurrency:
     group: tests-${{ github.event.pull_request.number || github.ref }}
