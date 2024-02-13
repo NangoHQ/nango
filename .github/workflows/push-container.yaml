@@ -33,6 +33,9 @@ jobs:
               env:
                 PUSH: ${{ (env.CAN_PUSH == 'true') && '--push' || '' }}
               run: |
+                echo "Building: '${{ inputs.package }}'"
+                echo "Tags: ${{ inputs.tags }}"
+
                 npm run i
                 npm run ${{ inputs.run-cmd }}
                 node scripts/flows.js
