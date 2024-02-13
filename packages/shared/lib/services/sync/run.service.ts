@@ -185,7 +185,7 @@ export default class SyncRun {
             const secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
-            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
 
             let syncData: NangoIntegrationData;
 

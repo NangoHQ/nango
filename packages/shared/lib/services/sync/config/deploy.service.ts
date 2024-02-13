@@ -121,7 +121,7 @@ export async function deploy(
     try {
         const flowIds = await schema().from<SyncConfig>(TABLE).insert(insertData).returning('id');
 
-        const endpoints: Array<SyncEndpoint> = [];
+        const endpoints: SyncEndpoint[] = [];
         flowIds.forEach((row, index) => {
             const flow = flows[index] as IncomingFlowConfig;
             if (flow.endpoints && row.id) {
@@ -414,7 +414,7 @@ export async function deployPreBuilt(
     try {
         const syncIds = await schema().from<SyncConfig>(TABLE).insert(insertData).returning('id');
 
-        const endpoints: Array<SyncEndpoint> = [];
+        const endpoints: SyncEndpoint[] = [];
         syncIds.forEach((row, index) => {
             const sync = configs[index] as IncomingPreBuiltFlowConfig;
             if (sync.endpoints && row.id) {

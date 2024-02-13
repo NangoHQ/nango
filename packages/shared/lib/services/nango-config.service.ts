@@ -133,6 +133,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
 
         if (integration!['provider']) {
             provider = integration!['provider'];
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete integration!['provider'];
         }
 
@@ -260,6 +261,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
         if (integration!['provider']) {
             provider = integration!['provider'];
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete integration!['provider'];
         }
 

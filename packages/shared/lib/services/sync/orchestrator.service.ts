@@ -215,7 +215,7 @@ export class Orchestrator {
             for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
-                    continue;
+                    throw new Error(`Sync "${syncName}" doest not exists.`);
                 }
 
                 if (fullResync) {
@@ -231,6 +231,7 @@ export class Orchestrator {
                     await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
                 }
             }
+
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id: environmentId,
