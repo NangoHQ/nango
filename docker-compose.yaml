@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server
+        image: nangohq/nango-server:hosted
         container_name: nango-server
         environment:
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
