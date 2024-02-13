@@ -31,7 +31,7 @@ jobs:
         with:
             package: runner
             run-cmd: ts-build
-            tags: -t nangohq/nango-runner:${{ github.event.pull_request.head.sha }} -t nangohq/nango-runner:enterprise-${{ github.event.pull_request.head.sha }} -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-${{ github.event.pull_request.head.sha }} -t nangohq/nango-runner:hosted
+            tags: -t nangohq/nango-runner:${{ github.event.pull_request.head.sha }} ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-runner:enterprise-${{ github.event.pull_request.head.sha }} -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-${{ github.event.pull_request.head.sha }} -t nangohq/nango-runner:hosted' || '' }}
     nango-server-staging:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
