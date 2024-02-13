@@ -1,7 +1,7 @@
 import * as cron from 'node-cron';
-import { isCloud, db, encryptionManager, errorManager, ErrorSourceEnum } from '@nangohq/shared';
-import tracer from 'dd-trace';
+import { isCloud, db, encryptionManager, errorManager, ErrorSourceEnum, logger } from '@nangohq/shared';
 import { SpanTypes } from '@nangohq/shared';
+import tracer from '../tracer.js';
 
 export async function deleteOldActivityLogs(): Promise<void> {
     /**
@@ -11,6 +11,7 @@ export async function deleteOldActivityLogs(): Promise<void> {
         const activityLogTableName = '_nango_activity_logs';
         const span = tracer.startSpan(SpanTypes.JOBS_CLEAN_ACTIVITY_LOGS);
         tracer.scope().activate(span, async () => {
+            logger.info('[oldActivity] starting');
             try {
                 // Postgres does not allow DELETE LIMIT so we batch ourself to limit the memory footprint of this query.
                 await db.knex.raw(
@@ -20,7 +21,9 @@ export async function deleteOldActivityLogs(): Promise<void> {
                 const e = new Error('failed_to_clean_activity_logs_table', { cause: err instanceof Error ? err.message : err });
                 errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
             }
+
             span.finish();
+            logger.info('[oldActivity] done');
         });
     });
 }
