@@ -26,6 +26,11 @@ const __dirname = dirname(__filename);
 export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
 
+interface IntervalResponse {
+    interval: StringValue;
+    offset: number;
+}
+
 export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {
     let location;
 
@@ -496,43 +501,43 @@ export function getOffset(interval: StringValue, date: Date): number {
  * and then 1636 etc. The offset should be based on the interval and should never be
  * greater than the interval
  */
-export function getInterval(runs: string, date: Date): ServiceResponse<{ interval: StringValue; offset: number }> {
+export function getInterval(runs: string, date: Date): ServiceResponse<IntervalResponse> {
     if (runs === 'every half day') {
-        const response = { interval: '12h' as StringValue, offset: getOffset('12h', date) };
+        const response: IntervalResponse = { interval: '12h', offset: getOffset('12h', date) };
         return { success: true, error: null, response };
     }
 
     if (runs === 'every half hour') {
-        const response = { interval: '30m' as StringValue, offset: getOffset('30m', date) };
+        const response: IntervalResponse = { interval: '30m', offset: getOffset('30m', date) };
         return { success: true, error: null, response };
     }
 
     if (runs === 'every quarter hour') {
-        const response = { interval: '15m' as StringValue, offset: getOffset('15m', date) };
+        const response: IntervalResponse = { interval: '15m', offset: getOffset('15m', date) };
         return { success: true, error: null, response };
     }
 
     if (runs === 'every hour') {
-        const response = { interval: '1h' as StringValue, offset: getOffset('1h', date) };
+        const response: IntervalResponse = { interval: '1h', offset: getOffset('1h', date) };
         return { success: true, error: null, response };
     }
 
     if (runs === 'every day') {
-        const response = { interval: '1d' as StringValue, offset: getOffset('1d', date) };
+        const response: IntervalResponse = { interval: '1d', offset: getOffset('1d', date) };
         return { success: true, error: null, response };
     }
 
     if (runs === 'every month') {
-        const response = { interval: '30d' as StringValue, offset: getOffset('30d', date) };
+        const response: IntervalResponse = { interval: '30d', offset: getOffset('30d', date) };
         return { success: true, error: null, response };
     }
 
     if (runs === 'every week') {
-        const response = { interval: '1w' as StringValue, offset: getOffset('1w', date) };
+        const response: IntervalResponse = { interval: '1w', offset: getOffset('1w', date) };
         return { success: true, error: null, response };
     }
 
-    const interval: StringValue = runs.replace('every ', '') as StringValue;
+    const interval = runs.replace('every ', '') as StringValue;
 
     if (ms(interval) < ms('5m')) {
         const error = new NangoError('sync_interval_too_short');
@@ -545,6 +550,7 @@ export function getInterval(runs: string, date: Date): ServiceResponse<{ interva
     }
 
     const offset = getOffset(interval, date);
+    const response: IntervalResponse = { interval, offset };
 
-    return { success: true, error: null, response: { interval, offset } };
+    return { success: true, error: null, response };
 }

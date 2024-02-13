@@ -65,7 +65,7 @@ function cancelProcedure() {
     return publicProcedure
         .input((input) => input as { syncId: string })
         .mutation(async ({ input }) => {
-            return await kill(input.syncId);
+            return kill(input.syncId);
         });
 }
 

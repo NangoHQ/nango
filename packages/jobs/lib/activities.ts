@@ -409,34 +409,52 @@ export async function reportFailure(
 }
 
 export async function cancelActivity(workflowArguments: InitialSyncArgs | ContinuousSyncArgs): Promise<void> {
-    const { syncId, activityLogId, syncName, nangoConnection, debug } = workflowArguments;
+    try {
+        const { syncId, activityLogId, syncName, nangoConnection, debug } = workflowArguments;
 
-    const context: Context = Context.current();
+        const context: Context = Context.current();
 
-    const environmentId = nangoConnection?.environment_id;
+        const environmentId = nangoConnection?.environment_id;
 
-    const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
+        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+            nangoConnection?.provider_config_key as string,
+            environmentId
+        )) as ProviderConfig;
 
-    const syncType = (await initialSyncExists(syncId as string)) ? SyncType.INCREMENTAL : SyncType.INITIAL;
+        const syncType = (await initialSyncExists(syncId as string)) ? SyncType.INCREMENTAL : SyncType.INITIAL;
 
-    const syncRun = new syncRunService({
-        integrationService,
-        writeToDb: true,
-        syncId,
-        nangoConnection,
-        syncType,
-        syncName,
-        activityLogId,
-        provider: syncConfig.provider,
-        temporalContext: context,
-        debug: Boolean(debug)
-    });
+        const syncRun = new syncRunService({
+            integrationService,
+            writeToDb: true,
+            syncId,
+            nangoConnection,
+            syncType,
+            syncName,
+            activityLogId,
+            provider: syncConfig.provider,
+            temporalContext: context,
+            debug: Boolean(debug)
+        });
 
-    if ('syncJobId' in workflowArguments) {
-        await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
-    } else {
-        await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
+        if ('syncJobId' in workflowArguments) {
+            await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
+        } else {
+            await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
+        }
+
+        await syncRun.cancel();
+    } catch (e: any) {
+        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e.message || e}`;
+        await errorManager.report(content, {
+            environmentId: workflowArguments.nangoConnection?.environment_id as number,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.SYNC,
+            metadata: {
+                connectionId: workflowArguments.nangoConnection?.connection_id as string,
+                providerConfigKey: workflowArguments.nangoConnection?.provider_config_key as string,
+                syncName: workflowArguments.syncName,
+                syncId: workflowArguments.syncId
+            }
+        });
     }
-
-    await syncRun.cancel();
 }

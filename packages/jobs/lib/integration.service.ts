@@ -49,8 +49,8 @@ class IntegrationService implements IntegrationServiceInterface {
             if (activityLogId && environmentId) {
                 await createActivityLogMessage({
                     level: 'error',
-                    environment_id: environmentId as number,
-                    activity_log_id: activityLogId as number,
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId,
                     content: `Failed to cancel script`,
                     timestamp: Date.now()
                 });

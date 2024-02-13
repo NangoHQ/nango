@@ -148,7 +148,8 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
             deleted: false,
             status: SyncStatus.RUNNING
         })
-        .orderBy('created_at', 'desc');
+        .orderBy('created_at', 'desc')
+        .limit(1);
 
     if (result && result.length > 0) {
         return result[0];
