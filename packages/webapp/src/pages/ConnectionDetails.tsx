@@ -391,29 +391,27 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 </Prism>
                                             </div>
                                         </div>
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Connection Metadata
+                                                </label>
+                                                <Prism language="json" colorScheme="dark">
+                                                    {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
+                                                </Prism>
+                                            </div>
+                                        </div>
                                         {(connection.oauthType === AuthModes.OAuth1 || connection.oauthType === AuthModes.OAuth2 || connection.oauthType === AuthModes.App) && (
-                                            <>
-                                                <div>
-                                                    <div className="mx-8 mt-8">
-                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                            Connection Metadata
-                                                        </label>
-                                                        <Prism language="json" colorScheme="dark">
-                                                            {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
-                                                        </Prism>
-                                                    </div>
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        Raw Token Response
+                                                    </label>
+                                                    <PrismPlus language="json" colorScheme="dark">
+                                                        {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
+                                                    </PrismPlus>
                                                 </div>
-                                                <div>
-                                                    <div className="mx-8 mt-8">
-                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                            Raw Token Response
-                                                        </label>
-                                                        <PrismPlus language="json" colorScheme="dark">
-                                                            {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
-                                                        </PrismPlus>
-                                                    </div>
-                                                </div>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 )}

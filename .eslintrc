@@ -1,18 +1,38 @@
 {
     "root": true,
     "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "impliedStrict": true,
+        "jsx": true
+      },
+      "project": false
+    },
     "plugins": [
       "@typescript-eslint",
-      "prettier"
+      "react",
+      "react-hooks"
     ],
     "extends": [
       "eslint:recommended",
-      "plugin:@typescript-eslint/eslint-recommended",
       "plugin:@typescript-eslint/recommended",
-      "prettier"
+      "plugin:@typescript-eslint/strict",
+      "plugin:@typescript-eslint/stylistic",
+      "plugin:react/recommended",
+      "plugin:react/jsx-runtime",
+      "plugin:prettier/recommended",
+      "plugin:react-hooks/recommended"
     ],
     "rules": {
       "no-console": 1,       // Means warning
-      "prettier/prettier": 2 // Means error
+      "prettier/prettier": 2,
+
+      "@typescript-eslint/no-inferrable-types": "off",
+
+      // Previously warn but now errors
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/no-explicit-any": "warn"
     }
-  }
+}

@@ -6,7 +6,11 @@ import { getRunnerClient } from '@nangohq/nango-runner';
 export class LocalRunner implements Runner {
     public client: any;
     public runnerType: RunnerType = RunnerType.Local;
-    constructor(public readonly id: string, public readonly url: string, private readonly childProcess: ChildProcess) {
+    constructor(
+        public readonly id: string,
+        public readonly url: string,
+        private readonly childProcess: ChildProcess
+    ) {
         this.client = getRunnerClient(this.url);
     }
 

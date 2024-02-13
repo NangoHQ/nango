@@ -1,6 +1,6 @@
 import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
 import type { AuthModes } from './Auth.js';
-import type { TimestampsAndDeleted } from './Generic.js';
+import type { HTTP_VERB, TimestampsAndDeleted } from './Generic.js';
 import type { SyncConfig, Action } from './Sync.js';
 
 export interface Config extends TimestampsAndDeleted {
@@ -32,6 +32,10 @@ export interface Template {
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
+        verification?: {
+            method: HTTP_VERB;
+            endpoint: string;
+        };
     };
     authorization_url: string;
     authorization_params?: Record<string, string>;
@@ -46,6 +50,7 @@ export interface Template {
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
+    webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
 }
 
@@ -62,6 +67,8 @@ export interface IntegrationWithCreds extends Integration {
     scopes: string;
     auth_mode: AuthModes;
     app_link?: string;
+    has_webhook: boolean;
+    webhook_url?: string;
     syncs: SyncConfig[];
     actions: Action[];
 }
