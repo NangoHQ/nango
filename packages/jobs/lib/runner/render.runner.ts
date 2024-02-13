@@ -1,6 +1,6 @@
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
-import { getRunnerClient } from '@nangohq/nango-runner';
+import { ProxyAppRouter, getRunnerClient } from '@nangohq/nango-runner';
 import { getEnv, getPersistAPIUrl } from '@nangohq/shared';
 import api from 'api';
 import tracer from '../tracer.js';
@@ -11,7 +11,7 @@ render.auth(process.env['RENDER_API_KEY']);
 const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
 
 export class RenderRunner implements Runner {
-    public client: any;
+    public client: ProxyAppRouter;
     public runnerType: RunnerType = RunnerType.Render;
     constructor(
         public readonly id: string,

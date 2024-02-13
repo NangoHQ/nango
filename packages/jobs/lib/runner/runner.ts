@@ -2,6 +2,7 @@ import type { KVStore } from '@nangohq/shared/lib/utils/kvstore/KVStore.js';
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
 import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore } from '@nangohq/shared';
+import type { ProxyAppRouter } from '@nangohq/nango-runner';
 
 export enum RunnerType {
     Local = 'local',
@@ -11,7 +12,7 @@ export enum RunnerType {
 export interface Runner {
     runnerType: RunnerType;
     id: string;
-    client: any;
+    client: ProxyAppRouter;
     url: string;
     suspend(): Promise<void>;
     toJSON(): any;

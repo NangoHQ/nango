@@ -23,6 +23,7 @@ import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
+import type { RunnerOutput } from '../models/Runner.js';
 import { isTest, isProd } from '../utils/utils.js';
 import { resultOk, type Result, resultErr } from '../utils/result.js';
 
@@ -491,24 +492,23 @@ class SyncClient {
                 ]
             });
 
-            const { success, error: rawError, response } = actionHandler;
+            const { success, error: rawError, response }: RunnerOutput = actionHandler;
 
             // Errors received from temporal are raw objects not classes
-            const error =
-                !(rawError instanceof NangoError) && rawError?.type && rawError.status
-                    ? new NangoError(rawError?.type, rawError?.payload, rawError.status)
-                    : rawError;
+            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
 
-            if (writeLogs && (success === false || error)) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
-                });
+            if (success === false || error) {
+                if (writeLogs) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        environment_id,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: `The action workflow ${workflowId} did not complete successfully`
+                    });
+                }
 
-                return resultErr(error);
+                return resultErr(error!);
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(

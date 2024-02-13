@@ -1,4 +1,4 @@
-import type { NangoProps } from '@nangohq/shared';
+import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
@@ -14,7 +14,7 @@ interface ExecProps {
     codeParams?: object;
 }
 
-async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean, isWebhook: boolean, code: string, codeParams?: object): Promise<object> {
+async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean, isWebhook: boolean, code: string, codeParams?: object): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
     const wrappedCode = `
