@@ -532,19 +532,23 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             ))}
                                                         </>
                                                     )}
-                                                    {(sync.latest_sync?.status === 'RUNNING' || lastCommand === 'RUN') &&
-                                                        (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
-                                                            <Link
-                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
-                                                                className={runningBubbleStyles}
-                                                            >
-                                                                <RunningBubble />
-                                                            </Link>
-                                                    ) : (
-                                                        <div className={runningBubbleStyles}>
-                                                            <RunningBubble />
-                                                        </div>
-                                                    ))}
+                                                    {lastCommand !== 'CANCEL' && (
+                                                        <>
+                                                            {(sync.latest_sync?.status === 'RUNNING' || lastCommand === 'RUN') &&
+                                                                (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
+                                                                    <Link
+                                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                                        className={runningBubbleStyles}
+                                                                    >
+                                                                        <RunningBubble />
+                                                                    </Link>
+                                                            ) : (
+                                                                <div className={runningBubbleStyles}>
+                                                                    <RunningBubble />
+                                                                </div>
+                                                            ))}
+                                                        </>
+                                                    )}
                                                 </li>
                                                 {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                                                     <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
