@@ -49,4 +49,9 @@ describe('Runner client', () => {
         const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
         await expect(run).resolves.toEqual([1, 2, 3]);
     });
+
+    it('should cancel a sync', async () => {
+        const result = await client.cancel.mutate({ syncId: 'sync-id' });
+        expect(result).toEqual('ok');
+    });
 });

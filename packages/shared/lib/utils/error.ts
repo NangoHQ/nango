@@ -503,6 +503,10 @@ export class NangoError extends Error {
                 this.message = '';
                 break;
 
+            case 'script_cancelled':
+                this.message = 'The script was cancelled successfully';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

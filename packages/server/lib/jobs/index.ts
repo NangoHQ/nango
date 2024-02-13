@@ -8,7 +8,7 @@ export async function deleteOldActivityLogs(): Promise<void> {
      * Delete all activity logs older than 15 days
      */
     cron.schedule('*/1 * * * *', async () => {
-        const activityLogTableName = '_nango_activity_logs';
+        const activityLogTableName = 'nango._nango_activity_logs';
         const span = tracer.startSpan(SpanTypes.JOBS_CLEAN_ACTIVITY_LOGS);
         tracer.scope().activate(span, async () => {
             try {

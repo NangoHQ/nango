@@ -407,3 +407,36 @@ export async function reportFailure(
         }
     }
 }
+
+export async function cancelActivity(workflowArguments: InitialSyncArgs | ContinuousSyncArgs): Promise<void> {
+    const { syncId, activityLogId, syncName, nangoConnection, debug } = workflowArguments;
+
+    const context: Context = Context.current();
+
+    const environmentId = nangoConnection?.environment_id;
+
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
+
+    const syncType = (await initialSyncExists(syncId as string)) ? SyncType.INCREMENTAL : SyncType.INITIAL;
+
+    const syncRun = new syncRunService({
+        integrationService,
+        writeToDb: true,
+        syncId,
+        nangoConnection,
+        syncType,
+        syncName,
+        activityLogId,
+        provider: syncConfig.provider,
+        temporalContext: context,
+        debug: Boolean(debug)
+    });
+
+    if ('syncJobId' in workflowArguments) {
+        await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
+    } else {
+        await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
+    }
+
+    await syncRun.cancel();
+}

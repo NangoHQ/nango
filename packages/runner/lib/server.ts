@@ -5,6 +5,7 @@ import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
 import type { NangoProps } from '@nangohq/shared';
 import { exec } from './exec.js';
+import { kill } from './kill.js';
 import superjson from 'superjson';
 import { fetch } from 'undici';
 
@@ -25,7 +26,8 @@ interface RunParams {
 
 const appRouter = router({
     health: healthProcedure(),
-    run: runProcedure()
+    run: runProcedure(),
+    cancel: cancelProcedure()
 });
 
 export type AppRouter = typeof appRouter;
@@ -56,6 +58,14 @@ function runProcedure() {
         .mutation(async ({ input }) => {
             const { nangoProps, code, codeParams } = input;
             return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
+        });
+}
+
+function cancelProcedure() {
+    return publicProcedure
+        .input((input) => input as { syncId: string })
+        .mutation(async ({ input }) => {
+            return await kill(input.syncId);
         });
 }
 

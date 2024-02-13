@@ -1,6 +1,6 @@
 import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import ms from 'ms';
+import ms, { StringValue } from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
@@ -14,7 +14,7 @@ import {
     createActivityLogMessageAndEnd,
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
-import { createSyncJob, updateRunId } from '../services/sync/job.service.js';
+import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
@@ -374,15 +374,13 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
+    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
-                case SyncCommand.PAUSE:
+                case SyncCommand.CANCEL:
                     {
-                        /*
-                        // TODO
                         const jobIsRunning = await isSyncJobRunning(syncId);
                         if (jobIsRunning) {
                             const { job_id, run_id } = jobIsRunning;
@@ -391,8 +389,10 @@ class SyncClient {
                                 await workflowHandle?.cancel();
                             }
                         }
-                        */
-
+                    }
+                    break;
+                case SyncCommand.PAUSE:
+                    {
                         await scheduleHandle?.pause();
                     }
                     break;
@@ -673,7 +673,7 @@ class SyncClient {
             scheduleDescription.spec = {
                 intervals: [
                     {
-                        every: ms(interval),
+                        every: ms(interval as StringValue),
                         offset
                     }
                 ]

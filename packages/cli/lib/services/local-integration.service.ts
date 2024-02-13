@@ -15,6 +15,10 @@ import * as zod from 'zod';
 import { Buffer } from 'buffer';
 
 class IntegrationService implements IntegrationServiceInterface {
+    async cancelScript() {
+        return;
+    }
+
     async runScript(
         syncName: string,
         _syncId: string,

@@ -148,10 +148,10 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
             deleted: false,
             status: SyncStatus.RUNNING
         })
-        .first('id', 'job_id', 'run_id');
+        .orderBy('created_at', 'desc');
 
-    if (result) {
-        return result;
+    if (result && result.length > 0) {
+        return result[0];
     }
 
     return null;
