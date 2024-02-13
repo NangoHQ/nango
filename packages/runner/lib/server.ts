@@ -3,10 +3,11 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import type { NangoProps } from '@nangohq/shared';
+import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { exec } from './exec.js';
 import superjson from 'superjson';
 import { fetch } from 'undici';
+import type { CreateTRPCProxyClient } from '@trpc/client';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -29,6 +30,7 @@ const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+export type ProxyAppRouter = CreateTRPCProxyClient<AppRouter>;
 
 function healthProcedure() {
     return publicProcedure
@@ -53,7 +55,7 @@ const notifyIdleEndpoint = process.env['NOTIFY_IDLE_ENDPOINT'] || '';
 function runProcedure() {
     return publicProcedure
         .input((input) => input as RunParams)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input }): Promise<RunnerOutput> => {
             const { nangoProps, code, codeParams } = input;
             return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
         });
