@@ -72,7 +72,8 @@ async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean, isWeb
                 success: false,
                 error: {
                     type,
-                    payload
+                    payload: payload || {},
+                    status: 500
                 },
                 response: null
             };

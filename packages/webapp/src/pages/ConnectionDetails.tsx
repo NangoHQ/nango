@@ -147,6 +147,8 @@ We could not retrieve and/or refresh your access token due to the following erro
         if (res?.status === 200) {
             if (command === 'RUN' || command === 'UNPAUSE') {
                 setLastCommand('RUN');
+            } else if (command === 'CANCEL') {
+                setLastCommand('CANCEL');
             } else {
                 setSyncLoaded(false);
             }

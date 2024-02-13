@@ -143,7 +143,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     isWebhook
                 });
 
-                if (res && res.cancelled) {
+                if (res && res.response && res.response.cancelled) {
                     const error = new NangoError('script_cancelled');
                     return { success: false, error, response: null };
                 }
