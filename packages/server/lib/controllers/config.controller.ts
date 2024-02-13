@@ -58,10 +58,7 @@ class ConfigController {
                     creationDate: config.created_at
                 };
                 if (template && template.auth_mode !== AuthModes.App && template.auth_mode !== AuthModes.Custom) {
-                    integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!).filter(
-                        // we ignore connection config params that are in the token response metadata or redirect url metadata
-                        (element) => [...(template.token_response_metadata || []), ...(template.redirect_uri_metadata || [])].indexOf(element) == -1
-                    );
+                    integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
                 }
                 return integration;
             });
