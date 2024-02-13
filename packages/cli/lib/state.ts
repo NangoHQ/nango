@@ -1,3 +1,4 @@
+// @ts-expect-error this import requires "moduleResolution nodenext"
 import Conf from 'conf';
 
 const schema = {
