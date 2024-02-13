@@ -1,5 +1,11 @@
 name: "[Release] Build service images"
-on: [push, pull_request]
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+
 concurrency:
     group: pulls/${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true

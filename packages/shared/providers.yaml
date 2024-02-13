@@ -597,6 +597,8 @@ greenhouse:
     token_url: https://api.greenhouse.io/oauth/token
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -606,6 +608,8 @@ greenhouse-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
