@@ -16,7 +16,7 @@ import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from './tracer.js';
 
 class IntegrationService implements IntegrationServiceInterface {
-    public runningScripts: { [key: string]: Context } = {};
+    public runningScripts: Record<string, Context> = {};
 
     constructor() {
         this.sendHeartbeat();
@@ -86,8 +86,10 @@ class IntegrationService implements IntegrationServiceInterface {
             }
 
             const accountId = nangoProps.accountId;
-            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default'); // a runner per account in prod only
-            const runner = await getOrStartRunner(runnerId).catch((_) => getOrStartRunner(getRunnerId('default'))); // fallback to default runner if account runner isn't ready yet
+            // a runner per account in prod only
+            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default');
+            // fallback to default runner if account runner isn't ready yet
+            const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
 
             const runSpan = tracer.startSpan('runner.run', { childOf: span }).setTag('runnerId', runner.id);
             try {
@@ -105,10 +107,11 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (res && !res.success && res.error) {
                     const { error } = res;
 
-                    const err = new NangoError(error.type, error.payload);
+                    const err = new NangoError(error.type, error.payload, error.status);
 
                     return { success: false, error: err, response: null };
                 }
+
                 return { success: true, error: null, response: res };
             } catch (err: any) {
                 runSpan.setTag('error', err);
