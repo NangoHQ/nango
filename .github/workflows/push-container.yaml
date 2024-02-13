@@ -17,7 +17,7 @@ jobs:
     push-container:
         runs-on: ubuntu-latest
         env:
-            CAN_PUSH: ${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}
+            CAN_PUSH: false
         steps:
             - uses: actions/checkout@v4
             - uses: docker/setup-buildx-action@v3
