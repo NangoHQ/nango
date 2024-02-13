@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
+import type { Span } from 'dd-trace';
 import type { LogLevel, Connection, NangoConnection, HTTP_VERB } from '@nangohq/shared';
+import tracer from '../tracer.js';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
@@ -40,7 +42,8 @@ import {
     findSyncByConnections,
     setFrequency,
     getEnvironmentAndAccountId,
-    getSyncAndActionConfigsBySyncNameAndConfigId
+    getSyncAndActionConfigsBySyncNameAndConfigId,
+    isOk
 } from '@nangohq/shared';
 
 class SyncController {
@@ -336,13 +339,16 @@ class SyncController {
     }
 
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('server.sync.triggerAction', {
+            childOf: active as Span
+        });
+
+        const { input, action_name } = req.body;
+        const environmentId = getEnvironmentId(res);
+        const connectionId = req.get('Connection-Id');
+        const providerConfigKey = req.get('Provider-Config-Key');
         try {
-            const environmentId = getEnvironmentId(res);
-            const connectionId = req.get('Connection-Id');
-            const providerConfigKey = req.get('Provider-Config-Key');
-
-            const { input, action_name } = req.body;
-
             if (!action_name || typeof action_name !== 'string') {
                 res.status(400).send({ error: 'Missing action name' });
 
@@ -385,6 +391,11 @@ class SyncController {
                 operation_name: action_name
             };
 
+            span.setTag('nango.actionName', action_name)
+                .setTag('nango.connectionId', connectionId)
+                .setTag('nango.environmentId', environmentId)
+                .setTag('nango.providerConfigKey', providerConfigKey);
+
             const activityLogId = await createActivityLog(log);
             if (!activityLogId) {
                 throw new NangoError('failed_to_create_activity_log');
@@ -392,21 +403,28 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
 
-            const {
-                success: actionSuccess,
-                error: actionError,
-                response: actionResponse
-            } = await syncClient!.triggerAction(connection, action_name, input, activityLogId, environmentId);
+            if (!syncClient) {
+                throw new NangoError('failed_to_get_sync_client');
+            }
 
-            if (!actionSuccess) {
-                errorManager.errResFromNangoErr(res, actionError);
+            const actionResponse = await syncClient.triggerAction(connection, action_name, input, activityLogId, environmentId);
+
+            if (isOk(actionResponse)) {
+                res.send(actionResponse.res);
+
                 return;
             } else {
-                res.send(actionResponse);
+                span.setTag('nango.error', actionResponse.err);
+                errorManager.errResFromNangoErr(res, actionResponse.err);
+
                 return;
             }
         } catch (e) {
+            span.setTag('nango.error', e);
+
             next(e);
+        } finally {
+            span.finish();
         }
     }
 

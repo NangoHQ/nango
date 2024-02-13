@@ -343,6 +343,11 @@ describe('generate function tests', () => {
         expect(noReturnUsed).toBe(true);
     });
 
+    it('should not complain when a return statement is used in a nested function', async () => {
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GreenhouseEeoc']);
+        expect(noReturnUsed).toBe(true);
+    });
+
     it('should complain of a non try catch not being awaited', async () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);

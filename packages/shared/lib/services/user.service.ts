@@ -68,7 +68,7 @@ class UserService {
     }
 
     async createUser(email: string, name: string, hashedPassword: string, salt: string, accountId: number): Promise<User | null> {
-        const result: void | Pick<User, 'id'> = await db.knex
+        const result: Pick<User, 'id'> = await db.knex
             .withSchema(db.schema())
             .from<User>(`_nango_users`)
             .insert({ email: email, name: name, hashed_password: hashedPassword, salt: salt, account_id: accountId }, ['id']);

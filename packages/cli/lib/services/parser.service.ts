@@ -114,6 +114,15 @@ class ParserService {
                                 path.stop();
                             }
                         },
+                        FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+                            path.skip();
+                        },
+                        FunctionExpression(path: NodePath<t.FunctionExpression>) {
+                            path.skip();
+                        },
+                        ArrowFunctionExpression(path: NodePath<t.ArrowFunctionExpression>) {
+                            path.skip();
+                        },
                         noScope: true
                     });
 

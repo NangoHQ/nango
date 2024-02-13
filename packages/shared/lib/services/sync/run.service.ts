@@ -337,14 +337,7 @@ export default class SyncRun {
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 
-                await metricsManager.captureMetric(MetricTypes.SYNC_TRACK_RUNTIME, this.syncId as string, this.syncType, totalRunTime, LogActionEnum.SYNC, [
-                    `environmentId:${this.nangoConnection.environment_id}`,
-                    `syncId:${this.syncId}`,
-                    `syncName:${this.syncName}`,
-                    `syncJobId:${this.syncJobId}`,
-                    `syncVersion:${syncData.version}`,
-                    `provider:${this.provider}`
-                ]);
+                await metricsManager.captureMetric(MetricTypes.SYNC_TRACK_RUNTIME, this.syncId as string, this.syncType, totalRunTime);
 
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
@@ -371,17 +364,9 @@ export default class SyncRun {
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
-                // means a void response from the sync script which is expected
-                // and means that they're using batchSave or batchDelete
-                if (userDefinedResults === undefined) {
-                    await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+                await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
-                    return { success: true, error: null, response: true };
-                } else {
-                    const error = new NangoError('sync_script_failure', 'The sync script did not return a void response', 500);
-
-                    return { success: false, error, response: null };
-                }
+                return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
                 // if it fails then restore the sync date

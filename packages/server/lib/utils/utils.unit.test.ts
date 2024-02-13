@@ -1,40 +1,120 @@
 import { expect, describe, it } from 'vitest';
 import { getConnectionMetadataFromTokenResponse, parseConnectionConfigParamsFromTemplate, getAdditionalAuthorizationParams } from './utils.js';
 import type { Template as ProviderTemplate } from '@nangohq/shared';
+import { AuthModes } from '@nangohq/shared';
 
 describe('Utils unit tests', () => {
-    it('Should parse template connection config params', () => {
-        // parsing connectionConfigParams from authorization_url
-        const authTemplate = {
-            name: 'braintree',
-            provider: 'braintree',
-            authorization_url: 'https://api.${connectionConfig.auth}.com/oauth/authorize'
-        };
+    it('Should parse config params in authorization_url', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'https://api.${connectionConfig.auth}.com/oauth/authorize',
+            token_url: 'n/a',
+            proxy: {
+                base_url: 'https://api.domain.com'
+            }
+        });
+        expect(params).toEqual(['auth']);
+    });
+    it('Should parse config params in token_url', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'n/a',
+            token_url: 'https://api.${connectionConfig.token}.com/oauth/access_token',
+            proxy: {
+                base_url: 'https://api.domain.com'
+            }
+        });
+        expect(params).toEqual(['token']);
+    });
 
-        const connectionConfigAuth = parseConnectionConfigParamsFromTemplate(authTemplate as unknown as ProviderTemplate);
-        expect(connectionConfigAuth).toEqual(['auth']);
-
-        // parsing connectionConfigParams from token_url
-        const tokenTemplate = {
-            name: 'braintree',
-            provider: 'braintree',
-            token_url: 'https://api.${connectionConfig.token}.com/oauth/access_token'
-        };
-
-        const connectionConfigToken = parseConnectionConfigParamsFromTemplate(tokenTemplate as unknown as ProviderTemplate);
-        expect(connectionConfigToken).toEqual(['token']);
-
-        // parsing connectionConfigParams from proxy.base_url
-        const proxyBaseUrlTemplate = {
-            name: 'freshdesk',
-            provider: 'freshdesk',
+    it('Should parse config params in proxy_url', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'n/a',
+            token_url: 'n/a',
             proxy: {
                 base_url: 'https://${connectionConfig.subdomain}.freshdesk.com'
             }
-        };
-
-        const connectionConfigProxyBaseUrl = parseConnectionConfigParamsFromTemplate(proxyBaseUrlTemplate as unknown as ProviderTemplate);
-        expect(connectionConfigProxyBaseUrl).toEqual(['subdomain']);
+        });
+        expect(params).toEqual(['subdomain']);
+    });
+    it('Should ignore config param in proxy.base_url if in redirect_uri_metadata', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'n/a',
+            token_url: 'n/a',
+            redirect_uri_metadata: ['instance_url'],
+            proxy: {
+                base_url: '${connectionConfig.instance_url}'
+            }
+        });
+        expect(params).toEqual([]);
+    });
+    it('Should ignore config param in proxy.base_url if in token_response_metadata', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'n/a',
+            token_url: 'n/a',
+            token_response_metadata: ['api_domain'],
+            proxy: {
+                base_url: 'https://${connectionConfig.api_domain}'
+            }
+        });
+        expect(params).toEqual([]);
+    });
+    it('Should ignore config param in proxy.headers if in redirect_uri_metadata', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'n/a',
+            token_url: 'n/a',
+            redirect_uri_metadata: ['some_header'],
+            proxy: {
+                headers: {
+                    'X-Some-Header': '${connectionConfig.some_header}'
+                },
+                base_url: 'n/a'
+            }
+        });
+        expect(params).toEqual([]);
+    });
+    it('Should ignore config param in proxy.headers if in token_response_metadata', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'n/a',
+            token_url: 'n/a',
+            token_response_metadata: ['another_header'],
+            proxy: {
+                headers: {
+                    'X-Another-Header': '${connectionConfig.another_header}'
+                },
+                base_url: 'n/a'
+            }
+        });
+        expect(params).toEqual([]);
+    });
+    it('Should not ignore param in token_response_metadata if also in authorization_url', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'https://${connectionConfig.provider_domain}.com/oauth/authorize',
+            token_url: 'n/a',
+            token_response_metadata: ['provider_domain'],
+            proxy: {
+                base_url: 'https://${connectionConfig.provider_domain}'
+            }
+        });
+        expect(params).toEqual(['provider_domain']);
+    });
+    it('Should not ignore param in token_response_metadata if also in token_url', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            auth_mode: AuthModes.OAuth2,
+            authorization_url: 'https://provider.com/oauth/authorize',
+            token_url: 'https://${connectionConfig.some_domain}.com/oauth/access_token',
+            token_response_metadata: ['some_domain'],
+            proxy: {
+                base_url: 'https://${connectionConfig.some_domain}'
+            }
+        });
+        expect(params).toEqual(['some_domain']);
     });
 
     it('Should extract metadata from token response based on template', () => {
