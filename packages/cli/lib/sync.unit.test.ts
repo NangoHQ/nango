@@ -358,6 +358,11 @@ describe('generate function tests', () => {
         expect(usedCorrectly).toBe(true);
     });
 
+    it('should not complain about awaiting when it is returned for an action', async () => {
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/no-async-return.ts`, SyncConfigType.ACTION, ['SomeModel']);
+        expect(awaiting).toBe(true);
+    });
+
     it('should complain about an incorrect model', async () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
