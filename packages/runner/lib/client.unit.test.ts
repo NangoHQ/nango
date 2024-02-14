@@ -54,7 +54,7 @@ describe('Runner client', () => {
           await expect(run).resolves.toEqual([1, 2, 3]);
          *
          */
-        const run = await exec(nangoProps, isInvokedImmediately, isWebhook, jsCode);
+        const run = await exec({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
         expect(run).toEqual([1, 2, 3]);
     });
 });

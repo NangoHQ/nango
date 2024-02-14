@@ -14,13 +14,8 @@ interface ExecProps {
     codeParams?: object;
 }
 
-export async function exec(
-    nangoProps: NangoProps,
-    isInvokedImmediately: boolean,
-    isWebhook: boolean,
-    code: string,
-    codeParams?: object
-): Promise<RunnerOutput> {
+export async function exec(params: ExecProps): Promise<RunnerOutput> {
+    const { nangoProps, isInvokedImmediately, isWebhook, code, codeParams } = params;
     const isAction = isInvokedImmediately && !isWebhook;
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
     const wrappedCode = `
@@ -97,7 +92,7 @@ process.on('message', async (message: ExecProps) => {
     }
 
     try {
-        const result = await exec(nangoProps, isInvokedImmediately, isWebhook, code, codeParams);
+        const result = await exec({ nangoProps, isInvokedImmediately, isWebhook, code, codeParams: codeParams as object });
         process.send({ result });
     } catch (error: any) {
         process.send({ error: error.message });
