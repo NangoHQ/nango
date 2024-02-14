@@ -1,11 +1,11 @@
-import { proxyActivities } from '@temporalio/workflow';
+import { CancellationScope, proxyActivities, isCancellation } from '@temporalio/workflow';
 import type * as activities from './activities.js';
 import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/worker';
 
 const DEFAULT_TIMEOUT = '24 hours';
 const MAXIMUM_ATTEMPTS = 3;
 
-const { reportFailure, routeSync, scheduleAndRouteSync, runAction, runWebhook } = proxyActivities<typeof activities>({
+const { cancelActivity, reportFailure, routeSync, scheduleAndRouteSync, runAction, runWebhook } = proxyActivities<typeof activities>({
     startToCloseTimeout: DEFAULT_TIMEOUT,
     scheduleToCloseTimeout: DEFAULT_TIMEOUT,
     retry: {
@@ -19,6 +19,11 @@ export async function initialSync(args: InitialSyncArgs): Promise<boolean | obje
     try {
         return await routeSync(args);
     } catch (e: any) {
+        if (isCancellation(e)) {
+            await CancellationScope.nonCancellable(() => cancelActivity(args));
+
+            return false;
+        }
         await reportFailure(e, args, DEFAULT_TIMEOUT, MAXIMUM_ATTEMPTS);
 
         return false;
@@ -27,8 +32,15 @@ export async function initialSync(args: InitialSyncArgs): Promise<boolean | obje
 
 export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean | object | null> {
     try {
-        return await scheduleAndRouteSync(args);
+        const result = await scheduleAndRouteSync(args);
+
+        return result;
     } catch (e: any) {
+        if (isCancellation(e)) {
+            await CancellationScope.nonCancellable(() => cancelActivity(args));
+
+            return { cancelled: true };
+        }
         await reportFailure(e, args, DEFAULT_TIMEOUT, MAXIMUM_ATTEMPTS);
 
         return false;

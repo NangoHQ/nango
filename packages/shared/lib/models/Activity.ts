@@ -13,6 +13,7 @@ export type LogAction =
     | 'internal authorization'
     | 'infrastructure'
     | 'pause sync'
+    | 'cancel sync'
     | 'proxy'
     | 'restart sync'
     | 'sync'
@@ -35,6 +36,7 @@ export enum LogActionEnum {
     PAUSE_SYNC = 'pause sync',
     PROXY = 'proxy',
     RESTART_SYNC = 'restart sync',
+    CANCEL_SYNC = 'cancel sync',
     SYNC = 'sync',
     SYNC_CLIENT = 'sync client',
     SYNC_DEPLOY = 'sync deploy',
