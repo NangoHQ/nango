@@ -30,8 +30,21 @@ class ActivityController {
 
     public async getMessages(req: Request, res: Response, next: NextFunction) {
         try {
-            const logIds: number[] = req.query['logIds'] ? (req.query['logIds'] as string).split(',').map((logId) => parseInt(logId)) : [];
-            if (logIds.length <= 0) {
+            const rawLogIds = req.query['logIds'];
+            if (typeof rawLogIds !== 'string') {
+                res.status(400).send({ message: 'Missing logsIds parameter' });
+                return;
+            }
+
+            const logIds = new Set<number>();
+            // Deduplicate and exclude NaN
+            for (const logId of rawLogIds.split(',')) {
+                const parsed = parseInt(logId, 10);
+                if (parsed) {
+                    logIds.add(parsed);
+                }
+            }
+            if (logIds.size <= 0) {
                 res.send([]);
                 return;
             }
@@ -41,9 +54,9 @@ class ActivityController {
                 errorManager.errResFromNangoErr(res, sessionError);
                 return;
             }
-            const { environment } = response;
 
-            const logs = await getLogMessagesForLogs(logIds, environment.id);
+            const { environment } = response;
+            const logs = await getLogMessagesForLogs(Array.from(logIds.values()), environment.id);
             res.send(logs);
         } catch (error) {
             next(error);
