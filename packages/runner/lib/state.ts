@@ -1,2 +1,2 @@
-import type { ChildProcess } from 'child_process';
-export const childProcesses = new Map<string, ChildProcess>();
+import type { Worker } from 'worker_threads';
+export const workerProcesses = new Map<string, Worker>();

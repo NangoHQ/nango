@@ -1,3 +1,4 @@
+import { parentPort, workerData } from 'worker_threads';
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
 import { Buffer } from 'buffer';
@@ -84,6 +85,18 @@ export async function exec(params: ExecProps): Promise<RunnerOutput> {
     }
 }
 
+const { nangoProps, isInvokedImmediately, isWebhook, code, codeParams } = workerData;
+
+// Execute the task with provided data
+exec({ nangoProps, isInvokedImmediately, isWebhook, code, codeParams: codeParams as object })
+    .then((result) => {
+        parentPort?.postMessage(result);
+    })
+    .catch((error) => {
+        parentPort?.postMessage({ error: error.message });
+    });
+
+/*
 process.on('message', async (message: ExecProps) => {
     const { nangoProps, isInvokedImmediately, isWebhook, code, codeParams } = message;
 
@@ -98,3 +111,4 @@ process.on('message', async (message: ExecProps) => {
         process.send({ error: error.message });
     }
 });
+*/
