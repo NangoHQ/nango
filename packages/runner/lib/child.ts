@@ -14,7 +14,13 @@ interface ExecProps {
     codeParams?: object;
 }
 
-async function exec(nangoProps: NangoProps, isInvokedImmediately: boolean, isWebhook: boolean, code: string, codeParams?: object): Promise<RunnerOutput> {
+export async function exec(
+    nangoProps: NangoProps,
+    isInvokedImmediately: boolean,
+    isWebhook: boolean,
+    code: string,
+    codeParams?: object
+): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
     const wrappedCode = `

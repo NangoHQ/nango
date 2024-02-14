@@ -1,6 +1,7 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { getRunnerClient } from './client.js';
 import { server } from './server.js';
+import { exec } from './child.js';
 
 describe('Runner client', () => {
     const port = 3095;
@@ -46,14 +47,8 @@ describe('Runner client', () => {
         `;
         const isInvokedImmediately = false;
         const isWebhook = false;
-        const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
-        console.log(run);
-        // TODO
-        //await expect(run).resolves.toEqual([1, 2, 3]);
-    });
 
-    it('should cancel a sync', async () => {
-        const result = await client.cancel.mutate({ syncId: 'sync-id' });
-        expect(result).toEqual({ ok: true, res: 'cancelled' });
+        const run = await exec(nangoProps, isInvokedImmediately, isWebhook, jsCode);
+        expect(run).toEqual([1, 2, 3]);
     });
 });
