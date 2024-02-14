@@ -1378,6 +1378,8 @@ tiktok-accounts:
         base_url: https://business-api.tiktok.com/open_api/v1.3/
     authorization_params:
         response_type: code
+    authorization_url_replacements:
+        client_id: client_key
     token_params:
         grant_type: authorization_code
     refresh_params:
