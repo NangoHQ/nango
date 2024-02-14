@@ -38,6 +38,7 @@ interface Connection {
 export default function ConnectionDetails() {
     const [loaded, setLoaded] = useState(false);
     const [syncLoaded, setSyncLoaded] = useState(false);
+    const [lastCommand, setLastCommand] = useState<RunSyncCommand | null>();
     const [fetchingRefreshToken, setFetchingRefreshToken] = useState(false);
     const [syncs, setSyncs] = useState([]);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -126,6 +127,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                 try {
                     const data = await res.json();
                     setSyncs(data);
+                    setLastCommand(null);
                 } catch (e) {
                     console.log(e);
                 }
@@ -143,10 +145,12 @@ We could not retrieve and/or refresh your access token due to the following erro
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
 
         if (res?.status === 200) {
-            try {
+            if (command === 'RUN' || command === 'UNPAUSE') {
+                setLastCommand('RUN');
+            } else if (command === 'CANCEL') {
+                setLastCommand('CANCEL');
+            } else {
                 setSyncLoaded(false);
-            } catch (e) {
-                console.log(e);
             }
         }
     };
@@ -480,62 +484,71 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     </li>
                                                 </Tooltip>
                                                 <li className="w-28">
-                                                    {sync.schedule_status === 'PAUSED' && sync.latest_sync?.status !== 'RUNNING' && (
-                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
-                                                            <X className="stroke-red-500 mr-2" size="12" />
-                                                            <p className="inline-block text-red-500 text-sm">stopped</p>
-                                                        </div>
+                                                    {lastCommand !== 'RUN' && (
+                                                        <>
+                                                            {sync.schedule_status === 'PAUSED' && sync.latest_sync?.status !== 'RUNNING' && (
+                                                                <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
+                                                                    <X className="stroke-red-500 mr-2" size="12" />
+                                                                    <p className="inline-block text-red-500 text-sm">stopped</p>
+                                                                </div>
+                                                            )}
+
+                                                            {sync?.schedule_status === 'RUNNING' && sync?.latest_sync === null && (
+                                                                <div className={errorBubbleStyles}>
+                                                                    <ErrorBubble />
+                                                                </div>
+                                                            )}
+                                                            {sync?.latest_sync?.status === 'STOPPED' &&
+                                                                sync.schedule_status !== 'PAUSED' &&
+                                                                (sync.latest_sync.activity_log_id && sync.latest_sync.activity_log_id !== null ? (
+                                                                    <Link
+                                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                                        className={errorBubbleStyles}
+                                                                    >
+                                                                        <ErrorBubble />
+                                                                    </Link>
+                                                            ) : (
+                                                                <div className={errorBubbleStyles}>
+                                                                    <ErrorBubble />
+                                                                </div>
+                                                            ))}
+                                                            {sync.latest_sync?.status === 'SUCCESS' &&
+                                                                sync.schedule_status !== 'PAUSED' &&
+                                                                (sync.latest_sync?.activity_log_id !== null ? (
+                                                                    <Tooltip text={`Last run time: ${getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}`} type="dark">
+                                                                        <Link
+                                                                            to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                                            className={successBubbleStyles}
+                                                                        >
+                                                                            <SuccessBubble />
+                                                                        </Link>
+                                                                    </Tooltip>
+                                                            ) : (
+                                                                <Tooltip text={`Last run time: ${getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}`} type="dark">
+                                                                    <div className={successBubbleStyles}>
+                                                                        <SuccessBubble />
+                                                                    </div>
+                                                                </Tooltip>
+                                                            ))}
+                                                        </>
                                                     )}
-                                                    {sync?.schedule_status === 'RUNNING' && sync?.latest_sync === null && (
-                                                        <div className={errorBubbleStyles}>
-                                                            <ErrorBubble />
-                                                        </div>
+                                                    {lastCommand !== 'CANCEL' && (
+                                                        <>
+                                                            {(sync.latest_sync?.status === 'RUNNING' || lastCommand === 'RUN') &&
+                                                                (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
+                                                                    <Link
+                                                                        to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                                        className={runningBubbleStyles}
+                                                                    >
+                                                                        <RunningBubble />
+                                                                    </Link>
+                                                            ) : (
+                                                                <div className={runningBubbleStyles}>
+                                                                    <RunningBubble />
+                                                                </div>
+                                                            ))}
+                                                        </>
                                                     )}
-                                                    {sync?.latest_sync?.status === 'STOPPED' &&
-                                                        sync.schedule_status !== 'PAUSED' &&
-                                                        (sync.latest_sync.activity_log_id && sync.latest_sync.activity_log_id !== null ? (
-                                                            <Link
-                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
-                                                                className={errorBubbleStyles}
-                                                            >
-                                                                <ErrorBubble />
-                                                            </Link>
-                                                    ) : (
-                                                        <div className={errorBubbleStyles}>
-                                                            <ErrorBubble />
-                                                        </div>
-                                                    ))}
-                                                    {sync.latest_sync?.status === 'RUNNING' &&
-                                                        (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
-                                                            <Link
-                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
-                                                                className={runningBubbleStyles}
-                                                            >
-                                                                <RunningBubble />
-                                                            </Link>
-                                                    ) : (
-                                                        <div className={runningBubbleStyles}>
-                                                            <RunningBubble />
-                                                        </div>
-                                                    ))}
-                                                    {sync.latest_sync?.status === 'SUCCESS' &&
-                                                        sync.schedule_status !== 'PAUSED' &&
-                                                        (sync.latest_sync?.activity_log_id !== null ? (
-                                                            <Tooltip text={`Last run time: ${getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}`} type="dark">
-                                                                <Link
-                                                                    to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
-                                                                    className={successBubbleStyles}
-                                                                >
-                                                                    <SuccessBubble />
-                                                                </Link>
-                                                            </Tooltip>
-                                                    ) : (
-                                                        <Tooltip text={`Last run time: ${getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}`} type="dark">
-                                                            <div className={successBubbleStyles}>
-                                                                <SuccessBubble />
-                                                            </div>
-                                                        </Tooltip>
-                                                    ))}
                                                 </li>
                                                 {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                                                     <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
@@ -613,6 +626,14 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     >
                                                         <p>Trigger</p>
                                                     </button>
+                                                    {(sync.latest_sync?.status === 'RUNNING' || lastCommand === 'RUN') && (
+                                                        <button
+                                                            className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-red-500 hover:bg-red-700"
+                                                            onClick={() => syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
+                                                        >
+                                                            <p>Cancel</p>
+                                                        </button>
+                                                    )}
                                                     {/*
                                                     <button
                                                         className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
