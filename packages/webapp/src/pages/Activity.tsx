@@ -816,7 +816,7 @@ export default function Activity() {
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
-                                                    {activity.messages.length >= 1 && (
+                                                    {activity.messages.length >= 1000 && (
                                                         <div className='text-center text-gray-500'>[only showing the last 1000 logs]</div>
                                                     )}
                                                     {activity.messages.map((message, index: number) => (
