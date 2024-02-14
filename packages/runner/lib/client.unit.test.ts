@@ -48,6 +48,12 @@ describe('Runner client', () => {
         const isInvokedImmediately = false;
         const isWebhook = false;
 
+        // TODO this should test the entire call like so
+        /**
+          const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
+          await expect(run).resolves.toEqual([1, 2, 3]);
+         *
+         */
         const run = await exec(nangoProps, isInvokedImmediately, isWebhook, jsCode);
         expect(run).toEqual([1, 2, 3]);
     });
