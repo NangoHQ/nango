@@ -21,6 +21,7 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'tiktok-ads':
                 return true;
             default:
                 return false;
@@ -47,6 +48,8 @@ class ProviderClient {
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'facebook':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'tiktok-ads':
+                return this.createTiktokToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -154,6 +157,29 @@ class ProviderClient {
             };
         }
         throw new NangoError('facebook_token_request_error');
+    }
+
+    private async createTiktokToken(tokenUrl: string, code: string, clientId: string, clientSecret: string): Promise<object> {
+        try {
+            const body = {
+                secret: clientSecret,
+                app_id: clientId,
+                auth_code: code
+            };
+
+            const response = await axios.post(tokenUrl, body);
+
+            if (response.status === 200 && response.data !== null) {
+                return {
+                    access_token: response.data.data['access_token'],
+                    advertiser_ids: response.data.data['advertiser_ids'],
+                    scope: response.data.data['scope']
+                };
+            }
+            throw new NangoError('tiktok_token_request_error');
+        } catch (e: any) {
+            throw new NangoError('tiktok_token_request_error', e.message);
+        }
     }
 
     private async refreshFigmaToken(refreshTokenUrl: string, refreshToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {

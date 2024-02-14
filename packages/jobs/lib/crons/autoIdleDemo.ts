@@ -13,8 +13,8 @@ import {
     findPausableDemoSyncs,
     logger
 } from '@nangohq/shared';
-import tracer from 'dd-trace';
 import { SpanTypes } from '@nangohq/shared';
+import tracer from '../tracer.js';
 
 export async function cronAutoIdleDemo(): Promise<void> {
     schedule('1 * * * *', () => {
