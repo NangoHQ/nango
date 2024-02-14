@@ -16,7 +16,11 @@ export async function exec(
 ): Promise<RunnerOutput> {
     return new Promise((resolve, reject) => {
         const childPath = isTest() ? path.resolve(__dirname, '../dist/child.js') : path.resolve(__dirname, './child.js');
-        const child = fork(childPath);
+
+        const child = fork(childPath, [], {
+            execArgv: ['--max-old-space-size=100'],
+            stdio: 'pipe'
+        });
 
         child.on('message', (message: any) => {
             resolve(message.result);
