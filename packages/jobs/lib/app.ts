@@ -1,6 +1,6 @@
+import './tracer.js';
 import { Temporal } from './temporal.js';
 import { server } from './server.js';
-import './tracer.js';
 import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 
 try {
