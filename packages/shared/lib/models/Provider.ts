@@ -45,6 +45,7 @@ export interface Template {
     token_params?: {
         [key: string]: string;
     };
+    authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: Array<string>;
     token_response_metadata?: Array<string>;
     docs?: string;
