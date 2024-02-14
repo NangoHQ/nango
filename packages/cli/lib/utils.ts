@@ -153,7 +153,6 @@ export async function upgradeAction(debug = false) {
         }
 
         if (!semver.gt(latestVersion, version)) {
-            state.set('lastIgnoreUpgrade', Date.now());
             return;
         }
 
