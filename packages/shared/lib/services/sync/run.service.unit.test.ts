@@ -12,6 +12,9 @@ class integrationServiceMock implements IntegrationServiceInterface {
             success: true
         };
     }
+    async cancelScript() {
+        return;
+    }
 }
 
 const integrationService = new integrationServiceMock();

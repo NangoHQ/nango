@@ -1,67 +1,67 @@
 import type { NangoAction, WorkableCreateCandidateResponse } from './models';
 
 interface EducationEntry {
-    school: String;
-    degree?: String;
-    field_of_study?: String;
-    start_date?: String;
-    end_date?: String;
+    school: string;
+    degree?: string;
+    field_of_study?: string;
+    start_date?: string;
+    end_date?: string;
 }
 
 interface ExperienceEntry {
-    title: String;
-    summary?: String;
-    start_date?: String;
-    end_date?: String;
-    current?: Boolean;
-    company?: String;
-    industry?: String;
+    title: string;
+    summary?: string;
+    start_date?: string;
+    end_date?: string;
+    current?: boolean;
+    company?: string;
+    industry?: string;
 }
 
 interface Answer {
-    question_key: String;
-    body?: String;
-    choices?: String[];
-    checked?: Boolean;
-    date?: String;
-    number?: Number;
+    question_key: string;
+    body?: string;
+    choices?: string[];
+    checked?: boolean;
+    date?: string;
+    number?: number;
     file?: {
-        name: String;
-        data: String;
+        name: string;
+        data: string;
     };
 }
 
 interface SocialProfile {
-    type: String;
-    name?: String;
-    username?: String;
-    url: String;
+    type: string;
+    name?: string;
+    username?: string;
+    url: string;
 }
 
 interface WorkableCreateCandidateInput {
-    shortcode: String;
+    shortcode: string;
     candidate: {
-        name: String;
-        firstname: String;
-        lastname: String;
-        email: String;
-        headline?: String;
-        summary?: String;
-        address?: String;
-        phone?: String;
-        cover_letter?: String;
+        name: string;
+        firstname: string;
+        lastname: string;
+        email: string;
+        headline?: string;
+        summary?: string;
+        address?: string;
+        phone?: string;
+        cover_letter?: string;
         education_entries?: EducationEntry[];
         experience_entries?: ExperienceEntry[];
         answers?: Answer[];
-        skills?: String[];
-        tags?: String[];
-        disqualified?: Boolean;
-        disqualification_reason?: String;
-        disqualified_at?: String;
+        skills?: string[];
+        tags?: string[];
+        disqualified?: boolean;
+        disqualification_reason?: string;
+        disqualified_at?: string;
         social_profiles?: SocialProfile[];
     };
-    domain?: String;
-    recruiter_key?: String;
+    domain?: string;
+    recruiter_key?: string;
 }
 
 export default async function runAction(nango: NangoAction, input: WorkableCreateCandidateInput): Promise<WorkableCreateCandidateResponse> {

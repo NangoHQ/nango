@@ -1,7 +1,7 @@
 import type { NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    const result = await nango.get({
+    await nango.get({
         endpoint: 'foo'
     });
 
@@ -16,5 +16,5 @@ export default async function fetchData(nango: NangoSync) {
             console.log(err);
         });
 
-    return result;
+    return;
 }

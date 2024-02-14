@@ -9,6 +9,8 @@ export enum MetricTypes {
     AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED = 'auth_token_request_callback_received',
     AUTH_TOKEN_REQUEST_SUCCESS = 'auth_token_request_success',
     AUTH_TOKEN_REQUEST_FAILURE = 'auth_token_request_failure',
+    ACTION_SUCCESS = 'action_success',
+    ACTION_FAILURE = 'action_failure',
     SYNC_OVERLAP = 'sync_overlap',
     SYNC_FAILURE = 'sync_failure',
     SYNC_SUCCESS = 'sync_success',
@@ -33,6 +35,12 @@ export enum MetricTypes {
     INCOMING_WEBHOOK_ISSUE_WEBHOOK_SUBSCRIPTION_NOT_FOUND_REGISTERED = 'incoming_webhook_issue_webhook_subscription_not_found_registered',
     INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY = 'incoming_webhook_processed_successfully',
     INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing'
+}
+
+export enum SpanTypes {
+    CONNECTION_TEST = 'nango.server.hooks.connectionTest',
+    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
+    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos'
 }
 
 class MetricsManager {
@@ -69,15 +77,7 @@ class MetricsManager {
         await this.logInstance?.submitLog(params);
     }
 
-    public async captureMetric(
-        metricName: string,
-        metricId: string,
-        metricCategory: string,
-        value: number,
-        operation: string,
-        optionalAdditionalTags?: string[]
-    ) {
-        const additionalTags = optionalAdditionalTags || [];
+    public async captureMetric(metricName: string, metricId: string, metricCategory: string, value: number) {
         const currentTime = Math.floor(Date.now() / 1000);
         const params: v2.MetricsApiSubmitMetricsRequest = {
             body: {
@@ -97,8 +97,7 @@ class MetricsManager {
                                 type: metricCategory
                             }
                         ],
-                        type: 3,
-                        tags: [`environment:${process.env['NODE_ENV']}`, `service:${operation}`, ...additionalTags]
+                        type: 3
                     }
                 ]
             }

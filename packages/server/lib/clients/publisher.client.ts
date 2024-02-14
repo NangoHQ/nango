@@ -168,7 +168,7 @@ export class Publisher {
     public async publish(wsClientId: WebSocketClientId, message: string): Promise<boolean> {
         // returns true if the message was sent to the WebSocket client
         // false otherwise
-        let delivered = this.wsPublisher.publish(wsClientId, message);
+        const delivered = this.wsPublisher.publish(wsClientId, message);
         if (!delivered) {
             // If the message was not sent because this instance doesn't have a WebSocket client for the channel
             // we forward it to another instance via Redis

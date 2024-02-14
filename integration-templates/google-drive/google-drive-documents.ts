@@ -38,7 +38,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const proxyConfiguration = {
             endpoint: `drive/v3/files`,
             params: {
-                fields: 'files(id, name, mimeType, webViewLink, parents)',
+                fields: 'files(id, name, mimeType, webViewLink, parents), nextPageToken',
                 pageSize: batchSize.toString(),
                 q: query
             },

@@ -5,7 +5,7 @@ import { InMemoryKVStore } from '../kvstore/InMemoryStore';
 describe('Locking', () => {
     let store: InMemoryKVStore;
     let locking: Locking;
-    let KEY = 'key';
+    const KEY = 'key';
 
     beforeAll(async () => {
         store = new InMemoryKVStore();

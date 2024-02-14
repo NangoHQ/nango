@@ -13,7 +13,8 @@ import {
     Pause,
     Play,
     User,
-    FastForward
+    FastForward,
+    XSquare
 } from '@geist-ui/icons'
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
@@ -341,7 +342,7 @@ export default function Activity() {
 
     const renderParams = (params: Record<string, string>, level: string) => {
         return Object.entries(params).map(([key, value]) => (
-            <div className={`max-w-5xl whitespace-normal break-all overflow-wrap ${level === 'error' ? 'text-red-500' : level === 'warn' ? 'text-orange-500' : ''}`} key={key}>
+            <div className={`max-w-5xl whitespace-normal break-all overflow-wrap ${getLogColor(level)}`} key={key}>
                 <span>{key}: </span>
                 {value === null ? '' : <JsonPrettyPrint data={value} />}
             </div>
@@ -433,6 +434,23 @@ export default function Activity() {
 
         return url.toString();
     };
+
+    const getLogColor = (level: string) => {
+        switch(level) {
+            case 'error':
+                return 'text-red-500';
+            case 'warn':
+                return 'text-yellow-500';
+            case 'debug':
+                return 'text-gray-500';
+            case 'http':
+                return 'text-green-500';
+            case 'silly':
+                return 'text-green-300';
+            default:
+                return '';
+        }
+    }
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
@@ -703,6 +721,23 @@ export default function Activity() {
                                                             </Link>
                                                         </span>
                                                     )}
+                                                    {activity?.action === 'cancel sync' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
+                                                                <XSquare className="stroke-red-500 mr-2" size="16" />
+                                                                <p className="inline-block text-gray-500">cancel sync</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
+                                                                {activity.operation_name && (
+                                                                    <Tooltip text={activity.operation_name} type="dark">
+                                                                        <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">({activity?.operation_name})</p>
+                                                                    </Tooltip>
+                                                                )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
                                                     {activity?.action === 'trigger sync' && (
                                                         <span className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
@@ -788,7 +823,7 @@ export default function Activity() {
                                                                     {formatTimestampWithTZ(Number(message?.timestamp))}
                                                                 </span>{' '}
                                                                 <span
-                                                                    className={`whitespace-normal break-all overflow-wrap ${message?.level === 'error' ? 'text-red-500' : message?.level === 'warn' ? 'text-orange-500' : ''}`}
+                                                                    className={`whitespace-normal break-all overflow-wrap ${getLogColor(message?.level as string)}`}
                                                                 >
                                                                     <JsonPrettyPrint data={message?.content} />
                                                                 </span>

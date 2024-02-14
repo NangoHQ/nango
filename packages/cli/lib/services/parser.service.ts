@@ -10,6 +10,7 @@ class ParserService {
         const code = fs.readFileSync(filePath, 'utf-8');
         let areAwaited = true;
         let usedCorrectly = true;
+        let noReturnUsed = true;
 
         const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
 
@@ -78,7 +79,9 @@ class ParserService {
                             (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
                     );
 
-                    if (!isAwaited && !isThenOrCatch && nangoCalls.includes(callee.property.name)) {
+                    const isReturned = Boolean(path.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
+
+                    if (!isAwaited && !isThenOrCatch && !isReturned && nangoCalls.includes(callee.property.name)) {
                         awaitMessage(callee.property.name, lineNumber);
                         areAwaited = false;
                     }
@@ -100,10 +103,49 @@ class ParserService {
                         }
                     }
                 }
+            },
+            ExportDefaultDeclaration(path: NodePath<t.ExportDefaultDeclaration>) {
+                const declaration = path.node.declaration;
+                function functionReturnsValue(funcNode: t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression): boolean {
+                    let returnsValue = false;
+
+                    traverseFn(funcNode.body, {
+                        ReturnStatement(path: NodePath<t.ReturnStatement>) {
+                            if (path.node.argument !== null) {
+                                returnsValue = true;
+                                path.stop();
+                            }
+                        },
+                        FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+                            path.skip();
+                        },
+                        FunctionExpression(path: NodePath<t.FunctionExpression>) {
+                            path.skip();
+                        },
+                        ArrowFunctionExpression(path: NodePath<t.ArrowFunctionExpression>) {
+                            path.skip();
+                        },
+                        noScope: true
+                    });
+
+                    return returnsValue;
+                }
+
+                if (t.isFunctionDeclaration(declaration) || t.isFunctionExpression(declaration) || t.isArrowFunctionExpression(declaration)) {
+                    if (functionReturnsValue(declaration) && type === SyncConfigType.SYNC) {
+                        const lineNumber = declaration.loc?.start.line || 'unknown';
+                        console.log(
+                            chalk.red(
+                                `The default exported function fetchData at "${filePath}:${lineNumber}" must not return a value. Sync scripts should not return but rather use batchSave to save data.`
+                            )
+                        );
+                        noReturnUsed = false;
+                    }
+                }
             }
         });
 
-        return areAwaited && usedCorrectly;
+        return areAwaited && usedCorrectly && noReturnUsed;
     }
 }
 

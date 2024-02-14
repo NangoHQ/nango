@@ -199,6 +199,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                 params: {},
             })
             .then(async () => {
+                await updateProgress(Steps.Authorize);
                 await initOnboarding();
                 setStep(Steps.Sync);
             })

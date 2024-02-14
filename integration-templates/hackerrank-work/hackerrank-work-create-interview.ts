@@ -1,20 +1,20 @@
 import type { NangoAction, HackerRankWorkInterview } from './models';
 
 interface CandidateInformation {
-    name: String;
-    email: String;
+    name: string;
+    email: string;
 }
 interface HackerRankWorkCreateInterviewInput {
     from: Date;
     to: Date;
-    title: String;
-    notes: String;
-    resume_url: String;
-    interviewers: String[];
-    result_url: String;
+    title: string;
+    notes: string;
+    resume_url: string;
+    interviewers: string[];
+    result_url: string;
     candidate: CandidateInformation;
-    send_email: Boolean;
-    interview_metadata: Object;
+    send_email: boolean;
+    interview_metadata: Record<string, any>;
 }
 
 const mapInputToPostData = (input: HackerRankWorkCreateInterviewInput): Record<string, any> => {

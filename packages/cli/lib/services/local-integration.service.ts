@@ -6,7 +6,8 @@ import {
     NangoIntegrationData,
     NangoSync,
     NangoProps,
-    localFileService
+    localFileService,
+    RunnerOutput
 } from '@nangohq/shared';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -15,6 +16,10 @@ import * as zod from 'zod';
 import { Buffer } from 'buffer';
 
 class IntegrationService implements IntegrationServiceInterface {
+    async cancelScript() {
+        return;
+    }
+
     async runScript(
         syncName: string,
         _syncId: string,
@@ -27,7 +32,7 @@ class IntegrationService implements IntegrationServiceInterface {
         isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object
-    ): Promise<any> {
+    ): Promise<RunnerOutput> {
         try {
             const nango = new NangoSync(nangoProps);
             const script: string | null = localFileService.getIntegrationFile(syncName, optionalLoadLocation);
@@ -81,7 +86,15 @@ class IntegrationService implements IntegrationServiceInterface {
             } catch (err: any) {
                 // TODO merge this back with the main integration service
                 if (err instanceof ActionError) {
-                    return { success: false, error: err, response: null };
+                    return {
+                        success: false,
+                        error: {
+                            type: err.type,
+                            payload: err.payload || {},
+                            status: 500
+                        },
+                        response: null
+                    };
                 }
 
                 let errorType = 'sync_script_failure';

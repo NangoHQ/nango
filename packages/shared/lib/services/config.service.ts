@@ -21,10 +21,25 @@ class ConfigService {
     public DEMO_GITHUB_CONFIG_KEY = 'demo-github-integration';
 
     private getTemplatesFromFile() {
-        const templatesPath = path.join(dirname(), '../../../providers.yaml');
+        const templatesPath = () => {
+            // find the providers.yaml file
+            // recursively searching in parent directories
+            const findProvidersYaml = (dir: string): string => {
+                const providersYamlPath = path.join(dir, 'providers.yaml');
+                if (fs.existsSync(providersYamlPath)) {
+                    return providersYamlPath;
+                }
+                const parentDir = path.dirname(dir);
+                if (parentDir === dir) {
+                    throw new NangoError('providers_yaml_not_found');
+                }
+                return findProvidersYaml(parentDir);
+            };
+            return findProvidersYaml(dirname());
+        };
 
         try {
-            const fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
+            const fileEntries = yaml.load(fs.readFileSync(templatesPath()).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
 
             if (fileEntries == null) {
                 throw new NangoError('provider_template_loading_failed');

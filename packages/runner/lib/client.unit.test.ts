@@ -1,6 +1,7 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { getRunnerClient } from './client.js';
 import { server } from './server.js';
+import { exec } from './child.js';
 
 describe('Runner client', () => {
     const port = 3095;
@@ -46,7 +47,14 @@ describe('Runner client', () => {
         `;
         const isInvokedImmediately = false;
         const isWebhook = false;
-        const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
-        await expect(run).resolves.toEqual([1, 2, 3]);
+
+        // TODO this should test the entire call like so
+        /**
+          const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
+          await expect(run).resolves.toEqual([1, 2, 3]);
+         *
+         */
+        const run = await exec(nangoProps, isInvokedImmediately, isWebhook, jsCode);
+        expect(run).toEqual([1, 2, 3]);
     });
 });
