@@ -539,13 +539,13 @@ export function getInterval(runs: string, date: Date): ServiceResponse<IntervalR
 
     const interval = runs.replace('every ', '') as StringValue;
 
-    if (ms(interval) < ms('5m')) {
-        const error = new NangoError('sync_interval_too_short');
+    if (!ms(interval)) {
+        const error = new NangoError('sync_interval_invalid');
         return { success: false, error, response: null };
     }
 
-    if (!ms(interval)) {
-        const error = new NangoError('sync_interval_invalid');
+    if (ms(interval) < ms('5m')) {
+        const error = new NangoError('sync_interval_too_short');
         return { success: false, error, response: null };
     }
 
