@@ -121,6 +121,12 @@ export default class SyncRun {
         }
     }
 
+    async cancel(): Promise<ServiceResponse<boolean>> {
+        await this.integrationService.cancelScript(this.syncId as string, this.nangoConnection.environment_id);
+
+        return { success: false, error: null, response: false };
+    }
+
     async run(
         optionalLastSyncDate?: Date | null,
         bypassEnvironment?: boolean,
@@ -325,7 +331,12 @@ export default class SyncRun {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData.version}` : ''
                     }`;
-                    await this.reportFailureForResults(message);
+
+                    if (error.type === 'script_cancelled') {
+                        await this.reportFailureForResults(error.message);
+                    } else {
+                        await this.reportFailureForResults(message);
+                    }
 
                     return { success: false, error, response: false };
                 }

@@ -1,6 +1,6 @@
 import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import ms from 'ms';
+import ms, { StringValue } from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
@@ -14,7 +14,7 @@ import {
     createActivityLogMessageAndEnd,
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
-import { createSyncJob, updateRunId } from '../services/sync/job.service.js';
+import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
@@ -23,6 +23,7 @@ import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
+import type { RunnerOutput } from '../models/Runner.js';
 import { isTest, isProd } from '../utils/utils.js';
 import { resultOk, type Result, resultErr } from '../utils/result.js';
 
@@ -374,15 +375,13 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
+    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
-                case SyncCommand.PAUSE:
+                case SyncCommand.CANCEL:
                     {
-                        /*
-                        // TODO
                         const jobIsRunning = await isSyncJobRunning(syncId);
                         if (jobIsRunning) {
                             const { job_id, run_id } = jobIsRunning;
@@ -391,8 +390,10 @@ class SyncClient {
                                 await workflowHandle?.cancel();
                             }
                         }
-                        */
-
+                    }
+                    break;
+                case SyncCommand.PAUSE:
+                    {
                         await scheduleHandle?.pause();
                     }
                     break;
@@ -491,24 +492,23 @@ class SyncClient {
                 ]
             });
 
-            const { success, error: rawError, response } = actionHandler;
+            const { success, error: rawError, response }: RunnerOutput = actionHandler;
 
             // Errors received from temporal are raw objects not classes
-            const error =
-                !(rawError instanceof NangoError) && rawError?.type && rawError.status
-                    ? new NangoError(rawError?.type, rawError?.payload, rawError.status)
-                    : rawError;
+            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
 
-            if (writeLogs && (success === false || error)) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
-                });
+            if (success === false || error) {
+                if (writeLogs) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        environment_id,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: `The action workflow ${workflowId} did not complete successfully`
+                    });
+                }
 
-                return resultErr(error);
+                return resultErr(error!);
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
@@ -673,7 +673,7 @@ class SyncClient {
             scheduleDescription.spec = {
                 intervals: [
                     {
-                        every: ms(interval),
+                        every: ms(interval as StringValue),
                         offset
                     }
                 ]
