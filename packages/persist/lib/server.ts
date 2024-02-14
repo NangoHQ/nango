@@ -1,9 +1,9 @@
+import './tracer.js';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { validateRequest } from 'zod-express';
 import { z } from 'zod';
 import persistController from './controllers/persist.controller.js';
-import './tracer.js';
 import { logLevelValues } from '@nangohq/shared';
 
 export const server = express();
