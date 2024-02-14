@@ -13,7 +13,8 @@ import {
     Pause,
     Play,
     User,
-    FastForward
+    FastForward,
+    XSquare
 } from '@geist-ui/icons'
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
@@ -716,6 +717,23 @@ export default function Activity() {
                                                             >
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
+                                                    {activity?.action === 'cancel sync' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
+                                                                <XSquare className="stroke-red-500 mr-2" size="16" />
+                                                                <p className="inline-block text-gray-500">cancel sync</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
+                                                                {activity.operation_name && (
+                                                                    <Tooltip text={activity.operation_name} type="dark">
+                                                                        <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">({activity?.operation_name})</p>
+                                                                    </Tooltip>
                                                                 )}
                                                             </Link>
                                                         </span>

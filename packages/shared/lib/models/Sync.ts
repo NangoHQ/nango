@@ -255,21 +255,24 @@ export enum SyncCommand {
     PAUSE = 'PAUSE',
     UNPAUSE = 'UNPAUSE',
     RUN = 'RUN',
-    RUN_FULL = 'RUN_FULL'
+    RUN_FULL = 'RUN_FULL',
+    CANCEL = 'CANCEL'
 }
 
 export const CommandToActivityLog = {
     PAUSE: LogActionEnum.PAUSE_SYNC,
     UNPAUSE: LogActionEnum.RESTART_SYNC,
     RUN: LogActionEnum.TRIGGER_SYNC,
-    RUN_FULL: LogActionEnum.FULL_SYNC
+    RUN_FULL: LogActionEnum.FULL_SYNC,
+    CANCEL: LogActionEnum.CANCEL_SYNC
 };
 
 export const SyncCommandToScheduleStatus = {
     PAUSE: ScheduleStatus.PAUSED,
     UNPAUSE: ScheduleStatus.RUNNING,
     RUN: ScheduleStatus.RUNNING,
-    RUN_FULL: ScheduleStatus.RUNNING
+    RUN_FULL: ScheduleStatus.RUNNING,
+    CANCEL: ScheduleStatus.STOPPED
 };
 
 export interface SyncConfigWithProvider {
@@ -298,4 +301,5 @@ export interface IntegrationServiceInterface {
         input?: object,
         temporalContext?: Context
     ): Promise<any>;
+    cancelScript(syncId: string, environmentId: number): Promise<void>;
 }

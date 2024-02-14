@@ -1,7 +1,20 @@
 export interface ActivityResponse {
     id: number;
     level: 'info' | 'debug' | 'error' | 'warn';
-    action: 'account' | 'oauth' | 'auth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync' | 'action' | 'webhook';
+    action:
+        | 'account'
+        | 'oauth'
+        | 'auth'
+        | 'proxy'
+        | 'token'
+        | 'sync'
+        | 'sync deploy'
+        | 'pause sync'
+        | 'restart sync'
+        | 'trigger sync'
+        | 'cancel sync'
+        | 'action'
+        | 'webhook';
     success: boolean;
     timestamp: number;
     start: number;
@@ -80,7 +93,7 @@ export interface SyncResponse {
     }[];
 }
 
-export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL';
+export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';
 
 export enum AuthModes {
     OAuth1 = 'OAUTH1',

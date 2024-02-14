@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
 import { SyncConfigType, cloudHost, stagingHost } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
+import { state } from './state.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,6 +27,7 @@ const execPromise = util.promisify(exec);
 
 export const NANGO_INTEGRATIONS_NAME = 'nango-integrations';
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './';
+const IGNORE_UPGRADE_FOR = 86400 * 1000;
 
 export const port = process.env['NANGO_PORT'] || '3003';
 let parsedHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
@@ -128,6 +130,15 @@ export async function upgradeAction(debug = false) {
     if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
         return;
     }
+
+    const ignoreState = state.get('lastIgnoreUpgrade');
+    if (typeof ignoreState === 'number' && ignoreState > Date.now() - IGNORE_UPGRADE_FOR) {
+        if (debug) {
+            printDebug(`Upgrade action skipped.`);
+        }
+        return;
+    }
+
     try {
         const resolved = npa('nango');
         const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
@@ -141,42 +152,47 @@ export async function upgradeAction(debug = false) {
             printDebug(`Latest version of ${resolved.name} is ${latestVersion}.`);
         }
 
-        if (semver.gt(latestVersion, version)) {
-            console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
-            const cwd = process.cwd();
-
-            const upgrade = process.env['NANGO_CLI_UPGRADE_MODE'] === 'auto' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
-
-            if (upgrade) {
-                console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
-
-                const args = locallyInstalled
-                    ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
-                    : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
-
-                if (debug) {
-                    printDebug(`Running npm ${args.join(' ')}`);
-                }
-
-                const child = spawn('npm', args, {
-                    cwd,
-                    detached: false,
-                    stdio: 'inherit'
-                });
-                await new Promise((resolve, reject) => {
-                    child.on('exit', (code) => {
-                        if (code !== 0) {
-                            reject(new Error(`Upgrade process exited with code ${code}`));
-                            return;
-                        }
-                        resolve(true);
-                        console.log(chalk.green(`Successfully upgraded ${resolved.name} to version ${latestVersion}`));
-                    });
-
-                    child.on('error', reject);
-                });
-            }
+        if (!semver.gt(latestVersion, version)) {
+            return;
         }
+
+        console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
+        const cwd = process.cwd();
+
+        const upgrade = process.env['NANGO_CLI_UPGRADE_MODE'] === 'auto' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
+
+        if (!upgrade) {
+            state.set('lastIgnoreUpgrade', Date.now());
+            return;
+        }
+
+        console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
+
+        const args = locallyInstalled
+            ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
+            : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+
+        if (debug) {
+            printDebug(`Running npm ${args.join(' ')}`);
+        }
+
+        const child = spawn('npm', args, {
+            cwd,
+            detached: false,
+            stdio: 'inherit'
+        });
+        await new Promise((resolve, reject) => {
+            child.on('exit', (code) => {
+                if (code !== 0) {
+                    reject(new Error(`Upgrade process exited with code ${code}`));
+                    return;
+                }
+                resolve(true);
+                console.log(chalk.green(`Successfully upgraded ${resolved.name} to version ${latestVersion}`));
+            });
+
+            child.on('error', reject);
+        });
     } catch (error: any) {
         console.error(`An error occurred: ${error.message}`);
     }
@@ -303,7 +319,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
 
 export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
     const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
-        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
         for (let i = 0; i < syncNames.length; i++) {
             const syncName = syncNames[i] as string;
@@ -331,7 +347,7 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
         // if the model is not returned from a sync script then it must be a
         // helper model that is used to build the returned models
         const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
-            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
             const syncNames = Object.keys(syncObject);
             for (let i = 0; i < syncNames.length; i++) {
                 const syncName = syncNames[i] as string;
