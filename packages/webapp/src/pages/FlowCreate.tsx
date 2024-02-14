@@ -279,7 +279,7 @@ export default function FlowCreate() {
                     <div className="mx-20 h-fit text-white text-sm">
                         <div className="mb-8">
                             <Info>
-                                If none of the available templates fit your specific needs, you can create your own <a href={`https://docs.nango.dev/guides/${flow?.type === 'sync' ? 'sync' : 'actions'}`} className="text-[#4E80EE]" rel="noreferrer" target="_blank">custom {flow?.type || 'sync' }s</a>,
+                                If none of the available templates fit your specific needs, you can create your own <a href={`https://docs.nango.dev/guides/${flow?.type === 'sync' ? 'sync' : 'action'}`} className="text-[#4E80EE]" rel="noreferrer" target="_blank">custom {flow?.type || 'sync' }s</a>,
                                 or request that we build them for you by reaching out on our <a href="https://nango.dev/slack" className="text-[#4E80EE]" rel="noreferrer" target="_blank">community</a>.
                             </Info>
                         </div>
