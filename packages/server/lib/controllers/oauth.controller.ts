@@ -391,7 +391,7 @@ class OAuthController {
 
                     Object.keys(template.authorization_url_replacements).forEach((key) => {
                         const replacement = urlReplacements[key];
-                        if (replacement !== undefined && typeof replacement === 'string') {
+                        if (typeof replacement === 'string') {
                             authorizationUri = authorizationUri.replace(key, replacement);
                         }
                     });
