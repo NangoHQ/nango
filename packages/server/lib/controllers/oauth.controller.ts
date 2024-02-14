@@ -379,12 +379,23 @@ class OAuthController {
                     oauth2Client.getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig)
                 );
 
-                const authorizationUri = simpleOAuthClient.authorizeURL({
+                let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
                     scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',
                     state: session.id,
                     ...allAuthParams
                 });
+
+                if (template.authorization_url_replacements) {
+                    const urlReplacements = template.authorization_url_replacements || {};
+
+                    Object.keys(template.authorization_url_replacements).forEach((key) => {
+                        const replacement = urlReplacements[key];
+                        if (typeof replacement === 'string') {
+                            authorizationUri = authorizationUri.replace(key, replacement);
+                        }
+                    });
+                }
 
                 await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth2 callback url received', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
