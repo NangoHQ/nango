@@ -143,26 +143,24 @@ class SyncClient {
         syncData: NangoIntegrationData,
         debug = false
     ): Promise<void> {
+        console.log('startContinuous');
         try {
-            let activityLogId: number | null = null;
-
-            const log = {
+            const activityLogId = await createActivityLog({
                 level: 'info' as LogLevel,
                 success: null,
-                action: LogActionEnum.SYNC,
+                action: LogActionEnum.SYNC_INIT,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
-                connection_id: nangoConnection?.connection_id as string,
-                provider_config_key: nangoConnection?.provider_config_key as string,
+                connection_id: nangoConnection.connection_id,
+                provider_config_key: nangoConnection.provider_config_key,
                 provider: syncConfig.provider,
                 session_id: sync?.id?.toString() as string,
-                environment_id: nangoConnection?.environment_id as number,
+                environment_id: nangoConnection.environment_id,
                 operation_name: syncName
-            };
-
-            if (syncData.auto_start !== false) {
-                activityLogId = await createActivityLog(log);
+            });
+            if (!activityLogId) {
+                return;
             }
 
             const { success, error, response } = getInterval(syncData.runs, new Date());
@@ -171,13 +169,13 @@ class SyncClient {
                 const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: nangoConnection?.environment_id as number,
-                    activity_log_id: activityLogId as number,
+                    environment_id: nangoConnection.environment_id,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content
                 });
 
-                await errorManager.report(content, {
+                errorManager.report(content, {
                     source: ErrorSourceEnum.CUSTOMER,
                     operation: LogActionEnum.SYNC_CLIENT,
                     environmentId: nangoConnection.environment_id,
@@ -190,22 +188,22 @@ class SyncClient {
                     }
                 });
 
-                await updateSuccessActivityLog(activityLogId as number, false);
+                await updateSuccessActivityLog(activityLogId, false);
 
                 return;
             }
 
             let handle = null;
-            const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
+            const jobId = generateWorkflowId(sync, syncName, nangoConnection.connection_id);
 
             if (syncData.auto_start !== false) {
                 if (debug) {
                     await createActivityLogMessage({
                         level: 'debug',
-                        environment_id: nangoConnection?.environment_id as number,
-                        activity_log_id: activityLogId as number,
+                        environment_id: nangoConnection.environment_id,
+                        activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `Starting sync job ${jobId} for sync ${sync.id}`
+                        content: `Creating sync job ${jobId} for sync ${sync.id}`
                     });
                 }
                 const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
@@ -223,19 +221,19 @@ class SyncClient {
                             syncJobId: syncJobId?.id as number,
                             nangoConnection,
                             syncName,
-                            activityLogId,
                             debug
                         }
                     ]
                 });
-                await updateRunId(syncJobId?.id as number, handle?.firstExecutionRunId as string);
+                await updateRunId(syncJobId.id as number, handle?.firstExecutionRunId as string);
             } else {
                 await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
 
             const { interval, offset } = response;
-            const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
+            const scheduleId = generateScheduleId(sync, syncName, nangoConnection.connection_id);
 
+            console.log('handle', activityLogId);
             const scheduleHandle = await this.client?.schedule.create({
                 scheduleId,
                 policies: {
@@ -259,7 +257,6 @@ class SyncClient {
                     args: [
                         {
                             syncId: sync.id,
-                            activityLogId,
                             nangoConnection,
                             syncName,
                             debug
@@ -268,8 +265,8 @@ class SyncClient {
                 }
             });
 
-            if (syncData.auto_start === false) {
-                await scheduleHandle?.pause();
+            if (syncData.auto_start === false && scheduleHandle) {
+                await scheduleHandle.pause();
             }
 
             await createSyncSchedule(
@@ -280,17 +277,19 @@ class SyncClient {
                 scheduleId
             );
 
-            if (syncData.auto_start !== false && handle) {
-                await createActivityLogMessage({
+            if (scheduleHandle) {
+                await createActivityLogMessageAndEnd({
                     level: 'info',
-                    environment_id: nangoConnection?.environment_id as number,
-                    activity_log_id: activityLogId as number,
-                    content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${SYNC_TASK_QUEUE}`,
+                    environment_id: nangoConnection.environment_id,
+                    activity_log_id: activityLogId,
+                    content: `Created schedule ${scheduleId} at ${syncData.runs} in the task queue: ${SYNC_TASK_QUEUE}`,
                     timestamp: Date.now()
                 });
             }
+
+            await updateSuccessActivityLog(activityLogId, true);
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: nangoConnection.environment_id,

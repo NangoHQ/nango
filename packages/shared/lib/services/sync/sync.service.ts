@@ -79,8 +79,8 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
     return result[0];
 };
 
-export const getLastSyncDate = async (id: string, backup = true): Promise<Date | null> => {
-    const result = await schema().select('last_sync_date').from<Sync>(TABLE).where({
+export const getLastSyncDate = async (id: string): Promise<Date | null> => {
+    const result = await schema().select<{ last_sync_date: Date | null }[]>('last_sync_date').from<Sync>(TABLE).where({
         id,
         deleted: false
     });
@@ -89,13 +89,7 @@ export const getLastSyncDate = async (id: string, backup = true): Promise<Date |
         return null;
     }
 
-    let { last_sync_date } = result[0];
-
-    if (backup && last_sync_date === null) {
-        last_sync_date = await getJobLastSyncDate(id);
-    }
-
-    return last_sync_date;
+    return result[0].last_sync_date;
 };
 
 export const clearLastSyncDate = async (id: string): Promise<void> => {
@@ -127,10 +121,6 @@ export async function setFrequency(id: string, frequency: string | null): Promis
  * set in the script
  */
 export const setLastSyncDate = async (id: string, tempDate: Date | string, override = true): Promise<boolean> => {
-    if (!tempDate) {
-        return false;
-    }
-
     const date = typeof tempDate === 'string' ? new Date(tempDate) : tempDate;
 
     if (isNaN(date.getTime())) {
@@ -141,7 +131,7 @@ export const setLastSyncDate = async (id: string, tempDate: Date | string, overr
     // that we should update the last sync date
     // if it isn't null
     if (!override) {
-        const lastSyncDate = await getLastSyncDate(id, false);
+        const lastSyncDate = await getLastSyncDate(id);
 
         if (lastSyncDate !== null) {
             return false;

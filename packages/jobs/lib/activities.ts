@@ -22,9 +22,9 @@ import {
     updateLatestJobSyncStatus,
     MetricTypes,
     isInitialSyncStillRunning,
-    initialSyncExists,
     getSyncByIdAndName,
-    logger
+    logger,
+    getLastSyncDate
 } from '@nangohq/shared';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
@@ -107,7 +107,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
     // https://typescript.temporal.io/api/classes/activity.Context
     const context: Context = Context.current();
-    const syncType = (await initialSyncExists(syncId as string)) ? SyncType.INCREMENTAL : SyncType.INITIAL;
+    const lastSyncDate = await getLastSyncDate(syncId);
+    const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
     try {
         if (!nangoConnection?.environment_id) {
             environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
@@ -178,7 +179,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             syncName
         });
 
-        await errorManager.report(content, {
+        errorManager.report(content, {
             environmentId,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.SYNC,
@@ -212,25 +213,24 @@ export async function syncProvider(
     debug = false
 ): Promise<boolean | object | null> {
     try {
+        console.log('syncprovider', existingActivityLogId);
         let activityLogId = existingActivityLogId;
 
-        if (syncType === SyncType.INCREMENTAL || existingActivityLogId === 0) {
-            const log = {
-                level: 'info' as LogLevel,
-                success: null,
-                action: LogActionEnum.SYNC,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: nangoConnection?.connection_id as string,
-                provider_config_key: nangoConnection?.provider_config_key as string,
-                provider: syncConfig.provider,
-                session_id: syncJobId ? syncJobId?.toString() : '',
-                environment_id: nangoConnection?.environment_id as number,
-                operation_name: syncName
-            };
-            activityLogId = (await createActivityLog(log)) as number;
-        }
+        const log = {
+            level: 'info' as LogLevel,
+            success: null,
+            action: LogActionEnum.SYNC,
+            start: Date.now(),
+            end: Date.now(),
+            timestamp: Date.now(),
+            connection_id: nangoConnection?.connection_id as string,
+            provider_config_key: nangoConnection?.provider_config_key as string,
+            provider: syncConfig.provider,
+            session_id: syncJobId ? syncJobId?.toString() : '',
+            environment_id: nangoConnection?.environment_id as number,
+            operation_name: syncName
+        };
+        activityLogId = (await createActivityLog(log)) as number;
 
         if (debug) {
             await createActivityLogMessage({
@@ -421,7 +421,8 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
             environmentId
         )) as ProviderConfig;
 
-        const syncType = (await initialSyncExists(syncId as string)) ? SyncType.INCREMENTAL : SyncType.INITIAL;
+        const lastSyncDate = await getLastSyncDate(syncId);
+        const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
 
         const syncRun = new syncRunService({
             integrationService,

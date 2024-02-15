@@ -35,12 +35,11 @@ class ParserService {
             'patch',
             'delete',
             'getConnection',
-            'setLastSyncDate',
             'getEnvironmentVariables',
             'triggerAction'
         ];
 
-        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];
+        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete'];
 
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',

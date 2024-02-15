@@ -17,6 +17,7 @@ export type LogAction =
     | 'proxy'
     | 'restart sync'
     | 'sync'
+    | 'sync init'
     | 'sync client'
     | 'sync deploy'
     | 'token'
@@ -38,6 +39,7 @@ export enum LogActionEnum {
     RESTART_SYNC = 'restart sync',
     CANCEL_SYNC = 'cancel sync',
     SYNC = 'sync',
+    SYNC_INIT = 'sync init',
     SYNC_CLIENT = 'sync client',
     SYNC_DEPLOY = 'sync deploy',
     TOKEN = 'token',
@@ -45,9 +47,7 @@ export enum LogActionEnum {
     WEBHOOK = 'webhook'
 }
 
-interface Message {
-    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
-}
+type Message = Record<string, unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>>;
 
 export interface ActivityLog {
     id?: number;

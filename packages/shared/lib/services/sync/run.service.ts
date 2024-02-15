@@ -7,7 +7,7 @@ import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
-import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
+import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
@@ -246,7 +246,6 @@ export default class SyncRun {
                     lastSyncDate = optionalLastSyncDate;
                 } else {
                     lastSyncDate = await getLastSyncDate(this.syncId as string);
-                    await clearLastSyncDate(this.syncId as string);
                 }
             }
 
@@ -380,8 +379,6 @@ export default class SyncRun {
                 return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
-                // if it fails then restore the sync date
-                await setLastSyncDate(this.syncId as string, lastSyncDate as Date, false);
                 const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
                 await this.reportFailureForResults(
                     `The ${this.syncType} "${this.syncName}"${

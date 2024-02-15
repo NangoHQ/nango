@@ -18,21 +18,21 @@ import logger from '../logger/console.js';
  */
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
-interface ParamEncoder {
-    (value: any, defaultEncoder: (value: any) => any): any;
-}
+type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 
 interface GenericFormData {
     append(name: string, value: any, options?: any): any;
 }
 
-interface SerializerVisitor {
-    (this: GenericFormData, value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
-}
+type SerializerVisitor = (
+    this: GenericFormData,
+    value: any,
+    key: string | number,
+    path: null | (string | number)[],
+    helpers: FormDataVisitorHelpers
+) => boolean;
 
-interface CustomParamsSerializer {
-    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
-}
+type CustomParamsSerializer = (params: Record<string, any>, options?: ParamsSerializerOptions) => string;
 
 interface FormDataVisitorHelpers {
     defaultVisitor: SerializerVisitor;
@@ -169,9 +169,7 @@ interface OAuth1Credentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
-interface Metadata {
-    [key: string]: string | Record<string, any>;
-}
+type Metadata = Record<string, string | Record<string, any>>;
 
 interface Connection {
     id?: number;
@@ -595,32 +593,6 @@ export class NangoSync extends NangoAction {
         if (config.stubbedMetadata) {
             this.stubbedMetadata = config.stubbedMetadata;
         }
-    }
-
-    /**
-     * Set Sync Last Sync Date
-     * @desc permanently set the last sync date for the sync
-     * to be used for the next sync run
-     */
-    public async setLastSyncDate(date: Date): Promise<boolean> {
-        if (date.toString() === 'Invalid Date') {
-            throw new Error('Invalid Date');
-        }
-        const response = await persistApi({
-            method: 'PUT',
-            url: `/sync/${this.syncId}`,
-            data: {
-                lastSyncDate: date
-            }
-        });
-        if (response.status > 299) {
-            logger.error(
-                `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                this.stringify()
-            );
-            throw new Error(`cannot set lastSyncDate for sync '${this.syncId}'`);
-        }
-        return true;
     }
 
     /**
