@@ -9,6 +9,7 @@ export interface ActivityResponse {
         | 'token'
         | 'sync'
         | 'sync deploy'
+        | 'sync init'
         | 'pause sync'
         | 'restart sync'
         | 'trigger sync'
@@ -20,9 +21,7 @@ export interface ActivityResponse {
     start: number;
     end: number;
     message: string;
-    messages: {
-        [index: string]: undefined | string | number;
-    }[];
+    messages: Record<string, undefined | string | number>[];
     connection_id: string;
     provider_config_key: string;
     provider: string;
@@ -31,9 +30,7 @@ export interface ActivityResponse {
     operation_name?: string;
 }
 
-export interface SyncResult {
-    [key: string]: Result;
-}
+export type SyncResult = Record<string, Result>;
 
 export interface Result {
     added: number;
@@ -57,9 +54,7 @@ export interface Sync {
     connections:
         | {
               connection_id: string;
-              metadata?: {
-                  [key: string]: string | Record<string, string>;
-              };
+              metadata?: Record<string, string | Record<string, string>>;
           }[]
         | null;
     metadata?: {
