@@ -427,10 +427,9 @@ class SyncController {
             }
         } catch (e) {
             span.setTag('nango.error', e);
+            span.finish();
 
             next(e);
-        } finally {
-            span.finish();
         }
     }
 
