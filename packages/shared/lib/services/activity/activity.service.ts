@@ -276,7 +276,7 @@ export async function getLogMessagesForLogs(logIds: number[], environment_id: nu
                 *,
                 RANK() OVER (PARTITION BY activity_log_id ORDER BY created_at DESC) AS rank
             FROM
-                _nango_activity_log_messages) AS partition
+                nango._nango_activity_log_messages) AS partition
         WHERE
             activity_log_id IN (${logIds.map(() => '?').join(',')})
             AND environment_id = ${environment_id}
