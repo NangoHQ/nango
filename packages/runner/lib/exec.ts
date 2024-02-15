@@ -1,5 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
+import { runningSyncs } from './state';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -14,6 +15,12 @@ export async function exec(
     codeParams?: object
 ): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
+
+    if (!isInvokedImmediately && nangoProps.syncId) {
+        runningSyncs.set(nangoProps.syncId, { cancelled: false });
+        nangoProps.runningSyncs = runningSyncs;
+        nangoProps.cancelled = runningSyncs.get(nangoProps.syncId)?.cancelled as boolean;
+    }
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
     const wrappedCode = `
                 (function() {
