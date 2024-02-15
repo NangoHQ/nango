@@ -198,6 +198,16 @@ export class ActionError extends Error {
     }
 }
 
+export class SyncCancelledError extends Error {
+    userCancelled: boolean;
+
+    constructor() {
+        super('Sync was cancelled');
+        this.name = 'SyncCancelledError';
+        this.userCancelled = true;
+    }
+}
+
 export interface NangoProps {
     host?: string;
     secretKey: string;
@@ -215,8 +225,6 @@ export interface NangoProps {
     attributes?: object | undefined;
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
-    cancelled?: boolean;
-    runningSyncs?: Map<string, { cancelled: boolean }>;
 }
 
 interface EnvironmentVariable {
@@ -233,8 +241,6 @@ export class NangoAction {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
-    cancelled = false;
-    runningSyncs?: Map<string, { cancelled: boolean }>;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -282,14 +288,6 @@ export class NangoAction {
         if (config.attributes) {
             this.attributes = config.attributes;
         }
-
-        if (config.cancelled) {
-            this.cancelled = config.cancelled;
-        }
-
-        if (config.runningSyncs) {
-            this.runningSyncs = config.runningSyncs;
-        }
     }
 
     protected stringify(): string {
@@ -322,9 +320,6 @@ export class NangoAction {
     }
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        console.log('checking state!!')
-        console.log(this.runningSyncs);
-        console.log(this.cancelled);
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {

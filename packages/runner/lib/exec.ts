@@ -1,6 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
-import { runningSyncs } from './state';
+import { SyncCancelledError, ActionError, NangoSync, NangoAction } from '@nangohq/shared';
+import { runningSyncs } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -15,21 +15,35 @@ export async function exec(
     codeParams?: object
 ): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
+    const isSync = !isInvokedImmediately;
 
     if (!isInvokedImmediately && nangoProps.syncId) {
         runningSyncs.set(nangoProps.syncId, { cancelled: false });
-        nangoProps.runningSyncs = runningSyncs;
-        nangoProps.cancelled = runningSyncs.get(nangoProps.syncId)?.cancelled as boolean;
     }
+
+    let checkInterval;
+    if (isSync) {
+        const checkInterval = setInterval(() => {
+            const syncState = runningSyncs.get(nangoProps.syncId as string);
+            if (syncState?.cancelled) {
+                clearInterval(checkInterval);
+                throw new SyncCancelledError();
+            }
+        }, 1000);
+    }
+
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
     const wrappedCode = `
-                (function() {
-                    var module = { exports: {} };
-                    var exports = module.exports;
-                    ${code}
-                    return module.exports;
-                })();
-            `;
+        (function() {
+            var module = { exports: {} };
+            var exports = module.exports;
+            ${code}
+            if (typeof clearInterval === 'function') {
+                clearInterval(${checkInterval});
+            }
+            return module.exports;
+        })();
+    `;
 
     try {
         const script = new vm.Script(wrappedCode);

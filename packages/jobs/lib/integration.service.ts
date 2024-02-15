@@ -11,7 +11,8 @@ import {
     ServiceResponse,
     NangoError,
     formatScriptError,
-    isOk
+    isOk,
+    SyncCancelledError
 } from '@nangohq/shared';
 import { Runner, getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from './tracer.js';
@@ -160,6 +161,14 @@ class IntegrationService implements IntegrationServiceInterface {
                 return { success: true, error: null, response: res };
             } catch (err: any) {
                 runSpan.setTag('error', err);
+
+                if (err instanceof SyncCancelledError) {
+                    return {
+                        success: false,
+                        error: new NangoError('script_cancelled'),
+                        response: null
+                    };
+                }
 
                 let errorType = 'sync_script_failure';
                 if (isWebhook) {
