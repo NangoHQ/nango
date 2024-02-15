@@ -11,6 +11,7 @@ export enum MetricTypes {
     AUTH_TOKEN_REQUEST_FAILURE = 'auth_token_request_failure',
     ACTION_SUCCESS = 'action_success',
     ACTION_FAILURE = 'action_failure',
+    ACTION_TRACK_RUNTIME = 'action_track_runtime',
     SYNC_OVERLAP = 'sync_overlap',
     SYNC_FAILURE = 'sync_failure',
     SYNC_SUCCESS = 'sync_success',
