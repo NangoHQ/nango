@@ -15,9 +15,9 @@ import {
     connectionService,
     LogActionEnum,
     createActivityLogMessageAndEnd,
-    metricsManager,
+    telemetry,
     AuthOperation,
-    MetricTypes,
+    LogTypes,
     AuthModes
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
@@ -170,8 +170,8 @@ class AppAuthController {
                     timestamp: Date.now()
                 });
 
-                await metricsManager.capture(
-                    MetricTypes.AUTH_TOKEN_REQUEST_FAILURE,
+                await telemetry.log(
+                    LogTypes.AUTH_TOKEN_REQUEST_FAILURE,
                     `App auth token retrieval request process failed ${error?.message}`,
                     LogActionEnum.AUTH,
                     {
@@ -234,7 +234,7 @@ class AppAuthController {
                 timestamp: Date.now()
             });
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
                 environmentId: String(environmentId),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
@@ -258,7 +258,7 @@ class AppAuthController {
                 url: req.originalUrl
             });
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
                 environmentId: String(environmentId),
                 providerConfigKey: String(providerConfigKey),
                 connectionId: String(connectionId)
