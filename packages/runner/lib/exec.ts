@@ -1,7 +1,8 @@
 import { Worker } from 'worker_threads';
 import path from 'path';
 import { fileURLToPath } from 'url';
-//import { workerProcesses } from './state.js';
+import { workerProcesses } from './state.js';
+import { terminate } from './terminate.js';
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,10 +24,12 @@ export async function exec(
 
         worker.on('message', (result: RunnerOutput) => {
             resolve(result);
+            terminate(nangoProps.syncId as string);
         });
 
         worker.on('error', (error) => {
             reject(error);
+            terminate(nangoProps.syncId as string);
         });
 
         worker.on('exit', (code) => {
@@ -35,8 +38,7 @@ export async function exec(
                 resolve({ success: true, error: null, response: { cancelled: true } });
             }
         });
-        // see how much memory a worker is using
 
-        //workerProcesses.set(nangoProps.syncId as string, worker);
+        workerProcesses.set(nangoProps.syncId as string, worker);
     });
 }
