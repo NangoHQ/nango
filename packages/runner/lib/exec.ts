@@ -1,11 +1,11 @@
-import { Worker } from 'worker_threads';
-import path from 'path';
+import { spawn } from 'child_process';
+import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-//import { workerProcesses } from './state.js';
-import type { NangoProps, RunnerOutput } from '@nangohq/shared';
+import { childProcesses } from './state.js';
+import { NangoProps, isTest, RunnerOutput, NangoError } from '@nangohq/shared';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 export async function exec(
     nangoProps: NangoProps,
@@ -15,28 +15,37 @@ export async function exec(
     codeParams?: object
 ): Promise<RunnerOutput> {
     return new Promise((resolve, reject) => {
-        const workerPath = path.resolve(__dirname, './worker.js');
+        const childPath = isTest() ? path.resolve(__dirname, '../dist/child.js') : path.resolve(__dirname, './child.js');
 
-        const workerData = { nangoProps, isInvokedImmediately, isWebhook, code, codeParams };
-
-        const worker = new Worker(workerPath, { workerData });
-
-        worker.on('message', (result: RunnerOutput) => {
-            resolve(result);
+        const child = spawn('node', [childPath], {
+            env: { ...process.env },
+            stdio: [process.stdin, process.stdout, process.stderr, 'ipc']
         });
 
-        worker.on('error', (error) => {
-            reject(error);
+        if (!child) {
+            const error = new NangoError('Child process failed to spawn.');
+            resolve({ success: false, error, response: null });
+        }
+
+        child.on('message', (message: any) => {
+            resolve(message.result);
         });
 
-        worker.on('exit', (code) => {
+        child.on('exit', (code) => {
             if (code !== 0) {
                 // TODO use Result and migrate the runner to return resultErr/resultOk
                 resolve({ success: true, error: null, response: { cancelled: true } });
             }
         });
-        // see how much memory a worker is using
 
-        //workerProcesses.set(nangoProps.syncId as string, worker);
+        child.on('error', reject);
+
+        const pid = child.pid;
+
+        if (pid) {
+            childProcesses.set(nangoProps.syncId as string, pid);
+        }
+
+        child.send({ nangoProps, isInvokedImmediately, isWebhook, code, codeParams });
     });
 }

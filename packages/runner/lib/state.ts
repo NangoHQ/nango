@@ -1,2 +1,1 @@
-import type { Worker } from 'worker_threads';
-export const workerProcesses = new Map<string, Worker>();
+export const childProcesses = new Map<string, number>();

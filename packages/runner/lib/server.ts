@@ -5,7 +5,7 @@ import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { exec } from './exec.js';
-import { terminate } from './terminate.js';
+import { kill } from './kill.js';
 import superjson from 'superjson';
 import { fetch } from 'undici';
 
@@ -65,7 +65,7 @@ function cancelProcedure() {
     return publicProcedure
         .input((input) => input as { syncId: string })
         .mutation(async ({ input }) => {
-            return terminate(input.syncId);
+            return kill(input.syncId);
         });
 }
 
