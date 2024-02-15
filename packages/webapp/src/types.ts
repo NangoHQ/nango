@@ -9,7 +9,6 @@ export interface ActivityResponse {
         | 'token'
         | 'sync'
         | 'sync deploy'
-        | 'sync init'
         | 'pause sync'
         | 'restart sync'
         | 'trigger sync'

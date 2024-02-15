@@ -596,6 +596,13 @@ export class NangoSync extends NangoAction {
     }
 
     /**
+     * Deprecated, reach out to support
+     */
+    public async setLastSyncDate(): Promise<void> {
+        logger.warn('setLastSyncDate is deprecated. Please contact us if you are using this method.');
+    }
+
+    /**
      * Deprecated, please use batchSave
      */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
