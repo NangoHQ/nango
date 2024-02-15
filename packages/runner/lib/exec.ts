@@ -1,7 +1,7 @@
 import { Worker } from 'worker_threads';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { workerProcesses } from './state.js';
+//import { workerProcesses } from './state.js';
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,7 +35,8 @@ export async function exec(
                 resolve({ success: true, error: null, response: { cancelled: true } });
             }
         });
+        // see how much memory a worker is using
 
-        workerProcesses.set(nangoProps.syncId as string, worker);
+        //workerProcesses.set(nangoProps.syncId as string, worker);
     });
 }
