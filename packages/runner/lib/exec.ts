@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { childProcesses } from './state.js';
+import { end } from './kill.js';
 import { NangoProps, isTest, RunnerOutput, NangoError } from '@nangohq/shared';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +19,7 @@ export async function exec(
         const childPath = isTest() ? path.resolve(__dirname, '../dist/child.js') : path.resolve(__dirname, './child.js');
 
         const child = spawn('node', [childPath], {
+            detached: true,
             env: { ...process.env },
             stdio: [process.stdin, process.stdout, process.stderr, 'ipc']
         });
@@ -29,16 +31,20 @@ export async function exec(
 
         child.on('message', (message: any) => {
             resolve(message.result);
+            end(nangoProps.syncId as string);
         });
 
-        child.on('exit', (code) => {
-            if (code !== 0) {
+        child.on('exit', (_code, signal) => {
+            if (signal === 'SIGKILL') {
                 // TODO use Result and migrate the runner to return resultErr/resultOk
                 resolve({ success: true, error: null, response: { cancelled: true } });
             }
         });
 
-        child.on('error', reject);
+        child.on('error', (error) => {
+            end(nangoProps.syncId as string);
+            reject(error);
+        });
 
         const pid = child.pid;
 
