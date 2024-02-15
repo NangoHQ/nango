@@ -21,7 +21,7 @@ import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } f
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
-import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
+import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
@@ -530,8 +530,8 @@ class SyncClient {
                 await updateSuccessActivityLog(activityLogId, true);
             }
 
-            await metricsManager.capture(
-                MetricTypes.ACTION_SUCCESS,
+            await telemetry.log(
+                LogTypes.ACTION_SUCCESS,
                 content,
                 LogActionEnum.ACTION,
                 {
@@ -571,8 +571,8 @@ class SyncClient {
                 }
             });
 
-            await metricsManager.capture(
-                MetricTypes.ACTION_FAILURE,
+            await telemetry.log(
+                LogTypes.ACTION_FAILURE,
                 content,
                 LogActionEnum.ACTION,
                 {
@@ -588,7 +588,7 @@ class SyncClient {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            await metricsManager.captureMetric(MetricTypes.ACTION_TRACK_RUNTIME, actionName, 'action', totalRunTime);
+            await telemetry.duration(MetricTypes.ACTION_TRACK_RUNTIME, totalRunTime);
         }
     }
 

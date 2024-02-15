@@ -6,7 +6,7 @@ import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
 import SyncClient from './clients/sync.client.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
-import metricsManager, { MetricTypes, SpanTypes } from './utils/metrics.manager.js';
+import telemetry, { LogTypes, SpanTypes, MetricTypes } from './utils/telemetry.js';
 import accountService from './services/account.service.js';
 import environmentService from './services/environment.service.js';
 import userService from './services/user.service.js';
@@ -63,7 +63,8 @@ export {
     providerClientManager,
     SyncClient,
     errorManager,
-    metricsManager,
+    telemetry,
+    LogTypes,
     MetricTypes,
     SpanTypes,
     ErrorSourceEnum,
