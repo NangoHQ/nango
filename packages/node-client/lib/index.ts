@@ -51,9 +51,7 @@ interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes.OAuth2;
 }
 
-interface CustomHeaders {
-    [key: string]: string | number | boolean;
-}
+type CustomHeaders = Record<string, string | number | boolean>;
 
 export enum SyncType {
     INITIAL = 'INITIAL',
