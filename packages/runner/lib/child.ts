@@ -23,6 +23,7 @@ export async function exec(
 ): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+
     const wrappedCode = `
                 (function() {
                     var module = { exports: {} };
