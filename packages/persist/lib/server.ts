@@ -27,22 +27,6 @@ server.use((req: Request, res: Response, next: NextFunction) => {
 server.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok' });
 });
-server.put(
-    '/sync/:syncId',
-    validateRequest({
-        params: z.object({
-            syncId: z.string()
-        }),
-        body: z.object({
-            lastSyncDate: z
-                .string()
-                .datetime()
-                .transform((value) => new Date(value))
-                .pipe(z.date()) as unknown as z.ZodDate
-        })
-    }),
-    persistController.saveLastSyncDate
-);
 
 server.post(
     '/environment/:environmentId/log',
