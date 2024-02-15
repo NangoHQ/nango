@@ -221,7 +221,7 @@ export default function Activity() {
                         const logsWithMessages = activities.map((activity: ActivityResponse) => {
                             const logMessages = allMessages[activity.id];
                             if (logMessages) {
-                                activity.messages = logMessages.reverse();
+                                activity.messages = logMessages;
                             }
                             return activity;
                         });
