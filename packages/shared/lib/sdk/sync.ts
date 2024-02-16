@@ -7,8 +7,7 @@ import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import logger from '../logger/console.js';
-import type { Tracer } from 'dd-trace';
-import { SpanTypes } from '../utils/telemetry.js';
+import telemetry, { MetricTypes } from '../utils/telemetry.js';
 
 /*
  *
@@ -506,6 +505,7 @@ export class NangoAction {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
             throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
         }
+
         return;
     }
 
@@ -789,13 +789,10 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
     'batchDelete',
     'batchSave',
     'batchSend',
-
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',
-
     'proxy',
-
     'log'
 ];
 
@@ -804,7 +801,7 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
  * This function will enable tracing on the SDK
  * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
  */
-export function instrumentSDK(rawNango: NangoAction | NangoSync, tracer: Tracer) {
+export function instrumentSDK(rawNango: NangoAction | NangoSync) {
     return new Proxy(rawNango, {
         get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
             // Method name is not matching the allowList we don't do anything else
@@ -812,29 +809,7 @@ export function instrumentSDK(rawNango: NangoAction | NangoSync, tracer: Tracer)
                 return target[propKey];
             }
 
-            if (propKey === 'proxy') {
-                // In case of Proxy we want to log what website we are reaching
-                function proxified(this: T, ...args: Parameters<NangoAction['proxy']>) {
-                    const scope = tracer.scope().active();
-                    scope?.addTags({
-                        proxy: { method: args[0].method, endpoint: args[0].endpoint }
-                    });
-                    return target[propKey as 'proxy'].apply(this, args);
-                }
-                return tracer.wrap(`${SpanTypes.RUNNER_SDK}.${propKey}`, proxified);
-            } else if ((propKey as keyof NangoSync) === 'batchSave') {
-                // In case of BatchSave the number of records are important
-                function proxified(this: NangoSync, ...args: Parameters<NangoSync['batchSave']>) {
-                    const scope = tracer.scope().active();
-                    scope?.addTags({
-                        batchSave: { count: args[0].length }
-                    });
-                    return (target as NangoSync)[propKey as 'batchSave'].apply(this, args);
-                }
-                return tracer.wrap(`${SpanTypes.RUNNER_SDK}.${propKey}`, proxified);
-            }
-
-            return tracer.wrap(`${SpanTypes.RUNNER_SDK}.${propKey}`, target[propKey]);
+            return telemetry.time(`${MetricTypes.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
         }
     });
 }
