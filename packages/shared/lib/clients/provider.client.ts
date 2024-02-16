@@ -21,6 +21,8 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'tiktok-ads':
+            case 'tiktok-accounts':
                 return true;
             default:
                 return false;
@@ -47,6 +49,10 @@ class ProviderClient {
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'facebook':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'tiktok-ads':
+                return this.createTiktokAdsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'tiktok-accounts':
+                return this.createTiktokAccountsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -74,6 +80,13 @@ class ProviderClient {
                 return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.refreshFacebookToken(template.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
+            case 'tiktok-accounts':
+                return this.refreshTiktokAccountsToken(
+                    template.refresh_url as string,
+                    credentials.refresh_token as string,
+                    config.oauth_client_id,
+                    config.oauth_client_secret
+                );
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -154,6 +167,89 @@ class ProviderClient {
             };
         }
         throw new NangoError('facebook_token_request_error');
+    }
+
+    private async createTiktokAdsToken(tokenUrl: string, code: string, clientId: string, clientSecret: string): Promise<object> {
+        try {
+            const body = {
+                secret: clientSecret,
+                app_id: clientId,
+                auth_code: code
+            };
+
+            const response = await axios.post(tokenUrl, body);
+
+            if (response.status === 200 && response.data !== null) {
+                return {
+                    access_token: response.data.data['access_token'],
+                    advertiser_ids: response.data.data['advertiser_ids'],
+                    scope: response.data.data['scope'],
+                    request_id: response.data['request_id']
+                };
+            }
+            throw new NangoError('tiktok_token_request_error');
+        } catch (e: any) {
+            throw new NangoError('tiktok_token_request_error', e.message);
+        }
+    }
+
+    private async createTiktokAccountsToken(tokenUrl: string, code: string, client_id: string, client_secret: string, redirect_uri: string): Promise<object> {
+        try {
+            const body = {
+                client_id,
+                client_secret,
+                grant_type: 'authorization_code',
+                auth_code: code,
+                redirect_uri
+            };
+
+            const response = await axios.post(tokenUrl, body);
+
+            if (response.status === 200 && response.data !== null) {
+                return {
+                    access_token: response.data.data['access_token'],
+                    token_type: response.data.data['token_type'],
+                    scope: response.data.data['scope'],
+                    expires_in: response.data.data['expires_in'],
+                    refresh_token: response.data.data['refresh_token'],
+                    refresh_token_expires_in: response.data.data['refresh_token_expires_in'],
+                    open_id: response.data.data['open_id'],
+                    request_id: response.data['request_id']
+                };
+            }
+            throw new NangoError('tiktok_token_request_error');
+        } catch (e: any) {
+            throw new NangoError('tiktok_token_request_error', e.message);
+        }
+    }
+
+    private async refreshTiktokAccountsToken(refreshTokenUrl: string, refreshToken: string, clientId: string, clientSecret: string): Promise<object> {
+        try {
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            };
+
+            const response = await axios.post(refreshTokenUrl, body);
+
+            if (response.status === 200 && response.data !== null) {
+                return {
+                    access_token: response.data.data['access_token'],
+                    token_type: response.data.data['token_type'],
+                    scope: response.data.data['scope'],
+                    expires_in: response.data.data['expires_in'],
+                    refresh_token: response.data.data['refresh_token'],
+                    refresh_token_expires_in: response.data.data['refresh_token_expires_in'],
+                    open_id: response.data.data['open_id'],
+                    request_id: response.data['request_id']
+                };
+            }
+            throw new NangoError('tiktok_token_refresh_request_error');
+        } catch (e: any) {
+            throw new NangoError('tiktok_token_refresh_request_error', e.message);
+        }
     }
 
     private async refreshFigmaToken(refreshTokenUrl: string, refreshToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {

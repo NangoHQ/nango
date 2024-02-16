@@ -40,7 +40,7 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
             return result[0].id;
         }
     } catch (e) {
-        await errorManager.report(e, {
+        errorManager.report(e, {
             source: ErrorSourceEnum.PLATFORM,
             environmentId: log.environment_id,
             operation: LogActionEnum.DATABASE,
@@ -253,6 +253,25 @@ export async function getTopLevelLogByEnvironment(
     await logs.select('_nango_activity_logs.*');
 
     return logs || [];
+}
+
+export async function activityFilter(environment_id: number, filterColumn: 'connection_id' | 'provider'): Promise<string[]> {
+    const logsQuery = db.knex
+        .withSchema(db.schema())
+        .from<ActivityLog>('_nango_activity_logs')
+        .where({ environment_id })
+        .whereNotNull(filterColumn)
+        .groupBy(filterColumn)
+        .select(filterColumn)
+        .orderBy(filterColumn, 'asc');
+
+    const logs = await logsQuery;
+
+    const distinctValues: string[] = logs
+        .map((log: { [key: string]: string }) => log[filterColumn] as string)
+        .filter((value: string | undefined): value is string => typeof value === 'string');
+
+    return distinctValues;
 }
 
 /**

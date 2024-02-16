@@ -16,7 +16,7 @@ import db, { schema } from '../../../db/database.js';
 import connectionService from '../../connection.service.js';
 import { NangoError } from '../../../utils/error.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
-import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 
 export const formatDataRecords = (
@@ -115,7 +115,7 @@ export async function getDataRecords(
         throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
     }
 
-    await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_DEPRECATED_METHOD_USED, `Deprecated get records method`, LogActionEnum.SYNC, {
+    await telemetry.log(LogTypes.SYNC_GET_RECORDS_DEPRECATED_METHOD_USED, `Deprecated get records method`, LogActionEnum.SYNC, {
         environmentId: String(environmentId),
         connectionId,
         providerConfigKey,
@@ -124,7 +124,7 @@ export async function getDataRecords(
     });
 
     if (order) {
-        await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_ORDER_USED, `Order used in get records with a order value of ${order}`, LogActionEnum.SYNC, {
+        await telemetry.log(LogTypes.SYNC_GET_RECORDS_ORDER_USED, `Order used in get records with a order value of ${order}`, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId,
             providerConfigKey,
@@ -139,53 +139,38 @@ export async function getDataRecords(
     switch (sortBy) {
         case 'updated_at': {
             sort = 'updated_at';
-            await metricsManager.capture(
-                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
-                `Sort by used in get records with a sort value of ${sort}`,
-                LogActionEnum.SYNC,
-                {
-                    environmentId: String(environmentId),
-                    connectionId,
-                    providerConfigKey,
-                    delta: String(delta),
-                    sort,
-                    model
-                }
-            );
+            await telemetry.log(LogTypes.SYNC_GET_RECORDS_SORT_BY_USED, `Sort by used in get records with a sort value of ${sort}`, LogActionEnum.SYNC, {
+                environmentId: String(environmentId),
+                connectionId,
+                providerConfigKey,
+                delta: String(delta),
+                sort,
+                model
+            });
 
             break;
         }
         case 'created_at': {
             sort = 'created_at';
-            await metricsManager.capture(
-                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
-                `Sort by used in get records with a sort value of ${sort}`,
-                LogActionEnum.SYNC,
-                {
-                    environmentId: String(environmentId),
-                    connectionId,
-                    providerConfigKey,
-                    delta: String(delta),
-                    sort,
-                    model
-                }
-            );
+            await telemetry.log(LogTypes.SYNC_GET_RECORDS_SORT_BY_USED, `Sort by used in get records with a sort value of ${sort}`, LogActionEnum.SYNC, {
+                environmentId: String(environmentId),
+                connectionId,
+                providerConfigKey,
+                delta: String(delta),
+                sort,
+                model
+            });
             break;
         }
         case 'id': {
-            await metricsManager.capture(
-                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
-                `Sort by used in get records with a sort value of ${sort}`,
-                LogActionEnum.SYNC,
-                {
-                    environmentId: String(environmentId),
-                    connectionId,
-                    providerConfigKey,
-                    delta: String(delta),
-                    sort,
-                    model
-                }
-            );
+            await telemetry.log(LogTypes.SYNC_GET_RECORDS_SORT_BY_USED, `Sort by used in get records with a sort value of ${sort}`, LogActionEnum.SYNC, {
+                environmentId: String(environmentId),
+                connectionId,
+                providerConfigKey,
+                delta: String(delta),
+                sort,
+                model
+            });
         }
     }
 
@@ -205,18 +190,13 @@ export async function getDataRecords(
             return { success: false, error, response: null };
         }
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_GET_RECORDS_OFFSET_USED,
-            `Offset used in get records with an offset value of ${offset}`,
-            LogActionEnum.SYNC,
-            {
-                environmentId: String(environmentId),
-                connectionId,
-                providerConfigKey,
-                delta: String(delta),
-                model
-            }
-        );
+        await telemetry.log(LogTypes.SYNC_GET_RECORDS_OFFSET_USED, `Offset used in get records with an offset value of ${offset}`, LogActionEnum.SYNC, {
+            environmentId: String(environmentId),
+            connectionId,
+            providerConfigKey,
+            delta: String(delta),
+            model
+        });
 
         query = query.offset(Number(offset));
     }
@@ -278,7 +258,7 @@ export async function getDataRecords(
     let result;
 
     if (includeMetaData) {
-        await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_INCLUDE_METADATA_USED, `Include Nango metadata used in get records`, LogActionEnum.SYNC, {
+        await telemetry.log(LogTypes.SYNC_GET_RECORDS_INCLUDE_METADATA_USED, `Include Nango metadata used in get records`, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId,
             providerConfigKey,
@@ -486,7 +466,7 @@ export async function getAllDataRecords(
         }
     } catch (e: any) {
         const errorMessage = 'List records error';
-        await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
+        await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId,
             providerConfigKey,
@@ -503,12 +483,11 @@ export async function getAllDataRecords(
 
 export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKey?: string | number): { isUnique: boolean; nonUniqueKeys: string[] } {
     const uniqueKey = optionalUniqueKey ?? 'id';
-    const idMap: { [key: string]: boolean } = {};
+    const idMap: Record<string, boolean> = {};
     let isUnique = true;
     const nonUniqueKeys: string[] = [];
 
-    for (let i = 0; i < data.length; i++) {
-        const item = data[i] as DataResponse;
+    for (const item of data) {
         const id = item[uniqueKey] as string | number;
 
         if (idMap[id]) {

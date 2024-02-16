@@ -51,9 +51,7 @@ interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes.OAuth2;
 }
 
-interface CustomHeaders {
-    [key: string]: string | number | boolean;
-}
+type CustomHeaders = Record<string, string | number | boolean>;
 
 export enum SyncType {
     INITIAL = 'INITIAL',
@@ -147,9 +145,9 @@ export class Nango {
         return response.data;
     }
 
-    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false): Promise<{ config: Integration | IntegrationWithCreds }> {
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredentials = false): Promise<{ config: Integration | IntegrationWithCreds }> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
-        const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredetials } });
+        const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredentials } });
         return response.data;
     }
 

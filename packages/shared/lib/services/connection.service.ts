@@ -29,7 +29,7 @@ import { NangoError } from '../utils/error.js';
 import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
+import telemetry, { LogTypes } from '../utils/telemetry.js';
 import {
     AppCredentials,
     AuthModes as ProviderAuthModes,
@@ -315,7 +315,7 @@ class ConnectionService {
         if (!connectionId) {
             const error = new NangoError('missing_connection');
 
-            await metricsManager.capture(MetricTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
@@ -327,7 +327,7 @@ class ConnectionService {
         if (!providerConfigKey) {
             const error = new NangoError('missing_provider_config');
 
-            await metricsManager.capture(MetricTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
@@ -348,7 +348,7 @@ class ConnectionService {
 
             const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
 
-            await metricsManager.capture(MetricTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
@@ -502,36 +502,22 @@ class ConnectionService {
 
     public async listConnections(
         environment_id: number,
-        limit: number | null = 20,
-        offset = 0,
-        integration?: string
+        connectionId?: string
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata }[]> {
         const queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' }, 'metadata')
-            .where({ environment_id, deleted: false })
-            .offset(offset);
-
-        if (limit !== null) {
-            queryBuilder.limit(limit);
+            .where({ environment_id, deleted: false });
+        if (connectionId) {
+            queryBuilder.where({ connection_id: connectionId });
         }
-
-        if (integration) {
-            queryBuilder.where({ provider_config_key: integration });
-        }
-
         return queryBuilder;
     }
 
     public async getAllNames(environment_id: number): Promise<string[]> {
         const connections = await this.listConnections(environment_id);
         return [...new Set(connections.map((config) => config.connection_id))];
-    }
-
-    public async getAllIntegrations(environment_id: number): Promise<string[]> {
-        const integrations = await this.listConnections(environment_id, null);
-        return [...new Set(integrations.map((config) => config.provider))];
     }
 
     public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
@@ -709,7 +695,7 @@ class ConnectionService {
         const shouldRefresh = await this.shouldRefreshCredentials(connection, credentials, providerConfig, template, instantRefresh);
 
         if (shouldRefresh) {
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey,
@@ -729,7 +715,7 @@ class ConnectionService {
 
                 const { success, error, response: newCredentials } = await this.getNewCredentials(connection, providerConfig, template);
                 if (!success || !newCredentials) {
-                    await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
+                    await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
                         environmentId: String(environment_id),
                         connectionId,
                         providerConfigKey,
@@ -741,7 +727,7 @@ class ConnectionService {
                 connection.credentials = newCredentials;
                 await this.updateConnection(connection);
 
-                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId,
                     providerConfigKey,
@@ -763,7 +749,7 @@ class ConnectionService {
 
                 const errorString = JSON.stringify(errorDetails);
 
-                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${errorString}`, LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${errorString}`, LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId,
                     providerConfigKey,

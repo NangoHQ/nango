@@ -22,7 +22,7 @@ export class RedisKVStore implements KVStore {
     }
 
     public async set(key: string, value: string, canOverride: boolean = true, ttlInMs: number = 0): Promise<void> {
-        let options: any = {};
+        const options: any = {};
         if (ttlInMs > 0) {
             options['PX'] = ttlInMs;
         }

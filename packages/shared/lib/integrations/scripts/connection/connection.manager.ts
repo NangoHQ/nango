@@ -1,4 +1,4 @@
-import type { AxiosResponse } from 'axios';
+import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '../../../models/Connection.js';
 import { LogLevel, LogActionEnum } from '../../../models/Activity.js';
 import { createActivityLogAndLogMessage } from '../../../services/activity/activity.service.js';
@@ -7,21 +7,19 @@ import type { UserProvidedProxyConfiguration } from '../../../models/Proxy.js';
 import proxyService from '../../../services/proxy.service.js';
 import connectionService from '../../../services/connection.service.js';
 import environmentService from '../../../services/environment.service.js';
-import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 
 import * as postConnectionHandlers from './index.js';
 
-interface PostConnectionHandler {
-    (internalNango: InternalNango): Promise<void>;
-}
+type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
-type PostConnectionHandlersMap = { [key: string]: PostConnectionHandler };
+type PostConnectionHandlersMap = Record<string, PostConnectionHandler>;
 
 const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as PostConnectionHandlersMap;
 
 export interface InternalNango {
     getConnection: () => Promise<Connection>;
-    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse>;
+    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
@@ -41,11 +39,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
         }
 
         const internalConfig = {
-            environmentId: createdConnection.environment_id,
-            isFlow: true,
-            isDryRun: false,
-            throwErrors: false,
-            connection
+            connection,
+            provider
         };
 
         const externalConfig = {
@@ -62,12 +57,13 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
                 return connection as Connection;
             },
-            proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => {
+            proxy: async ({ method, endpoint, data }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig = { ...externalConfig, method: method || externalConfig.method, endpoint };
                 if (data) {
                     finalExternalConfig.data = data;
                 }
-                return proxyService.routeOrConfigure(finalExternalConfig, internalConfig) as Promise<AxiosResponse>;
+                const { response } = await proxyService.route(finalExternalConfig, internalConfig);
+                return response;
             },
             updateConnectionConfig: (connectionConfig: ConnectionConfig) => {
                 return connectionService.updateConnectionConfig(connection as unknown as Connection, connectionConfig);
@@ -108,7 +104,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     content: `Post connection script failed with the error: ${errorString}`
                 });
 
-                await metricsManager.capture(MetricTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId: connection_id,
                     providerConfigKey: provider_config_key,
@@ -126,7 +122,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
         const errorString = JSON.stringify(errorDetails);
 
-        await metricsManager.capture(MetricTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${errorString}`, LogActionEnum.AUTH, {
+        await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${errorString}`, LogActionEnum.AUTH, {
             environmentId: String(environment_id),
             connectionId: connection_id,
             providerConfigKey: provider_config_key,

@@ -17,7 +17,7 @@ export default async function fetchData(nango: NangoSync) {
 
     // https://docs.wildix.com/wms/index.html#tag/Colleagues
     while (true) {
-        let payload = {
+        const payload = {
             baseUrlOverride: `https://${connection.connection_config['subdomain']}.wildixin.com`,
             endpoint: '/api/v1/Colleagues/',
             params: <Params>{

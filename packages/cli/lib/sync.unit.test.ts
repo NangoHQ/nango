@@ -22,7 +22,7 @@ describe('generate function tests', () => {
         await fs.promises.rm(testDirectory, { recursive: true, force: true });
     });
 
-    it('should init the expectd files in the nango-integrations directory', async () => {
+    it('should init the expected files in the nango-integrations directory', async () => {
         await init();
         expect(fs.existsSync(`./${testDirectory}/${exampleSyncName}.ts`)).toBe(true);
         expect(fs.existsSync(`./${testDirectory}/.env`)).toBe(true);
@@ -333,6 +333,21 @@ describe('generate function tests', () => {
         expect(awaiting).toBe(true);
     });
 
+    it('should complain when a return statement is used', async () => {
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        expect(noReturnUsed).toBe(false);
+    });
+
+    it('should not complain when a return statement is used but does not return anything', async () => {
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/void-return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        expect(noReturnUsed).toBe(true);
+    });
+
+    it('should not complain when a return statement is used in a nested function', async () => {
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GreenhouseEeoc']);
+        expect(noReturnUsed).toBe(true);
+    });
+
     it('should complain of a non try catch not being awaited', async () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
@@ -341,6 +356,11 @@ describe('generate function tests', () => {
     it('should not complain about a correct model', async () => {
         const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
         expect(usedCorrectly).toBe(true);
+    });
+
+    it('should not complain about awaiting when it is returned for an action', async () => {
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/no-async-return.ts`, SyncConfigType.ACTION, ['SomeModel']);
+        expect(awaiting).toBe(true);
     });
 
     it('should complain about an incorrect model', async () => {
