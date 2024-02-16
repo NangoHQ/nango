@@ -177,6 +177,8 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 export function getApiUrl() {
     if (isStaging()) {
         return stagingHost;
+    } else if (isEnterprise()) {
+        return process.env['NANGO_SERVER_URL'];
     } else if (isProd()) {
         return cloudHost;
     }
