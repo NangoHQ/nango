@@ -613,6 +613,12 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     >
                                                         <p>Trigger</p>
                                                     </button>
+                                                    <button
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-red-500 hover:bg-red-700"
+                                                        onClick={() => syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
+                                                    >
+                                                        <p>Cancel</p>
+                                                    </button>
                                                     {/*
                                                     <button
                                                         className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
