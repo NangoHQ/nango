@@ -20,7 +20,7 @@ export interface ActivityResponse {
     start: number;
     end: number;
     message: string;
-    messages: Record<string, undefined | string | number>[];
+    messages: Record<string, any>[];
     connection_id: string;
     provider_config_key: string;
     provider: string;
@@ -28,6 +28,8 @@ export interface ActivityResponse {
     endpoint?: string;
     operation_name?: string;
 }
+
+export type ActivityMessageResponse = Record<number, Record<string, any>[]>;
 
 export type SyncResult = Record<string, Result>;
 
