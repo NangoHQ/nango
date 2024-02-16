@@ -1,6 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
-import { runningSyncsWithAborts } from './state.js';
+import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -19,7 +19,7 @@ export async function exec(
     const abortController = new AbortController();
 
     if (!isInvokedImmediately && nangoProps.syncId) {
-        runningSyncsWithAborts.set(nangoProps.syncId, abortController);
+        syncAbortControllers.set(nangoProps.syncId, abortController);
     }
 
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);

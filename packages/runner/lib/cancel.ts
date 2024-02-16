@@ -1,8 +1,8 @@
 import { Result, resultOk, resultErr } from '@nangohq/shared';
-import { runningSyncsWithAborts } from './state.js';
+import { syncAbortControllers } from './state.js';
 
 export const cancel = (syncId: string): Result<string> => {
-    const abortController = runningSyncsWithAborts.get(syncId);
+    const abortController = syncAbortControllers.get(syncId);
     if (abortController) {
         abortController.abort();
         return resultOk('cancelled');
