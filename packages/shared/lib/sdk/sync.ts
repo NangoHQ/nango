@@ -781,13 +781,13 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
 export function instrumentSDK(rawNango: NangoAction | NangoSync, tracer: Tracer) {
     return new Proxy(rawNango, {
         get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
+            // Method name is not matching the allowList we don't do anything else
             if (!TELEMETRY_ALLOWED_METHODS.includes(propKey)) {
-                // Method name is not matching the allowList we don't do anything else
                 return target[propKey];
             }
 
             if (propKey === 'proxy') {
-                // In case of Proxy we want to log what we are calling
+                // In case of Proxy we want to log what website we are reaching
                 function proxified(this: T, ...args: Parameters<NangoAction['proxy']>) {
                     const scope = tracer.scope().active();
                     scope?.addTags({

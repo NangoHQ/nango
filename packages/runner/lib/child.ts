@@ -1,10 +1,11 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction, instrumentSDK } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
+import { tracer } from './tracer';
 
 interface ExecProps {
     nangoProps: NangoProps;
@@ -22,7 +23,8 @@ export async function exec(
     codeParams?: object
 ): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
-    const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+    const rawNango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+    const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango, tracer) : rawNango;
 
     const wrappedCode = `
                 (function() {
