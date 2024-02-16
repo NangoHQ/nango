@@ -10,13 +10,13 @@ interface EvaluAgentUserResponse {
 }
 
 export default async function fetchData(nango: NangoSync) {
-    let payload = {
+    const payload = {
         endpoint: '/v1/org/users'
     };
 
     const response = await nango.get(payload);
 
-    let returnedData = response.data.data;
+    const returnedData = response.data.data;
 
     const mappedUsers: EvaluAgentUser[] = returnedData.map((user: EvaluAgentUserResponse) => ({
         id: user.id,

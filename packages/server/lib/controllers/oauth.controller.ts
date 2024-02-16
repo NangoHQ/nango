@@ -44,8 +44,8 @@ import {
     providerClientManager,
     errorManager,
     analytics,
-    metricsManager,
-    MetricTypes,
+    telemetry,
+    LogTypes,
     AnalyticsTypes,
     hmacService,
     ErrorSourceEnum,
@@ -83,7 +83,7 @@ class OAuthController {
                 analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_START, 'OAuth request process start', LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_START, 'OAuth request process start', LogActionEnum.AUTH, {
                 environmentId: String(environmentId),
                 accountId: String(accountId),
                 providerConfigKey: String(providerConfigKey),
@@ -379,14 +379,25 @@ class OAuthController {
                     oauth2Client.getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig)
                 );
 
-                const authorizationUri = simpleOAuthClient.authorizeURL({
+                let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
                     scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',
                     state: session.id,
                     ...allAuthParams
                 });
 
-                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth2 callback url received', LogActionEnum.AUTH, {
+                if (template.authorization_url_replacements) {
+                    const urlReplacements = template.authorization_url_replacements || {};
+
+                    Object.keys(template.authorization_url_replacements).forEach((key) => {
+                        const replacement = urlReplacements[key];
+                        if (typeof replacement === 'string') {
+                            authorizationUri = authorizationUri.replace(key, replacement);
+                        }
+                    });
+                }
+
+                await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth2 callback url received', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     callbackUrl,
                     providerConfigKey: String(providerConfigKey),
@@ -441,7 +452,7 @@ class OAuthController {
 
             const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
                 callbackUrl,
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
@@ -640,7 +651,7 @@ class OAuthController {
         // if they end the flow early, be sure to have an end time
         await addEndTimeActivityLog(activityLogId as number);
 
-        await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth1 callback url received', LogActionEnum.AUTH, {
+        await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth1 callback url received', LogActionEnum.AUTH, {
             environmentId: String(environment_id),
             callbackUrl,
             providerConfigKey: String(providerConfigKey),
@@ -791,7 +802,7 @@ class OAuthController {
                 }
             });
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed with a missing code', LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed with a missing code', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
@@ -920,8 +931,8 @@ class OAuthController {
                     timestamp: Date.now()
                 });
 
-                await metricsManager.capture(
-                    MetricTypes.AUTH_TOKEN_REQUEST_FAILURE,
+                await telemetry.log(
+                    LogTypes.AUTH_TOKEN_REQUEST_FAILURE,
                     'OAuth2 token request failed, response from the server could not be parsed',
                     LogActionEnum.AUTH,
                     {
@@ -1037,7 +1048,7 @@ class OAuthController {
                 await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
             }
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
@@ -1058,7 +1069,7 @@ class OAuthController {
                 }
             });
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed', LogActionEnum.AUTH, {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
@@ -1165,7 +1176,7 @@ class OAuthController {
                     url: session.callbackUrl
                 });
 
-                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth1 token request succeeded', LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth1 token request succeeded', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),
@@ -1207,7 +1218,7 @@ class OAuthController {
                 });
                 const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
-                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth1 token request failed', LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth1 token request failed', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),

@@ -5,3 +5,5 @@ logs/*
 .idea/*
 .env
 nango-integrations/*
+dist/
+tsconfig.tsbuildinfo

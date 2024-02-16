@@ -7,7 +7,7 @@ import type { SyncConfig } from './../../../models/Sync.js';
 import connectionService from '../../../services/connection.service.js';
 import { getSyncConfigsByConfigIdForWebhook } from '../../../services/sync/config/config.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
-import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
@@ -28,8 +28,8 @@ export const internalNango: InternalNango = {
         const syncClient = await SyncClient.getInstance();
 
         if (!get(body, connectionIdentifier)) {
-            await metricsManager.capture(
-                MetricTypes.INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER,
+            await telemetry.log(
+                LogTypes.INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER,
                 'Incoming webhook had the wrong connection identifier',
                 LogActionEnum.WEBHOOK,
                 {
@@ -64,8 +64,8 @@ export const internalNango: InternalNango = {
         }
 
         if (!connections || connections.length === 0) {
-            await metricsManager.capture(
-                MetricTypes.INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND,
+            await telemetry.log(
+                LogTypes.INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND,
                 'Incoming webhook received but no connection found for it',
                 LogActionEnum.WEBHOOK,
                 {
@@ -82,7 +82,7 @@ export const internalNango: InternalNango = {
 
         const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
 
-        await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_RECEIVED, 'Incoming webhook received and connection found for it', LogActionEnum.WEBHOOK, {
+        await telemetry.log(LogTypes.INCOMING_WEBHOOK_RECEIVED, 'Incoming webhook received and connection found for it', LogActionEnum.WEBHOOK, {
             accountId: String(accountId),
             environmentId: String(integration.environment_id),
             provider: integration.provider,

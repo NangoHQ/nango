@@ -464,16 +464,9 @@ export function useGetProvidersAPI() {
 export function useGetConnectionListAPI() {
     const signout = useSignout();
 
-    return async (limit: number, offset: number, integration?: string) => {
+    return async () => {
         try {
-            const res = await fetch(
-                `/api/v1/connection?limit=${limit}&offset=${offset}` +
-                    `${integration ? `&integration=${integration}` : ''}`,
-                {
-                    method: 'GET',
-                    headers: getHeaders()
-                }
-            );
+            let res = await fetch('/api/v1/connection', { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();

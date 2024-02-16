@@ -123,6 +123,8 @@ export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
     scopes: string;
+    has_webhook: boolean;
+    webhook_url?: string;
 }
 
 interface Timestamps {

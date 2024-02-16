@@ -1,7 +1,7 @@
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
-    public payload: { [key: string]: unknown };
+    public payload: Record<string, unknown>;
     public override readonly message: string;
 
     constructor(type: string, payload = {}, status?: number) {
@@ -15,6 +15,11 @@ export class NangoError extends Error {
         }
 
         switch (type) {
+            case 'failed_to_get_sync_client':
+                this.status = 500;
+                this.message = 'Failed to get the sync client.';
+                break;
+
             case 'missing_auth_header':
                 this.status = 401;
                 this.message = 'Authentication failed. The request is missing the Authorization header.';
@@ -153,6 +158,11 @@ export class NangoError extends Error {
             case 'missing_app_id':
                 this.status = 400;
                 this.message = `Missing param 'app_id'.`;
+                break;
+
+            case 'missing_custom':
+                this.status = 400;
+                this.message = `Missing param 'custom'.`;
                 break;
 
             case 'missing_installation_id':
@@ -318,6 +328,11 @@ export class NangoError extends Error {
                 this.message = 'Provider configuration cannot be edited for API key based authentication.';
                 break;
 
+            case 'connection_test_failed':
+                this.status = status || 400;
+                this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;
+                break;
+
             case 'invalid_auth_mode':
                 this.status = 400;
                 this.message = 'Invalid auth mode. The provider does not support this auth mode.';
@@ -376,6 +391,11 @@ export class NangoError extends Error {
             case 'missing_id_field':
                 this.status = 400;
                 this.message = `Missing id field in the "${this.payload}" model. Make sure every single element in the array has an id property.`;
+                break;
+
+            case 'failed_to_create_activity_log':
+                this.status = 500;
+                this.message = 'Failed to create the activity log. Please try again.';
                 break;
 
             case 'sync_interval_too_short':
@@ -483,10 +503,14 @@ export class NangoError extends Error {
                 this.message = '';
                 break;
 
+            case 'script_cancelled':
+                this.message = 'The script was cancelled successfully';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error ${this.payload} has occurred: ${type}`;
+                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occured`;
         }
     }
 
