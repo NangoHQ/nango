@@ -12,7 +12,7 @@ import localFileService from './local.service.js';
 
 let client: S3Client | null = null;
 
-if (isEnterprise()) {
+if (isEnterprise() && !(process.env['AWS_PUBLIC_ACCESS_KEY_ID'] && process.env['AWS_PUBLIC_SECRET_ACCESS'])) {
     client = new S3Client({
         region: (process.env['AWS_REGION'] as string) || 'us-west-2'
     });
