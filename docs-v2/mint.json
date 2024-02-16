@@ -103,6 +103,7 @@
                     "pages": [
                         "integration-templates/overview",
                         "integration-templates/asana",
+                        "integration-templates/ashby",
                         "integration-templates/bamboohr",
                         "integration-templates/confluence",
                         "integration-templates/clari-copilot",
@@ -118,6 +119,7 @@
                         "integration-templates/lever",
                         "integration-templates/linear",
                         "integration-templates/microsoft-active-directory",
+                        "integration-templates/next-cloud",
                         "integration-templates/notion",
                         "integration-templates/pipedrive",
                         "integration-templates/salesforce",
@@ -271,6 +273,7 @@
                         "integrations/all/mural",
                         "integrations/all/nationbuilder",
                         "integrations/all/netsuite",
+                        "integrations/all/next-cloud",
                         "integrations/all/notion",
                         "integrations/all/okta",
                         "integrations/all/one-drive",

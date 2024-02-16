@@ -1,5 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes } from '@nangohq/shared';
+import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -15,18 +16,27 @@ export async function exec(
     codeParams?: object
 ): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
+
+    const abortController = new AbortController();
+
+    if (!isInvokedImmediately && nangoProps.syncId) {
+        syncAbortControllers.set(nangoProps.syncId, abortController);
+    }
+
     const rawNango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
 
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango, tracer) : rawNango;
 
+    nango.abortSignal = abortController.signal;
+
     const wrappedCode = `
-                (function() {
-                    var module = { exports: {} };
-                    var exports = module.exports;
-                    ${code}
-                    return module.exports;
-                })();
-            `;
+        (function() {
+            var module = { exports: {} };
+            var exports = module.exports;
+            ${code}
+            return module.exports;
+        })();
+    `;
 
     return tracer.trace(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.accountId)
