@@ -2,7 +2,7 @@ import type { Response } from 'express';
 import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
-import { isCloud, isEnterprise } from '../../utils/utils.js';
+import { isCloud, isEnterprise, isLocal } from '../../utils/utils.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -11,8 +11,10 @@ import { nangoConfigFile } from '../nango-config.service.js';
 import localFileService from './local.service.js';
 
 let client: S3Client | null = null;
+let useS3 = !isLocal();
 
 if (isEnterprise() && !(process.env['AWS_PUBLIC_ACCESS_KEY_ID'] && process.env['AWS_PUBLIC_SECRET_ACCESS'])) {
+    useS3 = false;
     client = new S3Client({
         region: (process.env['AWS_REGION'] as string) || 'us-west-2'
     });
@@ -31,14 +33,14 @@ class RemoteFileService {
     publicRoute = 'integration-templates';
 
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
-        if (isEnterprise()) {
+        if (isEnterprise() && !useS3) {
             const fileNameOnly = fileName.split('/').slice(-1)[0];
             const versionStrippedFileName = fileNameOnly?.replace(/-v[\d.]+(?=\.js$)/, '');
             localFileService.putIntegrationFile(versionStrippedFileName as string, fileContents, fileName.endsWith('.js'));
 
             return '_LOCAL_FILE_';
         }
-        if (!isCloud()) {
+        if (!useS3) {
             return '_LOCAL_FILE_';
         }
 
@@ -163,7 +165,7 @@ class RemoteFileService {
     }
 
     async deleteFiles(fileNames: string[]): Promise<void> {
-        if (!isCloud()) {
+        if (!isCloud() && !useS3) {
             return;
         }
 
@@ -199,7 +201,7 @@ class RemoteFileService {
         nangoConfigId: number,
         file_location: string
     ): Promise<void> {
-        if (!isCloud()) {
+        if (!isCloud() && !useS3) {
             return localFileService.zipAndSendFiles(res, integrationName, accountId, environmentId, nangoConfigId);
         } else {
             const nangoConfigLocation = file_location.split('/').slice(0, -3).join('/');
