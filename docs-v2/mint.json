@@ -111,6 +111,7 @@
                         "integration-templates/google-workspace",
                         "integration-templates/greenhouse",
                         "integration-templates/hackerrank-work",
+                        "integration-templates/hibob",
                         "integration-templates/hubspot",
                         "integration-templates/intercom",
                         "integration-templates/jira",

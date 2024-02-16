@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import { connectionService, configService, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
+import { activityFilter, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
 
 class ActivityController {
     public async retrieve(req: Request, res: Response, next: NextFunction) {
@@ -73,8 +73,8 @@ class ActivityController {
             const { environment } = response;
 
             const scripts = await getAllSyncAndActionNames(environment.id);
-            const integrations = await configService.getAllNames(environment.id);
-            const connections = await connectionService.getAllNames(environment.id);
+            const integrations = await activityFilter(environment.id, 'connection_id');
+            const connections = await activityFilter(environment.id, 'provider');
             res.send({ scripts, integrations, connections });
         } catch (error) {
             next(error);

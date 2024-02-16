@@ -353,40 +353,45 @@ export default function Activity() {
         const value = e.target.value;
         setStatus(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value, offset: 0 }));
     }
 
     const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedScript(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value, offset: 0 }));
     }
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedIntegration(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value, offset: 0 }));
     }
 
     const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedConnection(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value, offset: 0 }));
     }
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setDate(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value, offset: 0 }));
     }
 
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
