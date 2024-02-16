@@ -45,7 +45,9 @@ export enum MetricTypes {
 export enum SpanTypes {
     CONNECTION_TEST = 'nango.server.hooks.connectionTest',
     JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
-    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos'
+    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos',
+    RUNNER_EXEC = 'nango.runner.exec',
+    RUNNER_SDK = 'nango.runner.sdk'
 }
 
 class Telemetry {

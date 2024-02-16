@@ -8,6 +8,7 @@ import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import logger from '../logger/console.js';
 import type { Tracer } from 'dd-trace';
+import { SpanTypes } from '../utils/telemetry.js';
 
 /*
  *
@@ -795,7 +796,7 @@ export function instrumentSDK(rawNango: NangoAction | NangoSync, tracer: Tracer)
                     });
                     return target[propKey as 'proxy'].apply(this, args);
                 }
-                return tracer.wrap(`nango.runner.sdk.${propKey}`, proxified);
+                return tracer.wrap(`${SpanTypes.RUNNER_SDK}.${propKey}`, proxified);
             } else if ((propKey as keyof NangoSync) === 'batchSave') {
                 // In case of BatchSave the number of records are important
                 function proxified(this: NangoSync, ...args: Parameters<NangoSync['batchSave']>) {
@@ -805,10 +806,10 @@ export function instrumentSDK(rawNango: NangoAction | NangoSync, tracer: Tracer)
                     });
                     return (target as NangoSync)[propKey as 'batchSave'].apply(this, args);
                 }
-                return tracer.wrap(`nango.runner.sdk.${propKey}`, proxified);
+                return tracer.wrap(`${SpanTypes.RUNNER_SDK}.${propKey}`, proxified);
             }
 
-            return tracer.wrap(`nango.runner.sdk.${propKey}`, target[propKey]);
+            return tracer.wrap(`${SpanTypes.RUNNER_SDK}.${propKey}`, target[propKey]);
         }
     });
 }

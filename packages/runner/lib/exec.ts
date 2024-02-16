@@ -1,5 +1,5 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import { ActionError, NangoSync, NangoAction, instrumentSDK } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -28,7 +28,7 @@ export async function exec(
                 })();
             `;
 
-    return tracer.trace('nango.runner.exec', async (span) => {
+    return tracer.trace(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.accountId)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
