@@ -29,6 +29,9 @@ class LocalFileService {
         try {
             const realPath = fs.realpathSync(process.env['NANGO_INTEGRATIONS_FULL_PATH'] as string);
             if (!fs.existsSync(`${realPath}${distPrefix ? '/dist' : ''}/${syncName}`)) {
+                if (distPrefix) {
+                    fs.mkdirSync(`${realPath}/dist`, { recursive: true });
+                }
                 fs.writeFileSync(`${realPath}${distPrefix ? '/dist' : ''}/${syncName}`, fileContents, 'utf8');
             }
 
