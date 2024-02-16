@@ -1,0 +1,33 @@
+integrations:
+  hibob-service-user:
+    hibob-employees:
+      runs: every hour
+      returns:
+        - HibobEmployee
+      description: |
+        Returns a list of all active employees.
+        Details: full sync, doesn't track deletes, metadata is not required.
+models:
+  HibobEmployee:
+    id: string
+    firstName: string
+    surname: string
+    email: string
+    displayName: string
+    personal:
+      honorific: string
+      shortBirthDate: string
+      gender: string
+    about:
+      avatar: string
+      hobbies: string[]
+    work:
+      reportsTo:
+        id: string
+        firstName: string
+        surname: string
+        email: string
+      title: string
+      department: string
+      site: string
+      startDate: date
