@@ -103,6 +103,7 @@
                     "pages": [
                         "integration-templates/overview",
                         "integration-templates/asana",
+                        "integration-templates/ashby",
                         "integration-templates/bamboohr",
                         "integration-templates/confluence",
                         "integration-templates/clari-copilot",
