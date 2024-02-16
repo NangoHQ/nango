@@ -1483,7 +1483,7 @@ teamwork:
     authorization_url: https://www.teamwork.com/launchpad/login
     token_url: https://www.teamwork.com/launchpad/v1/token.json
     proxy:
-        base_url: https://api.surveymonkey.com
+        base_url: https://${connectionConfig.subdomain}${connectionConfig.extension}.teamwork.com
     docs: https://docs.nango.dev/integrations/all/teamwork
 tiktok-ads:
     auth_mode: OAUTH2
