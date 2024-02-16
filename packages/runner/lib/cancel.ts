@@ -1,7 +1,7 @@
 import { Result, resultOk, resultErr } from '@nangohq/shared';
 import { runningSyncsWithAborts } from './state.js';
 
-export const kill = (syncId: string): Result<string> => {
+export const cancel = (syncId: string): Result<string> => {
     const abortController = runningSyncsWithAborts.get(syncId);
     if (abortController) {
         abortController.abort();
