@@ -438,14 +438,12 @@ export default class SyncRun {
         if (index === numberOfModels - 1) {
             await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
             await updateSuccessActivityLog(this.activityLogId, true);
+
             // set the last sync date to when the sync started in case
             // the sync is long running to make sure we wouldn't miss
             // any changes while the sync is running
-            // but if the sync date was set by the user in the integration script,
-            // then don't override it
             if (!this.isWebhook) {
-                const override = false;
-                await setLastSyncDate(this.syncId as string, syncStartDate, override);
+                await setLastSyncDate(this.syncId as string, syncStartDate);
                 await slackNotificationService.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,

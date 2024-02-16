@@ -112,41 +112,9 @@ export async function setFrequency(id: string, frequency: string | null): Promis
 
 /**
  * Set Last Sync Date
- * @desc if passed a valid date set the sync date, however if
- * we don't want to override the sync make sure it is null
- * before we set it
- *
- * This is due to the fact that users can set the last sync date
- * during the integration script so we don't want to override what they
- * set in the script
  */
-export const setLastSyncDate = async (id: string, tempDate: Date | string, override = true): Promise<boolean> => {
-    const date = typeof tempDate === 'string' ? new Date(tempDate) : tempDate;
-
-    if (isNaN(date.getTime())) {
-        return false;
-    }
-
-    // if override is false that means we need to verify
-    // that we should update the last sync date
-    // if it isn't null
-    if (!override) {
-        const lastSyncDate = await getLastSyncDate(id);
-
-        if (lastSyncDate !== null) {
-            return false;
-        }
-    }
-
-    await schema()
-        .from<Sync>(TABLE)
-        .where({
-            id,
-            deleted: false
-        })
-        .update({
-            last_sync_date: date
-        });
+export const setLastSyncDate = async (id: string, date: Date): Promise<boolean> => {
+    await schema().from<Sync>(TABLE).where({ id, deleted: false }).update({ last_sync_date: date });
 
     return true;
 };
