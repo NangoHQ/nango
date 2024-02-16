@@ -25,7 +25,7 @@ import {
     SyncEndpoint
 } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
-import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { getEnv } from '../../../utils/utils.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
@@ -164,8 +164,8 @@ export async function deploy(
             .map((flow) => flow['syncName'])
             .join(', ')}).`;
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_DEPLOY_SUCCESS,
+        await telemetry.log(
+            LogTypes.SYNC_DEPLOY_SUCCESS,
             shortContent,
             LogActionEnum.SYNC_DEPLOY,
             {
@@ -190,8 +190,8 @@ export async function deploy(
 
         const shortContent = `Failure to deploy the syncs (${flowsWithVersions.map((flow) => flow.syncName).join(', ')}).`;
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_DEPLOY_FAILURE,
+        await telemetry.log(
+            LogTypes.SYNC_DEPLOY_FAILURE,
             shortContent,
             LogActionEnum.SYNC_DEPLOY,
             {
@@ -465,8 +465,8 @@ export async function deployPreBuilt(
             content
         });
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_DEPLOY_SUCCESS,
+        await telemetry.log(
+            LogTypes.SYNC_DEPLOY_SUCCESS,
             content,
             LogActionEnum.SYNC_DEPLOY,
             {
@@ -487,8 +487,8 @@ export async function deployPreBuilt(
         const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
         await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number, environment_id);
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_DEPLOY_FAILURE,
+        await telemetry.log(
+            LogTypes.SYNC_DEPLOY_FAILURE,
             content,
             LogActionEnum.SYNC_DEPLOY,
             {

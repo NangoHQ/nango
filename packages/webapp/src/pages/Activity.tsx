@@ -27,7 +27,7 @@ import { useActivityAPI } from '../utils/api';
 import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import type { ActivityResponse } from '../types';
+import type { ActivityMessageResponse, ActivityResponse } from '../types';
 
 import { useStore } from '../store';
 
@@ -218,11 +218,11 @@ export default function Activity() {
 
                 if (res?.status === 200) {
                     try {
-                        const allMessages = await res.json();
+                        const allMessages: ActivityMessageResponse = await res.json();
                         const logsWithMessages = activities.map((activity: ActivityResponse) => {
                             const logMessages = allMessages[activity.id];
                             if (logMessages) {
-                                activity.messages = logMessages;
+                                activity.messages = logMessages.reverse();
                             }
                             return activity;
                         });
@@ -354,40 +354,45 @@ export default function Activity() {
         const value = e.target.value;
         setStatus(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value, offset: 0 }));
     }
 
     const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedScript(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value, offset: 0 }));
     }
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedIntegration(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value, offset: 0 }));
     }
 
     const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedConnection(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value, offset: 0 }));
     }
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setDate(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value, offset: 0 }));
     }
 
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
@@ -834,6 +839,9 @@ export default function Activity() {
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
+                                                    {activity.messages.length >= 1000 && (
+                                                        <div className='text-center text-gray-500'>[only showing the last 1000 logs]</div>
+                                                    )}
                                                     {activity.messages.map((message, index: number) => (
                                                         <div key={index} className="flex flex-col max-w-7xl">
                                                             <div className="whitespace-normal break-all overflow-wrap">
