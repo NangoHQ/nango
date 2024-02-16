@@ -7,6 +7,7 @@ import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import logger from '../logger/console.js';
+import telemetry, { MetricTypes } from '../utils/telemetry.js';
 
 /*
  *
@@ -504,6 +505,7 @@ export class NangoAction {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
             throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
         }
+
         return;
     }
 
@@ -782,3 +784,34 @@ const persistApi = axios.create({
         return true;
     }
 });
+
+const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
+    'batchDelete',
+    'batchSave',
+    'batchSend',
+    'getConnection',
+    'getEnvironmentVariables',
+    'getMetadata',
+    'proxy',
+    'log'
+];
+
+/* eslint-disable no-inner-declarations */
+/**
+ * This function will enable tracing on the SDK
+ * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
+ */
+export function instrumentSDK(rawNango: NangoAction | NangoSync) {
+    return new Proxy(rawNango, {
+        get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
+            // Method name is not matching the allowList we don't do anything else
+            if (!TELEMETRY_ALLOWED_METHODS.includes(propKey)) {
+                return target[propKey];
+            }
+
+            return telemetry.time(`${MetricTypes.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
+        }
+    });
+}
+
+/* eslint-enable no-inner-declarations */

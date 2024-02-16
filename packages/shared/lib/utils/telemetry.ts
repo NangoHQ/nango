@@ -39,13 +39,15 @@ export enum LogTypes {
 export enum MetricTypes {
     ACTION_TRACK_RUNTIME = 'action_track_runtime',
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
-    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime'
+    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
+    RUNNER_SDK = 'nango.runner.sdk'
 }
 
 export enum SpanTypes {
     CONNECTION_TEST = 'nango.server.hooks.connectionTest',
     JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
-    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos'
+    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos',
+    RUNNER_EXEC = 'nango.runner.exec'
 }
 
 class Telemetry {
@@ -90,6 +92,48 @@ class Telemetry {
 
     public async duration(metricName: MetricTypes, value: number) {
         tracer.dogstatsd.distribution(metricName, value);
+    }
+
+    public time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: MetricTypes, func: F): F {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const that = this;
+
+        const duration = (start: [number, number]) => {
+            const durationComponents = process.hrtime(start);
+            const seconds = durationComponents[0];
+            const nanoseconds = durationComponents[1];
+            const duration = seconds * 1000 + nanoseconds / 1e6;
+
+            that.duration(metricName, duration);
+        };
+
+        // This function should handle both async/sync function
+        // So it's try/catch regular execution and use .then() for async
+        // @ts-expect-error can't fix this
+        return function wrapped(...args: any) {
+            const start = process.hrtime();
+
+            try {
+                const res = func(...args);
+                if (res[Symbol.toStringTag] === 'Promise') {
+                    return res.then(
+                        (v) => {
+                            duration(start);
+                            return v;
+                        },
+                        (err) => {
+                            duration(start);
+                            throw err;
+                        }
+                    );
+                }
+
+                return res;
+            } catch (err) {
+                duration(start);
+                throw err;
+            }
+        };
     }
 }
 
