@@ -178,7 +178,7 @@ export function getApiUrl() {
     if (isStaging()) {
         return stagingHost;
     } else if (isEnterprise()) {
-        return process.env['NANGO_SERVER_URL'];
+        return process.env['NANGO_SERVER_URL'] as string;
     } else if (isProd()) {
         return cloudHost;
     }
