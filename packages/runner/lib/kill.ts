@@ -1,10 +1,10 @@
 import { Result, resultOk, resultErr } from '@nangohq/shared';
-import { runningSyncs } from './state.js';
+import { runningSyncsWithAborts } from './state.js';
 
 export const kill = (syncId: string): Result<string> => {
-    const sync = runningSyncs.get(syncId);
-    if (sync) {
-        runningSyncs.set(syncId, { cancelled: true });
+    const abortController = runningSyncsWithAborts.get(syncId);
+    if (abortController) {
+        abortController.abort();
         return resultOk('cancelled');
     } else {
         return resultErr('child process not found');

@@ -198,16 +198,6 @@ export class ActionError extends Error {
     }
 }
 
-export class SyncCancelledError extends Error {
-    userCancelled: boolean;
-
-    constructor() {
-        super('Sync was cancelled');
-        this.name = 'SyncCancelledError';
-        this.userCancelled = true;
-    }
-}
-
 export interface NangoProps {
     host?: string;
     secretKey: string;
@@ -225,6 +215,7 @@ export interface NangoProps {
     attributes?: object | undefined;
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
+    abortSignal?: AbortSignal;
 }
 
 interface EnvironmentVariable {
@@ -241,6 +232,7 @@ export class NangoAction {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
+    abortSignal?: AbortSignal;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -288,6 +280,10 @@ export class NangoAction {
         if (config.attributes) {
             this.attributes = config.attributes;
         }
+
+        if (config.abortSignal) {
+            this.abortSignal = config.abortSignal;
+        }
     }
 
     protected stringify(): string {
@@ -319,7 +315,14 @@ export class NangoAction {
         };
     }
 
+    protected async verifySyncState(): Promise<void> {
+        if (this.abortSignal?.aborted) {
+            process.exit(0);
+        }
+    }
+
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        this.verifySyncState();
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
@@ -402,18 +405,22 @@ export class NangoAction {
     }
 
     public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials> {
+        this.verifySyncState();
         return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async getConnection(): Promise<Connection> {
+        this.verifySyncState();
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        this.verifySyncState();
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
     public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        this.verifySyncState();
         return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
@@ -423,10 +430,12 @@ export class NangoAction {
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
+        this.verifySyncState();
         return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async getWebhookURL(): Promise<string | undefined> {
+        this.verifySyncState();
         const { config: integration } = await this.nango.getIntegration(this.providerConfigKey!, true);
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
@@ -453,6 +462,7 @@ export class NangoAction {
      * silly = light green
      */
     public async log(...args: any[]): Promise<void> {
+        this.verifySyncState();
         if (args.length === 0) {
             return;
         }
@@ -621,6 +631,8 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchSave<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.verifySyncState();
+
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchSave received an empty array. No records to save.');
@@ -665,6 +677,7 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.verifySyncState();
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchDelete received an empty array. No records to delete.');
@@ -709,6 +722,7 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.verifySyncState();
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchUpdate received an empty array. No records to update.');
@@ -753,6 +767,7 @@ export class NangoSync extends NangoAction {
     }
 
     public override async getMetadata<T = Metadata>(): Promise<T> {
+        this.verifySyncState();
         if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;
         }

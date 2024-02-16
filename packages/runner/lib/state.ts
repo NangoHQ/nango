@@ -1,1 +1,1 @@
-export const runningSyncs = new Map<string, { cancelled: boolean }>();
+export const runningSyncsWithAborts = new Map<string, AbortController>();
