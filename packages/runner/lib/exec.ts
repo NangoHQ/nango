@@ -1,5 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoSync, NangoAction } from '@nangohq/shared';
+import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
 import * as url from 'url';
@@ -14,15 +15,25 @@ export async function exec(
     codeParams?: object
 ): Promise<RunnerOutput> {
     const isAction = isInvokedImmediately && !isWebhook;
+
+    const abortController = new AbortController();
+
+    if (!isInvokedImmediately && nangoProps.syncId) {
+        syncAbortControllers.set(nangoProps.syncId, abortController);
+    }
+
     const nango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+
+    nango.abortSignal = abortController.signal;
+
     const wrappedCode = `
-                (function() {
-                    var module = { exports: {} };
-                    var exports = module.exports;
-                    ${code}
-                    return module.exports;
-                })();
-            `;
+        (function() {
+            var module = { exports: {} };
+            var exports = module.exports;
+            ${code}
+            return module.exports;
+        })();
+    `;
 
     try {
         const script = new vm.Script(wrappedCode);

@@ -20,6 +20,7 @@ interface ScriptObject {
     context: Context | null;
     runner: Runner;
     activityLogId: number | undefined;
+    cancelled?: boolean;
 }
 
 class IntegrationService implements IntegrationServiceInterface {
@@ -44,7 +45,7 @@ class IntegrationService implements IntegrationServiceInterface {
         });
 
         if (isOk(res)) {
-            this.runningScripts.delete(syncId);
+            this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
         } else {
             if (activityLogId && environmentId) {
                 await createActivityLogMessage({
@@ -160,6 +161,17 @@ class IntegrationService implements IntegrationServiceInterface {
                 return { success: true, error: null, response: res };
             } catch (err: any) {
                 runSpan.setTag('error', err);
+
+                const scriptObject = this.runningScripts.get(syncId);
+
+                if (scriptObject) {
+                    const { cancelled } = scriptObject;
+
+                    if (cancelled) {
+                        this.runningScripts.delete(syncId);
+                        return { success: false, error: new NangoError('script_cancelled'), response: null };
+                    }
+                }
 
                 let errorType = 'sync_script_failure';
                 if (isWebhook) {
