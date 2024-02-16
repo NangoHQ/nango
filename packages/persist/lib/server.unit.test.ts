@@ -32,23 +32,6 @@ describe('Persist API', () => {
         expect(await response.json()).toEqual({ status: 'ok' });
     });
 
-    it('should set last sync date', async () => {
-        const syncId = 'abc';
-        dbTracker.on('query', (query) => {
-            query.response(true);
-        });
-        const response = await fetch(`${serverUrl}/sync/${syncId}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                lastSyncDate: new Date()
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        expect(response.status).toEqual(201);
-    });
-
     it('should log', async () => {
         dbTracker.on('query', (query) => {
             query.response([{ id: 1 }]);

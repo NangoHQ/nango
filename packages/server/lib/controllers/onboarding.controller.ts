@@ -160,16 +160,21 @@ class OnboardingController {
             const { account, environment } = response;
             await configService.createDefaultProviderConfigIfNotExisting(account.id);
             const githubDemoSync = flowService.getFlow(syncName);
+            if (!githubDemoSync) {
+                throw new Error('failed_to_find_demo_sync');
+            }
+
+            githubDemoSync.runs = 'every 5 minutes';
             const config: IncomingPreBuiltFlowConfig[] = [
                 {
                     provider: 'github',
                     providerConfigKey: configService.DEMO_GITHUB_CONFIG_KEY,
                     type: SyncConfigType.SYNC,
                     name: syncName,
-                    runs: githubDemoSync?.runs as string,
-                    auto_start: githubDemoSync?.auto_start as boolean,
-                    models: githubDemoSync?.returns as string[],
-                    model_schema: JSON.stringify(githubDemoSync?.model_schema),
+                    runs: githubDemoSync.runs,
+                    auto_start: githubDemoSync.auto_start === true,
+                    models: githubDemoSync.returns,
+                    model_schema: JSON.stringify(githubDemoSync.model_schema),
                     is_public: true,
                     public_route: 'github'
                 }

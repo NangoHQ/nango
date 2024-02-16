@@ -1,7 +1,7 @@
 import type { HTTP_VERB, Timestamps } from './Generic.js';
 
 export const logLevelValues = ['info', 'debug', 'error', 'warn', 'http', 'verbose', 'silly'] as const;
-export type LogLevel = typeof logLevelValues[number];
+export type LogLevel = (typeof logLevelValues)[number];
 export type LogAction =
     | 'account'
     | 'action'
@@ -13,6 +13,7 @@ export type LogAction =
     | 'internal authorization'
     | 'infrastructure'
     | 'pause sync'
+    | 'cancel sync'
     | 'proxy'
     | 'restart sync'
     | 'sync'
@@ -35,6 +36,7 @@ export enum LogActionEnum {
     PAUSE_SYNC = 'pause sync',
     PROXY = 'proxy',
     RESTART_SYNC = 'restart sync',
+    CANCEL_SYNC = 'cancel sync',
     SYNC = 'sync',
     SYNC_CLIENT = 'sync client',
     SYNC_DEPLOY = 'sync deploy',
@@ -43,9 +45,7 @@ export enum LogActionEnum {
     WEBHOOK = 'webhook'
 }
 
-interface Message {
-    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
-}
+type Message = Record<string, unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>>;
 
 export interface ActivityLog {
     id?: number;

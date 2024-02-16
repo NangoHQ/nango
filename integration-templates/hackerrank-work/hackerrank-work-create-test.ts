@@ -1,35 +1,35 @@
 import type { NangoAction, HackerRankWorkTest } from './models';
 
 interface HackerRankWorkCreateTestInput {
-    name: String;
+    name: string;
     starttime: Date;
     endtime: Date;
-    duration: Number;
-    instructions: String;
-    locked: Boolean;
-    draft: String;
-    languages: String[];
-    candidate_details: String[];
-    custom_acknowledge_text: String;
-    cutoff_score: Number;
-    master_password: String;
-    hide_compile_test: Boolean;
-    tags: String[];
-    role_ids: String[];
-    experience: String[];
-    questions: String[];
-    mcq_incorrect_score: Number;
-    mcq_correct_score: Number;
-    secure: Boolean;
-    shuffle_questions: Boolean;
-    test_admins: String[];
-    hide_template: Boolean;
-    enable_acknowledgement: Boolean;
-    enable_proctoring: Boolean;
-    candidate_tab_switch: Boolean;
-    track_editor_paste: Boolean;
-    show_copy_paste_prompt: Boolean;
-    ide_config: String;
+    duration: number;
+    instructions: string;
+    locked: boolean;
+    draft: string;
+    languages: string[];
+    candidate_details: string[];
+    custom_acknowledge_text: string;
+    cutoff_score: number;
+    master_password: string;
+    hide_compile_test: boolean;
+    tags: string[];
+    role_ids: string[];
+    experience: string[];
+    questions: string[];
+    mcq_incorrect_score: number;
+    mcq_correct_score: number;
+    secure: boolean;
+    shuffle_questions: boolean;
+    test_admins: string[];
+    hide_template: boolean;
+    enable_acknowledgement: boolean;
+    enable_proctoring: boolean;
+    candidate_tab_switch: boolean;
+    track_editor_paste: boolean;
+    show_copy_paste_prompt: boolean;
+    ide_config: string;
 }
 
 const mapInputToPostData = (input: HackerRankWorkCreateTestInput): Record<string, any> => {

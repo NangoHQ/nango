@@ -1,3 +1,14 @@
 node_modules
 **/node_modules
 npm-debug.log
+
+# Private keys can be in there
+**/.env
+
+.git
+.github/
+.husky/
+docker-compose.yml
+**/nango-data
+dev/
+docs-v2/

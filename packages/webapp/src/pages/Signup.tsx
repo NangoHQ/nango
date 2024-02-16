@@ -93,7 +93,7 @@ export default function Signup() {
                                         id="password"
                                         name="password"
                                         type="password"
-                                        autoComplete="current-password"
+                                        autoComplete="new-password"
                                         required
                                         minLength={8}
                                         maxLength={50}
