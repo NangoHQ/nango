@@ -9,7 +9,7 @@ const mockWebsocket = () => {
     return mock as WebSocket;
 };
 
-const mockRes = ({ status }: { status: Number }) => {
+const mockRes = ({ status }: { status: number }) => {
     const mock = {} as any;
     mock.status = () => status;
     mock.set = vi.fn();

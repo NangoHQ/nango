@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import {
-    setLastSyncDate,
     createActivityLogMessage,
     LogLevel,
     errorManager,
@@ -12,11 +11,14 @@ import {
     syncDataService,
     getSyncConfigByJobId,
     DataRecord,
-    UpsertResponse
+    UpsertResponse,
+    resultOk,
+    resultErr,
+    isOk,
+    Result
 } from '@nangohq/shared';
 import tracer from '../tracer.js';
 import type { Span } from 'dd-trace';
-import { Result, ok, err } from '../utils/result.js';
 
 type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
@@ -41,19 +43,6 @@ type RecordRequest = Request<
 >;
 
 class PersistController {
-    public async saveLastSyncDate(req: Request<{ syncId: string }, any, { lastSyncDate: Date }, any, Record<string, any>>, res: Response, next: NextFunction) {
-        const {
-            params: { syncId },
-            body: { lastSyncDate }
-        } = req;
-        const result = await setLastSyncDate(syncId, lastSyncDate);
-        if (result) {
-            res.status(201).send();
-        } else {
-            next(new Error(`Failed to save last sync date '${lastSyncDate}' for sync '${syncId}'`));
-        }
-    }
-
     public async saveActivityLog(
         req: Request<{ environmentId: number }, any, { activityLogId: number; level: LogLevel; msg: string }, any, Record<string, any>>,
         res: Response,
@@ -114,10 +103,10 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        if (result.ok) {
+        if (isOk(result)) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to save records': ${result.error.message}`));
+            next(new Error(`'Failed to save records': ${result.err.message}`));
         }
     }
 
@@ -155,10 +144,10 @@ class PersistController {
             softDelete: true,
             persistFunction: persist
         });
-        if (result.ok) {
+        if (isOk(result)) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to delete records': ${result.error.message}`));
+            next(new Error(`'Failed to delete records': ${result.err.message}`));
         }
     }
 
@@ -194,10 +183,10 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        if (result.ok) {
+        if (isOk(result)) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to update records': ${result.error.message}`));
+            next(new Error(`'Failed to update records': ${result.err.message}`));
         }
     }
 
@@ -273,15 +262,15 @@ class PersistController {
                 content: `There was an issue with the batch ${persistType}. ${error?.message}`,
                 timestamp: Date.now()
             });
-            const res = err(`Failed to ${persistType} records ${activityLogId}`);
-            span.setTag('error', res.error).finish();
+            const res = resultErr(`Failed to ${persistType} records ${activityLogId}`);
+            span.setTag('error', res.err).finish();
             return res;
         }
         const syncConfig = await getSyncConfigByJobId(syncJobId);
 
         if (syncConfig && !syncConfig?.models.includes(model)) {
-            const res = err(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
-            span.setTag('error', res.error).finish();
+            const res = resultErr(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            span.setTag('error', res.err).finish();
             return res;
         }
 
@@ -307,7 +296,7 @@ class PersistController {
 
             await updateSyncJobResult(syncJobId, updatedResults, model);
             span.finish();
-            return ok(void 0);
+            return resultOk(void 0);
         } else {
             const content = `There was an issue with the batch ${persistType}. ${persistResult?.error}`;
 
@@ -319,7 +308,7 @@ class PersistController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(content, {
+            errorManager.report(content, {
                 environmentId: environmentId,
                 source: ErrorSourceEnum.CUSTOMER,
                 operation: LogActionEnum.SYNC,
@@ -331,8 +320,8 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            const res = err(persistResult?.error!);
-            span.setTag('error', res.error).finish();
+            const res = resultErr(persistResult?.error!);
+            span.setTag('error', res.err).finish();
             return res;
         }
     }

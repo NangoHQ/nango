@@ -1,0 +1,156 @@
+integrations:
+  ashby:
+    ashby-candidates:
+      runs: every hour
+      returns:
+        - AshbyCandidate
+      description: |
+        Fetch a list of all candidates from your ashby account.
+        Details: Increamental sync, doesn't track deletes, metadata is required.
+    ashby-jobs:
+      runs: every hour
+      returns:
+        - AshbyJob
+      description: |
+        Fetch a list of all jobs from your ashby account.
+        Details: Increamental sync, doesn't track deletes, metadata is required.
+    ashby-create-application:
+      type: action
+      returns: AshbyCreateApplicationResponse
+      description: |
+        Action to consider a candidate for a job.
+    ashby-create-note:
+      type: action
+      returns: AshbyCreateNoteResponse
+      description: |
+        Action to create a note on a candidate.
+models:
+  AshbyCandidate:
+    id: string
+    createdAt: date
+    name: string
+    primaryEmailAddress:
+      value: string
+      type: string
+      isPrimary: boolean
+    emailAddresses: []
+    primaryPhoneNumber:
+      value: string
+      type: string
+      isPrimary: boolean
+    phoneNumbers: []
+    socialLinks: []
+    tags: []
+    position: string
+    company: string
+    school: string
+    applicationIds: string[]
+    resumeFileHandle:
+      id: string
+      name: string
+      handle: string
+    fileHandles: []
+    customFields: []
+    profileUrl: string
+    source:
+      id: string
+      title: string
+      isArchived: boolean
+      sourceType:
+        id: string
+        title: string
+        isArchived: boolean
+    creditedToUser:
+      id: string
+      firstName: string
+      lastName: string
+      email: string
+      globalRole: string
+      isEnabled: boolean
+      updatedAt: date
+  AshbyJob:
+    id: string
+    title: string
+    confidential: boolean
+    status: string
+    employmentType: string
+    locationId: string
+    departmentId: string
+    defaultInterviewPlanId: string
+    interviewPlanIds: string[]
+    customFields: []
+    jobPostingIds: string[]
+    customRequisitionId: string
+    hiringTeam: []
+    updatedAt: date
+    location:
+      id: string
+      name: string
+      isArchived: boolean
+      address:
+        postalAddress:
+          addressCountry: string
+          addressRegion: string
+          addressLocality: string
+      isRemote: boolean
+    openings: []
+  AshbyCreateApplicationResponse:
+    id: string
+    createdAt: date
+    updatedAt: date
+    status: string
+    customFields: []
+    candidate:
+      id: string
+      name: string
+      primaryEmailAddress:
+        value: string
+        type: string
+        isPrimary: boolean
+      primaryPhoneNumber:
+        value: string
+        type: string
+        isPrimary: boolean
+    currentInterviewStage:
+      id: string
+      title: string
+      type: string
+      orderInInterviewPlan: number
+      interviewPlanId: string
+    source:
+      id: string
+      title: string
+      isArchived: boolean
+      sourceType:
+        id: string
+        title: string
+        isArchived: boolean
+    archiveReason:
+      id: string
+      text: string
+      reasonType: string
+      isArchived: boolean
+    job:
+      id: string
+      title: string
+      locationId: string
+      departmentId: string
+    creditedToUser:
+      id: string
+      firstName: string
+      lastName: string
+      email: string
+      globalRole: string
+      isEnabled: boolean
+      updatedAt: date
+    hiringTeam: []
+    appliedViaJobPostingId: string
+  AshbyCreateNoteResponse:
+    id: string
+    createdAt: date
+    content: string
+    author:
+      id: string
+      firstName: string
+      lastName: string
+      email: string

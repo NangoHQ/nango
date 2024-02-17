@@ -3,8 +3,9 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import type { NangoProps } from '@nangohq/shared';
+import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { exec } from './exec.js';
+import { cancel } from './cancel.js';
 import superjson from 'superjson';
 import { fetch } from 'undici';
 
@@ -25,7 +26,8 @@ interface RunParams {
 
 const appRouter = router({
     health: healthProcedure(),
-    run: runProcedure()
+    run: runProcedure(),
+    cancel: cancelProcedure()
 });
 
 export type AppRouter = typeof appRouter;
@@ -53,9 +55,17 @@ const notifyIdleEndpoint = process.env['NOTIFY_IDLE_ENDPOINT'] || '';
 function runProcedure() {
     return publicProcedure
         .input((input) => input as RunParams)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input }): Promise<RunnerOutput> => {
             const { nangoProps, code, codeParams } = input;
             return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
+        });
+}
+
+function cancelProcedure() {
+    return publicProcedure
+        .input((input) => input as { syncId: string })
+        .mutation(async ({ input }) => {
+            return cancel(input.syncId);
         });
 }
 

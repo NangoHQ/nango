@@ -14,7 +14,7 @@ interface ResultPage {
 }
 
 export default async function fetchData(nango: NangoSync) {
-    let subdomain = await getZendeskSubdomain(nango);
+    const subdomain = await getZendeskSubdomain(nango);
     let content: ResultPage | null = null;
     while (true) {
         content = await paginate(nango, 'get', '/api/v2/help_center/en-us/articles', content, 2, subdomain);
@@ -23,7 +23,7 @@ export default async function fetchData(nango: NangoSync) {
             break;
         }
 
-        let ZendeskArticles = mapZendeskArticles(content.articles);
+        const ZendeskArticles = mapZendeskArticles(content.articles);
         await nango.batchSave(ZendeskArticles, 'ZendeskArticle');
 
         if (!content.has_more) {

@@ -1,20 +1,13 @@
-import { getSyncConfigByJobId } from '../services/sync/config/config.service.js';
-import { updateRecord, upsert } from '../services/sync/data/data.service.js';
-import { formatDataRecords } from '../services/sync/data/records.service.js';
-import environmentService from '../services/environment.service.js';
-import { createActivityLogMessage } from '../services/activity/activity.service.js';
-import { setLastSyncDate } from '../services/sync/sync.service.js';
-import { updateSyncJobResult } from '../services/sync/job.service.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { LogActionEnum } from '../models/Activity.js';
-import { getGlobalWebhookReceiveUrl } from '../utils/utils.js';
-
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
-import { getPersistAPIUrl } from '../utils/utils.js';
+import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
+import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
+import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
+import logger from '../logger/console.js';
+import telemetry, { MetricTypes } from '../utils/telemetry.js';
 
 /*
  *
@@ -26,21 +19,21 @@ import { getPersistAPIUrl } from '../utils/utils.js';
  */
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
-interface ParamEncoder {
-    (value: any, defaultEncoder: (value: any) => any): any;
-}
+type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 
 interface GenericFormData {
     append(name: string, value: any, options?: any): any;
 }
 
-interface SerializerVisitor {
-    (this: GenericFormData, value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
-}
+type SerializerVisitor = (
+    this: GenericFormData,
+    value: any,
+    key: string | number,
+    path: null | (string | number)[],
+    helpers: FormDataVisitorHelpers
+) => boolean;
 
-interface CustomParamsSerializer {
-    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
-}
+type CustomParamsSerializer = (params: Record<string, any>, options?: ParamsSerializerOptions) => string;
 
 interface FormDataVisitorHelpers {
     defaultVisitor: SerializerVisitor;
@@ -69,9 +62,8 @@ export interface AxiosResponse<T = any, D = any> {
     request?: any;
 }
 
-interface DataResponse {
-    id?: string;
-    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
+interface UserLogParameters {
+    level?: LogLevel;
 }
 
 enum PaginationType {
@@ -178,9 +170,7 @@ interface OAuth1Credentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
-interface Metadata {
-    [key: string]: string | Record<string, any>;
-}
+type Metadata = Record<string, string | Record<string, any>>;
 
 interface Connection {
     id?: number;
@@ -198,9 +188,9 @@ interface Connection {
 
 export class ActionError extends Error {
     type: string;
-    payload: unknown;
+    payload?: Record<string, unknown>;
 
-    constructor(payload?: unknown) {
+    constructor(payload?: Record<string, unknown>) {
         super();
         this.type = 'action_script_runtime_error';
         if (payload) {
@@ -226,11 +216,7 @@ export interface NangoProps {
     attributes?: object | undefined;
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
-    usePersistAPI?: boolean;
-}
-
-interface UserLogParameters {
-    level?: LogLevel;
+    abortSignal?: AbortSignal;
 }
 
 interface EnvironmentVariable {
@@ -247,7 +233,7 @@ export class NangoAction {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
-    usePersistAPI: boolean;
+    abortSignal?: AbortSignal;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -296,45 +282,91 @@ export class NangoAction {
             this.attributes = config.attributes;
         }
 
-        this.usePersistAPI = config.usePersistAPI || false;
+        if (config.abortSignal) {
+            this.abortSignal = config.abortSignal;
+        }
     }
 
-    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        const internalConfig = {
-            environmentId: this.environmentId as number,
-            isFlow: true,
-            isDryRun: this.dryRun as boolean,
-            existingActivityLogId: this.activityLogId as number,
-            throwErrors: true
-        };
+    protected stringify(): string {
+        return JSON.stringify(this, (key, value) => {
+            if (key === 'secretKey') {
+                return '********';
+            }
+            return value;
+        });
+    }
 
-        let connection = undefined;
-
+    private proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;
         }
-
         if (!config.providerConfigKey && this.providerConfigKey) {
             config.providerConfigKey = this.providerConfigKey;
         }
+        if (!config.connectionId) {
+            throw new Error('Missing connection id');
+        }
+        if (!config.providerConfigKey) {
+            throw new Error('Missing provider config key');
+        }
+        return {
+            ...config,
+            providerConfigKey: config.providerConfigKey,
+            connectionId: config.connectionId
+        };
+    }
 
+    protected async exitSyncIfAborted(): Promise<void> {
+        if (this.abortSignal?.aborted) {
+            process.exit(0);
+        }
+    }
+
+    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        this.exitSyncIfAborted();
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
-            const { connectionId, providerConfigKey } = config;
-            connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
-
+            const proxyConfig = this.proxyConfig(config);
+            const connection = await this.nango.getConnection(proxyConfig.providerConfigKey, proxyConfig.connectionId);
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
+            const {
+                config: { provider }
+            } = await this.nango.getIntegration(proxyConfig.providerConfigKey);
 
-            const responseOrError = await proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection });
+            const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
+                existingActivityLogId: this.activityLogId as number,
+                connection: connection,
+                provider
+            });
 
-            if (responseOrError instanceof Error) {
-                throw responseOrError;
+            if (activityLogs) {
+                for (const log of activityLogs) {
+                    if (log.level === 'debug') continue;
+                    await this.log(log.content, { level: log.level });
+                    switch (log.level) {
+                        case 'error':
+                            logger.error(log.content);
+                            break;
+                        case 'warn':
+                            logger.warn(log.content);
+                            break;
+                        case 'info':
+                            logger.info(log.content);
+                            break;
+                        default:
+                            logger.debug(log.content);
+                    }
+                }
             }
 
-            return responseOrError as unknown as Promise<AxiosResponse<T>>;
+            if (response instanceof Error) {
+                throw response;
+            }
+
+            return response;
         }
     }
 
@@ -374,52 +406,84 @@ export class NangoAction {
     }
 
     public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials> {
+        this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async getConnection(): Promise<Connection> {
+        this.exitSyncIfAborted();
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        this.exitSyncIfAborted();
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
     public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        this.exitSyncIfAborted();
         return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
-        console.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
+        logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
+        this.exitSyncIfAborted();
         return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async getWebhookURL(): Promise<string> {
-        const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
-        const providerConfigKey: string = this.providerConfigKey as string;
-        const response = await this.nango.getIntegration(providerConfigKey);
-        if (!response || !response.config || !response.config.provider) {
-            throw Error(`There was no provider found for the provider config key: ${providerConfigKey}`);
+    public async getWebhookURL(): Promise<string | undefined> {
+        this.exitSyncIfAborted();
+        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey!, true);
+        if (!integration || !integration.provider) {
+            throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
-        const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(this.environmentId as number);
-        const webhookURL = `${webhookBaseUrl}/${environmentUuid}/${response.config.provider}`;
-
-        return webhookURL;
+        return (integration as IntegrationWithCreds).webhook_url;
     }
 
     public async getFieldMapping(): Promise<Metadata> {
-        console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
+        logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
         const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 
-    public async log(content: string, userDefinedLevel?: UserLogParameters): Promise<void> {
+    /**
+     * Log
+     * @desc Log a message to the activity log which shows up in the Nango Dashboard
+     * note that the last argument can be an object with a level property to specify the log level
+     * example: await nango.log('This is a log message', { level: 'error' })
+     * error = red
+     * warn = orange
+     * info = white
+     * debug = grey
+     * http = green
+     * silly = light green
+     */
+    public async log(...args: any[]): Promise<void> {
+        this.exitSyncIfAborted();
+        if (args.length === 0) {
+            return;
+        }
+
+        const lastArg = args[args.length - 1];
+
+        const isUserDefinedLevel = (object: UserLogParameters | any): boolean => {
+            return typeof lastArg === 'object' && 'level' in object;
+        };
+
+        const userDefinedLevel: UserLogParameters | undefined = isUserDefinedLevel(lastArg) ? lastArg : undefined;
+
+        if (userDefinedLevel) {
+            args.pop();
+        }
+
+        const content = safeStringify(args);
+
         if (this.dryRun) {
-            console.log(content);
+            logger.info([...args]);
             return;
         }
 
@@ -427,41 +491,22 @@ export class NangoAction {
             throw new Error('There is no current activity log stream to log to');
         }
 
-        if (this.usePersistAPI) {
-            const response = await persistApi({
-                method: 'POST',
-                url: `/environment/${this.environmentId}/log`,
-                data: {
-                    activityLogId: this.activityLogId,
-                    level: userDefinedLevel?.level ?? 'info',
-                    msg: content
-                }
-            });
-            if (response.status > 299) {
-                console.log(
-                    `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    JSON.stringify(this, (key, value) => {
-                        if (key === 'secretKey') {
-                            return '********';
-                        }
-                        return value;
-                    })
-                );
-                throw new Error(`cannot save log for activityLogId '${this.activityLogId}'`);
+        const response = await persistApi({
+            method: 'POST',
+            url: `/environment/${this.environmentId}/log`,
+            data: {
+                activityLogId: this.activityLogId,
+                level: userDefinedLevel?.level ?? 'info',
+                msg: content
             }
-            return;
+        });
+
+        if (response.status > 299) {
+            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
         }
 
-        await createActivityLogMessage(
-            {
-                level: userDefinedLevel?.level ?? 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content,
-                timestamp: Date.now()
-            },
-            false
-        );
+        return;
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -514,20 +559,21 @@ export class NangoAction {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
+        const proxyConfig = this.proxyConfig(config);
         switch (paginationConfig.type.toLowerCase()) {
             case PaginationType.CURSOR:
                 return yield* paginateService.cursor<T>(
-                    config,
+                    proxyConfig,
                     paginationConfig as CursorPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,
                     this.proxy.bind(this)
                 );
             case PaginationType.LINK:
-                return yield* paginateService.link<T>(config, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                return yield* paginateService.link<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
             case PaginationType.OFFSET:
                 return yield* paginateService.offset<T>(
-                    config,
+                    proxyConfig,
                     paginationConfig as OffsetPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,
@@ -572,52 +618,26 @@ export class NangoSync extends NangoAction {
     }
 
     /**
-     * Set Sync Last Sync Date
-     * @desc permanently set the last sync date for the sync
-     * to be used for the next sync run
+     * Deprecated, reach out to support
      */
-    public async setLastSyncDate(date: Date): Promise<boolean> {
-        if (date.toString() === 'Invalid Date') {
-            throw new Error('Invalid Date');
-        }
-        if (this.usePersistAPI) {
-            const response = await persistApi({
-                method: 'PUT',
-                url: `/sync/${this.syncId}`,
-                data: {
-                    lastSyncDate: date
-                }
-            });
-            if (response.status > 299) {
-                console.log(
-                    `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    JSON.stringify(this, (key, value) => {
-                        if (key === 'secretKey') {
-                            return '********';
-                        }
-                        return value;
-                    })
-                );
-                throw new Error(`cannot set lastSyncDate for sync '${this.syncId}'`);
-            }
-            return true;
-        } else {
-            return await setLastSyncDate(this.syncId as string, date);
-        }
+    public async setLastSyncDate(): Promise<void> {
+        logger.warn('setLastSyncDate is deprecated. Please contact us if you are using this method.');
     }
 
     /**
      * Deprecated, please use batchSave
      */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
-        console.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
+        logger.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
         return this.batchSave(results, model);
     }
 
     public async batchSave<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.exitSyncIfAborted();
+
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchSave received an empty array. No records to save.');
+                logger.info('batchSave received an empty array. No records to save.');
             }
             return true;
         }
@@ -632,138 +652,37 @@ export class NangoSync extends NangoAction {
             return null;
         }
 
-        if (this.usePersistAPI) {
-            for (let i = 0; i < results.length; i += this.batchSize) {
-                const batch = results.slice(i, i + this.batchSize);
-                const response = await persistApi({
-                    method: 'POST',
-                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                    data: {
-                        model,
-                        records: batch,
-                        providerConfigKey: this.providerConfigKey,
-                        connectionId: this.connectionId,
-                        activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate || new Date(),
-                        trackDeletes: this.track_deletes
-                    }
-                });
-                if (response.status > 299) {
-                    console.log(
-                        `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                        JSON.stringify(this, (key, value) => {
-                            if (key === 'secretKey') {
-                                return '********';
-                            }
-                            return value;
-                        })
-                    );
-                    throw new Error(`cannot save records for sync '${this.syncId}'`);
+        for (let i = 0; i < results.length; i += this.batchSize) {
+            const batch = results.slice(i, i + this.batchSize);
+            const response = await persistApi({
+                method: 'POST',
+                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                data: {
+                    model,
+                    records: batch,
+                    providerConfigKey: this.providerConfigKey,
+                    connectionId: this.connectionId,
+                    activityLogId: this.activityLogId,
+                    lastSyncDate: this.lastSyncDate || new Date(),
+                    trackDeletes: this.track_deletes
                 }
-            }
-            return true;
-        }
-
-        const {
-            success,
-            error,
-            response: formattedResults
-        } = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId,
-            this.lastSyncDate,
-            this.track_deletes
-        );
-
-        if (!success || formattedResults === null) {
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch save. ${error?.message}`,
-                    timestamp: Date.now()
-                });
-            }
-
-            throw error;
-        }
-
-        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
-
-        if (syncConfig && !syncConfig?.models.includes(model)) {
-            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
-        }
-
-        const responseResults = await upsert(
-            formattedResults,
-            '_nango_sync_data_records',
-            'external_id',
-            this.nangoConnectionId as number,
-            model,
-            this.activityLogId as number,
-            this.environmentId as number,
-            this.track_deletes
-        );
-
-        if (responseResults.success) {
-            const { summary } = responseResults;
-            const updatedResults = {
-                [model]: {
-                    added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number,
-                    deleted: summary?.deletedKeys?.length as number
-                }
-            };
-
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
             });
-
-            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
-
-            return true;
-        } else {
-            const content = `There was an issue with the batch save. ${responseResults?.error}`;
-
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content,
-                    timestamp: Date.now()
-                });
-
-                await errorManager.report(content, {
-                    environmentId: this.environmentId as number,
-                    source: ErrorSourceEnum.CUSTOMER,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        connectionId: this.connectionId,
-                        providerConfigKey: this.providerConfigKey,
-                        syncId: this.syncId,
-                        nangoConnectionId: this.nangoConnectionId,
-                        syncJobId: this.syncJobId
-                    }
-                });
+            if (response.status > 299) {
+                logger.error(
+                    `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    this.stringify()
+                );
+                throw new Error(`cannot save records for sync '${this.syncId}'`);
             }
-
-            throw new Error(responseResults?.error);
         }
+        return true;
     }
 
     public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.exitSyncIfAborted();
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchDelete received an empty array. No records to delete.');
+                logger.info('batchDelete received an empty array. No records to delete.');
             }
             return true;
         }
@@ -778,140 +697,37 @@ export class NangoSync extends NangoAction {
             return null;
         }
 
-        if (this.usePersistAPI) {
-            for (let i = 0; i < results.length; i += this.batchSize) {
-                const batch = results.slice(i, i + this.batchSize);
-                const response = await persistApi({
-                    method: 'DELETE',
-                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                    data: {
-                        model,
-                        records: batch,
-                        providerConfigKey: this.providerConfigKey,
-                        connectionId: this.connectionId,
-                        activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate || new Date(),
-                        trackDeletes: this.track_deletes
-                    }
-                });
-                if (response.status > 299) {
-                    console.log(
-                        `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                        JSON.stringify(this, (key, value) => {
-                            if (key === 'secretKey') {
-                                return '********';
-                            }
-                            return value;
-                        })
-                    );
-                    throw new Error(`cannot delete records for sync '${this.syncId}'`);
+        for (let i = 0; i < results.length; i += this.batchSize) {
+            const batch = results.slice(i, i + this.batchSize);
+            const response = await persistApi({
+                method: 'DELETE',
+                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                data: {
+                    model,
+                    records: batch,
+                    providerConfigKey: this.providerConfigKey,
+                    connectionId: this.connectionId,
+                    activityLogId: this.activityLogId,
+                    lastSyncDate: this.lastSyncDate || new Date(),
+                    trackDeletes: this.track_deletes
                 }
-            }
-            return true;
-        }
-
-        const {
-            success,
-            error,
-            response: formattedResults
-        } = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId,
-            this.lastSyncDate,
-            this.track_deletes,
-            true
-        );
-
-        if (!success || formattedResults === null) {
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch delete. ${error?.message}`,
-                    timestamp: Date.now()
-                });
-            }
-
-            throw error;
-        }
-
-        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
-
-        if (syncConfig && !syncConfig?.models.includes(model)) {
-            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
-        }
-
-        const responseResults = await upsert(
-            formattedResults,
-            '_nango_sync_data_records',
-            'external_id',
-            this.nangoConnectionId as number,
-            model,
-            this.activityLogId as number,
-            this.environmentId as number,
-            this.track_deletes,
-            true
-        );
-
-        if (responseResults.success) {
-            const { summary } = responseResults;
-            const updatedResults: Record<string, { added: number; updated: number; deleted: number }> = {
-                [model]: {
-                    added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number,
-                    deleted: summary?.deletedKeys?.length as number
-                }
-            };
-
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
             });
-
-            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
-
-            return true;
-        } else {
-            const content = `There was an issue with the batch delete. ${responseResults?.error}`;
-
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content,
-                    timestamp: Date.now()
-                });
-
-                await errorManager.report(content, {
-                    environmentId: this.environmentId as number,
-                    source: ErrorSourceEnum.CUSTOMER,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        connectionId: this.connectionId,
-                        providerConfigKey: this.providerConfigKey,
-                        syncId: this.syncId,
-                        nangoConnectionId: this.nangoConnectionId,
-                        syncJobId: this.syncJobId
-                    }
-                });
+            if (response.status > 299) {
+                logger.error(
+                    `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    this.stringify()
+                );
+                throw new Error(`cannot delete records for sync '${this.syncId}'`);
             }
-
-            throw new Error(responseResults?.error);
         }
+        return true;
     }
 
     public async batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.exitSyncIfAborted();
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchUpdate received an empty array. No records to update.');
+                logger.info('batchUpdate received an empty array. No records to update.');
             }
             return true;
         }
@@ -926,128 +742,34 @@ export class NangoSync extends NangoAction {
             return null;
         }
 
-        if (this.usePersistAPI) {
-            for (let i = 0; i < results.length; i += this.batchSize) {
-                const batch = results.slice(i, i + this.batchSize);
-                const response = await persistApi({
-                    method: 'PUT',
-                    url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                    data: {
-                        model,
-                        records: batch,
-                        providerConfigKey: this.providerConfigKey,
-                        connectionId: this.connectionId,
-                        activityLogId: this.activityLogId,
-                        lastSyncDate: this.lastSyncDate || new Date(),
-                        trackDeletes: this.track_deletes
-                    }
-                });
-                if (response.status > 299) {
-                    console.log(
-                        `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                        JSON.stringify(this, (key, value) => {
-                            if (key === 'secretKey') {
-                                return '********';
-                            }
-                            return value;
-                        })
-                    );
-                    throw new Error(`cannot update records for sync '${this.syncId}'`);
+        for (let i = 0; i < results.length; i += this.batchSize) {
+            const batch = results.slice(i, i + this.batchSize);
+            const response = await persistApi({
+                method: 'PUT',
+                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                data: {
+                    model,
+                    records: batch,
+                    providerConfigKey: this.providerConfigKey,
+                    connectionId: this.connectionId,
+                    activityLogId: this.activityLogId,
+                    lastSyncDate: this.lastSyncDate || new Date(),
+                    trackDeletes: this.track_deletes
                 }
-            }
-            return true;
-        }
-
-        const {
-            success,
-            error,
-            response: formattedResults
-        } = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId || 0,
-            this.lastSyncDate,
-            false
-        );
-
-        if (!success || formattedResults === null) {
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch save. ${error?.message}`,
-                    timestamp: Date.now()
-                });
-            }
-
-            throw error;
-        }
-
-        const responseResults = await updateRecord(
-            formattedResults,
-            '_nango_sync_data_records',
-            'external_id',
-            this.nangoConnectionId as number,
-            model,
-            this.activityLogId as number,
-            this.environmentId as number
-        );
-
-        if (responseResults.success) {
-            const { summary } = responseResults;
-            const updatedResults = {
-                [model]: {
-                    added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number,
-                    deleted: summary?.deletedKeys?.length as number
-                }
-            };
-
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.environmentId as number,
-                activity_log_id: this.activityLogId as number,
-                content: `Batch update was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
             });
-
-            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
-
-            return true;
-        } else {
-            const content = `There was an issue with the batch update. ${responseResults?.error}`;
-
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: this.environmentId as number,
-                    activity_log_id: this.activityLogId as number,
-                    content,
-                    timestamp: Date.now()
-                });
-
-                await errorManager.report(content, {
-                    environmentId: this.environmentId as number,
-                    source: ErrorSourceEnum.CUSTOMER,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        connectionId: this.connectionId,
-                        providerConfigKey: this.providerConfigKey,
-                        syncId: this.syncId,
-                        nangoConnectionId: this.nangoConnectionId,
-                        syncJobId: this.syncJobId
-                    }
-                });
+            if (response.status > 299) {
+                logger.error(
+                    `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    this.stringify()
+                );
+                throw new Error(`cannot update records for sync '${this.syncId}'`);
             }
-
-            throw new Error(responseResults?.error);
         }
+        return true;
     }
 
     public override async getMetadata<T = Metadata>(): Promise<T> {
+        this.exitSyncIfAborted();
         if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;
         }
@@ -1062,3 +784,34 @@ const persistApi = axios.create({
         return true;
     }
 });
+
+const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
+    'batchDelete',
+    'batchSave',
+    'batchSend',
+    'getConnection',
+    'getEnvironmentVariables',
+    'getMetadata',
+    'proxy',
+    'log'
+];
+
+/* eslint-disable no-inner-declarations */
+/**
+ * This function will enable tracing on the SDK
+ * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
+ */
+export function instrumentSDK(rawNango: NangoAction | NangoSync) {
+    return new Proxy(rawNango, {
+        get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
+            // Method name is not matching the allowList we don't do anything else
+            if (!TELEMETRY_ALLOWED_METHODS.includes(propKey)) {
+                return target[propKey];
+            }
+
+            return telemetry.time(`${MetricTypes.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
+        }
+    });
+}
+
+/* eslint-enable no-inner-declarations */

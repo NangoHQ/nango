@@ -7,9 +7,7 @@ import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
-import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
-import { formatDataRecords } from './data/records.service.js';
-import { upsert } from './data/data.service.js';
+import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
@@ -17,13 +15,12 @@ import webhookService from '../notification/webhook.service.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
-import metricsManager, { MetricTypes } from '../../utils/metrics.manager.js';
+import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
-import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
+import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 import type { Metadata } from '../../models/Connection';
-import featureflags from '../../utils/featureflags.js';
 
 interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
@@ -124,6 +121,12 @@ export default class SyncRun {
         }
     }
 
+    async cancel(): Promise<ServiceResponse<boolean>> {
+        await this.integrationService.cancelScript(this.syncId as string, this.nangoConnection.environment_id);
+
+        return { success: false, error: null, response: false };
+    }
+
     async run(
         optionalLastSyncDate?: Date | null,
         bypassEnvironment?: boolean,
@@ -188,7 +191,7 @@ export default class SyncRun {
             const secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
-            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
 
             let syncData: NangoIntegrationData;
 
@@ -243,7 +246,6 @@ export default class SyncRun {
                     lastSyncDate = optionalLastSyncDate;
                 } else {
                     lastSyncDate = await getLastSyncDate(this.syncId as string);
-                    await clearLastSyncDate(this.syncId as string);
                 }
             }
 
@@ -264,8 +266,6 @@ export default class SyncRun {
                 }
             }
 
-            const usePersistAPIGlobally = await featureflags.isEnabled('use-persist-api', 'global', false);
-            const usePersistAPI = await featureflags.isEnabled('use-persist-api', `${environment?.account_id}`, false);
             const nangoProps = {
                 host: optionalHost || getApiUrl(),
                 accountId: environment?.account_id as number,
@@ -282,8 +282,7 @@ export default class SyncRun {
                 attributes: syncData.attributes,
                 track_deletes: trackDeletes as boolean,
                 logMessages: this.logMessages,
-                stubbedMetadata: this.stubbedMetadata,
-                usePersistAPI: usePersistAPIGlobally || usePersistAPI
+                stubbedMetadata: this.stubbedMetadata
             };
 
             if (this.debug) {
@@ -331,7 +330,12 @@ export default class SyncRun {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData.version}` : ''
                     }`;
-                    await this.reportFailureForResults(message);
+
+                    if (error.type === 'script_cancelled') {
+                        await this.reportFailureForResults(error.message);
+                    } else {
+                        await this.reportFailureForResults(message);
+                    }
 
                     return { success: false, error, response: false };
                 }
@@ -343,14 +347,7 @@ export default class SyncRun {
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 
-                await metricsManager.captureMetric(MetricTypes.SYNC_TRACK_RUNTIME, this.syncId as string, this.syncType, totalRunTime, LogActionEnum.SYNC, [
-                    `environmentId:${this.nangoConnection.environment_id}`,
-                    `syncId:${this.syncId}`,
-                    `syncName:${this.syncName}`,
-                    `syncJobId:${this.syncJobId}`,
-                    `syncVersion:${syncData.version}`,
-                    `provider:${this.provider}`
-                ]);
+                await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
 
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
@@ -377,112 +374,11 @@ export default class SyncRun {
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
-                // means a void response from the sync script which is expected
-                // and means that they're using batchSave or batchDelete
-                if (userDefinedResults === undefined) {
-                    await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+                await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
-                    return { success: true, error: null, response: true };
-                }
-
-                let i = 0;
-                for (const model of models) {
-                    if (userDefinedResults[model]) {
-                        if (!this.syncId) {
-                            continue;
-                        }
-
-                        const {
-                            success,
-                            error,
-                            response: formattedResults
-                        } = formatDataRecords(
-                            userDefinedResults[model],
-                            this.nangoConnection.id as number,
-                            model,
-                            this.syncId,
-                            this.syncJobId as number,
-                            lastSyncDate as Date,
-                            trackDeletes
-                        );
-
-                        if (!success || formattedResults === null) {
-                            await this.reportFailureForResults(error?.message as string);
-
-                            return { success: false, error, response: false };
-                        }
-
-                        if (this.writeToDb && this.activityLogId) {
-                            if (formattedResults.length === 0) {
-                                await this.reportResults(
-                                    model,
-                                    { addedKeys: [], updatedKeys: [], deletedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
-                                    i,
-                                    models.length,
-                                    syncStartDate,
-                                    syncData.version as string,
-                                    totalRunTime,
-                                    trackDeletes
-                                );
-                            }
-
-                            if (formattedResults.length > 0) {
-                                await metricsManager.capture(
-                                    MetricTypes.SYNC_SCRIPT_RETURN_USED,
-                                    'Data was sent at the end of the integration script instead of using batchSave',
-                                    LogActionEnum.SYNC,
-                                    {
-                                        environmentId: String(this.nangoConnection.environment_id),
-                                        syncName: this.syncName,
-                                        connectionDetails: JSON.stringify(this.nangoConnection),
-                                        syncId: this.syncId,
-                                        syncJobId: String(this.syncJobId),
-                                        syncType: this.syncType,
-                                        debug: String(this.debug)
-                                    }
-                                );
-
-                                const upsertResult: UpsertResponse = await upsert(
-                                    formattedResults,
-                                    '_nango_sync_data_records',
-                                    'external_id',
-                                    this.nangoConnection.id as number,
-                                    model,
-                                    this.activityLogId,
-                                    this.nangoConnection.environment_id
-                                );
-
-                                if (upsertResult.success) {
-                                    const { summary } = upsertResult;
-
-                                    await this.reportResults(
-                                        model,
-                                        summary as UpsertSummary,
-                                        i,
-                                        models.length,
-                                        syncStartDate,
-                                        syncData.version as string,
-                                        totalRunTime
-                                    );
-                                }
-
-                                if (!upsertResult.success) {
-                                    const message = `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`;
-                                    await this.reportFailureForResults(message);
-
-                                    const errorType = this.determineErrorType();
-
-                                    return { success: false, error: new NangoError(errorType, message), response: result };
-                                }
-                            }
-                        }
-                    }
-                    i++;
-                }
+                return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
-                // if it fails then restore the sync date
-                await setLastSyncDate(this.syncId as string, lastSyncDate as Date, false);
                 const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
                 await this.reportFailureForResults(
                     `The ${this.syncType} "${this.syncName}"${
@@ -542,14 +438,12 @@ export default class SyncRun {
         if (index === numberOfModels - 1) {
             await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
             await updateSuccessActivityLog(this.activityLogId, true);
+
             // set the last sync date to when the sync started in case
             // the sync is long running to make sure we wouldn't miss
             // any changes while the sync is running
-            // but if the sync date was set by the user in the integration script,
-            // then don't override it
             if (!this.isWebhook) {
-                const override = false;
-                await setLastSyncDate(this.syncId as string, syncStartDate, override);
+                await setLastSyncDate(this.syncId as string, syncStartDate);
                 await slackNotificationService.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
@@ -648,8 +542,8 @@ export default class SyncRun {
             });
         }
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_SUCCESS,
+        await telemetry.log(
+            LogTypes.SYNC_SUCCESS,
             content,
             LogActionEnum.SYNC,
             {
@@ -732,8 +626,8 @@ export default class SyncRun {
             }
         });
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_FAILURE,
+        await telemetry.log(
+            LogTypes.SYNC_FAILURE,
             content,
             LogActionEnum.SYNC,
             {

@@ -660,3 +660,17 @@ export async function getAllSyncAndActionNames(environmentId: number): Promise<s
 
     return result.map((syncConfig: SyncConfig) => syncConfig.sync_name);
 }
+
+export async function getSyncConfigsByConfigIdForWebhook(environment_id: number, nango_config_id: number): Promise<SyncConfig[]> {
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({
+            environment_id,
+            nango_config_id,
+            active: true,
+            deleted: false
+        })
+        .whereRaw('webhook_subscriptions IS NOT NULL and array_length(webhook_subscriptions, 1) > 0');
+
+    return result;
+}

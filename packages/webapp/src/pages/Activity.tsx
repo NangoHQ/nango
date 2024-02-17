@@ -13,7 +13,8 @@ import {
     Pause,
     Play,
     User,
-    FastForward
+    FastForward,
+    XSquare
 } from '@geist-ui/icons'
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
@@ -25,7 +26,7 @@ import { useActivityAPI } from '../utils/api';
 import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import type { ActivityResponse } from '../types';
+import type { ActivityMessageResponse, ActivityResponse } from '../types';
 
 import { useStore } from '../store';
 
@@ -216,11 +217,11 @@ export default function Activity() {
 
                 if (res?.status === 200) {
                     try {
-                        const allMessages = await res.json();
+                        const allMessages: ActivityMessageResponse = await res.json();
                         const logsWithMessages = activities.map((activity: ActivityResponse) => {
                             const logMessages = allMessages[activity.id];
                             if (logMessages) {
-                                activity.messages = logMessages;
+                                activity.messages = logMessages.reverse();
                             }
                             return activity;
                         });
@@ -341,7 +342,7 @@ export default function Activity() {
 
     const renderParams = (params: Record<string, string>, level: string) => {
         return Object.entries(params).map(([key, value]) => (
-            <div className={`max-w-5xl whitespace-normal break-all overflow-wrap ${level === 'error' ? 'text-red-500' : level === 'warn' ? 'text-orange-500' : ''}`} key={key}>
+            <div className={`max-w-5xl whitespace-normal break-all overflow-wrap ${getLogColor(level)}`} key={key}>
                 <span>{key}: </span>
                 {value === null ? '' : <JsonPrettyPrint data={value} />}
             </div>
@@ -352,40 +353,45 @@ export default function Activity() {
         const value = e.target.value;
         setStatus(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value, offset: 0 }));
     }
 
     const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedScript(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value, offset: 0 }));
     }
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedIntegration(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value, offset: 0 }));
     }
 
     const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setSelectedConnection(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value, offset: 0 }));
     }
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setDate(value);
         setLoaded(false);
+        setOffset(0);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value }));
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value, offset: 0 }));
     }
 
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
@@ -433,6 +439,23 @@ export default function Activity() {
 
         return url.toString();
     };
+
+    const getLogColor = (level: string) => {
+        switch(level) {
+            case 'error':
+                return 'text-red-500';
+            case 'warn':
+                return 'text-yellow-500';
+            case 'debug':
+                return 'text-gray-500';
+            case 'http':
+                return 'text-green-500';
+            case 'silly':
+                return 'text-green-300';
+            default:
+                return '';
+        }
+    }
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
@@ -703,6 +726,23 @@ export default function Activity() {
                                                             </Link>
                                                         </span>
                                                     )}
+                                                    {activity?.action === 'cancel sync' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
+                                                                <XSquare className="stroke-red-500 mr-2" size="16" />
+                                                                <p className="inline-block text-gray-500">cancel sync</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
+                                                                {activity.operation_name && (
+                                                                    <Tooltip text={activity.operation_name} type="dark">
+                                                                        <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">({activity?.operation_name})</p>
+                                                                    </Tooltip>
+                                                                )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
                                                     {activity?.action === 'trigger sync' && (
                                                         <span className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
@@ -781,6 +821,9 @@ export default function Activity() {
                                             {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
+                                                    {activity.messages.length >= 1000 && (
+                                                        <div className='text-center text-gray-500'>[only showing the last 1000 logs]</div>
+                                                    )}
                                                     {activity.messages.map((message, index: number) => (
                                                         <div key={index} className="flex flex-col max-w-7xl">
                                                             <div className="whitespace-normal break-all overflow-wrap">
@@ -788,7 +831,7 @@ export default function Activity() {
                                                                     {formatTimestampWithTZ(Number(message?.timestamp))}
                                                                 </span>{' '}
                                                                 <span
-                                                                    className={`whitespace-normal break-all overflow-wrap ${message?.level === 'error' ? 'text-red-500' : message?.level === 'warn' ? 'text-orange-500' : ''}`}
+                                                                    className={`whitespace-normal break-all overflow-wrap ${getLogColor(message?.level as string)}`}
                                                                 >
                                                                     <JsonPrettyPrint data={message?.content} />
                                                                 </span>

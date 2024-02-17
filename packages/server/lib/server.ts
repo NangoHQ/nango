@@ -1,9 +1,4 @@
-/*
- * Copyright (c) 2022 Nango, all rights reserved.
- */
-
-// Import environment variables (if running server locally).
-import './apm.js';
+import tracer from './tracer.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import _ from './utils/config.js';
@@ -64,10 +59,17 @@ const webAuth =
     isCloud() || isEnterprise()
         ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
         : isBasicAuthEnabled()
-        ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
-        : [authMiddleware.noAuth.bind(authMiddleware)];
+          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
+          : [authMiddleware.noAuth.bind(authMiddleware)];
 
-app.use(express.json({ limit: '75mb' }));
+app.use(
+    express.json({
+        limit: '75mb',
+        verify: (req: Request, _, buf) => {
+            req.rawBody = buf.toString();
+        }
+    })
+);
 app.use(bodyParser.raw({ type: 'text/xml' }));
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
@@ -213,7 +215,7 @@ if (!isCloud() && !isEnterprise()) {
 
 // Error handling.
 app.use(async (e: any, req: Request, res: Response, __: any) => {
-    await errorManager.handleGenericError(e, req, res);
+    await errorManager.handleGenericError(e, req, res, tracer);
 });
 
 // Webapp assets, static files and build.

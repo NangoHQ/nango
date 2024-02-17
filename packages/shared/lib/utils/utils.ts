@@ -10,9 +10,9 @@ import userService from '../services/user.service.js';
 import type { Connection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 
-type PackageJson = {
+interface PackageJson {
     version: string;
-};
+}
 
 const PORT = process.env['SERVER_PORT'] || 3003;
 export const localhostUrl = `http://localhost:${PORT}`;
@@ -98,6 +98,10 @@ export function isProd() {
     return process.env['NODE_ENV'] === NodeEnv.Prod;
 }
 
+export function isTest(): boolean {
+    return Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
+}
+
 export function isBasicAuthEnabled() {
     return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 }
@@ -115,16 +119,12 @@ export function getRedisUrl() {
 }
 
 export function isValidHttpUrl(str: string) {
-    const pattern = new RegExp(
-        '^(https?:\\/\\/)?' + // protocol
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|localhost|' + // domain name
-            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-            '(\\#[-a-z\\d_]*)?$',
-        'i'
-    ); // fragment locator
-    return !!pattern.test(str);
+    try {
+        new URL(str);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 export function dirname() {
@@ -177,6 +177,8 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 export function getApiUrl() {
     if (isStaging()) {
         return stagingHost;
+    } else if (isEnterprise()) {
+        return process.env['NANGO_SERVER_URL'] as string;
     } else if (isProd()) {
         return cloudHost;
     }
@@ -258,7 +260,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
 
     const parsedConfig: Record<string, string> = {};
 
-    Object.keys(rawConfig).forEach(function (key, _) {
+    Object.keys(rawConfig).forEach(function (key) {
         const newKey = key.replace('connectionConfig.', '');
         const value = rawConfig[key];
 
@@ -307,7 +309,7 @@ export function getAccount(res: Response): number {
 }
 
 export function getEnvironmentId(res: Response): number {
-    if (res.locals == null || !(environmentIdLocalsKey in res.locals)) {
+    if (res.locals === null || !(environmentIdLocalsKey in res.locals)) {
         throw new NangoError('environment_not_set_in_locals');
     }
 
@@ -381,11 +383,36 @@ export function isUserAuthenticated(req: Request): boolean {
 }
 
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    const arr = Object.entries(queryParams).filter(([_, v]) => typeof v === 'string'); // Filter strings
+    const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
 }
 
 export function packageJsonFile(): PackageJson {
     const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/shared/package.json' : '../shared/package.json';
     return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
+}
+
+export function safeStringify(obj: any): string {
+    const stringify = (obj: any, indent = 2) => {
+        const cache = new Set();
+        const jsonString = JSON.stringify(
+            obj,
+            (_key, value) => {
+                if (typeof value === 'object' && value !== null) {
+                    if (cache.has(value)) {
+                        return;
+                    }
+                    cache.add(value);
+                }
+                return value;
+            },
+            indent
+        );
+        cache.clear();
+        return jsonString;
+    };
+
+    const content = obj.map((arg: any) => (typeof arg === 'object' ? stringify(arg) : String(arg))).join(' ');
+
+    return content;
 }

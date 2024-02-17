@@ -10,7 +10,8 @@ import {
     SyncWithSchedule,
     SlimSync,
     SlimAction,
-    SyncCommand
+    SyncCommand,
+    ScheduleStatus
 } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
@@ -78,8 +79,8 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
     return result[0];
 };
 
-export const getLastSyncDate = async (id: string, backup = true): Promise<Date | null> => {
-    const result = await schema().select('last_sync_date').from<Sync>(TABLE).where({
+export const getLastSyncDate = async (id: string): Promise<Date | null> => {
+    const result = await schema().select<{ last_sync_date: Date | null }[]>('last_sync_date').from<Sync>(TABLE).where({
         id,
         deleted: false
     });
@@ -88,13 +89,7 @@ export const getLastSyncDate = async (id: string, backup = true): Promise<Date |
         return null;
     }
 
-    let { last_sync_date } = result[0];
-
-    if (backup && last_sync_date === null) {
-        last_sync_date = await getJobLastSyncDate(id);
-    }
-
-    return last_sync_date;
+    return result[0].last_sync_date;
 };
 
 export const clearLastSyncDate = async (id: string): Promise<void> => {
@@ -125,26 +120,11 @@ export async function setFrequency(id: string, frequency: string | null): Promis
  * during the integration script so we don't want to override what they
  * set in the script
  */
-export const setLastSyncDate = async (id: string, tempDate: Date | string, override = true): Promise<boolean> => {
-    if (!tempDate) {
-        return false;
-    }
-
+export const setLastSyncDate = async (id: string, tempDate: Date): Promise<boolean> => {
     const date = typeof tempDate === 'string' ? new Date(tempDate) : tempDate;
 
     if (isNaN(date.getTime())) {
         return false;
-    }
-
-    // if override is false that means we need to verify
-    // that we should update the last sync date
-    // if it isn't null
-    if (!override) {
-        const lastSyncDate = await getLastSyncDate(id, false);
-
-        if (lastSyncDate !== null) {
-            return false;
-        }
     }
 
     await schema()
@@ -526,8 +506,8 @@ export const getAndReconcileDifferences = async (
     const newActions: SlimAction[] = [];
     const syncsToCreate = [];
 
-    const existingSyncsByProviderConfig: { [key: string]: SlimSync[] } = {};
-    const existingConnectionsByProviderConfig: { [key: string]: NangoConnection[] } = {};
+    const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
+    const existingConnectionsByProviderConfig: Record<string, NangoConnection[]> = {};
 
     for (const sync of syncs) {
         const { syncName, providerConfigKey, type } = sync;
@@ -719,3 +699,49 @@ export const getAndReconcileDifferences = async (
         deletedActions
     };
 };
+
+export interface PausableSyncs {
+    id: string;
+    name: string;
+    environment_id: number;
+    provider: string;
+    connection_id: number;
+    unique_key: string;
+    schedule_id: string;
+}
+export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
+    const q = db.knex
+        .queryBuilder()
+        .withSchema(db.schema())
+        .from('_nango_syncs')
+        .select(
+            '_nango_syncs.id',
+            '_nango_syncs.name',
+            '_nango_connections.environment_id',
+            '_nango_configs.provider',
+            '_nango_configs.unique_key',
+            '_nango_connections.connection_id',
+            '_nango_sync_schedules.schedule_id'
+        )
+        .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
+        .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+        .join('_nango_configs', function () {
+            this.on('_nango_configs.environment_id', '_nango_connections.environment_id').on(
+                '_nango_configs.unique_key',
+                '_nango_connections.provider_config_key'
+            );
+        })
+        .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
+        .where({
+            '_nango_syncs.name': 'github-issues-lite',
+            '_nango_environments.name': 'dev',
+            '_nango_configs.unique_key': 'demo-github-integration',
+            '_nango_configs.provider': 'github',
+            '_nango_syncs.deleted': false,
+            '_nango_sync_schedules.status': ScheduleStatus.RUNNING
+        })
+        .where(db.knex.raw("_nango_syncs.updated_at <  NOW() - INTERVAL '25h'"));
+    const syncs: PausableSyncs[] = await q;
+
+    return syncs;
+}

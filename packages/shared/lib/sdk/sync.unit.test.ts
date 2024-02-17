@@ -14,6 +14,7 @@ vi.mock('@nangohq/node', () => {
 
 describe('Pagination', () => {
     const providerConfigKey = 'github';
+    const connectionId = 'connection-1';
 
     const cursorPagination: CursorPagination = {
         type: 'cursor',
@@ -45,6 +46,7 @@ describe('Pagination', () => {
             secretKey: 'encrypted',
             serverUrl: 'https://example.com',
             providerConfigKey,
+            connectionId,
             dryRun: true
         };
         nangoAction = new NangoAction(config);
@@ -124,7 +126,8 @@ describe('Pagination', () => {
             endpoint,
             params: { offset: '3', per_page: 3 },
             paginate: paginationConfigOverride,
-            providerConfigKey: 'github'
+            providerConfigKey,
+            connectionId
         });
     });
 
@@ -143,7 +146,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }
@@ -183,7 +186,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }
@@ -210,7 +213,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }
@@ -249,7 +252,7 @@ describe('Pagination', () => {
 
             const generator = nangoAction.paginate({ endpoint });
 
-            let actualRecords: any[] = [];
+            const actualRecords: any[] = [];
             for await (const batch of generator) {
                 actualRecords.push(...batch);
             }
@@ -292,7 +295,7 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint });
 
-        let actualRecords: any[] = [];
+        const actualRecords: any[] = [];
         for await (const batch of generator) {
             actualRecords.push(...batch);
         }

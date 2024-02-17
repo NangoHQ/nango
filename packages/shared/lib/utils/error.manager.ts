@@ -2,6 +2,7 @@ import * as uuid from 'uuid';
 import sentry, { EventHint } from '@sentry/node';
 import { readFileSync } from 'fs';
 import path from 'path';
+import type { Tracer } from 'dd-trace';
 import type { ErrorEvent } from '@sentry/types';
 import logger from '../logger/console.js';
 import { NangoError } from './error.js';
@@ -46,7 +47,7 @@ class ErrorManager {
         }
     }
 
-    public async report(e: any, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }) {
+    public report(e: unknown, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }, tracer?: Tracer): void {
         sentry.withScope(async function (scope) {
             if (config.environmentId || config.accountId) {
                 let accountId: number | undefined;
@@ -88,14 +89,17 @@ class ErrorManager {
             }
 
             if (config.metadata) {
-                const metadata = Object.entries(config.metadata).reduce((acc, [key, value]) => {
-                    if (typeof value === 'object') {
-                        acc[key] = JSON.stringify(value);
-                    } else {
-                        acc[key] = value;
-                    }
-                    return acc;
-                }, {} as Record<string, unknown>);
+                const metadata = Object.entries(config.metadata).reduce(
+                    (acc, [key, value]) => {
+                        if (typeof value === 'object') {
+                            acc[key] = JSON.stringify(value);
+                        } else {
+                            acc[key] = value;
+                        }
+                        return acc;
+                    },
+                    {} as Record<string, unknown>
+                );
                 scope.setContext('metadata', metadata);
             }
 
@@ -107,6 +111,15 @@ class ErrorManager {
         });
 
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
+
+        if (e instanceof Error && tracer) {
+            // Log to datadog manually
+            // https://github.com/DataDog/dd-trace-js/issues/1944
+            const span = tracer.scope().active();
+            if (span) {
+                span.setTag('error', e);
+            }
+        }
     }
 
     public errResFromNangoErr(res: Response, err: NangoError | null) {
@@ -124,7 +137,7 @@ class ErrorManager {
         this.errResFromNangoErr(res, err);
     }
 
-    public async handleGenericError(err: any, req: Request, res: any) {
+    public async handleGenericError(err: any, req: Request, res: any, tracer: Tracer): Promise<void> {
         const errorId = uuid.v4();
         if (!(err instanceof Error)) {
             err = new NangoError('generic_error_malformed', errorId);
@@ -132,21 +145,21 @@ class ErrorManager {
             err = new NangoError(err.message, errorId);
         }
 
-        const nangoErr = err as NangoError;
+        const nangoErr: NangoError = err;
 
         if (isApiAuthenticated(res)) {
             const environmentId = getEnvironmentId(res);
-            await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
+            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
         } else if (isUserAuthenticated(req)) {
             const { response, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
             if (!success || response === null) {
-                this.report(error, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload });
-                return;
+                this.report(error, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
+            } else {
+                const { environmentId } = response;
+                this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
             }
-            const { environmentId } = response;
-            await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
         } else {
-            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload });
+            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
         }
 
         const supportError = new NangoError('generic_error_support', errorId);

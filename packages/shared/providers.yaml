@@ -58,6 +58,19 @@ amazon:
         grant_type: refresh_token
     proxy:
         base_url: https://api.amazon.com
+aws:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
+    token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - openid
+    docs: https://docs.aws.amazon.com/cognito
 amplitude:
     auth_mode: BASIC
     proxy:
@@ -96,6 +109,10 @@ ashby:
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
+        verification:
+            method: POST
+            endpoint: apiKey.info
+    docs: https://developers.ashbyhq.com/reference/introduction
 atlassian:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
@@ -139,6 +156,10 @@ bamboohr-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+        verification:
+            method: GET
+            endpoint: /v1/meta/fields
+    docs: https://documentation.bamboohr.com/reference
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
@@ -234,6 +255,18 @@ calendly:
         response_type: code
     proxy:
         base_url: https://api.calendly.com
+chorus:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://chorus.ai
+clari-copilot:
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            X-Api-Key: ${apiKey}
+            X-Api-Password: ${connectionConfig.API_PASSWORD}
+        base_url: https://rest-api.copilot.clari.com
+    docs: https://api-doc.copilot.clari.com
 clickup:
     auth_mode: OAUTH2
     authorization_url: https://app.clickup.com/api
@@ -564,6 +597,8 @@ greenhouse:
     token_url: https://api.greenhouse.io/oauth/token
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -573,6 +608,8 @@ greenhouse-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -634,6 +671,10 @@ hibob-service-user:
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
+        verification:
+            method: GET
+            endpoint: /v1/company/named-lists
+    docs: https://apidocs.hibob.com/
 highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
@@ -770,6 +811,9 @@ linear:
     proxy:
         base_url: https://api.linear.app
     disable_pkce: true
+    webhook_routing_script: linear-webhook-routing
+    post_connection_script: linear-post-connection
+    webhook_user_defined_secret: true
 linkedin:
     auth_mode: OAUTH2
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
@@ -872,6 +916,12 @@ netsuite:
     token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
         - restlets
+next-cloud-ocs:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.domain}/ocs/v1.php
+        headers:
+            'OCS-APIRequest': 'true'
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
@@ -981,6 +1031,13 @@ paypal-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+pendo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.pendo.io
+        headers:
+            x-pendo-integration-key: ${apiKey}
+    docs: https://engageapi.pendo.io
 pennylane:
     auth_mode: OAUTH2
     authorization_url: https://app.pennylane.com/oauth/authorize
@@ -1318,6 +1375,32 @@ teamwork:
     token_url: https://www.teamwork.com/launchpad/v1/token.json
     proxy:
         base_url: https://api.surveymonkey.com
+tiktok-accounts:
+    auth_mode: OAUTH2
+    authorization_url: https://open-api.tiktok.com/platform/oauth/connect/
+    token_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/
+    refresh_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/
+    proxy:
+        base_url: https://business-api.tiktok.com/open_api/v1.3/
+    authorization_params:
+        response_type: code
+    authorization_url_replacements:
+        client_id: client_key
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ','
+tiktok-ads:
+    auth_mode: OAUTH2
+    authorization_url: https://business-api.tiktok.com/portal/auth
+    token_url: https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/
+    proxy:
+        base_url: https://business-api.tiktok.com/open_api/v1.3/
+    token_params:
+        grant_type: authorization_code
+    authorization_url_replacements:
+        client_id: app_id
 timely:
     auth_mode: OAUTH2
     authorization_url: https://api.timelyapp.com/1.1/oauth/authorize
@@ -1544,6 +1627,8 @@ zoho-desk:
 zoho-inventory:
     alias: zoho
 zoho-invoice:
+    alias: zoho
+zoho-bigin:
     alias: zoho
 zoom:
     auth_mode: OAUTH2

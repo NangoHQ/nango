@@ -7,9 +7,7 @@ import logger from '../../logger/console.js';
 const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';
 
-interface ActivityLogMessagesGrouped {
-    [logId: number]: ActivityLogMessage[];
-}
+export type ActivityLogMessagesGrouped = Record<number, ActivityLogMessage[]>;
 
 /**
  * _nango_activity_logs
@@ -40,7 +38,7 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
             return result[0].id;
         }
     } catch (e) {
-        await errorManager.report(e, {
+        errorManager.report(e, {
             source: ErrorSourceEnum.PLATFORM,
             environmentId: log.environment_id,
             operation: LogActionEnum.DATABASE,
@@ -255,6 +253,25 @@ export async function getTopLevelLogByEnvironment(
     return logs || [];
 }
 
+export async function activityFilter(environment_id: number, filterColumn: 'connection_id' | 'provider'): Promise<string[]> {
+    const logsQuery = db.knex
+        .withSchema(db.schema())
+        .from<ActivityLog>('_nango_activity_logs')
+        .where({ environment_id })
+        .whereNotNull(filterColumn)
+        .groupBy(filterColumn)
+        .select(filterColumn)
+        .orderBy(filterColumn, 'asc');
+
+    const logs = await logsQuery;
+
+    const distinctValues: string[] = logs
+        .map((log: { [key: string]: string }) => log[filterColumn] as string)
+        .filter((value: string | undefined): value is string => typeof value === 'string');
+
+    return distinctValues;
+}
+
 /**
  * Retrieves log messages and organizes them by log ID using raw SQL.
  * @desc Iterates over an array of log IDs, fetching the corresponding log messages
@@ -265,30 +282,35 @@ export async function getTopLevelLogByEnvironment(
  * each keyed by its associated log ID.
  */
 export async function getLogMessagesForLogs(logIds: number[], environment_id: number): Promise<ActivityLogMessagesGrouped> {
-    if (!logIds.length) {
-        return [];
-    }
-
     try {
+        const limit = 1000;
+
+        // Rank Partition will create one group per activity_log_id
+        // and allow us to ORDER with a GROUP by and add a "pseudo limit"
         const query = `
-            SELECT activity_log_id, array_agg(row_to_json(_nango_activity_log_messages.*)) as messages
-            FROM nango._nango_activity_log_messages
-            WHERE activity_log_id = ANY(?)
+        SELECT
+            *
+        FROM (
+            SELECT
+                *,
+                RANK() OVER (PARTITION BY activity_log_id ORDER BY created_at DESC) AS rank
+            FROM
+                nango._nango_activity_log_messages) AS partition
+        WHERE
+            activity_log_id IN (${logIds.map(() => '?').join(',')})
             AND environment_id = ${environment_id}
-            GROUP BY activity_log_id
-        `;
+            AND partition.rank <= ${limit};`;
 
-        const result = await db.knex.raw(query, [logIds]);
+        const result = await db.knex.raw<{ rows: ActivityLogMessage[] }>(query, logIds);
 
-        const groupedMessages: ActivityLogMessagesGrouped = result.rows.reduce(
-            (groups: ActivityLogMessagesGrouped, row: { activity_log_id: number; messages: ActivityLogMessage[] }) => {
-                groups[row.activity_log_id] = row.messages.sort(
-                    (a, b) => new Date(a.created_at as unknown as string).getTime() - new Date(b.created_at as unknown as string).getTime()
-                );
-                return groups;
-            },
-            {}
-        );
+        const groupedMessages: ActivityLogMessagesGrouped = {};
+        for (const row of result.rows) {
+            if (typeof groupedMessages[row.activity_log_id!] === 'undefined') {
+                groupedMessages[row.activity_log_id!] = [];
+            }
+
+            groupedMessages[row.activity_log_id!]!.push(row);
+        }
 
         return groupedMessages;
     } catch (error) {

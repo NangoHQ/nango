@@ -1,6 +1,6 @@
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
-import { getRunnerClient } from '@nangohq/nango-runner';
+import { ProxyAppRouter, getRunnerClient } from '@nangohq/nango-runner';
 import { getEnv, getPersistAPIUrl } from '@nangohq/shared';
 import api from 'api';
 import tracer from '../tracer.js';
@@ -11,9 +11,13 @@ render.auth(process.env['RENDER_API_KEY']);
 const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
 
 export class RenderRunner implements Runner {
-    public client: any;
+    public client: ProxyAppRouter;
     public runnerType: RunnerType = RunnerType.Render;
-    constructor(public readonly id: string, public readonly url: string, public readonly serviceId: string) {
+    constructor(
+        public readonly id: string,
+        public readonly url: string,
+        public readonly serviceId: string
+    ) {
         this.client = getRunnerClient(this.url);
     }
 
@@ -36,7 +40,7 @@ export class RenderRunner implements Runner {
 
     static async get(runnerId: string): Promise<RenderRunner | undefined> {
         let svc = null;
-        let res = await render.getServices({ name: runnerId, type: 'private_service', limit: '1' });
+        const res = await render.getServices({ name: runnerId, type: 'private_service', limit: '1' });
         if (res.data.length > 0) {
             svc = res.data[0].service;
             return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);
@@ -66,12 +70,6 @@ export class RenderRunner implements Runner {
                     envVars: [
                         { key: 'NODE_ENV', value: process.env['NODE_ENV'] },
                         { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] },
-                        { key: 'NANGO_DB_HOST', value: process.env['NANGO_DB_HOST'] },
-                        { key: 'NANGO_DB_NAME', value: process.env['NANGO_DB_NAME'] },
-                        { key: 'NANGO_DB_PASSWORD', value: process.env['NANGO_DB_PASSWORD'] },
-                        { key: 'NANGO_DB_PORT', value: process.env['NANGO_DB_PORT'] },
-                        { key: 'NANGO_DB_SSL', value: process.env['NANGO_DB_SSL'] },
-                        { key: 'NANGO_ENCRYPTION_KEY', value: process.env['NANGO_ENCRYPTION_KEY'] },
                         { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
                         { key: 'RUNNER_ID', value: runnerId },
                         { key: 'NOTIFY_IDLE_ENDPOINT', value: `${jobsServiceUrl}/idle` },

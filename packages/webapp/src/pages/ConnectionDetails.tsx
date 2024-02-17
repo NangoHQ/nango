@@ -391,29 +391,27 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 </Prism>
                                             </div>
                                         </div>
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Connection Metadata
+                                                </label>
+                                                <Prism language="json" colorScheme="dark">
+                                                    {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
+                                                </Prism>
+                                            </div>
+                                        </div>
                                         {(connection.oauthType === AuthModes.OAuth1 || connection.oauthType === AuthModes.OAuth2 || connection.oauthType === AuthModes.App) && (
-                                            <>
-                                                <div>
-                                                    <div className="mx-8 mt-8">
-                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                            Connection Metadata
-                                                        </label>
-                                                        <Prism language="json" colorScheme="dark">
-                                                            {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
-                                                        </Prism>
-                                                    </div>
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        Raw Token Response
+                                                    </label>
+                                                    <PrismPlus language="json" colorScheme="dark">
+                                                        {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
+                                                    </PrismPlus>
                                                 </div>
-                                                <div>
-                                                    <div className="mx-8 mt-8">
-                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                            Raw Token Response
-                                                        </label>
-                                                        <PrismPlus language="json" colorScheme="dark">
-                                                            {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
-                                                        </PrismPlus>
-                                                    </div>
-                                                </div>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 )}
@@ -614,6 +612,12 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
                                                         <p>Trigger</p>
+                                                    </button>
+                                                    <button
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-red-500 hover:bg-red-700"
+                                                        onClick={() => syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
+                                                    >
+                                                        <p>Cancel</p>
                                                     </button>
                                                     {/*
                                                     <button

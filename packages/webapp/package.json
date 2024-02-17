@@ -8,7 +8,7 @@
         "@headlessui/react": "^1.7.12",
         "@heroicons/react": "^2.0.18",
         "@mantine/prism": "^5.10.5",
-        "@nangohq/frontend": "^0.37.16",
+        "@nangohq/frontend": "^0.37.24",
         "@sentry/react": "^7.83.0",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",
@@ -34,10 +34,10 @@
         "zustand": "^4.3.9"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject",
+        "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
+        "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+        "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
+        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject",
         "start:hosted": "env-cmd -f .env.hosted npm run start",
         "start:staging": "env-cmd -f .env.staging npm run start",
         "start:prod": "env-cmd -f .env.prod npm run start",
@@ -45,12 +45,6 @@
         "build:enterprise": "env-cmd -f .env.enterprise npm run build",
         "build:staging": "env-cmd -f .env.staging npm run build",
         "build:prod": "env-cmd -f .env.prod npm run build"
-    },
-    "eslintConfig": {
-        "extends": [
-            "react-app",
-            "react-app/jest"
-        ]
     },
     "browserslist": {
         "production": [
@@ -72,7 +66,6 @@
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
         "@types/react-helmet": "^6.1.8",
-        "prettier-plugin-tailwindcss": "^0.2.3",
         "tailwindcss": "^3.2.7"
     },
     "proxy": "http://localhost:3003"

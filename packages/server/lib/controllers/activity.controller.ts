@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import { connectionService, configService, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
+import { activityFilter, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
 
 class ActivityController {
     public async retrieve(req: Request, res: Response, next: NextFunction) {
@@ -30,16 +30,33 @@ class ActivityController {
 
     public async getMessages(req: Request, res: Response, next: NextFunction) {
         try {
-            const logIds = req.query['logIds'] ? (req.query['logIds'] as string).split(',').map((logId) => parseInt(logId)) : [];
+            const rawLogIds = req.query['logIds'];
+            if (typeof rawLogIds !== 'string') {
+                res.status(400).send({ message: 'Missing logsIds parameter' });
+                return;
+            }
+
+            const logIds = new Set<number>();
+            // Deduplicate and exclude NaN
+            for (const logId of rawLogIds.split(',')) {
+                const parsed = parseInt(logId, 10);
+                if (parsed) {
+                    logIds.add(parsed);
+                }
+            }
+            if (logIds.size <= 0) {
+                res.send([]);
+                return;
+            }
 
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
                 errorManager.errResFromNangoErr(res, sessionError);
                 return;
             }
-            const { environment } = response;
 
-            const logs = await getLogMessagesForLogs(logIds, environment.id);
+            const { environment } = response;
+            const logs = await getLogMessagesForLogs(Array.from(logIds.values()), environment.id);
             res.send(logs);
         } catch (error) {
             next(error);
@@ -56,8 +73,8 @@ class ActivityController {
             const { environment } = response;
 
             const scripts = await getAllSyncAndActionNames(environment.id);
-            const integrations = await configService.getAllNames(environment.id);
-            const connections = await connectionService.getAllNames(environment.id);
+            const integrations = await activityFilter(environment.id, 'provider');
+            const connections = await activityFilter(environment.id, 'connection_id');
             res.send({ scripts, integrations, connections });
         } catch (error) {
             next(error);

@@ -9,7 +9,7 @@ export default async function fetchData(nango: NangoSync) {
     while (!finished) {
         // This API endpoint has an annoying bug: If you pass "starting_after" with no value you get a 500 server error
         // Because of this we only set it here when we are fetching page >= 2, otherwise we don't pass it.
-        let queryParams: Record<string, string> = {
+        const queryParams: Record<string, string> = {
             per_page: '150'
         };
 
@@ -28,8 +28,8 @@ export default async function fetchData(nango: NangoSync) {
             params: queryParams
         });
 
-        let contacts: any[] = resp.data.data;
-        let mappedContacts: IntercomContact[] = contacts.map((contact) => ({
+        const contacts: any[] = resp.data.data;
+        const mappedContacts: IntercomContact[] = contacts.map((contact) => ({
             id: contact.id,
             workspace_id: contact.workspace_id,
             external_id: contact.external_id,

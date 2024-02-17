@@ -18,7 +18,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "^0.37.16",
+        "@nangohq/shared": "^0.37.24",
         "@trpc/client": "^10.44.0",
         "@trpc/server": "^10.44.0",
         "api": "^6.1.1",

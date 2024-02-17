@@ -10,16 +10,53 @@ import {
     isProd,
     ServiceResponse,
     NangoError,
-    formatScriptError
+    formatScriptError,
+    isOk
 } from '@nangohq/shared';
-import { getOrStartRunner, getRunnerId } from './runner/runner.js';
+import { Runner, getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from './tracer.js';
 
+interface ScriptObject {
+    context: Context | null;
+    runner: Runner;
+    activityLogId: number | undefined;
+    cancelled?: boolean;
+}
+
 class IntegrationService implements IntegrationServiceInterface {
-    public runningScripts: { [key: string]: Context } = {};
+    public runningScripts: Map<string, ScriptObject>;
 
     constructor() {
+        this.runningScripts = new Map();
         this.sendHeartbeat();
+    }
+
+    async cancelScript(syncId: string, environmentId: number): Promise<void> {
+        const scriptObject = this.runningScripts.get(syncId);
+
+        if (!scriptObject) {
+            return;
+        }
+
+        const { runner, activityLogId } = scriptObject;
+
+        const res = await runner.client.cancel.mutate({
+            syncId
+        });
+
+        if (isOk(res)) {
+            this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
+        } else {
+            if (activityLogId && environmentId) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId,
+                    content: `Failed to cancel script`,
+                    timestamp: Date.now()
+                });
+            }
+        }
     }
 
     async runScript(
@@ -78,21 +115,27 @@ class IntegrationService implements IntegrationServiceInterface {
                 return { success: false, error, response: null };
             }
 
-            if (temporalContext) {
-                this.runningScripts[syncId] = temporalContext;
-            }
             if (nangoProps.accountId == null) {
                 throw new Error(`No accountId provided (instead ${nangoProps.accountId})`);
             }
 
             const accountId = nangoProps.accountId;
-            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default'); // a runner per account in prod only
-            const runner = await getOrStartRunner(runnerId).catch((_) => getOrStartRunner(getRunnerId('default'))); // fallback to default runner if account runner isn't ready yet
+            // a runner per account in prod only
+            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default');
+            // fallback to default runner if account runner isn't ready yet
+            const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+
+            if (temporalContext) {
+                this.runningScripts.set(syncId, { context: temporalContext, runner, activityLogId });
+            } else {
+                this.runningScripts.set(syncId, { context: null, runner, activityLogId });
+            }
 
             const runSpan = tracer.startSpan('runner.run', { childOf: span }).setTag('runnerId', runner.id);
             try {
                 // TODO: request sent to the runner for it to run the script is synchronous.
                 // TODO: Make the request return immediately and have the runner ping the job service when it's done.
+                // https://github.com/trpc/trpc/blob/66d7db60e59b7c758709175a53765c9db0563dc0/packages/tests/server/abortQuery.test.ts#L26
                 const res = await runner.client.run.mutate({
                     nangoProps,
                     code: script as string,
@@ -101,17 +144,34 @@ class IntegrationService implements IntegrationServiceInterface {
                     isWebhook
                 });
 
+                if (res && res.response && res.response.cancelled) {
+                    const error = new NangoError('script_cancelled');
+                    return { success: false, error, response: null };
+                }
+
                 // TODO handle errors from the runner more gracefully and this service doesn't have to handle them
                 if (res && !res.success && res.error) {
                     const { error } = res;
 
-                    const err = new NangoError(error.type, error.payload);
+                    const err = new NangoError(error.type, error.payload, error.status);
 
                     return { success: false, error: err, response: null };
                 }
+
                 return { success: true, error: null, response: res };
             } catch (err: any) {
                 runSpan.setTag('error', err);
+
+                const scriptObject = this.runningScripts.get(syncId);
+
+                if (scriptObject) {
+                    const { cancelled } = scriptObject;
+
+                    if (cancelled) {
+                        this.runningScripts.delete(syncId);
+                        return { success: false, error: new NangoError('script_cancelled'), response: null };
+                    }
+                }
 
                 let errorType = 'sync_script_failure';
                 if (isWebhook) {
@@ -151,7 +211,7 @@ class IntegrationService implements IntegrationServiceInterface {
 
             return { success: false, error: new NangoError(content, 500), response: null };
         } finally {
-            delete this.runningScripts[syncId];
+            this.runningScripts.delete(syncId);
             span.finish();
         }
     }
@@ -159,7 +219,13 @@ class IntegrationService implements IntegrationServiceInterface {
     private sendHeartbeat() {
         setInterval(() => {
             Object.keys(this.runningScripts).forEach((syncId) => {
-                const context = this.runningScripts[syncId];
+                const scriptObject = this.runningScripts.get(syncId);
+
+                if (!scriptObject) {
+                    return;
+                }
+
+                const { context } = scriptObject;
 
                 context?.heartbeat();
             });
