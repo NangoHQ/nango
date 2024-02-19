@@ -300,12 +300,12 @@ export default class SyncRun {
                 }
             }
 
+            const startTime = Date.now();
             try {
                 result = true;
 
                 const syncStartDate = new Date();
 
-                const startTime = Date.now();
                 const {
                     success,
                     error,
@@ -343,11 +343,6 @@ export default class SyncRun {
                 if (!this.writeToDb) {
                     return userDefinedResults;
                 }
-
-                const endTime = Date.now();
-                const totalRunTime = (endTime - startTime) / 1000;
-
-                await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
 
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
@@ -389,6 +384,11 @@ export default class SyncRun {
                 const errorType = this.determineErrorType();
 
                 return { success: false, error: new NangoError(errorType, errorMessage), response: result };
+            } finally {
+                if (!this.isAction) {
+                    const totalRunTime = (Date.now() - startTime) / 1000;
+                    await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
+                }
             }
         }
 
