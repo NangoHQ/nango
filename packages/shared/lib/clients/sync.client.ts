@@ -207,7 +207,7 @@ class SyncClient {
                     });
                 }
 
-                const res = await this.createInitialRun({ activityLogId, jobId, nangoConnection, syncId: sync.id!, syncName, debug });
+                const res = await this.triggerInitialSync({ activityLogId, jobId, nangoConnection, syncId: sync.id!, syncName, debug });
                 if (!res) {
                     return;
                 }
@@ -724,7 +724,7 @@ class SyncClient {
         }
     }
 
-    async createInitialRun({
+    async triggerInitialSync({
         syncId,
         jobId,
         syncName,

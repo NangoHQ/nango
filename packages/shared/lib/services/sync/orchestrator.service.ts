@@ -244,7 +244,7 @@ export class Orchestrator {
 
                     await clearLastSyncDate(sync.id!);
                     await deleteRecordsBySyncId(sync.id!);
-                    await syncClient.createInitialRun({ syncId: sync.id!, activityLogId, nangoConnection: connection, syncName: sync.name });
+                    await syncClient.triggerInitialSync({ syncId: sync.id!, activityLogId, nangoConnection: connection, syncName: sync.name });
                 } else {
                     await syncClient.runSyncCommand(schedule.schedule_id, sync?.id as string, command, activityLogId, environmentId);
                     // if they're triggering a sync that shouldn't change the schedule status
@@ -293,7 +293,7 @@ export class Orchestrator {
 
                     await clearLastSyncDate(sync.id!);
                     await deleteRecordsBySyncId(sync.id!);
-                    await syncClient.createInitialRun({ syncId: sync.id!, activityLogId, nangoConnection, syncName: sync.name });
+                    await syncClient.triggerInitialSync({ syncId: sync.id!, activityLogId, nangoConnection, syncName: sync.name });
                 } else {
                     await syncClient.runSyncCommand(schedule.schedule_id, sync.id as string, command, activityLogId, environmentId);
                     if (command !== SyncCommand.RUN) {
