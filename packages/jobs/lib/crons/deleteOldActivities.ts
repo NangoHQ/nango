@@ -43,12 +43,12 @@ export async function exec(): Promise<void> {
         do {
             count = await deleteLogsMessages({ activityLogId: log.id, limit: limitMsg });
             logger.info(`[oldActivity] deleted ${count} rows`);
+
+            // Free the CPU
+            await setTimeout(250);
         } while (count >= limitMsg);
 
         await deleteLog({ activityLogId: log.id });
-
-        // Free the CPU for a while
-        await setTimeout(5000);
     }
 
     logger.info('[oldActivity] done');

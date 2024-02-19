@@ -354,8 +354,10 @@ export async function deleteLog({ activityLogId }: { activityLogId: number }): P
 }
 
 export async function deleteLogsMessages({ activityLogId, limit }: { activityLogId: number; limit: number }): Promise<number> {
-    const del = await db.knex.raw(
-        `DELETE FROM nango._nango_activity_log_messages WHERE id IN (SELECT id FROM nango._nango_activity_log_messages WHERE activity_log_id = ${activityLogId} LIMIT ${limit})`
-    );
-    return del.rowCount;
+    const del = await db.knex
+        .withSchema(db.schema())
+        .from('_nango_activity_log_messages')
+        .whereIn('id', db.knex.queryBuilder().select('id').from('_nango_activity_log_messages').where({ activity_log_id: activityLogId }).limit(limit))
+        .del();
+    return del;
 }
