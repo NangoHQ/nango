@@ -266,7 +266,7 @@ export async function activityFilter(environment_id: number, filterColumn: 'conn
     const logs = await logsQuery;
 
     const distinctValues: string[] = logs
-        .map((log: { [key: string]: string }) => log[filterColumn] as string)
+        .map((log: Record<string, string>) => log[filterColumn] as string)
         .filter((value: string | undefined): value is string => typeof value === 'string');
 
     return distinctValues;
@@ -334,4 +334,28 @@ export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: s
         timestamp: Date.now(),
         content: errorMessage
     });
+}
+
+export async function findOldActivities({ retention, limit }: { retention: number; limit: number }): Promise<{ id: number }[]> {
+    const q = db.knex
+        .queryBuilder()
+        .withSchema(db.schema())
+        .from('_nango_activity_logs')
+        .select('id')
+        .where(db.knex.raw(`_nango_activity_logs.updated_at <  NOW() - INTERVAL '${retention} days'`))
+        .limit(limit);
+    const logs: { id: number }[] = await q;
+
+    return logs;
+}
+
+export async function deleteLog({ activityLogId }: { activityLogId: number }): Promise<void> {
+    await db.knex.withSchema(db.schema()).from('_nango_activity_logs').where({ id: activityLogId }).del();
+}
+
+export async function deleteLogsMessages({ activityLogId, limit }: { activityLogId: number; limit: number }): Promise<number> {
+    const del = await db.knex.raw(
+        `DELETE FROM nango._nango_activity_log_messages WHERE id IN (SELECT id FROM nango._nango_activity_log_messages WHERE activity_log_id = ${activityLogId} LIMIT ${limit})`
+    );
+    return del.rowCount;
 }
