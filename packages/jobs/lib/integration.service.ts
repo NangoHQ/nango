@@ -146,12 +146,14 @@ class IntegrationService implements IntegrationServiceInterface {
 
                 if (res && res.response && res.response.cancelled) {
                     const error = new NangoError('script_cancelled');
+                    runSpan.setTag('error', error);
                     return { success: false, error, response: null };
                 }
 
                 // TODO handle errors from the runner more gracefully and this service doesn't have to handle them
                 if (res && !res.success && res.error) {
                     const { error } = res;
+                    runSpan.setTag('error', error);
 
                     const err = new NangoError(error.type, error.payload, error.status);
 
