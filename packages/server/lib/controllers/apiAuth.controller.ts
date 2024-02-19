@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import tracer from '../tracer.js';
 import type { LogLevel } from '@nangohq/shared';
 import {
     getAccount,
@@ -10,6 +11,10 @@ import {
     AuthOperation,
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    connectionTest as connectionTestHook,
+    isErr,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
@@ -134,6 +139,36 @@ class ApiAuthController {
 
             const { apiKey } = req.body;
 
+            const credentials: ApiKeyCredentials = {
+                type: AuthModes.ApiKey,
+                apiKey
+            };
+
+            const connectionResponse = await connectionTestHook(
+                config?.provider,
+                template,
+                credentials,
+                connectionId,
+                providerConfigKey,
+                environmentId,
+                connectionConfig,
+                tracer
+            );
+
+            if (isErr(connectionResponse)) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId as number,
+                    content: `The credentials provided were not valid for the ${config?.provider} provider`,
+                    timestamp: Date.now()
+                });
+
+                errorManager.errResFromNangoErr(res, connectionResponse.err);
+
+                return;
+            }
+
             await createActivityLogMessage({
                 level: 'info',
                 environment_id: environmentId,
@@ -148,10 +183,7 @@ class ApiAuthController {
                 connectionId as string,
                 providerConfigKey as string,
                 config?.provider as string,
-                {
-                    type: AuthModes.ApiKey,
-                    apiKey
-                },
+                credentials,
                 connectionConfig,
                 environmentId,
                 accountId
@@ -313,6 +345,37 @@ class ApiAuthController {
                 return;
             }
 
+            const credentials: BasicApiCredentials = {
+                type: AuthModes.Basic,
+                username,
+                password
+            };
+
+            const connectionResponse = await connectionTestHook(
+                config?.provider,
+                template,
+                credentials,
+                connectionId,
+                providerConfigKey,
+                environmentId,
+                connectionConfig,
+                tracer
+            );
+
+            if (isErr(connectionResponse)) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId as number,
+                    content: `The credentials provided were not valid for the ${config?.provider} provider`,
+                    timestamp: Date.now()
+                });
+
+                errorManager.errResFromNangoErr(res, connectionResponse.err);
+
+                return;
+            }
+
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
             await createActivityLogMessage({
@@ -329,11 +392,7 @@ class ApiAuthController {
                 connectionId as string,
                 providerConfigKey as string,
                 config?.provider as string,
-                {
-                    type: AuthModes.Basic,
-                    username,
-                    password
-                },
+                credentials,
                 connectionConfig,
                 environmentId,
                 accountId

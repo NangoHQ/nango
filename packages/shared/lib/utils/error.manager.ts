@@ -124,6 +124,7 @@ class ErrorManager {
 
     public errResFromNangoErr(res: Response, err: NangoError | null) {
         if (err) {
+            logger.error(`Error: ${{ statusCode: err.status, type: err.type, payload: err.payload, message: err.message }}`);
             if (!err.message) {
                 res.status(err.status).send({ type: err.type, payload: err.payload });
             } else {

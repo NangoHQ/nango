@@ -1,9 +1,9 @@
+import './tracer.js';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { validateRequest } from 'zod-express';
 import { z } from 'zod';
 import persistController from './controllers/persist.controller.js';
-import './tracer.js';
 import { logLevelValues } from '@nangohq/shared';
 
 export const server = express();
@@ -27,22 +27,6 @@ server.use((req: Request, res: Response, next: NextFunction) => {
 server.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok' });
 });
-server.put(
-    '/sync/:syncId',
-    validateRequest({
-        params: z.object({
-            syncId: z.string()
-        }),
-        body: z.object({
-            lastSyncDate: z
-                .string()
-                .datetime()
-                .transform((value) => new Date(value))
-                .pipe(z.date()) as unknown as z.ZodDate
-        })
-    }),
-    persistController.saveLastSyncDate
-);
 
 server.post(
     '/environment/:environmentId/log',

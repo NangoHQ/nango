@@ -1,8 +1,15 @@
 name: "[Release] Build service images"
-on: [push, pull_request]
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+
 concurrency:
     group: pulls/${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
+
 jobs:
     nango-persist:
         uses: ./.github/workflows/push-container.yaml
@@ -10,28 +17,29 @@ jobs:
         with:
             package: persist
             run-cmd: ts-build
-            tags: -t nangohq/nango-persist:$GITHUB_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-persist:enterprise-$GITHUB_SHA -t nangohq/nango-persist:enterprise -t nangohq/nango-persist:hosted-$GITHUB_SHA -t nangohq/nango-persist:hosted' || '' }}
+            tags: -t nangohq/nango-persist:${{ github.event.pull_request.head.sha || github.sha }} ${{ github.ref == 'refs/heads/master' && format('-t nangohq/nango-persist:enterprise-{0} -t nangohq/nango-persist:enterprise -t nangohq/nango-persist:hosted-{1} -t nangohq/nango-persist:hosted', github.event.pull_request.head.sha || github.sha, github.event.pull_request.head.sha || github.sha)  || '' }}
     nango-jobs:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: jobs
             run-cmd: ts-build
-            tags: -t nangohq/nango-jobs:$GITHUB_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-jobs:enterprise-$GITHUB_SHA -t nangohq/nango-jobs:enterprise -t nangohq/nango-jobs:hosted-$GITHUB_SHA -t nangohq/nango-jobs:hosted' || '' }}
+            tags: -t nangohq/nango-jobs:${{ github.event.pull_request.head.sha || github.sha }} ${{ github.ref == 'refs/heads/master' && format('-t nangohq/nango-jobs:enterprise-{0} -t nangohq/nango-jobs:enterprise -t nangohq/nango-jobs:hosted-{1} -t nangohq/nango-jobs:hosted', github.event.pull_request.head.sha || github.sha, github.event.pull_request.head.sha || github.sha) || '' }}
     nango-runner:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: runner
             run-cmd: ts-build
-            tags: -t nangohq/nango-runner:$GITHUB_SHA ${{ github.ref == 'refs/heads/master' && '-t nangohq/nango-runner:enterprise-$GITHUB_SHA -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-$GITHUB_SHA -t nangohq/nango-runner:hosted' || '' }}
+            tags: -t nangohq/nango-runner:${{ github.event.pull_request.head.sha || github.sha }} ${{ github.ref == 'refs/heads/master' && format('-t nangohq/nango-runner:enterprise-{0} -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-{1} -t nangohq/nango-runner:hosted', github.event.pull_request.head.sha || github.sha, github.event.pull_request.head.sha || github.sha) || '' }}
     nango-server-staging:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: server
             run-cmd: build:staging
-            tags: -t nangohq/nango-server:staging-$GITHUB_SHA
+            tags: -t nangohq/nango-server:staging-${{ github.event.pull_request.head.sha || github.sha }}
+
     nango-server-prod:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -39,7 +47,7 @@ jobs:
         with:
             package: server
             run-cmd: build:prod
-            tags: -t nangohq/nango-server:production-$GITHUB_SHA
+            tags: -t nangohq/nango-server:production-${{ github.event.pull_request.head.sha || github.sha }}
     nango-server-self-hosted:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -47,7 +55,7 @@ jobs:
         with:
             package: server
             run-cmd: build:hosted
-            tags: -t nangohq/nango-server:hosted -t nangohq/nango-server:hosted-$GITHUB_SHA
+            tags: -t nangohq/nango-server:hosted -t nangohq/nango-server:hosted-${{ github.event.pull_request.head.sha || github.sha }}
     nango-server-enterprise:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -55,4 +63,4 @@ jobs:
         with:
             package: server
             run-cmd: build:enterprise
-            tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-$GITHUB_SHA
+            tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-${{ github.event.pull_request.head.sha || github.sha }}

@@ -1,6 +1,6 @@
 import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import ms from 'ms';
+import ms, { StringValue } from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
@@ -14,18 +14,19 @@ import {
     createActivityLogMessageAndEnd,
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
-import { createSyncJob, updateRunId } from '../services/sync/job.service.js';
+import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
+import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
-import { isProd } from '../utils/utils.js';
-import { Result, resultErr, resultOk } from '../utils/result.js';
-import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
+import type { RunnerOutput } from '../models/Runner.js';
+import { isTest, isProd } from '../utils/utils.js';
+import { resultOk, type Result, resultErr } from '../utils/result.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
@@ -54,6 +55,10 @@ class SyncClient {
     }
 
     private static async create(): Promise<SyncClient | null> {
+        if (isTest()) {
+            return new SyncClient(true as any);
+        }
+
         try {
             const connection = await Connection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
@@ -111,7 +116,7 @@ class SyncClient {
             nangoConnection?.environment_id as number
         )) as ProviderConfig;
 
-        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
         for (let k = 0; k < syncNames.length; k++) {
             const syncName = syncNames[k] as string;
@@ -371,15 +376,13 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number, environmentId: number) {
+    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
-                case SyncCommand.PAUSE:
+                case SyncCommand.CANCEL:
                     {
-                        /*
-                        // TODO
                         const jobIsRunning = await isSyncJobRunning(syncId);
                         if (jobIsRunning) {
                             const { job_id, run_id } = jobIsRunning;
@@ -388,8 +391,10 @@ class SyncClient {
                                 await workflowHandle?.cancel();
                             }
                         }
-                        */
-
+                    }
+                    break;
+                case SyncCommand.PAUSE:
+                    {
                         await scheduleHandle?.pause();
                     }
                     break;
@@ -416,8 +421,10 @@ class SyncClient {
                     console.warn('Not implemented');
                     break;
             }
-        } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+
+            return resultOk(true);
+        } catch (err) {
+            const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
@@ -426,6 +433,8 @@ class SyncClient {
                 timestamp: Date.now(),
                 content: `The sync command: ${command} failed with error: ${errorMessage}`
             });
+
+            return resultErr(err as Error);
         }
     }
 
@@ -455,6 +464,7 @@ class SyncClient {
         environment_id: number,
         writeLogs = true
     ): Promise<Result<T, NangoError>> {
+        const startTime = Date.now();
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
 
         try {
@@ -484,24 +494,23 @@ class SyncClient {
                 ]
             });
 
-            const { success, error: rawError, response } = actionHandler;
+            const { success, error: rawError, response }: RunnerOutput = actionHandler;
 
             // Errors received from temporal are raw objects not classes
-            const error =
-                !(rawError instanceof NangoError) && rawError?.type && rawError.status
-                    ? new NangoError(rawError?.type, rawError?.payload, rawError.status)
-                    : rawError;
+            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
 
-            if (writeLogs && (success === false || error)) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
-                });
+            if (success === false || error) {
+                if (writeLogs) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        environment_id,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: `The action workflow ${workflowId} did not complete successfully`
+                    });
+                }
 
-                return resultErr(error);
+                return resultErr(error!);
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
@@ -521,8 +530,8 @@ class SyncClient {
                 await updateSuccessActivityLog(activityLogId, true);
             }
 
-            await metricsManager.capture(
-                MetricTypes.ACTION_SUCCESS,
+            await telemetry.log(
+                LogTypes.ACTION_SUCCESS,
                 content,
                 LogActionEnum.ACTION,
                 {
@@ -562,8 +571,8 @@ class SyncClient {
                 }
             });
 
-            await metricsManager.capture(
-                MetricTypes.ACTION_FAILURE,
+            await telemetry.log(
+                LogTypes.ACTION_FAILURE,
                 content,
                 LogActionEnum.ACTION,
                 {
@@ -576,6 +585,10 @@ class SyncClient {
             );
 
             return resultErr(error);
+        } finally {
+            const endTime = Date.now();
+            const totalRunTime = (endTime - startTime) / 1000;
+            await telemetry.duration(MetricTypes.ACTION_TRACK_RUNTIME, totalRunTime);
         }
     }
 
@@ -692,7 +705,7 @@ class SyncClient {
             scheduleDescription.spec = {
                 intervals: [
                     {
-                        every: ms(interval),
+                        every: ms(interval as StringValue),
                         offset
                     }
                 ]

@@ -1,6 +1,7 @@
+import './tracer.js';
 import { Temporal } from './temporal.js';
 import { server } from './server.js';
-import './tracer.js';
+import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 
 try {
     const port = parseInt(process.env['NANGO_JOBS_PORT'] || '') || 3005;
@@ -9,6 +10,9 @@ try {
     const temporalNs = process.env['TEMPORAL_NAMESPACE'] || 'default';
     const temporal = new Temporal(temporalNs);
     temporal.start();
+
+    // Register recurring tasks
+    cronAutoIdleDemo();
 
     // handle SIGTERM
     process.on('SIGTERM', async () => {

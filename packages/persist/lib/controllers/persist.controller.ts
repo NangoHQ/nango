@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import {
-    setLastSyncDate,
     createActivityLogMessage,
     LogLevel,
     errorManager,
@@ -44,19 +43,6 @@ type RecordRequest = Request<
 >;
 
 class PersistController {
-    public async saveLastSyncDate(req: Request<{ syncId: string }, any, { lastSyncDate: Date }, any, Record<string, any>>, res: Response, next: NextFunction) {
-        const {
-            params: { syncId },
-            body: { lastSyncDate }
-        } = req;
-        const result = await setLastSyncDate(syncId, lastSyncDate);
-        if (result) {
-            res.status(201).send();
-        } else {
-            next(new Error(`Failed to save last sync date '${lastSyncDate}' for sync '${syncId}'`));
-        }
-    }
-
     public async saveActivityLog(
         req: Request<{ environmentId: number }, any, { activityLogId: number; level: LogLevel; msg: string }, any, Record<string, any>>,
         res: Response,

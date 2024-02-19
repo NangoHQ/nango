@@ -50,7 +50,8 @@
         "test:unit": "vitest",
         "test:integration": "vitest --config ./vite.integration.config.ts",
         "docs": "cd ./docs-v2 && mintlify dev --port 3033",
-        "nango": "cd ./packages/server && npm run nango"
+        "nango": "cd ./packages/server && npm run nango",
+        "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d"
     },
     "devDependencies": {
         "@tsconfig/node18-strictest-esm": "^1.0.1",

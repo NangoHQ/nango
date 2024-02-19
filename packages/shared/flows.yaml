@@ -20,6 +20,161 @@ integrations:
         completed: boolean
         created_at: date
         modified_at: date
+  ashby:
+    ashby-candidates:
+      runs: every hour
+      returns:
+        - AshbyCandidate
+      description: |
+        Fetch a list of all candidates from your ashby account.
+        Details: Increamental sync, doesn't track deletes, metadata is required.
+    ashby-jobs:
+      runs: every hour
+      returns:
+        - AshbyJob
+      description: |
+        Fetch a list of all jobs from your ashby account.
+        Details: Increamental sync, doesn't track deletes, metadata is required.
+    ashby-create-application:
+      type: action
+      returns: AshbyCreateApplicationResponse
+      description: |
+        Action to consider a candidate for a job.
+    ashby-create-note:
+      type: action
+      returns: AshbyCreateNoteResponse
+      description: |
+        Action to create a note on a candidate.
+    models:
+      AshbyCandidate:
+        id: string
+        createdAt: date
+        name: string
+        primaryEmailAddress:
+          value: string
+          type: string
+          isPrimary: boolean
+        emailAddresses: []
+        primaryPhoneNumber:
+          value: string
+          type: string
+          isPrimary: boolean
+        phoneNumbers: []
+        socialLinks: []
+        tags: []
+        position: string
+        company: string
+        school: string
+        applicationIds: string[]
+        resumeFileHandle:
+          id: string
+          name: string
+          handle: string
+        fileHandles: []
+        customFields: []
+        profileUrl: string
+        source:
+          id: string
+          title: string
+          isArchived: boolean
+          sourceType:
+            id: string
+            title: string
+            isArchived: boolean
+        creditedToUser:
+          id: string
+          firstName: string
+          lastName: string
+          email: string
+          globalRole: string
+          isEnabled: boolean
+          updatedAt: date
+      AshbyJob:
+        id: string
+        title: string
+        confidential: boolean
+        status: string
+        employmentType: string
+        locationId: string
+        departmentId: string
+        defaultInterviewPlanId: string
+        interviewPlanIds: string[]
+        customFields: []
+        jobPostingIds: string[]
+        customRequisitionId: string
+        hiringTeam: []
+        updatedAt: date
+        location:
+          id: string
+          name: string
+          isArchived: boolean
+          address:
+            postalAddress:
+              addressCountry: string
+              addressRegion: string
+              addressLocality: string
+          isRemote: boolean
+        openings: []
+      AshbyCreateApplicationResponse:
+        id: string
+        createdAt: date
+        updatedAt: date
+        status: string
+        customFields: []
+        candidate:
+          id: string
+          name: string
+          primaryEmailAddress:
+            value: string
+            type: string
+            isPrimary: boolean
+          primaryPhoneNumber:
+            value: string
+            type: string
+            isPrimary: boolean
+        currentInterviewStage:
+          id: string
+          title: string
+          type: string
+          orderInInterviewPlan: number
+          interviewPlanId: string
+        source:
+          id: string
+          title: string
+          isArchived: boolean
+          sourceType:
+            id: string
+            title: string
+            isArchived: boolean
+        archiveReason:
+          id: string
+          text: string
+          reasonType: string
+          isArchived: boolean
+        job:
+          id: string
+          title: string
+          locationId: string
+          departmentId: string
+        creditedToUser:
+          id: string
+          firstName: string
+          lastName: string
+          email: string
+          globalRole: string
+          isEnabled: boolean
+          updatedAt: date
+        hiringTeam: []
+        appliedViaJobPostingId: string
+      AshbyCreateNoteResponse:
+        id: string
+        createdAt: date
+        content: string
+        author:
+          id: string
+          firstName: string
+          lastName: string
+          email: string
   bamboohr-basic:
     syncs:
       bamboohr-employees:
@@ -933,6 +1088,38 @@ integrations:
         teams: []
         activated: boolean
         last_activity_time: date
+  hibob-service-user:
+    hibob-employees:
+      runs: every hour
+      returns:
+        - HibobEmployee
+      description: |
+        Returns a list of all active employees.
+        Details: full sync, doesn't track deletes, metadata is not required.
+    models:
+      HibobEmployee:
+        id: string
+        firstName: string
+        surname: string
+        email: string
+        displayName: string
+        personal:
+          honorific: string
+          shortBirthDate: string
+          gender: string
+        about:
+          avatar: string
+          hobbies: string[]
+        work:
+          reportsTo:
+            id: string
+            firstName: string
+            surname: string
+            email: string
+          title: string
+          department: string
+          site: string
+          startDate: date
   hubspot:
     syncs:
       hubspot-service-tickets:
@@ -1356,6 +1543,62 @@ integrations:
         isAdmin: boolean | null
         department: string | null
     rawName: microsoft-active-directory
+  next-cloud-ocs:
+    next-cloud-users:
+      runs: every hour
+      returns: NextCloudUser
+      description: |
+        Fetch all users' details from NextCloud account
+        Details: full sync, doesn't track deletes, metadata is not required.
+    models:
+      NextCloudUser:
+        enabled: boolean
+        id: string
+        lastLogin: number
+        backend: string
+        subadmin: string[]
+        quota:
+          free: number
+          used: number
+          total: number
+          relative: number
+          quota: number
+        manager: string
+        avatarScope: string
+        email: string
+        emailScope: string
+        additional_mail: []
+        additional_mailScope: []
+        displayname: string
+        display_name: string
+        displaynameScope: string
+        phone: string
+        phoneScope: string
+        address: string
+        addressScope: string
+        website: string
+        websiteScope: string
+        twitter: string
+        twitterScope: string
+        fediverse: string
+        fediverseScope: string
+        organisation: string
+        organisationScope: string
+        role: string
+        roleScope: string
+        headline: string
+        headlineScope: string
+        biography: string
+        biographyScope: string
+        profile_enabled: string
+        profile_enabledScope: string
+        groups: string[]
+        language: string
+        locale: string
+        notify_email: boolean
+        backendCapabilities:
+          setDisplayName: boolean
+          setPassword: boolean
   notion:
     syncs:
       notion-pages:

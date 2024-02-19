@@ -330,10 +330,10 @@ export function generateResponseModel(models: NangoSyncModel[], output: string, 
     }
     const metadata = {
         _nango_metadata: {
-            deleted_at: '<date-string | null>',
+            deleted_at: '<date| null>',
             last_action: 'ADDED|UPDATED|DELETED',
-            first_seen_at: '<date-string>',
-            last_modified_at: '<date-string>'
+            first_seen_at: '<date>',
+            last_modified_at: '<date>'
         }
     };
     return {...jsonResponse, ...metadata};

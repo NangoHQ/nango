@@ -1,6 +1,6 @@
 import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
 import type { AuthModes } from './Auth.js';
-import type { TimestampsAndDeleted } from './Generic.js';
+import type { HTTP_VERB, TimestampsAndDeleted } from './Generic.js';
 import type { SyncConfig, Action } from './Sync.js';
 
 export interface Config extends TimestampsAndDeleted {
@@ -32,6 +32,10 @@ export interface Template {
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
+        verification?: {
+            method: HTTP_VERB;
+            endpoint: string;
+        };
     };
     authorization_url: string;
     authorization_params?: Record<string, string>;
@@ -41,6 +45,7 @@ export interface Template {
     token_params?: {
         [key: string]: string;
     };
+    authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: Array<string>;
     token_response_metadata?: Array<string>;
     docs?: string;

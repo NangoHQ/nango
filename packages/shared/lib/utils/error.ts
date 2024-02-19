@@ -328,6 +328,11 @@ export class NangoError extends Error {
                 this.message = 'Provider configuration cannot be edited for API key based authentication.';
                 break;
 
+            case 'connection_test_failed':
+                this.status = status || 400;
+                this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;
+                break;
+
             case 'invalid_auth_mode':
                 this.status = 400;
                 this.message = 'Invalid auth mode. The provider does not support this auth mode.';
@@ -496,6 +501,10 @@ export class NangoError extends Error {
             case 'action_script_runtime_error':
                 this.status = 500;
                 this.message = '';
+                break;
+
+            case 'script_cancelled':
+                this.message = 'The script was cancelled successfully';
                 break;
 
             default:

@@ -7,6 +7,7 @@ import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import logger from '../logger/console.js';
+import telemetry, { MetricTypes } from '../utils/telemetry.js';
 
 /*
  *
@@ -18,21 +19,21 @@ import logger from '../logger/console.js';
  */
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
-interface ParamEncoder {
-    (value: any, defaultEncoder: (value: any) => any): any;
-}
+type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 
 interface GenericFormData {
     append(name: string, value: any, options?: any): any;
 }
 
-interface SerializerVisitor {
-    (this: GenericFormData, value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
-}
+type SerializerVisitor = (
+    this: GenericFormData,
+    value: any,
+    key: string | number,
+    path: null | (string | number)[],
+    helpers: FormDataVisitorHelpers
+) => boolean;
 
-interface CustomParamsSerializer {
-    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
-}
+type CustomParamsSerializer = (params: Record<string, any>, options?: ParamsSerializerOptions) => string;
 
 interface FormDataVisitorHelpers {
     defaultVisitor: SerializerVisitor;
@@ -169,9 +170,7 @@ interface OAuth1Credentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
-interface Metadata {
-    [key: string]: string | Record<string, any>;
-}
+type Metadata = Record<string, string | Record<string, any>>;
 
 interface Connection {
     id?: number;
@@ -189,9 +188,9 @@ interface Connection {
 
 export class ActionError extends Error {
     type: string;
-    payload: unknown;
+    payload?: Record<string, unknown>;
 
-    constructor(payload?: unknown) {
+    constructor(payload?: Record<string, unknown>) {
         super();
         this.type = 'action_script_runtime_error';
         if (payload) {
@@ -217,6 +216,7 @@ export interface NangoProps {
     attributes?: object | undefined;
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
+    abortSignal?: AbortSignal;
 }
 
 interface EnvironmentVariable {
@@ -233,6 +233,7 @@ export class NangoAction {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
+    abortSignal?: AbortSignal;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -280,6 +281,10 @@ export class NangoAction {
         if (config.attributes) {
             this.attributes = config.attributes;
         }
+
+        if (config.abortSignal) {
+            this.abortSignal = config.abortSignal;
+        }
     }
 
     protected stringify(): string {
@@ -311,7 +316,14 @@ export class NangoAction {
         };
     }
 
+    protected async exitSyncIfAborted(): Promise<void> {
+        if (this.abortSignal?.aborted) {
+            process.exit(0);
+        }
+    }
+
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        this.exitSyncIfAborted();
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
@@ -394,18 +406,22 @@ export class NangoAction {
     }
 
     public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials> {
+        this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async getConnection(): Promise<Connection> {
+        this.exitSyncIfAborted();
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        this.exitSyncIfAborted();
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
     public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        this.exitSyncIfAborted();
         return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
@@ -415,10 +431,12 @@ export class NangoAction {
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
+        this.exitSyncIfAborted();
         return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
     }
 
     public async getWebhookURL(): Promise<string | undefined> {
+        this.exitSyncIfAborted();
         const { config: integration } = await this.nango.getIntegration(this.providerConfigKey!, true);
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
@@ -445,6 +463,7 @@ export class NangoAction {
      * silly = light green
      */
     public async log(...args: any[]): Promise<void> {
+        this.exitSyncIfAborted();
         if (args.length === 0) {
             return;
         }
@@ -486,6 +505,7 @@ export class NangoAction {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
             throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
         }
+
         return;
     }
 
@@ -598,29 +618,10 @@ export class NangoSync extends NangoAction {
     }
 
     /**
-     * Set Sync Last Sync Date
-     * @desc permanently set the last sync date for the sync
-     * to be used for the next sync run
+     * Deprecated, reach out to support
      */
-    public async setLastSyncDate(date: Date): Promise<boolean> {
-        if (date.toString() === 'Invalid Date') {
-            throw new Error('Invalid Date');
-        }
-        const response = await persistApi({
-            method: 'PUT',
-            url: `/sync/${this.syncId}`,
-            data: {
-                lastSyncDate: date
-            }
-        });
-        if (response.status > 299) {
-            logger.error(
-                `Request to persist API (setLastSyncDate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                this.stringify()
-            );
-            throw new Error(`cannot set lastSyncDate for sync '${this.syncId}'`);
-        }
-        return true;
+    public async setLastSyncDate(): Promise<void> {
+        logger.warn('setLastSyncDate is deprecated. Please contact us if you are using this method.');
     }
 
     /**
@@ -632,6 +633,8 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchSave<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.exitSyncIfAborted();
+
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchSave received an empty array. No records to save.');
@@ -676,6 +679,7 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.exitSyncIfAborted();
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchDelete received an empty array. No records to delete.');
@@ -720,6 +724,7 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null> {
+        this.exitSyncIfAborted();
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchUpdate received an empty array. No records to update.');
@@ -764,6 +769,7 @@ export class NangoSync extends NangoAction {
     }
 
     public override async getMetadata<T = Metadata>(): Promise<T> {
+        this.exitSyncIfAborted();
         if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;
         }
@@ -778,3 +784,34 @@ const persistApi = axios.create({
         return true;
     }
 });
+
+const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
+    'batchDelete',
+    'batchSave',
+    'batchSend',
+    'getConnection',
+    'getEnvironmentVariables',
+    'getMetadata',
+    'proxy',
+    'log'
+];
+
+/* eslint-disable no-inner-declarations */
+/**
+ * This function will enable tracing on the SDK
+ * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
+ */
+export function instrumentSDK(rawNango: NangoAction | NangoSync) {
+    return new Proxy(rawNango, {
+        get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
+            // Method name is not matching the allowList we don't do anything else
+            if (!TELEMETRY_ALLOWED_METHODS.includes(propKey)) {
+                return target[propKey];
+            }
+
+            return telemetry.time(`${MetricTypes.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
+        }
+    });
+}
+
+/* eslint-enable no-inner-declarations */

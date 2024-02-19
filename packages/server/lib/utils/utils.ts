@@ -145,17 +145,20 @@ export function parseJsonDateAware(input: string) {
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
     if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers) {
-        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g) : null;
-        const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g);
-        const proxyBaseUrlMatches = template.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g);
+        const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
+        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
+        const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const proxyBaseUrlMatches = template.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyHeaderMatches = template.proxy?.headers
             ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
             : [];
-
-        const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || []), ...(proxyBaseUrlMatches || []), ...proxyHeaderMatches].filter(
-            (value, index, array) => array.indexOf(value) === index
+        const proxyMatches = [...proxyBaseUrlMatches, ...proxyHeaderMatches].filter(
+            // we ignore config params in proxy attributes that are also in the token response metadata or redirect url metadata
+            (param) => [...(template.token_response_metadata || []), ...(template.redirect_uri_metadata || [])].indexOf(cleanParamName(param)) == -1
         );
-        return params.map((param) => param.replace('${connectionConfig.', '').replace('}', '')); // Remove the ${connectionConfig.'} and return only the param name.
+        return [...tokenUrlMatches, ...authorizationUrlMatches, ...proxyMatches]
+            .map(cleanParamName)
+            .filter((value, index, array) => array.indexOf(value) === index); // remove duplicates
     }
 
     return [];

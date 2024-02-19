@@ -143,6 +143,9 @@ ashby:
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
+        verification:
+            method: POST
+            endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
 atlassian:
     categories:
@@ -194,6 +197,9 @@ bamboohr-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+        verification:
+            method: GET
+            endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
 battlenet:
     categories:
@@ -778,6 +784,8 @@ greenhouse:
     token_url: https://api.greenhouse.io/oauth/token
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -789,6 +797,8 @@ greenhouse-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -861,6 +871,10 @@ hibob-service-user:
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
+        verification:
+            method: GET
+            endpoint: /v1/company/named-lists
+    docs: https://apidocs.hibob.com/
 highlevel:
     categories:
         - marketing
@@ -1176,6 +1190,12 @@ netsuite:
     default_scopes:
         - restlets
     docs: https://docs.nango.dev/integrations/all/netsuite
+next-cloud-ocs:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.domain}/ocs/v1.php
+        headers:
+            'OCS-APIRequest': 'true'
 notion:
     categories:
         - knowledge-base
@@ -1745,6 +1765,32 @@ teamwork:
     proxy:
         base_url: https://${connectionConfig.subdomain}${connectionConfig.extension}.teamwork.com
     docs: https://docs.nango.dev/integrations/all/teamwork
+tiktok-accounts:
+    auth_mode: OAUTH2
+    authorization_url: https://open-api.tiktok.com/platform/oauth/connect/
+    token_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/
+    refresh_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/
+    proxy:
+        base_url: https://business-api.tiktok.com/open_api/v1.3/
+    authorization_params:
+        response_type: code
+    authorization_url_replacements:
+        client_id: client_key
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ','
+tiktok-ads:
+    auth_mode: OAUTH2
+    authorization_url: https://business-api.tiktok.com/portal/auth
+    token_url: https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/
+    proxy:
+        base_url: https://business-api.tiktok.com/open_api/v1.3/
+    token_params:
+        grant_type: authorization_code
+    authorization_url_replacements:
+        client_id: app_id
 timely:
     categories:
         - productivity
