@@ -95,7 +95,7 @@ paths:
                                     message:
                                         type: string
         put:
-            description: Edit an integration (only for OAuth APIs)
+            description: Edits an integration (only for OAuth APIs)
             requestBody:
                 required: true
                 content:
@@ -282,7 +282,7 @@ paths:
                                         type: string
     /connection:
         get:
-            description: Returns a list of connections
+            description: Returns a list of connections without credentials
             parameters:
                 - name: connectionId
                   in: query
@@ -330,7 +330,7 @@ paths:
                                                     description: Custom metadata attached to the connection
 
         post:
-            description: Adds a connection for which you already have an access token
+            description: Adds a connection for which you already have credentials.
             requestBody:
                 required: true
                 content:
@@ -396,7 +396,7 @@ paths:
 
     /connection/{connectionId}:
         get:
-            description: Returns a specific connection
+            description: Returns a specific connection with credentials
             parameters:
                 - name: connectionId
                   in: path
@@ -514,7 +514,7 @@ paths:
                                         type: string
 
         patch:
-            description: Update custom metadata for the connection.
+            description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
             parameters:
                 - name: connectionId
                   in: path
@@ -773,7 +773,7 @@ paths:
                                     description: The ID of the connection. If omitted, the syncs will be triggered for all relevant connections.
                                 syncs:
                                     type: array
-                                    description: A list of sync names that you wish to trigger.
+                                    description: An array of sync names to trigger. If the array is empty, all syncs are triggered. 
                                     items:
                                         type: string
             responses:
@@ -791,7 +791,7 @@ paths:
 
     /sync/start:
         post:
-            description: Starts the continuous execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
+            description: Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified.
             requestBody:
                 content:
                     application/json:
@@ -826,7 +826,7 @@ paths:
                                         type: string
     /sync/pause:
         post:
-            description: Pauses the continuous execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
+            description: Pauses the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified.
             requestBody:
                 content:
                     application/json:
