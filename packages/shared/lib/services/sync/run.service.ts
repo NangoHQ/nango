@@ -369,6 +369,7 @@ export default class SyncRun {
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
+                const totalRunTime = (Date.now() - startTime) / 1000;
                 await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                 return { success: true, error: null, response: true };
