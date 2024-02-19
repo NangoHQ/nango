@@ -208,14 +208,11 @@ export async function syncProvider(
     syncName: string,
     syncType: SyncType,
     nangoConnection: NangoConnection,
-    existingActivityLogId: number,
+    _existingActivityLogId: number,
     temporalContext: Context,
     debug = false
 ): Promise<boolean | object | null> {
     try {
-        console.log('syncprovider', existingActivityLogId);
-        let activityLogId = existingActivityLogId;
-
         const log = {
             level: 'info' as LogLevel,
             success: null,
@@ -230,7 +227,7 @@ export async function syncProvider(
             environment_id: nangoConnection?.environment_id as number,
             operation_name: syncName
         };
-        activityLogId = (await createActivityLog(log)) as number;
+        const activityLogId = (await createActivityLog(log)) as number;
 
         if (debug) {
             await createActivityLogMessage({
