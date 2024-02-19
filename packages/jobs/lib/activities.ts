@@ -30,7 +30,7 @@ import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
-    const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
+    const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
 
     // https://typescript.temporal.io/api/classes/activity.Context
@@ -40,17 +40,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
     }
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
 
-    return syncProvider(
-        syncConfig,
-        syncId,
-        syncJobId,
-        syncName,
-        SyncType.INITIAL,
-        { ...nangoConnection, environment_id: environmentId },
-        activityLogId,
-        context,
-        debug
-    );
+    return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, { ...nangoConnection, environment_id: environmentId }, context, debug);
 }
 
 export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
@@ -83,7 +73,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object | null> {
-    const { syncId, activityLogId, syncName, nangoConnection, debug } = args;
+    const { syncId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
 
@@ -143,7 +133,6 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             syncName,
             syncType,
             { ...nangoConnection, environment_id: environmentId },
-            activityLogId ?? 0,
             context,
             debug
         );
@@ -208,7 +197,6 @@ export async function syncProvider(
     syncName: string,
     syncType: SyncType,
     nangoConnection: NangoConnection,
-    _existingActivityLogId: number,
     temporalContext: Context,
     debug = false
 ): Promise<boolean | object | null> {
@@ -407,7 +395,7 @@ export async function reportFailure(
 
 export async function cancelActivity(workflowArguments: InitialSyncArgs | ContinuousSyncArgs): Promise<void> {
     try {
-        const { syncId, activityLogId, syncName, nangoConnection, debug } = workflowArguments;
+        const { syncId, syncName, nangoConnection, debug } = workflowArguments;
 
         const context: Context = Context.current();
 
@@ -428,7 +416,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
             nangoConnection,
             syncType,
             syncName,
-            activityLogId,
+            activityLogId: undefined,
             provider: syncConfig.provider,
             temporalContext: context,
             debug: Boolean(debug)

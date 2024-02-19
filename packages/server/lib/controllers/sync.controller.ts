@@ -627,6 +627,9 @@ class SyncController {
                 case SyncCommand.RUN:
                     event = AnalyticsTypes.SYNC_RUN;
                     break;
+                case SyncCommand.CANCEL:
+                    event = AnalyticsTypes.SYNC_CANCEL;
+                    break;
             }
 
             analytics.trackByEnvironmentId(event, environment.id, {
