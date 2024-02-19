@@ -23,9 +23,9 @@ import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
-import { isProd } from '../utils/utils.js';
-import { Result, resultErr, resultOk } from '../utils/result.js';
-import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
+import type { RunnerOutput } from '../models/Runner.js';
+import { isTest, isProd } from '../utils/utils.js';
+import { resultOk, type Result, resultErr } from '../utils/result.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
@@ -54,6 +54,10 @@ class SyncClient {
     }
 
     private static async create(): Promise<SyncClient | null> {
+        if (isTest()) {
+            return new SyncClient(true as any);
+        }
+
         try {
             const connection = await Connection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
@@ -111,7 +115,7 @@ class SyncClient {
             nangoConnection?.environment_id as number
         )) as ProviderConfig;
 
-        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
         for (let k = 0; k < syncNames.length; k++) {
             const syncName = syncNames[k] as string;
@@ -371,7 +375,7 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number, environmentId: number) {
+    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
@@ -416,8 +420,10 @@ class SyncClient {
                     console.warn('Not implemented');
                     break;
             }
-        } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+
+            return resultOk(true);
+        } catch (err) {
+            const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
@@ -426,6 +432,8 @@ class SyncClient {
                 timestamp: Date.now(),
                 content: `The sync command: ${command} failed with error: ${errorMessage}`
             });
+
+            return resultErr(err as Error);
         }
     }
 
@@ -484,24 +492,23 @@ class SyncClient {
                 ]
             });
 
-            const { success, error: rawError, response } = actionHandler;
+            const { success, error: rawError, response }: RunnerOutput = actionHandler;
 
             // Errors received from temporal are raw objects not classes
-            const error =
-                !(rawError instanceof NangoError) && rawError?.type && rawError.status
-                    ? new NangoError(rawError?.type, rawError?.payload, rawError.status)
-                    : rawError;
+            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
 
-            if (writeLogs && (success === false || error)) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
-                });
+            if (success === false || error) {
+                if (writeLogs) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        environment_id,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: `The action workflow ${workflowId} did not complete successfully`
+                    });
+                }
 
-                return resultErr(error);
+                return resultErr(error!);
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
@@ -520,19 +527,6 @@ class SyncClient {
 
                 await updateSuccessActivityLog(activityLogId, true);
             }
-
-            await metricsManager.capture(
-                MetricTypes.ACTION_SUCCESS,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
 
             return resultOk(response);
         } catch (e) {
@@ -561,19 +555,6 @@ class SyncClient {
                     input
                 }
             });
-
-            await metricsManager.capture(
-                MetricTypes.ACTION_FAILURE,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
 
             return resultErr(error);
         }

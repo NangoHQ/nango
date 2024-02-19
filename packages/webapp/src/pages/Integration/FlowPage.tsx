@@ -421,8 +421,8 @@ export default function FlowPage() {
                                                             <span className="ml-2 text-blue-400 text-opacity-50">{showMetadataCode ? 'Hide Code' : 'Show Code'}</span>
                                                         </div>
                                                         {showMetadataCode && (
-                                                            <div className="border border-blue-400 border-opacity-50 rounded-md text-white text-sm py-2 mt-3">
-                                                                <div className="flex justify-between items-center px-4 py-4 border-b border-border-blue-400">
+                                                            <div className="border-opacity-50 rounded-md text-white text-sm py-2 mt-3">
+                                                                <div className="flex justify-between items-center px-4 py-2 border-b border-border-blue-400">
                                                                     <div className="space-x-4">
                                                                         <Button
                                                                             type="button"
@@ -538,7 +538,7 @@ export default function FlowPage() {
                                                         className="p-3 transparent-code"
                                                         colorScheme="dark"
                                                     >
-                                                        {JSON.stringify({"records": [generateResponseModel(flow.models, model, true)]}, null, 2)}
+                                                        {JSON.stringify({"records": [generateResponseModel(flow.models, model, true)], "next_cursor": 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...'}, null, 2)}
                                                     </Prism>
                                                 </div>
                                             </div>

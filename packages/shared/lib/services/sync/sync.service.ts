@@ -10,7 +10,8 @@ import {
     SyncWithSchedule,
     SlimSync,
     SlimAction,
-    SyncCommand
+    SyncCommand,
+    ScheduleStatus
 } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
@@ -547,8 +548,8 @@ export const getAndReconcileDifferences = async (
     const newActions: SlimAction[] = [];
     const syncsToCreate = [];
 
-    const existingSyncsByProviderConfig: { [key: string]: SlimSync[] } = {};
-    const existingConnectionsByProviderConfig: { [key: string]: NangoConnection[] } = {};
+    const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
+    const existingConnectionsByProviderConfig: Record<string, NangoConnection[]> = {};
 
     for (const sync of syncs) {
         const { syncName, providerConfigKey, type } = sync;
@@ -740,3 +741,49 @@ export const getAndReconcileDifferences = async (
         deletedActions
     };
 };
+
+export interface PausableSyncs {
+    id: string;
+    name: string;
+    environment_id: number;
+    provider: string;
+    connection_id: number;
+    unique_key: string;
+    schedule_id: string;
+}
+export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
+    const q = db.knex
+        .queryBuilder()
+        .withSchema(db.schema())
+        .from('_nango_syncs')
+        .select(
+            '_nango_syncs.id',
+            '_nango_syncs.name',
+            '_nango_connections.environment_id',
+            '_nango_configs.provider',
+            '_nango_configs.unique_key',
+            '_nango_connections.connection_id',
+            '_nango_sync_schedules.schedule_id'
+        )
+        .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
+        .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+        .join('_nango_configs', function () {
+            this.on('_nango_configs.environment_id', '_nango_connections.environment_id').on(
+                '_nango_configs.unique_key',
+                '_nango_connections.provider_config_key'
+            );
+        })
+        .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
+        .where({
+            '_nango_syncs.name': 'github-issues-lite',
+            '_nango_environments.name': 'dev',
+            '_nango_configs.unique_key': 'demo-github-integration',
+            '_nango_configs.provider': 'github',
+            '_nango_syncs.deleted': false,
+            '_nango_sync_schedules.status': ScheduleStatus.RUNNING
+        })
+        .where(db.knex.raw("_nango_syncs.updated_at <  NOW() - INTERVAL '25h'"));
+    const syncs: PausableSyncs[] = await q;
+
+    return syncs;
+}

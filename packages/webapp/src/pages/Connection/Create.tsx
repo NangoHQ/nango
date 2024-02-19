@@ -352,9 +352,10 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             Connection ID
                                         </label>
                                         <Tooltip
+                                            type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-black text-sm">
+                                                    <div className="flex text-white text-sm">
                                                         <p>{`The ID you will use to retrieve the connection (most often the user ID).`}</p>
                                                     </div>
                                                 </>
@@ -407,9 +408,10 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             Extra Configuration: {paramName}
                                         </label>
                                         <Tooltip
+                                            type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-black text-sm">
+                                                    <div className="flex text-white text-sm">
                                                         <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
                                                         <a
                                                             href="https://docs.nango.dev/guides/oauth#connection-configuration"
@@ -526,9 +528,10 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             Optional: Additional Authorization Params
                                         </label>
                                         <Tooltip
+                                            type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-black text-sm">
+                                                    <div className="flex text-white text-sm">
                                                         <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
                                                     </div>
                                                 </>
@@ -560,9 +563,10 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             Private Key ID
                                         </label>
                                         <Tooltip
+                                            type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-black text-sm">
+                                                    <div className="flex text-white text-sm">
                                                         <p>{`Obtained after creating an API Key.`}</p>
                                                     </div>
                                                 </>
@@ -588,9 +592,10 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             Issuer ID
                                         </label>
                                         <Tooltip
+                                            type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-black text-sm">
+                                                    <div className="flex text-white text-sm">
                                                         <p>{`is accessible in App Store Connect, under Users and Access, then Copy next to the ID`}</p>
                                                     </div>
                                                 </>
@@ -616,9 +621,10 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             Private Key
                                         </label>
                                         <Tooltip
+                                            type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-black text-sm">
+                                                    <div className="flex text-white text-sm">
                                                         <p>{`Obtained after creating an API Key. This value should be base64 encoded when passing to the auth call`}</p>
                                                     </div>
                                                 </>
@@ -648,9 +654,10 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             Optional: Additional Authorization Params
                                         </label>
                                         <Tooltip
+                                            type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-black text-sm">
+                                                    <div className="flex text-white text-sm">
                                                         <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
                                                     </div>
                                                 </>

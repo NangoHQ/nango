@@ -8,10 +8,9 @@ export interface EndpointRowProps {
     flow: Flow;
     integration: IntegrationConfig | null;
     endpoint: string | FlowEndpoint;
-    source: 'Public' | 'Custom';
 }
 
-export default function EndpointRow({ flow, endpoint, source, integration }: EndpointRowProps) {
+export default function EndpointRow({ flow, endpoint, integration }: EndpointRowProps) {
     const navigate = useNavigate();
     const endpointRoute = parseEndpoint(endpoint);
     const { env } = useParams();
@@ -23,11 +22,6 @@ export default function EndpointRow({ flow, endpoint, source, integration }: End
             </div>
             <div className="flex items-center ml-3">
                 <div className="text-gray-400 w-64 max-w-3xl truncate">{flow.description}</div>
-            </div>
-            <div className="w-48 ml-3">
-                <div className="w-48 text-gray-400">
-                    {source}
-                </div>
             </div>
             <div className="flex flex-end ml-16 relative group hover:bg-neutral-800 rounded p-2">
                 {Boolean('version' in flow && flow.version !== null) ? (

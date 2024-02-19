@@ -2,7 +2,7 @@ import { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types';
 
 export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secretKey: string, connectionId: string, providerConfigKey: string) => {
     const model = Array.isArray(models) ? models[0].name : models;
-        return `import Nango from '@nangohq/node';
+        return `import { Nango } from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
 const issues = await nango.listRecords({

@@ -119,7 +119,7 @@ export default function EndpointReference() {
 
             const jsonModel = generateResponseModel(activeFlow?.models as NangoSyncModel[], Array.isArray(activeFlow?.returns) ? activeFlow?.returns[0] as string : activeFlow.returns, activeFlow?.type === 'sync');
             if (activeFlow?.type === 'sync') {
-                setJsonResponseSnippet(JSON.stringify({"records": [{...jsonModel}], "nextCursor": 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...'}, null, 2));
+                setJsonResponseSnippet(JSON.stringify({"records": [{...jsonModel}], "next_cursor": 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...'}, null, 2));
             } else {
                 setJsonResponseSnippet(JSON.stringify(jsonModel, null, 2));
             }
@@ -156,7 +156,7 @@ export default function EndpointReference() {
                     </div>
                     {activeFlow?.type === 'sync' && (!activeFlow.version && activeFlow.version === null) && (
                         <Info size={18} classNames="mt-3 z-10" padding="px-4 py-1.5" color="orange">
-                            To use this endpoint, enable file synchronization in the <span className="cursor-pointer underline" onClick={() => navigate(`/integration/${providerConfigKey}#scripts`)}>scripts</span>.
+                            To use this endpoint, enable file synchronization in the <span className="cursor-pointer underline" onClick={() => navigate(`/${env}/integration/${providerConfigKey}/${activeFlow?.name}`)}>scripts</span>.
                         </Info>
                     )}
                     <div className="flex flex-col z-10 mt-8">
@@ -212,7 +212,7 @@ export default function EndpointReference() {
                                 <div className="flex flex-col mt-4 text-gray-400 border border-border-gray rounded-md p-3 mb-5">
                                     <div className="flex w-full cursor-pointer" onClick={() => setShowParametersOpen(!showParametersOpen)}>
                                         {showParametersOpen ? <ChevronDownIcon className="flex h-5 w-5 text-gray-400" /> : <ChevronUpIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" /> }
-                                        <span className="ml-2">{showParametersOpen ? 'Hide Optional Parameters' : 'Show Parameters'}</span>
+                                        <span className="ml-2">{showParametersOpen ? 'Hide Optional Parameters' : 'Show Optional Parameters'}</span>
                                     </div>
                                     {showParametersOpen && (
                                         <div className="flex flex-col mt-4">
@@ -248,12 +248,9 @@ export default function EndpointReference() {
                                         </div>
                                     )}
                                 </div>
-                                <Info size={16} padding="px-4 py-1.5">
-                                    <a href="https://docs.nango.dev/guides/webhooks#webhooks-from-nango-to-your-app" target="_blank" className="text-white underline" rel="noreferrer">Register webhooks</a> to be notified when new data is available without polling.
-                                </Info>
                             </>
                         )}
-                        <div className="flex flex-col mt-8">
+                        <div className="flex flex-col mt-3">
                             <h2 className="text-base">Response</h2>
                             <span className="text-gray-400 mb-4">This endpoint returns the following response:</span>
                             <div className="border border-border-gray rounded-md text-white text-sm">

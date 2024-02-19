@@ -37,6 +37,12 @@ export enum MetricTypes {
     INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing'
 }
 
+export enum SpanTypes {
+    CONNECTION_TEST = 'nango.server.hooks.connectionTest',
+    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
+    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos'
+}
+
 class MetricsManager {
     private logInstance: v2.LogsApi | undefined;
     private metricsInstance: v2.MetricsApi | undefined;

@@ -98,6 +98,10 @@ export function isProd() {
     return process.env['NODE_ENV'] === NodeEnv.Prod;
 }
 
+export function isTest(): boolean {
+    return Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
+}
+
 export function isBasicAuthEnabled() {
     return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 }

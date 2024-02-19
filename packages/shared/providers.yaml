@@ -135,6 +135,10 @@ ashby:
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
+        verification:
+            method: POST
+            endpoint: apiKey.info
+    docs: https://developers.ashbyhq.com/reference/introduction
 atlassian:
     categories:
         - dev-tools
@@ -182,6 +186,10 @@ bamboohr-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+        verification:
+            method: GET
+            endpoint: /v1/meta/fields
+    docs: https://documentation.bamboohr.com/reference
 battlenet:
     categories:
         - gaming
@@ -722,6 +730,8 @@ greenhouse:
     token_url: https://api.greenhouse.io/oauth/token
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -733,6 +743,8 @@ greenhouse-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
+        retry:
+            after: 'Retry-After'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -800,6 +812,10 @@ hibob-service-user:
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
+        verification:
+            method: GET
+            endpoint: /v1/company/named-lists
+    docs: https://apidocs.hibob.com/
 highlevel:
     categories:
         - marketing
