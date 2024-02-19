@@ -39,7 +39,7 @@ import {
     CommandToActivityLog,
     ReportedSyncJobStatus
 } from '../../models/Sync.js';
-import { isErr, resultErr } from '../../utils/result.js';
+import { isErr } from '../../utils/result.js';
 
 interface CreateSyncArgs {
     connections: Connection[];

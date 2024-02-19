@@ -1,4 +1,4 @@
-import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription, WorkflowHandleWithFirstExecutionRunId, Workflow } from '@temporalio/client';
+import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
 import ms, { StringValue } from 'ms';
 import fs from 'fs-extra';
