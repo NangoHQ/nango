@@ -113,7 +113,7 @@ class ConnectionService {
 
         analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
-        return id;
+        return [{ id: id.id, operation: AuthOperation.CREATION }];
     }
 
     public async upsertApiConnection(
