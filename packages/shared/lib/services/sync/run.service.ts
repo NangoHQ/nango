@@ -386,7 +386,7 @@ export default class SyncRun {
 
                 return { success: false, error: new NangoError(errorType, errorMessage), response: result };
             } finally {
-                if (!this.isAction) {
+                if (!this.isInvokedImmediately) {
                     const totalRunTime = (Date.now() - startTime) / 1000;
                     await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
                 }
