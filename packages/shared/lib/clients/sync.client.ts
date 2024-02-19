@@ -1,4 +1,4 @@
-import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
+import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription, WorkflowHandleWithFirstExecutionRunId, Workflow } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
 import ms, { StringValue } from 'ms';
 import fs from 'fs-extra';
@@ -144,7 +144,6 @@ class SyncClient {
         syncData: NangoIntegrationData,
         debug = false
     ): Promise<void> {
-        console.log('startContinuous');
         try {
             const activityLogId = await createActivityLog({
                 level: 'info' as LogLevel,
@@ -194,7 +193,6 @@ class SyncClient {
                 return;
             }
 
-            let handle = null;
             const jobId = generateWorkflowId(sync, syncName, nangoConnection.connection_id);
 
             if (syncData.auto_start !== false) {
@@ -207,26 +205,11 @@ class SyncClient {
                         content: `Creating sync job ${jobId} for sync ${sync.id}`
                     });
                 }
-                const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
 
-                if (!syncJobId) {
+                const res = await this.createInitialRun({ activityLogId, jobId, nangoConnection, syncId: sync.id!, syncName, debug });
+                if (!res) {
                     return;
                 }
-
-                handle = await this.client?.workflow.start('initialSync', {
-                    taskQueue: SYNC_TASK_QUEUE,
-                    workflowId: jobId,
-                    args: [
-                        {
-                            syncId: sync.id,
-                            syncJobId: syncJobId?.id as number,
-                            nangoConnection,
-                            syncName,
-                            debug
-                        }
-                    ]
-                });
-                await updateRunId(syncJobId.id as number, handle?.firstExecutionRunId as string);
             } else {
                 await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
@@ -234,7 +217,6 @@ class SyncClient {
             const { interval, offset } = response;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection.connection_id);
 
-            console.log('handle', activityLogId);
             const scheduleHandle = await this.client?.schedule.create({
                 scheduleId,
                 policies: {
@@ -739,6 +721,40 @@ class SyncClient {
                 }
             });
         }
+    }
+
+    async createInitialRun({
+        syncId,
+        jobId,
+        syncName,
+        nangoConnection,
+        debug
+    }: {
+        syncId: string;
+        jobId: string;
+        syncName: string;
+        activityLogId: number;
+        nangoConnection: NangoConnection;
+        debug?: boolean;
+    }): Promise<boolean> {
+        const syncJobId = await createSyncJob(syncId, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
+
+        if (!syncJobId) {
+            return false;
+        }
+
+        const handle = await this.client?.workflow.start('initialSync', {
+            taskQueue: SYNC_TASK_QUEUE,
+            workflowId: jobId,
+            args: [{ syncId: syncId, syncJobId: syncJobId.id!, nangoConnection, syncName, debug }]
+        });
+        if (!handle) {
+            return false;
+        }
+
+        await updateRunId(syncJobId.id as number, handle.firstExecutionRunId);
+
+        return true;
     }
 }
 
