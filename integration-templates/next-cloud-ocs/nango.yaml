@@ -1,5 +1,5 @@
 integrations:
-  next-cloud:
+  next-cloud-ocs:
     syncs:
       next-cloud-users:
         runs: every hour

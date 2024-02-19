@@ -1088,7 +1088,7 @@ integrations:
         teams: []
         activated: boolean
         last_activity_time: date
-  hibob:
+  hibob-service-user:
     syncs:
       hibob-employees:
         runs: every hour
@@ -1545,7 +1545,7 @@ integrations:
         isAdmin: boolean | null
         department: string | null
     rawName: microsoft-active-directory
-  next-cloud:
+  next-cloud-ocs:
     syncs:
       next-cloud-users:
         runs: every hour

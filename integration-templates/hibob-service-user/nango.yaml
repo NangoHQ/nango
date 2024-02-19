@@ -1,5 +1,5 @@
 integrations:
-  hibob:
+  hibob-service-user:
     syncs:
       hibob-employees:
         runs: every hour
