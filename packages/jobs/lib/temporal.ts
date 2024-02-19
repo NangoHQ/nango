@@ -5,6 +5,8 @@ import { createRequire } from 'module';
 import * as activities from './activities.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE, isProd, isEnterprise } from '@nangohq/shared';
 
+const TEMPORAL_WORKER_MAX_CONCURRENCY = parseInt(process.env['TEMPORAL_WORKER_MAX_CONCURRENCY'] || '0') || 500;
+
 export class Temporal {
     namespace: string;
     workers: Worker[] | null;
@@ -48,7 +50,7 @@ export class Temporal {
                 namespace: this.namespace,
                 workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
                 activities,
-                maxConcurrentWorkflowTaskExecutions: 50,
+                maxConcurrentWorkflowTaskExecutions: TEMPORAL_WORKER_MAX_CONCURRENCY,
                 taskQueue: SYNC_TASK_QUEUE
             };
 

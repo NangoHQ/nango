@@ -7,15 +7,13 @@ import type { UserProvidedProxyConfiguration } from '../../../models/Proxy.js';
 import proxyService from '../../../services/proxy.service.js';
 import connectionService from '../../../services/connection.service.js';
 import environmentService from '../../../services/environment.service.js';
-import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 
 import * as postConnectionHandlers from './index.js';
 
-interface PostConnectionHandler {
-    (internalNango: InternalNango): Promise<void>;
-}
+type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
-type PostConnectionHandlersMap = { [key: string]: PostConnectionHandler };
+type PostConnectionHandlersMap = Record<string, PostConnectionHandler>;
 
 const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as PostConnectionHandlersMap;
 
@@ -106,7 +104,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     content: `Post connection script failed with the error: ${errorString}`
                 });
 
-                await metricsManager.capture(MetricTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId: connection_id,
                     providerConfigKey: provider_config_key,
@@ -124,7 +122,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
         const errorString = JSON.stringify(errorDetails);
 
-        await metricsManager.capture(MetricTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${errorString}`, LogActionEnum.AUTH, {
+        await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${errorString}`, LogActionEnum.AUTH, {
             environmentId: String(environment_id),
             connectionId: connection_id,
             providerConfigKey: provider_config_key,

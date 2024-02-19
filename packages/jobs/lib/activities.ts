@@ -17,10 +17,10 @@ import {
     createActivityLogAndLogMessage,
     ErrorSourceEnum,
     errorManager,
-    metricsManager,
+    telemetry,
     updateSyncJobStatus,
     updateLatestJobSyncStatus,
-    MetricTypes,
+    LogTypes,
     isInitialSyncStillRunning,
     initialSyncExists,
     getSyncByIdAndName,
@@ -94,7 +94,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
         logger.log('info', content);
 
-        await metricsManager.capture(MetricTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
+        await telemetry.log(LogTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
             environmentId: String(nangoConnection?.environment_id),
             connectionId: nangoConnection?.connection_id as string,
             providerConfigKey: nangoConnection?.provider_config_key as string,
@@ -170,7 +170,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             content
         });
 
-        await metricsManager.capture(MetricTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
+        await telemetry.log(LogTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId: nangoConnection?.connection_id as string,
             providerConfigKey: nangoConnection?.provider_config_key as string,
@@ -284,7 +284,7 @@ export async function syncProvider(
             content
         });
 
-        await metricsManager.capture(MetricTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
+        await telemetry.log(LogTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
             environmentId: String(nangoConnection?.environment_id),
             syncId,
             connectionId: nangoConnection?.connection_id as string,
@@ -388,7 +388,7 @@ export async function reportFailure(
         content += `due to a unknown failure.`;
     }
 
-    await metricsManager.capture(MetricTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
+    await telemetry.log(LogTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
         environmentId: String(nangoConnection?.environment_id),
         name,
         connectionId: nangoConnection?.connection_id as string,
@@ -405,5 +405,56 @@ export async function reportFailure(
         } else {
             await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
         }
+    }
+}
+
+export async function cancelActivity(workflowArguments: InitialSyncArgs | ContinuousSyncArgs): Promise<void> {
+    try {
+        const { syncId, activityLogId, syncName, nangoConnection, debug } = workflowArguments;
+
+        const context: Context = Context.current();
+
+        const environmentId = nangoConnection?.environment_id;
+
+        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+            nangoConnection?.provider_config_key as string,
+            environmentId
+        )) as ProviderConfig;
+
+        const syncType = (await initialSyncExists(syncId as string)) ? SyncType.INCREMENTAL : SyncType.INITIAL;
+
+        const syncRun = new syncRunService({
+            integrationService,
+            writeToDb: true,
+            syncId,
+            nangoConnection,
+            syncType,
+            syncName,
+            activityLogId,
+            provider: syncConfig.provider,
+            temporalContext: context,
+            debug: Boolean(debug)
+        });
+
+        if ('syncJobId' in workflowArguments) {
+            await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
+        } else {
+            await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
+        }
+
+        await syncRun.cancel();
+    } catch (e: any) {
+        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e.message || e}`;
+        await errorManager.report(content, {
+            environmentId: workflowArguments.nangoConnection?.environment_id as number,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.SYNC,
+            metadata: {
+                connectionId: workflowArguments.nangoConnection?.connection_id as string,
+                providerConfigKey: workflowArguments.nangoConnection?.provider_config_key as string,
+                syncName: workflowArguments.syncName,
+                syncId: workflowArguments.syncId
+            }
+        });
     }
 }

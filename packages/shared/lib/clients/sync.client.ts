@@ -1,6 +1,6 @@
 import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import ms from 'ms';
+import ms, { StringValue } from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
@@ -14,13 +14,14 @@ import {
     createActivityLogMessageAndEnd,
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
-import { createSyncJob, updateRunId } from '../services/sync/job.service.js';
+import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
+import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
@@ -375,15 +376,13 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
+    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
-                case SyncCommand.PAUSE:
+                case SyncCommand.CANCEL:
                     {
-                        /*
-                        // TODO
                         const jobIsRunning = await isSyncJobRunning(syncId);
                         if (jobIsRunning) {
                             const { job_id, run_id } = jobIsRunning;
@@ -392,8 +391,10 @@ class SyncClient {
                                 await workflowHandle?.cancel();
                             }
                         }
-                        */
-
+                    }
+                    break;
+                case SyncCommand.PAUSE:
+                    {
                         await scheduleHandle?.pause();
                     }
                     break;
@@ -463,6 +464,7 @@ class SyncClient {
         environment_id: number,
         writeLogs = true
     ): Promise<Result<T, NangoError>> {
+        const startTime = Date.now();
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
 
         try {
@@ -528,6 +530,19 @@ class SyncClient {
                 await updateSuccessActivityLog(activityLogId, true);
             }
 
+            await telemetry.log(
+                LogTypes.ACTION_SUCCESS,
+                content,
+                LogActionEnum.ACTION,
+                {
+                    workflowId,
+                    input: JSON.stringify(input, null, 2),
+                    connection: JSON.stringify(connection),
+                    actionName
+                },
+                `actionName:${actionName}`
+            );
+
             return resultOk(response);
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
@@ -556,7 +571,24 @@ class SyncClient {
                 }
             });
 
+            await telemetry.log(
+                LogTypes.ACTION_FAILURE,
+                content,
+                LogActionEnum.ACTION,
+                {
+                    workflowId,
+                    input: JSON.stringify(input, null, 2),
+                    connection: JSON.stringify(connection),
+                    actionName
+                },
+                `actionName:${actionName}`
+            );
+
             return resultErr(error);
+        } finally {
+            const endTime = Date.now();
+            const totalRunTime = (endTime - startTime) / 1000;
+            await telemetry.duration(MetricTypes.ACTION_TRACK_RUNTIME, totalRunTime);
         }
     }
 
@@ -673,7 +705,7 @@ class SyncClient {
             scheduleDescription.spec = {
                 intervals: [
                     {
-                        every: ms(interval),
+                        every: ms(interval as StringValue),
                         offset
                     }
                 ]

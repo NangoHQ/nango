@@ -33,7 +33,8 @@ class RemoteFileService {
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
         if (isEnterprise()) {
             const fileNameOnly = fileName.split('/').slice(-1)[0];
-            localFileService.putIntegrationFile(fileNameOnly as string, fileContents, fileName.endsWith('.js'));
+            const versionStrippedFileName = fileNameOnly?.replace(/-v[\d.]+(?=\.js$)/, '');
+            localFileService.putIntegrationFile(versionStrippedFileName as string, fileContents, fileName.endsWith('.js'));
 
             return '_LOCAL_FILE_';
         }

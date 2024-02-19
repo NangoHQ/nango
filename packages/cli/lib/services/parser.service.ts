@@ -35,12 +35,11 @@ class ParserService {
             'patch',
             'delete',
             'getConnection',
-            'setLastSyncDate',
             'getEnvironmentVariables',
             'triggerAction'
         ];
 
-        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];
+        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete'];
 
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
@@ -79,7 +78,9 @@ class ParserService {
                             (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
                     );
 
-                    if (!isAwaited && !isThenOrCatch && nangoCalls.includes(callee.property.name)) {
+                    const isReturned = Boolean(path.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
+
+                    if (!isAwaited && !isThenOrCatch && !isReturned && nangoCalls.includes(callee.property.name)) {
                         awaitMessage(callee.property.name, lineNumber);
                         areAwaited = false;
                     }

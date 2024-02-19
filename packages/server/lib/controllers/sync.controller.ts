@@ -354,18 +354,21 @@ class SyncController {
             if (!action_name || typeof action_name !== 'string') {
                 res.status(400).send({ error: 'Missing action name' });
 
+                span.finish();
                 return;
             }
 
             if (!connectionId) {
                 res.status(400).send({ error: 'Missing connection id' });
 
+                span.finish();
                 return;
             }
 
             if (!providerConfigKey) {
                 res.status(400).send({ error: 'Missing provider config key' });
 
+                span.finish();
                 return;
             }
 
@@ -374,6 +377,7 @@ class SyncController {
             if (!success || !connection) {
                 errorManager.errResFromNangoErr(res, error);
 
+                span.finish();
                 return;
             }
 
@@ -413,20 +417,21 @@ class SyncController {
 
             if (isOk(actionResponse)) {
                 res.send(actionResponse.res);
+                span.finish();
 
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.err);
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                span.finish();
 
                 return;
             }
         } catch (e) {
             span.setTag('nango.error', e);
+            span.finish();
 
             next(e);
-        } finally {
-            span.finish();
         }
     }
 
