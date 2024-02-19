@@ -778,7 +778,7 @@ paths:
                                         type: string
                                 full_resync:
                                     type: boolean
-                                    description: Reset the "lastSyncDate" associated with the sync before triggering the sync.
+                                    description: Clear the records and reset the "lastSyncDate" associated with the sync before triggering a new sync job.
 
             responses:
                 '200':

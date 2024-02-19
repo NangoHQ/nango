@@ -31,8 +31,9 @@ import { resultOk, type Result, resultErr } from '../utils/result.js';
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
     `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connectionId}.${Date.now()}`;
-const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
-const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
+const generateWorkflowId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
+const generateScheduleId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) =>
+    `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
 const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
@@ -731,12 +732,13 @@ class SyncClient {
         debug
     }: {
         syncId: string;
-        jobId: string;
+        jobId?: string;
         syncName: string;
         activityLogId: number;
         nangoConnection: NangoConnection;
         debug?: boolean;
     }): Promise<boolean> {
+        jobId = jobId || generateWorkflowId({ id: syncId }, syncName, nangoConnection.connection_id);
         const syncJobId = await createSyncJob(syncId, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
 
         if (!syncJobId) {

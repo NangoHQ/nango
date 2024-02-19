@@ -2,7 +2,7 @@ import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.serv
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { deleteJobsBySyncId as deleteSyncJobsBySyncId, getLatestSyncJob } from './job.service.js';
-import { deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data/records.service.js';
+import { deleteRecordsBySyncId, deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data/records.service.js';
 import {
     createSync,
     deleteSync,
@@ -39,6 +39,7 @@ import {
     CommandToActivityLog,
     ReportedSyncJobStatus
 } from '../../models/Sync.js';
+import { isErr, resultErr } from '../../utils/result.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -178,6 +179,10 @@ export class Orchestrator {
         connectionId?: string,
         fullResync?: boolean
     ): Promise<ServiceResponse<boolean>> {
+        if (fullResync && command !== SyncCommand.RUN) {
+            return { success: false, error: new NangoError('fullResync is only compatible with RUN'), response: null };
+        }
+
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderName(providerConfigKey as string);
 
@@ -194,6 +199,14 @@ export class Orchestrator {
             environment_id: environmentId
         };
         const activityLogId = await createActivityLog(log);
+        if (!activityLogId) {
+            return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
+        }
+
+        const syncClient = await SyncClient.getInstance();
+        if (!syncClient) {
+            return { success: false, error: new NangoError('failed_to_get_sync'), response: false };
+        }
 
         if (connectionId) {
             const {
@@ -202,33 +215,42 @@ export class Orchestrator {
                 response: connection
             } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
 
-            if (!success) {
+            if (!success || !connection) {
                 return { success: false, error, response: false };
             }
 
             let syncs = syncNames;
 
             if (syncs.length === 0) {
-                syncs = await getSyncNamesByConnectionId(connection?.id as number);
+                syncs = await getSyncNamesByConnectionId(connection.id as number);
             }
 
             for (const syncName of syncs) {
-                const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+                const sync = await getSyncByIdAndName(connection.id as number, syncName);
                 if (!sync) {
                     throw new Error(`Sync "${syncName}" doest not exists.`);
                 }
-
-                if (fullResync) {
-                    await clearLastSyncDate(sync.id!);
+                const schedule = await getSchedule(sync.id as string);
+                if (!schedule) {
+                    continue;
                 }
 
-                const schedule = await getSchedule(sync.id as string);
+                if (fullResync) {
+                    // We cancel any currently running sync to avoid concurrency issues
+                    const pause = await syncClient.runSyncCommand(schedule.schedule_id, sync.id as string, SyncCommand.CANCEL, activityLogId, environmentId);
+                    if (isErr(pause)) {
+                        continue;
+                    }
 
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                // if they're triggering a sync that shouldn't change the schedule status
-                if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                    await clearLastSyncDate(sync.id!);
+                    await deleteRecordsBySyncId(sync.id!);
+                    await syncClient.createInitialRun({ syncId: sync.id!, activityLogId, nangoConnection: connection, syncName: sync.name });
+                } else {
+                    await syncClient.runSyncCommand(schedule.schedule_id, sync?.id as string, command, activityLogId, environmentId);
+                    // if they're triggering a sync that shouldn't change the schedule status
+                    if (command !== SyncCommand.RUN) {
+                        await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    }
                 }
             }
 
@@ -253,28 +275,43 @@ export class Orchestrator {
 
             for (const sync of syncs) {
                 const schedule = await getSchedule(sync.id as string);
-
-                if (fullResync) {
-                    await clearLastSyncDate(sync.id!);
+                if (!schedule) {
+                    continue;
                 }
 
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                if (fullResync) {
+                    const nangoConnection = await connectionService.getConnectionById(sync.nango_connection_id);
+                    if (!nangoConnection) {
+                        continue;
+                    }
+
+                    // We cancel any currently running sync to avoid concurrency issues
+                    const pause = await syncClient.runSyncCommand(schedule.schedule_id, sync.id as string, SyncCommand.CANCEL, activityLogId, environmentId);
+                    if (isErr(pause)) {
+                        continue;
+                    }
+
+                    await clearLastSyncDate(sync.id!);
+                    await deleteRecordsBySyncId(sync.id!);
+                    await syncClient.createInitialRun({ syncId: sync.id!, activityLogId, nangoConnection, syncName: sync.name });
+                } else {
+                    await syncClient.runSyncCommand(schedule.schedule_id, sync.id as string, command, activityLogId, environmentId);
+                    if (command !== SyncCommand.RUN) {
+                        await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    }
                 }
             }
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id: environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Sync was updated with command: "${action}" for sync: ${Array.isArray(syncNames) ? syncNames.join(', ') : syncNames}`
             });
         }
 
-        await updateSuccessActivityLog(activityLogId as number, true);
+        await updateSuccessActivityLog(activityLogId, true);
 
         return { success: true, error: null, response: true };
     }
