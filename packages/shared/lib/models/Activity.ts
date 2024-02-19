@@ -45,9 +45,7 @@ export enum LogActionEnum {
     WEBHOOK = 'webhook'
 }
 
-interface Message {
-    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
-}
+type Message = Record<string, unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>>;
 
 export interface ActivityLog {
     id?: number;

@@ -7,7 +7,7 @@ import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
-import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
+import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
@@ -15,7 +15,7 @@ import webhookService from '../notification/webhook.service.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
-import metricsManager, { MetricTypes } from '../../utils/metrics.manager.js';
+import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -191,7 +191,7 @@ export default class SyncRun {
             const secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
-            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
 
             let syncData: NangoIntegrationData;
 
@@ -246,7 +246,6 @@ export default class SyncRun {
                     lastSyncDate = optionalLastSyncDate;
                 } else {
                     lastSyncDate = await getLastSyncDate(this.syncId as string);
-                    await clearLastSyncDate(this.syncId as string);
                 }
             }
 
@@ -348,7 +347,7 @@ export default class SyncRun {
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 
-                await metricsManager.captureMetric(MetricTypes.SYNC_TRACK_RUNTIME, this.syncId as string, this.syncType, totalRunTime);
+                await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
 
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
@@ -380,8 +379,6 @@ export default class SyncRun {
                 return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
-                // if it fails then restore the sync date
-                await setLastSyncDate(this.syncId as string, lastSyncDate as Date, false);
                 const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
                 await this.reportFailureForResults(
                     `The ${this.syncType} "${this.syncName}"${
@@ -441,14 +438,12 @@ export default class SyncRun {
         if (index === numberOfModels - 1) {
             await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
             await updateSuccessActivityLog(this.activityLogId, true);
+
             // set the last sync date to when the sync started in case
             // the sync is long running to make sure we wouldn't miss
             // any changes while the sync is running
-            // but if the sync date was set by the user in the integration script,
-            // then don't override it
             if (!this.isWebhook) {
-                const override = false;
-                await setLastSyncDate(this.syncId as string, syncStartDate, override);
+                await setLastSyncDate(this.syncId as string, syncStartDate);
                 await slackNotificationService.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
@@ -547,8 +542,8 @@ export default class SyncRun {
             });
         }
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_SUCCESS,
+        await telemetry.log(
+            LogTypes.SYNC_SUCCESS,
             content,
             LogActionEnum.SYNC,
             {
@@ -631,8 +626,8 @@ export default class SyncRun {
             }
         });
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_FAILURE,
+        await telemetry.log(
+            LogTypes.SYNC_FAILURE,
             content,
             LogActionEnum.SYNC,
             {

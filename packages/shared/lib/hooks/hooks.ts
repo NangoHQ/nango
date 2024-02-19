@@ -9,7 +9,7 @@ import type { HTTP_VERB } from '../models/Generic.js';
 import type { Template as ProviderTemplate } from '../models/Provider.js';
 import integrationPostConnectionScript from '../integrations/scripts/connection/connection.manager.js';
 import webhookService from '../services/notification/webhook.service.js';
-import { SpanTypes } from '../utils/metrics.manager.js';
+import { SpanTypes } from '../utils/telemetry.js';
 import { isCloud, isLocal, isEnterprise } from '../utils/utils.js';
 import { Result, resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';

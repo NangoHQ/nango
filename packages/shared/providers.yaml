@@ -916,6 +916,12 @@ netsuite:
     token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
         - restlets
+next-cloud-ocs:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.domain}/ocs/v1.php
+        headers:
+            'OCS-APIRequest': 'true'
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
@@ -1369,6 +1375,22 @@ teamwork:
     token_url: https://www.teamwork.com/launchpad/v1/token.json
     proxy:
         base_url: https://api.surveymonkey.com
+tiktok-accounts:
+    auth_mode: OAUTH2
+    authorization_url: https://open-api.tiktok.com/platform/oauth/connect/
+    token_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/
+    refresh_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/
+    proxy:
+        base_url: https://business-api.tiktok.com/open_api/v1.3/
+    authorization_params:
+        response_type: code
+    authorization_url_replacements:
+        client_id: client_key
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ','
 tiktok-ads:
     auth_mode: OAUTH2
     authorization_url: https://business-api.tiktok.com/portal/auth
