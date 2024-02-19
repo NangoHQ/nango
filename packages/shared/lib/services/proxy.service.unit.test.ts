@@ -665,7 +665,7 @@ describe('Proxy service configure', () => {
                 proxy: {
                     base_url: 'https://api.github.com'
                 },
-                docs: 'https://docs.github.com/en/rest'
+                docs: 'https://docs.nango.dev/integrations/all/github'
             },
             token: '',
             provider: 'github',
