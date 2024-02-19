@@ -4,7 +4,7 @@ export interface WSErr {
 }
 
 export class WSErrBuilder {
-    public static UnkownAuthMode(authMode: string): WSErr {
+    public static UnknownAuthMode(authMode: string): WSErr {
         return {
             type: 'auth_mode_err',
             message: `Auth mode ${authMode} not supported.`
@@ -32,7 +32,7 @@ export class WSErrBuilder {
         };
     }
 
-    public static UnkownGrantType(grantType: string): WSErr {
+    public static UnknownGrantType(grantType: string): WSErr {
         return {
             type: 'grant_type_err',
             message: `The grant type "${grantType}" is not supported by this OAuth flow.`
@@ -81,7 +81,7 @@ export class WSErrBuilder {
         };
     }
 
-    public static UnkownProviderTemplate(providerTemplate: string): WSErr {
+    public static UnknownProviderTemplate(providerTemplate: string): WSErr {
         return {
             type: 'unknown_config_key',
             message: `No Provider Configuration with key "${providerTemplate}".`
@@ -95,10 +95,10 @@ export class WSErrBuilder {
         };
     }
 
-    public static UnkownError(errorMessage?: string): WSErr {
+    public static UnknownError(errorMessage?: string): WSErr {
         return {
             type: 'unknown_err',
-            message: `Unkown error during the Oauth flow.${errorMessage ? ' ' + errorMessage : ''}`
+            message: `Unknown error during the Oauth flow.${errorMessage ? ' ' + errorMessage : ''}`
         };
     }
 
