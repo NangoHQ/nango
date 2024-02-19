@@ -246,7 +246,7 @@ class AppAuthController {
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
-            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -278,7 +278,7 @@ class AppAuthController {
                 activityLogId
             );
 
-            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 }
