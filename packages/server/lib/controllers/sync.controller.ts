@@ -276,9 +276,8 @@ class SyncController {
                 environmentId,
                 provider_config_key,
                 syncNames as string[],
-                SyncCommand.RUN,
-                connection_id,
-                full_resync
+                full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
+                connection_id
             );
 
             if (!success) {

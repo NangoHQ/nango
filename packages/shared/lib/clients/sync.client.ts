@@ -209,7 +209,7 @@ class SyncClient {
 
                 const res = await this.triggerInitialSync({ activityLogId, jobId, nangoConnection, syncId: sync.id!, syncName, debug });
                 if (!res) {
-                    return;
+                    throw new NangoError('failed_to_start_initial_sync');
                 }
             } else {
                 await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
@@ -266,7 +266,7 @@ class SyncClient {
                     level: 'info',
                     environment_id: nangoConnection.environment_id,
                     activity_log_id: activityLogId,
-                    content: `Created schedule ${scheduleId} at ${syncData.runs} in the task queue: ${SYNC_TASK_QUEUE}`,
+                    content: `Scheduled to run "${syncData.runs}"`,
                     timestamp: Date.now()
                 });
             }

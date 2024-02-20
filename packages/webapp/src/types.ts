@@ -11,8 +11,10 @@ export interface ActivityResponse {
         | 'sync deploy'
         | 'sync init'
         | 'pause sync'
+        | 'full sync'
         | 'restart sync'
         | 'trigger sync'
+        | 'trigger full sync'
         | 'cancel sync'
         | 'action'
         | 'webhook';

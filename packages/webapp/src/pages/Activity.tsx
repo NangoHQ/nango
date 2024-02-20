@@ -761,11 +761,11 @@ export default function Activity() {
                                                             </Link>
                                                         </span>
                                                     )}
-                                                    {activity?.action === 'trigger sync' && (
+                                                    {activity?.action === 'trigger sync' || activity.action === 'trigger full sync' && (
                                                         <span className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
                                                                 <FastForward className="stroke-gray-500 mr-2" size="16" />
-                                                                <p className="inline-block text-gray-500">trigger sync</p>
+                                                                <p className="inline-block text-gray-500">{activity.action}</p>
                                                             </div>
                                                             <Link
                                                                 to="/syncs"

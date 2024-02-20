@@ -98,7 +98,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     // https://typescript.temporal.io/api/classes/activity.Context
     const context: Context = Context.current();
     const lastSyncDate = await getLastSyncDate(syncId);
-    const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
+    const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.INITIAL;
     try {
         if (!nangoConnection?.environment_id) {
             environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
@@ -407,7 +407,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
         )) as ProviderConfig;
 
         const lastSyncDate = await getLastSyncDate(syncId);
-        const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
+        const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.INITIAL;
 
         const syncRun = new syncRunService({
             integrationService,
