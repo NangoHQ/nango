@@ -1,4 +1,3 @@
-import './tracer.js';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { validateRequest } from 'zod-express';
