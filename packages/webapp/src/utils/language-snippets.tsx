@@ -43,7 +43,6 @@ console.log(issues);
 };
 
 export const curlSnippet = (baseUrl: string, endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[], secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string, method = 'GET') => {
-    console.log(baseUrl)
     let curlMethod: HTTP_VERB = method as HTTP_VERB;
     if (typeof endpoint !== 'string') {
         curlMethod = (Object.keys(endpoint)[0]) as HTTP_VERB;
