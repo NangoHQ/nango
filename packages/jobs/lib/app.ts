@@ -2,6 +2,7 @@ import './tracer.js';
 import { Temporal } from './temporal.js';
 import { server } from './server.js';
 import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
+import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 
 try {
     const port = parseInt(process.env['NANGO_JOBS_PORT'] || '') || 3005;
@@ -13,6 +14,7 @@ try {
 
     // Register recurring tasks
     cronAutoIdleDemo();
+    deleteOldActivityLogs();
 
     // handle SIGTERM
     process.on('SIGTERM', async () => {

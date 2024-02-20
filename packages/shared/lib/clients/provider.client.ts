@@ -205,7 +205,7 @@ class ProviderClient {
 
             const response = await axios.post(tokenUrl, body);
 
-            if (response.status === 200 && response.data !== null) {
+            if (response.status === 200 && response.data && response.data.data) {
                 return {
                     access_token: response.data.data['access_token'],
                     token_type: response.data.data['token_type'],
@@ -217,7 +217,8 @@ class ProviderClient {
                     request_id: response.data['request_id']
                 };
             }
-            throw new NangoError('tiktok_token_request_error');
+
+            throw new NangoError('tiktok_token_request_error', response.data);
         } catch (e: any) {
             throw new NangoError('tiktok_token_request_error', e.message);
         }

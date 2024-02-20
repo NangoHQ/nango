@@ -44,7 +44,6 @@ import {
     packageJsonFile
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
-import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
@@ -232,9 +231,6 @@ const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 wss.on('connection', async (ws: WebSocket) => {
     await publisher.subscribe(ws);
 });
-
-// kick off any job
-deleteOldActivityLogs();
 
 const port = getPort();
 server.listen(port, () => {

@@ -1,3 +1,4 @@
+import './tracer.js';
 import { server } from './server.js';
 
 try {
