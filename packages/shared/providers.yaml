@@ -913,9 +913,16 @@ nationbuilder:
 netsuite:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
+    authorization_params:
+        prompt: consent
     token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
-        - restlets
+        - rest_webservices
+    proxy:
+        base_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
+        retry:
+            after: 'Retry-After'
+    docs: https://system.netsuite.com/help/helpcenter/en_US/APIs/REST_API_Browser/record/v1/2023.2/index.html
 next-cloud-ocs:
     auth_mode: BASIC
     proxy:
@@ -1377,7 +1384,7 @@ teamwork:
         base_url: https://api.surveymonkey.com
 tiktok-accounts:
     auth_mode: OAUTH2
-    authorization_url: https://open-api.tiktok.com/platform/oauth/connect/
+    authorization_url: https://www.tiktok.com/v2/auth/authorize/
     token_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/
     refresh_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/
     proxy:

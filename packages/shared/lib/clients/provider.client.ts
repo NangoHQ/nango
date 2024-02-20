@@ -205,15 +205,17 @@ class ProviderClient {
 
             const response = await axios.post(tokenUrl, body);
 
+            console.log(response.data);
+
             if (response.status === 200 && response.data !== null) {
                 return {
-                    access_token: response.data.data['access_token'],
-                    token_type: response.data.data['token_type'],
-                    scope: response.data.data['scope'],
-                    expires_in: response.data.data['expires_in'],
-                    refresh_token: response.data.data['refresh_token'],
-                    refresh_token_expires_in: response.data.data['refresh_token_expires_in'],
-                    open_id: response.data.data['open_id'],
+                    access_token: response.data?.access_token || response.data.data['access_token'],
+                    token_type: response.data?.token_type || response.data.data['token_type'],
+                    scope: response.data?.scope || response.data.data['scope'],
+                    expires_in: response.data?.expires_in || response.data.data['expires_in'],
+                    refresh_token: response.data?.refresh_token || response.data.data['refresh_token'],
+                    refresh_token_expires_in: response.data?.refresh_token_expires_in || response.data.data['refresh_token_expires_in'],
+                    open_id: response.data?.open_id || response.data.data['open_id'],
                     request_id: response.data['request_id']
                 };
             }
