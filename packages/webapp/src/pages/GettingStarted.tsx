@@ -15,6 +15,7 @@ import Spinner from '../components/ui/Spinner';
 import { nodeSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../utils/language-snippets';
 
 import { useStore } from '../store';
+import { useAnalyticsTrack } from '../utils/analytics';
 
 enum Steps {
     Authorize = 0,
@@ -47,6 +48,7 @@ export default function GettingStarted() {
     const [syncSnippet, setSyncSnippet] = useState('');
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [syncStillRunning, setSyncStillRunning] = useState(true);
+    const analyticsTrack = useAnalyticsTrack();
 
     const { setVisible, bindings } = useModal()
 
@@ -155,6 +157,8 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         if (res.status !== 201) {
             const { message } = await res.json();
             setServerErrorMessage(message);
+
+            analyticsTrack('web:getting_started:authorize_error');
             return;
         }
 
@@ -175,6 +179,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         if (!res.ok) {
             const { message } = await res.json();
             setServerErrorMessage(message);
+
             return;
         }
     };
@@ -191,6 +196,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
 
 
     const onAuthorize = async () => {
+        analyticsTrack('web:getting_started:authorize');
         const nango = new Nango({ host: hostUrl, publicKey });
 
         await verifyDemoProviderConfigKey();
@@ -252,6 +258,8 @@ nango.auth('${providerConfigKey}', '${connectionId}')
             if (response.status !== 200) {
                 clearInterval(pollingInterval as unknown as number);
                 pollingInterval = null;
+
+                analyticsTrack('web:getting_started:sync_error');
                 return;
             }
 
@@ -268,6 +276,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
     };
 
     const onGetRecords = async () => {
+        analyticsTrack('web:getting_started:sync');
         if (records.length === 0) {
             startPolling();
         }
@@ -276,24 +285,29 @@ nango.auth('${providerConfigKey}', '${connectionId}')
     };
 
     const onWebhookConfirm = async () => {
+        analyticsTrack('web:getting_started:webhook');
         setStep(Steps.Write);
         await updateProgress(Steps.Write);
     };
 
     const onActionConfirm = async () => {
+        analyticsTrack('web:getting_started:action');
         setStep(Steps.Ship);
         await updateProgress(Steps.Ship);
     };
 
-    const onClickExpore = async () => {
+    const onClickExplore = async () => {
+        analyticsTrack('web:getting_started:explore');
         window.open('https://docs.nango.dev/integrations/overview', '_blank');
     };
 
     const onClickGuides = async () => {
+        analyticsTrack('web:getting_started:guide');
         window.open('https://docs.nango.dev/introduction', '_blank');
     };
 
     const onClickJoinCommunity = async () => {
+        analyticsTrack('web:getting_started:community');
         window.open('https://nango.dev/slack', '_blank');
     };
 
@@ -538,7 +552,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                 <>
                                     <h3 className="text-text-light-gray mb-6">Build any integration for any API with Nango.</h3>
                                     <div className="space-x-3">
-                                        <Button type="button" variant="primary" onClick={onClickExpore}>
+                                        <Button type="button" variant="primary" onClick={onClickExplore}>
                                             <img className="h-5" src="/images/explore-icon.svg" alt="" />
                                             Explore pre-built APIs
                                         </Button>
