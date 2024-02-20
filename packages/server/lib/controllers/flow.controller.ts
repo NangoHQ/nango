@@ -273,18 +273,16 @@ class FlowController {
             const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey as string);
             const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
 
-            if (availableFlows) {
-                if (enabledFlows) {
-                    const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
+            if (availableFlows && enabledFlows && unEnabledFlows) {
+                const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
 
-                    const { syncs, actions } = unEnabledFlows;
+                const { syncs, actions } = unEnabledFlows;
 
-                    const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
-                    const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
+                const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
+                const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
 
-                    unEnabledFlows.syncs = filteredSyncs;
-                    unEnabledFlows.actions = filteredActions;
-                }
+                unEnabledFlows.syncs = filteredSyncs;
+                unEnabledFlows.actions = filteredActions;
             }
 
             res.send({ unEnabledFlows, enabledFlows });
