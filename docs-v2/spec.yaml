@@ -773,7 +773,7 @@ paths:
                                     description: The ID of the connection. If omitted, the syncs will be triggered for all relevant connections.
                                 syncs:
                                     type: array
-                                    description: An array of sync names to trigger. If the array is empty, all syncs are triggered. 
+                                    description: An array of sync names to trigger. If the array is empty, all syncs are triggered.
                                     items:
                                         type: string
             responses:
