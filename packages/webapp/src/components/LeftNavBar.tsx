@@ -179,7 +179,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             }`}
                         >
                             <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Activity ? 'text-white' : 'text-gray-400'}`} />
-                            <p>Logs</p>
+                            <p>Activity</p>
                         </Link>
                         <Link
                             to={`/${env}/project-settings`}
@@ -188,7 +188,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             }`}
                         >
                             <AdjustmentsHorizontalIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.ProjectSettings ? 'text-white' : 'text-gray-400'}`} />
-                            <p>Settings</p>
+                            <p>Environment Settings</p>
                         </Link>
                     </div>
                 </div>

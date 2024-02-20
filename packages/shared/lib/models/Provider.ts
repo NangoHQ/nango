@@ -76,6 +76,7 @@ export interface IntegrationWithCreds extends Integration {
     actions: Action[];
     created_at: Date;
     connections: NangoConnection[];
+    docs: string;
     connectionCount: number;
 }
 

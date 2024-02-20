@@ -15,17 +15,18 @@ import { AuthModes } from '../../types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { useStore } from '../../store';
 
-interface Providers {
+interface Provider {
     name: string;
     defaultScopes: string[];
     authMode: AuthModes;
     categories?: string[];
+    docs?: string;
 }
 
 export default function Create() {
     const [loaded, setLoaded] = useState(false);
-    const [initialProviders, setInitialProviders] = useState<Providers[] | null>(null);
-    const [providers, setProviders] = useState<Providers[] | null>(null);
+    const [initialProviders, setInitialProviders] = useState<Provider[] | null>(null);
+    const [providers, setProviders] = useState<Provider[] | null>(null);
     const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
     const getProvidersAPI = useGetProvidersAPI();
     const createIntegrationAPI = useCreateEmptyIntegrationAPI();
@@ -59,9 +60,9 @@ export default function Create() {
         }
     }
 
-    const showDocs = (e: any, provider: Providers) => {
+    const showDocs = (e: any, provider: Provider) => {
         e.stopPropagation();
-        const documentationUrl = `https://docs.nango.dev/integrations/all/${provider.name}` ;
+        const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}` ;
         window.open(documentationUrl, '_blank');
     }
 
@@ -75,7 +76,7 @@ export default function Create() {
             provider.name.toLowerCase().includes(lowercaseValue) ||
             provider.categories?.some(category => category.toLowerCase().includes(lowercaseValue))
         );
-        setProviders(filtered as Providers[]);
+        setProviders(filtered as Provider[]);
     }, [initialProviders]);
 
     const debouncedFilterProviders = useMemo(() =>
@@ -122,9 +123,7 @@ export default function Create() {
                                         )}
                                     </div>
                                 </div>
-                                {!provider.name.includes('sandbox') && (
-                                    <BookOpenIcon onClick={(e) => showDocs(e, provider)} className="h-5 w-5 text-gray-400 hover:text-white hover:bg-hover-gray" />
-                                )}
+                                <BookOpenIcon onClick={(e) => showDocs(e, provider)} className="h-5 w-5 text-gray-400 hover:text-white hover:bg-hover-gray" />
                             </div>
                         ))}
                     </div>

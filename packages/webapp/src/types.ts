@@ -268,4 +268,5 @@ export interface IntegrationConfig {
     custom?: Record<string, string>;
     connectionCount: number;
     connections: Connection[];
+    docs: string;
 }

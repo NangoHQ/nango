@@ -6,6 +6,7 @@ import {
     NangoError,
     getEnvironmentId,
     getEnvironmentAndAccountId,
+    Template as ProviderTemplate,
     analytics,
     AnalyticsTypes,
     configService,
@@ -79,6 +80,26 @@ class ConfigController {
                     return creationDateB.getTime() - creationDateA.getTime();
                 })
             });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async listProvidersFromYaml(_: Request, res: Response, next: NextFunction) {
+        try {
+            const providers = Object.entries(configService.getTemplates())
+                .map((providerProperties: [string, ProviderTemplate]) => {
+                    const [provider, properties] = providerProperties;
+                    return {
+                        name: provider,
+                        defaultScopes: properties.default_scopes,
+                        authMode: properties.auth_mode,
+                        categories: properties.categories,
+                        docs: properties.docs
+                    };
+                })
+                .sort((a, b) => a.name.localeCompare(b.name));
+            res.status(200).send(providers);
         } catch (err) {
             next(err);
         }
@@ -308,6 +329,7 @@ class ConfigController {
                       has_webhook: Boolean(hasWebhook),
                       webhook_secret,
                       connections,
+                      docs: providerTemplate.docs,
                       connectionCount,
                       has_webhook_user_defined_secret: providerTemplate.webhook_user_defined_secret,
                       webhook_url: webhookUrl

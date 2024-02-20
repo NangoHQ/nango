@@ -13,7 +13,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { defaultCallback } from '../../utils/utils';
 import APIReference from './APIReference';
 import Button from '../../components/ui/button/Button';
-import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { BuildingOfficeIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
@@ -114,6 +114,10 @@ export default function ShowIntegration() {
         </DashboardLayout>
     );
 
+    const showDocs = () => {
+        window.open(integration?.docs, '_blank');
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             <div>
@@ -126,9 +130,12 @@ export default function ShowIntegration() {
                                     <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">
                                         Integration
                                     </span>
-                                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
-                                        {providerConfigKey}
-                                    </h2>
+                                    <div className="flex items-center">
+                                        <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
+                                            {providerConfigKey}
+                                        </h2>
+                                        <BookOpenIcon onClick={() => showDocs()} className="ml-4 h-8 w-8 text-gray-400 cursor-pointer hover:text-white" />
+                                    </div>
                                 </div>
                             </div>
                             <Button
