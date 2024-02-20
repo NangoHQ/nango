@@ -185,12 +185,12 @@ class OAuthController {
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.UnkownProviderTemplate(config.provider).message,
+                    content: WSErrBuilder.UnknownProviderTemplate(config.provider).message,
                     timestamp: Date.now(),
                     url: callbackUrl
                 });
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderTemplate(config.provider));
             }
 
             const session: OAuthSession = {
@@ -250,19 +250,19 @@ class OAuthController {
                 level: 'error',
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownAuthMode(template.auth_mode).message,
+                content: WSErrBuilder.UnknownAuthMode(template.auth_mode).message,
                 timestamp: Date.now(),
                 url: callbackUrl
             });
 
-            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(template.auth_mode));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownAuthMode(template.auth_mode));
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                content: WSErrBuilder.UnknownError().message + '\n' + prettyError,
                 timestamp: Date.now()
             });
 
@@ -276,7 +276,7 @@ class OAuthController {
                 }
             });
 
-            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 
@@ -434,7 +434,7 @@ class OAuthController {
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.UnkownGrantType(grantType).message,
+                    content: WSErrBuilder.UnknownGrantType(grantType).message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: callbackUrl,
@@ -445,12 +445,12 @@ class OAuthController {
                     }
                 });
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownGrantType(grantType));
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownGrantType(grantType));
             }
         } catch (error: any) {
             const prettyError = JSON.stringify(error, ['message', 'name'], 2);
 
-            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
                 callbackUrl,
@@ -472,7 +472,7 @@ class OAuthController {
                 }
             });
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 
@@ -553,7 +553,7 @@ class OAuthController {
         } catch (error: any) {
             const prettyError = JSON.stringify(error, ['message', 'name'], 2);
 
-            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -568,7 +568,7 @@ class OAuthController {
                 }
             });
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 
@@ -736,14 +736,14 @@ class OAuthController {
                 level: 'error',
                 environment_id: session.environmentId,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownAuthMode(session.authMode).message,
+                content: WSErrBuilder.UnknownAuthMode(session.authMode).message,
                 state: state as string,
                 timestamp: Date.now(),
                 auth_mode: session.authMode,
                 url: req.originalUrl
             });
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownAuthMode(session.authMode));
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
@@ -754,7 +754,7 @@ class OAuthController {
                 metadata: errorManager.getExpressRequestContext(req)
             });
 
-            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -767,7 +767,7 @@ class OAuthController {
                 }
             });
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 
@@ -958,7 +958,7 @@ class OAuthController {
                     activityLogId
                 );
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
             }
 
             const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
@@ -1081,7 +1081,7 @@ class OAuthController {
                 level: 'error',
                 environment_id,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                content: WSErrBuilder.UnknownError().message + '\n' + prettyError,
                 timestamp: Date.now()
             });
 
@@ -1092,14 +1092,14 @@ class OAuthController {
                     provider_config_key: providerConfigKey,
                     environment_id,
                     auth_mode: template.auth_mode,
-                    error: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                    error: WSErrBuilder.UnknownError().message + '\n' + prettyError,
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
                 activityLogId
             );
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 
@@ -1230,7 +1230,7 @@ class OAuthController {
                     level: 'error',
                     environment_id,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                    content: WSErrBuilder.UnknownError().message + '\n' + prettyError,
                     timestamp: Date.now()
                 });
 
@@ -1241,14 +1241,14 @@ class OAuthController {
                         provider_config_key: providerConfigKey,
                         environment_id,
                         auth_mode: template.auth_mode,
-                        error: WSErrBuilder.UnkownError().message + '\n' + prettyError,
+                        error: WSErrBuilder.UnknownError().message + '\n' + prettyError,
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
                     activityLogId
                 );
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
     }
 }
