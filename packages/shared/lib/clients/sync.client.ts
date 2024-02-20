@@ -386,10 +386,15 @@ class SyncClient {
                         const jobIsRunning = await isSyncJobRunning(syncId);
                         if (jobIsRunning) {
                             const { job_id, run_id } = jobIsRunning;
-                            if (run_id) {
-                                const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
-                                await workflowHandle?.cancel();
+                            if (!run_id) {
+                                const error = new NangoError('run_id_not_found');
+                                return resultErr(error);
                             }
+                            const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
+                            await workflowHandle?.cancel();
+                        } else {
+                            const error = new NangoError('sync_job_not_running');
+                            return resultErr(error);
                         }
                     }
                     break;

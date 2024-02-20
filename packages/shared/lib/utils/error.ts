@@ -507,6 +507,16 @@ export class NangoError extends Error {
                 this.message = 'The script was cancelled successfully';
                 break;
 
+            case 'run_id_not_found':
+                this.status = 400;
+                this.message = 'The run id was not found';
+                break;
+
+            case 'sync_job_not_running':
+                this.status = 400;
+                this.message = 'The sync is not currently running so cannot be cancelled';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

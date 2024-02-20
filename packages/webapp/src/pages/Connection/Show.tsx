@@ -14,7 +14,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import Info from '../../components/ui/Info'
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
-import Syncs from './Syncs';
+import Models from './Models';
 import Authorization from './Authorization';
 import { SyncResponse, Connection } from '../../types';
 
@@ -212,7 +212,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             <section className="mt-10">
                 {activeTab === Tabs.Models && (
-                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} env={env} />
+                    <Models syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} env={env} />
                 )}
                 {activeTab === Tabs.Authorization && (
                     <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={syncLoaded} />

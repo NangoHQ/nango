@@ -1,8 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
+import { toast } from 'react-toastify';
 import { Loading, Tooltip } from '@geist-ui/core';
 import { Link } from 'react-router-dom';
-import { AdjustmentsHorizontalIcon, EllipsisHorizontalIcon, PlayCircleIcon, PauseCircleIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
-import { SyncResponse, RunSyncCommand } from '../../types';
+import {
+    AdjustmentsHorizontalIcon,
+    EllipsisHorizontalIcon,
+    PlayCircleIcon,
+    PauseCircleIcon,
+    ArrowPathRoundedSquareIcon,
+    StopCircleIcon
+} from '@heroicons/react/24/outline';
+import { UserFacingSyncCommand, SyncResponse, RunSyncCommand } from '../../types';
 import {
     calculateTotalRuntime,
     getRunTime,
@@ -14,7 +22,7 @@ import {
 import { Connection } from '../../types';
 import { useRunSyncAPI } from '../../utils/api';
 
-interface SyncsProps {
+interface ModelsProps {
     syncs: SyncResponse[] | null;
     connection: Connection | null;
     loaded: boolean;
@@ -23,7 +31,7 @@ interface SyncsProps {
     env: string
 }
 
-export default function Syncs(props: SyncsProps) {
+export default function Models(props: ModelsProps) {
     const { syncs, connection, setSyncLoaded, loaded, syncLoaded, env } = props;
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const runCommandSyncAPI = useRunSyncAPI();
@@ -54,11 +62,12 @@ export default function Syncs(props: SyncsProps) {
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
 
         if (res?.status === 200) {
-            try {
-                setSyncLoaded(false);
-            } catch (e) {
-                console.log(e);
-            }
+            setSyncLoaded(false);
+            const niceCommand = UserFacingSyncCommand[command];
+            toast.success(`The sync was successfully ${niceCommand}`, { position: toast.POSITION.BOTTOM_CENTER });
+        } else {
+            const data = await res?.json();
+            toast.error(data.error, { position: toast.POSITION.BOTTOM_CENTER });
         }
     };
 
@@ -82,6 +91,21 @@ export default function Syncs(props: SyncsProps) {
         </>
     );
     const runningBubbleStyles = 'inline-flex justify-center items-center rounded py-1 px-2 bg-blue-400 bg-opacity-20';
+
+    const renderBubble = (bubbleType: ReactNode, styles: string, sync: SyncResponse) => {
+        const hasActivityLogId = sync.latest_sync?.activity_log_id !== null;
+        const linkPath = `/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`;
+
+        return hasActivityLogId ? (
+            <Link to={linkPath} className={styles}>
+                {bubbleType}
+            </Link>
+        ) : (
+            <div className={styles}>
+                {bubbleType}
+            </div>
+        );
+    };
 
     if (!loaded || !syncLoaded || syncs === null) return (
         <Loading spaceRatio={2.5} className="top-24" />
@@ -126,57 +150,14 @@ export default function Syncs(props: SyncsProps) {
                                     </div>
                                     <div className="flex w-20 -ml-2">
                                         <span className="">
-                                            {sync.schedule_status === 'PAUSED' && sync.latest_sync?.status !== 'RUNNING' && (
+                                            {sync.status === 'PAUSED' && (
                                                 <div className="inline-flex justify-center items-center rounded py-1 px-2 bg-yellow-500 bg-opacity-20">
                                                     <p className="inline-block text-yellow-500">Paused</p>
                                                 </div>
                                             )}
-                                            {sync?.schedule_status === 'RUNNING' && sync?.latest_sync === null && (
-                                                <div className={errorBubbleStyles}>
-                                                    <ErrorBubble />
-                                                </div>
-                                            )}
-                                            {sync?.latest_sync?.status === 'STOPPED' &&
-                                                sync.schedule_status !== 'PAUSED' &&
-                                                (sync.latest_sync.activity_log_id && sync.latest_sync.activity_log_id !== null ? (
-                                                    <Link
-                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
-                                                        className={errorBubbleStyles}
-                                                    >
-                                                        <ErrorBubble />
-                                                    </Link>
-                                            ) : (
-                                                <div className={errorBubbleStyles}>
-                                                    <ErrorBubble />
-                                                </div>
-                                            ))}
-                                            {sync.latest_sync?.status === 'RUNNING' &&
-                                                (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
-                                                    <Link
-                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
-                                                        className={runningBubbleStyles}
-                                                    >
-                                                        <RunningBubble />
-                                                    </Link>
-                                            ) : (
-                                                <div className={runningBubbleStyles}>
-                                                    <RunningBubble />
-                                                </div>
-                                            ))}
-                                            {sync.latest_sync?.status === 'SUCCESS' &&
-                                                sync.schedule_status !== 'PAUSED' &&
-                                                (sync.latest_sync?.activity_log_id !== null ? (
-                                                    <Link
-                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
-                                                        className={successBubbleStyles}
-                                                    >
-                                                        <SuccessBubble />
-                                                    </Link>
-                                            ) : (
-                                                <div className={successBubbleStyles}>
-                                                    <SuccessBubble />
-                                                </div>
-                                            ))}
+                                            {sync?.status === 'ERROR' && renderBubble(<ErrorBubble />, errorBubbleStyles, sync)}
+                                            {sync?.status === 'RUNNING' && renderBubble(<RunningBubble />, runningBubbleStyles, sync)}
+                                            {sync?.status === 'SUCCESS' && renderBubble(<SuccessBubble />, successBubbleStyles, sync)}
                                         </span>
                                     </div>
                                     <div className="flex items-center w-10">{sync.frequency}</div>
@@ -276,6 +257,13 @@ export default function Syncs(props: SyncsProps) {
                                                     >
                                                         <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
                                                         <span className="pl-2">Trigger Once</span>
+                                                    </div>
+                                                    <div
+                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
+                                                        onClick={() => syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
+                                                    >
+                                                        <StopCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
+                                                        <span className="pl-2">Interrupt Running Job</span>
                                                     </div>
                                                 </div>
                                             </div>

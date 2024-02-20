@@ -272,7 +272,7 @@ export const SyncCommandToScheduleStatus = {
     UNPAUSE: ScheduleStatus.RUNNING,
     RUN: ScheduleStatus.RUNNING,
     RUN_FULL: ScheduleStatus.RUNNING,
-    CANCEL: ScheduleStatus.STOPPED
+    CANCEL: ScheduleStatus.RUNNING
 };
 
 export interface SyncConfigWithProvider {

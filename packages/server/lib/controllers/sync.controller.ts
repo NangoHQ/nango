@@ -45,7 +45,8 @@ import {
     setFrequency,
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    isOk
+    isOk,
+    isErr
 } from '@nangohq/shared';
 
 class SyncController {
@@ -603,7 +604,21 @@ class SyncController {
             const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number, environment.id);
+
+            if (!syncClient) {
+                const error = new NangoError('failed_to_get_sync_client');
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            const result = await syncClient.runSyncCommand(schedule_id, sync_id, command, activityLogId as number, environment.id);
+
+            if (isErr(result)) {
+                errorManager.errResFromNangoErr(res, result.err as NangoError);
+                return;
+            }
+
             if (command !== SyncCommand.RUN) {
                 await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
             }
@@ -628,6 +643,9 @@ class SyncController {
                     break;
                 case SyncCommand.RUN:
                     event = AnalyticsTypes.SYNC_RUN;
+                    break;
+                case SyncCommand.CANCEL:
+                    event = AnalyticsTypes.SYNC_CANCEL;
                     break;
             }
 

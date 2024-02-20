@@ -313,6 +313,16 @@ export class Orchestrator {
         return { success: true, error: null, response: syncsWithStatus };
     }
 
+    /**
+     * Classify Sync Status
+     * @desc categornize the different scenarios of sync status
+     * 1. If the schedule is paused and the job is not running, then the sync is paused
+     * 2. If the schedule is paused and the job is not running then the sync is stopped (last return case)
+     * 3. If the schedule is running but the last job is null then it is an error
+     * 4. If the job status is stopped then it is an error
+     * 5. If the job status is running then it is running
+     * 6. If the job status is success then it is success
+     */
     public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
         if (scheduleStatus === ScheduleStatus.PAUSED && jobStatus !== SyncStatus.RUNNING) {
             return SyncStatus.PAUSED;

@@ -76,6 +76,7 @@ export interface SyncResponse {
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
     models: string[];
     schedule_id: string;
+    status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
     latest_sync: {
         created_at: string;
         updated_at: string;
@@ -95,6 +96,14 @@ export interface SyncResponse {
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';
+
+export const UserFacingSyncCommand = {
+    PAUSE: 'paused',
+    UNPAUSE: 'resumed',
+    RUN: 'triggered',
+    RUN_FULL: 'run full',
+    CANCEL: 'cancelled'
+};
 
 export enum AuthModes {
     OAuth1 = 'OAUTH1',

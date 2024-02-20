@@ -222,7 +222,7 @@ export const getSyncsFlatWithNames = async (nangoConnection: Connection, syncNam
  * @description get the sync related to the connection
  * the latest sync and its result and the next sync based on the schedule
  */
-export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => {
+export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { status: SyncStatus })[]> => {
     const syncClient = await SyncClient.getInstance();
 
     if (!syncClient || !nangoConnection || !nangoConnection.id) {
@@ -326,6 +326,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
 
         return {
             ...sync,
+            status: syncOrchestrator.classifySyncStatus(sync?.latest_sync?.status, sync?.schedule_status),
             futureActionTimes
         };
     });
