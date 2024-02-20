@@ -48,6 +48,7 @@ export default function EndpointReference() {
     const connectionId = '<CONNECTION-ID>';
 
     const env = useStore(state => state.cookieValue);
+    const baseUrl = useStore(state => state.baseUrl);
     const { providerConfigKey } = useParams();
     const location = useLocation();
     const basePath = `/${env}/integration/${providerConfigKey}/reference/`;
@@ -188,7 +189,7 @@ export default function EndpointReference() {
                                         className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                         onClick={() => {
                                           if (language !== Language.cURL) {
-                                            setSyncSnippet(curlSnippet(activeFlow?.endpoints[0] as NangoSyncEndpoint, account?.secret_key as string, connectionId, integration?.unique_key as string, parseInput(activeFlow as Flow)));
+                                            setSyncSnippet(curlSnippet(baseUrl, activeFlow?.endpoints[0] as NangoSyncEndpoint, account?.secret_key as string, connectionId, integration?.unique_key as string, parseInput(activeFlow as Flow)));
                                             setLanguage(Language.cURL);
                                           }
                                         }}

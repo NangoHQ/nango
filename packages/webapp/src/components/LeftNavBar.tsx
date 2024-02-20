@@ -46,6 +46,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const storedEnvs = useStore(state => state.envs);
     const [envs, setEnvs] = useState<{ name: string; }[]>(storedEnvs);
     const setStoredEnvs = useStore(state => state.setEnvs);
+    const setBaseUrl = useStore(state => state.setBaseUrl);
 
     useEffect(() => {
         fetch('/api/v1/meta')
@@ -60,6 +61,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 if(JSON.stringify(data.environments) !== JSON.stringify(envs)) {
                     setEnvs(data.environments);
                     setStoredEnvs(data.environments);
+                    setBaseUrl(data.baseUrl);
                 }
                 setVersion(data.version);
                 setEmail(data.email);

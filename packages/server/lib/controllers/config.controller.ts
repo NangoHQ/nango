@@ -285,7 +285,8 @@ class ConfigController {
             });
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = providerTemplate.webhook_routing_script;
-            const connectionCount = (await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey)).length;
+            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+            const connectionCount = connections.length;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
                 webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environmentUuid}/${config.provider}`;
@@ -306,6 +307,7 @@ class ConfigController {
                       actions,
                       has_webhook: Boolean(hasWebhook),
                       webhook_secret,
+                      connections,
                       connectionCount,
                       has_webhook_user_defined_secret: providerTemplate.webhook_user_defined_secret,
                       webhook_url: webhookUrl
@@ -313,6 +315,29 @@ class ConfigController {
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
             res.status(200).send({ config: configRes });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getConnections(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const providerConfigKey = req.params['providerConfigKey'] as string;
+            const { environmentId } = response;
+
+            if (providerConfigKey == null) {
+                errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+
+            res.status(200).send(connections);
         } catch (err) {
             next(err);
         }

@@ -82,16 +82,10 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncId', nangoProps.syncId)
             .setTag('syncName', syncName);
         try {
-            let script: string | null = null;
-
-            if (integrationData.is_public && integrationData.type === 'action') {
-                script = await remoteFileService.getPublicFlowFile(integrationData.fileLocation as string, environmentId);
-            } else {
-                script =
-                    isCloud() && !optionalLoadLocation
-                        ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
-                        : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
-            }
+            const script: string | null =
+                isCloud() && !optionalLoadLocation
+                    ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
+                    : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;

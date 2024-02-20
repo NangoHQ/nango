@@ -177,6 +177,7 @@ app.route('/api/v1/integration').post(webAuth, configController.createProviderCo
 app.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
 app.route('/api/v1/integration/:providerConfigKey/endpoints').get(webAuth, flowController.getEndpoints.bind(connectionController));
+app.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 
 app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
 

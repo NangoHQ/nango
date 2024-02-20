@@ -42,15 +42,13 @@ console.log(issues);
 `;
 };
 
-export const curlSnippet = (endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[], secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string, method = 'GET') => {
-    console.log(endpoint);
+export const curlSnippet = (baseUrl: string, endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[], secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string, method = 'GET') => {
+    console.log(baseUrl)
     let curlMethod: HTTP_VERB = method as HTTP_VERB;
     if (typeof endpoint !== 'string') {
         curlMethod = (Object.keys(endpoint)[0]) as HTTP_VERB;
-        console.log(curlMethod)
         endpoint = (Array.isArray(endpoint) ? endpoint[0][curlMethod] : endpoint[curlMethod]) as string;
     }
-    console.log(endpoint)
 
     let formattedInput = '';
     if (typeof input === 'string') {
@@ -61,7 +59,7 @@ export const curlSnippet = (endpoint: string | NangoSyncEndpoint | NangoSyncEndp
 
         return `
     curl --request ${curlMethod} \\
-    --url https://api.nango.dev/v1${endpoint} \\
+    --url ${baseUrl}/v1${endpoint} \\
     --header 'Authorization: Bearer ${secretKey}' \\
     --header 'Connection-Id: ${connectionId}' \\
     --header 'Provider-Config-Key: ${providerConfigKey}'

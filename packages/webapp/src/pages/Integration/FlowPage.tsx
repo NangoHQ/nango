@@ -9,7 +9,8 @@ import { useModal } from '@geist-ui/core';
 import {
     useGetProjectInfoAPI,
     useGetFlowDetailsAPI,
-    useUpdateSyncFrequency
+    useUpdateSyncFrequency,
+    useGetConnectionAPI,
 } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -17,7 +18,7 @@ import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
 import { FlowConfiguration } from './Show';
-import type { Flow } from '../../types';
+import type { Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info'
@@ -30,6 +31,7 @@ import { useStore } from '../../store';
 export default function FlowPage() {
     const [accountLoaded, setAccountLoaded] = useState(false);
     const [loaded, setLoaded] = useState(false);
+    const [connections, setConnections] = useState<Connection[]>([]);
     const [flowConfig, setFlowConfig] = useState<FlowConfiguration | null>(null);
     const [secretKey, setSecretKey] = useState('');
     const [flow, setFlow] = useState<Flow | null>(null);
@@ -40,6 +42,7 @@ export default function FlowPage() {
     const { providerConfigKey, flowName } = useParams();
     const getFlowDetailsAPI = useGetFlowDetailsAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI()
+    const getConnectionAPI = useGetConnectionAPI();
     const updateSyncFrequency = useUpdateSyncFrequency();
     const { setVisible, bindings } = useModal();
     const navigate = useNavigate();
@@ -116,6 +119,25 @@ export default function FlowPage() {
             getFlow();
         }
     }, [providerConfigKey, getFlowDetailsAPI, flowName, loaded, setLoaded]);
+
+    useEffect(() => {
+        const getConnections = async () => {
+            if (providerConfigKey) {
+                let res = await getConnectionAPI(providerConfigKey);
+                if (res?.status === 200) {
+                    const connections = await res.json();
+                    if (connections.length > 0) {
+                        setConnections(connections);
+                    }
+                }
+            }
+        }
+
+        if (!loaded) {
+            getConnections();
+        }
+
+    },[providerConfigKey]);
 
     const downloadFlow = async () => {
         setIsDownloading(true);
@@ -298,8 +320,10 @@ export default function FlowPage() {
                                 <EnableDisableSync
                                     flow={flow as Flow}
                                     provider={provider}
+                                    providerConfigKey={providerConfigKey as string}
                                     setLoaded={setLoaded}
                                     rawName={flowConfig?.rawName}
+                                    connections={connections}
                                 />
                         </div>
                         <div className="flex flex-col w-1/2">

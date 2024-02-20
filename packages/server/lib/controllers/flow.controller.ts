@@ -110,7 +110,12 @@ class FlowController {
 
             // config is an array for compatibility purposes, it will only ever have one item
             const [firstConfig] = config;
-            const providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
+            let providerLookup;
+            if (firstConfig?.providerConfigKey) {
+                providerLookup = await configService.getConfigIdByProviderConfigKey(firstConfig?.providerConfigKey as string, environmentId);
+            } else {
+                providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
+            }
 
             if (!providerLookup) {
                 errorManager.errRes(res, 'provider_not_on_account');
@@ -265,7 +270,7 @@ class FlowController {
             const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
             const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === provider);
 
-            const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, provider as string);
+            const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey as string);
             const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
 
             if (availableFlows) {

@@ -26,7 +26,8 @@ class EnvironmentController {
 
             const environments = await environmentService.getEnvironmentsByAccountId(account.id);
             const version = packageJsonFile().version;
-            res.status(200).send({ environments, version, email: user.email });
+            const baseUrl = getBaseUrl();
+            res.status(200).send({ environments, version, email: user.email, baseUrl });
         } catch (err) {
             next(err);
         }

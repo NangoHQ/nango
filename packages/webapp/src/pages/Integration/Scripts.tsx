@@ -72,8 +72,10 @@ export default function Scripts(props: ScriptProps) {
                                             <EnableDisableSync
                                                 flow={flow}
                                                 provider={integration.provider}
+                                                providerConfigKey={integration.unique_key}
                                                 setLoaded={setLoaded}
                                                 rawName={endpoints?.unEnabledFlows?.rawName}
+                                                connections={integration?.connections}
                                             />
                                         </div>
                                     </td>
@@ -115,8 +117,10 @@ export default function Scripts(props: ScriptProps) {
                                             <EnableDisableSync
                                                 flow={flow}
                                                 provider={integration.provider}
+                                                providerConfigKey={integration.unique_key}
                                                 setLoaded={setLoaded}
                                                 rawName={endpoints?.unEnabledFlows?.rawName}
+                                                connections={integration?.connections}
                                             />
                                         </div>
                                     </td>

@@ -900,3 +900,18 @@ export function useUpdateSyncFrequency() {
         }
     };
 }
+
+export function useGetConnectionAPI() {
+    return async (providerConfigKey: string) => {
+        try {
+            const res = await fetch(`/api/v1/integration/${providerConfigKey}/connections`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}

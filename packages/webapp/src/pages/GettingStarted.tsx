@@ -4,7 +4,7 @@ import Nango from '@nangohq/frontend';
 import { Prism } from '@mantine/prism';
 import { useModal, Modal } from '@geist-ui/core';
 
-import { baseUrl } from '../utils/utils';
+import { baseUrl as getBaseUrl } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import Button from '../components/ui/button/Button';
@@ -55,6 +55,7 @@ export default function GettingStarted() {
     const providerConfigKey = 'demo-github-integration';
 
     const env = useStore(state => state.cookieValue);
+    const baseUrl = useStore(state => state.baseUrl);
 
     const getProjectInfoAPI = useGetProjectInfoAPI()
 
@@ -75,7 +76,7 @@ export default function GettingStarted() {
                 const account = (await res.json())['account'];
                 setPublicKey(account.public_key);
                 setSecretKey(account.secret_key);
-                setHostUrl(account.host || baseUrl());
+                setHostUrl(account.host || getBaseUrl());
                 const email = account.email;
                 let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
                 strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
@@ -395,7 +396,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.cURL) {
-                                                    setSyncSnippet(curlSnippet(endpoint, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(curlSnippet(baseUrl, endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.cURL);
                                                   }
                                                 }}

@@ -3,19 +3,22 @@ import { toast } from 'react-toastify';
 import { useModal } from '@geist-ui/core';
 import ActionModal from '../../../components/ui/ActionModal';
 import ToggleButton from '../../../components/ui/button/ToggleButton';
-import type { Flow } from '../../../types';
+import type { Flow, Connection } from '../../../types';
 import { useCreateFlow } from '../../../utils/api';
 
 export interface FlowProps {
     flow: Flow;
     provider: string;
+    providerConfigKey: string;
     setLoaded: (loaded: boolean) => void;
     rawName?: string;
+    connections: Connection[];
 }
 
-export default function EnableDisableSync({ flow, provider, setLoaded, rawName }: FlowProps) {
+export default function EnableDisableSync({ flow, provider, providerConfigKey, setLoaded, rawName, connections }: FlowProps) {
     const { setVisible, bindings } = useModal();
     const createFlow = useCreateFlow();
+    const connectionIds = connections.map(connection => connection.id);
 
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
@@ -24,7 +27,7 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
     const [modalTitleColor, setModalTitleColor] = useState('text-white');
 
     const enableSync = (flow: Flow) => {
-        setModalTitle('Enable sync?');
+        setModalTitle(`Enable ${flow.type}?`);
         setModalTitleColor('text-white')
         const content = flow?.type === 'sync' ?
             'Records will start syncing potentially for multiple connections. This will impact your billing.' :
@@ -37,6 +40,7 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
     const onEnableSync = async (flow: Flow) => {
         const flowPayload = {
             provider,
+            providerConfigKey,
             type: flow.type,
             name: flow.name,
             runs: flow.runs as string,
@@ -100,7 +104,7 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
 
     const onDisableSync = async (flow: Flow) => {
         setModalShowSpinner(true);
-        const res = await fetch(`/api/v1/flow/${flow?.id}`, {
+        const res = await fetch(`/api/v1/flow/${flow?.id}?sync_name=${flow.name}&connectionIds=${connectionIds.join(',')}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
