@@ -201,6 +201,7 @@
                         "integrations/all/asana",
                         "integrations/all/ashby",
                         "integrations/all/atlassian",
+                        "integrations/all/attio",
                         "integrations/all/auth0",
                         "integrations/all/aws",
                         "integrations/all/bamboohr",

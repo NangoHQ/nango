@@ -129,6 +129,18 @@ atlassian:
         grant_type: refresh_token
     proxy:
         base_url: https://api.atlassian.com
+attio:
+    auth_mode: OAUTH2
+    authorization_url: https://app.attio.com/authorize
+    token_url: https://app.attio.com/oauth/token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.attio.com
 auth0:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
