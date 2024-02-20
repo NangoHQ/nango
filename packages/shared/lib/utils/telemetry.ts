@@ -40,12 +40,12 @@ export enum MetricTypes {
     ACTION_TRACK_RUNTIME = 'action_track_runtime',
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
     WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
-    RUNNER_SDK = 'nango.runner.sdk'
+    RUNNER_SDK = 'nango.runner.sdk',
+    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs'
 }
 
 export enum SpanTypes {
     CONNECTION_TEST = 'nango.server.hooks.connectionTest',
-    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
     JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos',
     RUNNER_EXEC = 'nango.runner.exec'
 }
