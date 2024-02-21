@@ -200,11 +200,12 @@ export async function syncProvider(
     temporalContext: Context,
     debug = false
 ): Promise<boolean | object | null> {
+    const action = syncType === SyncType.INITIAL ? LogActionEnum.FULL_SYNC : LogActionEnum.SYNC;
     try {
         const log = {
             level: 'info' as LogLevel,
             success: null,
-            action: LogActionEnum.SYNC,
+            action,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -249,7 +250,7 @@ export async function syncProvider(
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: LogActionEnum.SYNC,
+            action,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -269,7 +270,7 @@ export async function syncProvider(
             content
         });
 
-        await telemetry.log(LogTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
+        await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {
             environmentId: String(nangoConnection?.environment_id),
             syncId,
             connectionId: nangoConnection?.connection_id as string,
@@ -277,10 +278,10 @@ export async function syncProvider(
             syncName
         });
 
-        await errorManager.report(content, {
+        errorManager.report(content, {
             environmentId: nangoConnection?.environment_id as number,
             source: ErrorSourceEnum.PLATFORM,
-            operation: LogActionEnum.SYNC,
+            operation: action,
             metadata: {
                 connectionId: nangoConnection?.connection_id as string,
                 providerConfigKey: nangoConnection?.provider_config_key as string,
