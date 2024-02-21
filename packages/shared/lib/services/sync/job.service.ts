@@ -158,19 +158,6 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
     return null;
 };
 
-export const initialSyncExists = async (sync_id: string): Promise<boolean> => {
-    const result = await schema()
-        .from<SyncJob>(SYNC_JOB_TABLE)
-        .where({ sync_id, deleted: false })
-        .andWhere(function () {
-            this.where({ type: SyncType.INITIAL }).andWhere('status', '!=', SyncStatus.PAUSED);
-        })
-        .andWhere('type', '!=', SyncType.INCREMENTAL)
-        .first();
-
-    return Boolean(result);
-};
-
 export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolean> => {
     const result = await schema()
         .from<SyncJob>(SYNC_JOB_TABLE)

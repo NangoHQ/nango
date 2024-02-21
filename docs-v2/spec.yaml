@@ -776,6 +776,10 @@ paths:
                                     description: A list of sync names that you wish to trigger.
                                     items:
                                         type: string
+                                full_resync:
+                                    type: boolean
+                                    description: Clear the records and reset the "lastSyncDate" associated with the sync before triggering a new sync job.
+
             responses:
                 '200':
                     description: Successfully triggered the sync

@@ -34,7 +34,7 @@ interface SyncRunConfig {
 
     syncId?: string;
     syncJobId?: number;
-    activityLogId?: number;
+    activityLogId?: number | undefined;
     provider?: string;
 
     loadLocation?: string;

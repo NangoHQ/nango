@@ -26,9 +26,7 @@ export interface SyncResult {
     deleted: number;
 }
 
-export interface SyncResultByModel {
-    [key: string]: SyncResult;
-}
+export type SyncResultByModel = Record<string, SyncResult>;
 
 export interface Sync extends TimestampsAndDeleted {
     id?: string;
@@ -263,7 +261,7 @@ export const CommandToActivityLog = {
     PAUSE: LogActionEnum.PAUSE_SYNC,
     UNPAUSE: LogActionEnum.RESTART_SYNC,
     RUN: LogActionEnum.TRIGGER_SYNC,
-    RUN_FULL: LogActionEnum.FULL_SYNC,
+    RUN_FULL: LogActionEnum.TRIGGER_FULL_SYNC,
     CANCEL: LogActionEnum.CANCEL_SYNC
 };
 
