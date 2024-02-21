@@ -29,11 +29,11 @@ export default function APIReference(props: APIReferenceProps) {
             ) : (
                 <>
                     <table className="w-[976px]">
-                        <tbody className="flex flex-col">
+                        <tbody className="flex flex-col max-w-[976px]">
                             <tr>
                                 <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
-                                    <div className="w-40">Endpoint</div>
-                                    <div className="w-64">Description</div>
+                                    <div className="w-0">Endpoint</div>
+                                    <div className="w-64 -ml-3">Description</div>
                                     <div className="">Enabled</div>
                                 </td>
                             </tr>

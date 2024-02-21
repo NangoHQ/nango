@@ -10,7 +10,6 @@ import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import flowService from '../flow.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
@@ -151,11 +150,6 @@ export default class SyncRun {
         let nangoConfig = this.loadLocation
             ? await loadLocalNangoConfig(this.loadLocation)
             : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
-
-        if (this.isAction) {
-            // if this is a public action then it doesn't need to be registered
-            nangoConfig = flowService.getActionAsNangoConfig(this.provider as string, this.syncName);
-        }
 
         if (!nangoConfig) {
             const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;

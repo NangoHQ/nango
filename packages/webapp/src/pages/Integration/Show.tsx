@@ -88,7 +88,7 @@ export default function ShowIntegration() {
                     <div className="mx-auto">
                         <div className="flex justify-between items-center">
                             <div className="flex">
-                                <IntegrationLogo provider={integration?.provider} height={24} width={24} classNames="mr-2" />
+                                <IntegrationLogo provider={integration?.provider} height={24} width={24} classNames="mr-2 border border-border-gray rounded-xl" />
                                 <div className="mt-3 ml-6">
                                     <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">
                                         Integration

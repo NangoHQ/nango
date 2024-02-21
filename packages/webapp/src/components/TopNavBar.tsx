@@ -34,7 +34,7 @@ export default function NavBar() {
                     {(isCloud() || isEnterprise()) && (
                         <button
                             onClick={logoutButtonClicked}
-                            className="flex h-8 rounded-md ml-4 px-3 text-sm hover:bg-hover-gray text-red-600 font-semibold"
+                            className="flex items-center h-8 rounded-md ml-4 px-3 text-sm hover:bg-hover-gray text-red-600 font-semibold"
                         >
                             <p>Log Out</p>
                         </button>

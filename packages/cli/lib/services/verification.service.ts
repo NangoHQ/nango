@@ -94,7 +94,7 @@ class VerificationService {
         }
     }
 
-    public async checkForMigration(loadLocation: string): Promise<void> {
+    public async runMigration(loadLocation: string): Promise<void> {
         if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
             return;
         }
@@ -105,23 +105,18 @@ class VerificationService {
         }
 
         const version = determineVersion(localConfig);
+        if (version === 'v2') {
+            console.log(chalk.blue(`nango.yaml is already at v2.`));
+        }
         if (version === 'v1' && localConfig.integrations) {
-            const autoMigrate = await promptly.confirm(
-                `You are using the v1 version of the Nango yaml. Would you like to us to automatically upgrade you to v2? This won't change your code but rather just make some minor adjustments to your yaml structure. A list of changes and explanations will also be outputted (yes/no)`
-            );
-
-            if (autoMigrate) {
-                exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error, stdout) => {
-                    if (error) {
-                        console.log(chalk.red(`There was an issue migrating your Nango yaml to v2.`));
-                        console.error(error);
-                        return;
-                    }
-                    console.log(chalk.blue(`Migrated to v2 of Nango yaml.`));
-                    console.log(chalk.yellow(`----------------------------------------`));
-                    console.log(chalk.blue(stdout));
-                });
-            }
+            exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error, stdout) => {
+                if (error) {
+                    console.log(chalk.red(`There was an issue migrating your Nango yaml to v2.`));
+                    console.error(error);
+                    return;
+                }
+                console.log(chalk.blue(`Migrated to v2 of nango.yaml!`));
+            });
         }
     }
 
