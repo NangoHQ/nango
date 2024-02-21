@@ -10,11 +10,11 @@ import { useStore } from '../../store';
 interface ScriptProps {
     endpoints: EndpointResponse;
     integration: IntegrationConfig;
-    setLoaded: (loaded: boolean) => void;
+    reload: () => void;
 }
 
 export default function Scripts(props: ScriptProps) {
-    const { integration, endpoints, setLoaded } = props;
+    const { integration, endpoints, reload } = props;
     const navigate = useNavigate();
     const syncs = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.syncs || []];
     const actions = [...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.actions || []];
@@ -73,7 +73,7 @@ export default function Scripts(props: ScriptProps) {
                                                 flow={flow}
                                                 provider={integration.provider}
                                                 providerConfigKey={integration.unique_key}
-                                                setLoaded={setLoaded}
+                                                reload={reload}
                                                 rawName={endpoints?.unEnabledFlows?.rawName}
                                                 connections={integration?.connections}
                                             />
@@ -118,7 +118,7 @@ export default function Scripts(props: ScriptProps) {
                                                 flow={flow}
                                                 provider={integration.provider}
                                                 providerConfigKey={integration.unique_key}
-                                                setLoaded={setLoaded}
+                                                reload={reload}
                                                 rawName={endpoints?.unEnabledFlows?.rawName}
                                                 connections={integration?.connections}
                                             />
