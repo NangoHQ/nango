@@ -23,7 +23,7 @@ API configuration: [`microsoft-tenant-specific`](https://nango.dev/providers.yam
     -   Add permissions for the appropriate app on the `API Permissions` tab
 -   [OAuth-related docs](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow).
     -   See particularly the `tenant` parameter under [Request an authorization code](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#request-an-authorization-code).
-        This `tenant` parameter must be provided as [extra configuration to the frontend SDK](https://docs.nango.dev/sdks/frontend#oauth-flows-requiring-extra-configuration).
+        This `tenant` parameter must be provided as [extra configuration to the frontend SDK](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization).
 -   [List of OAuth scopes](https://learn.microsoft.com/en-us/azure/active-directory/develop/permissions-consent-overview)
     -   The specific scopes required will depend on the application being accessed.  This might use the [.default scope with the resource's identifier URI](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope).
 

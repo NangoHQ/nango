@@ -188,7 +188,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                         <div className="flex text-black text-sm">
                                             <p>{`Stores the OAuth credentials & details. You can fetch it with the `}</p>
                                             <a
-                                                href="https://docs.nango.dev/reference/connections-api"
+                                                href="https://docs.nango.dev/reference/overview"
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="text-text-blue hover:text-text-light-blue ml-1"
@@ -197,7 +197,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             </a>
                                             <p className="ml-1">{` and `}</p>
                                             <a
-                                                href="https://docs.nango.dev/reference/node-sdk"
+                                                href="https://docs.nango.dev/reference/overview"
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="text-text-blue hover:text-text-light-blue ml-1"

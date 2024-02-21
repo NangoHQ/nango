@@ -23,7 +23,7 @@ export default function NavBar() {
                         <p>Help</p>
                     </a>
                     <a
-                        href="https://docs.nango.dev/quickstart"
+                        href="https://docs.nango.dev"
                         target="_blank"
                         rel="noreferrer"
                         className="flex items-center h-8 rounded-md ml-4 pl-2 pr-3 text-sm hover:text-white text-gray-400"

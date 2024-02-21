@@ -430,7 +430,7 @@ export default function ProjectSettings() {
                                                 <div className="flex text-black text-sm">
                                                     {`Used by the`}
                                                     <a
-                                                        href="https://docs.nango.dev/sdks/frontend"
+                                                        href="https://docs.nango.dev/reference/sdks/frontend"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1"
@@ -486,7 +486,7 @@ export default function ProjectSettings() {
                                                 <div className="flex text-black text-sm">
                                                     {`Used by the `}
                                                     <a
-                                                        href="https://docs.nango.dev/sdks/cli"
+                                                        href="https://docs.nango.dev/reference/cli"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1"
@@ -495,7 +495,7 @@ export default function ProjectSettings() {
                                                     </a>
                                                     {`, `}
                                                     <a
-                                                        href="https://docs.nango.dev/sdks/node"
+                                                        href="https://docs.nango.dev/reference/sdks/node"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1 mr-1"
@@ -504,7 +504,7 @@ export default function ProjectSettings() {
                                                     </a>
                                                     {` and `}
                                                     <a
-                                                        href="https://docs.nango.dev/api-reference/authentication"
+                                                        href="https://docs.nango.dev/reference/api/authentication"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1"
@@ -586,7 +586,7 @@ export default function ProjectSettings() {
                                                     <div className="flex text-black text-sm">
                                                         {`To register with external OAuth apps (cf. `}
                                                         <a
-                                                            href="https://docs.nango.dev/guides/oauth#custom-callback-url"
+                                                            href="https://docs.nango.dev/integrate/guides/authorize-an-api#use-a-custom-callback-url"
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="text-text-blue ml-1"
@@ -663,7 +663,7 @@ export default function ProjectSettings() {
                                                 <div className="flex text-black text-sm">
                                                     {`Be notified when new data is available from Nango (cf. `}
                                                     <a
-                                                        href="https://docs.nango.dev/guides/webhooks"
+                                                        href="https://docs.nango.dev/integrate/guides/receive-webhooks-from-nango"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1"
@@ -780,7 +780,7 @@ export default function ProjectSettings() {
                                                         <div className="flex text-black text-sm">
                                                             {`To secure the Frontend SDK calls with`}
                                                             <a
-                                                                href="https://docs.nango.dev/guides/advanced-auth#securing-the-frontend-sdk-calls-with-hmac"
+                                                                href="https://docs.nango.dev/integrate/guides/authorize-an-api#secure-the-frontend-sdk"
                                                                 target="_blank"
                                                                 rel="noreferrer"
                                                                 className="text-text-blue ml-1"

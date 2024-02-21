@@ -140,9 +140,7 @@ class ProxyService {
                 environment_id: connection.environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `${Date.now()} The proxy is not supported for this provider ${provider}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
-            You can also use the baseUrlOverride to get started right away.
-            See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
+                content: `${Date.now()} The proxy is either not supported for the provider ${provider} or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).`
             });
 
             return { success: false, error: new NangoError('missing_base_api_url'), response: null, activityLogs };

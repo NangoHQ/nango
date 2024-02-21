@@ -5,7 +5,7 @@ export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
-export const syncDocs = 'https://docs.nango.dev/guides/sync';
+export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
 
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';

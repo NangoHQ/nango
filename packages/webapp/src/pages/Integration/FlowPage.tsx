@@ -295,7 +295,7 @@ export default function FlowPage() {
                     {source === 'Public' && (
                         <div className="my-1">
                             <Info size={18} padding="px-4 py-1.5">
-                                This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">(learn more)</a>.
+                                This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized <a href="https://docs.nango.dev/customize/guides/extend-an-integration-template" target="_blank" className="text-white underline" rel="noreferrer">(learn more)</a>.
                             </Info>
                         </div>
                     )}
