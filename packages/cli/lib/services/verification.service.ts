@@ -109,9 +109,9 @@ class VerificationService {
             console.log(chalk.blue(`nango.yaml is already at v2.`));
         }
         if (version === 'v1' && localConfig.integrations) {
-            exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error, stdout) => {
+            exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error) => {
                 if (error) {
-                    console.log(chalk.red(`There was an issue migrating your Nango yaml to v2.`));
+                    console.log(chalk.red(`There was an issue migrating your nango.yaml to v2.`));
                     console.error(error);
                     return;
                 }

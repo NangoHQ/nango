@@ -204,15 +204,11 @@ export class Nango {
     }
 
     public async importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
-        throw new Error(
-            'This method has been deprecated, please use the REST API to import a connection.'
-        );
+        throw new Error('This method has been deprecated, please use the REST API to import a connection.');
     }
 
     public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
-        throw new Error(
-            'This method has been deprecated, please use the REST API to create a connection.'
-        );
+        throw new Error('This method has been deprecated, please use the REST API to create a connection.');
     }
 
     /**

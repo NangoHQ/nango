@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import path from 'path';
 import promptly from 'promptly';
 import axios, { AxiosResponse } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
@@ -7,7 +6,7 @@ import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost }
 import configService from './config.service.js';
 import compileService from './compile.service.js';
 import verificationService from './verification.service.js';
-import { NANGO_INTEGRATIONS_LOCATION, printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
+import { printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
 import type { DeployOptions } from '../types.js';
 
 class DeployService {
