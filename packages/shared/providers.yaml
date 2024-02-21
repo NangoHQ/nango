@@ -166,6 +166,21 @@ atlassian:
     proxy:
         base_url: https://api.atlassian.com
     docs: https://docs.nango.dev/integrations/all/atlassian
+attio:
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.attio.com/authorize
+    token_url: https://app.attio.com/oauth/token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.attio.com
+    docs: https://docs.nango.dev/integrations/all/attio
 auth0:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
@@ -536,6 +551,24 @@ exact-online:
         grant_type: refresh_token
     token_expiration_buffer: 30
     docs: https://docs.nango.dev/integrations/all/exact-online
+exist:
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://exist.io/oauth2/authorize
+    token_url: https://exist.io/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://exist.io/
+        paginate:
+            type: link
+            link_path_in_response_body: next
+    docs: https://docs.nango.dev/integrations/all/exist
 factorial:
     categories:
         - hr
@@ -1967,6 +2000,24 @@ wave-accounting:
     proxy:
         base_url: https://gql.waveapps.com
     docs: https://docs.nango.dev/integrations/all/wave-accounting
+whoop:
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://api.prod.whoop.com/oauth/oauth2/auth
+    token_url: https://api.prod.whoop.com/oauth/oauth2/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.prod.whoop.com/
+        retry:
+            after: 'x-ratelimit-reset'
+        paginate:
+            type: cursor
+            offset_name_in_request: nextToken
+            offset_name_in_response: next_token
+            limit_name_in_request: limit
+    docs: https://docs.nango.dev/integrations/all/whoop
 wildix-pbx:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
