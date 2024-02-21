@@ -1,13 +1,9 @@
 import type { AuthModes, AppStoreCredentials, AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials, AuthOperation } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 
-export interface Metadata {
-    [key: string]: string | Record<string, any>;
-}
+export type Metadata = Record<string, string | Record<string, any>>;
 
-export interface ConnectionConfig {
-    [key: string]: any;
-}
+export type ConnectionConfig = Record<string, any>;
 
 export interface BaseConnection extends TimestampsAndDeleted {
     id?: number;

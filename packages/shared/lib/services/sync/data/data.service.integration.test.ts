@@ -96,7 +96,7 @@ describe('Data service integration tests', () => {
         });
 
         for (let i = 0; i < sortedRecords?.length; i++) {
-            // @ts-ignore
+            // @ts-expect-error
             expect(sortedRecords?.[i]?.id).toEqual(expectedRecords[i].id);
         }
 

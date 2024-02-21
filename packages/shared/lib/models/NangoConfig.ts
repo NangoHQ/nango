@@ -26,13 +26,7 @@ export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
     output?: string | string[];
 }
 
-export interface NangoIntegrationV1 {
-    // providerConfigKey
-    [key: string]: {
-        // flow name
-        [key: string]: NangoIntegrationDataV1;
-    };
-}
+export type NangoIntegrationV1 = Record<string, Record<string, NangoIntegrationDataV1>>;
 
 export interface NangoV2IntegrationContents {
     provider?: string;
@@ -41,25 +35,17 @@ export interface NangoV2IntegrationContents {
     'post-connection-scripts'?: string[];
 }
 
-export interface NangoV2Integration {
-    // providerConfigKey
-    [key: string]: NangoV2IntegrationContents;
-}
+export type NangoV2Integration = Record<string, NangoV2IntegrationContents>;
 
-export interface NangoModelV1 {
-    // modelName
-    [key: string]: {
-        // field name
-        [key: string]: string | Record<string, string>;
-    };
-}
+export type NangoModelV1 = Record<string, Record<string, string | Record<string, string>>>;
 
-export interface ModelSchema {
-    [key: string]: {
+export type ModelSchema = Record<
+    string,
+    {
         description?: string;
         type: string | Record<string, string>;
-    };
-}
+    }
+>;
 
 interface Extends {
     __extends: string;
@@ -70,9 +56,7 @@ export interface NangoModelV2Contents {
     schema: ModelSchema | Extends;
 }
 
-export interface NangoModelV2 {
-    [key: string]: NangoModelV2Contents;
-}
+export type NangoModelV2 = Record<string, NangoModelV2Contents>;
 
 export interface NangoConfigV1 {
     integrations: NangoIntegrationV1;

@@ -16,7 +16,7 @@ class AccountController {
                 account.is_admin = true;
             }
 
-            delete account['uuid'];
+            delete account.uuid;
 
             const users = await userService.getUsersByAccountId(account.id);
             const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);

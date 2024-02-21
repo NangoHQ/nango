@@ -205,7 +205,7 @@ class ConnectionController {
                 return;
             }
 
-            const uniqueKeyToProvider: { [key: string]: string } = {};
+            const uniqueKeyToProvider: Record<string, string> = {};
             const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
 
             providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
@@ -264,7 +264,7 @@ class ConnectionController {
 
                 if (connection.credentials.raw && connection.credentials.raw['refresh_token']) {
                     const rawCreds = { ...connection.credentials.raw }; // Properties from 'raw' are not mutable so we need to create a new object.
-                    delete rawCreds['refresh_token'];
+                    delete rawCreds.refresh_token;
                     connection.credentials.raw = rawCreds;
                 }
             }
@@ -299,7 +299,7 @@ class ConnectionController {
                 return;
             }
 
-            const uniqueKeyToProvider: { [key: string]: string } = {};
+            const uniqueKeyToProvider: Record<string, string> = {};
             const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
 
             providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));

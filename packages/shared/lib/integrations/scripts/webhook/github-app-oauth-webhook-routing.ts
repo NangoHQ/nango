@@ -65,8 +65,8 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
         const template = configService.getTemplate(integration?.provider as string);
 
         const activityLogId = connection.connection_config['pendingLog'];
-        delete connection.connection_config['pendingLog'];
-        delete connection.connection_config['pending'];
+        delete connection.connection_config.pendingLog;
+        delete connection.connection_config.pending;
 
         const connectionConfig = {
             ...connection.connection_config,

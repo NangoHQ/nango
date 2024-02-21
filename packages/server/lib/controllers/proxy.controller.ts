@@ -29,9 +29,7 @@ import {
     configService
 } from '@nangohq/shared';
 
-interface ForwardedHeaders {
-    [key: string]: string;
-}
+type ForwardedHeaders = Record<string, string>;
 
 class ProxyController {
     /**
