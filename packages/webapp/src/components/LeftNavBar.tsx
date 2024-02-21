@@ -108,7 +108,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             newPath = `/${newEnv}/connections`;
         }
 
-        window.location.href = newPath;
+        window.history.pushState({}, '', newPath);
     };
 
     return (
