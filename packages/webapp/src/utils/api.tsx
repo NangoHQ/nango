@@ -2,8 +2,13 @@ import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
 
+export async function fetcher(...args: Parameters<typeof fetch>) {
+  const response = await fetch(...args);
+  return response.json();
+}
 
-function requestErrorToast() {
+
+export function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
 

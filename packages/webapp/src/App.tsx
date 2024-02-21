@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from "react";
+import { SWRConfig } from 'swr'
 import {
     Routes,
     Route,
@@ -10,10 +11,11 @@ import {
 } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import * as Sentry from "@sentry/react";
-
+import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud, isEnterprise } from './utils/utils';
+import { fetcher } from './utils/api';
 import { useStore } from './store';
 
 const Signup = lazy(() => import('./pages/Signup'));
@@ -68,6 +70,7 @@ const VALID_PATHS = [
 const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
     const env = useStore(state => state.cookieValue);
+    const signout = useSignout();
 
     const correctPage = (): string => {
         const url = new URL(window.location.href);
@@ -103,6 +106,11 @@ const App = () => {
             }}
         >
             <Suspense>
+                <SWRConfig value={{ fetcher, onError: (error) => {
+                    if (error.status === 401) {
+                        return signout();
+                    }
+                }}}>
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
                     <Route path="/dev/getting-started" element={<PrivateRoute />}>
@@ -155,6 +163,7 @@ const App = () => {
                     )}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </SentryRoutes>
+                </SWRConfig>
             </Suspense>
             <ToastContainer />
         </MantineProvider>

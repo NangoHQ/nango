@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import useSWR from 'swr'
+import { Loading } from '@geist-ui/core';
 import { Link } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline'
 
-import { useGetIntegrationListAPI } from '../../utils/api';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { requestErrorToast } from '../../utils/api';
 
 import { useStore } from '../../store';
 
@@ -20,44 +21,41 @@ interface Integration {
 export default function IntegrationList() {
     const navigate = useNavigate();
 
-    const [loaded, setLoaded] = useState(false);
-    const [integrations, setIntegrations] = useState<Integration[] | null>(null);
-    const getIntegrationListAPI = useGetIntegrationListAPI();
-
     const env = useStore(state => state.cookieValue);
 
-    useEffect(() => {
-        setLoaded(false);
-    }, [env]);
+    const { data, error } = useSWR<{integrations: Integration[]}>(`/api/v1/integration?env=${env}`)
 
-    useEffect(() => {
-        const getIntegrations = async () => {
-            const res = await getIntegrationListAPI();
+    if (error) {
+        requestErrorToast();
+        return (
+            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <Loading spaceRatio={2.5} className="-top-36" />
+            </DashboardLayout>
+        );
+    }
 
-            if (res?.status === 200) {
-                const data = await res.json();
-                setIntegrations(data['integrations']);
-            }
-        };
+    if (!data) {
+        return (
+            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <Loading spaceRatio={2.5} className="-top-36" />
+            </DashboardLayout>
+        );
+    }
 
-        if (!loaded) {
-            setLoaded(true);
-            getIntegrations();
-        }
-    }, [getIntegrationListAPI, setIntegrations, loaded]);
+    const { integrations } = data;
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Integrations</h2>
-                {integrations && integrations.length > 0 && (
+                {integrations.length > 0 && (
                     <Link to={`/${env}/integration/create`} className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                         <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                         Configure New Integration
                     </Link>
                 )}
             </div>
-            {integrations && integrations.length > 0 && (
+            {integrations?.length > 0 && (
                 <>
                     <div className="h-fit rounded-md text-white text-sm">
                         <table className="w-full">
@@ -69,7 +67,7 @@ export default function IntegrationList() {
                                         <div className="">Active Scripts</div>
                                     </td>
                                 </tr>
-                                {integrations.map(({ uniqueKey, provider, connectionCount, scripts }) => (
+                                {integrations?.map(({ uniqueKey, provider, connectionCount, scripts }) => (
                                     <tr key={`tr-${uniqueKey}`}>
                                         <td
                                             className={`flex ${
@@ -99,7 +97,7 @@ export default function IntegrationList() {
                     </div>
                 </>
             )}
-            {integrations && integrations.length === 0 && (
+            {integrations?.length === 0 && (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-2xl text-center w-full">Configure a new integration</h2>
                     <div className="my-2 text-gray-400">Before exchanging data with an external API, you need to configure it on Nango.</div>
