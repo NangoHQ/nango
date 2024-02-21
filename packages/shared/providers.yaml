@@ -484,6 +484,13 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+entrata:
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.entrata.com
+    docs: https://docs.nango.dev/integrations/all/entrata
 epic-games:
     categories:
         - gaming

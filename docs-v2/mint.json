@@ -254,8 +254,8 @@
                         "integrations/integration-templates/zendesk",
                         "integrations/integration-templates/zoho-crm"
                     ]
-                }  
-            ]  
+                }
+            ]
         },
         {
             "group": "All Pre-Configured APIs",
@@ -294,6 +294,7 @@
                         "integrations/all/discord",
                         "integrations/all/dropbox",
                         "integrations/all/docusign",
+                        "integrations/all/entrata",
                         "integrations/all/epic-games",
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
@@ -492,7 +493,7 @@
                         "reference/sdks/rust",
                         "reference/sdks/php"
                     ],
-                    "icon": "cubes" 
+                    "icon": "cubes"
                 },
                 "reference/sdks/frontend",
                 "reference/webhooks"
