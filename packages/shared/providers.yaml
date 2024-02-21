@@ -411,6 +411,22 @@ exact-online:
     refresh_params:
         grant_type: refresh_token
     token_expiration_buffer: 30
+exist:
+    auth_mode: OAUTH2
+    authorization_url: https://exist.io/oauth2/authorize
+    token_url: https://exist.io/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://exist.io/
+        paginate:
+            type: link
+            link_path_in_response_body: next
+    docs: https://developer.exist.io/
 factorial:
     auth_mode: OAUTH2
     authorization_url: https://api.factorialhr.com/oauth/authorize

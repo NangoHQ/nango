@@ -227,6 +227,7 @@
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
                         "integrations/all/exact-online",
+                        "integrations/all/exist",
                         "integrations/all/facebook",
                         "integrations/all/factorial",
                         "integrations/all/figjam",
