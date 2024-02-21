@@ -79,7 +79,7 @@
             ]
         },
         {
-            "group": "Use Nango Integrations",
+            "group": "Use Integrations",
             "pages": [
                 "integrate/overview",
                 {
@@ -103,7 +103,7 @@
             ]
         },
         {
-            "group": "Build Nango Integrations",
+            "group": "Build Integrations",
             "pages": [
                 "customize/overview",
                 {
@@ -417,7 +417,12 @@
         {
             "group": "Technical Reference",
             "pages": [
-                "reference/overview",
+                "reference/overview"
+            ]
+        },
+        {
+            "group": "Use Integrations",
+            "pages": [
                 {
                     "group": "HTTP API",
                     "icon": "cloud",
@@ -489,12 +494,16 @@
                     "icon": "cubes" 
                 },
                 "reference/sdks/frontend",
+                "reference/webhooks"
+            ]
+        },
+        {
+            "group": "Build Integrations",
+            "pages": [
                 "reference/cli",
                 "reference/api-configuration",
                 "reference/integration-configuration",
-                "reference/scripts",
-                "reference/webhooks",
-                "reference/ui"
+                "reference/scripts"
             ]
         }
     ],
