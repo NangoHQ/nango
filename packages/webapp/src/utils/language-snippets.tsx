@@ -60,6 +60,7 @@ export const curlSnippet = (baseUrl: string, endpoint: string | NangoSyncEndpoin
     curl --request ${curlMethod} \\
     --url ${baseUrl}/v1${endpoint} \\
     --header 'Authorization: Bearer ${secretKey}' \\
+    --header 'Content-Type: application/json' \\
     --header 'Connection-Id: ${connectionId}' \\
     --header 'Provider-Config-Key: ${providerConfigKey}'
     ${formattedInput ? `--data '${formattedInput}'` : ''}

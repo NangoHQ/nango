@@ -84,7 +84,6 @@ class DeployService {
     public async prep(options: DeployOptions, environment: string, debug = false) {
         const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
         await verificationService.necessaryFilesExist(autoConfirm);
-        await verificationService.checkForMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
 
         await parseSecretKey(environment, debug);
 
@@ -277,6 +276,10 @@ class DeployService {
 
                 if (debug) {
                     printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
+                }
+
+                if (flow?.input?.fields) {
+                    model_schema.push(flow.input);
                 }
 
                 const body = {
