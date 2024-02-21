@@ -10,14 +10,17 @@ interface State {
     baseUrl: string;
     envs: Env[];
     setCookieValue: (value: string) => void;
+    email: string;
     setEnvs: (envs: Env[]) => void;
     setBaseUrl: (value: string) => void;
+    setEmail: (value: string) => void;
 }
 
 export const useStore = create<State>((set: SetState<State>, get: GetState<State>) => ({
     cookieValue: Cookies.get('env') || 'dev',
     envs: [{ name: 'dev' }, { name: 'prod' }],
     baseUrl: 'https://api.nango.dev',
+    email: '',
 
     setCookieValue: (value) => {
         Cookies.set('env', value);
@@ -38,5 +41,9 @@ export const useStore = create<State>((set: SetState<State>, get: GetState<State
 
     setBaseUrl: (value) => {
         set({ baseUrl: value });
+    },
+
+    setEmail: (value) => {
+        set({ email: value });
     }
 }));

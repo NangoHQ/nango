@@ -29,7 +29,7 @@ export default function IntegrationList() {
         requestErrorToast();
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-            <Loading spaceRatio={2.5} className="-top-36" />
+                <Loading spaceRatio={2.5} className="-top-36" />
             </DashboardLayout>
         );
     }

@@ -10,12 +10,13 @@ export interface FlowProps {
     flow: Flow;
     provider: string;
     providerConfigKey: string;
-    setLoaded: (loaded: boolean) => void;
+    reload?: () => void;
+    setLoaded?: (loaded: boolean) => void;
     rawName?: string;
     connections: Connection[];
 }
 
-export default function EnableDisableSync({ flow, provider, providerConfigKey, setLoaded, rawName, connections }: FlowProps) {
+export default function EnableDisableSync({ flow, provider, providerConfigKey, reload, setLoaded, rawName, connections }: FlowProps) {
     const { setVisible, bindings } = useModal();
     const createFlow = useCreateFlow();
     const connectionIds = connections.map(connection => connection.id);
@@ -66,7 +67,12 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, s
         setModalShowSpinner(true);
         const res = await createFlow([flowPayload]);
         if (res?.status === 201) {
-            setLoaded(false);
+            if (reload) {
+                reload();
+            }
+            if (setLoaded) {
+                setLoaded(false);
+            }
         } else {
             const payload = await res?.json();
             toast.error(payload.error, {
@@ -112,7 +118,12 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, s
         });
 
         if (res.status === 204) {
-            setLoaded(false);
+            if (reload) {
+                reload();
+            }
+            if (setLoaded) {
+                setLoaded(false);
+            }
         } else {
             toast.error('Something went wrong', {
                 position: toast.POSITION.BOTTOM_CENTER

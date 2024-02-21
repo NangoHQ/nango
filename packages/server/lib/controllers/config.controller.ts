@@ -1,6 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 import {
+    flowService,
+    getConfigWithEndpointsByProviderConfigKey,
+    StandardNangoConfig,
     AuthModes,
     errorManager,
     NangoError,
@@ -262,6 +265,7 @@ class ConfigController {
 
             const providerConfigKey = req.params['providerConfigKey'] as string;
             const includeCreds = req.query['include_creds'] === 'true';
+            const includeFlows = req.query['include_flows'] === 'true';
 
             if (providerConfigKey == null) {
                 errorManager.errRes(res, 'missing_provider_config');
@@ -335,6 +339,31 @@ class ConfigController {
                       webhook_url: webhookUrl
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
+
+            if (includeFlows) {
+                const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
+                const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === config.provider);
+
+                const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey as string);
+                const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
+
+                if (availableFlows && enabledFlows && unEnabledFlows) {
+                    const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
+
+                    const { syncs, actions } = unEnabledFlows;
+
+                    const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
+                    const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
+
+                    unEnabledFlows.syncs = filteredSyncs;
+                    unEnabledFlows.actions = filteredActions;
+                }
+
+                const flows = { unEnabledFlows, enabledFlows };
+                res.status(200).send({ config: configRes, flows });
+
+                return;
+            }
 
             res.status(200).send({ config: configRes });
         } catch (err) {

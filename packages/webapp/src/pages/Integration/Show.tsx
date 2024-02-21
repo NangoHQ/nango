@@ -2,15 +2,10 @@ import { useParams } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
 import { Loading } from '@geist-ui/core';
 import { useState, useEffect } from 'react';
+import useSWR from 'swr'
 
-import {
-    useGetProjectInfoAPI,
-    useGetIntegrationEndpointsAPI,
-    useGetIntegrationDetailsAPI
-} from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { defaultCallback } from '../../utils/utils';
 import APIReference from './APIReference';
 import Button from '../../components/ui/button/Button';
 import { BuildingOfficeIcon, BookOpenIcon } from '@heroicons/react/24/outline';
@@ -19,6 +14,7 @@ import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
 import { IntegrationConfig, Flow, Account } from '../../types';
 import { useStore } from '../../store';
+import { requestErrorToast } from '../../utils/api';
 
 export enum Tabs {
     API,
@@ -40,16 +36,13 @@ export interface EndpointResponse {
 }
 
 export default function ShowIntegration() {
-    const [loaded, setLoaded] = useState(false);
-    const [accountLoaded, setAccountLoaded] = useState(false);
-    const [endpoints, setEndpoints] = useState<EndpointResponse>();
-    const [integration, setIntegration] = useState<IntegrationConfig | null>(null);
     const { providerConfigKey } = useParams();
+
+    const [loaded, setLoaded] = useState(true);
+    const { data, error } = useSWR<{config: IntegrationConfig, flows: EndpointResponse}>(`/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true&loaded=${loaded}`);
+    const { data: accountData, error: accountError } = useSWR<{account: Account}>(`/api/v1/environment`);
+
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
-    const [account, setAccount] = useState<Account>();
-    const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
-    const getEndpoints = useGetIntegrationEndpointsAPI();
-    const getProjectInfoAPI = useGetProjectInfoAPI()
     const navigate = useNavigate();
     const location = useLocation();
     const env = useStore(state => state.cookieValue);
@@ -66,53 +59,23 @@ export default function ShowIntegration() {
         }
     }, [location]);
 
-    useEffect(() => {
-        const getProviders = async () => {
-            if (providerConfigKey) {
-                let res = await getIntegrationDetailsAPI(providerConfigKey);
-                if (res?.status === 200) {
-                    const data = await res.json();
-                    const loadedIntegration = data['config'];
-                    setIntegration(data['config']);
-                    const endpointsRes = await getEndpoints(loadedIntegration.unique_key, loadedIntegration.provider);
-                    if (endpointsRes?.status === 200) {
-                        const endpointData = await endpointsRes.json();
-                        setEndpoints(endpointData);
-                    }
-                }
-            }
-        };
+    if (error || accountError) {
+        requestErrorToast();
+        return (
+            <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+                <Loading spaceRatio={2.5} className="-top-36" />
+            </DashboardLayout>
+        );
+    }
 
-        if (!loaded) {
-            setLoaded(true);
-            getProviders();
-        }
-    }, [providerConfigKey, getIntegrationDetailsAPI, loaded, setLoaded, getEndpoints]);
-
-    useEffect(() => {
-        const getAccount = async () => {
-            let res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setAccount({
-                    ...account,
-                    callback_url: account.callback_url || defaultCallback()
-                });
-            }
-        };
-
-        if (!accountLoaded) {
-            setAccountLoaded(true);
-            getAccount();
-        }
-    }, [accountLoaded, setAccountLoaded, getProjectInfoAPI, setAccount]);
-
-    if (!loaded || !accountLoaded) return (
+    if (!data || !accountData) return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             <Loading spaceRatio={2.5} className="-top-36" />
         </DashboardLayout>
     );
+
+    const { config: integration, flows: endpoints } = data;
+    const { account } = accountData;
 
     const showDocs = () => {
         window.open(integration?.docs, '_blank');
@@ -164,7 +127,7 @@ export default function ShowIntegration() {
                         <APIReference integration={integration} setActiveTab={setActiveTab} endpoints={endpoints} account={account} />
                     )}
                     {activeTab === Tabs.Scripts && integration && endpoints && (
-                        <Scripts integration={integration} endpoints={endpoints} setLoaded={setLoaded} />
+                        <Scripts integration={integration} endpoints={endpoints} reload={() => setLoaded(!loaded)} />
                     )}
                     {activeTab === Tabs.Auth && integration && account && (
                         <AuthSettings integration={integration} account={account} />

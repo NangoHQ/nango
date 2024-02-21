@@ -37,7 +37,6 @@ const navHoverBg = 'hover:bg-hover-gray';
 
 export default function LeftNavBar(props: LeftNavBarProps) {
     const [version, setVersion] = useState<string>('');
-    const [email, setEmail] = useState<string>('');
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
 
@@ -47,6 +46,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const [envs, setEnvs] = useState<{ name: string; }[]>(storedEnvs);
     const setStoredEnvs = useStore(state => state.setEnvs);
     const setBaseUrl = useStore(state => state.setBaseUrl);
+    const setEmail = useStore(state => state.setEmail);
 
     useEffect(() => {
         fetch('/api/v1/meta')
@@ -63,8 +63,10 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     setStoredEnvs(data.environments);
                     setBaseUrl(data.baseUrl);
                 }
+                if (data.email !== email) {
+                    setEmail(data.email);
+                }
                 setVersion(data.version);
-                setEmail(data.email);
             })
             .catch(err => {
                 console.error(err);
@@ -87,8 +89,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     }, [showUserSettings]);
 
     const env = useStore(state => state.cookieValue);
-
     const setCookieValue = useStore(state => state.setCookieValue);
+    const email = useStore(state => state.email);
 
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
@@ -101,11 +103,20 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
         let newPath = `/${pathSegments.join('/')}`;
 
+        let requiresRedirect = false;
+
         // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
         if (pathSegments[1] === 'integration' && pathSegments.length > 2) {
             newPath = `/${newEnv}/integrations`;
+            requiresRedirect = true;
         } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
             newPath = `/${newEnv}/connections`;
+            requiresRedirect = true;
+        }
+
+        if (requiresRedirect) {
+            window.location.href = newPath;
+            return;
         }
 
         window.history.pushState({}, '', newPath);

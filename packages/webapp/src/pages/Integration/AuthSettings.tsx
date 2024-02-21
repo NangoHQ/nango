@@ -14,6 +14,7 @@ import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
+import { defaultCallback } from '../../utils/utils';
 
 import { useStore } from '../../store';
 
@@ -258,8 +259,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             </Tooltip>
                         </div>
                         <span className="flex items-center">
-                            <span className="text-white mr-3">{account.callback_url}</span>
-                            <CopyButton text={account.callback_url} dark classNames="" />
+                            <span className="text-white mr-3">{account.callback_url || defaultCallback()}</span>
+                            <CopyButton text={account.callback_url || defaultCallback()} dark classNames="" />
                         </span>
                     </div>
                 </div>
