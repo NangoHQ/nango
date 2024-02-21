@@ -37,6 +37,6 @@ API configuration: [`github`](https://nango.dev/providers.yaml), [`github-app`](
     - The Setup URL (displayed on your Nango integration page) needs to be added to your GitHub App configuration (not to be confused with the Callback URL that can stay empty)
 -   There are certain API methods that only work with an OAuth App that will not work with an App. Please check the Github documentation and look for a "Works with Github Apps" header under the endpoint.
 -   The `github-app-oauth` is a combination of a Github App and OAuth and should be used when a Github App would need approval to be installed into an organization.
--   Nango supports initiating a connection with a GitHub App using the [Frontend SDK](https://docs.nango.dev/sdks/frontend#collecting-and-storing-end-user-credentials), but not directly from the [GitHub Marketplace](https://github.com/marketplace). Therefore, you should encourage users to install your GitHub App from your product, rather than from the GitHub Marketplace directly. This is a limitation we plan to fix in the future.
+-   Nango supports initiating a connection with a GitHub App using the frontend SDK, but not directly from the [GitHub Marketplace](https://github.com/marketplace). Therefore, you should encourage users to install your GitHub App from your product, rather than from the GitHub Marketplace directly. This is a limitation we plan to fix in the future.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/github.mdx)</Note>

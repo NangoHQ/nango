@@ -370,7 +370,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
             )}
             {(integration?.auth_mode === AuthModes.Basic || integration?.auth_mode === AuthModes.ApiKey) && (
                 <Info size={20} color="blue">
-                    The "{integration?.provider}" integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev/guides/oauth#connection-configuration" className="text-white underline hover:text-text-light-blue" rel="noreferrer" target="_blank">docs</a>).
+                    The "{integration?.provider}" integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev/integrate/guides/authorize-an-api" className="text-white underline hover:text-text-light-blue" rel="noreferrer" target="_blank">docs</a>).
                 </Info>
             )}
             {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && (

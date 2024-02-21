@@ -79,7 +79,7 @@
             ]
         },
         {
-            "group": "Integrate Nango",
+            "group": "Use Integrations",
             "pages": [
                 "integrate/overview",
                 {
@@ -103,7 +103,7 @@
             ]
         },
         {
-            "group": "Customize Nango",
+            "group": "Build Integrations",
             "pages": [
                 "customize/overview",
                 {
@@ -126,7 +126,8 @@
                                 "customize/guides/advanced/use-environment-variables",
                                 "customize/guides/advanced/unify-apis-and-models",
                                 "customize/guides/advanced/handle-errors-in-scripts",
-                                "customize/guides/advanced/handle-large-datasets"
+                                "customize/guides/advanced/handle-large-datasets",
+                                "customize/guides/advanced/migrate-integration-configuration"
                             ]
                         }
                     ]
@@ -224,10 +225,42 @@
                     ]
                 },
                 {
-                    "group": "All APIs",
-                    "icon": "bars",
+                    "group": "Integration Templates",
+                    "icon": "sheet-plastic",
                     "pages": [
-                        "integrations/all/accelo",
+                        "integrations/integration-templates/asana",
+                        "integrations/integration-templates/ashby",
+                        "integrations/integration-templates/bamboohr",
+                        "integrations/integration-templates/confluence",
+                        "integrations/integration-templates/clari-copilot",
+                        "integrations/integration-templates/github",
+                        "integrations/integration-templates/gmail",
+                        "integrations/integration-templates/google-workspace",
+                        "integrations/integration-templates/greenhouse",
+                        "integrations/integration-templates/hackerrank-work",
+                        "integrations/integration-templates/hibob",
+                        "integrations/integration-templates/hubspot",
+                        "integrations/integration-templates/intercom",
+                        "integrations/integration-templates/jira",
+                        "integrations/integration-templates/lever",
+                        "integrations/integration-templates/linear",
+                        "integrations/integration-templates/microsoft-active-directory",
+                        "integrations/integration-templates/next-cloud",
+                        "integrations/integration-templates/notion",
+                        "integrations/integration-templates/pipedrive",
+                        "integrations/integration-templates/salesforce",
+                        "integrations/integration-templates/slack",
+                        "integrations/integration-templates/workable",
+                        "integrations/integration-templates/zendesk",
+                        "integrations/integration-templates/zoho-crm"
+                    ]
+                }  
+            ]  
+        },
+        {
+            "group": "All Pre-Configured APIs",
+            "pages": [
+                "integrations/all/accelo",
                         "integrations/all/adobe",
                         "integrations/all/affinity",
                         "integrations/all/aircall",
@@ -380,45 +413,17 @@
                         "integrations/all/zoho-inventory",
                         "integrations/all/zoho-invoice",
                         "integrations/all/zoom"
-                    ]
-                },
-                {
-                    "group": "Integration Templates",
-                    "icon": "sheet-plastic",
-                    "pages": [
-                        "integrations/integration-templates/asana",
-                        "integrations/integration-templates/ashby",
-                        "integrations/integration-templates/bamboohr",
-                        "integrations/integration-templates/confluence",
-                        "integrations/integration-templates/clari-copilot",
-                        "integrations/integration-templates/github",
-                        "integrations/integration-templates/gmail",
-                        "integrations/integration-templates/google-workspace",
-                        "integrations/integration-templates/greenhouse",
-                        "integrations/integration-templates/hackerrank-work",
-                        "integrations/integration-templates/hibob",
-                        "integrations/integration-templates/hubspot",
-                        "integrations/integration-templates/intercom",
-                        "integrations/integration-templates/jira",
-                        "integrations/integration-templates/lever",
-                        "integrations/integration-templates/linear",
-                        "integrations/integration-templates/microsoft-active-directory",
-                        "integrations/integration-templates/next-cloud",
-                        "integrations/integration-templates/notion",
-                        "integrations/integration-templates/pipedrive",
-                        "integrations/integration-templates/salesforce",
-                        "integrations/integration-templates/slack",
-                        "integrations/integration-templates/workable",
-                        "integrations/integration-templates/zendesk",
-                        "integrations/integration-templates/zoho-crm"
-                    ]
-                }
             ]
         },
         {
             "group": "Technical Reference",
             "pages": [
-                "reference/overview",
+                "reference/overview"
+            ]
+        },
+        {
+            "group": "Use Integrations",
+            "pages": [
                 {
                     "group": "HTTP API",
                     "icon": "cloud",
@@ -490,12 +495,16 @@
                     "icon": "cubes" 
                 },
                 "reference/sdks/frontend",
+                "reference/webhooks"
+            ]
+        },
+        {
+            "group": "Build Integrations",
+            "pages": [
                 "reference/cli",
                 "reference/api-configuration",
                 "reference/integration-configuration",
-                "reference/scripts",
-                "reference/webhooks",
-                "reference/ui"
+                "reference/scripts"
             ]
         }
     ],

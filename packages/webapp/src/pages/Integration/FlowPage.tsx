@@ -295,14 +295,14 @@ export default function FlowPage() {
                     {source === 'Public' && (
                         <div className="my-1">
                             <Info size={18} padding="px-4 py-1.5">
-                                This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">(learn more)</a>.
+                                This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized <a href="https://docs.nango.dev/customize/guides/extend-an-integration-template" target="_blank" className="text-white underline" rel="noreferrer">(learn more)</a>.
                             </Info>
                         </div>
                     )}
                     {flow?.nango_yaml_version === 'v1' && (
                         <div className="my-5">
                             <Info size={18} padding="px-4 py-1.5">
-                                This {flow?.type} is using the legacy nango.yaml schema. <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">Migrate to the new schema</a> to unlock capabilities, including auto-generated API documentation.
+                                This {flow?.type} is using the legacy nango.yaml schema. <a href="https://docs.nango.dev/customize/guides/advanced/migrate-integration-configuration" target="_blank" className="text-white underline" rel="noreferrer">Migrate to the new schema</a> to unlock capabilities, including auto-generated API documentation.
                             </Info>
                         </div>
                     )}
