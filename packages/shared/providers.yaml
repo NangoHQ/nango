@@ -1555,6 +1555,13 @@ whoop:
         response_type: code
     proxy:
         base_url: https://api.prod.whoop.com/
+        retry:
+            after: 'x-ratelimit-reset'
+        paginate:
+            type: cursor
+            offset_name_in_request: nextToken
+            offset_name_in_response: next_token
+            limit_name_in_request: limit
     docs: https://developer.whoop.com/api
 workable:
     auth_mode: API_KEY
