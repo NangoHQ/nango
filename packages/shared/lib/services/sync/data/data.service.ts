@@ -225,23 +225,17 @@ export async function removeDuplicateKey(
  * in the database and return the keys that are not in the database
  *
  */
-export async function getAddedKeys(
-    response: DataRecord[],
-    dbTable: string,
-    uniqueKey: string,
-    nangoConnectionId: number,
-    model: string
-): Promise<Array<string>> {
-    const keys: Array<string> = response.map((data: DataRecord) => String(data[uniqueKey]));
+export async function getAddedKeys(response: DataRecord[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<string[]> {
+    const keys: string[] = response.map((data: DataRecord) => String(data[uniqueKey]));
 
-    const knownKeys: Array<string> = (await schema()
+    const knownKeys: string[] = (await schema()
         .from(dbTable)
         .where('nango_connection_id', nangoConnectionId)
         .where('model', model)
         .whereIn('external_id', keys)
-        .pluck('external_id')) as unknown as Array<string>;
+        .pluck('external_id')) as unknown as string[];
 
-    const unknownKeys: Array<string> = keys?.filter((data: string) => !knownKeys.includes(data));
+    const unknownKeys: string[] = keys?.filter((data: string) => !knownKeys.includes(data));
 
     return unknownKeys;
 }
@@ -253,14 +247,8 @@ export async function getAddedKeys(
  * Compare using the data_hash key
  *
  */
-export async function getUpdatedKeys(
-    response: DataRecord[],
-    dbTable: string,
-    uniqueKey: string,
-    nangoConnectionId: number,
-    model: string
-): Promise<Array<string>> {
-    const keys: Array<string> = response.map((data: DataRecord) => String(data[uniqueKey]));
+export async function getUpdatedKeys(response: DataRecord[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<string[]> {
+    const keys: string[] = response.map((data: DataRecord) => String(data[uniqueKey]));
     const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[uniqueKey]), data['data_hash'] as string]);
 
     const rowsToUpdate = await schema()

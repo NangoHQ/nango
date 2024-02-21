@@ -4,14 +4,12 @@ export interface InitialSyncArgs {
     syncId: string;
     syncJobId: number;
     syncName: string;
-    activityLogId: number;
     nangoConnection: NangoConnection;
     debug?: boolean;
 }
 
 export interface ContinuousSyncArgs {
     syncId: string;
-    activityLogId: number;
     syncName: string;
     syncData: NangoIntegrationData;
     nangoConnection: NangoConnection;

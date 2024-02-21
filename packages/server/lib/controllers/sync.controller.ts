@@ -242,22 +242,16 @@ class SyncController {
 
     public async trigger(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs: syncNames } = req.body;
-            let { provider_config_key, connection_id } = req.body;
+            const { syncs: syncNames, full_resync } = req.body;
 
-            if (!provider_config_key) {
-                provider_config_key = req.get('Provider-Config-Key') as string;
-            }
-
-            if (!connection_id) {
-                connection_id = req.get('Connection-Id') as string;
-            }
-
+            const provider_config_key: string | undefined = req.body.provider_config_key || req.get('Provider-Config-Key');
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
 
                 return;
             }
+
+            const connection_id: string | undefined = req.body.connection_id || req.get('Connection-Id');
 
             if (typeof syncNames === 'string') {
                 res.status(400).send({ message: 'Syncs must be an array' });
@@ -271,13 +265,18 @@ class SyncController {
                 return;
             }
 
+            if (full_resync && typeof full_resync !== 'boolean') {
+                res.status(400).send({ message: 'full_resync must be a boolean' });
+                return;
+            }
+
             const environmentId = getEnvironmentId(res);
 
             const { success, error } = await syncOrchestrator.runSyncCommand(
                 environmentId,
-                provider_config_key as string,
+                provider_config_key,
                 syncNames as string[],
-                SyncCommand.RUN,
+                full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
                 connection_id
             );
 
@@ -626,6 +625,9 @@ class SyncController {
                     break;
                 case SyncCommand.RUN:
                     event = AnalyticsTypes.SYNC_RUN;
+                    break;
+                case SyncCommand.CANCEL:
+                    event = AnalyticsTypes.SYNC_CANCEL;
                     break;
             }
 
