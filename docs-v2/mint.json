@@ -126,7 +126,8 @@
                                 "customize/guides/advanced/use-environment-variables",
                                 "customize/guides/advanced/unify-apis-and-models",
                                 "customize/guides/advanced/handle-errors-in-scripts",
-                                "customize/guides/advanced/handle-large-datasets"
+                                "customize/guides/advanced/handle-large-datasets",
+                                "customize/guides/advanced/migrate-integration-configuration"
                             ]
                         }
                     ]

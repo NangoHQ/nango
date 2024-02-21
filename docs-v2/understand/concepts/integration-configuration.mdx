@@ -5,5 +5,29 @@ description: 'Learn more about integration configuration.'
 ---
 
 <Info>
-The docs recently underwent a makeover, leaving this page empty. We are working hard to fill in all the missing pages within the next two weeks. Meanwhile, ask any questions on the [community](https://nango.dev/slack).
+The docs recently underwent a makeover, leaving this page incomplete. We are working hard to fill in all the missing pages within the next two weeks. Meanwhile, ask any questions on the [community](https://nango.dev/slack).
 </Info>
+
+# The new `nango.yaml` schema
+
+In February 2024, Nango introduced a new schema for the integration configuration (`nango.yaml`). 
+
+This schema has the following benefits: 
+- Ability to define custom endpoints for syncs & actions
+    - Custom endpoints can be unified across multiple APIs
+- Explicitly specify integration specs such as:
+    - necessary scopes
+    - integration description
+    - necessary inputs (parameters for actions, metadata for syncs)
+    - outputs (responses for actions, models for syncs)
+    - external webhook subscriptions
+
+Nango remains backward compatible with the old schema. But the old schema prevents benefitting from: 
+- generated API/SDK specs for sync & action endpoints
+- external webhooks
+- post-connection scripts
+- some improvements to the Nango UI
+
+<Tip>
+Migrating to the new `nango.yaml` schema is fast & easy following this [step-by-step guide](/customize/guides/advanced/migrate-integration-configuration).
+</Tip>

@@ -302,7 +302,7 @@ export default function FlowPage() {
                     {flow?.nango_yaml_version === 'v1' && (
                         <div className="my-5">
                             <Info size={18} padding="px-4 py-1.5">
-                                This {flow?.type} is using the legacy nango.yaml schema. <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">Migrate to the new schema</a> to unlock capabilities, including auto-generated API documentation.
+                                This {flow?.type} is using the legacy nango.yaml schema. <a href="https://docs.nango.dev/customize/guides/advanced/migrate-integration-configuration" target="_blank" className="text-white underline" rel="noreferrer">Migrate to the new schema</a> to unlock capabilities, including auto-generated API documentation.
                             </Info>
                         </div>
                     )}
