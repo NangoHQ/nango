@@ -1,18 +1,20 @@
 import { Fragment } from 'react';
-import { Tabs, EndpointResponse } from './Show';
+import { Tabs, SubTabs, EndpointResponse } from './Show';
 import EndpointRow from './components/EndpointRow';
 import HelpFooter from './components/HelpFooter';
-import { IntegrationConfig, Account } from '../../types';
+import { IntegrationConfig, Account, Flow } from '../../types';
 
 interface APIReferenceProps {
     integration: IntegrationConfig | null;
     setActiveTab: (tab: Tabs) => void;
     endpoints: EndpointResponse;
     account: Account;
+    setSubTab: (tab: SubTabs) => void;
+    setFlow: (flow: Flow) => void;
 }
 
 export default function APIReference(props: APIReferenceProps) {
-    const { integration, endpoints } = props;
+    const { integration, endpoints, setSubTab, setFlow } = props;
 
     const allFlows = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.actions || []];
     // if any element in the array has elements in the endpoints array then return true
@@ -45,6 +47,8 @@ export default function APIReference(props: APIReferenceProps) {
                                                 flow={flow}
                                                 endpoint={endpoint}
                                                 integration={integration}
+                                                setSubTab={setSubTab}
+                                                setFlow={setFlow}
                                             />
                                         </tr>
                                     ))}

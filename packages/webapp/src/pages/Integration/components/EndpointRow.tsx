@@ -1,22 +1,24 @@
-import { useNavigate, useParams } from 'react-router-dom';
 import EndpointLabel from './EndpointLabel';
 import { Flow, FlowEndpoint, IntegrationConfig } from '../../../types';
 import FlowCard from './FlowCard';
-import { parseEndpoint } from '../../../utils/utils';
+import { SubTabs } from '../Show';
 
 export interface EndpointRowProps {
     flow: Flow;
     integration: IntegrationConfig | null;
     endpoint: string | FlowEndpoint;
+    setSubTab: (tab: SubTabs) => void;
+    setFlow: (flow: Flow) => void;
 }
 
-export default function EndpointRow({ flow, endpoint, integration }: EndpointRowProps) {
-    const navigate = useNavigate();
-    const endpointRoute = parseEndpoint(endpoint);
-    const { env } = useParams();
+export default function EndpointRow({ flow, endpoint, setSubTab, setFlow }: EndpointRowProps) {
 
+    const routeToReference = () => {
+        setFlow(flow)
+        setSubTab(SubTabs.Reference);
+    }
     return (
-        <td className="flex items-center p-3 py-2.5 border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={() => navigate(`/${env}/integration/${integration?.unique_key}/reference${endpointRoute}`)}>
+        <td className="flex items-center p-3 py-2.5 border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={routeToReference}>
             <div className="flex items-center w-80">
                 <EndpointLabel endpoint={endpoint} type={flow.type} />
             </div>

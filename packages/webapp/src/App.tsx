@@ -25,7 +25,6 @@ import GettingStarted from './pages/GettingStarted';
 import IntegrationList from './pages/Integration/List';
 import CreateIntegration from './pages/Integration/Create';
 import ShowIntegration from './pages/Integration/Show';
-import EndpointReference from './pages/Integration/EndpointReference';
 import ConnectionList from './pages/Connection/List';
 import Connection from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
@@ -34,7 +33,6 @@ import PrivateRoute from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activity from './pages/Activity';
-import FlowPage from './pages/Integration/FlowPage';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
@@ -124,9 +122,6 @@ const App = () => {
                 <Route path="/:env/integration/:providerConfigKey" element={<PrivateRoute />}>
                     <Route path="/:env/integration/:providerConfigKey" element={<ShowIntegration />} />
                 </Route>
-                <Route path="/:env/integration/:providerConfigKey/reference" element={<PrivateRoute />}>
-                    <Route path="/:env/integration/:providerConfigKey/reference/*" element={<EndpointReference />} />
-                </Route>
                 <Route path="/:env/connections" element={<PrivateRoute />}>
                     <Route path="/:env/connections" element={<ConnectionList />} />
                 </Route>
@@ -146,9 +141,6 @@ const App = () => {
                     <Route path="/:env/project-settings" element={<ProjectSettings />} />
                 </Route>
                 <Route path="/auth-link" element={<AuthLink />} />
-                <Route path="/:env/integration/:providerConfigKey/:flowName" element={<PrivateRoute />}>
-                    <Route path="/:env/integration/:providerConfigKey/:flowName" element={<FlowPage />} />
-                </Route>
                 {(isCloud() || isEnterprise()) && (
                     <>
                         <Route path="/:env/account-settings" element={<AccountSettings />} />

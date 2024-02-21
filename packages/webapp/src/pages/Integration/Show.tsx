@@ -7,6 +7,7 @@ import useSWR from 'swr'
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import APIReference from './APIReference';
+import EndpointReference from './EndpointReference';
 import Button from '../../components/ui/button/Button';
 import { BuildingOfficeIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
@@ -20,6 +21,11 @@ export enum Tabs {
     API,
     Scripts,
     Auth
+}
+
+export enum SubTabs {
+    Reference,
+    Script
 }
 
 export interface FlowConfiguration {
@@ -43,6 +49,8 @@ export default function ShowIntegration() {
     const { data: accountData, error: accountError } = useSWR<{account: Account}>(`/api/v1/environment`);
 
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
+    const [subTab, setSubTab] = useState<SubTabs | null>(null);
+    const [currentFlow, setCurrentFlow] = useState<Flow | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
     const env = useStore(state => state.cookieValue);
@@ -81,6 +89,11 @@ export default function ShowIntegration() {
         window.open(integration?.docs, '_blank');
     }
 
+    const updateTab = (tab: Tabs) => {
+        setActiveTab(tab);
+        setSubTab(null);
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             <div>
@@ -117,14 +130,32 @@ export default function ShowIntegration() {
                 )}
                 <section className="mt-14">
                     <ul className="flex text-gray-400 space-x-2 text-sm cursor-pointer">
-                        <li className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.API)}>API Reference</li>
-                        <li className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Scripts)}>Scripts</li>
+                        <li className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => updateTab(Tabs.API)}>API Reference</li>
+                        <li className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => updateTab(Tabs.Scripts)}>Scripts</li>
                         <li className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Auth)}>Settings</li>
                     </ul>
                 </section>
                 <section className="mt-10">
                     {activeTab === Tabs.API && integration && endpoints && account && (
-                        <APIReference integration={integration} setActiveTab={setActiveTab} endpoints={endpoints} account={account} />
+                        <>
+                            {subTab === SubTabs.Reference ? (
+                                <EndpointReference
+                                    account={account}
+                                    endpoints={endpoints}
+                                    integration={integration}
+                                    activeFlow={currentFlow}
+                                />
+                            ) : (
+                                <APIReference
+                                    integration={integration}
+                                    setActiveTab={setActiveTab}
+                                    endpoints={endpoints}
+                                    account={account}
+                                    setSubTab={setSubTab}
+                                    setFlow={setCurrentFlow}
+                                />
+                            )}
+                        </>
                     )}
                     {activeTab === Tabs.Scripts && integration && endpoints && (
                         <Scripts integration={integration} endpoints={endpoints} reload={() => setLoaded(!loaded)} />

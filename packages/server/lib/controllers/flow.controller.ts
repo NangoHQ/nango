@@ -223,22 +223,19 @@ class FlowController {
                 return;
             }
 
-            if (!connectionIds) {
-                res.status(400).send('Missing connectionIds');
-                return;
-            }
-
             if (!syncName) {
                 res.status(400).send('Missing sync_name');
                 return;
             }
 
-            const connections = connectionIds.split(',');
+            if (connectionIds) {
+                const connections = connectionIds.split(',');
 
-            const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
+                const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
 
-            for (const sync of syncs) {
-                await syncOrchestrator.deleteSync(sync.id as string, environmentId);
+                for (const sync of syncs) {
+                    await syncOrchestrator.deleteSync(sync.id as string, environmentId);
+                }
             }
 
             await syncOrchestrator.deleteConfig(Number(id), environmentId);
