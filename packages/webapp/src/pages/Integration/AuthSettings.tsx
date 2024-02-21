@@ -245,18 +245,6 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
                             <span className="text-gray-400 text-xs uppercase">Callback Url</span>
-                            <Tooltip
-                                type="dark"
-                                text={
-                                    <>
-                                        <div className="flex text-white text-sm">
-                                            <p>{`Register this callback URL on the developer portal of the Integration Provider.`}</p>
-                                        </div>
-                                    </>
-                                }
-                            >
-                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
-                            </Tooltip>
                         </div>
                         <span className="flex items-center">
                             <span className="text-white mr-3">{account.callback_url || defaultCallback()}</span>
@@ -445,18 +433,6 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
                             <span className="text-gray-400 text-xs">Client ID</span>
-                            <Tooltip
-                                type="dark"
-                                text={
-                                    <>
-                                        <div className="flex text-white text-sm">
-                                            <p>{`Obtain the Client ID on the developer portal of the Integration Provider.`}</p>
-                                        </div>
-                                    </>
-                                }
-                            >
-                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
-                            </Tooltip>
                         </div>
                         <div className="flex text-white mt-1 items-center">
                             <div className="w-full relative">
@@ -480,18 +456,6 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
                             <span className="text-gray-400 text-xs">Client Secret</span>
-                            <Tooltip
-                                type="dark"
-                                text={
-                                    <>
-                                        <div className="flex text-white text-sm">
-                                            <p>{`Obtain the Client Secret on the developer portal of the Integration Provider.`}</p>
-                                        </div>
-                                    </>
-                                }
-                            >
-                                <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
-                            </Tooltip>
                         </div>
                         <div className="mt-1">
                             <SecretInput
@@ -499,6 +463,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 id="client_secret"
                                 name="client_secret"
                                 autoComplete="one-time-code"
+                                placeholder="Find the Client Secret on the developer portal of the external API provider."
                                 defaultValue={integration ? integration.client_secret : ''}
                                 required
                             />
@@ -508,18 +473,6 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         <div className="flex flex-col">
                             <div className="flex items-center mb-1">
                                 <span className="text-gray-400 text-xs">Scopes</span>
-                                <Tooltip
-                                    type="dark"
-                                    text={
-                                        <>
-                                            <div className="flex text-white text-sm">
-                                                <p>{`The list of scopes should be found in the documentation of the external provider.`}</p>
-                                            </div>
-                                        </>
-                                    }
-                                >
-                                    <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
-                                </Tooltip>
                             </div>
                             <div className="mt-1">
                                 <TagsInput

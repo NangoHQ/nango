@@ -136,9 +136,9 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
     const toggleSync = async (flow: Flow) => {
         const active = 'version' in flow && flow.version !== null;
         if (active) {
-            await disableSync(flow);
+            (flow?.type === 'sync' ? await disableSync(flow) : await onDisableSync(flow));
         } else {
-            await enableSync(flow);
+            (flow?.type === 'sync' ? await enableSync(flow) : await onEnableSync(flow));
         }
     }
 

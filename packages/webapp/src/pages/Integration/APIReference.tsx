@@ -24,7 +24,7 @@ export default function APIReference(props: APIReferenceProps) {
                 <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
                     <h2 className="text-xl text-center w-full">Integrate with {integration?.provider}</h2>
                     <div className="mt-4 text-gray-400">{integration?.provider} does not yet have publicly available endpoints on Nango.</div>
-                    <HelpFooter provider={integration?.provider} />
+                    <HelpFooter />
                 </div>
             ) : (
                 <>
@@ -52,7 +52,7 @@ export default function APIReference(props: APIReferenceProps) {
                             ))}
                         </tbody>
                     </table>
-                    <HelpFooter provider={integration?.provider} />
+                    <HelpFooter />
                 </>
             )}
         </div>

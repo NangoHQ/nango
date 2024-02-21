@@ -90,10 +90,10 @@ export default function ShowIntegration() {
                             <div className="flex">
                                 <IntegrationLogo provider={integration?.provider} height={24} width={24} classNames="mr-2 border border-border-gray rounded-xl" />
                                 <div className="mt-3 ml-6">
-                                    <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">
+                                    <span className="text-left text-xl font-semibold tracking-tight text-gray-400">
                                         Integration
                                     </span>
-                                    <div className="flex items-center">
+                                    <div className="flex items-center -mt-2">
                                         <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
                                             {providerConfigKey}
                                         </h2>
@@ -116,7 +116,7 @@ export default function ShowIntegration() {
                     </div>
                 )}
                 <section className="mt-14">
-                    <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
+                    <ul className="flex text-gray-400 space-x-2 text-sm cursor-pointer">
                         <li className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.API)}>API Reference</li>
                         <li className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Scripts)}>Scripts</li>
                         <li className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Auth)}>Settings</li>

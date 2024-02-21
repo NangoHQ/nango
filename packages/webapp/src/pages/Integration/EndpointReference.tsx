@@ -155,12 +155,12 @@ export default function EndpointReference() {
                         <EndpointLabel endpoint={activeFlow?.endpoints[0] as string | FlowEndpoint} type={activeFlow?.type as string} />
                         <span className="mt-2">{activeFlow?.description}</span>
                     </div>
-                    {activeFlow?.type === 'sync' && (!activeFlow.version && activeFlow.version === null) && (
-                        <Info size={18} classNames="mt-3 z-10" padding="px-4 py-1.5" color="orange">
-                            To use this endpoint, enable file synchronization in the <span className="cursor-pointer underline" onClick={() => navigate(`/${env}/integration/${providerConfigKey}/${activeFlow?.name}`)}>scripts</span>.
+                    {!activeFlow?.version && activeFlow?.version === null && (
+                        <Info size={18} classNames="mt-10 z-10" padding="px-4 py-1.5" color="orange">
+                            This endpoint is disabled. Enable it in the associated <span className="cursor-pointer underline" onClick={() => navigate(`/${env}/integration/${providerConfigKey}/${activeFlow?.name}`)}>script settings</span>.
                         </Info>
                     )}
-                    <div className="flex flex-col z-10 mt-8">
+                    <div className="flex flex-col z-10 mt-10">
                         <h2 className="text-base">Request</h2>
                         <span className="text-gray-400 mb-4">Use the following code snippet to call this endpoint: </span>
                         <div className="border border-border-gray rounded-md text-white text-sm">
@@ -213,11 +213,11 @@ export default function EndpointReference() {
                                 <div className="flex flex-col mt-4 text-gray-400 border border-border-gray rounded-md p-3 mb-5">
                                     <div className="flex w-full cursor-pointer" onClick={() => setShowParametersOpen(!showParametersOpen)}>
                                         {showParametersOpen ? <ChevronDownIcon className="flex h-5 w-5 text-gray-400" /> : <ChevronUpIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" /> }
-                                        <span className="ml-2">{showParametersOpen ? 'Hide Optional Parameters' : 'Show Optional Parameters'}</span>
+                                        <span className="ml-2">{showParametersOpen ? `Hide Optional ${language === Language.cURL ? 'Query ' : ''}Parameters` : `Show Optional ${language === Language.cURL ? 'Query ' : ''}Parameters`}</span>
                                     </div>
                                     {showParametersOpen && (
                                         <div className="flex flex-col mt-4">
-                                            <span>The following parameters can be added to the <i>listRecords</i> request:</span>
+                                            <span>The following parameters can be added to the {language === Language.Node ? <i>listRecords</i> : 'request'}{language === Language.cURL ? ' as query params' : ''}:</span>
                                             <div className="border-t border-neutral-700 mt-4 py-4">
                                                 <div className="flex">
                                                     <span className="text-indigo-200">delta</span>

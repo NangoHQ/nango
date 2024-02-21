@@ -6,12 +6,10 @@ export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secre
 const nango = new Nango({ secretKey: '${secretKey}' });
 
 const issues = await nango.listRecords({
-    proivderConfigKey: '${providerConfigKey}',
+    providerConfigKey: '${providerConfigKey}',
     connectionId: '${connectionId}',
     model: '${model}'
 });
-
-console.log(issues);
 `};
 
 export const nodeActionSnippet = (actionName: string, secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string) => {
@@ -37,8 +35,6 @@ const issues = await nango.triggerAction(
     '${actionName}',
     ${formattedInput}
 );
-
-console.log(issues);
 `;
 };
 
@@ -53,7 +49,13 @@ export const curlSnippet = (baseUrl: string, endpoint: string | NangoSyncEndpoin
     if (typeof input === 'string') {
         formattedInput = input;
     } else if (input && typeof input === 'object') {
-        formattedInput = `{\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}`;
+        formattedInput = `{
+${JSON.stringify(input, null, 2)
+  .split('\n')
+  .slice(1)
+  .join('\n')
+  .replace(/^/gm, '    ')
+  .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
     }
 
         return `

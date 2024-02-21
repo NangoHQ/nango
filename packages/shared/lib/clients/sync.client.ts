@@ -492,7 +492,12 @@ class SyncClient {
                 args: [
                     {
                         actionName,
-                        nangoConnection: connection,
+                        nangoConnection: {
+                            id: connection.id,
+                            connection_id: connection.connection_id,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
                         input,
                         activityLogId: writeLogs ? activityLogId : undefined
                     }
