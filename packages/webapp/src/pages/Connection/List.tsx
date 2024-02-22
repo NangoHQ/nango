@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import _ from 'lodash';
 
 import { PlusIcon } from '@heroicons/react/24/outline'
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
@@ -57,10 +58,11 @@ export default function ConnectionList() {
         const value = event.target.value;
         if (value === '_ALL') {
             setFilteredConnections(data?.connections || []);
+            setSelectedIntegration('_ALL');
             return;
         }
         const filtered = data?.connections.filter((connection) =>
-            connection.provider_config_key.toLowerCase().includes(value.toLowerCase())
+            connection.provider_config_key.toLowerCase() === value.toLowerCase()
         );
         setFilteredConnections(filtered || []);
         setSelectedIntegration(value);
@@ -181,7 +183,7 @@ export default function ConnectionList() {
                                                 <CopyButton dark text={connectionId} />
                                             </div>
                                             <div className="flex items-center w-1/3 mr-8">
-                                                <img src={`/images/template-logos/${provider}.svg`} alt="" className="h-7 w-7 mt-0.5 mr-0.5" />
+                                                <IntegrationLogo provider={provider} height={7} width={7} classNames="mr-0.5" />
                                                 <p className="ml-2">{providerConfigKey}</p>
                                             </div>
                                             <div className="flex w-20">

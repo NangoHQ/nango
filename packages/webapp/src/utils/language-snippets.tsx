@@ -64,7 +64,7 @@ ${JSON.stringify(input, null, 2)
     --header 'Authorization: Bearer ${secretKey}' \\
     --header 'Content-Type: application/json' \\
     --header 'Connection-Id: ${connectionId}' \\
-    --header 'Provider-Config-Key: ${providerConfigKey}'
+    --header 'Provider-Config-Key: ${providerConfigKey}' ${formattedInput ? '\\' : ''}
     ${formattedInput ? `--data '${formattedInput}'` : ''}
         `;
     };

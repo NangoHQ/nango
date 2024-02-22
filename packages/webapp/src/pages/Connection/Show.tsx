@@ -178,7 +178,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                     <div className="flex">
                         <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
                             {connection?.provider && (
-                                <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer" />
+                                <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer p-1 border border-border-gray rounded-xl" />
                             )}
                         </Link>
                         <div className="mt-3 ml-6">

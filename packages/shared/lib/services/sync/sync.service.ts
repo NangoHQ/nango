@@ -706,7 +706,7 @@ export interface PausableSyncs {
     name: string;
     environment_id: number;
     provider: string;
-    connection_id: number;
+    connection_id: string;
     unique_key: string;
     schedule_id: string;
 }

@@ -611,7 +611,17 @@ class SyncController {
                 return;
             }
 
-            const result = await syncClient.runSyncCommand(schedule_id, sync_id, command, activityLogId as number, environment.id);
+            const result = await syncClient.runSyncCommand(
+                schedule_id,
+                sync_id,
+                command,
+                activityLogId as number,
+                environment.id,
+                connection?.provider_config_key as string,
+                connection?.connection_id as string,
+                sync_name,
+                connection?.id
+            );
 
             if (isErr(result)) {
                 errorManager.errResFromNangoErr(res, result.err as NangoError);

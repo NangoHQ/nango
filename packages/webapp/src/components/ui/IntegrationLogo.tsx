@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SquaresPlusIcon } from '@heroicons/react/24/outline';
+import { LockOpenIcon, CubeTransparentIcon } from '@heroicons/react/24/outline';
 
 interface IntegrationLogoProps {
     provider: string;
@@ -12,6 +12,10 @@ interface IntegrationLogoProps {
 export default function IntegrationLogo({ provider, height = 5, width = 5, color = 'text-white', classNames = '' }: IntegrationLogoProps) {
     const [imgError, setImgError] = useState(false);
 
+    if (provider === 'unauthenticated') {
+        return <LockOpenIcon className={`h-${height} w-${width} ${color} ${classNames}`} />;
+    }
+
     return (
         <>
             {!imgError ? (
@@ -22,7 +26,7 @@ export default function IntegrationLogo({ provider, height = 5, width = 5, color
                     onError={() => setImgError(true)}
                 />
             ) : (
-                <SquaresPlusIcon className={`h-${height} w-${width} ${color} ${classNames}`} />
+                <CubeTransparentIcon className={`h-${height} w-${width} ${color} ${classNames}`} />
             )}
         </>
     );

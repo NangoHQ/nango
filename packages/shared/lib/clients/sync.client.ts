@@ -20,13 +20,14 @@ import { getSyncConfig } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
-import { createSync } from '../services/sync/sync.service.js';
+import { deleteRecordsBySyncId } from '../services/sync/data/records.service.js';
+import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
 import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import { isTest, isProd } from '../utils/utils.js';
-import { resultOk, type Result, resultErr } from '../utils/result.js';
+import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
@@ -358,25 +359,27 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
+    async runSyncCommand(
+        scheduleId: string,
+        syncId: string,
+        command: SyncCommand,
+        activityLogId: number,
+        environmentId: number,
+        providerConfigKey: string,
+        connectionId: string,
+        syncName: string,
+        nangoConnectionId?: number
+    ): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
                 case SyncCommand.CANCEL:
                     {
-                        const jobIsRunning = await isSyncJobRunning(syncId);
-                        if (jobIsRunning) {
-                            const { job_id, run_id } = jobIsRunning;
-                            if (!run_id) {
-                                const error = new NangoError('run_id_not_found');
-                                return resultErr(error);
-                            }
-                            const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
-                            await workflowHandle?.cancel();
-                        } else {
-                            const error = new NangoError('sync_job_not_running');
-                            return resultErr(error);
+                        const result = await this.cancelSync(syncId);
+
+                        if (isErr(result)) {
+                            return resultErr(result.err);
                         }
                     }
                     break;
@@ -405,7 +408,27 @@ class SyncClient {
                     await scheduleHandle?.trigger(OVERLAP_POLICY);
                     break;
                 case SyncCommand.RUN_FULL:
-                    console.warn('Not implemented');
+                    {
+                        // we just want to try and cancel if the sync is running
+                        // so we don't care about the result
+                        await this.cancelSync(syncId);
+                        await clearLastSyncDate(syncId);
+                        await deleteRecordsBySyncId(syncId);
+                        await createActivityLogMessage({
+                            level: 'info',
+                            environment_id: environmentId,
+                            activity_log_id: activityLogId,
+                            timestamp: Date.now(),
+                            content: `Records for the sync were deleted successfully`
+                        });
+                        const nangoConnection: NangoConnection = {
+                            id: nangoConnectionId as number,
+                            provider_config_key: providerConfigKey,
+                            connection_id: connectionId,
+                            environment_id: environmentId
+                        };
+                        await this.triggerInitialSync({ syncId, activityLogId, nangoConnection, syncName });
+                    }
                     break;
             }
 
@@ -423,6 +446,24 @@ class SyncClient {
 
             return resultErr(err as Error);
         }
+    }
+
+    async cancelSync(syncId: string): Promise<Result<boolean>> {
+        const jobIsRunning = await isSyncJobRunning(syncId);
+        if (jobIsRunning) {
+            const { job_id, run_id } = jobIsRunning;
+            if (!run_id) {
+                const error = new NangoError('run_id_not_found');
+                return resultErr(error);
+            }
+            const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
+            await workflowHandle?.cancel();
+        } else {
+            const error = new NangoError('sync_job_not_running');
+            return resultErr(error);
+        }
+
+        return resultOk(true);
     }
 
     async triggerSyncs(syncs: SyncWithSchedule[], environmentId: number) {

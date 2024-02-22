@@ -253,17 +253,24 @@ export default function Models(props: ModelsProps) {
                                                     </div>
                                                     <div
                                                         className="flex items-center hover:bg-neutral-800 px-4 py-4"
-                                                        onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
-                                                    >
-                                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                        <span className="pl-2">Trigger Once</span>
-                                                    </div>
-                                                    <div
-                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
                                                         onClick={() => syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
                                                         <StopCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
                                                         <span className="pl-2">Interrupt Running Job</span>
+                                                    </div>
+                                                    <div
+                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
+                                                        onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
+                                                    >
+                                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
+                                                        <span className="pl-2">Trigger Job (Incremental)</span>
+                                                    </div>
+                                                    <div
+                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
+                                                        onClick={() => syncCommand('RUN_FULL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
+                                                    >
+                                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
+                                                        <span className="pl-2">Trigger Job (Full Refresh)</span>
                                                     </div>
                                                 </div>
                                             </div>
