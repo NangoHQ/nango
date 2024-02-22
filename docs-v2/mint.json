@@ -254,8 +254,8 @@
                         "integrations/integration-templates/zendesk",
                         "integrations/integration-templates/zoho-crm"
                     ]
-                }  
-            ]  
+                }
+            ]
         },
         {
             "group": "All Pre-Configured APIs",
@@ -272,6 +272,7 @@
                         "integrations/all/asana",
                         "integrations/all/ashby",
                         "integrations/all/atlassian",
+                        "integrations/all/attio",
                         "integrations/all/auth0",
                         "integrations/all/aws",
                         "integrations/all/bamboohr",
@@ -294,10 +295,12 @@
                         "integrations/all/discord",
                         "integrations/all/dropbox",
                         "integrations/all/docusign",
+                        "integrations/all/entrata",
                         "integrations/all/epic-games",
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
                         "integrations/all/exact-online",
+                        "integrations/all/exist",
                         "integrations/all/facebook",
                         "integrations/all/factorial",
                         "integrations/all/figjam",
@@ -397,6 +400,7 @@
                         "integrations/all/uber",
                         "integrations/all/wakatime",
                         "integrations/all/wave-accounting",
+                        "integrations/all/whoop",
                         "integrations/all/wildix-pbx",
                         "integrations/all/workable",
                         "integrations/all/xero",
@@ -492,7 +496,7 @@
                         "reference/sdks/rust",
                         "reference/sdks/php"
                     ],
-                    "icon": "cubes" 
+                    "icon": "cubes"
                 },
                 "reference/sdks/frontend",
                 "reference/webhooks"
