@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import useSWR from 'swr'
 import { Loading } from '@geist-ui/core';
@@ -12,16 +11,14 @@ import Button from '../../components/ui/button/Button';
 import { requestErrorToast } from '../../utils/api';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
-import { FlowConfiguration, EndpointResponse } from './Show';
+import { FlowConfiguration, EndpointResponse, Tabs, SubTabs } from './Show';
 import type { IntegrationConfig, Account, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info'
-import { parseEndpoint, parseInput, generateResponseModel, formatDateToShortUSFormat } from '../../utils/utils';
+import { parseInput, generateResponseModel, formatDateToShortUSFormat } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippets';
-
-import { useStore } from '../../store';
 
 interface FlowPageProps {
     account: Account;
@@ -31,10 +28,12 @@ interface FlowPageProps {
     reload: () => void;
     endpoints: EndpointResponse;
     setFlow: (flow: Flow) => void;
+    setActiveTab: (tab: Tabs) => void;
+    setSubTab: (tab: SubTabs) => void;
 }
 
 export default function FlowPage(props: FlowPageProps) {
-    const { account, integration, flow, flowConfig, reload, endpoints, setFlow } = props;
+    const { account, integration, flow, flowConfig, reload, endpoints, setFlow, setActiveTab, setSubTab } = props;
     const { data: connections, error } = useSWR<Connection[]>(`/api/v1/integration/${integration.unique_key}/connections`);
 
     if (error) {
@@ -47,8 +46,6 @@ export default function FlowPage(props: FlowPageProps) {
     const [isEnabling, setIsEnabling] = useState(false);
     const updateSyncFrequency = useUpdateSyncFrequency();
     const { setVisible, bindings } = useModal();
-    const navigate = useNavigate();
-    const env = useStore(state => state.cookieValue);
 
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState<string | React.ReactNode>('');
@@ -185,6 +182,11 @@ export default function FlowPage(props: FlowPageProps) {
         );
     }
 
+    const routeToReference = () => {
+        setActiveTab(Tabs.API);
+        setSubTab(SubTabs.Reference);
+    };
+
     return (
                 <>
             <ActionModal
@@ -267,7 +269,7 @@ export default function FlowPage(props: FlowPageProps) {
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Endpoints</span>
                             {flow?.endpoints.map((endpoint, index) => (
-                                <div key={index} onClick={() => navigate(`/${env}/integration/${integration.unique_key}/reference${parseEndpoint(endpoint)}`)} className="flex flex-col space-y-2 cursor-pointer">
+                                <div key={index} onClick={routeToReference} className="flex flex-col space-y-2 cursor-pointer">
                                     <EndpointLabel endpoint={endpoint} type={flow.type} />
                                 </div>
                             ))}

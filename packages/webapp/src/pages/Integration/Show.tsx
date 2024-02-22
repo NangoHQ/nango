@@ -171,6 +171,8 @@ export default function ShowIntegration() {
                                     reload={() => setLoaded(!loaded)}
                                     endpoints={endpoints}
                                     setFlow={setCurrentFlow}
+                                    setActiveTab={setActiveTab}
+                                    setSubTab={setSubTab}
                                 />
                             ) : (
                                 <Scripts
