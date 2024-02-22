@@ -48,7 +48,7 @@ integrations:
         description: |
           Fetches candidates for the specified job from workable.
           Details: full sync, doesn't track deletes, metadata is not required.
-        output: WorkableCandidate
+        output: WorkableJobsCandidate
         sync_type: full
         endpoint: /workable/jobs-candidates
         scopes:
@@ -105,6 +105,8 @@ models:
     domain: string
     created_at: date
     updated_at: date
+  WorkableJobsCandidate:
+    __extends: WorkableCandidate
   WorkableCandidateActivity:
     id: string
     action: string
