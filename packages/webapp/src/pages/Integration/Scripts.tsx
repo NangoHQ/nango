@@ -133,6 +133,7 @@ export default function Scripts(props: ScriptProps) {
                                                     reload={reload}
                                                     rawName={endpoints?.unEnabledFlows?.rawName}
                                                     connections={integration?.connections}
+                                                    showSpinner={true}
                                                 />
                                             </div>
                                         </td>

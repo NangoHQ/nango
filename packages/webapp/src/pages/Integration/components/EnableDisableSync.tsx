@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { useModal } from '@geist-ui/core';
 import ActionModal from '../../../components/ui/ActionModal';
 import ToggleButton from '../../../components/ui/button/ToggleButton';
+import Spinner from '../../../components/ui/Spinner';
 import type { Flow, Connection } from '../../../types';
 import { useCreateFlow } from '../../../utils/api';
 import { EndpointResponse } from '../Show';
@@ -16,9 +17,11 @@ export interface FlowProps {
     connections: Connection[];
     endpoints?: EndpointResponse;
     setFlow?: (flow: Flow) => void;
+    setIsEnabling?: (isEnabling: boolean) => void;
+    showSpinner?: boolean;
 }
 
-export default function EnableDisableSync({ flow, provider, providerConfigKey, reload, rawName, connections, endpoints, setFlow }: FlowProps) {
+export default function EnableDisableSync({ flow, provider, providerConfigKey, reload, rawName, connections, endpoints, setFlow, setIsEnabling, showSpinner }: FlowProps) {
     const { setVisible, bindings } = useModal();
     const createFlow = useCreateFlow();
     const connectionIds = connections.map(connection => connection.id);
@@ -67,11 +70,15 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
         };
 
         setModalShowSpinner(true);
+        if (setIsEnabling) {
+            setIsEnabling(true);
+        }
         const res = await createFlow([flowPayload]);
         if (res?.status === 201) {
             const payload = await res?.json();
 
             if (payload && payload[0] && setFlow) {
+                console.log(typeof payload)
                 const newFlow = payload[0];
                 console.log(newFlow);
                 setFlow(newFlow as Flow);
@@ -84,6 +91,9 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
             });
         }
         setModalShowSpinner(false);
+        if (setIsEnabling) {
+            setIsEnabling(false);
+        }
         setVisible(false);
     }
 
@@ -162,6 +172,11 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
                 modalTitleColor={modalTitleColor}
                 setVisible={setVisible}
             />
+            {showSpinner && (!('version' in flow) || flow.version === null) && modalShowSpinner && (
+                <span className="mr-2">
+                    <Spinner size={1} />
+                </span>
+            )}
             <ToggleButton enabled={Boolean('version' in flow && flow.version !== null)} onChange={() => toggleSync(flow)} />
         </>
     );

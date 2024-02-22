@@ -44,6 +44,7 @@ export default function FlowPage(props: FlowPageProps) {
     const [showMetadataCode, setShowMetadataCode] = useState(false);
     const [showAutoStartCode, setShowAutoStartCode] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isEnabling, setIsEnabling] = useState(false);
     const updateSyncFrequency = useUpdateSyncFrequency();
     const { setVisible, bindings } = useModal();
     const navigate = useNavigate();
@@ -171,6 +172,10 @@ export default function FlowPage(props: FlowPageProps) {
             setShowFrequencyEditMenu(false);
             setVisible(false);
             reload();
+            setFlow({
+                ...flow,
+                runs: `every ${frequencyWithoutEvery}`
+            } as Flow);
         });
     };
 
@@ -239,16 +244,24 @@ export default function FlowPage(props: FlowPageProps) {
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Enabled</span>
                             {connections && (
-                                <EnableDisableSync
-                                    flow={flow as Flow}
-                                    provider={integration.provider}
-                                    providerConfigKey={integration.unique_key}
-                                    reload={reload}
-                                    rawName={flowConfig?.rawName}
-                                    connections={connections}
-                                    endpoints={endpoints}
-                                    setFlow={setFlow}
-                                />
+                                <span className="flex">
+                                    <EnableDisableSync
+                                        flow={flow as Flow}
+                                        provider={integration.provider}
+                                        providerConfigKey={integration.unique_key}
+                                        reload={reload}
+                                        rawName={flowConfig?.rawName}
+                                        connections={connections}
+                                        endpoints={endpoints}
+                                        setFlow={setFlow}
+                                        setIsEnabling={setIsEnabling}
+                                    />
+                                    {flow.type === 'action' && isEnabling && (
+                                        <span className="ml-2">
+                                            <Spinner size={1} />
+                                        </span>
+                                    )}
+                                </span>
                             )}
                         </div>
                         <div className="flex flex-col w-1/2">

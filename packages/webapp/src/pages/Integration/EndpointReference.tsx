@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import Button from '../../components/ui/button/Button';
@@ -10,6 +8,7 @@ import EndpointLabel from './components/EndpointLabel';
 import { NangoSyncModel, NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow, Account } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
 import { parseInput, generateResponseModel } from '../../utils/utils';
+import { Tabs, SubTabs } from './Show';
 import { useStore } from '../../store';
 
 enum Language {
@@ -25,10 +24,12 @@ interface EndpointReferenceProps {
     account: Account;
     integration: IntegrationConfig;
     activeFlow: Flow | null;
+    setSubTab: (tab: SubTabs) => void;
+    setActiveTab: (tab: Tabs) => void;
 }
 
 export default function EndpointReference(props: EndpointReferenceProps) {
-    const { account, integration, activeFlow } = props;
+    const { account, integration, activeFlow, setSubTab, setActiveTab } = props;
 
     const [showParametersOpen, setShowParametersOpen] = useState(false);
     const [language, setLanguage] = useState<Language>(Language.Node);
@@ -37,11 +38,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
 
     const connectionId = '<CONNECTION-ID>';
 
-    const env = useStore(state => state.cookieValue);
     const baseUrl = useStore(state => state.baseUrl);
-    const { providerConfigKey } = useParams();
-
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (activeFlow) {
@@ -60,6 +57,11 @@ export default function EndpointReference(props: EndpointReferenceProps) {
         }
     }, [activeFlow, account, integration?.unique_key]);
 
+    const routeToFlow = () => {
+        setActiveTab(Tabs.Scripts);
+        setSubTab(SubTabs.Flow);
+    };
+
     return (
         <div className="text-white">
             <div className="flex flex-col z-10 mt-4 text-gray-400">
@@ -68,7 +70,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
             </div>
             {!activeFlow?.version && activeFlow?.version === null && (
                 <Info size={18} classNames="mt-10 mb-10 z-10" padding="px-4 py-1.5" color="orange">
-                    This endpoint is disabled. Enable it in the associated <span className="cursor-pointer underline" onClick={() => navigate(`/${env}/integration/${providerConfigKey}/${activeFlow?.name}`)}>script settings</span>.
+                    This endpoint is disabled. Enable it in the associated <span className="cursor-pointer underline" onClick={routeToFlow}>script settings</span>.
                 </Info>
             )}
             <div className="flex flex-col z-10 mt-6">

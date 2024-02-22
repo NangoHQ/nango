@@ -145,6 +145,8 @@ export default function ShowIntegration() {
                                     account={account}
                                     integration={integration}
                                     activeFlow={currentFlow}
+                                    setActiveTab={setActiveTab}
+                                    setSubTab={setSubTab}
                                 />
                             ) : (
                                 <APIReference
