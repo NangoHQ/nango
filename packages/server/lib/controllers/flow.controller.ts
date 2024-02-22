@@ -131,7 +131,7 @@ class FlowController {
 
             await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
 
-            res.sendStatus(201);
+            res.status(201).send(preBuiltResponse.result);
         } catch (e) {
             next(e);
         }

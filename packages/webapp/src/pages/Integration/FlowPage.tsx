@@ -335,7 +335,7 @@ export default function FlowPage(props: FlowPageProps) {
                             </div>
                         </div>
                     )}
-                    {flow?.type === 'sync' && flow?.webhookSubscriptions.length > 0 && (
+                    {flow?.type === 'sync' && flow?.webhookSubscriptions?.length > 0 && (
                         <div className="flex">
                             <div className="flex flex-col w-1/2 relative">
                                 <span className="text-gray-400 text-xs uppercase mb-1">Webhook Subscriptions</span>

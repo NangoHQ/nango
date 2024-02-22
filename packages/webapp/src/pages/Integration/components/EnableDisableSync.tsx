@@ -69,6 +69,13 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
         setModalShowSpinner(true);
         const res = await createFlow([flowPayload]);
         if (res?.status === 201) {
+            const payload = await res?.json();
+
+            if (payload && payload[0] && setFlow) {
+                const newFlow = payload[0];
+                console.log(newFlow);
+                setFlow(newFlow as Flow);
+            }
             reload();
         } else {
             const payload = await res?.json();
@@ -115,6 +122,8 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
         });
 
         if (res.status === 204) {
+            // since the flow is set from the parent page we need to change the enabled
+            // flow to be unenabled and without a version and deployed date
             if (endpoints && setFlow) {
                 const { enabledFlows } = endpoints;
                 if (enabledFlows) {
