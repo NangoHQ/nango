@@ -1370,6 +1370,15 @@ stripe-express:
         base_url: https://api.stripe.com
 stripe-app:
     auth_mode: OAUTH2
+    authorization_url: https://marketplace.stripe.com/oauth/v2/authorize
+    token_url: https://api.stripe.com/v1/oauth/token
+    disable_pkce: true
+    proxy:
+        base_url: https://api.stripe.com
+    refresh_params:
+        grant_type: refresh_token
+stripe-app-sandbox:
+    auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
     token_url: https://api.stripe.com/v1/oauth/token
     disable_pkce: true

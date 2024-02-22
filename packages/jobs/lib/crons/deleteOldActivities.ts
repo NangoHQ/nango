@@ -4,9 +4,10 @@ import tracer from '../tracer.js';
 import { setTimeout } from 'node:timers/promises';
 
 // Retention in days
-const retention = parseInt(process.env['NANGO_CLEAR_ACTIVIES_RETENTION'] || '', 10) || 15;
-const limitLog = parseInt(process.env['NANGO_CLEAR_ACTIVIES_LIMIT'] || '', 10) || 2000;
-const limitMsg = parseInt(process.env['NANGO_CLEAR_ACTIVIES_MSG_LIMIT'] || '', 10) || 5000;
+const retention = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_RETENTION'] || '', 10) || 15;
+const limitLog = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_LIMIT'] || '', 10) || 2000;
+const limitMsg = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_MSG_LIMIT'] || '', 10) || 5000;
+const cpuNice = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_CPU_NICE_MS'] || '', 10) || 200;
 
 export async function deleteOldActivityLogs(): Promise<void> {
     /**
@@ -41,7 +42,7 @@ export async function exec(): Promise<void> {
             logger.info(`[oldActivity] deleted ${count} rows`);
 
             // Free the CPU
-            await setTimeout(200);
+            await setTimeout(cpuNice);
         } while (count >= limitMsg);
 
         await deleteLog({ activityLogId: log.id });
