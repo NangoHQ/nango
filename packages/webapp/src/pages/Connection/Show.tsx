@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { Loading } from '@geist-ui/core';
 import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
@@ -140,6 +141,14 @@ We could not retrieve and/or refresh your access token due to the following erro
             setFetchingRefreshToken(false);
         }, 400);
     };
+
+    if (!loaded || !syncLoaded) {
+        return (
+            <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+                <Loading spaceRatio={2.5} className="-top-36" />
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>

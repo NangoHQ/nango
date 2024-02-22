@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
@@ -65,8 +65,13 @@ export default function EndpointReference(props: EndpointReferenceProps) {
     return (
         <div className="text-white">
             <div className="flex flex-col z-10 mt-4 text-gray-400">
-                <EndpointLabel endpoint={activeFlow?.endpoints[0] as string | FlowEndpoint} type={activeFlow?.type as string} />
-                <span className="mt-2">{activeFlow?.description}</span>
+                <span className="flex items-center">
+                    <EndpointLabel endpoint={activeFlow?.endpoints[0] as string | FlowEndpoint} type={activeFlow?.type as string} />
+                    <AdjustmentsHorizontalIcon onClick={routeToFlow} className="flex h-5 w-5 ml-2 cursor-pointer" />
+                </span>
+                {activeFlow?.description && (
+                    <span className="mt-2">{activeFlow?.description}</span>
+                )}
             </div>
             {!activeFlow?.version && activeFlow?.version === null && (
                 <Info size={18} classNames="mt-10 mb-10 z-10" padding="px-4 py-1.5" color="orange">
