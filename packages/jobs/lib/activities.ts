@@ -340,8 +340,8 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
 export async function reportFailure(
     error: any,
     workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs,
-    DEFAULT_TIMEOUT: string,
-    MAXIMUM_ATTEMPTS: number
+    timeout: string,
+    max_attempts: number
 ): Promise<void> {
     const { nangoConnection } = workflowArguments;
     let type = 'webhook';
@@ -366,9 +366,9 @@ export async function reportFailure(
         content += `due to a termination.`;
     } else if (error.cause instanceof TimeoutFailure || error.cause?.name === 'TimeoutFailure') {
         if (error.cause.timeoutType === 3) {
-            content += `due to a timeout with respect to the max schedule length timeout of ${DEFAULT_TIMEOUT}.`;
+            content += `due to a timeout with respect to the max schedule length timeout of ${timeout}.`;
         } else {
-            content += `due to a timeout and a lack of heartbeat with ${MAXIMUM_ATTEMPTS} attempts.`;
+            content += `due to a timeout and a lack of heartbeat with ${max_attempts} attempts.`;
         }
     } else {
         content += `due to a unknown failure.`;
