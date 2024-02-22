@@ -45,7 +45,7 @@ export default function FlowCard({ flow }: FlowProps) {
                 <span className="flex flex-col w-1/2">
                     <div className="text-gray-400">SOURCE</div>
                     <div className="text-white">
-                        {'is_public' in flow && flow.is_public ? 'Public' : 'Custom'}
+                        {'is_public' in flow && flow.is_public ? 'Template' : 'Custom'}
                     </div>
                 </span>
                 {flow?.type === 'sync' && 'sync_type' in flow && (

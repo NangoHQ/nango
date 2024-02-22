@@ -280,7 +280,7 @@ export default function FlowPage(props: FlowPageProps) {
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Source</span>
                             <div className="text-white">
-                                {flow?.is_public ? 'Public' : 'Custom'}
+                                {flow?.is_public ? 'Template' : 'Custom'}
                             </div>
                         </div>
                         {flow?.sync_type && (

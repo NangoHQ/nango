@@ -75,7 +75,7 @@ export default function Scripts(props: ScriptProps) {
                                                     <div className="w-72 max-w-3xl truncate">{flow.description}</div>
                                                 </div>
                                                 <div className="flex items-center w-32">
-                                                    {flow.is_public ? 'Public' : 'Custom'
+                                                    {flow.is_public ? 'Template' : 'Custom'
                                                     }
                                                 </div>
                                                 <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
@@ -122,7 +122,7 @@ export default function Scripts(props: ScriptProps) {
                                                 <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
                                             </div>
                                             <div className="flex items-center w-16">
-                                                {flow.is_public ? 'Public' : 'Custom'
+                                                {flow.is_public ? 'Template' : 'Custom'
                                                 }
                                             </div>
                                             <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
