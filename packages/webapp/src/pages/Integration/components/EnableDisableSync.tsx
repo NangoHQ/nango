@@ -5,18 +5,20 @@ import ActionModal from '../../../components/ui/ActionModal';
 import ToggleButton from '../../../components/ui/button/ToggleButton';
 import type { Flow, Connection } from '../../../types';
 import { useCreateFlow } from '../../../utils/api';
+import { EndpointResponse } from '../Show';
 
 export interface FlowProps {
     flow: Flow;
     provider: string;
     providerConfigKey: string;
-    reload?: () => void;
-    setLoaded?: (loaded: boolean) => void;
+    reload: () => void;
     rawName?: string;
     connections: Connection[];
+    endpoints?: EndpointResponse;
+    setFlow?: (flow: Flow) => void;
 }
 
-export default function EnableDisableSync({ flow, provider, providerConfigKey, reload, setLoaded, rawName, connections }: FlowProps) {
+export default function EnableDisableSync({ flow, provider, providerConfigKey, reload, rawName, connections, endpoints, setFlow }: FlowProps) {
     const { setVisible, bindings } = useModal();
     const createFlow = useCreateFlow();
     const connectionIds = connections.map(connection => connection.id);
@@ -67,12 +69,7 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
         setModalShowSpinner(true);
         const res = await createFlow([flowPayload]);
         if (res?.status === 201) {
-            if (reload) {
-                reload();
-            }
-            if (setLoaded) {
-                setLoaded(false);
-            }
+            reload();
         } else {
             const payload = await res?.json();
             toast.error(payload.error, {
@@ -118,12 +115,15 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
         });
 
         if (res.status === 204) {
-            if (reload) {
-                reload();
+            if (endpoints && setFlow) {
+                const { enabledFlows } = endpoints;
+                if (enabledFlows) {
+                    const newFlow = enabledFlows[flow.type === 'sync' ? 'syncs' : 'actions'].find(f => f.name === flow.name) as Flow;
+                    const { version, last_deployed, ...rest } = newFlow;
+                    setFlow(rest);
+                }
             }
-            if (setLoaded) {
-                setLoaded(false);
-            }
+            reload();
         } else {
             toast.error('Something went wrong', {
                 position: toast.POSITION.BOTTOM_CENTER

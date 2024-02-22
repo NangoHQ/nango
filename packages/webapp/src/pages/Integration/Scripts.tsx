@@ -1,25 +1,34 @@
-import { useNavigate } from 'react-router';
 import { Tooltip } from '@geist-ui/core';
 import { BoltIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
-import { EndpointResponse } from './Show';
-import { IntegrationConfig } from '../../types';
+import { SubTabs, EndpointResponse, FlowConfiguration } from './Show';
+import { IntegrationConfig, Flow } from '../../types';
 import EnableDisableSync from './components/EnableDisableSync';
 import HelpFooter from './components/HelpFooter';
-import { useStore } from '../../store';
 
 interface ScriptProps {
     endpoints: EndpointResponse;
     integration: IntegrationConfig;
     reload: () => void;
+    setFlow: (flow: Flow) => void;
+    setSubTab: (tab: SubTabs) => void;
+    setFlowConfig: (flowConfig: FlowConfiguration) => void;
 }
 
 export default function Scripts(props: ScriptProps) {
-    const { integration, endpoints, reload } = props;
-    const navigate = useNavigate();
+    const { integration, endpoints, reload, setFlow, setSubTab, setFlowConfig } = props;
     const syncs = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.syncs || []];
     const actions = [...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.actions || []];
     const hasScripts = syncs.length || actions.length;
-    const env = useStore(state => state.cookieValue);
+
+    const routeToScript = (flow: Flow) => {
+        setFlow(flow)
+        setSubTab(SubTabs.Flow);
+        if (flow.is_public) {
+            setFlowConfig(endpoints.unEnabledFlows as FlowConfiguration);
+        } else {
+            setFlowConfig(endpoints.enabledFlows as FlowConfiguration);
+        }
+    };
 
     return (
         <div className="h-fit rounded-md text-white text-sm">
@@ -52,7 +61,7 @@ export default function Scripts(props: ScriptProps) {
                                             <td
                                                 key={flow.name}
                                                 className="flex items-center p-3 py-4 hover:bg-hover-gray cursor-pointer justify-between border-b border-border-gray"
-                                                onClick={() => navigate(`/${env}/integration/${integration.unique_key}/${flow.name}`)}
+                                                onClick={() => routeToScript(flow)}
                                             >
                                                 <div className="flex items-center w-36">
                                                     <span className="w-48">{flow.name}</span>
@@ -104,7 +113,7 @@ export default function Scripts(props: ScriptProps) {
                                         <td
                                             key={flow.name}
                                             className="flex items-center cursor-pointer p-3 py-6 hover:bg-hover-gray justify-between border-b border-border-gray"
-                                            onClick={() => navigate(`/${env}/integration/${integration.unique_key}/${flow.name}`)}
+                                            onClick={() => routeToScript(flow)}
                                         >
                                             <div className="flex items-center w-36">
                                                 <span className="w-48">{flow.name}</span>

@@ -16,7 +16,8 @@ export default function EndpointRow({ flow, endpoint, setSubTab, setFlow }: Endp
     const routeToReference = () => {
         setFlow(flow)
         setSubTab(SubTabs.Reference);
-    }
+    };
+
     return (
         <td className="flex items-center p-3 py-2.5 border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={routeToReference}>
             <div className="flex items-center w-80">

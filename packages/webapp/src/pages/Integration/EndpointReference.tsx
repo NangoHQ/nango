@@ -10,7 +10,6 @@ import EndpointLabel from './components/EndpointLabel';
 import { NangoSyncModel, NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow, Account } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
 import { parseInput, generateResponseModel } from '../../utils/utils';
-import { EndpointResponse } from './Show';
 import { useStore } from '../../store';
 
 enum Language {
@@ -23,7 +22,6 @@ enum Language {
 }
 
 interface EndpointReferenceProps {
-    endpoints: EndpointResponse;
     account: Account;
     integration: IntegrationConfig;
     activeFlow: Flow | null;

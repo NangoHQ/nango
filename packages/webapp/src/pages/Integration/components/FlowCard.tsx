@@ -89,7 +89,7 @@ export default function FlowCard({ flow }: FlowProps) {
                 <span className="flex flex-col w-1/2">
                     <div className="text-gray-400">ENABLED</div>
                     <div className="text-amber-500">
-                        {'version' in flow ? 'Yes' : 'No'}
+                        {'version' in flow && flow.version !== null ? 'Yes' : 'No'}
                     </div>
                 </span>
             </div>

@@ -1,24 +1,19 @@
 import { useNavigate } from 'react-router';
-import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useState, useEffect } from 'react';
-import { ArrowLeftIcon, CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import useSWR from 'swr'
+import { Loading } from '@geist-ui/core';
+import { useState } from 'react';
+import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import { useModal } from '@geist-ui/core';
 
-import {
-    useGetProjectInfoAPI,
-    useGetFlowDetailsAPI,
-    useUpdateSyncFrequency,
-    useGetConnectionAPI,
-} from '../../utils/api';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
-import DashboardLayout from '../../layout/DashboardLayout';
+import { useUpdateSyncFrequency } from '../../utils/api';
 import Button from '../../components/ui/button/Button';
+import { requestErrorToast } from '../../utils/api';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
-import { FlowConfiguration } from './Show';
-import type { Flow, Connection } from '../../types';
+import { FlowConfiguration, EndpointResponse } from './Show';
+import type { IntegrationConfig, Account, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info'
@@ -28,27 +23,32 @@ import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippet
 
 import { useStore } from '../../store';
 
-export default function FlowPage() {
-    const [accountLoaded, setAccountLoaded] = useState(false);
-    const [loaded, setLoaded] = useState(false);
-    const [connections, setConnections] = useState<Connection[]>([]);
-    const [flowConfig, setFlowConfig] = useState<FlowConfiguration | null>(null);
-    const [secretKey, setSecretKey] = useState('');
-    const [flow, setFlow] = useState<Flow | null>(null);
+interface FlowPageProps {
+    account: Account;
+    integration: IntegrationConfig;
+    flow: Flow | null;
+    flowConfig: FlowConfiguration | null;
+    reload: () => void;
+    endpoints: EndpointResponse;
+    setFlow: (flow: Flow) => void;
+}
+
+export default function FlowPage(props: FlowPageProps) {
+    const { account, integration, flow, flowConfig, reload, endpoints, setFlow } = props;
+    const { data: connections, error } = useSWR<Connection[]>(`/api/v1/integration/${integration.unique_key}/connections`);
+
+    if (error) {
+        requestErrorToast();
+    }
+
     const [showMetadataCode, setShowMetadataCode] = useState(false);
     const [showAutoStartCode, setShowAutoStartCode] = useState(false);
-    const [provider, setProvider] = useState('');
     const [isDownloading, setIsDownloading] = useState(false);
-    const { providerConfigKey, flowName } = useParams();
-    const getFlowDetailsAPI = useGetFlowDetailsAPI();
-    const getProjectInfoAPI = useGetProjectInfoAPI()
-    const getConnectionAPI = useGetConnectionAPI();
     const updateSyncFrequency = useUpdateSyncFrequency();
     const { setVisible, bindings } = useModal();
     const navigate = useNavigate();
     const env = useStore(state => state.cookieValue);
 
-    const [source, setSource] = useState<'Public' | 'Custom'>();
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState<string | React.ReactNode>('');
     const [modalAction, setModalAction] = useState<(() => void) | null>(null);
@@ -58,94 +58,13 @@ export default function FlowPage() {
     const [showFrequencyEditMenu, setShowFrequencyEditMenu] = useState(false);
     const [frequencyEdit, setFrequencyEdit] = useState('');
 
-    useEffect(() => {
-        const getAccount = async () => {
-            let res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setSecretKey(account.secret_key);
-            }
-        };
-
-        if (!loaded) {
-            setAccountLoaded(true);
-            getAccount();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [accountLoaded, setLoaded, getProjectInfoAPI, setSecretKey]);
-
-    useEffect(() => {
-        const getFlow = async () => {
-            if (providerConfigKey && flowName) {
-                let res = await getFlowDetailsAPI(providerConfigKey, flowName);
-                if (res?.status === 200) {
-                    const data = await res.json();
-
-                    setProvider(data.provider);
-
-                    if (data.flowConfig) {
-                        setFlowConfig(data.flowConfig);
-                        let flow: Flow;
-                        if (data.flowConfig.syncs.length > 0) {
-                            flow = data.flowConfig.syncs[0];
-                            setFlow(flow);
-                        } else {
-                            flow = data.flowConfig.actions[0];
-                            setFlow(flow);
-                        }
-                        if (flow?.is_public) {
-                            setSource('Public');
-                        } else {
-                            setSource('Custom')
-                        }
-                    } else {
-                        setSource('Public');
-                        setFlowConfig(data.unEnabledFlow)
-                        if (data.unEnabledFlow.syncs.length > 0){
-                            const { version, ...rest } = data.unEnabledFlow.syncs[0];
-                            setFlow(rest);
-                        } else {
-                            const { version, ...rest } = data.unEnabledFlow.actions[0];
-                            setFlow(rest);
-                        }
-                    }
-                }
-            }
-        };
-
-        if (!loaded) {
-            setLoaded(true);
-            getFlow();
-        }
-    }, [providerConfigKey, getFlowDetailsAPI, flowName, loaded, setLoaded]);
-
-    useEffect(() => {
-        const getConnections = async () => {
-            if (providerConfigKey) {
-                let res = await getConnectionAPI(providerConfigKey);
-                if (res?.status === 200) {
-                    const connections = await res.json();
-                    if (connections.length > 0) {
-                        setConnections(connections);
-                    }
-                }
-            }
-        }
-
-        if (!loaded) {
-            getConnections();
-        }
-
-    },[providerConfigKey]);
-
     const downloadFlow = async () => {
         setIsDownloading(true);
         const flowInfo = {
             name: flow?.name,
-            provider: provider,
+            provider: integration.provider,
             is_public: true,
-            public_route: flowConfig?.rawName || provider
+            public_route: flowConfig?.rawName || integration.provider
         };
 
         const response = await fetch('/api/v1/flow/download', {
@@ -187,7 +106,7 @@ export default function FlowPage() {
             return;
         }
 
-        if (source === 'Custom') {
+        if (!flow.is_public) {
             setModalTitle('Cannot edit frequency for custom syncs');
             setModalContent('If you want to edit the frequency of this sync, edit it in your `nango.yaml` configuration file.');
             setVisible(true);
@@ -251,12 +170,18 @@ export default function FlowPage() {
             setModalShowSpinner(false);
             setShowFrequencyEditMenu(false);
             setVisible(false);
-            setLoaded(false);
+            reload();
         });
     };
 
+    if (!flow) {
+        return (
+            <Loading spaceRatio={2.5} className="-top-36" />
+        );
+    }
+
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <>
             <ActionModal
                 bindings={bindings}
                 modalTitle={modalTitle}
@@ -266,16 +191,12 @@ export default function FlowPage() {
                 modalTitleColor={modalTitleColor}
                 setVisible={setVisible}
             />
-            {provider && flow && (
-                <>
-                <ArrowLeftIcon className="flex h-5 w-5 text-gray-500 cursor-pointer mb-4" onClick={() => navigate(`/${env}/integration/${providerConfigKey}#scripts`)} />
                 <div className="mx-auto space-y-10 text-sm">
                     <div className="flex justify-between">
                         <div className="flex">
-                            <img src={`/images/template-logos/${provider}.svg`} alt="" className="h-24 w-24" />
-                            <div className="mt-3 ml-6">
+                            <div className="mt-3">
                                 <span className="text-left text-base font-semibold tracking-tight text-gray-400 mb-12">
-                                    {flow?.type?.charAt(0)?.toUpperCase() + flow?.type?.slice(1)}
+                                    {flow?.type?.charAt(0)?.toUpperCase() + flow?.type?.slice(1)} Script
                                 </span>
                                 <h2 className="text-left text-[28px] font-semibold tracking-tight text-white mb-12">
                                     {flow?.name}
@@ -292,7 +213,7 @@ export default function FlowPage() {
                             </Button>
                         </div>
                     </div>
-                    {source === 'Public' && (
+                    {flow.is_public && (
                         <div className="my-1">
                             <Info size={18} padding="px-4 py-1.5">
                                 This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized <a href="https://docs.nango.dev/customize/guides/extend-an-integration-template" target="_blank" className="text-white underline" rel="noreferrer">(learn more)</a>.
@@ -317,19 +238,23 @@ export default function FlowPage() {
                     <div className="flex">
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Enabled</span>
+                            {connections && (
                                 <EnableDisableSync
                                     flow={flow as Flow}
-                                    provider={provider}
-                                    providerConfigKey={providerConfigKey as string}
-                                    setLoaded={setLoaded}
+                                    provider={integration.provider}
+                                    providerConfigKey={integration.unique_key}
+                                    reload={reload}
                                     rawName={flowConfig?.rawName}
                                     connections={connections}
+                                    endpoints={endpoints}
+                                    setFlow={setFlow}
                                 />
+                            )}
                         </div>
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Endpoints</span>
                             {flow?.endpoints.map((endpoint, index) => (
-                                <div key={index} onClick={() => navigate(`/${env}/integration/${providerConfigKey}/reference${parseEndpoint(endpoint)}`)} className="flex flex-col space-y-2 cursor-pointer">
+                                <div key={index} onClick={() => navigate(`/${env}/integration/${integration.unique_key}/reference${parseEndpoint(endpoint)}`)} className="flex flex-col space-y-2 cursor-pointer">
                                     <EndpointLabel endpoint={endpoint} type={flow.type} />
                                 </div>
                             ))}
@@ -355,7 +280,7 @@ export default function FlowPage() {
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Source</span>
                             <div className="text-white">
-                                {source}
+                                {flow?.is_public ? 'Public' : 'Custom'}
                             </div>
                         </div>
                         {flow?.sync_type && (
@@ -456,7 +381,7 @@ export default function FlowPage() {
                                                                             Node
                                                                         </Button>
                                                                     </div>
-                                                                    <CopyButton dark text={setMetadaSnippet(secretKey, providerConfigKey as string, parseInput(flow) as Record<string, any>)} />
+                                                                    <CopyButton dark text={setMetadaSnippet(account.secret_key, integration.unique_key, parseInput(flow) as Record<string, any>)} />
                                                                 </div>
                                                                 <Prism
                                                                     noCopy
@@ -464,7 +389,7 @@ export default function FlowPage() {
                                                                     className="p-1 transparent-code"
                                                                     colorScheme="dark"
                                                                 >
-                                                                    {setMetadaSnippet(secretKey, providerConfigKey as string, parseInput(flow) as Record<string, any>)}
+                                                                    {setMetadaSnippet(account.secret_key, integration.unique_key, parseInput(flow) as Record<string, any>)}
                                                                 </Prism>
                                                             </div>
                                                         )}
@@ -513,7 +438,7 @@ export default function FlowPage() {
                                                                             Node
                                                                         </Button>
                                                                     </div>
-                                                                    <CopyButton dark text={autoStartSnippet(secretKey, providerConfigKey as string, flow?.name as string)} />
+                                                                    <CopyButton dark text={autoStartSnippet(account.secret_key, integration.unique_key, flow?.name as string)} />
                                                                 </div>
                                                                 <Prism
                                                                     noCopy
@@ -521,7 +446,7 @@ export default function FlowPage() {
                                                                     className="p-1 transparent-code"
                                                                     colorScheme="dark"
                                                                 >
-                                                                    {autoStartSnippet(secretKey, providerConfigKey as string, flow?.name as string)}
+                                                                    {autoStartSnippet(account.secret_key, integration.unique_key, flow?.name as string)}
                                                                 </Prism>
                                                             </div>
                                                         )}
@@ -574,7 +499,5 @@ export default function FlowPage() {
                     )}
                 </div>
                 </>
-            )}
-        </DashboardLayout>
     );
 }

@@ -8,6 +8,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import APIReference from './APIReference';
 import EndpointReference from './EndpointReference';
+import FlowPage from './FlowPage';
 import Button from '../../components/ui/button/Button';
 import { BuildingOfficeIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
@@ -25,7 +26,7 @@ export enum Tabs {
 
 export enum SubTabs {
     Reference,
-    Script
+    Flow
 }
 
 export interface FlowConfiguration {
@@ -51,6 +52,7 @@ export default function ShowIntegration() {
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
     const [subTab, setSubTab] = useState<SubTabs | null>(null);
     const [currentFlow, setCurrentFlow] = useState<Flow | null>(null);
+    const [flowConfig, setFlowConfig] = useState<FlowConfiguration | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
     const env = useStore(state => state.cookieValue);
@@ -141,7 +143,6 @@ export default function ShowIntegration() {
                             {subTab === SubTabs.Reference ? (
                                 <EndpointReference
                                     account={account}
-                                    endpoints={endpoints}
                                     integration={integration}
                                     activeFlow={currentFlow}
                                 />
@@ -158,7 +159,28 @@ export default function ShowIntegration() {
                         </>
                     )}
                     {activeTab === Tabs.Scripts && integration && endpoints && (
-                        <Scripts integration={integration} endpoints={endpoints} reload={() => setLoaded(!loaded)} />
+                        <>
+                            {subTab === SubTabs.Flow ? (
+                                <FlowPage
+                                    integration={integration}
+                                    account={account}
+                                    flow={currentFlow}
+                                    flowConfig={flowConfig}
+                                    reload={() => setLoaded(!loaded)}
+                                    endpoints={endpoints}
+                                    setFlow={setCurrentFlow}
+                                />
+                            ) : (
+                                <Scripts
+                                    integration={integration}
+                                    endpoints={endpoints}
+                                    reload={() => setLoaded(!loaded)}
+                                    setFlow={setCurrentFlow}
+                                    setFlowConfig={setFlowConfig}
+                                    setSubTab={setSubTab}
+                                />
+                            )}
+                        </>
                     )}
                     {activeTab === Tabs.Auth && integration && account && (
                         <AuthSettings integration={integration} account={account} />
