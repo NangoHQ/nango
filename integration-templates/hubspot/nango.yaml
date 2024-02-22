@@ -11,12 +11,12 @@ integrations:
         output: HubspotContact
         sync_type: full
         endpoint: /hubspot/contacts
-      hubspot-owner:
+      hubspot-owners:
         runs: every day
         output: HubspotOwner
         sync_type: full
         endpoint: /hubspot/owner
-      hubspot-user:
+      hubspot-users:
         runs: every day
         output: HubspotUser
         sync_type: full
