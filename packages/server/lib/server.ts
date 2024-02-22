@@ -1,7 +1,7 @@
 import tracer from './tracer.js';
+import './utils/config.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
-import _ from './utils/config.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
 import providerController from './controllers/provider.controller.js';
@@ -19,6 +19,7 @@ import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
+import { rateLimiterMiddleware } from './controllers/ratelimit.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -52,14 +53,15 @@ const app = express();
 
 // Auth
 AuthClient.setup(app);
-const apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
-const apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
+
+const apiAuth = [authMiddleware.secretKeyAuth, rateLimiterMiddleware];
+const apiPublicAuth = [authMiddleware.publicKeyAuth, rateLimiterMiddleware];
 const webAuth =
     isCloud() || isEnterprise()
-        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
+        ? [passport.authenticate('session'), authMiddleware.sessionAuth, rateLimiterMiddleware]
         : isBasicAuthEnabled()
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
-          : [authMiddleware.noAuth.bind(authMiddleware)];
+          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth, rateLimiterMiddleware]
+          : [authMiddleware.noAuth, rateLimiterMiddleware];
 
 app.use(
     express.json({
@@ -139,12 +141,12 @@ app.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(
 
 // Webapp routes (no auth).
 if (isCloud() || isEnterprise()) {
-    app.route('/api/v1/signup').post(authController.signup.bind(authController));
-    app.route('/api/v1/signup/invite').get(authController.invitation.bind(authController));
-    app.route('/api/v1/logout').post(authController.logout.bind(authController));
-    app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
-    app.route('/api/v1/forgot-password').put(authController.forgotPassword.bind(authController));
-    app.route('/api/v1/reset-password').put(authController.resetPassword.bind(authController));
+    app.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
+    app.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
+    app.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
+    app.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
+    app.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
+    app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
 }
 
 // Webapp routes (session auth).

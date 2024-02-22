@@ -207,6 +207,7 @@ export interface NangoProps {
     environmentId?: number;
     activityLogId?: number;
     providerConfigKey?: string;
+    provider?: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -237,6 +238,7 @@ export class NangoAction {
 
     public connectionId?: string;
     public providerConfigKey?: string;
+    public provider?: string;
 
     public ActionError = ActionError;
 
@@ -276,6 +278,10 @@ export class NangoAction {
 
         if (config.environmentId) {
             this.environmentId = config.environmentId;
+        }
+
+        if (config.provider) {
+            this.provider = config.provider;
         }
 
         if (config.attributes) {
@@ -332,14 +338,11 @@ export class NangoAction {
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
-            const {
-                config: { provider }
-            } = await this.nango.getIntegration(proxyConfig.providerConfigKey);
 
             const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
                 existingActivityLogId: this.activityLogId as number,
-                connection: connection,
-                provider
+                connection,
+                provider: this.provider as string
             });
 
             if (activityLogs) {
@@ -526,14 +529,7 @@ export class NangoAction {
     }
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
-        const providerConfigKey: string = this.providerConfigKey as string;
-        const response = await this.nango.getIntegration(providerConfigKey);
-
-        if (!response || !response.config || !response.config.provider) {
-            throw Error(`There was no provider found for the provider config key: ${providerConfigKey}`);
-        }
-
-        const template = configService.getTemplate(response.config.provider);
+        const template = configService.getTemplate(this.provider as string);
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {

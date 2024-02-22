@@ -9,9 +9,12 @@ export interface ActivityResponse {
         | 'token'
         | 'sync'
         | 'sync deploy'
+        | 'sync init'
         | 'pause sync'
+        | 'full sync'
         | 'restart sync'
         | 'trigger sync'
+        | 'trigger full sync'
         | 'cancel sync'
         | 'action'
         | 'webhook';
