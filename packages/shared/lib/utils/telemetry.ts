@@ -41,7 +41,9 @@ export enum MetricTypes {
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
     WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
     RUNNER_SDK = 'nango.runner.sdk',
-    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs'
+    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
+    PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
+    PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes'
 }
 
 export enum SpanTypes {
