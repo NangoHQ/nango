@@ -57,7 +57,11 @@ function convertYAML(inputYAML) {
                     delete data.integrations[integration][taskName];
                 } else if (task.runs) {
                     change.type = 'sync';
-                    task.output = task.returns ? task.returns[0] : null;
+                    if (Array.isArray(task.returns)) {
+                        task.output = task.returns.length === 1 ? task.returns[0] : task.returns;
+                    } else {
+                        task.output = task.returns;
+                    }
                     change.changes.push({
                         action: `Set output from returns for ${taskName}`,
                         explanation: `The returns field has been deprecated in v2 as it is potentially confusing. Syncs and actions now have an 'output' field. A sync's output is assumed to be an array.`
