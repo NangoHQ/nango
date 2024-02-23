@@ -129,7 +129,7 @@ export default function Activity() {
     const { error: logActivitiesError } = useSWR(
         () => logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null,
         {
-            onSuccess: (data) => {
+            onSuccess: (data: ActivityMessageResponse) => {
                 const updatedActivities = activities?.map(activity => {
                     const messages = data[activity.id];
                     return { ...activity, messages: messages ? messages.reverse() : [] };
