@@ -98,7 +98,8 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models, input } = flow;
+            const { name, type, returns: models } = flow;
+            let { input } = flow;
 
             if (allSyncNames[name] === undefined) {
                 allSyncNames[name] = true;
@@ -142,6 +143,10 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                         type: model
                     }));
                 }
+            }
+
+            if (input && Object.keys(input).length === 0) {
+                input = undefined;
             }
 
             const rendered = ejs.render(ejsTemplateContents, {
