@@ -15,7 +15,9 @@ import {
     resultOk,
     resultErr,
     isOk,
-    Result
+    Result,
+    telemetry,
+    MetricTypes
 } from '@nangohq/shared';
 import tracer from '../tracer.js';
 import type { Span } from 'dd-trace';
@@ -222,6 +224,7 @@ class PersistController {
         persistFunction: (records: DataRecord[]) => Promise<UpsertResponse>;
     }): Promise<Result<void>> {
         const active = tracer.scope().active();
+        const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
         const span = tracer.startSpan('persistRecords', {
             childOf: active as Span,
             tags: {
@@ -235,7 +238,7 @@ class PersistController {
                 model,
                 activityLogId,
                 'records.count': records.length,
-                'records.sizeInBytes': Buffer.byteLength(JSON.stringify(records), 'utf8')
+                'records.sizeInBytes': recordsSizeInBytes
             }
         });
 
@@ -295,6 +298,10 @@ class PersistController {
             });
 
             await updateSyncJobResult(syncJobId, updatedResults, model);
+
+            telemetry.increment(MetricTypes.PERSIST_RECORDS_COUNT, records.length);
+            telemetry.increment(MetricTypes.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
+
             span.finish();
             return resultOk(void 0);
         } else {
