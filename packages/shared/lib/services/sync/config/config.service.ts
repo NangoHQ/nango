@@ -20,6 +20,8 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
         models: {}
     };
 
+    let isV1 = false;
+
     for (const syncConfig of syncConfigs) {
         if (!syncConfig) {
             continue;
@@ -38,6 +40,15 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
         }
 
         const syncName = syncConfig.sync_name;
+
+        const endpoint =
+            !syncConfig.endpoints_object || syncConfig?.endpoints_object?.length === 0
+                ? null
+                : syncConfig.endpoints_object.map((endpoint) => `${endpoint.method} ${endpoint.path}`);
+
+        if (!endpoint || endpoint.length === 0) {
+            isV1 = true;
+        }
 
         const flowObject = {
             id: syncConfig.id,
@@ -59,7 +70,8 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
                     ? null
                     : syncConfig.endpoints_object.map((endpoint) => `${endpoint.method} ${endpoint.path}`),
             input: syncConfig.input,
-            'webhook-subscriptions': syncConfig.webhook_subscriptions
+            'webhook-subscriptions': syncConfig.webhook_subscriptions,
+            nango_yaml_version: isV1 ? 'v1' : 'v2'
         } as NangoIntegrationDataV2;
 
         if (syncConfig.type === SyncConfigType.SYNC) {
@@ -729,7 +741,7 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
             )
         )
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .join('_nango_sync_endpoints', `${TABLE}.id`, '_nango_sync_endpoints.sync_config_id')
+        .leftJoin('_nango_sync_endpoints', `${TABLE}.id`, '_nango_sync_endpoints.sync_config_id')
         .where({
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.unique_key': provider_config_key,
@@ -741,6 +753,7 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
     if (syncConfigs.length === 0) {
         return null;
     }
+
     const standardConfig = convertSyncConfigToStandardConfig(syncConfigs);
 
     const [config] = standardConfig;
