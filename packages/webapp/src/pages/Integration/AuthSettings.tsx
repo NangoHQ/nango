@@ -217,7 +217,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     ) : (
                         <div className="flex text-white">
                             <span className="mr-2">{integrationId}</span>
-                            {integration?.connectionCount === 0 && (
+                            {integration?.connection_count === 0 && (
                                 <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editIntegrationID()} />
                             )}
                         </div>

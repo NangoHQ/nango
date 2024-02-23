@@ -269,7 +269,7 @@ export interface IntegrationConfig {
     created_at: string;
     webhook_secret?: string;
     custom?: Record<string, string>;
-    connectionCount: number;
+    connection_count: number;
     connections: Connection[];
     docs: string;
 }

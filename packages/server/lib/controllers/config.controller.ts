@@ -30,7 +30,7 @@ interface Integration {
     authMode: AuthModes;
     uniqueKey: string;
     provider: string;
-    connectionCount: number;
+    connection_count: number;
     scripts: number;
     creationDate: Date | undefined;
     connectionConfigParams?: string[];
@@ -64,7 +64,7 @@ class ConfigController {
                         uniqueKey: config.unique_key,
                         provider: config.provider,
                         scripts: activeFlows?.length,
-                        connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
+                        connection_count: connections.filter((connection) => connection.provider === config.unique_key).length,
                         creationDate: config.created_at
                     };
 
@@ -311,7 +311,7 @@ class ConfigController {
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = providerTemplate.webhook_routing_script;
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
-            const connectionCount = connections.length;
+            const connection_count = connections.length;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
                 webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environmentUuid}/${config.provider}`;
@@ -334,7 +334,7 @@ class ConfigController {
                       webhook_secret,
                       connections,
                       docs: providerTemplate.docs,
-                      connectionCount,
+                      connection_count,
                       has_webhook_user_defined_secret: providerTemplate.webhook_user_defined_secret,
                       webhook_url: webhookUrl
                   } as IntegrationWithCreds)

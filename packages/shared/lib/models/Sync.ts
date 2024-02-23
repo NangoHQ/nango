@@ -135,7 +135,7 @@ export interface SyncDeploymentResult {
     providerConfigKey: string;
     type: SyncConfigType;
     last_deployed?: Date;
-    models?: string | string[];
+    models: string | string[];
     id?: number | undefined;
 
     // legacy

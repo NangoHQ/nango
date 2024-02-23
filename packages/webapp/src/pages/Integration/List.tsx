@@ -14,7 +14,7 @@ import { useStore } from '../../store';
 interface Integration {
     uniqueKey: string;
     provider: string;
-    connectionCount: number;
+    connection_count: number;
     scripts: number;
 }
 
@@ -67,7 +67,7 @@ export default function IntegrationList() {
                                         <div className="">Active Scripts</div>
                                     </td>
                                 </tr>
-                                {integrations?.map(({ uniqueKey, provider, connectionCount, scripts }) => (
+                                {integrations?.map(({ uniqueKey, provider, connection_count, scripts }) => (
                                     <tr key={`tr-${uniqueKey}`}>
                                         <td
                                             className={`flex ${
@@ -83,7 +83,7 @@ export default function IntegrationList() {
                                                     <p className="mt-1.5 mr-4 ml-0.5">{uniqueKey}</p>
                                                 </div>
                                                 <div className="flex items-center flex w-40">
-                                                    <p className="">{connectionCount}</p>
+                                                    <p className="">{connection_count}</p>
                                                 </div>
                                                 <div className="flex items-center pl-20 flex">
                                                     <p className="">{scripts}</p>

@@ -69,7 +69,7 @@ class ConnectionService {
         metadata?: Metadata
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
-        const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
@@ -78,7 +78,7 @@ class ConnectionService {
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig,
                 environment_id: environment_id,
-                nango_config_id: nango_config_id as number,
+                config_id: config_id as number,
                 metadata: metadata || storedConnection.metadata || null
             });
 
@@ -102,7 +102,7 @@ class ConnectionService {
                 encryptionManager.encryptConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
-                    nango_config_id: nango_config_id as number,
+                    config_id: config_id as number,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
                     environment_id: environment_id,
@@ -126,12 +126,12 @@ class ConnectionService {
         accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
-        const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
-                nango_config_id: nango_config_id as number,
+                config_id: config_id as number,
                 provider_config_key: providerConfigKey,
                 credentials,
                 connection_config: connectionConfig,
@@ -155,7 +155,7 @@ class ConnectionService {
                 encryptionManager.encryptApiConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
-                    nango_config_id: nango_config_id as number,
+                    config_id: config_id as number,
                     credentials,
                     connection_config: connectionConfig,
                     environment_id
@@ -176,7 +176,7 @@ class ConnectionService {
         accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
-        const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
             await db.knex
@@ -186,7 +186,7 @@ class ConnectionService {
                 .update({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
-                    nango_config_id: nango_config_id as number,
+                    config_id: config_id as number,
                     updated_at: new Date()
                 });
 

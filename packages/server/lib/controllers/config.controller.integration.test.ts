@@ -218,7 +218,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
                     unique_key: 'test',
                     client_id: 'abc',
                     client_secret: 'def',
-                    connectionCount: 0,
+                    connection_count: 0,
                     connections: [],
                     custom: null,
                     docs: 'https://docs.nango.dev/integrations/all/notion',

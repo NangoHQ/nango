@@ -47,8 +47,8 @@ export interface Template {
         [key: string]: string;
     };
     authorization_url_replacements?: Record<string, string>;
-    redirect_uri_metadata?: Array<string>;
-    token_response_metadata?: Array<string>;
+    redirect_uri_metadata?: string[];
+    token_response_metadata?: string[];
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
@@ -77,7 +77,7 @@ export interface IntegrationWithCreds extends Integration {
     created_at: Date;
     connections: NangoConnection[];
     docs: string;
-    connectionCount: number;
+    connection_count: number;
 }
 
 export interface Integration {

@@ -22,7 +22,7 @@ interface Integration {
     authMode: AuthModes;
     uniqueKey: string;
     provider: string;
-    connectionCount: number;
+    connection_count: number;
     creationDate: string;
     connectionConfigParams: string[];
 }

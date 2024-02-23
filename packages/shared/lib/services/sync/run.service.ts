@@ -147,7 +147,7 @@ export default class SyncRun {
                 console.log(content);
             }
         }
-        let nangoConfig = this.loadLocation
+        const nangoConfig = this.loadLocation
             ? await loadLocalNangoConfig(this.loadLocation)
             : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
 

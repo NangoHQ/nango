@@ -11,7 +11,7 @@ export interface ConnectionConfig {
 
 export interface BaseConnection extends TimestampsAndDeleted {
     id?: number;
-    nango_config_id?: number;
+    config_id?: number;
     provider_config_key: string; // TO deprecate
     connection_id: string;
     connection_config: ConnectionConfig;
@@ -40,7 +40,7 @@ export interface ApiConnection {
     id?: number;
     connection_id: string;
     provider_config_key: string;
-    nango_config_id?: number;
+    config_id?: number;
     environment_id: number;
     connection_config: ConnectionConfig;
     credentials_iv?: string | null;
