@@ -169,9 +169,6 @@ export default function Activity() {
                 const id = parseInt(activityLogId);
                 setExpandedRow(id);
 
-                // remove query param env from the url without updating the push state
-                navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, env: null }), { replace: true });
-
                 // wait 1 second before scrolling
                 await new Promise(resolve => setTimeout(resolve, 500));
 
