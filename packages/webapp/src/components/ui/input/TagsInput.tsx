@@ -1,4 +1,5 @@
 import { useEffect, forwardRef, type KeyboardEvent, useState, useMemo } from 'react';
+import { PlusSmallIcon } from '@heroicons/react/24/outline';
 import { X } from '@geist-ui/icons';
 
 import useSet from '../../../hooks/useSet';
@@ -6,14 +7,24 @@ import useSet from '../../../hooks/useSet';
 type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { defaultValue?: string; selectedScopes?: string[]; addToScopesSet?: (scope: string) => void; removeFromSelectedSet?: (scope: string) => void };
 
 const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput({ className, defaultValue, selectedScopes: optionalSelectedScopes, addToScopesSet: optionalAddToScopesSet, removeFromSelectedSet: optionalRemoveFromSelectedSet, ...props }, ref) {
-    const defaultScopes = useMemo(() => {
-        return !!defaultValue ? defaultValue.split(',') : [];
-    }, [defaultValue]);
+  const defaultScopes = useMemo(() => {
+      return !!defaultValue ? defaultValue.split(',') : [];
+  }, [defaultValue]);
 
-    const [enteredValue, setEnteredValue] = useState('');
-    const [error, setError] = useState('');
-    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
+  const [enteredValue, setEnteredValue] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [error, setError] = useState('');
+  const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
 
+  function handleInputFocus() {
+      setIsInputFocused(true);
+  }
+
+  function handleInputBlur() {
+      setTimeout(() => {
+          setIsInputFocused(false);
+      }, 100);
+  }
 
   const [scopes, setScopes] = useState(selectedScopes);
 
@@ -81,24 +92,26 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     value={enteredValue}
                     onChange={(e) => setEnteredValue(e.currentTarget.value)}
                     onKeyDown={handleEnter}
-                    className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    placeholder={`${Boolean(scopes.length) ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
+                    className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                 />
-                <button
-                    onClick={() => handleAdd()}
-                    type="button"
-                    className="text-center px-8 text-sm font-medium bg-white text-black rounded-lg cursor-pointer"
-                >
-                    Add
-                </button>
             </div>
             {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
+            {enteredValue !== '' && isInputFocused && (
+                <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer" onClick={handleAdd}>
+                    <PlusSmallIcon onClick={handleAdd} className="h-5 w-5 cursor-pointer" />
+                    <span className="">Add new scope: "{enteredValue}"</span>
+                </div>
+            )}
             {Boolean(scopes.length) && (
-                <div className="px-2 pt-2 mt-3 pb-11 mb-3 flex flex-wrap rounded-lg border border-border-gray">
+                <div className="pt-1 mb-3 flex flex-wrap space-x-2">
                     {scopes.map((selectedScope, i) => {
                         return (
                             <span
                                 key={selectedScope + i}
-                                className="flex flex-wrap gap-2 pl-4 pr-2 py-2 m-1 justify-between items-center text-sm font-medium rounded-lg cursor-pointer bg-gray-100 text-black"
+                                className="flex flex-wrap gap-1 pl-4 pr-2 py-1 mt-0.5 justify-between items-center text-sm font-medium rounded-lg cursor-pointer bg-green-600 bg-opacity-20 text-green-600"
                             >
                                 {selectedScope}
                                 <X onClick={() => removeScope(selectedScope)} className="h-5 w-5" />

@@ -152,7 +152,7 @@ export default class SyncRun {
             : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
 
         if (!nangoConfig) {
-            const message = `No sync configuration was found for ${this.syncName}.`;
+            const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
             if (this.activityLogId) {
                 await this.reportFailureForResults(message);
             } else {
@@ -201,7 +201,7 @@ export default class SyncRun {
                 syncData = (syncObject['syncs'] ? syncObject!['syncs']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
             }
 
-            const { returns: models, track_deletes: trackDeletes } = syncData;
+            const { returns: models, track_deletes: trackDeletes, is_public: isPublic } = syncData;
 
             if (syncData.sync_config_id) {
                 if (this.debug) {
@@ -224,7 +224,7 @@ export default class SyncRun {
                 }
             }
 
-            if (!isCloud()) {
+            if (!isCloud() && !isPublic && !this.isAction) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation
@@ -556,6 +556,8 @@ export default class SyncRun {
                 version,
                 syncName: this.syncName,
                 connectionDetails: JSON.stringify(this.nangoConnection),
+                connectionId: this.nangoConnection.connection_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
@@ -636,6 +638,8 @@ export default class SyncRun {
                 environmentId: String(this.nangoConnection.environment_id),
                 syncName: this.syncName,
                 connectionDetails: JSON.stringify(this.nangoConnection),
+                connectionId: this.nangoConnection.connection_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,

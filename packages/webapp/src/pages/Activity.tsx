@@ -1,6 +1,6 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import Spinner from '../components/ui/Spinner';
 import {
     ChevronsLeft,
@@ -78,6 +78,7 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
 
 export default function Activity() {
     const navigate = useNavigate();
+    const { env: initialEnv } = useParams();
 
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState<ActivityResponse[]>([]);
@@ -100,7 +101,6 @@ export default function Activity() {
     const queryParams = queryString.parse(location.search);
     const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
     const initialOffset: string | (string | null)[] | null = queryParams.offset;
-    const initialEnv: string | (string | null)[] | null = queryParams.env;
     const initialStatus: string | (string | null)[] | null = queryParams.status;
     const initialScript: string | (string | null)[] | null = queryParams.script;
     const initialIntegration: string | (string | null)[] | null = queryParams.integration;
@@ -407,9 +407,9 @@ export default function Activity() {
     }
 
     const copyActivityLogUrl = (activity: ActivityResponse): string => {
-        const baseUrl = `${window.location.protocol}//${window.location.host}/activity`;
+        const baseUrl = `${window.location.protocol}//${window.location.host}/${env}/activity`;
         const url = new URL(baseUrl);
-        const params = new URLSearchParams({ env, activity_log_id: activity.id.toString() });
+        const params = new URLSearchParams({ activity_log_id: activity.id.toString() });
 
         if (activity.connection_id) {
             params.append('connection', activity.connection_id);
@@ -459,12 +459,12 @@ export default function Activity() {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
-            <div className="max-w-screen-xl px-16 w-fit mx-auto">
-                <div className="flex items-center mt-16 mb-6">
+        <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
+            <div className="relative -left-24">
+                <div className="flex items-center mb-6">
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
-                            <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
+                            <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Logs</h2>
                             {!loaded && <Spinner size={1.5} />}
                         </span>
                         <span>
@@ -479,7 +479,7 @@ export default function Activity() {
                                 <select
                                     id="status"
                                     name="status"
-                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                    className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                     onChange={handleStatusChange}
                                     value={status}
                                 >
@@ -497,7 +497,7 @@ export default function Activity() {
                                     <select
                                         id="script"
                                         name="script"
-                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleScriptChange}
                                         value={selectedScript}
                                     >
@@ -516,7 +516,7 @@ export default function Activity() {
                                     <select
                                         id="connection"
                                         name="connection"
-                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleConnectionChange}
                                         value={selectedConnection}
                                     >
@@ -535,7 +535,7 @@ export default function Activity() {
                                     <select
                                         id="integration"
                                         name="integration"
-                                        className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleIntegrationChange}
                                         value={selectedIntegration}
                                     >
@@ -554,7 +554,7 @@ export default function Activity() {
                                     type="date"
                                     id="date-filter"
                                     name="date-filter"
-                                    className="bg-bg-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm hide-calendar-icon"
+                                    className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm hide-calendar-icon"
                                     style={{ WebkitAppearance: 'none' }}
                                     onChange={handleDateChange}
                                     value={selectedDate}
@@ -588,7 +588,7 @@ export default function Activity() {
                 )}
                 {activities.length > 0 && (
                     <>
-                    <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden">
+                    <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden min-w-[1150px]">
                         <table className="table-auto">
                             <tbody className="px-4">
                                 {activities.filter((activity: ActivityResponse) => typeof activity?.action === 'string').map((activity: ActivityResponse, index: number) => (
@@ -601,21 +601,21 @@ export default function Activity() {
                                             <div className="flex items-center px-2">
                                                 {activity?.success === null && (
                                                     <Link
-                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? `/${env}/integrations` : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`}
                                                     >
                                                         <Clock className="stroke-yellow-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === true && (
                                                     <Link
-                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? `/${env}/integrations` : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`}
                                                     >
                                                         <CheckInCircle className="stroke-green-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === false && (
                                                     <Link
-                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? `/${env}/integrations` : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`}
                                                     >
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     </Link>
@@ -674,7 +674,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-green-500">{activity.action}</p>
                                                             </div>
                                                             <Link
-                                                                to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                                to={`/${env}/connections/${activity.provider_config_key}/${activity.connection_id}`}
                                                                 className="flex items-center"
                                                             >
                                                                 {activity.operation_name && (
@@ -692,7 +692,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-[#8247FF]">sync deploy</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                             </Link>
                                                         </span>
@@ -721,7 +721,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-gray-500">pause sync</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
@@ -736,7 +736,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-gray-500">restart sync</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
@@ -768,7 +768,7 @@ export default function Activity() {
                                                                 <p className="inline-block text-gray-500">{activity.action}</p>
                                                             </div>
                                                             <Link
-                                                                to="/syncs"
+                                                                to={`/${env}/integrations`}
                                                             >
                                                                 {activity.operation_name && (
                                                                     <Tooltip text={activity.operation_name} type="dark">
@@ -796,7 +796,7 @@ export default function Activity() {
                                                 </div>
                                                 <Tooltip text={activity?.connection_id} type="dark">
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={`/${env}/connections/${activity.provider_config_key}/${activity.connection_id}`}
                                                         className={`block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate ${activity.connection_id === null ? 'cursor-default' : ''}`}
                                                         onClick={(e) => {
                                                             if (activity.connection_id === null) {
@@ -808,7 +808,7 @@ export default function Activity() {
                                                     </Link>
                                                 </Tooltip>
                                                 <Link
-                                                    to={activity.provider === null ? '/syncs' : `/integration/${activity.provider_config_key}`}
+                                                    to={activity.provider === null ? `/${env}/integrations` : `/${env}/integration/${activity.provider_config_key}`}
                                                     className={`block w-48 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
                                                     onClick={(e) => {
                                                         if (activity.provider === null && activity.action !== 'sync deploy') {
@@ -828,7 +828,7 @@ export default function Activity() {
                                                 <p className="text-gray-500 w-40">{formatTimestamp(Number(activity.timestamp))}</p>
                                                 {activity.messages && activity.messages.length > 0 && activity.messages && activity.messages[0] !== null && (
                                                     <button
-                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-hover-gray"
                                                         onClick={() => setExpandedRow(activity.id === expandedRow ? -1 : activity.id)}
                                                     >
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>

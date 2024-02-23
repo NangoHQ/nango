@@ -22,9 +22,11 @@ export interface NangoIntegrationDataV1 {
 export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
     sync_type?: SyncType;
     description?: string;
+    updated_at?: string;
     'webhook-subscriptions'?: string[];
     scopes?: string[];
     output?: string | string[];
+    id?: number;
 }
 
 export interface NangoIntegrationV1 {
@@ -119,15 +121,22 @@ export interface NangoSyncConfig {
     returns: string[];
     models: NangoSyncModel[];
     endpoints: NangoSyncEndpoint[];
+    is_public?: boolean;
+    pre_built?: boolean;
+    version?: string | null;
+    last_deployed?: string | null;
+    id?: number;
 
     // v2 additions
     input?: NangoSyncModel;
     sync_type?: SyncType;
+    nango_yaml_version?: string;
     webhookSubscriptions?: string[];
 }
 
 export interface StandardNangoConfig {
     providerConfigKey: string;
+    rawName?: string;
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];

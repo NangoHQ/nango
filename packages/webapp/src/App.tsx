@@ -1,4 +1,5 @@
-import React, { lazy, Suspense } from "react";
+import React from "react";
+import { SWRConfig } from 'swr'
 import {
     Routes,
     Route,
@@ -10,31 +11,31 @@ import {
 } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import * as Sentry from "@sentry/react";
-
+import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud, isEnterprise } from './utils/utils';
+import { fetcher } from './utils/api';
 import { useStore } from './store';
 
-const Signup = lazy(() => import('./pages/Signup'));
-const InviteSignup = lazy(() => import('./pages/InviteSignup'));
-const Signin = lazy(() => import('./pages/Signin'));
-const GettingStarted = lazy(() => import('./pages/GettingStarted'));
-const IntegrationList = lazy(() => import('./pages/IntegrationList'));
-const IntegrationCreate = lazy(() => import('./pages/IntegrationCreate'));
-const ConnectionList = lazy(() => import('./pages/ConnectionList'));
-const ConnectionCreate = lazy(() => import('./pages/ConnectionCreate'));
-const FlowCreate = lazy(() => import('./pages/FlowCreate'));
-const ConnectionDetails = lazy(() => import('./pages/ConnectionDetails'));
-const ProjectSettings = lazy(() => import('./pages/ProjectSettings'));
-const PrivateRoute = lazy(() => import('./components/PrivateRoute'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const Activity = lazy(() => import('./pages/Activity'));
-const Syncs = lazy(() => import('./pages/Syncs'));
-const AuthLink = lazy(() => import('./pages/AuthLink'));
-const AccountSettings = lazy(() => import('./pages/AccountSettings'));
-const UserSettings = lazy(() => import('./pages/UserSettings'));
+import Signup from './pages/Signup';
+import InviteSignup from './pages/InviteSignup';
+import Signin from './pages/Signin';
+import GettingStarted from './pages/GettingStarted';
+import IntegrationList from './pages/Integration/List';
+import CreateIntegration from './pages/Integration/Create';
+import ShowIntegration from './pages/Integration/Show';
+import ConnectionList from './pages/Connection/List';
+import Connection from './pages/Connection/Show';
+import ConnectionCreate from './pages/Connection/Create';
+import ProjectSettings from './pages/ProjectSettings';
+import PrivateRoute from './components/PrivateRoute';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import Activity from './pages/Activity';
+import AuthLink from './pages/AuthLink';
+import AccountSettings from './pages/AccountSettings';
+import UserSettings from './pages/UserSettings';
 
 Sentry.init({
   dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -52,11 +53,38 @@ Sentry.init({
   tracesSampleRate: 0.1,
 });
 
+const VALID_PATHS = [
+    'getting-started',
+    'integration',
+    'integrations',
+    'syncs',
+    'connections',
+    'activity',
+    'project-settings',
+    'user-settings',
+    'account-settings',
+];
+
 const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
     const env = useStore(state => state.cookieValue);
+    const signout = useSignout();
 
-    const landingPage = env === 'dev' ? '/getting-started' : '/integrations';
+    const correctPage = (): string => {
+        const url = new URL(window.location.href);
+        const pathSegments = url.pathname.split('/').filter(Boolean);
+
+        const rawUrl = window.location.href;
+
+        if (VALID_PATHS.some(path => rawUrl.includes(path))) {
+            const newPathSegments = [env, ...pathSegments];
+            url.pathname = '/' + newPathSegments.join('/');
+
+            return url.pathname;
+        }
+
+        return env === 'dev' ? '/dev/getting-started' : '/prod/integrations';
+    };
 
     return (
         <MantineProvider
@@ -75,60 +103,58 @@ const App = () => {
                 })
             }}
         >
-            <Suspense>
-                <SentryRoutes >
-                    <Route path="/" element={<Navigate to={landingPage} replace />} />
-                    <Route path="/getting-started" element={<PrivateRoute />}>
-                        <Route path="/getting-started" element={<GettingStarted />} />
-                    </Route>
-                    <Route path="/integrations" element={<PrivateRoute />}>
-                        <Route path="/integrations" element={<IntegrationList />} />
-                    </Route>
-                    <Route path="/integration/create" element={<PrivateRoute />}>
-                        <Route path="/integration/create" element={<IntegrationCreate />} />
-                    </Route>
-                    <Route path="/integration/:providerConfigKey" element={<PrivateRoute />}>
-                        <Route path="/integration/:providerConfigKey" element={<IntegrationCreate />} />
-                    </Route>
-                    <Route path="/syncs" element={<PrivateRoute />}>
-                        <Route path="/syncs" element={<Syncs />} />
-                    </Route>
-                    <Route path="/connections" element={<PrivateRoute />}>
-                        <Route path="/connections" element={<ConnectionList />} />
-                    </Route>
-                    <Route path="/connections/create" element={<PrivateRoute />}>
-                        <Route path="/connections/create" element={<ConnectionCreate />} />
-                    </Route>
-                    <Route path="/connections/create/:providerConfigKey" element={<PrivateRoute />}>
-                        <Route path="/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
-                    </Route>
-                    <Route path="/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
-                        <Route path="/connections/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
-                    </Route>
-                    <Route path="/activity" element={<PrivateRoute />}>
-                        <Route path="/activity" element={<Activity />} />
-                    </Route>
-                    <Route path="/project-settings" element={<PrivateRoute />}>
-                        <Route path="/project-settings" element={<ProjectSettings />} />
-                    </Route>
-                    <Route path="/auth-link" element={<AuthLink />} />
-                    <Route path="/flow/create" element={<PrivateRoute />}>
-                        <Route path="/flow/create" element={<FlowCreate />} />
-                    </Route>
-                    {(isCloud() || isEnterprise()) && (
-                        <>
-                            <Route path="/account-settings" element={<AccountSettings />} />
-                            <Route path="/user-settings" element={<UserSettings />} />
-                            <Route path="/signin" element={<Signin />} />
-                            <Route path="/signup" element={<Signup />} />
-                            <Route path="/signup/:token" element={<InviteSignup />} />
-                            <Route path="/forgot-password" element={<ForgotPassword />} />
-                            <Route path="/reset-password/:token" element={<ResetPassword />} />
-                        </>
-                    )}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </SentryRoutes>
-            </Suspense>
+            <SWRConfig value={{ fetcher, onError: (error) => {
+                if (error.status === 401) {
+                    return signout();
+                }
+            }}}>
+            <SentryRoutes>
+                <Route path="/" element={<Navigate to={correctPage()} replace />} />
+                <Route path="/dev/getting-started" element={<PrivateRoute />}>
+                    <Route path="/dev/getting-started" element={<GettingStarted />} />
+                </Route>
+                <Route path="/:env/integrations" element={<PrivateRoute />}>
+                    <Route path="/:env/integrations" element={<IntegrationList />} />
+                </Route>
+                <Route path="/:env/integration/create" element={<PrivateRoute />}>
+                    <Route path="/:env/integration/create" element={<CreateIntegration />} />
+                </Route>
+                <Route path="/:env/integration/:providerConfigKey" element={<PrivateRoute />}>
+                    <Route path="/:env/integration/:providerConfigKey" element={<ShowIntegration />} />
+                </Route>
+                <Route path="/:env/connections" element={<PrivateRoute />}>
+                    <Route path="/:env/connections" element={<ConnectionList />} />
+                </Route>
+                <Route path="/:env/connections/create" element={<PrivateRoute />}>
+                    <Route path="/:env/connections/create" element={<ConnectionCreate />} />
+                </Route>
+                <Route path="/:env/connections/create/:providerConfigKey" element={<PrivateRoute />}>
+                    <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
+                </Route>
+                <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
+                    <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
+                </Route>
+                <Route path="/:env/activity" element={<PrivateRoute />}>
+                    <Route path="/:env/activity" element={<Activity />} />
+                </Route>
+                <Route path="/:env/project-settings" element={<PrivateRoute />}>
+                    <Route path="/:env/project-settings" element={<ProjectSettings />} />
+                </Route>
+                <Route path="/auth-link" element={<AuthLink />} />
+                {(isCloud() || isEnterprise()) && (
+                    <>
+                        <Route path="/:env/account-settings" element={<AccountSettings />} />
+                        <Route path="/:env/user-settings" element={<UserSettings />} />
+                        <Route path="/signin" element={<Signin />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/signup/:token" element={<InviteSignup />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password/:token" element={<ResetPassword />} />
+                    </>
+                )}
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </SentryRoutes>
+            </SWRConfig>
             <ToastContainer />
         </MantineProvider>
     );

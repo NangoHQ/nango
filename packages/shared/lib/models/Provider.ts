@@ -1,5 +1,6 @@
 import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
 import type { AuthModes } from './Auth.js';
+import type { NangoConnection } from './Connection.js';
 import type { HTTP_VERB, TimestampsAndDeleted } from './Generic.js';
 import type { SyncConfig, Action } from './Sync.js';
 
@@ -51,6 +52,7 @@ export interface Template {
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
+    categories?: string[];
 }
 
 export interface TemplateAlias {
@@ -70,6 +72,10 @@ export interface IntegrationWithCreds extends Integration {
     webhook_url?: string;
     syncs: SyncConfig[];
     actions: Action[];
+    created_at: Date;
+    connections: NangoConnection[];
+    docs: string;
+    connection_count: number;
 }
 
 export interface Integration {

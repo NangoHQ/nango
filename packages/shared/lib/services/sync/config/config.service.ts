@@ -3,7 +3,7 @@ import db, { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
-import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType, NangoConfigMetadata } from '../../../models/Sync.js';
+import { Action, SyncConfigWithProvider, SyncType, SyncConfig, SlimSync, SyncConfigType, NangoConfigMetadata } from '../../../models/Sync.js';
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
@@ -11,6 +11,110 @@ import type { NangoConfig, NangoConfigV1, NangoV2Integration, StandardNangoConfi
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const TABLE = dbNamespace + 'sync_configs';
+
+type extendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: { method: string; path: string }[] };
+
+const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): StandardNangoConfig[] => {
+    const nangoConfig = {
+        integrations: {} as Record<string, NangoV2Integration>,
+        models: {}
+    };
+
+    for (const syncConfig of syncConfigs) {
+        if (!syncConfig) {
+            continue;
+        }
+
+        const uniqueKey = syncConfig.unique_key;
+
+        if (!uniqueKey) {
+            continue;
+        }
+
+        if (!nangoConfig['integrations'][uniqueKey]) {
+            nangoConfig['integrations'][uniqueKey] = {
+                provider: syncConfig.provider
+            } as NangoV2Integration;
+        }
+
+        const syncName = syncConfig.sync_name;
+
+        const flowObject = {
+            id: syncConfig.id,
+            runs: syncConfig.runs,
+            type: syncConfig.type,
+            output: syncConfig.models,
+            returns: syncConfig.models,
+            description: syncConfig?.metadata?.description || '',
+            track_deletes: syncConfig.track_deletes,
+            auto_start: syncConfig.auto_start,
+            attributes: syncConfig.attributes || {},
+            scopes: syncConfig?.metadata?.scopes || [],
+            version: syncConfig.version as string,
+            updated_at: syncConfig.updated_at?.toISOString(),
+            is_public: syncConfig?.is_public,
+            pre_built: syncConfig?.pre_built,
+            endpoint:
+                !syncConfig.endpoints_object || syncConfig?.endpoints_object?.length === 0
+                    ? null
+                    : syncConfig.endpoints_object.map((endpoint) => `${endpoint.method} ${endpoint.path}`),
+            input: syncConfig.input,
+            'webhook-subscriptions': syncConfig.webhook_subscriptions
+        } as NangoIntegrationDataV2;
+
+        if (syncConfig.type === SyncConfigType.SYNC) {
+            if (!nangoConfig['integrations'][uniqueKey]!['syncs']) {
+                nangoConfig['integrations'][uniqueKey]!['syncs'] = {} as Record<string, NangoIntegrationDataV2>;
+            }
+            flowObject['sync_type'] = syncConfig.sync_type as SyncType;
+            nangoConfig['integrations'][uniqueKey]!['syncs'] = {
+                ...nangoConfig['integrations'][uniqueKey]!['syncs'],
+                [syncName]: flowObject
+            };
+        } else {
+            if (!nangoConfig['integrations'][uniqueKey]!['actions']) {
+                nangoConfig['integrations'][uniqueKey]!['actions'] = {} as Record<string, NangoIntegrationDataV2>;
+            }
+            nangoConfig['integrations'][uniqueKey]!['actions'] = {
+                ...nangoConfig['integrations'][uniqueKey]!['actions'],
+                [syncName]: flowObject
+            };
+        }
+    }
+
+    const { success, response: standardConfig } = convertV2ConfigObject(nangoConfig);
+
+    if (!success || !standardConfig) {
+        return [];
+    }
+
+    const configWithModels = standardConfig.map((config: StandardNangoConfig) => {
+        const { providerConfigKey } = config;
+        for (const sync of [...config.syncs, ...config.actions]) {
+            const { name } = sync;
+            const syncObject = syncConfigs.find(
+                (syncConfig: extendedSyncConfig) => syncConfig.sync_name === name && syncConfig.unique_key === providerConfigKey
+            );
+
+            const { model_schema, input } = syncObject as SyncConfig;
+
+            for (const model of model_schema) {
+                if (Array.isArray(model.fields) && Array.isArray(model.fields[0])) {
+                    model.fields = model.fields.flat();
+                }
+
+                if (model.name === input) {
+                    sync.input = model;
+                }
+            }
+            sync.models = model_schema;
+        }
+
+        return config;
+    });
+
+    return configWithModels;
+};
 
 export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfig | null> {
     let syncConfigs;
@@ -81,6 +185,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             `${TABLE}.track_deletes`,
             `${TABLE}.auto_start`,
             `${TABLE}.attributes`,
+            `${TABLE}.updated_at`,
             `${TABLE}.version`,
             `${TABLE}.sync_type`,
             `${TABLE}.metadata`,
@@ -89,10 +194,10 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             '_nango_configs.unique_key',
             db.knex.raw(
                 `(
-            SELECT json_agg(json_build_object('method', method, 'path', path))
-            FROM _nango_sync_endpoints
-            WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
-        ) as endpoints`
+                    SELECT json_agg(json_build_object('method', method, 'path', path))
+                    FROM _nango_sync_endpoints
+                    WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
+                ) as endpoints_object`
             )
         )
         .from<SyncConfig>(TABLE)
@@ -107,98 +212,9 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
         return [];
     }
 
-    const nangoConfig = {
-        integrations: {} as Record<string, NangoV2Integration>,
-        models: {}
-    };
+    const standardConfig = convertSyncConfigToStandardConfig(syncConfigs);
 
-    for (const syncConfig of syncConfigs) {
-        if (!syncConfig) {
-            continue;
-        }
-
-        const uniqueKey = syncConfig.unique_key;
-
-        if (!uniqueKey) {
-            continue;
-        }
-
-        if (!nangoConfig['integrations'][uniqueKey]) {
-            nangoConfig['integrations'][uniqueKey] = {};
-            nangoConfig['integrations']![uniqueKey]!['provider'] = syncConfig.provider;
-        }
-        const syncName = syncConfig.sync_name;
-
-        const flowObject = {
-            runs: syncConfig.runs,
-            type: syncConfig.type,
-            output: syncConfig.models,
-            returns: syncConfig.models,
-            description: syncConfig.metadata.description || '',
-            track_deletes: syncConfig.track_deletes,
-            auto_start: syncConfig.auto_start,
-            attributes: syncConfig.attributes || {},
-            scopes: syncConfig.metadata.scopes || [],
-            version: syncConfig.version as string,
-            endpoint:
-                !syncConfig.endpoints || syncConfig.endpoints.legnth === 0
-                    ? null
-                    : syncConfig.endpoints.map((endpoint: { path: string; method: string }) => `${endpoint.method} ${endpoint.path}`),
-            input: syncConfig.input
-        } as NangoIntegrationDataV2;
-
-        if (syncConfig.type === SyncConfigType.SYNC) {
-            if (!nangoConfig['integrations'][uniqueKey]!['syncs']) {
-                nangoConfig['integrations'][uniqueKey]!['syncs'] = {} as Record<string, NangoIntegrationDataV2>;
-            }
-            flowObject['sync_type'] = syncConfig.sync_type;
-            nangoConfig['integrations'][uniqueKey]!['syncs'] = {
-                [syncName]: flowObject
-            };
-        } else {
-            if (!nangoConfig['integrations'][uniqueKey]!['actions']) {
-                nangoConfig['integrations'][uniqueKey]!['actions'] = {} as Record<string, NangoIntegrationDataV2>;
-            }
-            nangoConfig['integrations'][uniqueKey]!['actions'] = {
-                [syncName]: flowObject
-            };
-        }
-    }
-
-    type extendedSyncConfig = SyncConfig & { provider: string; unique_key: string };
-
-    const { success, response: standardConfig } = convertV2ConfigObject(nangoConfig);
-
-    if (!success || !standardConfig) {
-        return [];
-    }
-
-    const configWithModels = standardConfig.map((config: StandardNangoConfig) => {
-        const { providerConfigKey } = config;
-        for (const sync of [...config.syncs, ...config.actions]) {
-            const { name } = sync;
-            const syncObject = syncConfigs.find(
-                (syncConfig: extendedSyncConfig) => syncConfig.sync_name === name && syncConfig.unique_key === providerConfigKey
-            );
-
-            const { model_schema, input } = syncObject;
-
-            for (const model of model_schema) {
-                if (Array.isArray(model.fields) && Array.isArray(model.fields[0])) {
-                    model.fields = model.fields.flat();
-                }
-
-                if (model.name === input) {
-                    sync.input = model;
-                }
-            }
-            sync.models = model_schema;
-        }
-
-        return config;
-    });
-
-    return configWithModels;
+    return standardConfig;
 }
 
 export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string, isAction?: boolean): Promise<SyncConfig[] | null> {
@@ -227,6 +243,29 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     }
 
     return null;
+}
+
+export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<SyncConfig[]> {
+    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
+
+    if (!config) {
+        throw new Error('Provider config not found');
+    }
+
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({
+            environment_id,
+            nango_config_id: config.id as number,
+            active: true,
+            deleted: false
+        });
+
+    if (result) {
+        return result;
+    }
+
+    return [];
 }
 
 export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
@@ -645,6 +684,124 @@ export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ n
     }
 
     return result;
+}
+
+export async function updateFrequency(sync_config_id: number, runs: string): Promise<void> {
+    await schema()
+        .from<SyncConfig>(TABLE)
+        .update({
+            runs
+        })
+        .where({
+            id: sync_config_id,
+            deleted: false,
+            active: true
+        });
+}
+
+export async function getConfigWithEndpointsByProviderConfigKey(environment_id: number, provider_config_key: string): Promise<StandardNangoConfig | null> {
+    const syncConfigs = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(
+            `${TABLE}.id`,
+            `${TABLE}.metadata`,
+            `${TABLE}.sync_name`,
+            `${TABLE}.pre_built`,
+            `${TABLE}.is_public`,
+            `${TABLE}.updated_at`,
+            `${TABLE}.version`,
+            `${TABLE}.runs`,
+            `${TABLE}.models`,
+            `${TABLE}.model_schema`,
+            `${TABLE}.input`,
+            `${TABLE}.type`,
+            `${TABLE}.sync_type`,
+            `${TABLE}.track_deletes`,
+            `${TABLE}.auto_start`,
+            '_nango_configs.unique_key',
+            '_nango_configs.provider',
+            db.knex.raw(
+                `(
+                    SELECT json_agg(json_build_object('method', method, 'path', path))
+                    FROM _nango_sync_endpoints
+                    WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
+                ) as endpoints_object`
+            )
+        )
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .join('_nango_sync_endpoints', `${TABLE}.id`, '_nango_sync_endpoints.sync_config_id')
+        .where({
+            '_nango_configs.environment_id': environment_id,
+            '_nango_configs.unique_key': provider_config_key,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false,
+            [`${TABLE}.active`]: true
+        });
+
+    if (syncConfigs.length === 0) {
+        return null;
+    }
+    const standardConfig = convertSyncConfigToStandardConfig(syncConfigs);
+
+    const [config] = standardConfig;
+
+    return config as StandardNangoConfig;
+}
+
+export async function getConfigWithEndpointsByProviderConfigKeyAndName(
+    environment_id: number,
+    provider_config_key: string,
+    name: string
+): Promise<StandardNangoConfig | null> {
+    const syncConfigs = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(
+            `${TABLE}.id`,
+            `${TABLE}.metadata`,
+            `${TABLE}.sync_name`,
+            `${TABLE}.pre_built`,
+            `${TABLE}.is_public`,
+            `${TABLE}.updated_at`,
+            `${TABLE}.version`,
+            `${TABLE}.runs`,
+            `${TABLE}.models`,
+            `${TABLE}.model_schema`,
+            `${TABLE}.input`,
+            `${TABLE}.type`,
+            `${TABLE}.sync_type`,
+            `${TABLE}.track_deletes`,
+            `${TABLE}.auto_start`,
+            `${TABLE}.webhook_subscriptions`,
+            '_nango_configs.unique_key',
+            '_nango_configs.provider',
+            db.knex.raw(
+                `(
+                    SELECT json_agg(json_build_object('method', method, 'path', path))
+                    FROM _nango_sync_endpoints
+                    WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
+                ) as endpoints_object`
+            )
+        )
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .join('_nango_sync_endpoints', `${TABLE}.id`, '_nango_sync_endpoints.sync_config_id')
+        .where({
+            '_nango_configs.environment_id': environment_id,
+            '_nango_configs.unique_key': provider_config_key,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false,
+            [`${TABLE}.sync_name`]: name,
+            [`${TABLE}.active`]: true
+        });
+
+    if (syncConfigs.length === 0) {
+        return null;
+    }
+
+    const standardConfig = convertSyncConfigToStandardConfig(syncConfigs);
+
+    const [config] = standardConfig;
+
+    return config as StandardNangoConfig;
 }
 
 export async function getAllSyncAndActionNames(environmentId: number): Promise<string[]> {
