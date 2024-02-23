@@ -127,21 +127,16 @@ export default function Activity() {
     });
 
     const { error: logActivitiesError } = useSWR(
-      logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null,
-      {
-        onSuccess: (data: ActivityMessageResponse) => {
-            if (activities) {
-              const logsWithMessages = activities?.map(activity => {
-                const logMessages = data[activity.id]; // Adjust this if the structure of `data` is different
-                if (logMessages) {
-                  activity.messages = logMessages.reverse();
-                }
-                return activity;
-              });
-              setActivities(logsWithMessages);
+        () => logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null,
+        {
+            onSuccess: (data) => {
+                const updatedActivities = activities?.map(activity => {
+                    const messages = data[activity.id];
+                    return { ...activity, messages: messages ? messages.reverse() : [] };
+                });
+                setActivities(updatedActivities as ActivityResponse[]);
             }
         }
-      }
     );
 
     const { data: activityFilters } = useSWR(`/api/v1/activity-filters?env=${env}`);
@@ -731,7 +726,7 @@ export default function Activity() {
                                                         )}
                                                     </Link>
                                                     <p className="text-gray-500 w-40">{formatTimestamp(Number(activity.timestamp))}</p>
-                                                    {activity.messages && activity.messages.length > 0 && activity.messages && activity.messages[0] !== null && (
+                                                    {activity.messages && activity.messages.length > 0 && activity.messages[0] !== null && (
                                                         <button
                                                             className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-hover-gray"
                                                             onClick={() => setExpandedRow(activity.id === expandedRow ? -1 : activity.id)}
