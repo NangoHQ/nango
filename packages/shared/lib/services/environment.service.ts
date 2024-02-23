@@ -17,9 +17,7 @@ interface EnvironmentAccount {
     environment: string;
 }
 
-interface EnvironmentAccountSecrets {
-    [key: string]: EnvironmentAccount;
-}
+type EnvironmentAccountSecrets = Record<string, EnvironmentAccount>;
 
 export const defaultEnvironments = ['prod', 'dev'];
 
@@ -388,7 +386,7 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironmentVariables(result);
     }
 
-    async editEnvironmentVariable(environment_id: number, values: Array<{ name: string; value: string }>): Promise<number[] | null> {
+    async editEnvironmentVariable(environment_id: number, values: { name: string; value: string }[]): Promise<number[] | null> {
         await db.knex.withSchema(db.schema()).from<EnvironmentVariable>(`_nango_environment_variables`).where({ environment_id }).del();
 
         if (values.length === 0) {

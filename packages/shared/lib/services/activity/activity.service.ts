@@ -215,7 +215,6 @@ export async function getTopLevelLogByEnvironment(
         .withSchema(db.schema())
         .from<ActivityLog>('_nango_activity_logs')
         .where({ environment_id })
-        .groupBy('_nango_activity_logs.id')
         .orderBy('_nango_activity_logs.timestamp', 'desc')
         .offset(offset)
         .limit(limit);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
 import type { HTTP_VERB } from './Generic.js';
 import type { SyncType, SyncConfigType, NangoConfigMetadata } from './Sync.js';
 
