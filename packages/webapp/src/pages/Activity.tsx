@@ -1,5 +1,4 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
-import useSWR from 'swr'
 import { Helmet } from 'react-helmet';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import Spinner from '../components/ui/Spinner';
@@ -122,13 +121,6 @@ export default function Activity() {
 
     const isInitialMount = useRef(true);
     const [activityRefs, setActivityRefs] = useState<{ [key: number]: React.RefObject<HTMLTableRowElement> }>({});
-
-    const { data: activities, error, mutate } = useSWR(`/api/path/to/activities?offset=${offset}&limit=${limit}&status=${status}&script=${selectedScript}&integration=${selectedIntegration}&connection=${selectedConnection}&date=${selectedDate}`, fetcher, {
-        onSuccess: (data) => {
-            setLogIds(data.map((activity: ActivityResponse) => activity.id));
-            // Any additional logic to run on data success
-        }
-    });
 
     useEffect(() => {
         setLoaded(false);
