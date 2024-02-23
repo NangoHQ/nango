@@ -642,7 +642,6 @@ class ConfigController {
                 environment_id: environmentId,
                 custom
             };
-            console.log(newConfig);
 
             const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environmentId);
 
