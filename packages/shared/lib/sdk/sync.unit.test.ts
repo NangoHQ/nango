@@ -75,7 +75,7 @@ describe('Pagination', () => {
         stubProviderTemplate(cursorPagination);
         mockErrorManagerReport();
 
-        // @ts-ignore
+        // @ts-expect-error
         vi.spyOn(configService, 'getProviderConfig').mockImplementation((config: any) => {
             return Promise.resolve('{}');
         });

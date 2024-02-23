@@ -7,7 +7,7 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 vi.mock('crypto', async () => {
     const actualCrypto = await vi.importActual('crypto');
     return {
-        // @ts-ignore
+        // @ts-expect-error
         ...actualCrypto,
         timingSafeEqual: () => true
     };

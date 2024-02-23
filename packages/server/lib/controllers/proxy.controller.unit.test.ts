@@ -7,7 +7,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             rawHeaders: ['Nango-Proxy-Test-Header', 'TestValue', 'nango-proxy-another-header', 'AnotherValue', 'Irrelevant-Header', 'IrrelevantValue']
         };
 
-        // @ts-ignore
+        // @ts-expect-error
         const parsedHeaders = proxyController.parseHeaders(req);
 
         expect(parsedHeaders).toEqual({
@@ -21,7 +21,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             rawHeaders: ['Irrelevant-Header-One', 'IrrelevantValueOne', 'Irrelevant-Header-Two', 'IrrelevantValueTwo']
         };
 
-        // @ts-ignore
+        // @ts-expect-error
         const parsedHeaders = proxyController.parseHeaders(req);
 
         expect(parsedHeaders).toEqual({});
@@ -30,7 +30,7 @@ describe('Proxy Controller Construct URL Tests', () => {
     it('Should handle the case when rawHeaders is not an array or empty', () => {
         const req: any = {};
 
-        // @ts-ignore
+        // @ts-expect-error
         const parsedHeaders = proxyController.parseHeaders(req);
 
         expect(parsedHeaders).toEqual({});

@@ -66,8 +66,56 @@
     ],
     "redirects": [
         {
-            "source": "guides/actions",
-            "destination": "guides/action"
+            "source": "/guides/custom",
+            "destination": "/customize/guides/create-a-custom-integration"
+        },
+        {
+            "source": "/guides/action",
+            "destination": "/integrate/guides/perform-workflows-with-an-api"
+        },
+        {
+            "source": "/guides/sync",
+            "destination": "/integrate/guides/sync-data-from-an-api"
+        },
+        {
+            "source": "/guides/oauth",
+            "destination": "/integrate/guides/authorize-an-api"
+        },
+        {
+            "source": "/guides/proxy",
+            "destination": "/integrate/guides/proxy-requests-to-an-api"
+        },
+        {
+            "source": "/guides/webhooks",
+            "destination": "/integrate/guides/receive-webhooks-from-nango"
+        },
+        {
+            "source": "/guides/advanced-auth",
+            "destination": "/integrate/guides/authorize-an-api"
+        },
+        {
+            "source": "/guides/field-mapping",
+            "destination": "/integrate/guides/advanced/use-custom-field-mappings"
+        },
+        {
+            "source": "/guides/api-key",
+            "destination": "/integrate/guides/authorize-an-api"
+        },
+        {
+            "source": "/guides/contribute",
+            "destination": "/customize/guides/contribute-an-api"
+        },
+        {
+            "source": "/integration-templates",
+            "destination": "/integrations/overview"
+        },
+        {
+            "source": "/guides/cloud",
+            "destination": "/host/cloud"
+        },
+        {
+            "source": "/guides/managed-integrations",
+            "destination": "/host/managed-integrations"
         }
     ],
     "navigation": [
@@ -517,7 +565,7 @@
         "twitter": "https://twitter.com/NangoHQ",
         "linkedin": "https://www.linkedin.com/company/nangohq/",
         "github": "https://github.com/NangoHQ/nango",
-        "slack": "https://nango-community.slack.com/join/shared_invite/zt-1cvpdflmb-TMrjJJ_AZJeMivOgt906HA#/shared-invite/email",
+        "slack": "https://nango.dev/slack",
         "website": "https://www.nango.dev/"
     }
 }
