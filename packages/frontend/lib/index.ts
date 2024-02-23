@@ -20,7 +20,11 @@ export class AuthError extends Error {
     }
 }
 
-export type AuthResult = { providerConfigKey: string; connectionId: string; isPending?: boolean };
+export interface AuthResult {
+    providerConfigKey: string;
+    connectionId: string;
+    isPending?: boolean;
+}
 
 interface AuthOptions {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
@@ -357,7 +361,7 @@ enum AuthorizationStatus {
  */
 class AuthorizationModal {
     private url: string;
-    private features: { [key: string]: string | number };
+    private features: Record<string, string | number>;
     private width = 500;
     private height = 600;
     public modal: Window;

@@ -59,9 +59,10 @@ export default function FlowPage(props: FlowPageProps) {
     const downloadFlow = async () => {
         setIsDownloading(true);
         const flowInfo = {
+            id: flow?.id,
             name: flow?.name,
             provider: integration.provider,
-            is_public: true,
+            is_public: flow?.is_public,
             public_route: flowConfig?.rawName || integration.provider
         };
 

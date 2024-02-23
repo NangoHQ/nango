@@ -129,7 +129,7 @@ describe('SyncRun', () => {
         expect(failRun.response).toEqual(false);
 
         // if run script returns null then fail
-        // @ts-ignore
+        // @ts-expect-error
         vi.spyOn(integrationService, 'runScript').mockImplementation(() => {
             return Promise.resolve(null);
         });
