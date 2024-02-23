@@ -17,6 +17,7 @@ export interface NangoIntegrationDataV1 {
     pre_built?: boolean;
     is_public?: boolean;
     endpoint?: string | string[];
+    nango_yaml_version?: string;
 }
 
 export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
