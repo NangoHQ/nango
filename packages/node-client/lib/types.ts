@@ -92,9 +92,7 @@ export interface ApiKeyCredentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
-export interface Metadata {
-    [key: string]: string | Record<string, any>;
-}
+export type Metadata = Record<string, string | Record<string, any>>;
 
 export interface Connection {
     id?: number;

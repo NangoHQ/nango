@@ -24,7 +24,7 @@ interface ErrorOptionalConfig {
     accountId?: number;
     userId?: number;
     environmentId?: number;
-    metadata?: { [key: string]: unknown };
+    metadata?: Record<string, unknown>;
     operation?: string;
 }
 
@@ -167,8 +167,8 @@ class ErrorManager {
         this.errResFromNangoErr(res, supportError);
     }
 
-    public getExpressRequestContext(req: Request): { [key: string]: unknown } {
-        const metadata: { [key: string]: unknown } = {};
+    public getExpressRequestContext(req: Request): Record<string, unknown> {
+        const metadata: Record<string, unknown> = {};
         metadata['baseUrl'] = req.baseUrl;
         metadata['originalUrl'] = req.originalUrl;
         metadata['subdomains'] = req.subdomains;

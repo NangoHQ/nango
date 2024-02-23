@@ -43,9 +43,7 @@ export interface Template {
     scope_separator?: string;
     default_scopes?: string[];
     token_url: string | TokenUrlObject;
-    token_params?: {
-        [key: string]: string;
-    };
+    token_params?: Record<string, string>;
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];
     token_response_metadata?: string[];
