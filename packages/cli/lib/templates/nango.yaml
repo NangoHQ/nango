@@ -1,18 +1,18 @@
 integrations:
   demo-github-integration:
-     syncs:
-        github-issue-example:
-          description: |
-              Fetches the Github issues from all a user's repositories.
-              Details: full sync, doesn't track deletes, metadata is not required.
-          type: sync
-          endpoint: /example/github/issues
-          sync_type: full
-          scopes: public_repo
-          track_deletes: false
-          runs: every half hour
-          auto_start: true
-          output: GithubIssue
+    syncs:
+      github-issue-example:
+        description: |
+          Fetches the Github issues from all a user's repositories.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        type: sync
+        endpoint: /example/github/issues
+        sync_type: full
+        scopes: public_repo
+        track_deletes: false
+        runs: every half hour
+        auto_start: true
+        output: GithubIssue
 
 models:
   GithubIssue:
@@ -25,5 +25,4 @@ models:
     author_id: string
     state: string
     date_created: date
-    date_last_modified: date
-    body: string
+    date_last_modified:
