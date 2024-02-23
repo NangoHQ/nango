@@ -1,28 +1,29 @@
 integrations:
   google-calendar:
-    google-calendar-events:
-      description: |
-        Sync calendar events on the primary calendar going back one month and
-        save the entire object as specified by the Google API.
-        Details: partial sync, doesn't support deletes, sync goes back one
-        month, metadata is not required.
-        Required scope(s): https://www.googleapis.com/auth/calendar.readonly
-      type: sync
-      runs: every 5 minutes
-      returns:
-        - GoogleCalendarEvent
-    google-calendars:
-      description: |
-        Sync the calendars list of the user.
-        Details: full sync, does support deletes. Sync goes back all time,
-        metadata not required.
-        Required scope(s): https://www.googleapis.com/auth/calendar.readonly
-      type: sync
-      track_deletes: true
-      runs: every hour
-      returns:
-        - GoogleCalendar
-
+    syncs:
+      google-calendar-events:
+        description: |
+          Sync calendar events on the primary calendar going back one month and
+          save the entire object as specified by the Google API.
+          Details: partial sync, doesn't support deletes, sync goes back one
+          month, metadata is not required.
+        runs: every 5 minutes
+        output: GoogleCalendarEvent
+        sync_type: incremental
+        endpoint: /google-calendar/events
+        scopes: https://www.googleapis.com/auth/calendar.readonly
+      google-calendars:
+        description: |
+          Sync the calendars list of the user.
+          Details: full sync, does support deletes. Sync goes back all time,
+          metadata not required.
+          Required scope(s): https://www.googleapis.com/auth/calendar.readonly
+        track_deletes: true
+        runs: every hour
+        output: GoogleCalendar
+        sync_type: full
+        endpoint: /google-calendar/calendars
+        scopes: https://www.googleapis.com/auth/calendar.readonly
 models:
   GoogleCalendar:
     kind: string

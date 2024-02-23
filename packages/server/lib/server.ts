@@ -173,10 +173,14 @@ app.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.g
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
+app.route('/api/v1/integration/name').put(webAuth, configController.editProviderConfigName.bind(connectionController));
 app.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
+app.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
+app.route('/api/v1/integration/:providerConfigKey/endpoints').get(webAuth, flowController.getEndpoints.bind(connectionController));
+app.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 
-app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
+app.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
 app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
@@ -196,10 +200,12 @@ app.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibl
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
+app.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
 app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 app.route('/api/v1/flow/:id').delete(webAuth, flowController.deleteFlow.bind(flowController));
+app.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
 app.route('/api/v1/onboarding').post(webAuth, onboardingController.init.bind(onboardingController));

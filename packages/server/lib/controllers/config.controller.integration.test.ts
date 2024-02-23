@@ -211,24 +211,30 @@ describe('Should verify the config controller HTTP API calls', async () => {
         };
 
         await configController.getProviderConfig(req as unknown as Request, getRes, next as NextFunction);
-        expect(sendMock).toHaveBeenCalledWith({
-            config: {
-                provider: 'notion',
-                unique_key: 'test',
-                client_id: 'abc',
-                client_secret: 'def',
-                custom: null,
-                has_webhook: false,
-                scopes: 'abc,def,efg',
-                app_link: null,
-                auth_mode: 'OAUTH2',
-                syncs: [],
-                actions: [],
-                webhook_secret: null,
-                webhook_url: null,
-                has_webhook_user_defined_secret: undefined
-            }
-        });
+        expect(sendMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                config: {
+                    provider: 'notion',
+                    unique_key: 'test',
+                    client_id: 'abc',
+                    client_secret: 'def',
+                    connection_count: 0,
+                    connections: [],
+                    custom: null,
+                    docs: 'https://docs.nango.dev/integrations/all/notion',
+                    has_webhook: false,
+                    scopes: 'abc,def,efg',
+                    app_link: null,
+                    auth_mode: 'OAUTH2',
+                    created_at: expect.any(Date),
+                    syncs: [],
+                    actions: [],
+                    webhook_secret: null,
+                    webhook_url: null,
+                    has_webhook_user_defined_secret: undefined
+                }
+            })
+        );
     });
 
     it('DELETE a provider config successfully', async () => {

@@ -3,18 +3,20 @@
     const isArrayMappings = Array.isArray(mappings);
     const isArrayInputs = Array.isArray(inputs);
 
-    const formattedInterfaceNames = isArrayInterfaceNames ? interfaceNames.join(', ') : interfaceNames;
+    let formattedInterfaceNames = isArrayInterfaceNames ? interfaceNames.join(', ') : interfaceNames;
     const javascriptPrimitives = ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'object', 'null'];
     const filteredInputs = isArrayInputs ? inputs.filter(input => !javascriptPrimitives.includes(input)) : inputs;
 
     const formattedInputs = isArrayInputs ? filteredInputs.join(', ') : (javascriptPrimitives.includes(inputs) ? '' : inputs);
 
     let returnTypes = 'void';
-    if (isArrayMappings && mappings.length > 0) {
-        if (mappings.length === 1) {
-            returnTypes = `${mappings[0].name}[]`;
-        } else {
-            returnTypes = '{' + mappings.map(mapping => `${mapping.name}: ${mapping.type}[]`).join(', ') + '}';
+    if (Array.isArray(mappings)) {
+        if (mappings.length > 0) {
+            if (mappings.length === 1) {
+                returnTypes = `${mappings[0].name}[]`;
+            } else {
+                returnTypes = '{' + mappings.map(mapping => `${mapping.name}: ${mapping.type}[]`).join(', ') + '}';
+            }
         }
     } else if (typeof mappings === 'object') {
         returnTypes = `${mappings.name}`;
@@ -31,9 +33,18 @@
             paramInputs = inputs;
         }
     }
+
+    if (formattedInputs) {
+        const formattedInputsArray = formattedInputs.split(',').map(input => input.trim());
+        if (isArrayInterfaceNames) {
+            formattedInterfaceNames = formattedInterfaceNames.filter(interfaceName => !formattedInputsArray.includes(interfaceName));
+        } else {
+            formattedInterfaceNames = formattedInterfaceNames === formattedInputs ? '' : formattedInterfaceNames;
+        }
+    }
 %>
 import type { NangoAction<%= formattedInterfaceNames ? ', ' + formattedInterfaceNames : '' %><%= formattedInputs ? ', ' + formattedInputs : '' %> } from './<%= interfaceFileName %>';
 
-export default async function runAction(nango: NangoAction, input<%= optionalInput %>: <%= paramInputs %>): Promise<<%= returnTypes %>> {
+export default async function runAction(nango: NangoAction<%= inputs ? ', input' + optionalInput + ': ' + paramInputs : '' %>): Promise<<%= returnTypes %>> {
     // Integration code goes here
 }

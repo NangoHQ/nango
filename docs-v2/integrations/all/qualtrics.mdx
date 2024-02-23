@@ -7,13 +7,13 @@ API configuration: [`qualtrics`](https://nango.dev/providers.yaml)
 
 ## Features
 
-| Feature                                                                          | Status                          |
-| -------------------------------------------------------------------------------- | ------------------------------- |
-| [Auth (OAuth)](/guides/oauth)                                                      | ✅                              |
-| [Syncs](/guides/sync) & [Actions](/guides/action)                                                              | ✅                              |
-| [Nango Proxy](/guides/proxy)                          | ✅   |
-| Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
-| API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
@@ -36,10 +36,10 @@ You should request this from the user and pass it to Nango in the `nango.auth()`
 nango.auth('qualtrics', '<CONNECTION-ID>', {params: {subdomain: '<qualtrics-subdomain>'}});
 ```
 
-For more details, see the [docs here](/guides/advanced-auth#connection-configuration).
+For more details, see the [docs here](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
--   You are required to pass in the Data Center used to register your Qualtrics account as a subdomain for both the OAuth requests and subsequent API requests (cf. [Connection configuration](guides/oauth#connection-configuration)).
+-   You are required to pass in the Data Center used to register your Qualtrics account as a subdomain for both the OAuth requests and subsequent API requests (cf. [Connection configuration](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization)).
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/qualtrics.mdx)</Note>

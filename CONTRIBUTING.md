@@ -1,6 +1,6 @@
 # Contributes
 
-To create an extension or run Nango locally: [check our documentation](https://docs.nango.dev/contribute)
+You can run Nango locally with Docker ([step-by-step guide](https://docs.nango.dev/host/self-host/local)), contribute an API ([step-by-step guide](https://docs.nango.dev/customize/guides/contribute-an-api)) and contribute an integration template ([step-by-step guide](https://docs.nango.dev/contribute-an-integration-template)).
 
 ## Develop locally
 
@@ -64,4 +64,4 @@ And deploy your changes
 nango deploy dev
 ```
 
-To know more about the CLI, check the [documentation](https://docs.nango.dev/sdks/cli).
+To know more about the CLI, check the [documentation](https://docs.nango.dev/reference/cli).

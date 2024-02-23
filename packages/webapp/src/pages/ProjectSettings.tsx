@@ -415,261 +415,183 @@ export default function ProjectSettings() {
                 <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>Activate</Modal.Action>
             </Modal>
             {secretKey && (
-                <div className="mx-auto w-largebox">
-                    <div className="mx-20 h-full mb-20">
-                        <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Project Settings</h2>
-                        <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
-                            <div>
-                                <div className="mx-8 mt-8">
-                                    <div className="flex">
-                                        <label htmlFor="public_key" className="text-text-light-gray block text-sm font-semibold mb-2">
-                                            Public Key
-                                        </label>
-                                        <Tooltip
-                                            text={
-                                                <>
-                                                    <div className="flex text-black text-sm">
-                                                        {`Used by the`}
-                                                        <a
-                                                            href="https://docs.nango.dev/sdks/frontend"
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="text-text-blue ml-1"
-                                                        >
-                                                            Frontend SDK
-                                                        </a>
-                                                        {'.'}
-                                                    </div>
-                                                </>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                    </div>
-                                    <div className="flex">
-                                        <Prism className="w-full" language="bash" colorScheme="dark">
-                                            {publicKey}
-                                        </Prism>
-                                        {publicKeyRotatable && (
+                <div className="h-full mb-20">
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Project Settings</h2>
+                    <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex">
+                                    <label htmlFor="public_key" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                        Public Key
+                                    </label>
+                                    <Tooltip
+                                        text={
                                             <>
-                                                <button
-                                                    onClick={() => hasPendingPublicKey ? onRevertKey() : onRotateKey()}
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                >
-                                                    {hasPendingPublicKey ? 'Revert' : 'Rotate'}
-                                                </button>
-                                                <button
-                                                    onClick={handleActivatePublicKey}
-                                                    className={`${hasPendingPublicKey ? 'hover:bg-gray-700 bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
-                                                    disabled={!hasPendingPublicKey}
-                                                >
-                                                    Activate
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                    {hasPendingPublicKey && (
-                                        <div className=" text-red-500 text-sm">
-                                            Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <div>
-                                <div className="mx-8 mt-8">
-                                    <div className="flex">
-                                        <label htmlFor="secret_key" className="text-text-light-gray block text-sm font-semibold mb-2">
-                                            Secret Key
-                                        </label>
-                                        <Tooltip
-                                            text={
-                                                <>
-                                                    <div className="flex text-black text-sm">
-                                                        {`Used by the `}
-                                                        <a
-                                                            href="https://docs.nango.dev/sdks/cli"
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="text-text-blue ml-1"
-                                                        >
-                                                            CLI
-                                                        </a>
-                                                        {`, `}
-                                                        <a
-                                                            href="https://docs.nango.dev/sdks/node"
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="text-text-blue ml-1 mr-1"
-                                                        >
-                                                            Backend SDKs
-                                                        </a>
-                                                        {` and `}
-                                                        <a
-                                                            href="https://docs.nango.dev/api-reference/authentication"
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="text-text-blue ml-1"
-                                                        >
-                                                            REST API
-                                                        </a>
-                                                        {'.'}
-                                                    </div>
-                                                </>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                    </div>
-                                    <div className="flex">
-                                        <SecretInput additionalclass="w-full" disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
-                                        {secretKeyRotatable && (
-                                            <>
-                                                <button
-                                                    onClick={() => hasPendingSecretKey ? onRevertKey(false) : onRotateKey(false)}
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                >
-                                                    {hasPendingSecretKey ? 'Revert' : 'Rotate'}
-                                                </button>
-                                                <button
-                                                    onClick={handleActivateSecretKey}
-                                                    className={`${hasPendingSecretKey ? 'hover:bg-gray-700 bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
-                                                    disabled={!hasPendingSecretKey}
-                                                >
-                                                    Activate
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                    {hasPendingSecretKey && (
-                                        <div className=" text-red-500 text-sm">
-                                            Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            {env !== 'dev' && (
-                                <div className="flex items-center justify-between mx-8 mt-8">
-                                    <div>
-                                        <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
-                                            Slack Alerts
-                                        <Tooltip
-                                            text={
                                                 <div className="flex text-black text-sm">
-                                                    {slackIsConnected ?
-                                                        'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.' :
-                                                        'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'
-                                                    }
+                                                    {`Used by the`}
+                                                    <a
+                                                        href="https://docs.nango.dev/reference/sdks/frontend"
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-text-blue ml-1"
+                                                    >
+                                                        Frontend SDK
+                                                    </a>
+                                                    {'.'}
                                                 </div>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                        </label>
-                                    </div>
-                                    <div className="">
-                                        <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
-                                            <img src={`images/template-logos/slack.svg`} alt="" className="flex h-7 pb-0.5" />
-                                            {slackIsConnected ? 'Disconnect' : 'Connect'}
-                                        </Button>
-                                    </div>
+                                            </>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
                                 </div>
-                            )}
-                            <div>
-                                <div className="mx-8 mt-8">
-                                    <div className="flex text-white  mb-2">
-                                        <div className="flex">
-                                            <label htmlFor="callback_url" className="text-text-light-gray block text-sm font-semibold mb-2">
-                                                Callback URL
-                                            </label>
-                                            <Tooltip
-                                                text={
-                                                    <>
-                                                        <div className="flex text-black text-sm">
-                                                            {`To register with external OAuth apps (cf. `}
-                                                            <a
-                                                                href="https://docs.nango.dev/guides/oauth#custom-callback-url"
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="text-text-blue ml-1"
-                                                            >
-                                                                custom callback URL docs
-                                                            </a>
-                                                            {`).`}
-                                                        </div>
-                                                    </>
-                                                }
-                                            >
-                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                            </Tooltip>
-                                        </div>
-                                    </div>
-                                    {callbackEditMode && (
-                                        <form className="mt-2" onSubmit={handleCallbackSave}>
-                                            <div className="flex">
-                                                <input
-                                                    id="callback_url"
-                                                    name="callback_url"
-                                                    autoComplete="new-password"
-                                                    type="url"
-                                                    defaultValue={callbackUrl}
-                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
-                                                />
-
-                                                <button
-                                                    type="submit"
-                                                    className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
-                                                >
-                                                    Save
-                                                </button>
-                                            </div>
-                                            <p className="mt-2 text-sm text-red-700">
-                                                {isCloud() ? (
-                                                    <>
-                                                        Customizing the callback URL requires that you set up a 308 redirect from the custom callback URL to
-                                                        https://api.nango.dev/oauth/callback.
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        Customizing the callback URL requires that you set up a redirect from the custom callback URL to{' '}
-                                                        {defaultCallback()}.
-                                                    </>
-                                                )}
-                                            </p>
-                                        </form>
-                                    )}
-                                    {!callbackEditMode && (
-                                        <div className="flex">
-                                            <Prism language="bash" colorScheme="dark" className="w-full">
-                                                {callbackUrl}
-                                            </Prism>
+                                <div className="flex">
+                                    <Prism className="w-full" language="bash" colorScheme="dark">
+                                        {publicKey}
+                                    </Prism>
+                                    {publicKeyRotatable && (
+                                        <>
                                             <button
-                                                onClick={handleCallbackEdit}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                onClick={() => hasPendingPublicKey ? onRevertKey() : onRotateKey()}
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
-                                                Edit
+                                                {hasPendingPublicKey ? 'Revert' : 'Rotate'}
                                             </button>
-                                        </div>
+                                            <button
+                                                onClick={handleActivatePublicKey}
+                                                className={`${hasPendingPublicKey ? 'hover:bg-hover-gray bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
+                                                disabled={!hasPendingPublicKey}
+                                            >
+                                                Activate
+                                            </button>
+                                        </>
                                     )}
+                                </div>
+                                {hasPendingPublicKey && (
+                                    <div className=" text-red-500 text-sm">
+                                        Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex">
+                                    <label htmlFor="secret_key" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                        Secret Key
+                                    </label>
+                                    <Tooltip
+                                        text={
+                                            <>
+                                                <div className="flex text-black text-sm">
+                                                    {`Used by the `}
+                                                    <a
+                                                        href="https://docs.nango.dev/reference/cli"
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-text-blue ml-1"
+                                                    >
+                                                        CLI
+                                                    </a>
+                                                    {`, `}
+                                                    <a
+                                                        href="https://docs.nango.dev/reference/sdks/node"
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-text-blue ml-1 mr-1"
+                                                    >
+                                                        Backend SDKs
+                                                    </a>
+                                                    {` and `}
+                                                    <a
+                                                        href="https://docs.nango.dev/reference/api/authentication"
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-text-blue ml-1"
+                                                    >
+                                                        REST API
+                                                    </a>
+                                                    {'.'}
+                                                </div>
+                                            </>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                </div>
+                                <div className="flex">
+                                    <SecretInput additionalclass="w-full h-11" tall disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
+                                    {secretKeyRotatable && (
+                                        <>
+                                            <button
+                                                onClick={() => hasPendingSecretKey ? onRevertKey(false) : onRotateKey(false)}
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                            >
+                                                {hasPendingSecretKey ? 'Revert' : 'Rotate'}
+                                            </button>
+                                            <button
+                                                onClick={handleActivateSecretKey}
+                                                className={`${hasPendingSecretKey ? 'hover:bg-hover-gray bg-gray-800' : 'opacity-50'} text-red-500 flex h-11 rounded-md ml-2 px-4 pt-3 text-sm`}
+                                                disabled={!hasPendingSecretKey}
+                                            >
+                                                Activate
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                {hasPendingSecretKey && (
+                                    <div className=" text-red-500 text-sm">
+                                        Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        {env !== 'dev' && (
+                            <div className="flex items-center justify-between mx-8 mt-8">
+                                <div>
+                                    <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
+                                        Slack Alerts
+                                    <Tooltip
+                                        text={
+                                            <div className="flex text-black text-sm">
+                                                {slackIsConnected ?
+                                                    'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.' :
+                                                    'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'
+                                                }
+                                            </div>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                    </label>
+                                </div>
+                                <div className="">
+                                    <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
+                                        <img src={`images/template-logos/slack.svg`} alt="" className="flex h-7 pb-0.5" />
+                                        {slackIsConnected ? 'Disconnect' : 'Connect'}
+                                    </Button>
                                 </div>
                             </div>
-                            <div>
-                                <div className="mx-8 mt-8">
+                        )}
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex text-white  mb-2">
                                     <div className="flex">
-                                        <label htmlFor="webhook_url" className="text-text-light-gray block text-sm font-semibold mb-2">
-                                            Webhook URL
+                                        <label htmlFor="callback_url" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                            Callback URL
                                         </label>
                                         <Tooltip
                                             text={
                                                 <>
                                                     <div className="flex text-black text-sm">
-                                                        {`Be notified when new data is available from Nango (cf. `}
+                                                        {`To register with external OAuth apps (cf. `}
                                                         <a
-                                                            href="https://docs.nango.dev/guides/webhooks"
+                                                            href="https://docs.nango.dev/integrate/guides/authorize-an-api#use-a-custom-callback-url"
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="text-text-blue ml-1"
                                                         >
-                                                            webhook docs
+                                                            custom callback URL docs
                                                         </a>
                                                         {`).`}
                                                     </div>
@@ -679,248 +601,324 @@ export default function ProjectSettings() {
                                             <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                         </Tooltip>
                                     </div>
-                                    {webhookEditMode && (
-                                        <form className="mt-2" onSubmit={handleWebhookbackSave}>
-                                            <div className="flex">
-                                                <input
-                                                    id="webhook_url"
-                                                    name="webhook_url"
-                                                    autoComplete="new-password"
-                                                    type="url"
-                                                    defaultValue={webhookUrl}
-                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
-                                                />
+                                </div>
+                                {callbackEditMode && (
+                                    <form className="mt-2" onSubmit={handleCallbackSave}>
+                                        <div className="flex">
+                                            <input
+                                                id="callback_url"
+                                                name="callback_url"
+                                                autoComplete="new-password"
+                                                type="url"
+                                                defaultValue={callbackUrl}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                            />
 
-                                                <button
-                                                    type="submit"
-                                                    className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
-                                                >
-                                                    Save
-                                                </button>
-                                            </div>
-                                        </form>
-                                    )}
-                                    {!webhookEditMode && (
-                                        <div className="flex">
-                                            <Prism language="bash" colorScheme="dark" className="w-full">
-                                                {webhookUrl || '\u0000'}
-                                            </Prism>
-                                            <button
-                                                onClick={() => setWebhookEditMode(!webhookEditMode)}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                            >
-                                                Edit
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <div>
-                                <div className="mx-8 mt-8">
-                                    <div className="flex items-center mb-2">
-                                        <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
-                                            Send Webhooks For Empty Sync Responses
-                                        </label>
-                                        <Tooltip
-                                            text={
-                                                <>
-                                                    <div className="flex text-black text-sm">
-                                                        {`If checked, a webhook wil be sent on every sync run completion, even if no data has changed.`}
-                                                    </div>
-                                                </>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                        <input
-                                            type="checkbox"
-                                            className="flex ml-3 bg-black"
-                                            checked={alwaysSendWebhook}
-                                            onChange={(event) => handleWebookSendUpdate(event.target.checked)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <div className="mx-8 mt-8">
-                                    <div className="flex items-center mb-2">
-                                        <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
-                                            Send New Connection Creation Webhooks
-                                        </label>
-                                        <Tooltip
-                                            text={
-                                                <>
-                                                    <div className="flex text-black text-sm">
-                                                        {`If checked, a webhook will be sent on connection creation success or failure.`}
-                                                    </div>
-                                                </>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                        <input
-                                            type="checkbox"
-                                            className="flex ml-3 bg-black"
-                                            checked={sendAuthWebhook}
-                                            onChange={(event) => handleWebookSendAuth(event.target.checked)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <div className="mx-8 mt-8 relative">
-                                    <div className="flex mb-2">
-                                        <div className="flex text-white  mb-2">
-                                            <div className="flex">
-                                                <label htmlFor="hmac key" className="text-text-light-gray block text-sm font-semibold mb-2">
-                                                    HMAC Key
-                                                </label>
-                                                <Tooltip
-                                                    text={
-                                                        <>
-                                                            <div className="flex text-black text-sm">
-                                                                {`To secure the Frontend SDK calls with`}
-                                                                <a
-                                                                    href="https://docs.nango.dev/guides/advanced-auth#securing-the-frontend-sdk-calls-with-hmac"
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    className="text-text-blue ml-1"
-                                                                >
-                                                                    HMAC
-                                                                </a>
-                                                                {`.`}
-                                                            </div>
-                                                        </>
-                                                    }
-                                                >
-                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                                </Tooltip>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {!hmacEditMode && (
-                                        <div className="flex">
-                                            <SecretInput disabled optionalvalue={hmacKey} setoptionalvalue={setHmacKey} additionalclass="w-full" />
-                                            <button
-                                                onClick={() => setHmacEditMode(!hmacEditMode)}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                            >
-                                                Edit
-                                            </button>
-                                        </div>
-                                    )}
-                                    {hmacEditMode && (
-                                        <form className="mt-2" onSubmit={handleHmacSave}>
-                                            <div className="flex">
-                                                <input
-                                                    id="hmac_key"
-                                                    name="hmac_key"
-                                                    autoComplete="new-password"
-                                                    type="text"
-                                                    value={hmacKey}
-                                                    onChange={(event) => setHmacKey(event.target.value)}
-                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
-                                                />
-                                                <button
-                                                    type="submit"
-                                                    className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
-                                                >
-                                                    Save
-                                                </button>
-                                            </div>
-                                        </form>
-                                    )}
-                                </div>
-                            </div>
-                            <div>
-                                <div className="mx-8 mt-8">
-                                    <div className="flex items-center mb-2">
-                                        <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
-                                            HMAC Enabled
-                                        </label>
-                                        <input
-                                            type="checkbox"
-                                            className="flex ml-3 bg-black"
-                                            checked={hmacEnabled}
-                                            onChange={(event) => handleHmacEnabled(event.target.checked)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <div className="mx-8 mt-8">
-                                    <div className="flex items-center mb-2">
-                                        <label htmlFor="email" className="text-text-light-gray text-sm font-semibold">
-                                            Environment Variables
-                                        </label>
-                                        <Tooltip
-                                            text={
-                                                <div className="flex text-black text-sm">
-                                                    Set environment variables to be used inside sync and action scripts.
-                                                </div>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                    </div>
-                                    <form
-                                        className="mt-2"
-                                        onSubmit={handleEnvVariablesSave}
-                                    >
-                                        {envVariables.map((envVar, index) => (
-                                            <div key={envVar.id || `${envVar.name}_${index}`} className="flex items-center mt-2">
-                                                <input
-                                                    id={`env_var_name_${envVar.id || index}`}
-                                                    name={`${envVar.id || index}-env_var_name_${index}`}
-                                                    defaultValue={envVar.name}
-                                                    autoComplete="new-password"
-                                                    required
-                                                    type="text"
-                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none mr-3"
-                                                />
-                                                <input
-                                                    id={`env_var_value_${envVar.id || index}`}
-                                                    name={`${envVar.id || index}-env_var_value_${index}`}
-                                                    defaultValue={envVar.value}
-                                                    required
-                                                    autoComplete="new-password"
-                                                    type="password"
-                                                    onMouseEnter={(e) => e.currentTarget.type = 'text'}
-                                                    onMouseLeave={(e) => {
-                                                        if (document.activeElement !== e.currentTarget) {
-                                                            e.currentTarget.type = 'password';
-                                                        }
-                                                    }}
-                                                    onFocus={(e) => e.currentTarget.type = 'text'}
-                                                    onBlur={(e) => e.currentTarget.type = 'password'}
-                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
-                                                />
-                                                <button
-                                                    onClick={() => handleRemoveEnvVariable(index)}
-                                                    className="flex hover:bg-gray-700 border border-border-gray text-white h-11 ml-4 px-4 pt-3 text-sm"
-                                                    type="button"
-                                                >
-                                                    <TrashIcon className="flex h-5 w-5 text-white" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                        <div className="flex justify-end mt-4">
-                                            <button
-                                                onClick={handleAddEnvVariable}
-                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm mr-4"
-                                                type="button"
-                                            >
-                                                Add Environment Variable
-                                            </button>
                                             <button
                                                 type="submit"
-                                                className="hover:bg-gray-200 bg-white text-gray-700 flex h-11 rounded-md px-4 pt-3 text-sm"
+                                                className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
                                             >
-                                                Save Environment Variable
+                                                Save
+                                            </button>
+                                        </div>
+                                        <p className="mt-2 text-sm text-red-700">
+                                            {isCloud() ? (
+                                                <>
+                                                    Customizing the callback URL requires that you set up a 308 redirect from the custom callback URL to
+                                                    https://api.nango.dev/oauth/callback.
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Customizing the callback URL requires that you set up a redirect from the custom callback URL to{' '}
+                                                    {defaultCallback()}.
+                                                </>
+                                            )}
+                                        </p>
+                                    </form>
+                                )}
+                                {!callbackEditMode && (
+                                    <div className="flex">
+                                        <Prism language="bash" colorScheme="dark" className="w-full">
+                                            {callbackUrl}
+                                        </Prism>
+                                        <button
+                                            onClick={handleCallbackEdit}
+                                            className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex">
+                                    <label htmlFor="webhook_url" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                        Webhook URL
+                                    </label>
+                                    <Tooltip
+                                        text={
+                                            <>
+                                                <div className="flex text-black text-sm">
+                                                    {`Be notified when new data is available from Nango (cf. `}
+                                                    <a
+                                                        href="https://docs.nango.dev/integrate/guides/receive-webhooks-from-nango"
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-text-blue ml-1"
+                                                    >
+                                                        webhook docs
+                                                    </a>
+                                                    {`).`}
+                                                </div>
+                                            </>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                </div>
+                                {webhookEditMode && (
+                                    <form className="mt-2" onSubmit={handleWebhookbackSave}>
+                                        <div className="flex">
+                                            <input
+                                                id="webhook_url"
+                                                name="webhook_url"
+                                                autoComplete="new-password"
+                                                type="url"
+                                                defaultValue={webhookUrl}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                            />
+
+                                            <button
+                                                type="submit"
+                                                className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                            >
+                                                Save
                                             </button>
                                         </div>
                                     </form>
+                                )}
+                                {!webhookEditMode && (
+                                    <div className="flex">
+                                        <Prism language="bash" colorScheme="dark" className="w-full">
+                                            {webhookUrl || '\u0000'}
+                                        </Prism>
+                                        <button
+                                            onClick={() => setWebhookEditMode(!webhookEditMode)}
+                                            className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex items-center mb-2">
+                                    <label htmlFor="send_webhooks_for_empty" className="text-text-light-gray text-sm font-semibold">
+                                        Send Webhooks For Empty Sync Responses
+                                    </label>
+                                    <Tooltip
+                                        text={
+                                            <>
+                                                <div className="flex text-black text-sm">
+                                                    {`If checked, a webhook wil be sent on every sync run completion, even if no data has changed.`}
+                                                </div>
+                                            </>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                    <input
+                                        type="checkbox"
+                                        className="flex ml-3 bg-black"
+                                        checked={alwaysSendWebhook}
+                                        onChange={(event) => handleWebookSendUpdate(event.target.checked)}
+                                    />
                                 </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex items-center mb-2">
+                                    <label htmlFor="send_webhooks_for_creation" className="text-text-light-gray text-sm font-semibold">
+                                        Send New Connection Creation Webhooks
+                                    </label>
+                                    <Tooltip
+                                        text={
+                                            <>
+                                                <div className="flex text-black text-sm">
+                                                    {`If checked, a webhook will be sent on connection creation success or failure.`}
+                                                </div>
+                                            </>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                    <input
+                                        type="checkbox"
+                                        className="flex ml-3 bg-black"
+                                        checked={sendAuthWebhook}
+                                        onChange={(event) => handleWebookSendAuth(event.target.checked)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8 relative">
+                                <div className="flex mb-2">
+                                    <div className="flex text-white mb-2">
+                                        <div className="flex">
+                                            <label htmlFor="hmac key" className="text-text-light-gray block text-sm font-semibold">
+                                                HMAC Key
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            {`To secure the Frontend SDK calls with`}
+                                                            <a
+                                                                href="https://docs.nango.dev/integrate/guides/authorize-an-api#secure-the-frontend-sdk"
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="text-text-blue ml-1"
+                                                            >
+                                                                HMAC
+                                                            </a>
+                                                            {`.`}
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                    </div>
+                                </div>
+                                {!hmacEditMode && (
+                                    <div className="flex">
+                                        <SecretInput disabled optionalvalue={hmacKey} setoptionalvalue={setHmacKey} additionalclass="w-full" tall />
+                                        <button
+                                            onClick={() => setHmacEditMode(!hmacEditMode)}
+                                            className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                )}
+                                {hmacEditMode && (
+                                    <form className="mt-2" onSubmit={handleHmacSave}>
+                                        <div className="flex">
+                                            <input
+                                                id="hmac_key"
+                                                name="hmac_key"
+                                                autoComplete="new-password"
+                                                type="text"
+                                                value={hmacKey}
+                                                onChange={(event) => setHmacKey(event.target.value)}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                            />
+                                            <button
+                                                type="submit"
+                                                className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex items-center mb-2">
+                                    <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
+                                        HMAC Enabled
+                                    </label>
+                                    <input
+                                        type="checkbox"
+                                        className="flex ml-3 bg-black"
+                                        checked={hmacEnabled}
+                                        onChange={(event) => handleHmacEnabled(event.target.checked)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex items-center mb-2">
+                                    <label htmlFor="email" className="text-text-light-gray text-sm font-semibold">
+                                        Environment Variables
+                                    </label>
+                                    <Tooltip
+                                        text={
+                                            <div className="flex text-black text-sm">
+                                                Set environment variables to be used inside sync and action scripts.
+                                            </div>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                </div>
+                                <form
+                                    className="mt-2"
+                                    onSubmit={handleEnvVariablesSave}
+                                >
+                                    {envVariables.map((envVar, index) => (
+                                        <div key={envVar.id || `${envVar.name}_${index}`} className="flex items-center mt-2">
+                                            <input
+                                                id={`env_var_name_${envVar.id || index}`}
+                                                name={`${envVar.id || index}-env_var_name_${index}`}
+                                                defaultValue={envVar.name}
+                                                autoComplete="new-password"
+                                                required
+                                                type="text"
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none mr-3"
+                                            />
+                                            <input
+                                                id={`env_var_value_${envVar.id || index}`}
+                                                name={`${envVar.id || index}-env_var_value_${index}`}
+                                                defaultValue={envVar.value}
+                                                required
+                                                autoComplete="new-password"
+                                                type="password"
+                                                onMouseEnter={(e) => e.currentTarget.type = 'text'}
+                                                onMouseLeave={(e) => {
+                                                    if (document.activeElement !== e.currentTarget) {
+                                                        e.currentTarget.type = 'password';
+                                                    }
+                                                }}
+                                                onFocus={(e) => e.currentTarget.type = 'text'}
+                                                onBlur={(e) => e.currentTarget.type = 'password'}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                            />
+                                            <button
+                                                onClick={() => handleRemoveEnvVariable(index)}
+                                                className="flex hover:bg-hover-gray text-white h-11 ml-4 px-4 pt-3 text-sm"
+                                                type="button"
+                                            >
+                                                <TrashIcon className="flex h-5 w-5 text-white" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <div className="flex justify-end mt-4">
+                                        <button
+                                            onClick={handleAddEnvVariable}
+                                            className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm mr-4"
+                                            type="button"
+                                        >
+                                            Add Environment Variable
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="hover:bg-gray-200 bg-white text-gray-700 flex h-11 rounded-md px-4 pt-3 text-sm"
+                                        >
+                                            Save Environment Variable
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>

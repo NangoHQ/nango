@@ -1,17 +1,22 @@
 integrations:
   bamboohr-basic:
-    bamboohr-employees:
-      runs: every 6 hours
-      returns:
-        - BamboohrEmployee
-      description: |
-        Fetches employees from bamboohr.
-        Details: full sync, doesn't track deletes, metadata is not required.
-    bamboohr-create-employee:
-      type: action
-      returns: BamboohrCreateEmployeeResponse
-      description: |
-        Action to create a new employee.
+    syncs:
+      bamboohr-employees:
+        runs: every 6 hours
+        description: |
+          Fetches employees from bamboohr.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: BamboohrEmployee
+        sync_type: incremental
+        endpoint: /bamboohr/employees
+        scopes:
+          - default
+    actions:
+      bamboohr-create-employee:
+        description: |
+          Action to create a new employee.
+        output: BamboohrCreateEmployeeResponse
+        endpoint: /bamboohr/create-employee
 models:
   BamboohrEmployee:
     id: string

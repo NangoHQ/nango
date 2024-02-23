@@ -1,4 +1,5 @@
 import type { PrismProps } from '@mantine/prism';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import classNames from 'classnames';
 import { useCallback, useState } from 'react';
@@ -14,9 +15,9 @@ export default function PrismPlus({ children, ...props }: PrismProps) {
         return (
             <span
                 onClick={toggleSecretVisibility}
-                className="bg-gray-300 hover:bg-gray-400 rounded px-2 py-1 text-sm text-gray-600 cursor-pointer absolute z-10 top-3 right-10"
+                className="rounded px-1 py-1 text-sm text-gray-600 cursor-pointer absolute z-10 -top-7 right-3"
             >
-                {isSecretVisible ? 'hide' : 'show'}
+                {isSecretVisible ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
             </span>
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps

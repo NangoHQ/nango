@@ -69,6 +69,7 @@ class ConnectionService {
         metadata?: Metadata
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
@@ -77,6 +78,7 @@ class ConnectionService {
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig,
                 environment_id: environment_id,
+                config_id: config_id as number,
                 metadata: metadata || storedConnection.metadata || null
             });
 
@@ -100,6 +102,7 @@ class ConnectionService {
                 encryptionManager.encryptConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
+                    config_id: config_id as number,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
                     environment_id: environment_id,
@@ -123,10 +126,12 @@ class ConnectionService {
         accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
+                config_id: config_id as number,
                 provider_config_key: providerConfigKey,
                 credentials,
                 connection_config: connectionConfig,
@@ -150,6 +155,7 @@ class ConnectionService {
                 encryptionManager.encryptApiConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
+                    config_id: config_id as number,
                     credentials,
                     connection_config: connectionConfig,
                     environment_id
@@ -170,13 +176,19 @@ class ConnectionService {
         accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
 
         if (storedConnection) {
-            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update({
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                updated_at: new Date()
-            });
+            await db.knex
+                .withSchema(db.schema())
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
+                .update({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    config_id: config_id as number,
+                    updated_at: new Date()
+                });
 
             analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
 

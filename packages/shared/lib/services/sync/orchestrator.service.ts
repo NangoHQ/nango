@@ -2,7 +2,7 @@ import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.serv
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { deleteJobsBySyncId as deleteSyncJobsBySyncId, getLatestSyncJob } from './job.service.js';
-import { deleteRecordsBySyncId, deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data/records.service.js';
+import { deleteRecordsBySyncId } from './data/records.service.js';
 import {
     createSync,
     deleteSync,
@@ -10,8 +10,7 @@ import {
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
     getSyncByIdAndName,
-    getSyncNamesByConnectionId,
-    clearLastSyncDate
+    getSyncNamesByConnectionId
 } from './sync.service.js';
 import {
     createActivityLogMessageAndEnd,
@@ -22,7 +21,7 @@ import {
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
-import type { Connection, NangoConnection } from '../../models/Connection.js';
+import type { Connection } from '../../models/Connection.js';
 import type { Job as SyncJob, Schedule as SyncSchedule } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
@@ -39,7 +38,6 @@ import {
     CommandToActivityLog,
     ReportedSyncJobStatus
 } from '../../models/Sync.js';
-import { isErr } from '../../utils/result.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -145,7 +143,7 @@ export class Orchestrator {
     public async deleteSyncRelatedObjects(syncId: string) {
         await deleteSyncJobsBySyncId(syncId);
         await deleteSyncSchedulesBySyncId(syncId);
-        await deleteSyncResultsBySyncId(syncId);
+        await deleteRecordsBySyncId(syncId);
     }
 
     public async deleteSyncsByConnection(connection: Connection) {
@@ -230,14 +228,20 @@ export class Orchestrator {
                     continue;
                 }
 
-                if (command === SyncCommand.RUN_FULL) {
-                    await this.startFullResync({ syncClient, activityLogId, connection, environmentId, schedule, sync });
-                } else {
-                    await syncClient.runSyncCommand(schedule.schedule_id, sync?.id as string, command, activityLogId, environmentId);
-                    // if they're triggering a sync that shouldn't change the schedule status
-                    if (command !== SyncCommand.RUN) {
-                        await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
-                    }
+                await syncClient.runSyncCommand(
+                    schedule.schedule_id,
+                    sync?.id as string,
+                    command,
+                    activityLogId,
+                    environmentId,
+                    providerConfigKey as string,
+                    connectionId as string,
+                    syncName,
+                    connection.id
+                );
+                // if they're triggering a sync that shouldn't change the schedule status
+                if (command !== SyncCommand.RUN) {
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
                 }
             }
         } else {
@@ -258,18 +262,24 @@ export class Orchestrator {
                     continue;
                 }
 
-                if (command === SyncCommand.RUN_FULL) {
-                    const connection = await connectionService.getConnectionById(sync.nango_connection_id);
-                    if (!connection) {
-                        continue;
-                    }
+                const connection = await connectionService.getConnectionById(sync.nango_connection_id);
+                if (!connection) {
+                    continue;
+                }
 
-                    await this.startFullResync({ syncClient, activityLogId, connection, environmentId, schedule, sync });
-                } else {
-                    await syncClient.runSyncCommand(schedule.schedule_id, sync.id as string, command, activityLogId, environmentId);
-                    if (command !== SyncCommand.RUN) {
-                        await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
-                    }
+                await syncClient.runSyncCommand(
+                    schedule.schedule_id,
+                    sync.id as string,
+                    command,
+                    activityLogId,
+                    environmentId,
+                    providerConfigKey,
+                    connection.connection_id as string,
+                    sync.name,
+                    connection.id
+                );
+                if (command !== SyncCommand.RUN) {
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
                 }
             }
         }
@@ -335,6 +345,16 @@ export class Orchestrator {
         return { success: true, error: null, response: syncsWithStatus };
     }
 
+    /**
+     * Classify Sync Status
+     * @desc categornize the different scenarios of sync status
+     * 1. If the schedule is paused and the job is not running, then the sync is paused
+     * 2. If the schedule is paused and the job is not running then the sync is stopped (last return case)
+     * 3. If the schedule is running but the last job is null then it is an error
+     * 4. If the job status is stopped then it is an error
+     * 5. If the job status is running then it is running
+     * 6. If the job status is success then it is success
+     */
     public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
         if (scheduleStatus === ScheduleStatus.PAUSED && jobStatus !== SyncStatus.RUNNING) {
             return SyncStatus.PAUSED;
@@ -432,40 +452,6 @@ export class Orchestrator {
         }
 
         return reportedStatus;
-    }
-
-    private async startFullResync({
-        syncClient,
-        schedule,
-        sync,
-        activityLogId,
-        environmentId,
-        connection
-    }: {
-        syncClient: SyncClient;
-        schedule: SyncSchedule;
-        sync: Sync;
-        activityLogId: number;
-        environmentId: number;
-        connection: NangoConnection;
-    }): Promise<void> {
-        // We cancel any currently running sync to avoid concurrency issues
-        const pause = await syncClient.runSyncCommand(schedule.schedule_id, sync.id as string, SyncCommand.CANCEL, activityLogId, environmentId);
-        if (isErr(pause)) {
-            return;
-        }
-
-        await clearLastSyncDate(sync.id!);
-        await deleteRecordsBySyncId(sync.id!);
-        await createActivityLogMessage({
-            level: 'info',
-            environment_id: environmentId,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `Records for sync "${sync.name}" deleted successfully`
-        });
-
-        await syncClient.triggerInitialSync({ syncId: sync.id!, activityLogId, nangoConnection: connection, syncName: sync.name });
     }
 }
 

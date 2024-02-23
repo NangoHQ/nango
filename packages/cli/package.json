@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.37.26",
+    "version": "0.38.0",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -77,6 +77,7 @@
         "docker/docker-compose.yaml",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",
+        "scripts/v1-v2.js",
         "tsconfig.dev.json",
         "!**/*.json",
         "README.md"

@@ -22,11 +22,12 @@ class EnvironmentController {
                 errorManager.errResFromNangoErr(res, sessionError);
                 return;
             }
-            const { account } = response;
+            const { account, user } = response;
 
             const environments = await environmentService.getEnvironmentsByAccountId(account.id);
             const version = packageJsonFile().version;
-            res.status(200).send({ environments, version });
+            const baseUrl = getBaseUrl();
+            res.status(200).send({ environments, version, email: user.email, baseUrl });
         } catch (err) {
             next(err);
         }

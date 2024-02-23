@@ -174,7 +174,7 @@ class OnboardingController {
                     runs: githubDemoSync.runs,
                     auto_start: githubDemoSync.auto_start === true,
                     models: githubDemoSync.returns,
-                    model_schema: JSON.stringify(githubDemoSync.model_schema),
+                    model_schema: JSON.stringify(githubDemoSync?.models),
                     is_public: true,
                     public_route: 'github'
                 }

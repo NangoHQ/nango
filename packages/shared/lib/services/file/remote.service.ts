@@ -68,6 +68,14 @@ class RemoteFileService {
         }
     }
 
+    public getRemoteFileLocationForPublicTemplate(integrationName: string, fileName: string): string {
+        return `${this.publicRoute}/${integrationName}/dist/${fileName}.js`;
+    }
+
+    public async getPublicFlowFile(filePath: string, environmentId: number): Promise<string | null> {
+        return this.getFile(filePath, environmentId);
+    }
+
     /**
      * Copy
      * @desc copy an existing public integration file to user's location in s3,

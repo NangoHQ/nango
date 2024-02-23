@@ -2,8 +2,13 @@ import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
 
+export async function fetcher(...args: Parameters<typeof fetch>) {
+  const response = await fetch(...args);
+  return response.json();
+}
 
-function requestErrorToast() {
+
+export function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
 
@@ -377,6 +382,32 @@ export function useCreateIntegrationAPI() {
     };
 }
 
+export function useCreateEmptyIntegrationAPI() {
+    const signout = useSignout();
+
+    return async (provider: string) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    provider: provider
+                })
+            };
+
+            let res = await fetch('/api/v1/integration/new', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useEditIntegrationAPI() {
     const signout = useSignout();
 
@@ -405,6 +436,33 @@ export function useEditIntegrationAPI() {
 
             if (res.status !== 200) {
                 return serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditIntegrationNameAPI() {
+    const signout = useSignout();
+
+    return async (providerConfigKey: string, name: string) => {
+        try {
+            const options = {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    oldProviderConfigKey: providerConfigKey,
+                    newProviderConfigKey: name
+                })
+            };
+
+            const res = await fetch(`/api/v1/integration/name`, options);
+
+            if (res.status === 401) {
+                return signout();
             }
 
             return res;
@@ -632,7 +690,7 @@ export function useGetAllSyncsAPI() {
 }
 
 export function useRunSyncAPI() {
-    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: number, sync_name: string, provider?: string) => {
+    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: string, sync_name: string, provider?: string) => {
         try {
             const res = await fetch(`/api/v1/sync/command`, {
                 method: 'POST',
@@ -793,6 +851,67 @@ export function useCreateFlow() {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify(flow)
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useGetIntegrationEndpointsAPI() {
+    return async (integration: string, provider: string) => {
+        try {
+            const res = await fetch(`/api/v1/integration/${integration}/endpoints?provider=${provider}`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useGetFlowDetailsAPI() {
+    return async (providerConfigKey: string, flowName: string) => {
+        try {
+            const res = await fetch(`/api/v1/flow/${flowName}?provider_config_key=${providerConfigKey}`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useUpdateSyncFrequency() {
+    return async (syncId: number, frequency: string) => {
+        try {
+            const res = await fetch(`/api/v1/sync/${syncId}/frequency`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ frequency })
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useGetConnectionAPI() {
+    return async (providerConfigKey: string) => {
+        try {
+            const res = await fetch(`/api/v1/integration/${providerConfigKey}/connections`, {
+                method: 'GET',
+                headers: getHeaders()
             });
 
             return res;

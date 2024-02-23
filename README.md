@@ -4,7 +4,7 @@
 
 </div>
 
-<h1 align="center">A single API for all your integrations</h1>
+<h1 align="center">One platform for all your integrations.</h1>
 
 <div align="center">
 Ship integrations fast. Maintain full control.
@@ -16,122 +16,83 @@ Ship integrations fast. Maintain full control.
     <br />
 
   <br/>
-    <a href="https://nango.dev/integrations">Supported APIs</a>
-    ·
-    <a href="https://docs.nango.dev/">Docs</a>
+    <a href="https://nango.dev/integrations">150+ pre-configured APIs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
-    <a href="https://docs.nango.dev/contribute">Contribute an API</a>
-    ·
-    <a href="https://github.com/nangohq/nango/issues">Report Bug</a>
+    <a href="https://docs.nango.dev/customize/guides/contribute-an-api">Contribute an API</a>
     ·
     <a href="https://nango.dev/slack">Slack Community</a>
 </p>
 
-Nango simplifies integrating your product with any external API. It's as flexible as building integrations yourself and as quick as choosing a pre-existing solution. This means you can:
+Nango is a single API to interact with all other external APIs. It should be the only API you need to integrate to your app.
 
-* Build the integrations your customers need
-* Clean up your codebase
-* And get a good night's sleep!
+<img src="/docs-v2/images/overview.png">
 
-## 👀 An Overview of Nango
+## 👩‍💻 Sample code 
 
-With Nango, you can construct integrations in hours, not weeks, while retaining complete control over the integration's logic and access to all external APIs.
-
-Nango merges production-ready infrastructure with [pre-build integration templates](https://docs.nango.dev/integration-templates/overview) for [over 100 APIs](https://docs.nango.dev/integrations/overview):
-
-*   🔐 Authenticate 100+ APIs with just one line of code
-*   🔁 Enable bi-directional data synchronization
-*   ⏩️ Easily access unified APIs for any category
-*   🚫 Automate API-specific rate limits, retries & pagination
-*   🧠 Apply strong typing with your custom data models
-*   🪝 Utilize webhooks & real-time data syncs
-*   👀 Take advantage of built-in monitoring
-*   📺 Access your admin dashboard
-
-You'll have full control over the integrations without the headache of maintenance and ops.
-
-## 👩‍💻 Sample Code with Nango
-
-*   A single line to initiate a new OAuth flow & connect an integration:
+Initiate a new OAuth flow from your frontend:
 
 ```js
-nango.auth('github', '<user-id>');
+nango.auth('github', 'user123');
 ```
 
-*   A single line to fetch structured objects from any external API:
+Get structured objects from external APIs from your backend:
 
 ```ts
 nango.listRecords<GithubIssue>({
     providerConfigKey: 'github',
-    connectionId: '<user-id>',
-    model: 'GithubIssue', // Or any other data you want to sync
+    connectionId: 'user123',
+    model: 'GithubIssue',
 });
 ```
 
-## ✅ Over 100 Pre-configured APIs, Easy to Add Your Own
+# 👩🏻‍🔧 Choose your level of service
 
-Nango works with any API and use-case. [Adding an API](https://docs.nango.dev/contribute) is simple, and we already have many APIs covered.
+Nango's flexibility ensures it supports any API integration:
 
-[Over 100 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box, including:
+1. **Pre-built integrations**: Utilize pre-built integrations for popular APIs and standard use-cases to ship fast.
+2. **Custom integrations**: Build your own integrations in code with limitless customization capabilities.
+3. **Managed integrations**: Leverage Nango experts to create and maintain your integrations end-to-end.
 
-*   **CRM**: Front, Hubspot, Salesforce, and more
-*   **Accounting**: Xero, Sellsy, Zoho Books, and more
-*   **Fintech:** Brex, Stripe, Braintree, Ramp, and more
-*   **Developer tools**: GitHub, GitLab, Linear, Jira, and more
-*   **Communication**: Gmail, Microsoft Teams, Slack, Discord, Zoom, and more
-*   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello,
-    GSheet, ClickUp, and more
-*   **Social**: Twitter, LinkedIn, Reddit, Facebook, and more
-*   [and many others...](https://nango.dev/integrations)
+# 🔌 150+ pre-built APIs & integrations, or build your own!
 
-If your favorite API is not listed, you can [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it](https://docs.nango.dev/contribute).
+[Over 150 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
+- **Accounting**: Netsuite, Quickbooks, Xero, ...
+- **Communications**: Slack, Discord, Teams, ...
+- **CRMs**: Hubspot, Salesforce, ...
+- **Emails**: Gmails, Outlook, ...
+- **HR**: Deel, Gusto, BambooHR, Personio, ...
+- **Identity**: Okta, Auth0, ...
+- **Knowledge Bases**: Notion, Drive, ...
+- **Ticketing**: Linear, Jira, ...
+- **Support**: Zendesk, ...
+- **Video**: Zoom, Google Meet, ...
+- and [many more](https://nango.dev/integrations)
 
-## 🚀 Get started with Nango 
+But remember, Nango can work with **any API and any use-case**!
 
-You can try Nango in 10 minutes with the [Quickstart 🚀](https://nango.dev/quickstart).
+# 🚀 Get started
 
-Or sign up for free:
+Sign up for free and try the interactive demo:
 
 <a href="https://app.nango.dev/signup" target="_blank">
   <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
 </a>
 
-## 🕐 When is Nango the Right Choice?
+# 🙋‍♀️ Why is Nango open-source?
 
-Consider Nango if:
+Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
+- [Contribute an API](/customize/guides/contribute-an-api)
+- [Contribute integration templates](/customize/guides/contribute-an-integration-template)
 
-*   You need to build integrations quickly
-*   Pre-packaged solutions such as embedded iPaaS or unified APIs are too restrictive
-*   You want to minimize maintenance overhead in production
+# 📚 Learn more
 
-Nango is primarily for SaaS products where integrations are at the heart of the user experience. If your product deeply integrates with other SaaS products, Nango is likely your best bet.
+- [Learn how to integrate Nango](https://docs.nango.dev/integrate/overview)
+- [Asks questions on the community](https://nango.dev/slack)
+- [Book a demo](https://calendly.com/rguldener/30min)
 
-However, Nango is not designed for automating internal workflows or adding single sign-on login options.
-
-## 🙋‍♀️ Why is Nango Open-Source?
-
-At Nango, we believe all software should integrate seamlessly with the other software its users utilize. Integrations are core features in software products and as such should be built by engineers.
-
-Our mission is to simplify the process for engineers to incorporate these integrations into their products with an open platform.
-
-With our open-source approach, every engineer can contribute improvements to the platform for everyone:
-
-*   [Contribute new APIs](https://docs.nango.dev/contribute) for OAuth flows & data syncs
-*   [Contribute new integration templates](https://docs.nango.dev/integration-templates/overview) or extend existing one for themselves
-*   Share [API specific quirks](https://docs.nango.dev/integrations/all/salesforce#api-gotchas) with other developers
-
-## 🔍 Where to learn more
-
-*   Explore the [documentation](https://docs.nango.dev)
-*   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
-*   [Contribute a new API](https://docs.nango.dev/contribute)
-*   Check out our [blog on native integrations](https://www.nango.dev/blog)
-*   Explore the [integration templates](https://docs.nango.dev/integration-templates/overview)
-*   Check out the [100+ supported APIs](https://nango.dev/integrations)
-
-## 💪 Contributors
+# 💪 Contributors
 
 Thank you for continuously making Nango better ❤️
 
@@ -139,6 +100,6 @@ Thank you for continuously making Nango better ❤️
   <img src="https://contrib.rocks/image?repo=nangohq/nango" />
 </a>
 
-## 🐻 History
+# 🐻 History
 
 Pizzly (a simple service for OAuth) was initially developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40 individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
