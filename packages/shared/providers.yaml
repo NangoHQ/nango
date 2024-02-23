@@ -686,8 +686,8 @@ github-app:
     auth_mode: APP
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
-    docs: https://docs.nango.dev/integrations/all/github
     webhook_routing_script: github-app-webhook-routing
+    docs: https://docs.nango.dev/integrations/all/github
 github-app-oauth:
     categories:
         - dev-tools
@@ -698,9 +698,9 @@ github-app-oauth:
     token_url:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
-    docs: https://docs.nango.dev/integrations/all/github
     webhook_routing_script: github-app-oauth-webhook-routing
     post_connection_script: github-app-oauth-post-connection
+    docs: https://docs.nango.dev/integrations/all/github
 gitlab:
     categories:
         - dev-tools
@@ -923,12 +923,12 @@ highlevel:
     token_url: https://services.leadconnectorhq.com/oauth/token
     proxy:
         base_url: https://services.leadconnectorhq.com
-    docs: https://docs.nango.dev/integrations/all/highlevel
     disable_pkce: true
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/highlevel
 hubspot:
     categories:
         - marketing
@@ -1242,6 +1242,7 @@ next-cloud-ocs:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
         headers:
             'OCS-APIRequest': 'true'
+    docs: http://docs.nango.dev/integrations/all/next-cloud
 notion:
     categories:
         - knowledge-base
@@ -1538,9 +1539,9 @@ salesforce:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://docs.nango.dev/integrations/all/salesforce
     webhook_routing_script: salesforce-webhook-routing
     post_connection_script: salesforce-post-connection
+    docs: https://docs.nango.dev/integrations/all/salesforce
 salesforce-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://test.salesforce.com/services/oauth2/authorize
@@ -1578,7 +1579,6 @@ servicem8:
     token_url: https://go.servicem8.com/oauth/access_token
     proxy:
         base_url: https://api.servicem8.com
-    docs: https://docs.nango.dev/integrations/all/servicem8
     scope_seprator: ' '
     authorization_params:
         response_type: code
@@ -1586,6 +1586,7 @@ servicem8:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/servicem8
 servicenow:
     categories:
         - productivity
@@ -1639,8 +1640,8 @@ slack:
             cursor_path_in_response: response_metadata.next_cursor
             cursor_name_in_request: cursor
             limit_name_in_request: limit
-    docs: https://docs.nango.dev/integrations/all/slack
     webhook_routing_script: slack-webhook-routing
+    docs: https://docs.nango.dev/integrations/all/slack
 smartrecruiters-api-key:
     auth_mode: API_KEY
     proxy:
@@ -1786,6 +1787,7 @@ stripe-app:
         base_url: https://api.stripe.com
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/stripe-app
 stripe-app-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
@@ -1821,6 +1823,8 @@ teamwork:
         base_url: https://${connectionConfig.subdomain}${connectionConfig.extension}.teamwork.com
     docs: https://docs.nango.dev/integrations/all/teamwork
 tiktok-accounts:
+    categories:
+        - social
     auth_mode: OAUTH2
     authorization_url: https://www.tiktok.com/v2/auth/authorize/
     token_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/
@@ -1836,7 +1840,10 @@ tiktok-accounts:
     refresh_params:
         grant_type: refresh_token
     scope_separator: ','
+    docs: https://docs.nango.dev/integrations/all/tiktok-accounts
 tiktok-ads:
+    categories:
+        - social
     auth_mode: OAUTH2
     authorization_url: https://business-api.tiktok.com/portal/auth
     token_url: https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/
@@ -1846,6 +1853,7 @@ tiktok-ads:
         grant_type: authorization_code
     authorization_url_replacements:
         client_id: app_id
+    docs: https://docs.nango.dev/integrations/all/tiktok-ads
 timely:
     categories:
         - productivity
@@ -1990,6 +1998,7 @@ uber:
     docs: https://docs.nango.dev/integrations/all/uber
 unauthenticated:
     auth_mode: NONE
+    docs: https://docs.nango.dev/integrations/overview
 wakatime:
     categories:
         - analytics
@@ -1997,9 +2006,9 @@ wakatime:
     auth_mode: OAUTH2
     authorization_url: https://wakatime.com/oauth/authorize
     token_url: https://wakatime.com/oauth/token
-    docs: https://docs.nango.dev/integrations/all/wakatime
     proxy:
         base_url: https://wakatime.com
+    docs: https://docs.nango.dev/integrations/all/wakatime
 wave-accounting:
     categories:
         - accounting

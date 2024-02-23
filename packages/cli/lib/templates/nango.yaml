@@ -1,17 +1,19 @@
 integrations:
   demo-github-integration:
-    github-issue-example:
-      description: |
-          Fetches the Github issues from all a user's repositories.
-          Details: full sync, doesn't track deletes, metadata is not required.
-      type: sync
-      scopes: public_repo
-      sync_type: full
-      track_deletes: false
-      runs: every half hour
-      auto_start: true
-      returns:
-        - GithubIssue
+    scripts:
+        github-issue-example:
+          description: |
+              Fetches the Github issues from all a user's repositories.
+              Details: full sync, doesn't track deletes, metadata is not required.
+          type: sync
+          scopes: public_repo
+          endpoint: /example/github/issues
+          sync_type: full
+          scopes: public_repo
+          track_deletes: false
+          runs: every half hour
+          auto_start: true
+          output: GithubIssue
 
 models:
   GithubIssue:
