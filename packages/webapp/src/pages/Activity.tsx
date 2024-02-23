@@ -3,6 +3,7 @@ import useSWR from 'swr'
 import { Helmet } from 'react-helmet';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
+import { requestErrorToast } from '../utils/api';
 import {
     ChevronsLeft,
     Clock,
@@ -334,7 +335,11 @@ export default function Activity() {
         }
     }
 
-    if (logActivitiesError || error || activities === null) {
+    if (error || logActivitiesError) {
+        requestErrorToast();
+    }
+
+    if (activities === null) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
                 <Loading spaceRatio={2.5} className="-top-36" />
