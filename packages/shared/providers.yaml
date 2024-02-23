@@ -85,6 +85,8 @@ anrok:
         base_url: https://api.anrok.com
         headers:
             Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/anrok
 aws:
     categories:
