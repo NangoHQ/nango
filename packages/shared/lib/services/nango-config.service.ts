@@ -382,7 +382,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints,
-                nango_yaml_version: 'v2',
+                nango_yaml_version: sync.nango_yaml_version || 'v2',
                 webhookSubscriptions
             };
 
@@ -474,7 +474,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
                 endpoints,
-                nango_yaml_version: 'v2'
+                nango_yaml_version: action.nango_yaml_version || 'v2'
             };
 
             if (action.id) {
