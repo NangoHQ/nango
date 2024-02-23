@@ -1,5 +1,6 @@
 import semver from 'semver';
 import db, { schema, dbNamespace } from '../../../db/database.js';
+import logger from '../../../logger/console.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
@@ -94,7 +95,11 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
         }
     }
 
-    const { success, response: standardConfig } = convertV2ConfigObject(nangoConfig);
+    const { success, error, response: standardConfig } = convertV2ConfigObject(nangoConfig);
+
+    if (error) {
+        logger.error(`Error in converting sync config to standard config: ${error}`);
+    }
 
     if (!success || !standardConfig) {
         return [];
