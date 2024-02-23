@@ -155,7 +155,7 @@ export default function Models(props: ModelsProps) {
                                                     <p className="inline-block text-yellow-500">Paused</p>
                                                 </div>
                                             )}
-                                            {sync?.status === 'ERROR' && renderBubble(<ErrorBubble />, errorBubbleStyles, sync)}
+                                            {(sync?.status === 'ERROR' || sync?.status === 'STOPPED') && renderBubble(<ErrorBubble />, errorBubbleStyles, sync)}
                                             {sync?.status === 'RUNNING' && renderBubble(<RunningBubble />, runningBubbleStyles, sync)}
                                             {sync?.status === 'SUCCESS' && renderBubble(<SuccessBubble />, successBubbleStyles, sync)}
                                         </span>
