@@ -164,6 +164,12 @@ export default function Activity() {
     }, [activityFilters]);
 
     useEffect(() => {
+        if (error || logActivitiesError) {
+            requestErrorToast();
+        }
+    }, [error, logActivitiesError]);
+
+    useEffect(() => {
         const scrollToLog = async () => {
             if (isInitialMount.current && activityLogId && typeof activityLogId === 'string' && Object.keys(activityRefs).length > 0) {
                 const id = parseInt(activityLogId);
@@ -333,8 +339,6 @@ export default function Activity() {
     }
 
     if (error || logActivitiesError) {
-        requestErrorToast();
-
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
                 <Loading spaceRatio={2.5} className="-top-36" />
