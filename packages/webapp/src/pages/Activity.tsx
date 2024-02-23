@@ -231,6 +231,7 @@ export default function Activity() {
     };
 
     const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setActivities([]);
         setFilterSet(true);
         const value = e.target.value;
         setStatus(value);
@@ -240,6 +241,7 @@ export default function Activity() {
     }
 
     const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setActivities([]);
         setFilterSet(true);
         const value = e.target.value;
         setSelectedScript(value);
@@ -249,6 +251,7 @@ export default function Activity() {
     }
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setActivities([]);
         setFilterSet(true);
         const value = e.target.value;
         setSelectedIntegration(value);
@@ -258,6 +261,7 @@ export default function Activity() {
     }
 
     const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setActivities([]);
         setFilterSet(true);
         const value = e.target.value;
         setSelectedConnection(value);
@@ -267,6 +271,7 @@ export default function Activity() {
     }
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setActivities([]);
         setFilterSet(true);
         const value = e.target.value;
         setDate(value);
@@ -276,6 +281,7 @@ export default function Activity() {
     }
 
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
+        setActivities([]);
         setFilterSet(true);
         action('');
         const url = window.location.pathname;
