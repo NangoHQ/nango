@@ -620,7 +620,7 @@ describe('Proxy service configure', () => {
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
-        expect(error?.message).toContain('proxy is not supported');
+        expect(error?.message).toContain('proxy is either not supported');
         expect(activityLogs.length).toBe(3);
         expect(activityLogs[2]).toMatchObject({
             environment_id: 1,
@@ -665,7 +665,7 @@ describe('Proxy service configure', () => {
                 proxy: {
                     base_url: 'https://api.github.com'
                 },
-                docs: 'https://docs.github.com/en/rest'
+                docs: 'https://docs.nango.dev/integrations/all/github'
             },
             token: '',
             provider: 'github',

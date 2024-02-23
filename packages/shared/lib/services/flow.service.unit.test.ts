@@ -144,6 +144,6 @@ describe('Flow service tests', () => {
 
         const flow = FlowService.getFlow('github-issues-lite');
         expect(flow).not.toBeNull();
-        expect(flow?.model_schema).not.toBeUndefined();
+        expect(flow?.models).not.toBeUndefined();
     });
 });

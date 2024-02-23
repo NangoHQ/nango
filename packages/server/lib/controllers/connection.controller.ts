@@ -417,7 +417,8 @@ class ConnectionController {
                     return {
                         name: provider,
                         defaultScopes: properties.default_scopes,
-                        authMode: properties.auth_mode
+                        authMode: properties.auth_mode,
+                        categories: properties.categories
                     };
                 })
                 .sort((a, b) => a.name.localeCompare(b.name));

@@ -134,6 +134,9 @@ export interface SyncDeploymentResult {
     version: string;
     providerConfigKey: string;
     type: SyncConfigType;
+    last_deployed?: Date;
+    models: string | string[];
+    id?: number | undefined;
 
     // legacy
     sync_name?: string;
@@ -270,7 +273,7 @@ export const SyncCommandToScheduleStatus = {
     UNPAUSE: ScheduleStatus.RUNNING,
     RUN: ScheduleStatus.RUNNING,
     RUN_FULL: ScheduleStatus.RUNNING,
-    CANCEL: ScheduleStatus.STOPPED
+    CANCEL: ScheduleStatus.RUNNING
 };
 
 export interface SyncConfigWithProvider {

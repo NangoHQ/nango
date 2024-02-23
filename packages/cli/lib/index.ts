@@ -152,6 +152,13 @@ program
         })(options as DeployOptions);
     });
 
+program
+    .command('migrate-config')
+    .description('Migrate the nango.yaml from v1 (deprecated) to v2')
+    .action(async function (this: Command) {
+        await verificationService.runMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    });
+
 // Hidden commands //
 
 program
@@ -224,8 +231,8 @@ program
     .description('Verify the parsed sync config and output the object for verification')
     .action(async function (this: Command) {
         const { autoConfirm } = this.opts();
-        await verificationService.necessaryFilesExist(autoConfirm);
         const cwd = process.cwd();
+        await verificationService.necessaryFilesExist(autoConfirm);
         const { success, error, response: config } = await configService.load(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
         if (!success || !config) {

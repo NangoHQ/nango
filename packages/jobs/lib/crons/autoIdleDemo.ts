@@ -64,7 +64,16 @@ export async function exec(): Promise<void> {
 
         logger.info(`[autoidle] pausing ${sync.id}`);
 
-        const resTemporal = await syncClient.runSyncCommand(sync.schedule_id, sync.id, SyncCommand.PAUSE, activityLogId, sync.environment_id);
+        const resTemporal = await syncClient.runSyncCommand(
+            sync.schedule_id,
+            sync.id,
+            SyncCommand.PAUSE,
+            activityLogId,
+            sync.environment_id,
+            sync.unique_key,
+            sync.connection_id,
+            sync.name
+        );
         if (isErr(resTemporal)) {
             continue;
         }

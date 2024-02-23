@@ -34,7 +34,12 @@
                 "description": "Sync github issues continuously from public repos\n",
                 "scopes": ["public_repo"],
                 "endpoints": [{ "GET": "/ticketing/tickets" }],
-                "webhookSubscriptions": ["issue.creation"]
+                "webhookSubscriptions": ["issue.creation"],
+                "is_public": false,
+                "last_deployed": null,
+                "nango_yaml_version": "v2",
+                "pre_built": false,
+                "version": null
             },
             {
                 "name": "github-issue-example-two",
@@ -67,7 +72,12 @@
                 "description": "Sync github issues continuously from public repos example two\n",
                 "scopes": ["public_repo"],
                 "endpoints": [{ "GET": "/ticketing/tickets-two" }],
-                "webhookSubscriptions": []
+                "webhookSubscriptions": [],
+                "is_public": false,
+                "last_deployed": null,
+                "nango_yaml_version": "v2",
+                "pre_built": false,
+                "version": null
             },
             {
                 "name": "github-multiple-models",
@@ -116,7 +126,12 @@
                 "description": "Sync github issues to multiple models",
                 "scopes": [],
                 "endpoints": [{ "GET": "/ticketing/ticket" }, { "GET": "/ticketing/pr" }],
-                "webhookSubscriptions": []
+                "webhookSubscriptions": [],
+                "is_public": false,
+                "last_deployed": null,
+                "nango_yaml_version": "v2",
+                "pre_built": false,
+                "version": null
             }
         ],
         "actions": [
@@ -150,7 +165,12 @@
                 "returns": "GithubIssueAction",
                 "runs": "",
                 "scopes": ["repo:read"],
-                "type": "action"
+                "type": "action",
+                "is_public": false,
+                "last_deployed": null,
+                "nango_yaml_version": "v2",
+                "pre_built": false,
+                "version": null
             },
             {
                 "name": "github-create-issue",
@@ -182,7 +202,12 @@
                         { "name": "body", "type": "string" }
                     ]
                 },
-                "endpoints": [{ "POST": "/ticketing/tickets" }]
+                "endpoints": [{ "POST": "/ticketing/tickets" }],
+                "is_public": false,
+                "last_deployed": null,
+                "nango_yaml_version": "v2",
+                "pre_built": false,
+                "version": null
             },
             {
                 "name": "github-delete-issue",
@@ -202,7 +227,12 @@
                     "name": "GithubIssue:id",
                     "fields": [{ "name": "id", "type": "integer" }]
                 },
-                "endpoints": [{ "DELETE": "/ticketing/tickets/{GithubIssue:id}" }]
+                "endpoints": [{ "DELETE": "/ticketing/tickets/{GithubIssue:id}" }],
+                "is_public": false,
+                "last_deployed": null,
+                "nango_yaml_version": "v2",
+                "pre_built": false,
+                "version": null
             }
         ]
     }

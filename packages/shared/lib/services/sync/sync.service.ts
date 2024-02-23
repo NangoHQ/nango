@@ -201,7 +201,7 @@ export const getSyncsFlatWithNames = async (nangoConnection: Connection, syncNam
  * @description get the sync related to the connection
  * the latest sync and its result and the next sync based on the schedule
  */
-export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => {
+export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { status: SyncStatus })[]> => {
     const syncClient = await SyncClient.getInstance();
 
     if (!syncClient || !nangoConnection || !nangoConnection.id) {
@@ -235,6 +235,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
+            `${SYNC_CONFIG_TABLE}.models`,
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -264,11 +265,14 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
         )
         .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
+        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
         .where({
             nango_connection_id: nangoConnection.id,
             [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
             [`${SYNC_JOB_TABLE}.deleted`]: false,
-            [`${TABLE}.deleted`]: false
+            [`${TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.active`]: true
         })
         .orderBy(`${TABLE}.name`, 'asc')
         .groupBy(
@@ -276,7 +280,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
-            `${SYNC_SCHEDULE_TABLE}.schedule_id`
+            `${SYNC_SCHEDULE_TABLE}.schedule_id`,
+            `${SYNC_CONFIG_TABLE}.models`
         );
 
     const syncsWithSchedule = result.map(async (sync) => {
@@ -300,6 +305,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
 
         return {
             ...sync,
+            status: syncOrchestrator.classifySyncStatus(sync?.latest_sync?.status, sync?.schedule_status),
             futureActionTimes
         };
     });
@@ -451,6 +457,22 @@ export const findSyncByConnections = async (connectionIds: number[], sync_name: 
     }
 
     return [];
+};
+
+export const getSyncsBySyncConfigId = async (environmentId: number, syncConfigId: number): Promise<Sync[]> => {
+    const results = await schema()
+        .select('sync_name', `${TABLE}.id`)
+        .from<Sync>(TABLE)
+        .join(SYNC_CONFIG_TABLE, `${TABLE}.name`, `${SYNC_CONFIG_TABLE}.sync_name`)
+        .where({
+            environment_id: environmentId,
+            [`${SYNC_CONFIG_TABLE}.id`]: syncConfigId,
+            [`${TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.active`]: true
+        });
+
+    return results;
 };
 
 export const getSyncsByConnectionIdsAndEnvironmentIdAndSyncName = async (connectionIds: string[], environmentId: number, syncName: string): Promise<Sync[]> => {
@@ -684,7 +706,7 @@ export interface PausableSyncs {
     name: string;
     environment_id: number;
     provider: string;
-    connection_id: number;
+    connection_id: string;
     unique_key: string;
     schedule_id: string;
 }

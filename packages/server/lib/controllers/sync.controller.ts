@@ -37,13 +37,16 @@ import {
     getAttributes,
     flowService,
     getActionOrModelByEndpoint,
-    getInterval,
+    getSyncsBySyncConfigId,
+    updateFrequency,
     updateSyncScheduleFrequency,
+    getInterval,
     findSyncByConnections,
     setFrequency,
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    isOk
+    isOk,
+    isErr
 } from '@nangohq/shared';
 
 class SyncController {
@@ -321,7 +324,7 @@ class SyncController {
 
             const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_VERB, path);
             if (action) {
-                const input = req.body;
+                const input = req.body || req.params[1];
                 req.body = {};
                 req.body['action_name'] = action;
                 req.body['input'] = input;
@@ -600,7 +603,31 @@ class SyncController {
             const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number, environment.id);
+
+            if (!syncClient) {
+                const error = new NangoError('failed_to_get_sync_client');
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            const result = await syncClient.runSyncCommand(
+                schedule_id,
+                sync_id,
+                command,
+                activityLogId as number,
+                environment.id,
+                connection?.provider_config_key as string,
+                connection?.connection_id as string,
+                sync_name,
+                connection?.id
+            );
+
+            if (isErr(result)) {
+                errorManager.errResFromNangoErr(res, result.err as NangoError);
+                return;
+            }
+
             if (command !== SyncCommand.RUN) {
                 await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
             }
@@ -665,6 +692,54 @@ class SyncController {
             const attributes = await getAttributes(provider_config_key as string, sync_name as string);
 
             res.status(200).send(attributes);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async updateFrequency(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            const { environment } = response;
+            const syncConfigId = req.params['syncId'];
+            const { frequency } = req.body;
+
+            if (!syncConfigId) {
+                res.status(400).send({ message: 'Missing sync config id' });
+
+                return;
+            }
+
+            if (!frequency) {
+                res.status(400).send({ message: 'Missing frequency' });
+
+                return;
+            }
+
+            const syncs = await getSyncsBySyncConfigId(environment.id, Number(syncConfigId));
+            const setFrequency = `every ${frequency}`;
+            for (const sync of syncs) {
+                const { success: updateScheduleSuccess, error: updateScheduleError } = await updateSyncScheduleFrequency(
+                    sync.id as string,
+                    setFrequency,
+                    sync.name,
+                    environment.id
+                );
+
+                if (!updateScheduleSuccess) {
+                    errorManager.errResFromNangoErr(res, updateScheduleError);
+                    return;
+                }
+            }
+            await updateFrequency(Number(syncConfigId), setFrequency);
+
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }

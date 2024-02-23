@@ -1,10 +1,11 @@
 integrations:
   google-mail:
-    gmail-emails:
-      runs: every hour
-      returns:
-        - GmailEmail
-
+    syncs:
+      gmail-emails:
+        runs: every hour
+        output: GmailEmail
+        sync_type: incremental
+        endpoint: /google-mail/emails
 models:
   GmailEmail:
     id: string
