@@ -10,7 +10,7 @@ import configService from './config.service.js';
 class ModelService {
     public build(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
         const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
-            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
             const syncNames = Object.keys(syncObject);
             for (let i = 0; i < syncNames.length; i++) {
                 const syncName = syncNames[i] as string;
@@ -38,7 +38,7 @@ class ModelService {
             // if the model is not returned from a sync script then it must be a
             // helper model that is used to build the returned models
             const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
-                const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+                const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
                 const syncNames = Object.keys(syncObject);
                 for (let i = 0; i < syncNames.length; i++) {
                     const syncName = syncNames[i] as string;

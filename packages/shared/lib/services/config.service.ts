@@ -12,7 +12,7 @@ import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigI
 import environmentService from '../services/environment.service.js';
 
 class ConfigService {
-    templates: { [key: string]: ProviderTemplate } | null;
+    templates: Record<string, ProviderTemplate> | null;
 
     constructor() {
         this.templates = this.getTemplatesFromFile();
@@ -39,7 +39,7 @@ class ConfigService {
         };
 
         try {
-            const fileEntries = yaml.load(fs.readFileSync(templatesPath()).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
+            const fileEntries = yaml.load(fs.readFileSync(templatesPath()).toString()) as Record<string, ProviderTemplate | ProviderTemplateAlias>;
 
             if (fileEntries == null) {
                 throw new NangoError('provider_template_loading_failed');
@@ -63,7 +63,7 @@ class ConfigService {
                 }
             }
 
-            return fileEntries as { [key: string]: ProviderTemplate };
+            return fileEntries as Record<string, ProviderTemplate>;
         } catch (_) {
             return null;
         }
@@ -283,7 +283,7 @@ class ConfigService {
         return template;
     }
 
-    getTemplates(): { [key: string]: ProviderTemplate } {
+    getTemplates(): Record<string, ProviderTemplate> {
         if (this.templates == null) {
             throw new NangoError('provider_template_loading_failed');
         }

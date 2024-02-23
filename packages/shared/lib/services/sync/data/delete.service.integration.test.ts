@@ -246,7 +246,7 @@ describe('Data delete service integration tests', () => {
         await takeSnapshot(nangoConnectionId as number, modelName);
 
         if (formattedResults) {
-            // @ts-ignore
+            // @ts-expect-error
             rawRecords[0]!['json']['updatedAt'] = new Date().toISOString();
         }
 

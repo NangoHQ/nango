@@ -4,11 +4,11 @@ export interface DataResponse {
 }
 
 export interface UpsertSummary {
-    addedKeys: Array<string>;
-    updatedKeys: Array<string>;
-    deletedKeys?: Array<string>;
-    affectedInternalIds: Array<string>;
-    affectedExternalIds: Array<string>;
+    addedKeys: string[];
+    updatedKeys: string[];
+    deletedKeys?: string[];
+    affectedInternalIds: string[];
+    affectedExternalIds: string[];
 }
 export interface UpsertResponse {
     success: boolean;
