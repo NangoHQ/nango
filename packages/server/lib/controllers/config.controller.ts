@@ -131,18 +131,22 @@ class ConfigController {
                 errorManager.errRes(res, 'missing_provider_template');
                 return;
             }
-            if (req.body['client_id'] == null) {
-                errorManager.errRes(res, 'missing_client_id');
-                return;
-            }
-            if (req.body['client_secret'] == null) {
-                errorManager.errRes(res, 'missing_client_secret');
-                return;
-            }
 
             const provider = req.body['provider'];
 
             const template = await configService.getTemplate(provider as string);
+            const authMode = template.auth_mode;
+
+            if (authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) {
+                if (req.body['client_id'] == null) {
+                    errorManager.errRes(res, 'missing_client_id');
+                    return;
+                }
+                if (req.body['client_secret'] == null) {
+                    errorManager.errRes(res, 'missing_client_secret');
+                    return;
+                }
+            }
 
             let oauth_client_secret = req.body['client_secret'] ?? null;
 
@@ -583,8 +587,9 @@ class ConfigController {
             const provider = req.body['provider'];
 
             const template = await configService.getTemplate(provider as string);
+            const authMode = template.auth_mode;
 
-            if (template.auth_mode === AuthModes.ApiKey || template.auth_mode === AuthModes.Basic) {
+            if (authMode === AuthModes.ApiKey || authMode === AuthModes.Basic) {
                 errorManager.errRes(res, 'provider_config_edit_not_allowed');
                 return;
             }
@@ -593,13 +598,16 @@ class ConfigController {
                 errorManager.errRes(res, 'missing_provider_template');
                 return;
             }
-            if (req.body['oauth_client_id'] == null) {
-                errorManager.errRes(res, 'missing_client_id');
-                return;
-            }
-            if (req.body['oauth_client_secret'] == null) {
-                errorManager.errRes(res, 'missing_client_secret');
-                return;
+
+            if (authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) {
+                if (req.body['oauth_client_id'] == null) {
+                    errorManager.errRes(res, 'missing_client_id');
+                    return;
+                }
+                if (req.body['oauth_client_secret'] == null) {
+                    errorManager.errRes(res, 'missing_client_secret');
+                    return;
+                }
             }
 
             let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
