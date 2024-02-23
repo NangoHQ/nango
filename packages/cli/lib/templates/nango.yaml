@@ -1,6 +1,6 @@
 integrations:
   demo-github-integration:
-        scripts:
+        syncs:
             github-issue-example:
               description: |
                   Fetches the Github issues from all a user's repositories.
