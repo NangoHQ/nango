@@ -334,6 +334,12 @@ export default function Activity() {
 
     if (error || logActivitiesError) {
         requestErrorToast();
+
+        return (
+            <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
+                <Loading spaceRatio={2.5} className="-top-36" />
+            </DashboardLayout>
+        );
     }
 
     if (activities === null) {
