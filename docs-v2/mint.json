@@ -66,10 +66,6 @@
     ],
     "redirects": [
         {
-            "source": "guides/actions",
-            "destination": "guides/action"
-        },
-        {
             "source": "/guides/custom",
             "destination": "/customize/guides/create-a-custom-integration"
         },
@@ -114,11 +110,11 @@
             "destination": "/integrations/overview"
         },
         {
-            "source": "guides/cloud",
+            "source": "/guides/cloud",
             "destination": "/host/cloud"
         },
         {
-            "source": "guides/managed-integrations",
+            "source": "/guides/managed-integrations",
             "destination": "/host/managed-integrations"
         }
     ],
