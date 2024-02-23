@@ -13,7 +13,7 @@ exports.up = async function(knex) {
             continue;
         }
         const { id, provider_config_key, environment_id } = connection;
-        const config = await knex.select('id').from(`${CONFIGS_TABLE}`).where({ unique_key: provider_config_key, environment_id }).first();
+        const config = await knex.select('id').from(`nango.${CONFIGS_TABLE}`).where({ unique_key: provider_config_key, environment_id }).first();
 
         if (config) {
             await knex(`nango.${CONNECTIONS_TABLE}`).where({ id }).update({ config_id: config.id });

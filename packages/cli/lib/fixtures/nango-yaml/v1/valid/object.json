@@ -30,8 +30,7 @@
                 "description": "",
                 "scopes": [],
                 "endpoints": [],
-                "type": "sync",
-                "nango_yaml_version": "v1"
+                "type": "sync"
             }
         ],
         "actions": [
@@ -46,8 +45,7 @@
                 "runs": "",
                 "scopes": [],
                 "track_deletes": false,
-                "type": "action",
-                "nango_yaml_version": "v1"
+                "type": "action"
             }
         ]
     }
