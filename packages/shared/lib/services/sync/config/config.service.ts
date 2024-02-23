@@ -97,7 +97,9 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
 
     const { success, error, response: standardConfig } = convertV2ConfigObject(nangoConfig);
 
-    logger.error(`Error in converting sync config to standard config: ${error}`);
+    if (error) {
+        logger.error(`Error in converting sync config to standard config: ${error}`);
+    }
 
     if (!success || !standardConfig) {
         return [];
