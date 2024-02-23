@@ -214,20 +214,14 @@ export async function getConnection(providerConfigKey: string, connectionId: str
         });
 }
 
-export async function getProviderBySyncName(params: Record<string, string>, debug = false) {
-    const url = process.env['NANGO_HOSTPORT'] + `/sync/provider`;
+export async function getConfig(providerConfigKey: string, debug = false) {
+    const url = process.env['NANGO_HOSTPORT'] + `/config/${providerConfigKey}`;
     const headers = enrichHeaders();
     if (debug) {
-        printDebug(
-            `getProviderBySyncName endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)} with params: ${JSON.stringify(
-                params,
-                null,
-                2
-            )}`
-        );
+        printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
     return await axios
-        .get(url, { params, headers, httpsAgent: httpsAgent() })
+        .get(url, { headers, httpsAgent: httpsAgent() })
         .then((res) => {
             return res.data;
         })
