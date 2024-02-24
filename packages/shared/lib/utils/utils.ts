@@ -62,6 +62,10 @@ export function isStaging() {
     return process.env['NODE_ENV'] === NodeEnv.Staging;
 }
 
+export function isHosted() {
+    return !isCloud() && !isLocal() && !isEnterprise();
+}
+
 export function getPort() {
     if (process.env['SERVER_PORT']) {
         return +process.env['SERVER_PORT'];
