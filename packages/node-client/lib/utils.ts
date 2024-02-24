@@ -1,7 +1,7 @@
 import type { ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
 
 export const validateProxyConfiguration = (config: ProxyConfiguration) => {
-    const requiredParams: Array<keyof ProxyConfiguration> = ['endpoint', 'providerConfigKey', 'connectionId'];
+    const requiredParams: (keyof ProxyConfiguration)[] = ['endpoint', 'providerConfigKey', 'connectionId'];
 
     requiredParams.forEach((param) => {
         if (typeof config[param] === 'undefined') {
@@ -11,7 +11,7 @@ export const validateProxyConfiguration = (config: ProxyConfiguration) => {
 };
 
 export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig) => {
-    const requiredParams: Array<keyof GetRecordsRequestConfig> = ['model', 'providerConfigKey', 'connectionId'];
+    const requiredParams: (keyof GetRecordsRequestConfig)[] = ['model', 'providerConfigKey', 'connectionId'];
 
     requiredParams.forEach((param) => {
         if (typeof config[param] === 'undefined') {

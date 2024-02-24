@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import type { Metadata, NangoConnection } from '@nangohq/shared';
 import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
-import { parseSecretKey, printDebug, hostport, getConnection } from '../utils.js';
+import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import configService from './config.service.js';
 import compileService from './compile.service.js';
 import integrationService from './local-integration.service.js';
@@ -98,6 +98,17 @@ class DryRunService {
             printDebug(`Connection found with ${JSON.stringify(nangoConnection, null, 2)}`);
         }
 
+        const {
+            config: { provider }
+        } = await getConfig(providerConfigKey, debug);
+        if (!provider) {
+            console.log(chalk.red('Provider not found'));
+            return;
+        }
+        if (debug) {
+            printDebug(`Provider found: ${provider}`);
+        }
+
         if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {
             process.env['NANGO_CLOUD'] = 'true';
         }
@@ -138,6 +149,7 @@ class DryRunService {
             integrationService,
             writeToDb: false,
             nangoConnection,
+            provider,
             input: normalizedInput as object,
             isAction: syncInfo?.type === SyncConfigType.ACTION,
             syncId: 'abc',

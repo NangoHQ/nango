@@ -1,59 +1,57 @@
 integrations:
-    linear: # scopes: none (defaults to read)
-        linear-issues:
-            runs: every 5min
-            returns:
-                - LinearIssue
-
-        linear-projects:
-            runs: every 5min
-            returns:
-                - LinearProject
-
-        linear-teams:
-            runs: every 5min
-            returns:
-                - LinearTeam
-
-        linear-roadmaps:
-            runs: every 5min
-            returns:
-                - LinearRoadmap
-
+  linear:
+    syncs:
+      linear-issues:
+        runs: every 5min
+        output: LinearIssue
+        sync_type: incremental
+        endpoint: /linear/issues
+      linear-projects:
+        runs: every 5min
+        output: LinearProject
+        sync_type: incremental
+        endpoint: /linear/projects
+      linear-teams:
+        runs: every 5min
+        output: LinearTeam
+        sync_type: incremental
+        endpoint: /linear/teams
+      linear-roadmaps:
+        runs: every 5min
+        output: LinearRoadmap
+        sync_type: incremental
+        endpoint: /linear/roadmaps
 models:
-    LinearIssue:
-        id: string
-        assigneeId: string | null
-        creatorId: string | null
-        createdAt: date
-        description: string | null
-        dueDate: date | null
-        projectId: string | null
-        teamId: string
-        title: string
-        status: string
-
-    LinearTeam:
-        id: string
-        name: string
-        description: string | null
-        createdAt: date
-        updatedAt: date
-
-    LinearProject:
-        id: string
-        url: string
-        name: string
-        description: string | null
-        createdAt: date
-        updatedAt: date
-        teamId: string
-
-    LinearRoadmap:
-        id: string
-        name: string
-        description: string | null
-        createdAt: date
-        updatedAt: date
-        teamId: string
-        projectIds: string
+  LinearIssue:
+    id: string
+    assigneeId: string | null
+    creatorId: string | null
+    createdAt: date
+    description: string | null
+    dueDate: date | null
+    projectId: string | null
+    teamId: string
+    title: string
+    status: string
+  LinearTeam:
+    id: string
+    name: string
+    description: string | null
+    createdAt: date
+    updatedAt: date
+  LinearProject:
+    id: string
+    url: string
+    name: string
+    description: string | null
+    createdAt: date
+    updatedAt: date
+    teamId: string
+  LinearRoadmap:
+    id: string
+    name: string
+    description: string | null
+    createdAt: date
+    updatedAt: date
+    teamId: string
+    projectIds: string

@@ -204,15 +204,11 @@ export class Nango {
     }
 
     public async importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
-        throw new Error(
-            'This method has been deprecated, please use the REST API to import a connection. See https://docs.nango.dev/api-reference/connection/post'
-        );
+        throw new Error('This method has been deprecated, please use the REST API to import a connection.');
     }
 
     public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
-        throw new Error(
-            'This method has been deprecated, please use the REST API to create a connection. See https://docs.nango.dev/api-reference/connection/post'
-        );
+        throw new Error('This method has been deprecated, please use the REST API to create a connection.');
     }
 
     /**
@@ -404,7 +400,7 @@ export class Nango {
         return response.data;
     }
 
-    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string): Promise<void> {
+    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string, fullResync?: boolean): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
         if (typeof syncs === 'string') {
@@ -414,7 +410,8 @@ export class Nango {
         const body = {
             syncs: syncs || [],
             provider_config_key: providerConfigKey,
-            connection_id: connectionId
+            connection_id: connectionId,
+            full_resync: fullResync
         };
 
         return axios.post(url, body, { headers: this.enrichHeaders() });

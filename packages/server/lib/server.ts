@@ -1,7 +1,7 @@
 import tracer from './tracer.js';
+import './utils/config.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
-import _ from './utils/config.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
 import providerController from './controllers/provider.controller.js';
@@ -19,6 +19,7 @@ import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
+import { rateLimiterMiddleware } from './controllers/ratelimit.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -44,7 +45,6 @@ import {
     packageJsonFile
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
-import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
@@ -53,14 +53,15 @@ const app = express();
 
 // Auth
 AuthClient.setup(app);
-const apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
-const apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
+
+const apiAuth = [authMiddleware.secretKeyAuth, rateLimiterMiddleware];
+const apiPublicAuth = [authMiddleware.publicKeyAuth, rateLimiterMiddleware];
 const webAuth =
     isCloud() || isEnterprise()
-        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
+        ? [passport.authenticate('session'), authMiddleware.sessionAuth, rateLimiterMiddleware]
         : isBasicAuthEnabled()
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
-          : [authMiddleware.noAuth.bind(authMiddleware)];
+          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth, rateLimiterMiddleware]
+          : [authMiddleware.noAuth, rateLimiterMiddleware];
 
 app.use(
     express.json({
@@ -140,12 +141,12 @@ app.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(
 
 // Webapp routes (no auth).
 if (isCloud() || isEnterprise()) {
-    app.route('/api/v1/signup').post(authController.signup.bind(authController));
-    app.route('/api/v1/signup/invite').get(authController.invitation.bind(authController));
-    app.route('/api/v1/logout').post(authController.logout.bind(authController));
-    app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
-    app.route('/api/v1/forgot-password').put(authController.forgotPassword.bind(authController));
-    app.route('/api/v1/reset-password').put(authController.resetPassword.bind(authController));
+    app.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
+    app.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
+    app.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
+    app.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
+    app.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
+    app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
 }
 
 // Webapp routes (session auth).
@@ -172,10 +173,14 @@ app.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.g
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
+app.route('/api/v1/integration/name').put(webAuth, configController.editProviderConfigName.bind(connectionController));
 app.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
+app.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
+app.route('/api/v1/integration/:providerConfigKey/endpoints').get(webAuth, flowController.getEndpoints.bind(connectionController));
+app.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 
-app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
+app.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
 app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
@@ -195,10 +200,12 @@ app.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibl
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
+app.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
 app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 app.route('/api/v1/flow/:id').delete(webAuth, flowController.deleteFlow.bind(flowController));
+app.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
 app.route('/api/v1/onboarding').post(webAuth, onboardingController.init.bind(onboardingController));
@@ -232,9 +239,6 @@ const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 wss.on('connection', async (ws: WebSocket) => {
     await publisher.subscribe(ws);
 });
-
-// kick off any job
-deleteOldActivityLogs();
 
 const port = getPort();
 server.listen(port, () => {

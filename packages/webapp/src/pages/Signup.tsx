@@ -33,7 +33,6 @@ export default function Signup() {
                 email: user.email,
                 name: user.name,
                 accountId: user.accountId
-
             });
             signin(user);
             navigate('/');

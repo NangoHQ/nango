@@ -12,7 +12,7 @@ import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigI
 import environmentService from '../services/environment.service.js';
 
 class ConfigService {
-    templates: { [key: string]: ProviderTemplate } | null;
+    templates: Record<string, ProviderTemplate> | null;
 
     constructor() {
         this.templates = this.getTemplatesFromFile();
@@ -39,7 +39,7 @@ class ConfigService {
         };
 
         try {
-            const fileEntries = yaml.load(fs.readFileSync(templatesPath()).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
+            const fileEntries = yaml.load(fs.readFileSync(templatesPath()).toString()) as Record<string, ProviderTemplate | ProviderTemplateAlias>;
 
             if (fileEntries == null) {
                 throw new NangoError('provider_template_loading_failed');
@@ -63,7 +63,7 @@ class ConfigService {
                 }
             }
 
-            return fileEntries as { [key: string]: ProviderTemplate };
+            return fileEntries as Record<string, ProviderTemplate>;
         } catch (_) {
             return null;
         }
@@ -141,6 +141,12 @@ class ConfigService {
             .filter((config) => config != null) as ProviderConfig[];
     }
 
+    async listProviderConfigsByProvider(environment_id: number, provider: string): Promise<ProviderConfig[]> {
+        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, provider, deleted: false }))
+            .map((config) => encryptionManager.decryptProviderConfig(config))
+            .filter((config) => config != null) as ProviderConfig[];
+    }
+
     async getAllNames(environment_id: number): Promise<string[]> {
         const configs = await this.listProviderConfigs(environment_id);
         return configs.map((config) => config.unique_key);
@@ -149,6 +155,28 @@ class ConfigService {
     async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
         return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(configToInsert, ['id']);
+    }
+
+    async createEmptyProviderConfig(provider: string, environment_id: number): Promise<Pick<ProviderConfig, 'id' | 'unique_key'>> {
+        const existingProviders = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider, environment_id, deleted: false });
+
+        const config = {
+            environment_id,
+            unique_key: existingProviders.length === 0 ? provider : `${provider}-${existingProviders.length + 1}`,
+            provider
+        };
+
+        const id = await this.createProviderConfig(config as ProviderConfig);
+
+        if (!id || id.length === 0) {
+            throw new NangoError('unknown_provider_config');
+        }
+
+        return { id: id[0]?.id, unique_key: config.unique_key } as Pick<ProviderConfig, 'id' | 'unique_key'>;
     }
 
     /**
@@ -227,6 +255,14 @@ class ConfigService {
             .update(encryptionManager.encryptProviderConfig(config));
     }
 
+    async editProviderConfigName(providerConfigKey: string, newUniqueKey: string, environment_id: number) {
+        return db.knex
+            .withSchema(db.schema())
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .update({ unique_key: newUniqueKey });
+    }
+
     checkProviderTemplateExists(provider: string) {
         if (this.templates == null) {
             throw new NangoError('provider_template_loading_failed');
@@ -247,7 +283,7 @@ class ConfigService {
         return template;
     }
 
-    getTemplates(): { [key: string]: ProviderTemplate } {
+    getTemplates(): Record<string, ProviderTemplate> {
         if (this.templates == null) {
             throw new NangoError('provider_template_loading_failed');
         }
@@ -267,6 +303,21 @@ class ConfigService {
         }
 
         return result;
+    }
+
+    async getConfigIdByProviderConfigKey(providerConfigKey: string, environment_id: number): Promise<number | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .select('id')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .first();
+
+        if (!result) {
+            return null;
+        }
+
+        return result.id;
     }
 }
 

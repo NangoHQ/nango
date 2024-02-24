@@ -38,6 +38,15 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
                 if (!output.integrations[integrationName]) {
                     output.integrations[integrationName] = {};
                 }
+                output.integrations[integrationName].models = nangoData.models;
+
+                for (const model in nangoData.models) {
+                    if (nangoData.models[model].__extends) {
+                        const extendedModel = nangoData.models[model].__extends;
+                        const fullModel = nangoData.models[extendedModel];
+                        nangoData.models[model] = { ...fullModel };
+                    }
+                }
                 output.integrations[integrationName].models = {
                     ...output.integrations[integrationName].models,
                     ...nangoData.models

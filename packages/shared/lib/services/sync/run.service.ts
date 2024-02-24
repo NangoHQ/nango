@@ -34,7 +34,7 @@ interface SyncRunConfig {
 
     syncId?: string;
     syncJobId?: number;
-    activityLogId?: number;
+    activityLogId?: number | undefined;
     provider?: string;
 
     loadLocation?: string;
@@ -152,7 +152,7 @@ export default class SyncRun {
             : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
 
         if (!nangoConfig) {
-            const message = `No sync configuration was found for ${this.syncName}.`;
+            const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
             if (this.activityLogId) {
                 await this.reportFailureForResults(message);
             } else {
@@ -201,7 +201,7 @@ export default class SyncRun {
                 syncData = (syncObject['syncs'] ? syncObject!['syncs']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
             }
 
-            const { returns: models, track_deletes: trackDeletes } = syncData;
+            const { returns: models, track_deletes: trackDeletes, is_public: isPublic } = syncData;
 
             if (syncData.sync_config_id) {
                 if (this.debug) {
@@ -224,7 +224,7 @@ export default class SyncRun {
                 }
             }
 
-            if (!isCloud()) {
+            if (!isCloud() && !isPublic && !this.isAction) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation
@@ -272,6 +272,7 @@ export default class SyncRun {
                 connectionId: String(this.nangoConnection?.connection_id),
                 environmentId: this.nangoConnection?.environment_id as number,
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
+                provider: this.provider as string,
                 activityLogId: this.activityLogId as number,
                 secretKey,
                 nangoConnectionId: this.nangoConnection?.id as number,
@@ -300,12 +301,12 @@ export default class SyncRun {
                 }
             }
 
+            const startTime = Date.now();
             try {
                 result = true;
 
                 const syncStartDate = new Date();
 
-                const startTime = Date.now();
                 const {
                     success,
                     error,
@@ -344,11 +345,6 @@ export default class SyncRun {
                     return userDefinedResults;
                 }
 
-                const endTime = Date.now();
-                const totalRunTime = (endTime - startTime) / 1000;
-
-                await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
-
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
 
@@ -374,6 +370,7 @@ export default class SyncRun {
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
+                const totalRunTime = (Date.now() - startTime) / 1000;
                 await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                 return { success: true, error: null, response: true };
@@ -389,6 +386,11 @@ export default class SyncRun {
                 const errorType = this.determineErrorType();
 
                 return { success: false, error: new NangoError(errorType, errorMessage), response: result };
+            } finally {
+                if (!this.isInvokedImmediately) {
+                    const totalRunTime = (Date.now() - startTime) / 1000;
+                    await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
+                }
             }
         }
 
@@ -554,6 +556,8 @@ export default class SyncRun {
                 version,
                 syncName: this.syncName,
                 connectionDetails: JSON.stringify(this.nangoConnection),
+                connectionId: this.nangoConnection.connection_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
@@ -634,6 +638,8 @@ export default class SyncRun {
                 environmentId: String(this.nangoConnection.environment_id),
                 syncName: this.syncName,
                 connectionDetails: JSON.stringify(this.nangoConnection),
+                connectionId: this.nangoConnection.connection_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,

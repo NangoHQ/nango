@@ -1,4 +1,7 @@
 accelo:
+    categories:
+        - invoicing
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/authorize
     token_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/token
@@ -11,7 +14,10 @@ accelo:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.api.accelo.com
+    docs: https://docs.nango.dev/integrations/all/accelo
 adobe:
+    categories:
+        - design
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
     token_url: https://ims-na1.adobelogin.com/ims/token/v3
@@ -23,11 +29,17 @@ adobe:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/adobe
 affinity:
+    categories:
+        - crm
     auth_mode: BASIC
     proxy:
         base_url: https://api.affinity.co
+    docs: https://docs.nango.dev/integrations/all/affinity
 aircall:
+    categories:
+        - support
     auth_mode: OAUTH2
     authorization_url: https://dashboard.aircall.io/oauth/authorize
     token_url: https://api.aircall.io/v1/oauth/token
@@ -36,7 +48,10 @@ aircall:
         scope: public_api
     token_params:
         grant_type: authorization_code
+    docs: https://docs.nango.dev/integrations/all/aircall
 airtable:
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://airtable.com/oauth2/v1/authorize
     token_url: https://airtable.com/oauth2/v1/token
@@ -45,8 +60,11 @@ airtable:
         response_type: code
     proxy:
         base_url: https://api.airtable.com
-    docs: https://airtable.com/developers/web/api/introduction
+    docs: https://docs.nango.dev/integrations/all/airtable
 amazon:
+    categories:
+        - dev-tools
+        - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://www.amazon.com/ap/oa
     token_url: https://api.amazon.${connectionConfig.extension}/auth/o2/token
@@ -58,7 +76,11 @@ amazon:
         grant_type: refresh_token
     proxy:
         base_url: https://api.amazon.com
+    docs: https://docs.nango.dev/integrations/all/amazon
 aws:
+    categories:
+        - dev-tools
+        - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
     token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
@@ -70,23 +92,33 @@ aws:
         grant_type: refresh_token
     default_scopes:
         - openid
-    docs: https://docs.aws.amazon.com/cognito
+    docs: https://docs.nango.dev/integrations/all/aws
 amplitude:
+    categories:
+        - analytics
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+    docs: https://docs.nango.dev/integrations/all/amplitude
 apollo:
+    categories:
+        - marketing
     auth_mode: API_KEY
     proxy:
         base_url: https://app.apollo.io/api
         query:
             api_key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/apollo
 apple-app-store:
     auth_mode: APP_STORE
     token_url: https://api.appstoreconnect.apple.com/v1/apps
     authorization_params:
         audience: appstoreconnect-v1
+    docs: https://docs.nango.dev/integrations/all/apple-app-store
 asana:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
     token_url: https://app.asana.com/-/oauth_token
@@ -104,16 +136,20 @@ asana:
             cursor_name_in_request: offset
             response_path: data
             limit_name_in_request: limit
-    docs: https://developers.asana.com/reference
+    docs: https://docs.nango.dev/integrations/all/asana
 ashby:
+    categories:
+        - ats
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
         verification:
             method: POST
             endpoint: apiKey.info
-    docs: https://developers.ashbyhq.com/reference/introduction
+    docs: https://docs.nango.dev/integrations/all/ashby
 atlassian:
+    categories:
+        - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
@@ -129,6 +165,22 @@ atlassian:
         grant_type: refresh_token
     proxy:
         base_url: https://api.atlassian.com
+    docs: https://docs.nango.dev/integrations/all/atlassian
+attio:
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.attio.com/authorize
+    token_url: https://app.attio.com/oauth/token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.attio.com
+    docs: https://docs.nango.dev/integrations/all/attio
 auth0:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
@@ -140,7 +192,10 @@ auth0:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/auth0
 bamboohr:
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
     token_url: https://${connectionConfig.subdomain}.bamboohr.com/token.php
@@ -152,6 +207,7 @@ bamboohr:
         request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+    docs: https://docs.nango.dev/integrations/all/bamboohr
 bamboohr-basic:
     auth_mode: BASIC
     proxy:
@@ -159,8 +215,10 @@ bamboohr-basic:
         verification:
             method: GET
             endpoint: /v1/meta/fields
-    docs: https://documentation.bamboohr.com/reference
+    docs: https://docs.nango.dev/integrations/all/bamboohr
 battlenet:
+    categories:
+        - gaming
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
     token_url: https://oauth.battle.${connectionConfig.extension}/token
@@ -168,13 +226,19 @@ battlenet:
         response_type: code
     token_params:
         grant_type: authorization_code
+    docs: https://docs.nango.dev/integrations/all/battlenet
 bitbucket:
+    categories:
+        - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
     token_url: https://bitbucket.org/site/oauth2/access_token
     proxy:
         base_url: https://api.bitbucket.org
+    docs: https://docs.nango.dev/integrations/all/bitbucket
 blackbaud:
+    categories:
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://app.blackbaud.com/oauth/authorize
     token_url: https://oauth2.sky.blackbaud.com/token
@@ -186,7 +250,10 @@ blackbaud:
         grant_type: refresh_token
     proxy:
         base_url: https://api.sky.blackbaud.com
+    docs: https://docs.nango.dev/integrations/all/blackbaud
 boldsign:
+    categories:
+        - legal
     auth_mode: OAUTH2
     authorization_url: https://account.boldsign.com/connect/authorize
     token_url: https://account.boldsign.com/connect/token
@@ -198,13 +265,20 @@ boldsign:
         grant_type: refresh_token
     proxy:
         base_url: https://api.boldsign.com
+    docs: https://docs.nango.dev/integrations/all/boldsign
 box:
+    categories:
+        - knowledge-base
+        - storage
     auth_mode: OAUTH2
     authorization_url: https://account.box.com/api/oauth2/authorize
     token_url: https://api.box.com/oauth2/token
     proxy:
         base_url: https://api.box.com
+    docs: https://docs.nango.dev/integrations/all/box
 braintree:
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
     token_url: https://api.braintreegateway.com/oauth/access_tokens
@@ -215,6 +289,7 @@ braintree:
         grant_type: authorization_code
     redirect_uri_metadata:
         - merchantId
+    docs: https://docs.nango.dev/integrations/all/braintree
 braintree-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
@@ -226,7 +301,10 @@ braintree-sandbox:
         grant_type: authorization_code
     redirect_uri_metadata:
         - merchantId
+    docs: https://docs.nango.dev/integrations/all/braintree
 brex:
+    categories:
+        - banking
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.brex.com/oauth2/default/v1/token
@@ -235,19 +313,24 @@ brex:
         - offline_access
     proxy:
         base_url: https://platform.brexapis.com
+    docs: https://docs.nango.dev/integrations/all/brex
 brex-api-key:
     auth_mode: API_KEY
     proxy:
         headers:
             Authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
+    docs: https://docs.nango.dev/integrations/all/brex
 brex-staging:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
     proxy:
         base_url: https://platform.staging.brexapis.com
+    docs: https://docs.nango.dev/integrations/all/brex
 calendly:
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://auth.calendly.com/oauth/authorize
     token_url: https://auth.calendly.com/oauth/token
@@ -255,10 +338,12 @@ calendly:
         response_type: code
     proxy:
         base_url: https://api.calendly.com
+    docs: https://docs.nango.dev/integrations/all/calendly
 chorus:
     auth_mode: BASIC
     proxy:
         base_url: https://chorus.ai
+    docs: https://docs.nango.dev/integrations/all/chorus
 clari-copilot:
     auth_mode: API_KEY
     proxy:
@@ -266,14 +351,20 @@ clari-copilot:
             X-Api-Key: ${apiKey}
             X-Api-Password: ${connectionConfig.API_PASSWORD}
         base_url: https://rest-api.copilot.clari.com
-    docs: https://api-doc.copilot.clari.com
+    docs: https://docs.nango.dev/integrations/all/clari-copilot
 clickup:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://app.clickup.com/api
     token_url: https://api.clickup.com/api/v2/oauth/token
     proxy:
         base_url: https://api.clickup.com
+    docs: https://docs.nango.dev/integrations/all/clickup
 close:
+    categories:
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://app.close.com/oauth2/authorize
     token_url: https://api.close.com/oauth2/token/
@@ -284,19 +375,32 @@ close:
     proxy:
         base_url: https://api.close.com/api
         docs: https://developer.close.com/
+    docs: https://docs.nango.dev/integrations/all/close
 coda:
+    categories:
+        - knowledge-base
+        - productivity
     auth_mode: API_KEY
     proxy:
         base_url: https://coda.io/apis/v1
         headers:
             Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/coda
 confluence:
+    categories:
+        - knowledge-base
     alias: jira
+    docs: https://docs.nango.dev/integrations/all/confluence
 contentstack:
+    categories:
+        - cms
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
+    docs: https://docs.nango.dev/integrations/all/contentstack
 deel:
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://auth.letsdeel.com/oauth2/authorize
     token_url: https://auth.letsdeel.com/oauth2/tokens
@@ -309,6 +413,7 @@ deel:
         grant_type: refresh_token
     proxy:
         base_url: https://api.letsdeel.com
+    docs: https://docs.nango.dev/integrations/all/deel
 deel-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
@@ -322,7 +427,10 @@ deel-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://api-staging.letsdeel.com
+    docs: https://docs.nango.dev/integrations/all/deel
 digitalocean:
+    categories:
+        - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
     token_url: https://cloud.digitalocean.com/v1/oauth/token
@@ -334,7 +442,11 @@ digitalocean:
         grant_type: refresh_token
     proxy:
         base_url: https://api.digitalocean.com
+    docs: https://docs.nango.dev/integrations/all/digitalocean
 discord:
+    categories:
+        - gaming
+        - social
     auth_mode: OAUTH2
     authorization_url: https://discord.com/api/oauth2/authorize
     token_url: https://discord.com/api/oauth2/token
@@ -344,7 +456,10 @@ discord:
         base_url: https://discord.com
         retry:
             after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/discord
 docusign:
+    categories:
+        - legal
     auth_mode: OAUTH2
     authorization_url: https://account.docusign.com/oauth/auth
     token_url: https://account.docusign.com/oauth/token
@@ -357,6 +472,7 @@ docusign:
         grant_type: refresh_token
     proxy:
         base_url: https://www.docusign.net
+    docs: https://docs.nango.dev/integrations/all/docusign
 docusign-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://account-d.docusign.com/oauth/auth
@@ -370,7 +486,11 @@ docusign-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://demo.docusign.net
+    docs: https://docs.nango.dev/integrations/all/docusign
 dropbox:
+    categories:
+        - knowledge-base
+        - storage
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
     token_url: https://api.dropboxapi.com/oauth2/token
@@ -378,18 +498,32 @@ dropbox:
         token_access_type: offline
     proxy:
         base_url: https://api.dropboxapi.com
+    docs: https://docs.nango.dev/integrations/all/dropbox
+entrata:
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.entrata.com
+    docs: https://docs.nango.dev/integrations/all/entrata
 epic-games:
+    categories:
+        - gaming
     auth_mode: OAUTH2
     authorization_url: https://www.epicgames.com/id/authorize
     token_url: https://api.epicgames.dev/epic/oauth/v1/token
     authorization_method: header
     proxy:
         base_url: https://api.epicgames.dev
+    docs: https://docs.nango.dev/integrations/all/epic-games
 evaluagent:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.region}.evaluagent.com
+    docs: https://docs.nango.dev/integrations/all/evaluagent
 eventbrite:
+    categories:
+        - marketing
     auth_mode: OAUTH2
     authorization_url: https://www.eventbrite.com/oauth/authorize
     token_url: https://www.eventbrite.com/oauth/token
@@ -399,7 +533,12 @@ eventbrite:
         grant_type: authorization_code
     proxy:
         base_url: https://www.eventbriteapi.com
+    docs: https://docs.nango.dev/integrations/all/eventbrite
 exact-online:
+    categories:
+        - accounting
+        - hr
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
     token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
@@ -411,20 +550,53 @@ exact-online:
     refresh_params:
         grant_type: refresh_token
     token_expiration_buffer: 30
+    docs: https://docs.nango.dev/integrations/all/exact-online
+exist:
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://exist.io/oauth2/authorize
+    token_url: https://exist.io/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://exist.io/
+        paginate:
+            type: link
+            link_path_in_response_body: next
+    docs: https://docs.nango.dev/integrations/all/exist
 factorial:
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://api.factorialhr.com/oauth/authorize
     token_url: https://api.factorialhr.com/oauth/token
     disable_pkce: true
+    docs: https://docs.nango.dev/integrations/all/factorial
 facebook:
+    categories:
+        - marketing
+        - social
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth
     token_url: https://graph.facebook.com/v15.0/oauth/access_token
     proxy:
         base_url: https://graph.facebook.com
+    docs: https://docs.nango.dev/integrations/all/facebook
 figjam:
+    categories:
+        - design
+        - productivity
     alias: figma
+    docs: https://docs.nango.dev/integrations/all/figjam
 figma:
+    categories:
+        - design
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
     token_url: https://www.figma.com/api/oauth/token
@@ -432,14 +604,20 @@ figma:
     disable_pkce: true
     proxy:
         base_url: https://api.figma.com
+    docs: https://docs.nango.dev/integrations/all/figma
 fitbit:
+    categories:
+        - sports
     auth_mode: OAUTH2
     authorization_url: https://www.fitbit.com/oauth2/authorize
     token_url: https://api.fitbit.com/oauth2/token
     authorization_method: header
     proxy:
         base_url: https://api.fitbit.com
+    docs: https://docs.nango.dev/integrations/all/fitbit
 freshbooks:
+    categories:
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
     token_url: https://api.freshbooks.com/auth/oauth/token
@@ -447,15 +625,25 @@ freshbooks:
         response_type: code
     proxy:
         base_url: https://api.freshbooks.com
+    docs: https://docs.nango.dev/integrations/all/freshbooks
 freshdesk:
+    categories:
+        - support
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
+    docs: https://docs.nango.dev/integrations/all/freshdesk
 freshservice:
+    categories:
+        - support
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
+    docs: https://docs.nango.dev/integrations/all/freshservice
 front:
+    categories:
+        - support
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://app.frontapp.com/oauth/authorize
     token_url: https://app.frontapp.com/oauth/token
@@ -465,11 +653,19 @@ front:
             type: link
             response_path: _results
             link_path_in_response_body: _pagination.next
+    docs: https://docs.nango.dev/integrations/all/front
 guru:
+    categories:
+        - knowledge-base
     auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/v1
+    docs: https://docs.nango.dev/integrations/all/guru
 github:
+    categories:
+        - dev-tools
+        - support
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
     token_url: https://github.com/login/oauth/access_token
@@ -481,34 +677,47 @@ github:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-    docs: https://docs.github.com/en/rest
+    docs: https://docs.nango.dev/integrations/all/github
 github-app:
+    categories:
+        - dev-tools
+        - ticketing
     alias: github
     auth_mode: APP
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
-    docs: https://docs.github.com/en/apps
     webhook_routing_script: github-app-webhook-routing
+    docs: https://docs.nango.dev/integrations/all/github
 github-app-oauth:
+    categories:
+        - dev-tools
+        - ticketing
     alias: github
     auth_mode: CUSTOM
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
-    docs: https://docs.github.com/en/apps
     webhook_routing_script: github-app-oauth-webhook-routing
     post_connection_script: github-app-oauth-post-connection
+    docs: https://docs.nango.dev/integrations/all/github
 gitlab:
+    categories:
+        - dev-tools
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+    docs: https://docs.nango.dev/integrations/all/gitlab
 gong:
+    categories:
+        - productivity
     auth_mode: BASIC
     proxy:
         base_url: https://api.gong.io
+    docs: https://docs.nango.dev/integrations/all/gong
 gong-oauth:
     auth_mode: OAUTH2
     authorization_url: https://app.gong.io/oauth2/authorize
@@ -524,6 +733,7 @@ gong-oauth:
     token_request_auth_method: basic
     proxy:
         base_url: https://api.gong.io
+    docs: https://docs.nango.dev/integrations/all/gong
 google:
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth
@@ -540,7 +750,10 @@ google:
             limit_name_in_request: maxSize
             cursor_name_in_request: pageToken
             response_path: items
+    docs: https://docs.nango.dev/integrations/all/google
 google-calendar:
+    categories:
+        - productivity
     alias: google
     proxy:
         base_url: https://www.googleapis.com
@@ -550,21 +763,30 @@ google-calendar:
             limit_name_in_request: maxSize
             cursor_name_in_request: pageToken
             response_path: items
-    docs: https://developers.google.com/calendar/api/v3/reference
+    docs: https://docs.nango.dev/integrations/all/google-calendar
 google-mail:
+    categories:
+        - productivity
     alias: google
     proxy:
         base_url: https://gmail.googleapis.com
-    docs: https://developers.google.com/gmail/api/reference/rest
+    docs: https://docs.nango.dev/integrations/all/google-mail
 google-sheet:
+    categories:
+        - productivity
     alias: google
     proxy:
         base_url: https://sheets.googleapis.com
-    docs: https://developers.google.com/sheets/api/reference/rest
+    docs: https://docs.nango.dev/integrations/all/google-sheet
 google-drive:
+    categories:
+        - knowledge-base
+        - storage
     alias: google
-    docs: https://developers.google.com/drive/api/reference/rest/v3
+    docs: https://docs.nango.dev/integrations/all/google-drive
 google-ads:
+    categories:
+        - marketing
     alias: google
     token_url: https://www.googleapis.com/oauth2/v3/token
     proxy:
@@ -575,8 +797,10 @@ google-ads:
             limit_name_in_request: pageSize
             cursor_name_in_request: pageToken
             response_path: results
-    docs: https://developers.google.com/google-ads/api/rest/overview
+    docs: https://docs.nango.dev/integrations/all/google-ads
 gorgias:
+    categories:
+        - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/token
@@ -591,7 +815,10 @@ gorgias:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
+    docs: https://docs.nango.dev/integrations/all/gorgias
 greenhouse:
+    categories:
+        - ats
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
@@ -603,8 +830,10 @@ greenhouse:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-    docs: https://developers.greenhouse.io
+    docs: https://docs.nango.dev/integrations/all/greenhouse
 greenhouse-basic:
+    categories:
+        - ats
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
@@ -614,8 +843,12 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-    docs: https://developers.greenhouse.io
+    docs: https://docs.nango.dev/integrations/all/greenhouse
 gumroad:
+    categories:
+        - design
+        - e-commerce
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://gumroad.com/oauth/authorize
     token_url: https://api.gumroad.com/oauth/token
@@ -627,7 +860,10 @@ gumroad:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gumroad.com
+    docs: https://docs.nango.dev/integrations/all/gumroad
 gusto:
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
     token_url: https://api.gusto.com/oauth/token
@@ -639,6 +875,7 @@ gusto:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gusto.com
+    docs: https://docs.nango.dev/integrations/all/gusto
 gusto-demo:
     auth_mode: OAUTH2
     authorization_url: https://api.gusto-demo.com/oauth/authorize
@@ -651,10 +888,12 @@ gusto-demo:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gusto-demo.com
+    docs: https://docs.nango.dev/integrations/all/gusto
 hackerrank-work:
     auth_mode: BASIC
     proxy:
         base_url: https://www.hackerrank.com
+    docs: https://docs.nango.dev/integrations/all/hackerrank-work
 health-gorilla:
     auth_mode: OAUTH2
     authorization_url: https://api.healthgorilla.com/oauth/authorize
@@ -667,6 +906,7 @@ health-gorilla:
         grant_type: refresh_token
     proxy:
         base_url: https://healthgorilla.com
+    docs: https://docs.nango.dev/integrations/all/healthgorilla
 hibob-service-user:
     auth_mode: BASIC
     proxy:
@@ -676,18 +916,23 @@ hibob-service-user:
             endpoint: /v1/company/named-lists
     docs: https://apidocs.hibob.com/
 highlevel:
+    categories:
+        - marketing
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
     token_url: https://services.leadconnectorhq.com/oauth/token
     proxy:
         base_url: https://services.leadconnectorhq.com
-    docs: https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview
     disable_pkce: true
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/highlevel
 hubspot:
+    categories:
+        - marketing
+        - support
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
@@ -704,26 +949,42 @@ hubspot:
             limit_name_in_request: limit
             cursor_name_in_request: after
             response_path: results
-    docs: https://developers.hubspot.com/docs/api/overview
+    docs: https://docs.nango.dev/integrations/all/hubspot
 instagram:
+    categories:
+        - marketing
+        - social
     auth_mode: OAUTH2
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     proxy:
         base_url: https://graph.instagram.com
+    docs: https://docs.nango.dev/integrations/all/instagram
 intercom:
+    categories:
+        - marketing
+        - support
+        - surveys
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://app.intercom.io/oauth
     token_url: https://api.intercom.io/auth/eagle/token
     proxy:
         base_url: https://api.intercom.io
+    docs: https://docs.nango.dev/integrations/all/intercom
 intuit:
+    categories:
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
     proxy:
         base_url: https://quickbooks.api.intuit.com
+    docs: https://docs.nango.dev/integrations/all/intuit
 jira:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
@@ -743,10 +1004,12 @@ jira:
             link_path_in_response_body: _links.next
     post_connection_script: jira-post-connection
     webhook_routing_script: jira-webhook-routing
+    docs: https://docs.nango.dev/integrations/all/jira
 helpscout-docs:
     auth_mode: BASIC
     proxy:
         base_url: https://docsapi.helpscout.net
+    docs: https://docs.nango.dev/integrations/all/helpscout
 helpscout-mailbox:
     auth_mode: OAUTH2
     authorization_url: https://secure.helpscout.net/authentication/authorizeClientApplication
@@ -759,7 +1022,10 @@ helpscout-mailbox:
         grant_type: refresh_token
     proxy:
         base_url: https://api.helpscout.net
+    docs: https://docs.nango.dev/integrations/all/helpscout
 keap:
+    categories:
+        - marketing
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
     token_url: https://api.infusionsoft.com/token
@@ -771,13 +1037,19 @@ keap:
         grant_type: refresh_token
     proxy:
         base_url: https://api.infusionsoft.com
+    docs: https://docs.nango.dev/integrations/all/keap
 klaviyo:
+    categories:
+        - marketing
     auth_mode: API_KEY
     proxy:
         base_url: https://a.klaviyo.com
         headers:
             Authorization: Klaviyo-API-Key ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/klaviyo
 lever:
+    categories:
+        - ats
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
     token_url: https://auth.lever.co/oauth/token
@@ -787,10 +1059,12 @@ lever:
         audience: https://api.lever.co/v1
     proxy:
         base_url: https://api.lever.co
+    docs: https://docs.nango.dev/integrations/all/lever
 lever-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.lever.co
+    docs: https://docs.nango.dev/integrations/all/lever
 lever-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://sandbox-lever.auth0.com/authorize
@@ -801,7 +1075,11 @@ lever-sandbox:
         audience: https://api.sandbox.lever.co/v1/
     proxy:
         base_url: https://api.sandbox.lever.co
+    docs: https://docs.nango.dev/integrations/all/lever
 linear:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
     token_url: https://api.linear.app/oauth/token
@@ -814,26 +1092,39 @@ linear:
     webhook_routing_script: linear-webhook-routing
     post_connection_script: linear-post-connection
     webhook_user_defined_secret: true
+    docs: https://docs.nango.dev/integrations/all/linear
 linkedin:
+    categories:
+        - ats
+        - social
     auth_mode: OAUTH2
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
     token_url: https://www.linkedin.com/oauth/v2/accessToken
     disable_pkce: true
     proxy:
         base_url: https://api.linkedin.com
+    docs: https://docs.nango.dev/integrations/all/linkedin
 linkhut:
     auth_mode: OAUTH2
     authorization_url: https://ln.ht/_/oauth/authorize
     token_url: https://api.ln.ht/v1/oauth/token
     proxy:
         base_url: https://api.ln.ht
+    docs: https://docs.nango.dev/integrations/all/linkhut
 mailchimp:
+    categories:
+        - marketing
+        - surveys
     auth_mode: OAUTH2
     authorization_url: https://login.mailchimp.com/oauth2/authorize
     token_url: https://login.mailchimp.com/oauth2/token
     authorization_params:
         response_type: code
+    docs: https://docs.nango.dev/integrations/all/mailchimp
 microsoft-teams:
+    categories:
+        - productivity
+        - video
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
@@ -851,7 +1142,10 @@ microsoft-teams:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/microsoft-teams
 microsoft-tenant-specific:
+    categories:
+        - erp
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
@@ -866,11 +1160,18 @@ microsoft-tenant-specific:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
 mixpanel:
+    categories:
+        - analytics
     auth_mode: BASIC
     proxy:
         base_url: https://mixpanel.com
+    docs: https://docs.nango.dev/integrations/all/mixpanel
 miro:
+    categories:
+        - design
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://miro.com/oauth/authorize
     token_url: https://api.miro.com/v1/oauth/token
@@ -882,11 +1183,18 @@ miro:
         grant_type: refresh_token
     proxy:
         base_url: https://api.miro.com
+    docs: https://docs.nango.dev/integrations/all/miro
 monday:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
+    docs: https://docs.nango.dev/integrations/all/monday
 mural:
+    categories:
+        - design
     auth_mode: OAUTH2
     authorization_url: https://app.mural.co/api/public/v1/authorization/oauth2
     token_url: https://app.mural.co/api/public/v1/authorization/oauth2/token
@@ -898,6 +1206,7 @@ mural:
         grant_type: refresh_token
     proxy:
         base_url: https://app.mural.co
+    docs: https://docs.nango.dev/integrations/all/mural
 nationbuilder:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
@@ -910,19 +1219,34 @@ nationbuilder:
         grant_type: refresh_token
     default_scopes:
         - default
+    docs: https://docs.nango.dev/integrations/all/nationbuilder
 netsuite:
+    categories:
+        - accounting
+        - erp
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
+    authorization_params:
+        prompt: consent
     token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
-        - restlets
+        - rest_webservices
+    proxy:
+        base_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/netsuite
 next-cloud-ocs:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
         headers:
             'OCS-APIRequest': 'true'
+    docs: http://docs.nango.dev/integrations/all/next-cloud
 notion:
+    categories:
+        - knowledge-base
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
     token_url: https://api.notion.com/v1/oauth/token
@@ -943,7 +1267,7 @@ notion:
             cursor_name_in_request: start_cursor
             limit_name_in_request: page_size
             response_path: results
-    docs: https://developers.notion.com/reference
+    docs: https://docs.nango.dev/integrations/all/notion
 okta:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
@@ -955,9 +1279,16 @@ okta:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/okta
 one-drive:
+    categories:
+        - knowledge-base
+        - storage
     alias: microsoft-teams
+    docs: https://docs.nango.dev/integrations/all/one-drive
 osu:
+    categories:
+        - gaming
     auth_mode: OAUTH2
     authorization_url: https://osu.ppy.sh/oauth/authorize
     token_url: https://osu.ppy.sh/oauth/token
@@ -971,7 +1302,10 @@ osu:
         grant_type: refresh_token
     proxy:
         base_url: https://osu.ppy.sh
+    docs: https://docs.nango.dev/integrations/all/osu
 outreach:
+    categories:
+        - marketing
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
     token_url: https://api.outreach.io/oauth/token
@@ -983,13 +1317,19 @@ outreach:
         grant_type: refresh_token
     proxy:
         base_url: https://api.outreach.io
+    docs: https://docs.nango.dev/integrations/all/outreach
 pagerduty:
+    categories:
+        - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
     proxy:
         base_url: https://api.pagerduty.com
+    docs: https://docs.nango.dev/integrations/all/pagerduty
 pandadoc:
+    categories:
+        - legal
     auth_mode: OAUTH2
     authorization_url: https://app.pandadoc.com/oauth2/authorize
     token_url: https://api.pandadoc.com/oauth2/access_token
@@ -1001,7 +1341,10 @@ pandadoc:
         grant_type: refresh_token
     proxy:
         base_url: https://api.pandadoc.com
+    docs: https://docs.nango.dev/integrations/all/pandadoc
 payfit:
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://oauth.payfit.com/authorize
     token_url: https://app.pagerduty.com/oauth/token
@@ -1009,7 +1352,10 @@ payfit:
         response_type: code
     token_params:
         grant_type: authorization_code
+    docs: https://docs.nango.dev/integrations/all/payfit
 paypal:
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://www.paypal.com/signin/authorize
     token_url: https://api.paypal.com/v1/oauth2/token
@@ -1020,6 +1366,7 @@ paypal:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/paypal
 paypal-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://www.sandbox.paypal.com/signin/authorize
@@ -1031,14 +1378,20 @@ paypal-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/paypal
 pendo:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.pendo.io
         headers:
             x-pendo-integration-key: ${apiKey}
-    docs: https://engageapi.pendo.io
+    docs: https://docs.nango.dev/integrations/all/pendo
 pennylane:
+    categories:
+        - accounting
+        - banking
+        - invoicing
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://app.pennylane.com/oauth/authorize
     token_url: https://app.pennylane.com/oauth/token
@@ -1051,7 +1404,10 @@ pennylane:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/pennylane
 pipedrive:
+    categories:
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
@@ -1065,14 +1421,19 @@ pipedrive:
             offset_name_in_request: start
             response_path: data
             limit_name_in_request: limit
-    docs: https://developers.pipedrive.com/docs/api/v1
+    docs: https://docs.nango.dev/integrations/all/pipedrive
 qualtrics:
+    categories:
+        - surveys
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth
     token_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/token
     proxy:
         base_url: https://${connectionConfig.subdomain}.qualtrics.com
+    docs: https://docs.nango.dev/integrations/all/qualtrics
 quickbooks:
+    categories:
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
@@ -1080,13 +1441,17 @@ quickbooks:
         - realmId
     proxy:
         base_url: https://quickbooks.api.intuit.com
+    docs: https://docs.nango.dev/integrations/all/quickbooks
 ramp:
+    categories:
+        - banking
     auth_mode: OAUTH2
     authorization_url: https://app.ramp.com/v1/authorize
     token_url: https://api.ramp.com/developer/v1/token
     authorization_method: header
     proxy:
         base_url: https://api.ramp.com
+    docs: https://docs.nango.dev/integrations/all/ramp
 ramp-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://demo.ramp.com/v1/authorize
@@ -1094,7 +1459,10 @@ ramp-sandbox:
     authorization_method: header
     proxy:
         base_url: https://demo-api.ramp.com
+    docs: https://docs.nango.dev/integrations/all/ramp
 reddit:
+    categories:
+        - social
     auth_mode: OAUTH2
     authorization_url: https://www.reddit.com/api/v1/authorize
     token_url: https://www.reddit.com/api/v1/access_token
@@ -1103,7 +1471,10 @@ reddit:
         duration: permanent
     proxy:
         base_url: https://oauth.reddit.com
+    docs: https://docs.nango.dev/integrations/all/reddit
 ring-central:
+    categories:
+        - support
     auth_mode: OAUTH2
     authorization_url: https://platform.ringcentral.com/restapi/oauth/authorize
     token_url: https://platform.ringcentral.com/restapi/oauth/token
@@ -1116,7 +1487,7 @@ ring-central:
         grant_type: refresh_token
     proxy:
         base_url: https://platform.ringcentral.com
-    docs: https://developers.ringcentral.com/api-reference/
+    docs: https://docs.nango.dev/integrations/all/ring-central
 ring-central-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
@@ -1130,15 +1501,22 @@ ring-central-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://platform.devtest.ringcentral.com
-    docs: https://developers.ringcentral.com/api-reference/
+    docs: https://docs.nango.dev/integrations/all/ring-central
 segment:
+    categories:
+        - analytics
+        - marketing
     auth_mode: OAUTH2
     authorization_url: https://id.segmentapis.com/oauth2/auth
     token_url: https://id.segmentapis.com/oauth2/token
     token_request_auth_method: basic
     proxy:
         base_url: https://api.segment.io
+    docs: https://docs.nango.dev/integrations/all/segment
 sage:
+    categories:
+        - accounting
+        - erp
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
     token_url: https://oauth.accounting.sage.com/token
@@ -1146,7 +1524,10 @@ sage:
         filter: apiv3.1
     proxy:
         base_url: https://api.accounting.sage.com
+    docs: https://docs.nango.dev/integrations/all/sage
 salesforce:
+    categories:
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://login.salesforce.com/services/oauth2/authorize
     token_url: https://login.salesforce.com/services/oauth2/token
@@ -1158,9 +1539,9 @@ salesforce:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://developer.salesforce.com/docs/api
     webhook_routing_script: salesforce-webhook-routing
     post_connection_script: salesforce-post-connection
+    docs: https://docs.nango.dev/integrations/all/salesforce
 salesforce-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://test.salesforce.com/services/oauth2/authorize
@@ -1171,26 +1552,33 @@ salesforce-sandbox:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://developer.salesforce.com/docs/api
+    docs: https://docs.nango.dev/integrations/all/salesforce
 salesloft:
+    categories:
+        - marketing
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize
     token_url: https://accounts.salesloft.com/oauth/token
     proxy:
         base_url: https://api.salesloft.com
+    docs: https://docs.nango.dev/integrations/all/salesloft
 sendgrid:
+    categories:
+        - marketing
     auth_mode: API_KEY
     proxy:
         headers:
             Authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
+    docs: https://docs.nango.dev/integrations/all/sendgrid
 servicem8:
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://go.servicem8.com/oauth/authorize
     token_url: https://go.servicem8.com/oauth/access_token
     proxy:
         base_url: https://api.servicem8.com
-    docs: https://developer.servicem8.com/docs
     scope_seprator: ' '
     authorization_params:
         response_type: code
@@ -1198,7 +1586,10 @@ servicem8:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/servicem8
 servicenow:
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
     token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
@@ -1208,7 +1599,10 @@ servicenow:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/servicenow
 shopify:
+    categories:
+        - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
@@ -1216,13 +1610,20 @@ shopify:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
         headers:
             X-Shopify-Access-Token: ${accessToken}
+    docs: https://docs.nango.dev/integrations/all/shopify
 shortcut:
+    categories:
+        - dev-tools
+        - productivity
     auth_mode: API_KEY
     proxy:
         base_url: https://api.app.shortcut.com
         headers:
             Shortcut-Token: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/shortcut
 slack:
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
@@ -1239,14 +1640,15 @@ slack:
             cursor_path_in_response: response_metadata.next_cursor
             cursor_name_in_request: cursor
             limit_name_in_request: limit
-    docs: https://api.slack.com/apis
     webhook_routing_script: slack-webhook-routing
+    docs: https://docs.nango.dev/integrations/all/slack
 smartrecruiters-api-key:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.smartrecruiters.com
         headers:
             X-SmartToken: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/smartrecruiters
 smartsheet:
     auth_mode: OAUTH2
     authorization_url: https://app.smartsheet.com/b/authorize
@@ -1257,6 +1659,7 @@ smartsheet:
         grant_type: authorization_code
     proxy:
         base_url: https://api.smartsheet.com
+    docs: https://docs.nango.dev/integrations/all/smartsheet
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
@@ -1266,14 +1669,20 @@ smugmug:
     signature_method: 'PLAINTEXT'
     proxy:
         base_url: https://www.smugmug.com
-        docs: https://api.smugmug.com/api/v2/doc
+    docs: https://docs.nango.dev/integrations/all/smugmug
 splitwise:
+    categories:
+        - payment
+        - social
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
     token_url: https://secure.splitwise.com/oauth/token
     proxy:
         base_url: https://secure.splitwise.com
+    docs: https://docs.nango.dev/integrations/all/splitwise
 spotify:
+    categories:
+        - other
     auth_mode: OAUTH2
     authorization_url: https://accounts.spotify.com/authorize
     token_url: https://accounts.spotify.com/api/token
@@ -1285,8 +1694,10 @@ spotify:
         grant_type: refresh_token
     proxy:
         base_url: https://api.spotify.com
-    docs: https://developer.spotify.com/documentation/web-api
+    docs: https://docs.nango.dev/integrations/all/spotify
 squareup:
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://connect.squareup.com/oauth2/authorize
     token_url: https://connect.squareup.com/oauth2/token
@@ -1301,6 +1712,7 @@ squareup:
         grant_type: refresh_token
     proxy:
         base_url: https://connect.squareup.com
+    docs: https://docs.nango.dev/integrations/all/squareup
 squareup-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
@@ -1315,7 +1727,11 @@ squareup-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://connect.squareupsandbox.com
+    docs: https://docs.nango.dev/integrations/all/squareup
 stackexchange:
+    categories:
+        - knowledge-base
+        - support
     auth_mode: OAUTH2
     authorization_url: https://stackoverflow.com/oauth
     token_url: https://stackoverflow.com/oauth/access_token/json
@@ -1323,7 +1739,11 @@ stackexchange:
         - no_expiry
     proxy:
         base_url: https://api.stackexchange.com
+    docs: https://docs.nango.dev/integrations/all/stackexchange
 strava:
+    categories:
+        - social
+        - sports
     auth_mode: OAUTH2
     authorization_url: https://www.strava.com/oauth/mobile/authorize
     token_url: https://www.strava.com/api/v3/oauth/token
@@ -1337,11 +1757,17 @@ strava:
         grant_type: refresh_token
     proxy:
         base_url: https://www.strava.com
+    docs: https://docs.nango.dev/integrations/all/strava
 stripe:
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
+    docs: https://docs.nango.dev/integrations/all/stripe
 stripe-express:
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/express/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
@@ -1349,7 +1775,20 @@ stripe-express:
         - stripe_user_id
     proxy:
         base_url: https://api.stripe.com
+    docs: https://docs.nango.dev/integrations/all/stripe-express
 stripe-app:
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://marketplace.stripe.com/oauth/v2/authorize
+    token_url: https://api.stripe.com/v1/oauth/token
+    disable_pkce: true
+    proxy:
+        base_url: https://api.stripe.com
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/stripe-app
+stripe-app-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
     token_url: https://api.stripe.com/v1/oauth/token
@@ -1358,7 +1797,10 @@ stripe-app:
         base_url: https://api.stripe.com
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/stripe-app
 survey-monkey:
+    categories:
+        - surveys
     auth_mode: OAUTH2
     authorization_url: https://api.surveymonkey.com/oauth/authorize
     token_url: https://api.surveymonkey.com/oauth/token
@@ -1369,15 +1811,22 @@ survey-monkey:
         grant_type: authorization_code
     proxy:
         base_url: https://api.surveymonkey.com
+    docs: https://docs.nango.dev/integrations/all/survey-monkey
 teamwork:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://www.teamwork.com/launchpad/login
     token_url: https://www.teamwork.com/launchpad/v1/token.json
     proxy:
-        base_url: https://api.surveymonkey.com
+        base_url: https://${connectionConfig.subdomain}${connectionConfig.extension}.teamwork.com
+    docs: https://docs.nango.dev/integrations/all/teamwork
 tiktok-accounts:
+    categories:
+        - social
     auth_mode: OAUTH2
-    authorization_url: https://open-api.tiktok.com/platform/oauth/connect/
+    authorization_url: https://www.tiktok.com/v2/auth/authorize/
     token_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/
     refresh_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/
     proxy:
@@ -1391,7 +1840,10 @@ tiktok-accounts:
     refresh_params:
         grant_type: refresh_token
     scope_separator: ','
+    docs: https://docs.nango.dev/integrations/all/tiktok-accounts
 tiktok-ads:
+    categories:
+        - social
     auth_mode: OAUTH2
     authorization_url: https://business-api.tiktok.com/portal/auth
     token_url: https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/
@@ -1401,7 +1853,10 @@ tiktok-ads:
         grant_type: authorization_code
     authorization_url_replacements:
         client_id: app_id
+    docs: https://docs.nango.dev/integrations/all/tiktok-ads
 timely:
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://api.timelyapp.com/1.1/oauth/authorize
     token_url: https://api.timelyapp.com/1.1/oauth/token
@@ -1412,8 +1867,11 @@ timely:
         grant_type: authorization_code
     proxy:
         base_url: https://api.timelyapp.com
-    docs: https://dev.timelyapp.com
+    docs: https://docs.nango.dev/integrations/all/timely
 trello:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH1
     request_url: https://trello.com/1/OAuthGetRequestToken
     authorization_url: https://trello.com/1/OAuthAuthorizeToken
@@ -1424,14 +1882,24 @@ trello:
         expiration: never
     proxy:
         base_url: https://api.trello.com
+    docs: https://docs.nango.dev/integrations/all/trello
 todoist:
+    categories:
+        - productivity
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://todoist.com/oauth/authorize
     token_url: https://todoist.com/oauth/access_token
     scope_separator: ','
     proxy:
         base_url: https://api.todoist.com
+    docs: https://docs.nango.dev/integrations/all/todoist
 twitch:
+    categories:
+        - gaming
+        - social
+        - sports
+        - video
     auth_mode: OAUTH2
     authorization_url: https://id.twitch.tv/oauth2/authorize
     token_url: https://id.twitch.tv/oauth2/token
@@ -1444,7 +1912,11 @@ twitch:
         grant_type: refresh_token
     proxy:
         base_url: https://api.twitch.tv
+    docs: https://docs.nango.dev/integrations/all/twitch
 twitter:
+    categories:
+        - marketing
+        - social
     auth_mode: OAUTH1
     request_url: https://api.twitter.com/oauth/request_token
     authorization_url: https://api.twitter.com/oauth/authorize
@@ -1454,7 +1926,11 @@ twitter:
         x_auth_access_type: write
     proxy:
         base_url: https://api.twitter.com
+    docs: https://docs.nango.dev/integrations/all/twitter
 twitter-v2:
+    categories:
+        - marketing
+        - social
     auth_mode: OAUTH2
     authorization_url: https://twitter.com/i/oauth2/authorize
     token_url: https://api.twitter.com/2/oauth2/token
@@ -1470,6 +1946,7 @@ twitter-v2:
         - offline.access
     proxy:
         base_url: https://api.twitter.com
+    docs: https://docs.nango.dev/integrations/all/twitter
 twinfield:
     auth_mode: OAUTH2
     authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
@@ -1487,7 +1964,10 @@ twinfield:
         - twf.organisationUser
         - offline_access
     disable_pkce: true
+    docs: https://docs.nango.dev/integrations/all/twinfield
 typeform:
+    categories:
+        - surveys
     auth_mode: OAUTH2
     authorization_url: https://api.typeform.com/oauth/authorize
     token_url: https://api.typeform.com/oauth/token
@@ -1502,6 +1982,7 @@ typeform:
         grant_type: refresh_token
     proxy:
         base_url: https://api.typeform.com
+    docs: https://docs.nango.dev/integrations/all/typeform
 uber:
     auth_mode: OAUTH2
     authorization_url: https://login.uber.com/oauth/v2/authorize
@@ -1514,21 +1995,47 @@ uber:
         grant_type: refresh_token
     proxy:
         base_url: https://api.uber.com
+    docs: https://docs.nango.dev/integrations/all/uber
 unauthenticated:
     auth_mode: NONE
+    docs: https://docs.nango.dev/integrations/overview
 wakatime:
+    categories:
+        - analytics
+        - dev-tools
     auth_mode: OAUTH2
     authorization_url: https://wakatime.com/oauth/authorize
     token_url: https://wakatime.com/oauth/token
-    docs: https://wakatime.com/developers
     proxy:
         base_url: https://wakatime.com
+    docs: https://docs.nango.dev/integrations/all/wakatime
 wave-accounting:
+    categories:
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
     token_url: https://api.waveapps.com/oauth2/token
     proxy:
         base_url: https://gql.waveapps.com
+    docs: https://docs.nango.dev/integrations/all/wave-accounting
+whoop:
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://api.prod.whoop.com/oauth/oauth2/auth
+    token_url: https://api.prod.whoop.com/oauth/oauth2/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.prod.whoop.com/
+        retry:
+            after: 'x-ratelimit-reset'
+        paginate:
+            type: cursor
+            offset_name_in_request: nextToken
+            offset_name_in_response: next_token
+            limit_name_in_request: limit
+    docs: https://docs.nango.dev/integrations/all/whoop
 wildix-pbx:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
@@ -1537,16 +2044,21 @@ wildix-pbx:
         response_type: code
     redirect_uri_metadata:
         - subdomain
-    docs: https://docs.wildix.com/wms/index.html
+    docs: https://docs.nango.dev/integrations/all/wildix-pbx
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
 workable:
+    categories:
+        - ats
     auth_mode: API_KEY
     proxy:
         headers:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
+    docs: https://docs.nango.dev/integrations/all/workable
 xero:
+    categories:
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://login.xero.com/identity/connect/authorize
     token_url: https://identity.xero.com/connect/token
@@ -1556,11 +2068,17 @@ xero:
         - offline_access
     proxy:
         base_url: https://api.xero.com
+    docs: https://docs.nango.dev/integrations/all/xero
 yahoo:
+    categories:
+        - social
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
+    docs: https://docs.nango.dev/integrations/all/yahoo
 yandex:
+    categories:
+        - social
     auth_mode: OAUTH2
     authorization_url: https://oauth.yandex.com/authorize
     token_url: https://oauth.yandex.com/token
@@ -1572,15 +2090,23 @@ yandex:
         grant_type: refresh_token
     proxy:
         base_url: https://translate.yandex.net
+    docs: https://docs.nango.dev/integrations/all/yandex
 youtube:
     alias: google
+    categories:
+        - video
+    docs: https://docs.nango.dev/integrations/all/youtube
 zapier-nla:
     auth_mode: OAUTH2
     authorization_url: https://nla.zapier.com/oauth/authorize/
     token_url: https://nla.zapier.com/oauth/token/
     proxy:
         base_url: https://nla.zapier.com
+    docs: https://docs.nango.dev/integrations/all/zapier-nla
 zendesk:
+    categories:
+        - support
+        - ticketing
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
@@ -1592,7 +2118,10 @@ zendesk:
             type: link
             limit_name_in_request: per_page
             link_path_in_response_body: next_page
+    docs: https://docs.nango.dev/integrations/all/zendesk
 zenefits:
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
     token_url: https://secure.zenefits.com/oauth2/token
@@ -1604,7 +2133,10 @@ zenefits:
         grant_type: refresh_token
     proxy:
         base_url: https://api.zenefits.com
+    docs: https://docs.nango.dev/integrations/all/zenefits
 zoho:
+    categories:
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
     token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
@@ -1620,17 +2152,32 @@ zoho:
             limit_name_in_request: per_page
 zoho-books:
     alias: zoho
+    docs: https://docs.nango.dev/integrations/all/zoho-books
 zoho-crm:
     alias: zoho
+    docs: https://docs.nango.dev/integrations/all/zoho-crm
 zoho-desk:
+    categories:
+        - support
+        - ticketing
     alias: zoho
+    docs: https://docs.nango.dev/integrations/all/zoho-desk
 zoho-inventory:
+    categories:
+        - e-commerce
     alias: zoho
+    docs: https://docs.nango.dev/integrations/all/zoho-inventory
 zoho-invoice:
+    categories:
+        - invoicing
     alias: zoho
+    docs: https://docs.nango.dev/integrations/all/zoho-invoice
 zoho-bigin:
     alias: zoho
+    docs: https://docs.nango.dev/integrations/all/zoho-bigin
 zoom:
+    categories:
+        - video
     auth_mode: OAUTH2
     authorization_url: https://zoom.us/oauth/authorize
     token_url: https://zoom.us/oauth/token
@@ -1640,3 +2187,4 @@ zoom:
         grant_type: refresh_token
     proxy:
         base_url: https://developer.zoom.us
+    docs: https://docs.nango.dev/integrations/all/zoom

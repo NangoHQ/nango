@@ -26,9 +26,7 @@ export interface SyncResult {
     deleted: number;
 }
 
-export interface SyncResultByModel {
-    [key: string]: SyncResult;
-}
+export type SyncResultByModel = Record<string, SyncResult>;
 
 export interface Sync extends TimestampsAndDeleted {
     id?: string;
@@ -136,6 +134,9 @@ export interface SyncDeploymentResult {
     version: string;
     providerConfigKey: string;
     type: SyncConfigType;
+    last_deployed?: Date;
+    models: string | string[];
+    id?: number | undefined;
 
     // legacy
     sync_name?: string;
@@ -263,7 +264,7 @@ export const CommandToActivityLog = {
     PAUSE: LogActionEnum.PAUSE_SYNC,
     UNPAUSE: LogActionEnum.RESTART_SYNC,
     RUN: LogActionEnum.TRIGGER_SYNC,
-    RUN_FULL: LogActionEnum.FULL_SYNC,
+    RUN_FULL: LogActionEnum.TRIGGER_FULL_SYNC,
     CANCEL: LogActionEnum.CANCEL_SYNC
 };
 
@@ -272,7 +273,7 @@ export const SyncCommandToScheduleStatus = {
     UNPAUSE: ScheduleStatus.RUNNING,
     RUN: ScheduleStatus.RUNNING,
     RUN_FULL: ScheduleStatus.RUNNING,
-    CANCEL: ScheduleStatus.STOPPED
+    CANCEL: ScheduleStatus.RUNNING
 };
 
 export interface SyncConfigWithProvider {

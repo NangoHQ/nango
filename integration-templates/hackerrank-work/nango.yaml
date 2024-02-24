@@ -1,44 +1,62 @@
 integrations:
   hackerrank-work:
-    hackerrank-work-interviews:
-      runs: every 6 hours
-      returns:
-        - HackerRankWorkInterview
-      description: |
-        Fetches interviews from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-    hackerrank-work-teams:
-      runs: every 6 hours
-      returns:
-        - HackerRankWorkTeam
-      description: |
-        Fetches teams from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-    hackerrank-work-tests:
-      runs: every 6 hours
-      returns:
-        - HackerRankWorkTest
-      description: |
-        Fetches tests from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-    hackerrank-work-users:
-      runs: every 6 hours
-      returns:
-        - HackerRankWorkUser
-      description: |
-        Fetches users from hackerrank work.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-    hackerrank-work-create-test:
-      type: action
-      returns: HackerRankWorkTest
-      description: |
-        Action to create a test on hackerrank work.
-    hackerrank-work-create-interview:
-      type: action
-      returns: HackerRankWorkInterview
-      description: |
-        Action to create an interview on hackerrank work.
+    syncs:
+      hackerrank-work-interviews:
+        runs: every 6 hours
+        description: |
+          Fetches interviews from hackerrank work.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: HackerRankWorkInterview
+        sync_type: incremental
+        endpoint: /hackerrank-work/interviews
+        scopes:
+          - default
+      hackerrank-work-teams:
+        runs: every 6 hours
+        description: |
+          Fetches teams from hackerrank work.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: HackerRankWorkTeam
+        sync_type: incremental
+        endpoint: /hackerrank-work/teams
+        scopes:
+          - default
+      hackerrank-work-tests:
+        runs: every 6 hours
+        description: |
+          Fetches tests from hackerrank work.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: HackerRankWorkTest
+        sync_type: incremental
+        endpoint: /hackerrank-work/tests
+        scopes:
+          - default
+      hackerrank-work-users:
+        runs: every 6 hours
+        description: |
+          Fetches users from hackerrank work.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: HackerRankWorkUser
+        sync_type: incremental
+        endpoint: /hackerrank-work/users
+        scopes:
+          - default
+    actions:
+      hackerrank-work-create-interview:
+        description: |
+          Action to create an interview on hackerrank work.
+        input: HackerRankWorkCreateInterviewInput
+        output: HackerRankWorkInterview
+        endpoint: /hackerrank-work/create-interview
 models:
+  HackerRankWorkCreateInterviewInput:
+    __extends: HackerRankWorkInterview
+    send_email: boolean
+    interview_metadata: object
   HackerRankWorkInterview:
     id: string
     status: string
@@ -58,10 +76,13 @@ models:
     user: string
     thumbs_up: boolean
     resume_url: string
-    interviewers: []
-    candidate: []
+    interviewers: string[]
+    candidate: CandidateInformation
     result_url: string
     report_url: string
+  CandidateInformation:
+    name: string
+    email: string
   HackerRankWorkTeam:
     id: string
     name: string

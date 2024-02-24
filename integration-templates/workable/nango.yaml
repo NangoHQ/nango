@@ -1,73 +1,85 @@
 integrations:
   workable:
-    workable-candidates:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidate
-      description: |
-        Fetches candidates from workable.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_candidates
-    workable-candidates-activities:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidateActivity
-      description: |
-        Fetches activity stream of the given candidate
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_candidates
-    workable-candidates-offer:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidateOffer
-      description: |
-        Fetches candidate's latest offer from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_candidates
-    workable-create-candidate:
-      type: action
-      returns: WorkableCreateCandidateResponse
-      description: |
-        Action to create a candidate at the specified job.
-        Scope(s): w_candidates
-    workable-create-comment:
-      type: action
-      returns: WorkableCreateCommentResponse
-      description: |
-        Action to create a comment on the applicant's timeline.
-        Scope(s): w_candidates or w_comments
-    workable-jobs:
-      runs: every 6 hours
-      returns:
-        - WorkableJob
-      description: |
-        Fetches jobs from workable.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_jobs
-    workable-jobs-candidates:
-      runs: every 6 hours
-      returns:
-        - WorkableCandidate
-      description: |
-        Fetches candidates for the specified job from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_jobs
-    workable-jobs-questions:
-      runs: every 6 hours
-      returns:
-        - WorkableJobQuestion
-      description: |
-        Fetches questions for the specified job from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_jobs
-    workable-members:
-      runs: every 6 hours
-      returns:
-        - WorkableMember
-      description: |
-        Fetches account members from workable.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): r_jobs
+    syncs:
+      workable-candidates:
+        runs: every 6 hours
+        description: |
+          Fetches candidates from workable.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: WorkableCandidate
+        sync_type: incremental
+        endpoint: /workable/candidates
+        scopes:
+          - r_candidates
+      workable-candidates-activities:
+        runs: every 6 hours
+        description: |
+          Fetches activity stream of the given candidate
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableCandidateActivity
+        sync_type: full
+        endpoint: /workable/candidates-activities
+        scopes:
+          - r_candidates
+      workable-candidates-offer:
+        runs: every 6 hours
+        description: |
+          Fetches candidate's latest offer from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableCandidateOffer
+        sync_type: full
+        endpoint: /workable/candidates-offer
+        scopes:
+          - r_candidates
+      workable-jobs:
+        runs: every 6 hours
+        description: |
+          Fetches jobs from workable.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: WorkableJob
+        sync_type: incremental
+        endpoint: /workable/jobs
+        scopes:
+          - r_jobs
+      workable-jobs-candidates:
+        runs: every 6 hours
+        description: |
+          Fetches candidates for the specified job from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableJobsCandidate
+        sync_type: full
+        endpoint: /workable/jobs-candidates
+        scopes:
+          - r_jobs
+      workable-jobs-questions:
+        runs: every 6 hours
+        description: |
+          Fetches questions for the specified job from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableJobQuestion
+        sync_type: full
+        endpoint: /workable/jobs-questions
+        scopes:
+          - r_jobs
+      workable-members:
+        runs: every 6 hours
+        description: |
+          Fetches account members from workable.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: WorkableMember
+        sync_type: full
+        endpoint: /workable/members
+        scopes:
+          - r_jobs
+    actions:
+      workable-create-comment:
+        description: |
+          Action to create a comment on the applicant's timeline.
+          Scope(s): w_candidates or w_comments
+        output: WorkableCreateCommentResponse
+        endpoint: /workable/create-comment
 models:
   WorkableCandidate:
     id: string
@@ -93,6 +105,8 @@ models:
     domain: string
     created_at: date
     updated_at: date
+  WorkableJobsCandidate:
+    __extends: WorkableCandidate
   WorkableCandidateActivity:
     id: string
     action: string

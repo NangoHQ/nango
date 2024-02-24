@@ -7,13 +7,15 @@ interface ClipboardButtonProps {
     icontype?: 'clipboard' | 'link';
     textPrompt?: string;
     dark?: boolean;
+    classNames?: string;
 }
 
-export default function ClipboardButton({ text, icontype = 'clipboard', textPrompt = 'Copy', dark = false }: ClipboardButtonProps) {
+export default function ClipboardButton({ text, icontype = 'clipboard', textPrompt = 'Copy', dark = false, classNames = '' }: ClipboardButtonProps) {
     const [tooltipText, setTooltipText] = useState(textPrompt);
 
-    const copyToClipboard = async () => {
+    const copyToClipboard = async (e: React.MouseEvent) => {
         try {
+            e.stopPropagation();
             await navigator.clipboard.writeText(text);
             setTooltipText('Copied');
         } catch (err) {
@@ -35,9 +37,9 @@ export default function ClipboardButton({ text, icontype = 'clipboard', textProm
     return (
         <Tooltip className="text-xs" text={tooltipText} type={`${dark ? 'dark': 'default'}`}>
             {icontype === 'link' ? (
-                <Link color="gray" className="h-4 ml-1 cursor-pointer" onClick={copyToClipboard} />
+                <Link color="gray" className={`h-4 ml-1 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
             ) : (
-                <Clipboard color="gray" className="h-4 ml-1 cursor-pointer" onClick={copyToClipboard} />
+                <Clipboard color="gray" className={`h-4 ml-1 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
             )}
         </Tooltip>
     );

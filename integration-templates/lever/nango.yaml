@@ -1,87 +1,106 @@
 integrations:
   lever-basic:
-    lever-create-note:
-      type: action
-      returns: LeverOpportunityNote
-      description: |
-        Create a note and add it to a candidate profile in your Lever account.
-        Scope(s): notes:write:admin
-    lever-create-opportunity:
-      type: action
-      returns: LeverOpportunity
-      description: |
-        Create candidates and opportunities in your Lever account.
-        Scope(s): opportunities:write:admin
-    lever-opportunities:
-      runs: every 6 hours
-      returns:
-        - LeverOpportunity
-      description: |
-        Fetch all pipeline Opportunities for Contacts in your Lever account.
-        Details: incremental sync, doesn't track deletes, metadata is not required.
-        Scope(s): opportunities:read:admin
-    lever-opportunities-applications:
-      runs: every 6 hours
-      returns:
-        - LeverOpportunityApplication
-      description: |
-        Fetch all applications for a candidate in your lever account.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): applications:read:admin
-    lever-opportunities-feedbacks:
-      runs: every 6 hours
-      returns:
-        - LeverOpportunityFeedback
-      description: |
-        Fetch all feedback forms for a candidate for a specific Opportunity in lever.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): feedback:read:admin
-    lever-opportunities-interviews:
-      runs: every 6 hours
-      returns:
-        - LeverOpportunityInterview
-      description: |
-        Fetch all interviewers for a specific Opportunity in lever.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): interviews:read:admin
-    lever-opportunities-notes:
-      runs: every 6 hours
-      returns:
-        - LeverOpportunityNote
-      description: |
-        Fetch all notes for a specific candidate in lever.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): notes:read:admin
-    lever-opportunities-offers:
-      runs: every 6 hours
-      returns:
-        - LeverOpportunityOffer
-      description: |
-        Fetch all offers for a specific candidate in lever.
-        Scope(s): offers:write:admin
-    lever-postings:
-      runs: every 6 hours
-      returns:
-        - LeverPosting
-      description: |
-        Fetch all postings in your Lever account.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): postings:read:admin
-    lever-postings-apply:
-      runs: every 6 hours
-      returns: LeverPostingApply
-      description: |
-        Fetch all questions included in a posting’s application form in your Lever account.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): postings:read:admin
-    lever-stage:
-      runs: every 6 hours
-      returns:
-        - LeverStage
-      description: |
-        Fetch all pipeline stages in your Lever account.
-        Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): stages:read:admin
+    actions:
+      lever-create-opportunity:
+        description: |
+          Create candidates and opportunities in your Lever account.
+        output: LeverOpportunity
+        endpoint: /lever/create-opportunity
+        scopes: opportunities:write:admin
+    syncs:
+      lever-opportunities:
+        runs: every 6 hours
+        description: |
+          Fetch all pipeline Opportunities for Contacts in your Lever account.
+          Details: incremental sync, doesn't track deletes, metadata is not
+          required.
+        output: LeverOpportunity
+        sync_type: incremental
+        endpoint: /lever/opportunities
+        scopes:
+          - opportunities:read:admin
+      lever-opportunities-applications:
+        runs: every 6 hours
+        description: |
+          Fetch all applications for a candidate in your lever account.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: LeverOpportunityApplication
+        sync_type: full
+        endpoint: /lever/opportunities-applications
+        scopes:
+          - applications:read:admin
+      lever-opportunities-feedbacks:
+        runs: every 6 hours
+        description: |
+          Fetch all feedback forms for a candidate for a specific Opportunity in
+          lever.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: LeverOpportunityFeedback
+        sync_type: full
+        endpoint: /lever/opportunities-feedbacks
+        scopes:
+          - feedback:read:admin
+      lever-opportunities-interviews:
+        runs: every 6 hours
+        description: |
+          Fetch all interviewers for a specific Opportunity in lever.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: LeverOpportunityInterview
+        sync_type: full
+        endpoint: /lever/opportunities-interviews
+        scopes:
+          - interviews:read:admin
+      lever-opportunities-notes:
+        runs: every 6 hours
+        description: |
+          Fetch all notes for a specific candidate in lever.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: LeverOpportunityNote
+        sync_type: full
+        endpoint: /lever/opportunities-notes
+        scopes:
+          - notes:read:admin
+      lever-opportunities-offers:
+        runs: every 6 hours
+        description: |
+          Fetch all offers for a specific candidate in lever.
+        output: LeverOpportunityOffer
+        sync_type: full
+        endpoint: /lever/opportunities-offers
+        scopes:
+          - offers:write:admin
+      lever-postings:
+        runs: every 6 hours
+        description: |
+          Fetch all postings in your Lever account.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: LeverPosting
+        sync_type: full
+        endpoint: /lever/postings
+        scopes:
+          - postings:read:admin
+      lever-postings-apply:
+        runs: every 6 hours
+        description: |
+          Fetch all questions included in a posting’s application form in your
+          Lever account.
+          Details: full sync, doesn't track deletes, metadata is not required.
+          Scope(s):
+        output: L
+        sync_type: full
+        endpoint: /lever/postings-apply
+        scopes:
+          - postings:read:admin
+      lever-stage:
+        runs: every 6 hours
+        description: |
+          Fetch all pipeline stages in your Lever account.
+          Details: full sync, doesn't track deletes, metadata is not required.
+        output: LeverStage
+        sync_type: full
+        endpoint: /lever/stage
+        scopes:
+          - stages:read:admin
 models:
   LeverOpportunity:
     id: string

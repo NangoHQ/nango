@@ -24,7 +24,7 @@ interface ErrorOptionalConfig {
     accountId?: number;
     userId?: number;
     environmentId?: number;
-    metadata?: { [key: string]: unknown };
+    metadata?: Record<string, unknown>;
     operation?: string;
 }
 
@@ -124,6 +124,7 @@ class ErrorManager {
 
     public errResFromNangoErr(res: Response, err: NangoError | null) {
         if (err) {
+            logger.error(`Response error: ${JSON.stringify({ statusCode: err.status, type: err.type, payload: err.payload, message: err.message })}`);
             if (!err.message) {
                 res.status(err.status).send({ type: err.type, payload: err.payload });
             } else {
@@ -166,8 +167,8 @@ class ErrorManager {
         this.errResFromNangoErr(res, supportError);
     }
 
-    public getExpressRequestContext(req: Request): { [key: string]: unknown } {
-        const metadata: { [key: string]: unknown } = {};
+    public getExpressRequestContext(req: Request): Record<string, unknown> {
+        const metadata: Record<string, unknown> = {};
         metadata['baseUrl'] = req.baseUrl;
         metadata['originalUrl'] = req.originalUrl;
         metadata['subdomains'] = req.subdomains;
