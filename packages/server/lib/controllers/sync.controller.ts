@@ -624,7 +624,7 @@ class SyncController {
             );
 
             if (isErr(result)) {
-                errorManager.errResFromNangoErr(res, result.err as NangoError);
+                errorManager.handleGenericError(result.err, req, res, tracer);
                 return;
             }
 
