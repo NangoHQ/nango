@@ -1812,6 +1812,18 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+teamtailor:
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.teamtailor.com
+        retry:
+            after: 'X-Rate-Limit-Reset'
+        headers:
+            Authorization: Token token=${apiKey}
+            X-Api-Version: '20210218'
+    docs: https://docs.nango.dev/integrations/all/teamtailor
 teamwork:
     categories:
         - productivity
