@@ -1,16 +1,15 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.service.js';
 import connectionService from '../connection.service.js';
-import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
-import { deleteJobsBySyncId as deleteSyncJobsBySyncId, getLatestSyncJob } from './job.service.js';
-import { deleteRecordsBySyncId } from './data/records.service.js';
+import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
+import { getLatestSyncJob } from './job.service.js';
 import {
     createSync,
-    deleteSync,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
     getSyncByIdAndName,
-    getSyncNamesByConnectionId
+    getSyncNamesByConnectionId,
+    softDeleteSync
 } from './sync.service.js';
 import {
     createActivityLogMessageAndEnd,
@@ -135,25 +134,20 @@ export class Orchestrator {
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async deleteSync(syncId: string, environmentId: number) {
-        await deleteScheduleForSync(syncId as string, environmentId);
-        await deleteSync(syncId as string);
+    public async softDeleteSync(syncId: string, environmentId: number) {
+        await deleteScheduleForSync(syncId, environmentId);
+        await softDeleteSync(syncId);
     }
 
-    public async deleteSyncRelatedObjects(syncId: string) {
-        await deleteSyncJobsBySyncId(syncId);
-        await deleteSyncSchedulesBySyncId(syncId);
-        await deleteRecordsBySyncId(syncId);
-    }
-
-    public async deleteSyncsByConnection(connection: Connection) {
-        const syncs = await getSyncsByConnectionId(connection.id as number);
+    public async softDeleteSyncsByConnection(connection: Connection) {
+        const syncs = await getSyncsByConnectionId(connection.id!);
 
         if (!syncs) {
             return;
         }
+
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string, connection.environment_id as number);
+            await this.softDeleteSync(sync.id!, connection.environment_id);
         }
     }
 
@@ -165,7 +159,7 @@ export class Orchestrator {
         }
 
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string, environmentId);
+            await this.softDeleteSync(sync.id as string, environmentId);
         }
     }
 

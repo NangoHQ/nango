@@ -8,7 +8,8 @@ import type {
     CustomerFacingDataRecord,
     DataRecordWithMetadata,
     GetRecordsResponse,
-    LastAction
+    LastAction,
+    Sync
 } from '../../../models/Sync.js';
 import type { DataResponse } from '../../../models/Data.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
@@ -503,11 +504,6 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
     return { isUnique, nonUniqueKeys };
 }
 
-export async function deleteRecordsBySyncId(sync_id: string): Promise<void> {
-    await schema().from<SyncDataRecord>('_nango_sync_data_records').where({ sync_id }).del();
-    await schema().from<SyncDataRecord>('_nango_sync_data_records_deletes').where({ sync_id }).del();
-}
-
 export async function getSingleRecord(external_id: string, nango_connection_id: number, model: string): Promise<SyncDataRecord | null> {
     const encryptedRecord = await schema().from<SyncDataRecord>('_nango_sync_data_records').where({
         nango_connection_id,
@@ -548,4 +544,36 @@ export async function getRecordsByExternalIds(external_ids: string[], nango_conn
     }
 
     return result as unknown as SyncDataRecord[];
+}
+
+export async function findSyncsWithDeletableRecords(limit: number): Promise<Pick<Sync, 'id'>[]> {
+    return db.knex
+        .select<Pick<Sync, 'id'>[]>('syncs.id')
+        .from('_nango_sync_data_records AS rec')
+        .join('_nango_syncs AS syncs', 'syncs.id', '=', 'rec.sync_id')
+        .where('syncs.deleted', true)
+        .groupBy('syncs.id')
+        .limit(limit);
+}
+
+export async function deleteRecordsBySyncIdSafe(syncId: string, limit: number): Promise<void> {
+    let countRecords = 0;
+    do {
+        countRecords = await db
+            .knex('_nango_sync_data_records')
+            .whereIn('id', function (sub) {
+                sub.select('id').from('_nango_sync_data_records').where({ sync_id: syncId }).limit(limit);
+            })
+            .del();
+    } while (countRecords >= limit);
+
+    let countDeletes = 0;
+    do {
+        countDeletes = await db
+            .knex('_nango_sync_data_records_deletes')
+            .whereIn('id', function (sub) {
+                sub.select('id').from('_nango_sync_data_records_deletes').where({ sync_id: syncId }).limit(limit);
+            })
+            .del();
+    } while (countDeletes >= limit);
 }
