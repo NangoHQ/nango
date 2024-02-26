@@ -163,7 +163,7 @@ class ProxyService {
             environment_id: connection.environment_id,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
-            content: `Endpoint set to ${endpoint} with retries set to ${retries}`
+            content: `Endpoint set to ${endpoint} with retries set to ${retries} ${retryOn ? `and retryOn set to ${retryOn}` : ''}`
         });
 
         if (headers && headers['Content-Type'] === 'multipart/form-data') {

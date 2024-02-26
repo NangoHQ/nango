@@ -94,7 +94,7 @@ class ProxyController {
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,
                 method: method.toUpperCase() as HTTP_VERB,
-                retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
+                retryOn
             };
 
             const {
