@@ -556,7 +556,7 @@ export async function findSyncsWithDeletableRecords(limit: number): Promise<Pick
         .limit(limit);
 }
 
-export async function deleteRecordsBySyncIdSafe(syncId: string, limit: number): Promise<void> {
+export async function deleteRecordsBySyncIdSafe(syncId: string, limit: number = 5000): Promise<void> {
     let countRecords = 0;
     do {
         countRecords = await db
