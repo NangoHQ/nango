@@ -11,6 +11,7 @@ class ParserService {
         let areAwaited = true;
         let usedCorrectly = true;
         let noReturnUsed = true;
+        let retryOnUsedCorrectly = true;
 
         const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
 
@@ -101,6 +102,31 @@ class ParserService {
                             usedCorrectly = false;
                         }
                     }
+                    const callArguments = path.node.arguments;
+                    if (callArguments.length > 0 && t.isObjectExpression(callArguments[0])) {
+                        let retriesPropertyFound = false;
+                        let retryOnPropertyFound = false;
+                        callArguments[0].properties.forEach((prop: t.ObjectProperty | t.ObjectMethod | t.SpreadElement) => {
+                            if (t.isObjectProperty(prop)) {
+                                if (t.isIdentifier(prop.key) && prop.key.name === 'retries') {
+                                    retriesPropertyFound = true;
+                                }
+                                if (t.isIdentifier(prop.key) && prop.key.name === 'retryOn') {
+                                    retryOnPropertyFound = true;
+                                }
+                            }
+                        });
+
+                        if (!retriesPropertyFound && retryOnPropertyFound) {
+                            const lineNumber = path.node.loc?.start.line as number;
+                            console.log(
+                                chalk.red(
+                                    `Usage of 'retryOn' without 'retries' at "${filePath}:${lineNumber}". 'retryOn' should not be used if 'retries' is not set.`
+                                )
+                            );
+                            retryOnUsedCorrectly = false;
+                        }
+                    }
                 }
             },
             ExportDefaultDeclaration(path: NodePath<t.ExportDefaultDeclaration>) {
@@ -144,7 +170,7 @@ class ParserService {
             }
         });
 
-        return areAwaited && usedCorrectly && noReturnUsed;
+        return areAwaited && usedCorrectly && noReturnUsed && retryOnUsedCorrectly;
     }
 }
 
