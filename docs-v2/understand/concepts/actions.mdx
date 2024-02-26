@@ -4,7 +4,9 @@ sidebarTitle: 'Actions'
 description: 'Learn more about actions.'
 ---
 
-Actions within Nango are designed to facilitate direct workflows with external APIs, such as creating a contact in Hubspot or sending a message via Slack. Unlike [syncs](understand/concepts/syncs), actions require manual triggering and can provide immediate responses, making them ideally suited for dynamic, real-time interactions.
+# Overview
+
+Actions within Nango are designed to facilitate direct workflows with external APIs, such as creating a contact in Hubspot or sending a message via Slack. Unlike [syncs](/understand/concepts/syncs), actions require manual triggering and can provide immediate responses, making them ideally suited for dynamic, real-time interactions.
 
 # Use Cases for Actions
 Actions shine in scenarios requiring two-way syncing or direct data manipulation. For instance, while syncs could be used to regularly import the latest contacts from Hubspot, actions enable the creation or modification of those contacts directly from your application. This capability ensures a seamless flow of information both to and from external services.
@@ -17,10 +19,10 @@ Action executions are transient, with no data persistence on Nango's part. This 
 
 ### Defined Inputs and Outputs 
 
-Actions are defined with explicit input parameters and output responses. These schemas are meticulously outlined as models within the [integration configuration](understand/concepts/integration-configuration), ensuring clarity and consistency in data handling.
+Actions are defined with explicit input parameters and output responses. These schemas are meticulously outlined as models within the [integration configuration](/understand/concepts/integration-configuration), ensuring clarity and consistency in data handling.
 
 ### Endpoint Access 
-Once enabled, actions are accessible through specific endpoints, each with an automatically generated API reference available in the [Nango UI](understand/concepts/ui). This setup facilitates easy integration and execution of actions within your application.
+Once enabled, actions are accessible through specific endpoints, each with an automatically generated API reference available in the [Nango UI](/understand/concepts/ui). This setup facilitates easy integration and execution of actions within your application.
 
 ### Immediate Feedback
 
@@ -34,10 +36,10 @@ Actions differ significantly from proxies by executing predefined scripts rather
 
 ### Unified Modeling
 
-Actions support inputs and outputs that adhere to [unified models](understand/concepts/api-unification), streamlining the integration process across different external APIs. This unification greatly simplifies your integration code, reducing complexity and minimizing potential errors.
+Actions support inputs and outputs that adhere to [unified models](/understand/concepts/api-unification), streamlining the integration process across different external APIs. This unification greatly simplifies your integration code, reducing complexity and minimizing potential errors.
 
 # Action Scripts
-Action executions are powered by [integration scripts](understand/concepts/scripts) that encapsulate the logic for interfacing with external APIs. While Nango provides [script templates](understand/concepts/templates) for common use cases, there's also support for custom scripting to meet specific integration needs.
+Action executions are powered by [integration scripts](/understand/concepts/scripts) that encapsulate the logic for interfacing with external APIs. While Nango provides [script templates](understand/concepts/templates) for common use cases, there's also support for custom scripting to meet specific integration needs.
 
 # Conclusion
 Actions in Nango provide a robust framework for handling real-time, interactive workflows with external APIs. From two-way syncing to intricate data manipulations, actions offer the flexibility, immediacy, and precision needed to effectively integrate and automate external API interactions within your application. With the added benefits of unified modeling and script-driven logic, Nango actions are an essential tool for developers looking to streamline their application's external integrations.
