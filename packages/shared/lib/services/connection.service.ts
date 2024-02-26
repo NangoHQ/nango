@@ -546,7 +546,7 @@ class ConnectionService {
                 environment_id,
                 deleted: false
             })
-            .update({ deleted: true, deleted_at: new Date() });
+            .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
     }
 
     public async getConnectionCredentials(
