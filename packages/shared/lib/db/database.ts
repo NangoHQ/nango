@@ -16,7 +16,8 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<a
         pool: {
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '20')
-        }
+        },
+        searchPath: 'nango'
     };
 }
 
