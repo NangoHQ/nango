@@ -16,6 +16,7 @@ interface BaseProxyConfiguration {
     baseUrlOverride?: string;
     responseType?: ResponseType;
     retryHeader?: RetryHeaderConfig;
+    retryOn?: number[] | null;
 }
 
 export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
