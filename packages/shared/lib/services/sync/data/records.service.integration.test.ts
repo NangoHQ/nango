@@ -72,9 +72,9 @@ describe('Records service integration test', () => {
         } while (cursor);
 
         for (let i = 1; i < allFetchedRecords.length; i++) {
-            // @ts-ignore
+            // @ts-expect-error
             const currentRecordDate = dayjs(allFetchedRecords[i]._nango_metadata.first_seen_at);
-            // @ts-ignore
+            // @ts-expect-error
             const previousRecordDate = dayjs(allFetchedRecords[i - 1]._nango_metadata.first_seen_at);
 
             expect(currentRecordDate.isAfter(previousRecordDate) || currentRecordDate.isSame(previousRecordDate)).toBe(true);
@@ -91,7 +91,7 @@ describe('Records service integration test', () => {
         const { modelName, nangoConnectionId } = meta;
 
         // insert in chunks of 1000
-        // @ts-ignore
+        // @ts-expect-error
         for (let i = 0; i < formattedResults?.length; i += 1000) {
             const { error, success } = await DataService.upsert(
                 formattedResults?.slice(i, i + 1000) as unknown as DataRecord[],

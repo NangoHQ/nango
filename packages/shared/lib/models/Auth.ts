@@ -84,11 +84,11 @@ export interface TemplateOAuth1 extends Template {
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
-export type OAuth1RequestTokenResult = {
+export interface OAuth1RequestTokenResult {
     request_token: string;
     request_token_secret: string;
     parsed_query_string: any;
-};
+}
 
 export interface CredentialsCommon<T = Record<string, any>> {
     type: AuthModes;

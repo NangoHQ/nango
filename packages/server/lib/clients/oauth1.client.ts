@@ -6,11 +6,11 @@ import oAuth1 from 'oauth';
 import type { Config as ProviderConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/shared';
 import { AuthModes } from '@nangohq/shared';
 
-type OAuth1RequestTokenResult = {
+interface OAuth1RequestTokenResult {
     request_token: string;
     request_token_secret: string;
     parsed_query_string: any;
-};
+}
 
 // The choice of OAuth 1.0a libraries for node is not exactly great:
 // There are a half-dozen around but none of the is really maintained anymore (no surprise, OAuth 1.0 is officially deprecated)
@@ -85,30 +85,30 @@ export class OAuth1Client {
             // This is lifted from https://github.com/ciaranj/node-oauth/blob/master/lib/oauth.js#L456
             // Unfortunately that main method does not expose extra params like the initial token request does ¯\_(ツ)_/¯
 
-            // @ts-ignore
+            // @ts-expect-error
             additionalTokenParams['oauth_verifier'] = oauth_token_verifier;
 
-            // @ts-ignore
+            // @ts-expect-error
             this.client._performSecureRequest(
                 oauth_token,
                 oauth_token_secret,
-                // @ts-ignore
+                // @ts-expect-error
                 this.client._clientOptions.accessTokenHttpMethod,
-                // @ts-ignore
+                // @ts-expect-error
                 this.client._accessUrl,
                 additionalTokenParams,
                 null,
                 undefined,
-                // @ts-ignore
+                // @ts-expect-error
                 function (error, data, response) {
                     if (error) reject(error);
                     else {
-                        // @ts-ignore
+                        // @ts-expect-error
                         const queryParams = new URLSearchParams(data);
 
                         const parsedFull = {};
                         for (const pair of queryParams) {
-                            // @ts-ignore
+                            // @ts-expect-error
                             parsedFull[pair[0]] = pair[1];
                         }
 
