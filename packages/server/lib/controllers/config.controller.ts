@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 import {
     flowService,
+    isHosted,
     getConfigWithEndpointsByProviderConfigKey,
     StandardNangoConfig,
     AuthModes,
@@ -344,7 +345,7 @@ class ConfigController {
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
-            if (includeFlows) {
+            if (includeFlows && !isHosted()) {
                 const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
                 const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === config.provider);
 
