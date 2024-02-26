@@ -1817,7 +1817,7 @@ teamtailor:
         - ats
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.teamtailor.com
+        base_url: https://{connectionConfig.extension}.teamtailor.com
         retry:
             after: 'X-Rate-Limit-Reset'
         headers:

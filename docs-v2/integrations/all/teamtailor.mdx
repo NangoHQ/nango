@@ -32,5 +32,6 @@ API configuration: [`teamtailor`](https://nango.dev/providers.yaml)
 - Teamtailor uses API_KEY auth mode with Authorization: Token token=`api_key` in the request header to access different endpoints.
 - The rate limit allows for a maximum of 50 requests per 10 seconds.
 - All API calls must have `X-Api-Version` as a header to resolve API versions.
+- Teamtailor uses different domain extensions for different regions, i.e `na` for US West(Oregon) Hosted Customers. For EU(Ireland) based clients, add `api` as your extension but for US West(Oregon) based customers add `api.na` as your extension.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/teamtailor.mdx)</Note>
