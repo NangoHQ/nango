@@ -412,6 +412,7 @@ class SyncClient {
                         // we just want to try and cancel if the sync is running
                         // so we don't care about the result
                         await this.cancelSync(syncId);
+
                         await clearLastSyncDate(syncId);
                         await deleteRecordsBySyncId(syncId);
                         await createActivityLogMessage({
@@ -427,6 +428,7 @@ class SyncClient {
                             connection_id: connectionId,
                             environment_id: environmentId
                         };
+
                         await this.triggerInitialSync({ syncId, activityLogId, nangoConnection, syncName });
                     }
                     break;
@@ -456,8 +458,20 @@ class SyncClient {
                 const error = new NangoError('run_id_not_found');
                 return resultErr(error);
             }
+
             const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
-            await workflowHandle?.cancel();
+            if (!workflowHandle) {
+                const error = new NangoError('run_id_not_found');
+                return resultErr(error);
+            }
+
+            try {
+                await workflowHandle.cancel();
+                // We await the results otherwise it might not be cancelled yet
+                await workflowHandle.result();
+            } catch (err) {
+                return resultErr(new NangoError('failed_to_cancel_sync', err as any));
+            }
         } else {
             const error = new NangoError('sync_job_not_running');
             return resultErr(error);
