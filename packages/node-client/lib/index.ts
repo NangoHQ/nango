@@ -590,7 +590,7 @@ export class Nango {
 
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress } = config;
+        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress, retryOn } = config;
 
         const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
@@ -618,6 +618,10 @@ export class Nango {
 
         if (decompress) {
             headers['Decompress'] = decompress;
+        }
+
+        if (retryOn) {
+            headers['Retry-On'] = retryOn.join(',');
         }
 
         const options: AxiosRequestConfig = {

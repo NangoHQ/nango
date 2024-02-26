@@ -113,6 +113,7 @@ export interface ProxyConfiguration {
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
     retryHeader?: RetryHeaderConfig;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+    retryOn?: number[] | null;
 }
 
 enum AuthModes {
