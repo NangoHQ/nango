@@ -368,6 +368,16 @@ describe('generate function tests', () => {
         expect(awaiting).toBe(false);
     });
 
+    it('should complain if retryOn is used without retries', async () => {
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-bad.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        expect(usedCorrectly).toBe(false);
+    });
+
+    it('should not complain if retryOn is used with retries', async () => {
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-good.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        expect(usedCorrectly).toBe(false);
+    });
+
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
         const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid`));
         expect(config).toBeDefined();
