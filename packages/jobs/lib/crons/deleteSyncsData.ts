@@ -12,7 +12,7 @@ export async function deleteSyncsData(): Promise<void> {
     /**
      * Clean data from soft deleted syncs.
      */
-    cron.schedule('*/1 * * * *', async () => {
+    cron.schedule('*/20 * * * *', async () => {
         const start = Date.now();
         try {
             await exec();
