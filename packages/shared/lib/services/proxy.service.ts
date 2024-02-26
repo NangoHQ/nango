@@ -42,7 +42,7 @@ class ProxyService {
     ): ServiceResponse<ApplicationConstructedProxyConfiguration> & Activities {
         const activityLogs: ActivityLogMessage[] = [];
         let data = externalConfig.data;
-        const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride } = externalConfig;
+        const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
         const { connection, provider, existingActivityLogId: activityLogId } = internalConfig;
 
         if (!passedEndpoint && !baseUrlOverride) {
@@ -195,7 +195,8 @@ class ProxyService {
             connection,
             params: externalConfig.params as Record<string, string>,
             paramsSerializer: externalConfig.paramsSerializer as ParamsSerializerOptions,
-            responseType: externalConfig.responseType as ResponseType
+            responseType: externalConfig.responseType as ResponseType,
+            retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
         };
 
         return { success: true, error: null, response: configBody, activityLogs };
@@ -285,7 +286,8 @@ class ProxyService {
                 error?.response?.headers['x-ratelimit-remaining'] &&
                 error?.response?.headers['x-ratelimit-remaining'] === '0') ||
             error?.response?.status === 429 ||
-            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string)
+            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string) ||
+            config.retryOn?.includes(Number(error?.response?.status))
         ) {
             if (config.retryHeader) {
                 const type = config.retryHeader.at ? 'at' : 'after';
