@@ -92,9 +92,7 @@ export interface ApiKeyCredentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
-export interface Metadata {
-    [key: string]: string | Record<string, any>;
-}
+export type Metadata = Record<string, string | Record<string, any>>;
 
 export interface Connection {
     id?: number;
@@ -123,6 +121,7 @@ export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
     scopes: string;
+    created_at: Date;
     has_webhook: boolean;
     webhook_url?: string;
 }

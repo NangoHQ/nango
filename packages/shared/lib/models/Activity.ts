@@ -17,10 +17,12 @@ export type LogAction =
     | 'proxy'
     | 'restart sync'
     | 'sync'
+    | 'sync init'
     | 'sync client'
     | 'sync deploy'
     | 'token'
     | 'trigger sync'
+    | 'trigger full sync'
     | 'webhook';
 
 export enum LogActionEnum {
@@ -38,10 +40,12 @@ export enum LogActionEnum {
     RESTART_SYNC = 'restart sync',
     CANCEL_SYNC = 'cancel sync',
     SYNC = 'sync',
+    SYNC_INIT = 'sync init',
     SYNC_CLIENT = 'sync client',
     SYNC_DEPLOY = 'sync deploy',
     TOKEN = 'token',
     TRIGGER_SYNC = 'trigger sync',
+    TRIGGER_FULL_SYNC = 'trigger full sync',
     WEBHOOK = 'webhook'
 }
 

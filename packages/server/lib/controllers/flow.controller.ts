@@ -14,6 +14,9 @@ import {
     remoteFileService,
     getAllSyncsAndActions,
     getNangoConfigIdAndLocationFromId,
+    getConfigWithEndpointsByProviderConfigKey,
+    StandardNangoConfig,
+    getConfigWithEndpointsByProviderConfigKeyAndName,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName
 } from '@nangohq/shared';
 
@@ -107,7 +110,12 @@ class FlowController {
 
             // config is an array for compatibility purposes, it will only ever have one item
             const [firstConfig] = config;
-            const providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
+            let providerLookup;
+            if (firstConfig?.providerConfigKey) {
+                providerLookup = await configService.getConfigIdByProviderConfigKey(firstConfig?.providerConfigKey as string, environmentId);
+            } else {
+                providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
+            }
 
             if (!providerLookup) {
                 errorManager.errRes(res, 'provider_not_on_account');
@@ -123,7 +131,7 @@ class FlowController {
 
             await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
 
-            res.sendStatus(201);
+            res.status(201).send(preBuiltResponse.result);
         } catch (e) {
             next(e);
         }
@@ -215,27 +223,98 @@ class FlowController {
                 return;
             }
 
-            if (!connectionIds) {
-                res.status(400).send('Missing connectionIds');
-                return;
-            }
-
             if (!syncName) {
                 res.status(400).send('Missing sync_name');
                 return;
             }
 
-            const connections = connectionIds.split(',');
+            if (connectionIds) {
+                const connections = connectionIds.split(',');
 
-            const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
+                const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
 
-            for (const sync of syncs) {
-                await syncOrchestrator.deleteSync(sync.id as string, environmentId);
+                for (const sync of syncs) {
+                    await syncOrchestrator.deleteSync(sync.id as string, environmentId);
+                }
             }
 
             await syncOrchestrator.deleteConfig(Number(id), environmentId);
 
             res.sendStatus(204);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getEndpoints(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { environmentId } = response;
+            const providerConfigKey = req.params['providerConfigKey'];
+            const provider = req.query['provider'];
+
+            if (!providerConfigKey) {
+                res.status(400).send('Missing providerConfigKey');
+                return;
+            }
+
+            const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
+            const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === provider);
+
+            const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey as string);
+            const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
+
+            if (availableFlows && enabledFlows && unEnabledFlows) {
+                const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
+
+                const { syncs, actions } = unEnabledFlows;
+
+                const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
+                const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
+
+                unEnabledFlows.syncs = filteredSyncs;
+                unEnabledFlows.actions = filteredActions;
+            }
+
+            res.send({ unEnabledFlows, enabledFlows });
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            const { environment } = response;
+            const providerConfigKey = req.query['provider_config_key'] as string;
+            const { flowName } = req.params;
+
+            if (!providerConfigKey) {
+                res.status(400).send({ message: 'Missing provider config key' });
+                return;
+            }
+
+            if (!flowName) {
+                res.status(400).send({ message: 'Missing sync name' });
+                return;
+            }
+
+            const flow = flowService.getSingleFlowAsStandardConfig(flowName);
+            const provider = await configService.getProviderName(providerConfigKey as string);
+            const flowConfig = await getConfigWithEndpointsByProviderConfigKeyAndName(environment.id, providerConfigKey, flowName as string);
+
+            res.send({ flowConfig, unEnabledFlow: flow, provider });
         } catch (e) {
             next(e);
         }

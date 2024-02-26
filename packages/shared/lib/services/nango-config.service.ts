@@ -70,7 +70,7 @@ export function determineVersion(configData: NangoConfig): 'v1' | 'v2' {
     }
 }
 
-export function loadStandardConfig(configData: NangoConfig, showMessages = false): ServiceResponse<StandardNangoConfig[] | null> {
+export function loadStandardConfig(configData: NangoConfig, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[] | null> {
     try {
         if (!configData) {
             return { success: false, error: new NangoError('no_config_found'), response: null };
@@ -82,7 +82,7 @@ export function loadStandardConfig(configData: NangoConfig, showMessages = false
         }
 
         const configServiceResponse =
-            version === 'v1' ? convertConfigObject(configData as NangoConfigV1) : convertV2ConfigObject(configData as NangoConfigV2, showMessages);
+            version === 'v1' ? convertConfigObject(configData as NangoConfigV1) : convertV2ConfigObject(configData as NangoConfigV2, showMessages, isPublic);
 
         return configServiceResponse;
     } catch (error: any) {
@@ -137,6 +137,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
 
         if (integration!['provider']) {
             provider = integration!['provider'];
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete integration!['provider'];
         }
 
@@ -164,7 +165,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 models: models || [],
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
-                endpoints: sync?.endpoints || []
+                endpoints: sync?.endpoints || [],
+                nango_yaml_version: 'v1'
             };
 
             if (sync.type === SyncConfigType.ACTION) {
@@ -251,7 +253,7 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
     return { success: true, error: null, response: inputModel };
 };
 
-export function convertV2ConfigObject(config: NangoConfigV2, showMessages = false): ServiceResponse<StandardNangoConfig[]> {
+export function convertV2ConfigObject(config: NangoConfigV2, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[]> {
     const output: StandardNangoConfig[] = [];
     const allModelNames = config.models ? Object.keys(config.models) : [];
 
@@ -264,6 +266,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
         if (integration!['provider']) {
             provider = integration!['provider'];
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete integration!['provider'];
         }
 
@@ -368,6 +371,10 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 runs,
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
+                last_deployed: sync.updated_at || null,
+                is_public: (isPublic !== undefined ? isPublic : sync.is_public === true) as boolean,
+                pre_built: (isPublic !== undefined ? isPublic : sync.pre_built === true) as boolean,
+                version: sync.version || null,
                 attributes: sync.attributes || {},
                 input: inputModel,
                 // a sync always returns an array
@@ -375,8 +382,13 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints,
+                nango_yaml_version: sync.nango_yaml_version || 'v2',
                 webhookSubscriptions
             };
+
+            if (sync.id) {
+                syncObject.id = sync.id;
+            }
 
             builtSyncs.push(syncObject);
         }
@@ -452,13 +464,22 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 type: SyncConfigType.ACTION,
                 models: models || [],
                 runs: '',
+                is_public: (isPublic !== undefined ? isPublic : action.is_public === true) as boolean,
+                pre_built: (isPublic !== undefined ? isPublic : action.pre_built === true) as boolean,
+                version: action.version || null,
+                last_deployed: action.updated_at || null,
                 attributes: action.attributes || {},
                 returns: action.output as string[],
                 description: action?.description || action?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
-                endpoints
+                endpoints,
+                nango_yaml_version: action.nango_yaml_version || 'v2'
             };
+
+            if (action.id) {
+                actionObject.id = action.id;
+            }
 
             builtActions.push(actionObject);
         }

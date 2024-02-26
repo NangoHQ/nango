@@ -20,19 +20,21 @@ import { getSyncConfig } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
-import { createSync } from '../services/sync/sync.service.js';
+import { deleteRecordsBySyncId } from '../services/sync/data/records.service.js';
+import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
 import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import { isTest, isProd } from '../utils/utils.js';
-import { resultOk, type Result, resultErr } from '../utils/result.js';
+import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
     `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connectionId}.${Date.now()}`;
-const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
-const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
+const generateWorkflowId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
+const generateScheduleId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) =>
+    `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
 const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
@@ -145,25 +147,22 @@ class SyncClient {
         debug = false
     ): Promise<void> {
         try {
-            let activityLogId: number | null = null;
-
-            const log = {
+            const activityLogId = await createActivityLog({
                 level: 'info' as LogLevel,
                 success: null,
-                action: LogActionEnum.SYNC,
+                action: LogActionEnum.SYNC_INIT,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
-                connection_id: nangoConnection?.connection_id as string,
-                provider_config_key: nangoConnection?.provider_config_key as string,
+                connection_id: nangoConnection.connection_id,
+                provider_config_key: nangoConnection.provider_config_key,
                 provider: syncConfig.provider,
                 session_id: sync?.id?.toString() as string,
-                environment_id: nangoConnection?.environment_id as number,
+                environment_id: nangoConnection.environment_id,
                 operation_name: syncName
-            };
-
-            if (syncData.auto_start !== false) {
-                activityLogId = await createActivityLog(log);
+            });
+            if (!activityLogId) {
+                return;
             }
 
             const { success, error, response } = getInterval(syncData.runs, new Date());
@@ -172,13 +171,13 @@ class SyncClient {
                 const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: nangoConnection?.environment_id as number,
-                    activity_log_id: activityLogId as number,
+                    environment_id: nangoConnection.environment_id,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content
                 });
 
-                await errorManager.report(content, {
+                errorManager.report(content, {
                     source: ErrorSourceEnum.CUSTOMER,
                     operation: LogActionEnum.SYNC_CLIENT,
                     environmentId: nangoConnection.environment_id,
@@ -191,51 +190,34 @@ class SyncClient {
                     }
                 });
 
-                await updateSuccessActivityLog(activityLogId as number, false);
+                await updateSuccessActivityLog(activityLogId, false);
 
                 return;
             }
 
-            let handle = null;
-            const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
+            const jobId = generateWorkflowId(sync, syncName, nangoConnection.connection_id);
 
             if (syncData.auto_start !== false) {
                 if (debug) {
                     await createActivityLogMessage({
                         level: 'debug',
-                        environment_id: nangoConnection?.environment_id as number,
-                        activity_log_id: activityLogId as number,
+                        environment_id: nangoConnection.environment_id,
+                        activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `Starting sync job ${jobId} for sync ${sync.id}`
+                        content: `Creating sync job ${jobId} for sync ${sync.id}`
                     });
                 }
-                const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
 
-                if (!syncJobId) {
-                    return;
+                const res = await this.triggerInitialSync({ activityLogId, jobId, nangoConnection, syncId: sync.id!, syncName, debug });
+                if (!res) {
+                    throw new NangoError('failed_to_start_initial_sync');
                 }
-
-                handle = await this.client?.workflow.start('initialSync', {
-                    taskQueue: SYNC_TASK_QUEUE,
-                    workflowId: jobId,
-                    args: [
-                        {
-                            syncId: sync.id,
-                            syncJobId: syncJobId?.id as number,
-                            nangoConnection,
-                            syncName,
-                            activityLogId,
-                            debug
-                        }
-                    ]
-                });
-                await updateRunId(syncJobId?.id as number, handle?.firstExecutionRunId as string);
             } else {
                 await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
 
             const { interval, offset } = response;
-            const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
+            const scheduleId = generateScheduleId(sync, syncName, nangoConnection.connection_id);
 
             const scheduleHandle = await this.client?.schedule.create({
                 scheduleId,
@@ -260,7 +242,6 @@ class SyncClient {
                     args: [
                         {
                             syncId: sync.id,
-                            activityLogId,
                             nangoConnection,
                             syncName,
                             debug
@@ -269,8 +250,8 @@ class SyncClient {
                 }
             });
 
-            if (syncData.auto_start === false) {
-                await scheduleHandle?.pause();
+            if (syncData.auto_start === false && scheduleHandle) {
+                await scheduleHandle.pause();
             }
 
             await createSyncSchedule(
@@ -281,17 +262,19 @@ class SyncClient {
                 scheduleId
             );
 
-            if (syncData.auto_start !== false && handle) {
-                await createActivityLogMessage({
+            if (scheduleHandle) {
+                await createActivityLogMessageAndEnd({
                     level: 'info',
-                    environment_id: nangoConnection?.environment_id as number,
-                    activity_log_id: activityLogId as number,
-                    content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${SYNC_TASK_QUEUE}`,
+                    environment_id: nangoConnection.environment_id,
+                    activity_log_id: activityLogId,
+                    content: `Scheduled to run "${syncData.runs}"`,
                     timestamp: Date.now()
                 });
             }
+
+            await updateSuccessActivityLog(activityLogId, true);
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: nangoConnection.environment_id,
@@ -376,20 +359,27 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number, environmentId: number): Promise<Result<boolean>> {
+    async runSyncCommand(
+        scheduleId: string,
+        syncId: string,
+        command: SyncCommand,
+        activityLogId: number,
+        environmentId: number,
+        providerConfigKey: string,
+        connectionId: string,
+        syncName: string,
+        nangoConnectionId?: number
+    ): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
                 case SyncCommand.CANCEL:
                     {
-                        const jobIsRunning = await isSyncJobRunning(syncId);
-                        if (jobIsRunning) {
-                            const { job_id, run_id } = jobIsRunning;
-                            if (run_id) {
-                                const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
-                                await workflowHandle?.cancel();
-                            }
+                        const result = await this.cancelSync(syncId);
+
+                        if (isErr(result)) {
+                            return resultErr(result.err);
                         }
                     }
                     break;
@@ -418,7 +408,29 @@ class SyncClient {
                     await scheduleHandle?.trigger(OVERLAP_POLICY);
                     break;
                 case SyncCommand.RUN_FULL:
-                    console.warn('Not implemented');
+                    {
+                        // we just want to try and cancel if the sync is running
+                        // so we don't care about the result
+                        await this.cancelSync(syncId);
+
+                        await clearLastSyncDate(syncId);
+                        await deleteRecordsBySyncId(syncId);
+                        await createActivityLogMessage({
+                            level: 'info',
+                            environment_id: environmentId,
+                            activity_log_id: activityLogId,
+                            timestamp: Date.now(),
+                            content: `Records for the sync were deleted successfully`
+                        });
+                        const nangoConnection: NangoConnection = {
+                            id: nangoConnectionId as number,
+                            provider_config_key: providerConfigKey,
+                            connection_id: connectionId,
+                            environment_id: environmentId
+                        };
+
+                        await this.triggerInitialSync({ syncId, activityLogId, nangoConnection, syncName });
+                    }
                     break;
             }
 
@@ -436,6 +448,36 @@ class SyncClient {
 
             return resultErr(err as Error);
         }
+    }
+
+    async cancelSync(syncId: string): Promise<Result<boolean>> {
+        const jobIsRunning = await isSyncJobRunning(syncId);
+        if (jobIsRunning) {
+            const { job_id, run_id } = jobIsRunning;
+            if (!run_id) {
+                const error = new NangoError('run_id_not_found');
+                return resultErr(error);
+            }
+
+            const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
+            if (!workflowHandle) {
+                const error = new NangoError('run_id_not_found');
+                return resultErr(error);
+            }
+
+            try {
+                await workflowHandle.cancel();
+                // We await the results otherwise it might not be cancelled yet
+                await workflowHandle.result();
+            } catch (err) {
+                return resultErr(new NangoError('failed_to_cancel_sync', err as any));
+            }
+        } else {
+            const error = new NangoError('sync_job_not_running');
+            return resultErr(error);
+        }
+
+        return resultOk(true);
     }
 
     async triggerSyncs(syncs: SyncWithSchedule[], environmentId: number) {
@@ -487,7 +529,12 @@ class SyncClient {
                 args: [
                     {
                         actionName,
-                        nangoConnection: connection,
+                        nangoConnection: {
+                            id: connection.id,
+                            connection_id: connection.connection_id,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
                         input,
                         activityLogId: writeLogs ? activityLogId : undefined
                     }
@@ -740,6 +787,41 @@ class SyncClient {
                 }
             });
         }
+    }
+
+    async triggerInitialSync({
+        syncId,
+        jobId,
+        syncName,
+        nangoConnection,
+        debug
+    }: {
+        syncId: string;
+        jobId?: string;
+        syncName: string;
+        activityLogId: number;
+        nangoConnection: NangoConnection;
+        debug?: boolean;
+    }): Promise<boolean> {
+        jobId = jobId || generateWorkflowId({ id: syncId }, syncName, nangoConnection.connection_id);
+        const syncJobId = await createSyncJob(syncId, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
+
+        if (!syncJobId) {
+            return false;
+        }
+
+        const handle = await this.client?.workflow.start('initialSync', {
+            taskQueue: SYNC_TASK_QUEUE,
+            workflowId: jobId,
+            args: [{ syncId: syncId, syncJobId: syncJobId.id!, nangoConnection, syncName, debug }]
+        });
+        if (!handle) {
+            return false;
+        }
+
+        await updateRunId(syncJobId.id as number, handle.firstExecutionRunId);
+
+        return true;
     }
 }
 

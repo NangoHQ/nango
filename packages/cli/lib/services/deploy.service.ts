@@ -277,6 +277,10 @@ class DeployService {
                     printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
                 }
 
+                if (flow?.input?.fields) {
+                    model_schema.push(flow.input);
+                }
+
                 const body = {
                     syncName,
                     providerConfigKey,

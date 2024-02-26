@@ -17,9 +17,7 @@ interface EnvironmentAccount {
     environment: string;
 }
 
-interface EnvironmentAccountSecrets {
-    [key: string]: EnvironmentAccount;
-}
+type EnvironmentAccountSecrets = Record<string, EnvironmentAccount>;
 
 export const defaultEnvironments = ['prod', 'dev'];
 
@@ -200,13 +198,13 @@ class EnvironmentService {
     }
 
     async getAccountAndEnvironmentById(account_id: number, environment: string): Promise<{ account: Account | null; environment: Environment | null }> {
-        const account = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: account_id });
+        const account = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: account_id });
 
         if (account == null || account.length == 0 || account[0] == null) {
             return { account: null, environment: null };
         }
 
-        const environmentResult = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ account_id, name: environment });
+        const environmentResult = await db.knex.select('*').from<Environment>(TABLE).where({ account_id, name: environment });
 
         if (environmentResult == null || environmentResult.length == 0 || environmentResult[0] == null) {
             return { account: null, environment: null };
@@ -388,7 +386,7 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironmentVariables(result);
     }
 
-    async editEnvironmentVariable(environment_id: number, values: Array<{ name: string; value: string }>): Promise<number[] | null> {
+    async editEnvironmentVariable(environment_id: number, values: { name: string; value: string }[]): Promise<number[] | null> {
         await db.knex.withSchema(db.schema()).from<EnvironmentVariable>(`_nango_environment_variables`).where({ environment_id }).del();
 
         if (values.length === 0) {

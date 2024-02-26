@@ -15,6 +15,11 @@
             "to": "#012AC3"
         }
     },
+    "feedback": {
+        "suggestEdit": true,
+        "raiseIssue": true,
+        "thumbsRating": true
+    },
     "analytics": {
         "gtm": {
             "tagId": "GTM-N4KVPWR"
@@ -44,19 +49,14 @@
     },
     "anchors": [
         {
-            "name": "Supported APIs",
+            "name": "APIs & Integration Templates",
             "icon": "bars",
             "url": "integrations"
         },
         {
-            "name": "SDKs & CLI",
-            "icon": "cubes",
-            "url": "sdks"
-        },
-        {
-            "name": "API Reference",
+            "name": "Technical Reference",
             "icon": "book",
-            "url": "api-reference"
+            "url": "reference"
         },
         {
             "name": "Community",
@@ -66,97 +66,182 @@
     ],
     "redirects": [
         {
-            "source": "guides/actions",
-            "destination": "guides/action"
+            "source": "/guides/custom",
+            "destination": "/customize/guides/create-a-custom-integration"
+        },
+        {
+            "source": "/guides/action",
+            "destination": "/integrate/guides/perform-workflows-with-an-api"
+        },
+        {
+            "source": "/guides/sync",
+            "destination": "/integrate/guides/sync-data-from-an-api"
+        },
+        {
+            "source": "/guides/oauth",
+            "destination": "/integrate/guides/authorize-an-api"
+        },
+        {
+            "source": "/guides/proxy",
+            "destination": "/integrate/guides/proxy-requests-to-an-api"
+        },
+        {
+            "source": "/guides/webhooks",
+            "destination": "/integrate/guides/receive-webhooks-from-nango"
+        },
+        {
+            "source": "/guides/advanced-auth",
+            "destination": "/integrate/guides/authorize-an-api"
+        },
+        {
+            "source": "/guides/field-mapping",
+            "destination": "/integrate/guides/advanced/use-custom-field-mappings"
+        },
+        {
+            "source": "/guides/api-key",
+            "destination": "/integrate/guides/authorize-an-api"
+        },
+        {
+            "source": "/guides/contribute",
+            "destination": "/customize/guides/contribute-an-api"
+        },
+        {
+            "source": "/integration-templates",
+            "destination": "/integrations/overview"
+        },
+        {
+            "source": "/guides/cloud",
+            "destination": "/host/cloud"
+        },
+        {
+            "source": "/guides/managed-integrations",
+            "destination": "/host/managed-integrations"
         }
     ],
     "navigation": [
         {
-            "group": "Getting Started",
+            "group": "Get Started",
             "pages": [
                 "introduction",
-                "guides/integrate"
+                "demo"
             ]
         },
         {
-            "group": "Step-By-Step Guides",
+            "group": "Use Integrations",
             "pages": [
-                "quickstart",
-                "guides/oauth",
-                "guides/sync",
-                "guides/action",
+                "integrate/overview",
                 {
-                    "group": "Other Guides",
+                    "group": "Step-by-step guides",
                     "pages": [
-                        "guides/proxy",
-                        "guides/webhooks",
-                        "guides/custom",
-                        "guides/advanced-auth",
-                        "guides/field-mapping",
-                        "guides/api-key",
-                        "guides/env-vars",
-                        "contribute"
+                        "integrate/guides/authorize-an-api",
+                        "integrate/guides/sync-data-from-an-api",
+                        "integrate/guides/perform-workflows-with-an-api",
+                        "integrate/guides/proxy-requests-to-an-api",
+                        "integrate/guides/receive-webhooks-from-nango",
+                        "integrate/guides/receive-webhooks-from-an-api",
+                        {
+                            "group": "Advanced",
+                            "pages": [
+                                "integrate/guides/advanced/store-customer-specific-data",
+                                "integrate/guides/advanced/use-custom-field-mappings"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "group": "Build Integrations",
+            "pages": [
+                "customize/overview",
+                {
+                    "group": "Step-by-step guides",
+                    "pages": [
+                        "customize/guides/setup",
+                        "customize/guides/create-a-custom-integration",
+                        "customize/guides/extend-an-integration-template",
+                        "customize/guides/contribute-an-api",
+                        "customize/guides/contribute-an-integration-template",
+                        {
+                            "group": "Advanced",
+                            "pages": [
+                                "customize/guides/advanced/validate-api-responses",
+                                "customize/guides/advanced/handle-rate-limits",
+                                "customize/guides/advanced/sync-data-incrementally",
+                                "customize/guides/advanced/support-custom-field-mappings",
+                                "customize/guides/advanced/detect-deletions",
+                                "customize/guides/advanced/paginate-api-responses",
+                                "customize/guides/advanced/use-environment-variables",
+                                "customize/guides/advanced/unify-apis-and-models",
+                                "customize/guides/advanced/handle-errors-in-scripts",
+                                "customize/guides/advanced/handle-large-datasets",
+                                "customize/guides/advanced/migrate-integration-configuration"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "group": "Understand Nango",
+            "pages": [
+                "understand/architecture",
+                {
+                    "group": "Concepts",
+                    "pages": [
+                        "understand/concepts/integrations",
+                        "understand/concepts/connections",
+                        "understand/concepts/syncs",
+                        "understand/concepts/actions",
+                        "understand/concepts/integration-reference",
+                        "understand/concepts/proxy",
+                        "understand/concepts/webhooks",
+                        "understand/concepts/environments",
+                        "understand/concepts/ui",
+                        "understand/concepts/templates",
+                        "understand/concepts/cli",
+                        "understand/concepts/integrations-folder",
+                        "understand/concepts/scripts",
+                        "understand/concepts/api-configuration",
+                        "understand/concepts/integration-configuration",
+                        "understand/concepts/api-unification"
                     ]
                 },
                 {
-                    "group": "Integration Templates",
+                    "group": "Best practices",
                     "pages": [
-                        "integration-templates/overview",
-                        "integration-templates/asana",
-                        "integration-templates/ashby",
-                        "integration-templates/bamboohr",
-                        "integration-templates/confluence",
-                        "integration-templates/clari-copilot",
-                        "integration-templates/github",
-                        "integration-templates/gmail",
-                        "integration-templates/google-workspace",
-                        "integration-templates/greenhouse",
-                        "integration-templates/hackerrank-work",
-                        "integration-templates/hibob",
-                        "integration-templates/hubspot",
-                        "integration-templates/intercom",
-                        "integration-templates/jira",
-                        "integration-templates/lever",
-                        "integration-templates/linear",
-                        "integration-templates/microsoft-active-directory",
-                        "integration-templates/next-cloud",
-                        "integration-templates/notion",
-                        "integration-templates/pipedrive",
-                        "integration-templates/salesforce",
-                        "integration-templates/slack",
-                        "integration-templates/workable",
-                        "integration-templates/zendesk",
-                        "integration-templates/zoho-crm"
+                        "understand/best-practices/define-an-integration-strategy",
+                        "understand/best-practices/when-to-unify-external-apis"
                     ]
                 }
             ]
         },
         {
-            "group": "Nango Offers",
+            "group": "Host Nango",
             "pages": [
-                "cloud",
-                "managed-integrations",
+                "host/cloud",
+                "host/managed-integrations",
                 {
-                    "group": "Self-Hosting Instructions",
+                    "group": "Self-hosting instructions",
                     "pages": [
-                        "use/self-hosting-instructions",
-                        "use/local",
-                        "use/aws",
-                        "use/gcp",
-                        "use/digital-ocean",
-                        "use/render",
-                        "use/heroku"
+                        "host/self-host/self-hosting-instructions",
+                        "host/self-host/local",
+                        "host/self-host/aws",
+                        "host/self-host/gcp",
+                        "host/self-host/digital-ocean",
+                        "host/self-host/render",
+                        "host/self-host/heroku"
                     ]
                 }
             ]
         },
         {
-            "group": "Supported APIs & Categories",
+            "group": "APIs & Integration Templates",
             "pages": [
                 "integrations/overview",
-                "integrations/add-your-own-integration",
                 {
-                    "group": "Supported Categories",
+                    "group": "APIs By Category",
+                    "icon": "grid-2",
                     "pages": [
                         "integrations/accounting",
                         "integrations/analytics",
@@ -178,7 +263,7 @@
                         "integrations/payment",
                         "integrations/productivity",
                         "integrations/social",
-                        "integrations/sport",
+                        "integrations/sports",
                         "integrations/storage",
                         "integrations/support",
                         "integrations/surveys",
@@ -188,9 +273,42 @@
                     ]
                 },
                 {
-                    "group": "Supported APIs",
+                    "group": "Integration Templates",
+                    "icon": "sheet-plastic",
                     "pages": [
-                        "integrations/all/accelo",
+                        "integrations/integration-templates/asana",
+                        "integrations/integration-templates/ashby",
+                        "integrations/integration-templates/bamboohr",
+                        "integrations/integration-templates/confluence",
+                        "integrations/integration-templates/clari-copilot",
+                        "integrations/integration-templates/github",
+                        "integrations/integration-templates/gmail",
+                        "integrations/integration-templates/google-workspace",
+                        "integrations/integration-templates/greenhouse",
+                        "integrations/integration-templates/hackerrank-work",
+                        "integrations/integration-templates/hibob",
+                        "integrations/integration-templates/hubspot",
+                        "integrations/integration-templates/intercom",
+                        "integrations/integration-templates/jira",
+                        "integrations/integration-templates/lever",
+                        "integrations/integration-templates/linear",
+                        "integrations/integration-templates/microsoft-active-directory",
+                        "integrations/integration-templates/next-cloud",
+                        "integrations/integration-templates/notion",
+                        "integrations/integration-templates/pipedrive",
+                        "integrations/integration-templates/salesforce",
+                        "integrations/integration-templates/slack",
+                        "integrations/integration-templates/workable",
+                        "integrations/integration-templates/zendesk",
+                        "integrations/integration-templates/zoho-crm"
+                    ]
+                }
+            ]
+        },
+        {
+            "group": "All Pre-Configured APIs",
+            "pages": [
+                "integrations/all/accelo",
                         "integrations/all/adobe",
                         "integrations/all/affinity",
                         "integrations/all/aircall",
@@ -198,9 +316,11 @@
                         "integrations/all/amazon",
                         "integrations/all/amplitude",
                         "integrations/all/apollo",
+                        "integrations/all/apple-app-store",
                         "integrations/all/asana",
                         "integrations/all/ashby",
                         "integrations/all/atlassian",
+                        "integrations/all/attio",
                         "integrations/all/auth0",
                         "integrations/all/aws",
                         "integrations/all/bamboohr",
@@ -223,10 +343,12 @@
                         "integrations/all/discord",
                         "integrations/all/dropbox",
                         "integrations/all/docusign",
+                        "integrations/all/entrata",
                         "integrations/all/epic-games",
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
                         "integrations/all/exact-online",
+                        "integrations/all/exist",
                         "integrations/all/facebook",
                         "integrations/all/factorial",
                         "integrations/all/figjam",
@@ -243,6 +365,7 @@
                         "integrations/all/google",
                         "integrations/all/google-ads",
                         "integrations/all/google-calendar",
+                        "integrations/all/google-drive",
                         "integrations/all/google-mail",
                         "integrations/all/google-sheet",
                         "integrations/all/gorgias",
@@ -310,10 +433,11 @@
                         "integrations/all/stackexchange",
                         "integrations/all/strava",
                         "integrations/all/stripe",
+                        "integrations/all/stripe-app",
                         "integrations/all/stripe-express",
                         "integrations/all/survey-monkey",
                         "integrations/all/teamwork",
-                        "integrations/all/ticktok-accounts",
+                        "integrations/all/tiktok-accounts",
                         "integrations/all/tiktok-ads",
                         "integrations/all/timely",
                         "integrations/all/todoist",
@@ -325,6 +449,7 @@
                         "integrations/all/uber",
                         "integrations/all/wakatime",
                         "integrations/all/wave-accounting",
+                        "integrations/all/whoop",
                         "integrations/all/wildix-pbx",
                         "integrations/all/workable",
                         "integrations/all/xero",
@@ -341,95 +466,98 @@
                         "integrations/all/zoho-inventory",
                         "integrations/all/zoho-invoice",
                         "integrations/all/zoom"
+            ]
+        },
+        {
+            "group": "Technical Reference",
+            "pages": [
+                "reference/overview"
+            ]
+        },
+        {
+            "group": "Use Integrations",
+            "pages": [
+                {
+                    "group": "HTTP API",
+                    "icon": "cloud",
+                    "pages": [
+                        "reference/api/authentication",
+                        {
+                            "group": "Integrations",
+                            "pages": [
+                                "reference/api/integration/list",
+                                "reference/api/integration/get",
+                                "reference/api/integration/create",
+                                "reference/api/integration/update",
+                                "reference/api/integration/delete"
+                            ]
+                        },
+                        {
+                            "group": "Connections",
+                            "pages": [
+                                "reference/api/connection/list",
+                                "reference/api/connection/get",
+                                "reference/api/connection/post",
+                                "reference/api/connection/set-metadata",
+                                "reference/api/connection/update-metadata",
+                                "reference/api/connection/delete"
+                            ]
+                        },
+                        {
+                            "group": "Syncs",
+                            "pages": [
+                                "reference/api/sync/records-list",
+                                "reference/api/sync/records-get",
+                                "reference/api/sync/trigger",
+                                "reference/api/sync/start",
+                                "reference/api/sync/pause",
+                                "reference/api/sync/status",
+                                "reference/api/sync/update-connection-frequency",
+                                "reference/api/sync/environment-variables"
+                            ]
+                        },
+                        {
+                            "group": "Actions",
+                            "pages": [
+                                "reference/api/action/trigger"
+                            ]
+                        },
+                        {
+                            "group": "Proxy",
+                            "pages": [
+                                "reference/api/proxy/get",
+                                "reference/api/proxy/post",
+                                "reference/api/proxy/put",
+                                "reference/api/proxy/patch",
+                                "reference/api/proxy/delete"
+                            ]
+                        }
                     ]
-                }
+                },
+                {
+                    "group": "Backend SDKs",
+                    "pages": [
+                        "reference/sdks/node",
+                        "reference/sdks/python",
+                        "reference/sdks/java",
+                        "reference/sdks/ruby",
+                        "reference/sdks/go",
+                        "reference/sdks/rust",
+                        "reference/sdks/php"
+                    ],
+                    "icon": "cubes"
+                },
+                "reference/sdks/frontend",
+                "reference/webhooks"
             ]
         },
         {
-            "group": "Overview",
+            "group": "Build Integrations",
             "pages": [
-                "sdks/overview"
-            ]
-        },
-        {
-            "group": "Frontend SDK",
-            "pages": [
-                "sdks/frontend"
-            ]
-        },
-        {
-            "group": "CLI",
-            "pages": [
-                "sdks/cli"
-            ]
-        },
-        {
-            "group": "Backend SDKs",
-            "pages": [
-                "sdks/node",
-                "sdks/python",
-                "sdks/java",
-                "sdks/ruby",
-                "sdks/go",
-                "sdks/rust",
-                "sdks/php"
-            ]
-        },
-        {
-            "group": "Overview",
-            "pages": [
-                "api-reference/overview",
-                "api-reference/authentication"
-            ]
-        },
-        {
-            "group": "Integrations",
-            "pages": [
-                "api-reference/integration/list",
-                "api-reference/integration/get",
-                "api-reference/integration/create",
-                "api-reference/integration/update",
-                "api-reference/integration/delete"
-            ]
-        },
-        {
-            "group": "Connections",
-            "pages": [
-                "api-reference/connection/list",
-                "api-reference/connection/get",
-                "api-reference/connection/post",
-                "api-reference/connection/set-metadata",
-                "api-reference/connection/update-metadata",
-                "api-reference/connection/delete"
-            ]
-        },
-        {
-            "group": "Syncs",
-            "pages": [
-                "api-reference/sync/records-list",
-                "api-reference/sync/records-get",
-                "api-reference/sync/trigger",
-                "api-reference/sync/start",
-                "api-reference/sync/pause",
-                "api-reference/sync/status",
-                "api-reference/sync/update-connection-frequency",
-                "api-reference/sync/environment-variables"
-            ]
-        },
-        {
-            "group": "Actions",
-            "pages": [
-                "api-reference/action/trigger"
-            ]
-        },
-        {
-            "group": "Proxy",
-            "pages": [
-                "api-reference/proxy/get",
-                "api-reference/proxy/post",
-                "api-reference/proxy/put",
-                "api-reference/proxy/patch",
-                "api-reference/proxy/delete"
+                "reference/cli",
+                "reference/api-configuration",
+                "reference/integration-configuration",
+                "reference/scripts"
             ]
         }
     ],
@@ -437,7 +565,7 @@
         "twitter": "https://twitter.com/NangoHQ",
         "linkedin": "https://www.linkedin.com/company/nangohq/",
         "github": "https://github.com/NangoHQ/nango",
-        "slack": "https://nango-community.slack.com/join/shared_invite/zt-1cvpdflmb-TMrjJJ_AZJeMivOgt906HA#/shared-invite/email",
+        "slack": "https://nango.dev/slack",
         "website": "https://www.nango.dev/"
     }
 }

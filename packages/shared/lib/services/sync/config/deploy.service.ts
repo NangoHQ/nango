@@ -371,7 +371,10 @@ export async function deployPreBuilt(
             idsToMarkAsInvactive.push(...ids);
         }
 
-        insertData.push({
+        const created_at = new Date();
+
+        const flowData = {
+            created_at,
             sync_name,
             nango_config_id,
             file_location,
@@ -389,12 +392,16 @@ export async function deployPreBuilt(
             metadata,
             pre_built: true,
             is_public
-        });
+        };
+
+        insertData.push(flowData);
 
         flowReturnData.push({
             ...config,
             providerConfigKey: provider_config_key,
-            version
+            ...flowData,
+            last_deployed: created_at,
+            models: JSON.parse(model_schema)
         });
     }
 
@@ -413,6 +420,13 @@ export async function deployPreBuilt(
 
     try {
         const syncIds = await schema().from<SyncConfig>(TABLE).insert(insertData).returning('id');
+
+        flowReturnData.forEach((flow, index) => {
+            const row = syncIds[index];
+            if (row) {
+                flow.id = row.id;
+            }
+        });
 
         const endpoints: SyncEndpoint[] = [];
         syncIds.forEach((row, index) => {

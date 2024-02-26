@@ -1,11 +1,11 @@
 import parser from 'cron-parser';
-import type { SyncResult } from '../types';
+import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
-export const syncDocs = 'https://docs.nango.dev/guides/sync';
+export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
 
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
@@ -101,14 +101,35 @@ export function elapsedTime(start: number, end: number): string {
     return `${elapsedSeconds}.${elapsedMilliseconds} seconds`;
 }
 
+export function formatDateToShortUSFormat(dateString: string): string {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        month: 'short',
+        day: '2-digit',
+        hour12: false,
+    };
+
+    const formattedDate = date.toLocaleString('en-US', options);
+
+    if (formattedDate === 'Invalid Date') {
+        return '-';
+    }
+
+    const parts = formattedDate.split(', ');
+    return `${parts[1]}, ${parts[0]}`;
+}
+
+
 export function formatDateToUSFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      second: 'numeric',
       hour12: true,
     };
 
@@ -244,3 +265,95 @@ export function calculateTotalRuntime(timestamps: { created_at: string; updated_
 
     return  result === '' ? '-' : result;
 };
+
+export function createExampleForType(type: string): any {
+    if (typeof type !== 'string') {
+        return {};
+    }
+
+    const rawType = type.replace('|', '').replace('null', '').replace('undefined', '').trim();
+
+    switch (rawType) {
+        case 'string':
+            return '<string>'
+        case 'integer':
+            return '<number>';
+        case 'boolean':
+            return '<boolean>';
+        case 'number':
+            return '<number>';
+        case 'object':
+            return '<object>';
+        case 'array':
+            return '<array>';
+        case 'date':
+            return '<date>';
+        default:
+            return '';
+    }
+}
+
+export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean|string|number> {
+    if (!Array.isArray(model.fields)) {
+        return createExampleForType(model.name);
+    }
+    const example = {} as Record<string, boolean|string|number>;
+    for (const field of model.fields) {
+        example[field.name] = createExampleForType(field.type);
+    }
+    return example;
+}
+
+export const parseInput = (flow: Flow) => {
+    let input;
+
+    if (flow?.input && Object.keys(flow?.input).length > 0 && !flow.input.fields) {
+        input = flow.input.name;
+    } else if (flow?.input && Object.keys(flow?.input).length > 0) {
+        const rawInput = {} as Record<string, boolean|string|number>;
+        for (const field of flow.input.fields) {
+            rawInput[field.name] = field.type;
+        }
+        input = rawInput;
+    } else {
+        input = undefined;
+    }
+
+    return input;
+};
+
+export function generateResponseModel(models: NangoSyncModel[], output: string, isSync: boolean): Record<string, any> {
+    const model = models.find((model) => model.name === output);
+    const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
+    if (!isSync) {
+        return jsonResponse;
+    }
+    const metadata = {
+        _nango_metadata: {
+            deleted_at: '<date| null>',
+            last_action: 'ADDED|UPDATED|DELETED',
+            first_seen_at: '<date>',
+            last_modified_at: '<date>'
+        }
+    };
+    return {...jsonResponse, ...metadata};
+}
+
+export function getSimpleDate(dateString: string | undefined): string {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+export function parseEndpoint(endpoint: string | FlowEndpoint): string {
+    if (typeof endpoint === 'string') {
+        return endpoint;
+    }
+
+    return Object.values(endpoint)[0];
+}

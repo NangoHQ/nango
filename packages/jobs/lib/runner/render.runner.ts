@@ -74,7 +74,8 @@ export class RenderRunner implements Runner {
                         { key: 'RUNNER_ID', value: runnerId },
                         { key: 'NOTIFY_IDLE_ENDPOINT', value: `${jobsServiceUrl}/idle` },
                         { key: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
-                        { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() }
+                        { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
+                        { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] }
                     ]
                 });
                 svc = res.data.service;

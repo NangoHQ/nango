@@ -2,7 +2,7 @@ import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.serv
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { deleteJobsBySyncId as deleteSyncJobsBySyncId, getLatestSyncJob } from './job.service.js';
-import { deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data/records.service.js';
+import { deleteRecordsBySyncId } from './data/records.service.js';
 import {
     createSync,
     deleteSync,
@@ -143,7 +143,7 @@ export class Orchestrator {
     public async deleteSyncRelatedObjects(syncId: string) {
         await deleteSyncJobsBySyncId(syncId);
         await deleteSyncSchedulesBySyncId(syncId);
-        await deleteSyncResultsBySyncId(syncId);
+        await deleteRecordsBySyncId(syncId);
     }
 
     public async deleteSyncsByConnection(connection: Connection) {
@@ -192,6 +192,14 @@ export class Orchestrator {
             environment_id: environmentId
         };
         const activityLogId = await createActivityLog(log);
+        if (!activityLogId) {
+            return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
+        }
+
+        const syncClient = await SyncClient.getInstance();
+        if (!syncClient) {
+            return { success: false, error: new NangoError('failed_to_get_sync_client'), response: false };
+        }
 
         if (connectionId) {
             const {
@@ -200,37 +208,42 @@ export class Orchestrator {
                 response: connection
             } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
 
-            if (!success) {
+            if (!success || !connection) {
                 return { success: false, error, response: false };
             }
 
             let syncs = syncNames;
 
             if (syncs.length === 0) {
-                syncs = await getSyncNamesByConnectionId(connection?.id as number);
+                syncs = await getSyncNamesByConnectionId(connection.id as number);
             }
 
             for (const syncName of syncs) {
-                const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+                const sync = await getSyncByIdAndName(connection.id as number, syncName);
                 if (!sync) {
+                    throw new Error(`Sync "${syncName}" doest not exists.`);
+                }
+                const schedule = await getSchedule(sync.id as string);
+                if (!schedule) {
                     continue;
                 }
-                const schedule = await getSchedule(sync?.id as string);
 
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
+                await syncClient.runSyncCommand(
+                    schedule.schedule_id,
+                    sync?.id as string,
+                    command,
+                    activityLogId,
+                    environmentId,
+                    providerConfigKey as string,
+                    connectionId as string,
+                    syncName,
+                    connection.id
+                );
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
                 }
             }
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: environmentId,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
-            });
         } else {
             const syncs =
                 syncNames.length > 0
@@ -244,23 +257,42 @@ export class Orchestrator {
             }
 
             for (const sync of syncs) {
-                const schedule = await getSchedule(sync?.id as string);
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
+                const schedule = await getSchedule(sync.id as string);
+                if (!schedule) {
+                    continue;
+                }
+
+                const connection = await connectionService.getConnectionById(sync.nango_connection_id);
+                if (!connection) {
+                    continue;
+                }
+
+                await syncClient.runSyncCommand(
+                    schedule.schedule_id,
+                    sync.id as string,
+                    command,
+                    activityLogId,
+                    environmentId,
+                    providerConfigKey,
+                    connection.connection_id as string,
+                    sync.name,
+                    connection.id
+                );
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
                 }
             }
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: environmentId,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Sync was updated with command: "${action}" for sync: ${Array.isArray(syncNames) ? syncNames.join(', ') : syncNames}`
-            });
         }
 
-        await updateSuccessActivityLog(activityLogId as number, true);
+        await createActivityLogMessageAndEnd({
+            level: 'info',
+            environment_id: environmentId,
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
+        });
+
+        await updateSuccessActivityLog(activityLogId, true);
 
         return { success: true, error: null, response: true };
     }
@@ -313,6 +345,16 @@ export class Orchestrator {
         return { success: true, error: null, response: syncsWithStatus };
     }
 
+    /**
+     * Classify Sync Status
+     * @desc categornize the different scenarios of sync status
+     * 1. If the schedule is paused and the job is not running, then the sync is paused
+     * 2. If the schedule is paused and the job is not running then the sync is stopped (last return case)
+     * 3. If the schedule is running but the last job is null then it is an error
+     * 4. If the job status is stopped then it is an error
+     * 5. If the job status is running then it is running
+     * 6. If the job status is success then it is success
+     */
     public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
         if (scheduleStatus === ScheduleStatus.PAUSED && jobStatus !== SyncStatus.RUNNING) {
             return SyncStatus.PAUSED;

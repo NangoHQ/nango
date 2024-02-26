@@ -1,8 +1,1 @@
-<svg width="62" height="62" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="62" height="62" rx="10" fill="white"/>
-<rect x="9" y="15" width="21.6573" height="3.42679" rx="1.7134" fill="#5C25C9"/>
-<rect x="14.4828" y="22.1279" width="27.6885" height="3.42679" rx="1.7134" fill="#3070EA"/>
-<rect x="20.2399" y="29.2559" width="32.7601" height="3.42679" rx="1.7134" fill="#439747"/>
-<rect x="14.4828" y="36.3828" width="27.6885" height="3.42679" rx="1.7134" fill="#F1A23A"/>
-<rect x="9" y="43.5107" width="21.6573" height="3.42679" rx="1.7134" fill="#EB4A26"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="62" height="62" fill="none"><rect x="9" y="15" width="21.657" height="3.427" rx="1.713" fill="#5c25c9"/><rect x="14.483" y="22.128" width="27.689" height="3.427" rx="1.713" fill="#3070ea"/><rect x="20.24" y="29.255" width="32.76" height="3.427" rx="1.713" fill="#439747"/><rect x="14.483" y="36.383" width="27.689" height="3.427" rx="1.713" fill="#f1a23a"/><rect x="9" y="43.511" width="21.657" height="3.427" rx="1.713" fill="#eb4a26"/></svg>

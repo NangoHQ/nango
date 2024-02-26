@@ -34,6 +34,7 @@ export enum AnalyticsTypes {
     SYNC_PAUSE = 'sync:command_pause',
     SYNC_RUN = 'sync:command_run',
     SYNC_UNPAUSE = 'sync:command_unpause',
+    SYNC_CANCEL = 'sync:command_cancel',
     UNAUTH_CONNECTION_INSERTED = 'server:unauth_connection_inserted',
     UNAUTH_CONNECTION_UPDATED = 'server:unauth_connection_updated',
     WEB_CONNECION_CREATED = 'web:connection_created',

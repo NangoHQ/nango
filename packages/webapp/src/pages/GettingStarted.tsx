@@ -4,7 +4,7 @@ import Nango from '@nangohq/frontend';
 import { Prism } from '@mantine/prism';
 import { useModal, Modal } from '@geist-ui/core';
 
-import { baseUrl } from '../utils/utils';
+import { baseUrl as getBaseUrl } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import Button from '../components/ui/button/Button';
@@ -15,6 +15,7 @@ import Spinner from '../components/ui/Spinner';
 import { nodeSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../utils/language-snippets';
 
 import { useStore } from '../store';
+import { useAnalyticsTrack } from '../utils/analytics';
 
 enum Steps {
     Authorize = 0,
@@ -47,13 +48,16 @@ export default function GettingStarted() {
     const [syncSnippet, setSyncSnippet] = useState('');
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [syncStillRunning, setSyncStillRunning] = useState(true);
+    const analyticsTrack = useAnalyticsTrack();
 
     const { setVisible, bindings } = useModal()
 
     const model = 'Issue';
+    const endpoint = '/github/lite-issues';
     const providerConfigKey = 'demo-github-integration';
 
     const env = useStore(state => state.cookieValue);
+    const baseUrl = useStore(state => state.baseUrl);
 
     const getProjectInfoAPI = useGetProjectInfoAPI()
 
@@ -66,7 +70,7 @@ export default function GettingStarted() {
         window.location.href = '/integrations';
     }
 
-        useEffect(() => {
+    useEffect(() => {
         const getAccount = async () => {
             let res = await getProjectInfoAPI();
 
@@ -74,7 +78,7 @@ export default function GettingStarted() {
                 const account = (await res.json())['account'];
                 setPublicKey(account.public_key);
                 setSecretKey(account.secret_key);
-                setHostUrl(account.host || baseUrl());
+                setHostUrl(account.host || getBaseUrl());
                 const email = account.email;
                 let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
                 strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
@@ -155,6 +159,8 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         if (res.status !== 201) {
             const { message } = await res.json();
             setServerErrorMessage(message);
+
+            analyticsTrack('web:getting_started:authorize_error');
             return;
         }
 
@@ -175,6 +181,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         if (!res.ok) {
             const { message } = await res.json();
             setServerErrorMessage(message);
+
             return;
         }
     };
@@ -191,6 +198,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
 
 
     const onAuthorize = async () => {
+        analyticsTrack('web:getting_started:authorize');
         const nango = new Nango({ host: hostUrl, publicKey });
 
         await verifyDemoProviderConfigKey();
@@ -252,6 +260,8 @@ nango.auth('${providerConfigKey}', '${connectionId}')
             if (response.status !== 200) {
                 clearInterval(pollingInterval as unknown as number);
                 pollingInterval = null;
+
+                analyticsTrack('web:getting_started:sync_error');
                 return;
             }
 
@@ -268,6 +278,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
     };
 
     const onGetRecords = async () => {
+        analyticsTrack('web:getting_started:sync');
         if (records.length === 0) {
             startPolling();
         }
@@ -276,24 +287,29 @@ nango.auth('${providerConfigKey}', '${connectionId}')
     };
 
     const onWebhookConfirm = async () => {
+        analyticsTrack('web:getting_started:webhook');
         setStep(Steps.Write);
         await updateProgress(Steps.Write);
     };
 
     const onActionConfirm = async () => {
+        analyticsTrack('web:getting_started:action');
         setStep(Steps.Ship);
         await updateProgress(Steps.Ship);
     };
 
-    const onClickExpore = async () => {
+    const onClickExplore = async () => {
+        analyticsTrack('web:getting_started:explore');
         window.open('https://docs.nango.dev/integrations/overview', '_blank');
     };
 
     const onClickGuides = async () => {
+        analyticsTrack('web:getting_started:guide');
         window.open('https://docs.nango.dev/introduction', '_blank');
     };
 
     const onClickJoinCommunity = async () => {
+        analyticsTrack('web:getting_started:community');
         window.open('https://nango.dev/slack', '_blank');
     };
 
@@ -323,9 +339,9 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                     <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
                 </Modal.Action>
             </Modal>
-            <div className="px-16 w-fit mx-auto text-white ">
+            <div className="text-white">
                 <div>
-                    <h1 className="mt-16 text-left text-4xl font-semibold tracking-tight text-white">How integrations work with <span onDoubleClick={resetOnboarding}>Nango</span></h1>
+                    <h1 className="text-left text-4xl font-semibold tracking-tight text-white">How integrations work with <span onDoubleClick={resetOnboarding}>Nango</span></h1>
                     <h2 className="mt-4 text-xl text-text-light-gray">Using GitHub as an example, follow these steps to synchronize external data with the Nango API.</h2>
                 </div>
                 <div className="border-l border-border-gray">
@@ -394,7 +410,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.cURL) {
-                                                    setSyncSnippet(curlSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(curlSnippet(baseUrl, endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.cURL);
                                                   }
                                                 }}
@@ -407,7 +423,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Python) {
-                                                    setSyncSnippet(pythonSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(pythonSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Python);
                                                   }
                                                 }}
@@ -420,7 +436,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.PHP) {
-                                                    setSyncSnippet(phpSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(phpSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.PHP);
                                                   }
                                                 }}
@@ -433,7 +449,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Go) {
-                                                    setSyncSnippet(goSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(goSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Go);
                                                   }
                                                 }}
@@ -446,7 +462,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Java) {
-                                                    setSyncSnippet(javaSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(javaSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Java);
                                                   }
                                                 }}
@@ -538,7 +554,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                 <>
                                     <h3 className="text-text-light-gray mb-6">Build any integration for any API with Nango.</h3>
                                     <div className="space-x-3">
-                                        <Button type="button" variant="primary" onClick={onClickExpore}>
+                                        <Button type="button" variant="primary" onClick={onClickExplore}>
                                             <img className="h-5" src="/images/explore-icon.svg" alt="" />
                                             Explore pre-built APIs
                                         </Button>
