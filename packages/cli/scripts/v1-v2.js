@@ -57,14 +57,22 @@ function convertYAML(inputYAML) {
                     delete data.integrations[integration][taskName];
                 } else if (task.runs) {
                     change.type = 'sync';
-                    task.output = task.returns ? task.returns[0] : null;
+                    if (Array.isArray(task.returns)) {
+                        task.output = task.returns.length === 1 ? task.returns[0] : task.returns;
+                    } else {
+                        task.output = task.returns;
+                    }
                     change.changes.push({
                         action: `Set output from returns for ${taskName}`,
                         explanation: `The returns field has been deprecated in v2 as it is potentially confusing. Syncs and actions now have an 'output' field. A sync's output is assumed to be an array.`
                     });
                     const contents = readFileSync(`./${location}${taskName}.ts`, 'utf8');
                     task.sync_type = contents.includes('lastSyncDate') ? 'incremental' : 'full';
-                    task.endpoint = `/${integration}/${taskName.replace(`${integration}-`, '')}`;
+                    if (Array.isArray(task.output)) {
+                        task.endpoint = task.output.map((o) => `/${integration}/${taskName.replace(`${integration}-`, '')}/${o.toLowerCase()}`);
+                    } else {
+                        task.endpoint = `/${integration}/${taskName.replace(`${integration}-`, '')}`;
+                    }
                     change.changes.push({
                         action: `Set endpoint for ${taskName}`,
                         explanation: `Syncs and actions now have a REST endpoint which is user defined and can be called directly. A sync's HTTP method is assumed to be a GET and an action's HTTP method is assumed to be a POST.`

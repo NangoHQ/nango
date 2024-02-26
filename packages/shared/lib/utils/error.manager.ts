@@ -126,9 +126,9 @@ class ErrorManager {
         if (err) {
             logger.error(`Response error: ${JSON.stringify({ statusCode: err.status, type: err.type, payload: err.payload, message: err.message })}`);
             if (!err.message) {
-                res.status(err.status).send({ type: err.type, payload: err.payload });
+                res.status(err.status || 500).send({ type: err.type, payload: err.payload });
             } else {
-                res.status(err.status).send({ error: err.message, type: err.type, payload: err.payload });
+                res.status(err.status || 500).send({ error: err.message, type: err.type, payload: err.payload });
             }
         }
     }
