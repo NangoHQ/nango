@@ -836,7 +836,7 @@ const res = await nango.get({
                 The number of retries in case of failure (with exponential back-off). Optional, default 0.
             </ResponseField>
             <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx and 429
+                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
                 The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
@@ -901,7 +901,7 @@ const res = await nango.post({
                 The number of retries in case of failure (with exponential back-off). Optional, default 0.
             </ResponseField>
             <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx and 429
+                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
                 The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
@@ -965,7 +965,7 @@ const res = await nango.put({
                 The number of retries in case of failure (with exponential back-off). Optional, default 0.
             </ResponseField>
             <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx and 429
+                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
                 The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
@@ -1029,7 +1029,8 @@ const res = await nango.patch({
                 The number of retries in case of failure (with exponential back-off). Optional, default 0.
             </ResponseField>
             <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx and 429
+                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
+            </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
                 The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
             </ResponseField>
@@ -1092,7 +1093,7 @@ const res = await nango.delete({
                 The number of retries in case of failure (with exponential back-off). Optional, default 0.
             </ResponseField>
             <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx and 429
+                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
                 The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
