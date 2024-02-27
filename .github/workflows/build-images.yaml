@@ -92,31 +92,31 @@ jobs:
                     NANGO_PERSIST_PORT: 3002
                 ports:
                   - 3002:3002
-                  options: >-
-                    --health-cmd "curl -s --fail http://localhost:3002/health || exit 1"
-                    --health-interval 5s
-                    --health-timeout 5s
-                    --health-retries 3
+                options: >-
+                  --health-cmd "curl -s --fail http://localhost:3002/health || exit 1"
+                  --health-interval 5s
+                  --health-timeout 5s
+                  --health-retries 3
             jobs:
                 image: nangohq/nango-jobs:${{ github.event.pull_request.head.sha || github.sha }}
                 env:
                     NANGO_JOBS_PORT: 3003
                 ports:
                   - 3003:3003
-                  options: >-
-                    --health-cmd "curl -s --fail http://localhost:3003/health || exit 1"
-                    --health-interval 5s
-                    --health-timeout 5s
-                    --health-retries 3
+                options: >-
+                  --health-cmd "curl -s --fail http://localhost:3003/health || exit 1"
+                  --health-interval 5s
+                  --health-timeout 5s
+                  --health-retries 3
             runner:
                 image: nangohq/nango-runner:${{ github.event.pull_request.head.sha || github.sha }}
                 ports:
                   - 3006:3006
-                  options: >-
-                    --health-cmd "curl -s --fail http://localhost:3006/health || exit 1"
-                    --health-interval 5s
-                    --health-timeout 5s
-                    --health-retries 3
+                options: >-
+                  --health-cmd "curl -s --fail http://localhost:3006/health || exit 1"
+                  --health-interval 5s
+                  --health-timeout 5s
+                  --health-retries 3
 
         runs-on: ubuntu-latest
         steps:
