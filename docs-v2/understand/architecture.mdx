@@ -4,6 +4,77 @@ sidebarTitle: 'Architecture'
 description: 'Learn more about the architecture of Nango.'
 ---
 
-<Info>
-The docs recently underwent a makeover, leaving this page empty. We are working hard to fill in all the missing pages within the next two weeks. Meanwhile, ask any questions on the [community](https://nango.dev/slack).
-</Info>
+Nango improves the way applications integrate with external APIs by providing a flexible, customizable unified API. Unlike traditional unified APIs that offer a one-size-fits-all solution, Nango empowers developers to tailor the interaction between their app and external APIs, ensuring a perfect fit for their specific needs.
+
+# Core components
+
+- **[Integrations](/understand/concepts/integrations):** The configurations that define how to connect to an external API. Each integration represents a separate external service (like Hubspot or Slack) and includes details such as authentication methods and consumable API endpoints.
+
+- **[Connections](/understand/concepts/connections):** Connections are instances of integrations for individual users or entities. They store the authentication credentials (like OAuth tokens or API keys) that allow Nango to access the external API on behalf of a specific user or entity.
+
+- **[Scripts](/understand/concepts/scripts):** Scripts are the heart of Nango's customization capabilities. They define the logic for how Nango interacts with external APIs, and run on Nango's infrastructure. Scripts are either provided by Nango as [templates](/understand/concepts/templates) or implemented by you. There are different types of scripts:
+
+    - **[Action](/understand/concepts/actions) scripts:** Enable specific tasks (e.g., creating a contact) to be executed with an external API.
+
+    - **[Sync](/understand/concepts/syncs) scripts:** Automate the synchronization of data from external APIs into your app.
+
+    - **[Webhook](/understand/concepts/webhooks) scripts:** Handle incoming webhooks from external APIs for real-time updates.
+
+- **Generated API reference:** Nango automatically generates an API reference for each integration, providing a clear and accessible documentation of available endpoints, actions, and sync operations. This reference is a guide for developers on how to utilize the Nango API to interact with external services.
+
+# A dual architecture
+
+Nango's architecture can be divided into two main parts: the customer app's interaction with Nango, and Nango's interaction with external APIs. This dual approach is what sets Nango apart, offering unprecedented flexibility and customization.
+
+**Customer app to Nango** 
+
+Developers use the unified API provided by Nango to interact with various external services. This part is streamlined and standardized across all Nango integrations, providing a consistent and easy-to-use interface for developers.
+
+**Nango to external APIs** 
+
+Here lies Nango's unique value proposition. Unlike traditional unified APIs, Nango allows developers to customize how it interacts with each external API through scripts. This means that while the interface from the app to Nango remains unified, the communication from Nango to external APIs can be tailored to meet specific requirements.
+
+# Detailed architecture
+
+**API**
+
+The API layer, developed with Node.js, serves as the front door to Nango, handling requests from customer applications. It processes operations related to integrations, connections, actions, and syncs, offering a unified interface for developers.
+
+**Control Plane Storage**
+
+This component stores configuration data for users, integrations, connections, and scripts. It uses Postgres.
+
+**Temporal**
+
+Temporal manages the scheduling of syncs and acts as a queue for script execution jobs. It's responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
+
+**Orchestrator Service**
+
+The Orchestrator Service dispatches jobs to runner services. It acts as the central manager that allocates script execution tasks to available runners, balancing load and ensuring efficient processing of integration logic.
+
+**Runner Services**
+
+Runner services, built on Node, are isolated per customer and responsible for running the integration scripts. These services directly interact with external APIs, executing the custom logic defined in action, sync, and webhook scripts. 
+
+**Records Storage**
+
+This storage component persists the records synced by the runners, conforming to the specific models defined in the [integration configurations](/understand/concepts/integration-configuration) and supporting the unified API's data retrieval needs.
+
+**Script Storage**
+
+Scripts, whether provided by Nango as [templates](/understand/concepts/templates) or developed by customers ([step-by-step guide](/customize/guides/create-a-custom-integration)), are stored in blob storage. This provides a scalable, secure storage solution that ensures scripts are readily accessible for execution by the runner services.
+
+**Logs Storage**
+
+Logs are critical to have observability over how your scripts are run. Nango automatically generates logs, but you can add custom logs in your scripts as well. Logs are surfaced and searchable in the Nango UI. 
+
+# Self-hosting
+
+Nango offers the flexibility to be [self-hosted](/host/cloud), appealing to enterprises with specific compliance or operational requirements. The infrastructure components, including the API, control plane, and all associated services, can be deployed within a customer's own environment. The self-hosting option comes in two editions:
+
+- **Free Edition:** Includes just the API and control plane, focuses on authorizing external APIs.
+- **Enterprise Self-Hosting Edition:** Offers the full suite of Nango components, providing the complete capabilities of Nango in a self-hosted configuration.
+
+# Conclusion
+
+Nango's infrastructure is designed for scalability, reliability, and flexibility, supporting the full range of integration scenarios. From handling real-time actions to managing complex sync schedules, each component plays a crucial role in delivering a seamless integration experience. Whether utilized as a cloud service or deployed in a self-hosted environment, Nango provides the foundation for a robust and tailored API integration infrastructure.
