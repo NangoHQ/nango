@@ -16,4 +16,4 @@ COPY package*.json ./
 RUN npm pkg delete scripts.prepare
 RUN npm install --omit=dev
 
-CMD [ "node", "/nango/packages/runner/dist/app.js", "80", "dockerized-runner" ]
+CMD [ "node", "/nango/packages/runner/dist/app.js", "", "dockerized-runner" ]
