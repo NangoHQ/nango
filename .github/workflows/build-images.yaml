@@ -66,6 +66,7 @@ jobs:
             tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-${{ github.event.pull_request.head.sha || github.sha }}
 
     test-image-server:
+        needs: [nango-server-staging, nango-persist, nango-jobs, nango-runner]
         services:
             server:
                 image: nangohq/nango-server:${{ github.event.pull_request.head.sha || github.sha }}
