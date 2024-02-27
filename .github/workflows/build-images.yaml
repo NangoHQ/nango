@@ -68,13 +68,29 @@ jobs:
     test-image-server:
         needs: [nango-server-staging, nango-persist, nango-jobs, nango-runner]
         services:
-            postgres:
+            nango-db:
               image: postgres:15.5-alpine
+              env:
+                POSTGRES_PASSWORD: nango
+                POSTGRES_USER: nango
+                POSTGRES_DB: nango
               options: >-
                 --health-cmd pg_isready
                 --health-interval 10s
                 --health-timeout 5s
                 --health-retries 5
+
+            temporal:
+              image: temporalio/auto-setup
+              env:
+                DB: nango-db
+                DB_PORT: 5432
+                POSTGRES_USER: nango
+                POSTGRES_PWD: nango
+                POSTGRES_SEEDS: nango-db
+              ports:
+                  - 7233:7233
+
             server:
                 image: nangohq/nango-server:staging-${{ github.event.pull_request.head.sha || github.sha }}
                 env:
