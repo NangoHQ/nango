@@ -54,8 +54,8 @@ export interface ProxyConfiguration {
     retryOn?: number[] | null;
 }
 
-type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
-type CombinedFilterAction = `${FilterAction},${FilterAction}`;
+export type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
+export type CombinedFilterAction = `${FilterAction},${FilterAction}`;
 
 export interface GetRecordsRequestConfig {
     providerConfigKey: string;
@@ -127,7 +127,7 @@ export interface IntegrationWithCreds extends Integration {
     webhook_url?: string;
 }
 
-interface Timestamps {
+export interface Timestamps {
     created_at: string;
     updated_at: string;
 }
@@ -148,7 +148,7 @@ export interface Action extends Timestamps {
     name: string;
 }
 
-type SyncType = 'INCREMENTAL' | 'INITIAL';
+export type SyncType = 'INCREMENTAL' | 'INITIAL';
 
 export interface Integration {
     unique_key: string;
