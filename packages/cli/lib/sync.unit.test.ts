@@ -381,8 +381,7 @@ describe('generate function tests', () => {
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
         const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid`));
         expect(config).toBeDefined();
-        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid/object.json`), 'utf8');
-        expect(config).toEqual(JSON.parse(json));
+        expect(config).toMatchSnapshot();
     });
 
     it('v1 - should complain about commas at the end of declared types', async () => {
@@ -400,8 +399,7 @@ describe('generate function tests', () => {
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
         const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/valid`));
         expect(config).toBeDefined();
-        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v2/valid/object.json`), 'utf8');
-        expect(config).toEqual(JSON.parse(json));
+        expect(config).toMatchSnapshot();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', async () => {
