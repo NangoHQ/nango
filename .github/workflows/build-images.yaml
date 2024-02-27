@@ -95,29 +95,13 @@ jobs:
         steps:
             - name: Test server
               run: |
-                if curl -s http://localhost:3001/health | grep -q "{"result":"ok"}"; then
-                    exit 0
-                else
-                    exit 1
-                fi
+                exit $(curl -sS http://localhost:3001/health | grep -q "{.result.:.ok.}")
             - name: Test persist
               run: |
-                if curl -s http://localhost:3002/health | grep -q "{"status":"ok"}"; then
-                    exit 0
-                else
-                    exit 1
-                fi
+                exit $(curl -sS http://localhost:3002/health | grep -q "{.status.:.ok.}")
             - name: Test jobs
               run: |
-                if curl -s http://localhost:3003/health | grep -q "{"status":"ok"}"; then
-                    exit 0
-                else
-                    exit 1
-                fi
+                exit $(curl -sS http://localhost:3003/health | grep -q "{.status.:.ok.}")
             - name: Test runner
               run: |
-                if curl -s http://localhost:3006/health | grep -q "{"status":"ok"}"; then
-                    exit 0
-                else
-                    exit 1
-                fi
+                exit $(curl -sS http://localhost:3006/health | grep -q "{.status.:.ok.}")
