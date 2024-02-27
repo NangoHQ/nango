@@ -64,3 +64,38 @@ jobs:
             package: server
             run-cmd: build:enterprise
             tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-${{ github.event.pull_request.head.sha || github.sha }}
+
+    test-image-server:
+        services:
+            server:
+                image: nangohq/nango-server:${{ github.event.pull_request.head.sha || github.sha }}
+                env:
+                    SERVER_PORT: 3001
+                ports:
+                  - 3001:3001
+            persist:
+                image: nangohq/nango-persist:${{ github.event.pull_request.head.sha || github.sha }}
+                env:
+                    NANGO_PERSIST_PORT: 3002
+                ports:
+                  - 3002:3002
+            jobs:
+                image: nangohq/nango-jobs:${{ github.event.pull_request.head.sha || github.sha }}
+                env:
+                    NANGO_JOBS_PORT: 3003
+                ports:
+                  - 3003:3003
+            runner:
+                image: nangohq/nango-runner:${{ github.event.pull_request.head.sha || github.sha }}
+                ports:
+                  - 3006:3006
+        runs-on: ubuntu-latest
+        steps:
+            - name: Test server
+              run: |
+                curl -XGET http://localhost:3001/health
+                if curl -s http://localhost:3001/health | grep -q "{"result":"ok"}"; then
+                    exit 0
+                else
+                    exit 1
+                fi
