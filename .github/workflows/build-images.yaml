@@ -97,11 +97,6 @@ jobs:
                     SERVER_PORT: 3001
                 ports:
                   - 3001:3001
-                options: >-
-                  --health-cmd "curl -s --fail http://localhost:3001/health || exit 1"
-                  --health-interval 5s
-                  --health-timeout 5s
-                  --health-retries 5
             # persist:
             #     image: nangohq/nango-persist:${{ github.event.pull_request.head.sha || github.sha }}
             #     env:
