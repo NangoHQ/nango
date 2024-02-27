@@ -1030,6 +1030,7 @@ const res = await nango.patch({
             </ResponseField>
             <ResponseField name="retryOn" type="number[]">
                 Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
+            </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
                 The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
             </ResponseField>
