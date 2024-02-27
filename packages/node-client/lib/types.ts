@@ -51,6 +51,7 @@ export interface ProxyConfiguration {
     baseUrlOverride?: string;
     decompress?: boolean;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+    retryOn?: number[] | null;
 }
 
 type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';

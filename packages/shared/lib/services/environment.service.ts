@@ -198,13 +198,13 @@ class EnvironmentService {
     }
 
     async getAccountAndEnvironmentById(account_id: number, environment: string): Promise<{ account: Account | null; environment: Environment | null }> {
-        const account = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: account_id });
+        const account = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: account_id });
 
         if (account == null || account.length == 0 || account[0] == null) {
             return { account: null, environment: null };
         }
 
-        const environmentResult = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ account_id, name: environment });
+        const environmentResult = await db.knex.select('*').from<Environment>(TABLE).where({ account_id, name: environment });
 
         if (environmentResult == null || environmentResult.length == 0 || environmentResult[0] == null) {
             return { account: null, environment: null };
