@@ -40,5 +40,5 @@ jobs:
                 npm run i
                 npm run ${{ inputs.run-cmd }}
                 node scripts/flows.js
-                docker buildx build -f packages/${{ inputs.package }}/Dockerfile --platform linux/amd64 ${{ inputs.tags }} . --no-cache ${{ env.PUSH }}
+                docker buildx build -f packages/${{ inputs.package }}/Dockerfile --platform linux/amd64 ${{ inputs.tags }} . ${{ env.PUSH }}
 
