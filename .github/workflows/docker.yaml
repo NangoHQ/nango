@@ -11,6 +11,7 @@ concurrency:
     group: docker-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
+# Note: It's not reliable, this job only test already pushed images
 jobs:
     docker_check_job:
         if: github.ref == 'refs/heads/master'

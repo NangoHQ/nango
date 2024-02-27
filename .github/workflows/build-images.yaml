@@ -68,28 +68,57 @@ jobs:
     test-image-server:
         needs: [nango-server-staging, nango-persist, nango-jobs, nango-runner]
         services:
+            postgres:
+              image: postgres:15.5-alpine
+              env:
+                POSTGRES_PASSWORD: postgres
+              options: >-
+                --health-cmd pg_isready
+                --health-interval 10s
+                --health-timeout 5s
+                --health-retries 5
             server:
                 image: nangohq/nango-server:staging-${{ github.event.pull_request.head.sha || github.sha }}
                 env:
                     SERVER_PORT: 3001
                 ports:
                   - 3001:3001
+                options: >-
+                  --health-cmd "curl -s --fail http://localhost:3001/health || exit 1"
+                  --health-interval 5s
+                  --health-timeout 5s
+                  --health-retries 3
             persist:
                 image: nangohq/nango-persist:${{ github.event.pull_request.head.sha || github.sha }}
                 env:
                     NANGO_PERSIST_PORT: 3002
                 ports:
                   - 3002:3002
+                  options: >-
+                    --health-cmd "curl -s --fail http://localhost:3002/health || exit 1"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 3
             jobs:
                 image: nangohq/nango-jobs:${{ github.event.pull_request.head.sha || github.sha }}
                 env:
                     NANGO_JOBS_PORT: 3003
                 ports:
                   - 3003:3003
+                  options: >-
+                    --health-cmd "curl -s --fail http://localhost:3003/health || exit 1"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 3
             runner:
                 image: nangohq/nango-runner:${{ github.event.pull_request.head.sha || github.sha }}
                 ports:
                   - 3006:3006
+                  options: >-
+                    --health-cmd "curl -s --fail http://localhost:3006/health || exit 1"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 3
 
         runs-on: ubuntu-latest
         steps:
