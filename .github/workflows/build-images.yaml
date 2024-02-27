@@ -69,7 +69,7 @@ jobs:
         needs: [nango-server-staging, nango-persist, nango-jobs, nango-runner]
         services:
             server:
-                image: nangohq/nango-server:${{ github.event.pull_request.head.sha || github.sha }}
+                image: nangohq/nango-server:staging-${{ github.event.pull_request.head.sha || github.sha }}
                 env:
                     SERVER_PORT: 3001
                 ports:
