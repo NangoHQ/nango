@@ -94,8 +94,32 @@ jobs:
         steps:
             - name: Test server
               run: |
-                curl -XGET http://localhost:3001/health
-                if curl -s http://localhost:3001/health | grep -q "{"result":"ok"}"; then
+                curl -XGET http://server:3001/health
+                if curl -s http://server:3001/health | grep -q "{"result":"ok"}"; then
+                    exit 0
+                else
+                    exit 1
+                fi
+            - name: Test persist
+              run: |
+                curl -XGET http://persist:3001/health
+                if curl -s http://persist:3001/health | grep -q "{"status":"ok"}"; then
+                    exit 0
+                else
+                    exit 1
+                fi
+            - name: Test jobs
+              run: |
+                curl -XGET http://jobs:3001/health
+                if curl -s http://jobs:3001/health | grep -q "{"status":"ok"}"; then
+                    exit 0
+                else
+                    exit 1
+                fi
+            - name: Test runner
+              run: |
+                curl -XGET http://runner:3001/health
+                if curl -s http://runner:3001/health | grep -q "{"status":"ok"}"; then
                     exit 0
                 else
                     exit 1
