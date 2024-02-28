@@ -375,11 +375,11 @@ export async function deployPreBuilt(
 
         const model_schema = JSON.parse(model_schema_string);
 
-        if (input.name) {
+        if (typeof input !== 'string' && input?.name) {
             model_schema.push(input);
         }
 
-        const flowData = {
+        const flowData: SyncConfig = {
             created_at,
             sync_name,
             nango_config_id,
@@ -388,7 +388,7 @@ export async function deployPreBuilt(
             models,
             active: true,
             runs,
-            input: input.name || input,
+            input: typeof input !== 'string' ? String(input?.name) : input,
             model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id,
             deleted: false,
@@ -408,7 +408,7 @@ export async function deployPreBuilt(
             providerConfigKey: provider_config_key,
             ...flowData,
             last_deployed: created_at,
-            input,
+            input: typeof input !== 'string' ? (input as SyncModelSchema) : String(input),
             models: model_schema
         });
     }

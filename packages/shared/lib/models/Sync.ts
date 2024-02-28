@@ -101,7 +101,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     pre_built?: boolean;
     is_public?: boolean;
     endpoints?: NangoSyncEndpoint[];
-    input?: string;
+    input?: string | SyncModelSchema;
     sync_type?: SyncType | undefined;
     webhook_subscriptions?: string[];
 }
@@ -131,11 +131,11 @@ export interface SlimAction {
 
 export interface SyncDeploymentResult {
     name: string;
-    version: string;
+    version?: string;
     providerConfigKey: string;
     type: SyncConfigType;
     last_deployed?: Date;
-    input?: string;
+    input?: string | SyncModelSchema;
     models: string | string[];
     id?: number | undefined;
 
@@ -164,6 +164,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     model_schema: string;
+    input?: string | SyncModelSchema;
     endpoints?: NangoSyncEndpoint[];
 }
 
@@ -191,7 +192,6 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     };
     version?: string;
     track_deletes?: boolean;
-    input?: string;
     sync_type?: SyncType;
     webhookSubscriptions?: string[];
 }

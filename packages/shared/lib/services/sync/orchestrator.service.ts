@@ -82,7 +82,7 @@ export class Orchestrator {
                     createdSync as Sync,
                     syncConfig as ProviderConfig,
                     syncName,
-                    { ...sync, returns: sync.models },
+                    { ...sync, returns: sync.models, input: '' },
                     debug
                 );
             }
