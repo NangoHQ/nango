@@ -100,11 +100,11 @@ export async function deploy(
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 environment_id,
-                activity_log_id: activityLogId,
+                activity_log_id: activityLogId!,
                 timestamp: Date.now(),
                 content: `Failed to deploy`
             });
-            await updateSuccessActivityLog(activityLogId, false);
+            await updateSuccessActivityLog(activityLogId!, false);
             return { success, error, response: null };
         }
 
