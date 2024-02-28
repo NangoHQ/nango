@@ -324,11 +324,11 @@ export const tscWatch = async (debug = false) => {
         compileFile(filePath);
     });
 
+    const compiler = tsNode.create({
+        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+        compilerOptions: JSON.parse(tsconfig).compilerOptions
+    });
     function compileFile(filePath: string) {
-        const compiler = tsNode.create({
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
-        });
-
         try {
             const providerConfiguration = config?.find((config) =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
