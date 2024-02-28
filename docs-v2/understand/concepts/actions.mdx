@@ -11,7 +11,11 @@ Actions within Nango are designed to facilitate direct workflows with external A
 # Use Cases for Actions
 Actions shine in scenarios requiring two-way syncing or direct data manipulation. For instance, while syncs could be used to regularly import the latest contacts from Hubspot, actions enable the creation or modification of those contacts directly from your application. This capability ensures a seamless flow of information both to and from external services.
 
-# Execution Characteristics
+# Main Characteristics
+
+### Script-Driven 
+
+Actions differ significantly from proxies by executing predefined scripts rather than mere individual requests. This allows for complex workflows, involving intricate request orchestration and data transformations, to be executed seamlessly.
 
 ### Transient Execution
 
@@ -28,22 +32,21 @@ Once enabled, actions are accessible through specific endpoints, each with an au
 
 The outcomes of action executions, whether errors or successes, are directly relayed in the response to your trigger request. This immediate feedback loop empowers you to handle retries or further processing as needed.
 
-# Distinguishing Features from Proxies
-
-### Script-Driven 
-
-Actions differ significantly from proxies by executing predefined scripts rather than mere individual requests. This allows for complex workflows, involving intricate request orchestration and data transformations, to be executed seamlessly.
-
 ### Unified Modeling
 
-Actions support inputs and outputs that adhere to [unified models](/understand/concepts/api-unification), streamlining the integration process across different external APIs. This unification greatly simplifies your integration code, reducing complexity and minimizing potential errors.
+Actions support inputs and outputs that adhere to [unified models](/understand/concepts/api-unification), streamlining the integration process across different external APIs. 
+
+**Action vs. the Proxy**
+
+Actions handle more complex scenarios that require multiple requests or data transformations, while the [Proxy](/understand/concepts/proxy) works for individual API requests.
+
+<Tip>
+The Proxy is actually the default way to make API requests in integration scripts, including action scripts.
+</Tip>
 
 # Action Scripts
 Action executions are powered by [integration scripts](/understand/concepts/scripts) that encapsulate the logic for interfacing with external APIs. While Nango provides [script templates](understand/concepts/templates) for common use cases, there's also support for custom scripting to meet specific integration needs.
 
-# Conclusion
-Actions in Nango provide a robust framework for handling real-time, interactive workflows with external APIs. From two-way syncing to intricate data manipulations, actions offer the flexibility, immediacy, and precision needed to effectively integrate and automate external API interactions within your application. With the added benefits of unified modeling and script-driven logic, Nango actions are an essential tool for developers looking to streamline their application's external integrations.
+# Getting started with actions
 
-
-
-
+Check out the actions [step-by-step guide](/integrate/guides/perform-workflows-with-an-api) or refer to the reference ([API](/reference/api/action/trigger) / [SDK](/reference/sdks/node#actions)).

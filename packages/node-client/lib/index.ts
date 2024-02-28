@@ -24,6 +24,8 @@ import { validateProxyConfiguration, validateSyncRecordConfiguration } from './u
 export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
 
+export * from './types.js';
+
 interface NangoProps {
     host?: string;
     secretKey: string;
