@@ -12,7 +12,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import ActionModal from '../../components/ui/ActionModal';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
-import Info from '../../components/ui/Info'
+import Info from '../../components/ui/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import Models from './Models';
@@ -39,11 +39,11 @@ export default function ShowIntegration() {
     const deleteConnectionAPI = useDeleteConnectionAPI();
     const getSyncAPI = useGetSyncAPI();
 
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.cookieValue);
     const navigate = useNavigate();
     const location = useLocation();
     const { setVisible, bindings } = useModal();
-    const { setVisible: setErrorVisible, bindings: errorBindings } = useModal()
+    const { setVisible: setErrorVisible, bindings: errorBindings } = useModal();
     const { connectionId, providerConfigKey } = useParams();
 
     useEffect(() => {
@@ -69,10 +69,10 @@ export default function ShowIntegration() {
 We could not retrieve and/or refresh your access token due to the following error:
 \n\n${(await res.json()).error}
 `);
-            setConnection({
-                providerConfigKey,
-                connectionId
-            } as Connection);
+                setConnection({
+                    providerConfigKey,
+                    connectionId
+                } as Connection);
             }
         };
 
@@ -82,7 +82,7 @@ We could not retrieve and/or refresh your access token due to the following erro
         }
     }, [connectionId, providerConfigKey, getConnectionDetailsAPI, loaded, setLoaded]);
 
-       useEffect(() => {
+    useEffect(() => {
         if (!connectionId || !providerConfigKey) return;
 
         const getSyncs = async () => {
@@ -164,13 +164,18 @@ We could not retrieve and/or refresh your access token due to the following erro
             <Modal {...errorBindings} wrapClassName="!h-[600px] !w-[550px] !max-w-[550px] !bg-[#0E1014] no-border-modal">
                 <div className="flex justify-between text-sm">
                     <div>
-                        <Modal.Content className="overflow-scroll max-w-[550px] !text-sm text-white font-mono">
-                            {serverErrorMessage}
-                        </Modal.Content>
+                        <Modal.Content className="overflow-scroll max-w-[550px] !text-sm text-white font-mono">{serverErrorMessage}</Modal.Content>
                     </div>
                 </div>
-                <Modal.Action placeholder={null} passive className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]" onClick={() => setErrorVisible(false)}>
-                    <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
+                <Modal.Action
+                    placeholder={null}
+                    passive
+                    className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]"
+                    onClick={() => setErrorVisible(false)}
+                >
+                    <Button className="!text-text-light-gray" variant="zombieGray">
+                        Close
+                    </Button>
                 </Modal.Action>
             </Modal>
             <div className="mx-auto">
@@ -178,16 +183,17 @@ We could not retrieve and/or refresh your access token due to the following erro
                     <div className="flex">
                         <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
                             {connection?.provider && (
-                                <IntegrationLogo provider={connection?.provider} height={24} width={24} classNames="mr-2 cursor-pointer p-1 border border-border-gray rounded-xl" />
+                                <IntegrationLogo
+                                    provider={connection?.provider}
+                                    height={24}
+                                    width={24}
+                                    classNames="mr-2 cursor-pointer p-1 border border-border-gray rounded-xl"
+                                />
                             )}
                         </Link>
                         <div className="mt-3 ml-6">
-                            <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">
-                                Connection
-                            </span>
-                            <h2 className="text-left text-3xl font-semibold tracking-tight text-white">
-                                {connectionId}
-                            </h2>
+                            <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">Connection</span>
+                            <h2 className="text-left text-3xl font-semibold tracking-tight text-white">{connectionId}</h2>
                         </div>
                     </div>
                     <Button
@@ -195,10 +201,10 @@ We could not retrieve and/or refresh your access token due to the following erro
                         size="sm"
                         className="flex cursor-pointer text-gray-400 neutral-700 items-center"
                         onClick={() => {
-                            setVisible(true)
+                            setVisible(true);
                         }}
-                        >
-                        <TrashIcon  className="flex h-5 w-5" />
+                    >
+                        <TrashIcon className="flex h-5 w-5" />
                         <span className="px-1">Delete</span>
                     </Button>
                 </div>
@@ -206,15 +212,29 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             <section className="mt-14">
                 <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
-                    <li className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Models)}>Models</li>
-                    <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
+                    <li
+                        className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        onClick={() => setActiveTab(Tabs.Models)}
+                    >
+                        Models
+                    </li>
+                    <li
+                        className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        onClick={() => setActiveTab(Tabs.Authorization)}
+                    >
+                        Authorization
+                    </li>
                 </ul>
             </section>
 
             {serverErrorMessage && (
                 <div className="flex my-12">
                     <Info size={14} padding="px-4 py-1.5" color="red">
-                        There was an error refreshing the credentials <span onClick={() => setErrorVisible(true)} className="cursor-pointer text-white underline">(show details)</span>.
+                        There was an error refreshing the credentials{' '}
+                        <span onClick={() => setErrorVisible(true)} className="cursor-pointer text-white underline">
+                            (show details)
+                        </span>
+                        .
                     </Info>
                 </div>
             )}
@@ -228,9 +248,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                 )}
             </section>
             <Helmet>
-                <style>
-                    {'.no-border-modal footer { border-top: none !important; }'}
-                </style>
+                <style>{'.no-border-modal footer { border-top: none !important; }'}</style>
             </Helmet>
         </DashboardLayout>
     );

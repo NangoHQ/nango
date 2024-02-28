@@ -3,10 +3,9 @@ import { useSignout } from './user';
 import { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
 
 export async function fetcher(...args: Parameters<typeof fetch>) {
-  const response = await fetch(...args);
-  return response.json();
+    const response = await fetch(...args);
+    return response.json();
 }
-
 
 export function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
@@ -352,7 +351,16 @@ export function useGetIntegrationDetailsAPI() {
 export function useCreateIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string, custom?: Record<string, string>) => {
+    return async (
+        provider: string,
+        authMode: AuthModes,
+        providerConfigKey: string,
+        clientId: string,
+        clientSecret: string,
+        scopes: string,
+        app_link: string,
+        custom?: Record<string, string>
+    ) => {
         try {
             const options = {
                 method: 'POST',
@@ -411,7 +419,16 @@ export function useCreateEmptyIntegrationAPI() {
 export function useEditIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string, custom?: Record<string, string>) => {
+    return async (
+        provider: string,
+        authMode: AuthModes,
+        providerConfigKey: string,
+        clientId: string,
+        clientSecret: string,
+        scopes: string,
+        app_link: string,
+        custom?: Record<string, string>
+    ) => {
         try {
             const options = {
                 method: 'PUT',
@@ -627,15 +644,17 @@ export function useActivityAPI() {
     return async (limit: number, offset: number, status?: string, script?: string, integration?: string, connection?: string, date?: string) => {
         try {
             const res = await fetch(
-              `/api/v1/activity?limit=${limit}&offset=${offset}` +
-              `${status ? `&status=${status}` : ''}` +
-              `${script ? `&script=${script}` : ''}` +
-              `${integration ? `&integration=${integration}` : ''}` +
-              `${connection ? `&connection=${connection}` : ''}` +
-              `${date ? `&date=${date}` : ''}`, {
-              method: 'GET',
-              headers: getHeaders(),
-            });
+                `/api/v1/activity?limit=${limit}&offset=${offset}` +
+                    `${status ? `&status=${status}` : ''}` +
+                    `${script ? `&script=${script}` : ''}` +
+                    `${integration ? `&integration=${integration}` : ''}` +
+                    `${connection ? `&connection=${connection}` : ''}` +
+                    `${date ? `&date=${date}` : ''}`,
+                {
+                    method: 'GET',
+                    headers: getHeaders()
+                }
+            );
 
             return res;
         } catch (e) {
@@ -649,7 +668,7 @@ export function useGetSyncAPI() {
         try {
             const res = await fetch(`/api/v1/sync?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
-                headers: getHeaders(),
+                headers: getHeaders()
             });
 
             return res;
@@ -664,7 +683,7 @@ export function useGetHmacAPI() {
         try {
             const res = await fetch(`/api/v1/environment/hmac?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
-                headers: getHeaders(),
+                headers: getHeaders()
             });
 
             return res;
@@ -679,7 +698,7 @@ export function useGetAllSyncsAPI() {
         try {
             const res = await fetch(`/api/v1/syncs`, {
                 method: 'GET',
-                headers: getHeaders(),
+                headers: getHeaders()
             });
 
             return res;
@@ -702,7 +721,6 @@ export function useRunSyncAPI() {
         } catch (e) {
             requestErrorToast();
         }
-
     };
 }
 

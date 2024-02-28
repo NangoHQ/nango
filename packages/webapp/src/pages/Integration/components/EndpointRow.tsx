@@ -12,9 +12,8 @@ export interface EndpointRowProps {
 }
 
 export default function EndpointRow({ flow, endpoint, setSubTab, setFlow }: EndpointRowProps) {
-
     const routeToReference = () => {
-        setFlow(flow)
+        setFlow(flow);
         setSubTab(SubTabs.Reference);
     };
 
