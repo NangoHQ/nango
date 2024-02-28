@@ -4,18 +4,18 @@ const syncSchedules = '_nango_sync_schedules';
 const syncDataRecords = '_nango_sync_data_records';
 
 exports.up = async function (knex, _) {
-    await knex.schema.withSchema('nango').createTable(syncs, function (table) {
+    await knex.schema.createTable(syncs, function (table) {
         table.uuid('id').primary().notNullable();
         table.integer('nango_connection_id').unsigned().notNullable();
         table.string('name').notNullable();
         table.specificType('models', 'text ARRAY');
 
-        table.foreign('nango_connection_id').references('id').inTable('nango._nango_connections').onDelete('CASCADE');
+        table.foreign('nango_connection_id').references('id').inTable('_nango_connections').onDelete('CASCADE');
         table.timestamps(true, true);
     });
 
-    await knex.schema.withSchema('nango').alterTable(syncJobs, function (table) {
-        table.uuid('sync_id').references('id').inTable(`nango.${syncs}`).onDelete('CASCADE');
+    await knex.schema.alterTable(syncJobs, function (table) {
+        table.uuid('sync_id').references('id').inTable(syncs).onDelete('CASCADE');
         table.dropColumn('nango_connection_id');
         table.dropColumn('sync_name');
         table.dropColumn('models');
@@ -24,40 +24,40 @@ exports.up = async function (knex, _) {
         table.jsonb('result').defaultTo('{}');
     });
 
-    await knex.schema.withSchema('nango').alterTable(syncSchedules, function (table) {
-        table.uuid('sync_id').references('id').inTable(`nango.${syncs}`).onDelete('CASCADE');
+    await knex.schema.alterTable(syncSchedules, function (table) {
+        table.uuid('sync_id').references('id').inTable(syncs).onDelete('CASCADE');
         table.string('frequency');
         table.dropColumn('sync_job_id');
         table.dropColumn('nango_connection_id');
     });
 
-    await knex.schema.withSchema('nango').alterTable(syncDataRecords, function (table) {
-        table.uuid('sync_id').references('id').inTable(`nango.${syncs}`).onDelete('CASCADE');
+    await knex.schema.alterTable(syncDataRecords, function (table) {
+        table.uuid('sync_id').references('id').inTable(syncs).onDelete('CASCADE');
     });
 };
 
 exports.down = async function (knex, _) {
-    await knex.schema.withSchema('nango').alterTable(syncJobs, function (table) {
+    await knex.schema.alterTable(syncJobs, function (table) {
         table.dropColumn('sync_id');
         table.integer('nango_connection_id').unsigned().notNullable();
         table.string('sync_name').notNullable();
         table.specificType('models', 'text ARRAY');
         table.string('frequency');
-        table.foreign('nango_connection_id').references('id').inTable('nango._nango_connections').onDelete('CASCADE');
+        table.foreign('nango_connection_id').references('id').inTable('_nango_connections').onDelete('CASCADE');
         table.dropColumn('result');
     });
 
-    await knex.schema.withSchema('nango').alterTable(syncSchedules, function (table) {
+    await knex.schema.alterTable(syncSchedules, function (table) {
         table.dropColumn('sync_id');
         table.integer('nango_connection_id').unsigned().notNullable();
         table.dropColumn('frequency');
-        table.integer('sync_job_id').references('id').inTable(`nango.${syncJobs}`).onDelete('CASCADE');
-        table.foreign('nango_connection_id').references('id').inTable('nango._nango_connections').onDelete('CASCADE');
+        table.integer('sync_job_id').references('id').inTable(syncJobs).onDelete('CASCADE');
+        table.foreign('nango_connection_id').references('id').inTable('_nango_connections').onDelete('CASCADE');
     });
 
-    await knex.schema.withSchema('nango').alterTable(syncDataRecords, function (table) {
+    await knex.schema.alterTable(syncDataRecords, function (table) {
         table.dropColumn('sync_id');
     });
 
-    await knex.schema.withSchema('nango').dropTable(syncs);
+    await knex.schema.dropTable(syncs);
 };

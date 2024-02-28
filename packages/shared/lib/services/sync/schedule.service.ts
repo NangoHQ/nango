@@ -9,7 +9,7 @@ import { resultOk, type Result, resultErr } from '../../utils/result.js';
 const TABLE = dbNamespace + 'sync_schedules';
 
 export const createSchedule = async (sync_id: string, frequency: string, offset: number, status: ScheduleStatus, schedule_id: string): Promise<void> => {
-    await db.knex.withSchema(db.schema()).from<SyncSchedule>(TABLE).insert({
+    await db.knex.from<SyncSchedule>(TABLE).insert({
         sync_id,
         status,
         schedule_id,

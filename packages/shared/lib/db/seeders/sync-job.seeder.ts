@@ -9,5 +9,5 @@ export const createSyncJobSeeds = async (connectionId = 1): Promise<Job> => {
 };
 
 export const deleteAllSyncJobSeeds = async (): Promise<void> => {
-    await db.knex.raw('TRUNCATE TABLE nango._nango_sync_jobs CASCADE');
+    await db.knex.raw('TRUNCATE TABLE _nango_sync_jobs CASCADE');
 };
