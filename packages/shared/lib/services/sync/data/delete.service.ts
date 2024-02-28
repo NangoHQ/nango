@@ -135,9 +135,9 @@ export const takeSnapshot = async (nangoConnectionId: number, model: string): Pr
 
         const result = await db.knex.raw(
             `
-INSERT INTO nango.${DELETE_RECORDS_TABLE} (${columns.join(', ')})
+INSERT INTO ${DELETE_RECORDS_TABLE} (${columns.join(', ')})
 SELECT ${columns.join(', ')}
-FROM nango.${RECORDS_TABLE}
+FROM ${RECORDS_TABLE}
 WHERE external_is_deleted = false AND
 nango_connection_id = ? AND model = ?
     `,

@@ -7,10 +7,10 @@ const ENVIRONMENTS_TABLE = '_nango_environments';
 const ACCOUNTS_TABLE = '_nango_accounts';
 
 exports.up = async function (knex, _) {
-    const existingAccounts = await knex.withSchema('nango').table(ACCOUNTS_TABLE).select('*');
+    const existingAccounts = await knex.table(ACCOUNTS_TABLE).select('*');
 
     for (const account of existingAccounts) {
-        await knex.withSchema('nango').table(ENVIRONMENTS_TABLE).insert({
+        await knex.table(ENVIRONMENTS_TABLE).insert({
             account_id: account.id,
             name: 'prod',
             secret_key: account.secret_key,
@@ -21,13 +21,13 @@ exports.up = async function (knex, _) {
             webhook_url: account.webhook_url
         });
 
-        await knex.withSchema('nango').table(ENVIRONMENTS_TABLE).insert({
+        await knex.table(ENVIRONMENTS_TABLE).insert({
             account_id: account.id,
             name: 'dev'
         });
     }
 
-    return knex.schema.withSchema('nango').alterTable(ACCOUNTS_TABLE, function (table) {
+    return knex.schema.alterTable(ACCOUNTS_TABLE, function (table) {
         table.dropColumn('secret_key');
         table.dropColumn('public_key');
         table.dropColumn('secret_key_iv');
@@ -38,9 +38,9 @@ exports.up = async function (knex, _) {
 };
 
 exports.down = async function (knex, _) {
-    await knex.withSchema('nango').table('_nango_environments').truncate();
+    await knex.table('_nango_environments').truncate();
 
-    return knex.schema.withSchema('nango').alterTable(ACCOUNTS_TABLE, function (table) {
+    return knex.schema.alterTable(ACCOUNTS_TABLE, function (table) {
         table.uuid('secret_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();
         table.uuid('public_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();
         table.string('secret_key_iv');
