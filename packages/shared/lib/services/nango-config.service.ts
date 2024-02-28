@@ -101,7 +101,10 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
         return null;
     }
 
-    const modelData = config.models[modelName] || config.models[`${modelName.slice(0, -1)}`];
+    // if it is an array of models, we still need to be able to recognize it
+    const strippedModelName = modelName.replace(/[\W_]+/g, '');
+
+    const modelData = config.models[strippedModelName];
 
     for (const fieldName in modelData) {
         const fieldType = modelData[fieldName];

@@ -277,7 +277,7 @@ export async function deployPreBuilt(
 
         providerConfigKeys.push(provider_config_key);
 
-        const { type, models, auto_start, runs, model_schema, is_public, attributes = {}, metadata = {} } = config;
+        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {}, input } = config;
         const sync_name = config.name || config.syncName;
 
         if (type === SyncConfigType.SYNC && !runs) {
@@ -373,6 +373,12 @@ export async function deployPreBuilt(
 
         const created_at = new Date();
 
+        const model_schema = JSON.parse(model_schema_string);
+
+        if (input.name) {
+            model_schema.push(input);
+        }
+
         const flowData = {
             created_at,
             sync_name,
@@ -382,7 +388,8 @@ export async function deployPreBuilt(
             models,
             active: true,
             runs,
-            model_schema: model_schema as unknown as SyncModelSchema[],
+            input: input.name || input,
+            model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id,
             deleted: false,
             track_deletes: false,
@@ -401,7 +408,8 @@ export async function deployPreBuilt(
             providerConfigKey: provider_config_key,
             ...flowData,
             last_deployed: created_at,
-            models: JSON.parse(model_schema)
+            input,
+            models: model_schema
         });
     }
 

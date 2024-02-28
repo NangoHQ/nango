@@ -326,7 +326,7 @@ export function generateResponseModel(models: NangoSyncModel[], output: string, 
     const model = models.find((model) => model.name === output);
     const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
     if (!isSync) {
-        return jsonResponse;
+        return model?.name?.includes('[]') ? [jsonResponse] : jsonResponse;
     }
     const metadata = {
         _nango_metadata: {
