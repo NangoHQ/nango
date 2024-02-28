@@ -4,6 +4,56 @@ sidebarTitle: 'Environments'
 description: 'Learn more about environments.'
 ---
 
+Nango lets you deploy integrations to multiple cloud environments to ensure that you can develop & test integrations safely, before pushing to production. 
+
+On the Nango UI, you can switch between environments in the left nav bar. 
+
+These environment are shared among team members of your workspace. Edits to environment settings, connections, integrations, scripts, etc. will affect all team members. We are planning to soon add a personal development environment which allows to deploy integrations without affecting team members. In the meantime, you should use the CLI `dryrun` method to test integrations locally (cf. documentation). 
+
+Most of Nango's settings are specific to an environment: 
+- Public & secret keys to interact with the Nango API & SDKs
+- Callback URL to complete OAuth flows
+- Webhook URL to send webhooks form Nango
+- Environment variables
+- etc.
+
+By default, you get two Nango environments (Dev & Prod) but you can ask us to create more environments for you on the community (cf. community link).
+
+When developing Nango custom integration scripts with the CLI, you should add the secret keys for your various environments to your `.env` file (cf. CLI docs). This will allow you to deploy your integrations to these environments, fetch connection credentials from them for testing, etc.
+
+
+
+-----
+
+# Overview
+
+Nango supports multiple cloud environments, enabling safe development and testing of integrations before they go live. This system ensures that your work can move smoothly from development to production.
+
+# Shared workspace environments
+
+All environments within a workspace are shared among team members. Any changes you make—whether to environment settings, connections, integrations, or scripts—will reflect across your team. 
+
 <Info>
-The docs recently underwent a makeover, leaving this page empty. We are working hard to fill in all the missing pages within the next two weeks. Meanwhile, ask any questions on the [community](https://nango.dev/slack).
+We're working on introducing personal development environments to facilitate individual testing and development. Until then, the [dry run feature](/customize/guides/create-a-custom-integration#test-your-scripts-locally) in the CLI is your go-to for local integration testing.
 </Info>
+
+Access different environments directly from the Nango UI. The left navigation bar lets you easily switch between them.
+
+# Environment-specific settings
+
+Each environment in Nango comes with its own set of configurations:
+
+- API & SDK Keys: Unique public and secret keys for interacting with the Nango API and SDKs.
+- Callback URL: For completing OAuth authentication flows.
+- Webhook URL: To receive webhooks from Nango.
+- Environment Variables: For custom configuration needs.
+
+These environment-specific settings ensure your integrations can operate under different conditions without conflict.
+
+# Default and additional environments
+
+By default, Nango provides two environments: Development (Dev) and Production (Prod). If your project requires more nuanced staging environments, you're welcome to request additional ones via our community platform.
+
+# Working with the CLI
+
+For developers crafting custom integration scripts, managing your environment's secret keys in a .env file is crucial. This practice allows you to seamlessly deploy integrations across environments and test them with actual connection credentials.
