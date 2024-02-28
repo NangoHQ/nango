@@ -169,7 +169,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]" onClick={() => setErrorVisible(false)}>
+                <Modal.Action placeholder={null} passive className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]" onClick={() => setErrorVisible(false)}>
                     <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
                 </Modal.Action>
             </Modal>

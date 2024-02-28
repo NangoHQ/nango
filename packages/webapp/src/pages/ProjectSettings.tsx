@@ -394,8 +394,8 @@ export default function ProjectSettings() {
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!text-lg" onClick={() => setVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey()}>Activate</Modal.Action>
+                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setVisible(false)}>Cancel</Modal.Action>
+                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey()}>Activate</Modal.Action>
             </Modal>
             <Modal {...secretBindings} wrapClassName="!w-max overflow-visible">
                 <div className="flex justify-between">
@@ -411,8 +411,8 @@ export default function ProjectSettings() {
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!text-lg" onClick={() => setSecretVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>Activate</Modal.Action>
+                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setSecretVisible(false)}>Cancel</Modal.Action>
+                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>Activate</Modal.Action>
             </Modal>
             {secretKey && (
                 <div className="h-full mb-20">

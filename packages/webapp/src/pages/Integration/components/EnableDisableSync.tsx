@@ -78,9 +78,7 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
             const payload = await res?.json();
 
             if (payload && payload[0] && setFlow) {
-                console.log(typeof payload)
                 const newFlow = payload[0];
-                console.log(newFlow);
                 setFlow(newFlow as Flow);
             }
             reload();

@@ -34,7 +34,7 @@ class OAuthSessionService {
     }
 
     private queryBuilder() {
-        return db.knex.withSchema(db.schema()).select('*').from<OAuthSession>('_nango_oauth_sessions');
+        return db.knex.select('*').from<OAuthSession>('_nango_oauth_sessions');
     }
 }
 
