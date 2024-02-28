@@ -335,7 +335,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!flex !justify-end !text-sm !bg-black !border-0 !h-[100px]" onClick={() => setVisible(false)}>
+                <Modal.Action placeholder={null} passive className="!flex !justify-end !text-sm !bg-black !border-0 !h-[100px]" onClick={() => setVisible(false)}>
                     <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
                 </Modal.Action>
             </Modal>

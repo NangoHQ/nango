@@ -1,13 +1,32 @@
 {
     "files": [],
     "references": [
-        { "path": "packages/node-client" },
-        { "path": "packages/shared" },
-        { "path": "packages/cli" },
-        { "path": "packages/server" },
-        { "path": "packages/frontend" },
-        { "path": "packages/runner" },
-        { "path": "packages/jobs" },
-        { "path": "packages/persist" }
+        {
+            "path": "packages/cli"
+        },
+        {
+            "path": "packages/frontend"
+        },
+        {
+            "path": "packages/jobs"
+        },
+        {
+            "path": "packages/node-client"
+        },
+        {
+            "path": "packages/persist"
+        },
+        {
+            "path": "packages/runner"
+        },
+        {
+            "path": "packages/server"
+        },
+        {
+            "path": "packages/shared"
+        },
+        {
+            "path": "packages/webapp"
+        }
     ]
 }
