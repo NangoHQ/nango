@@ -169,8 +169,8 @@ export default function AccountSettings() {
                 <Modal.Content>
                   <p>This action cannot be undone, are you sure?</p>
                 </Modal.Content>
-                <Modal.Action passive onClick={() => cancelSuspendMember()}>Cancel</Modal.Action>
-                <Modal.Action onClick={() => confirmSuspendMember()}>Submit</Modal.Action>
+                <Modal.Action placeholder={null} passive onClick={() => cancelSuspendMember()}>Cancel</Modal.Action>
+                <Modal.Action placeholder={null} onClick={() => confirmSuspendMember()}>Submit</Modal.Action>
             </Modal>
             <Modal {...inviteBindings}>
                 <Modal.Title>Invite Member</Modal.Title>
@@ -181,8 +181,8 @@ export default function AccountSettings() {
                         <button type="submit" className="hidden" />
                     </form>
                 </Modal.Content>
-                <Modal.Action passive onClick={() => setInviteVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action onClick={handleSubmit}>Submit</Modal.Action>
+                <Modal.Action placeholder={null} passive onClick={() => setInviteVisible(false)}>Cancel</Modal.Action>
+                <Modal.Action placeholder={null} onClick={handleSubmit}>Submit</Modal.Action>
             </Modal>
             <div className="h-full mb-20">
                 <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Account Settings</h2>

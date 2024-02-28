@@ -13,7 +13,7 @@ git clone https://github.com/NangoHQ/nango.git
 Install the project
 
 ```sh
-npm run install:all
+npm i
 ```
 
 Set your envs
