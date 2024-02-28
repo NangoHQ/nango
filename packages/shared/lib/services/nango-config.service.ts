@@ -102,7 +102,7 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
     }
 
     // if it is an array of models, we still need to be able to recognize it
-    const strippedModelName = modelName.replace(/[\W_]+/g, '');
+    const strippedModelName = modelName.replace(/\[\]/g, '');
 
     const modelData = config.models[strippedModelName];
 
