@@ -97,6 +97,14 @@ export async function deploy(
         );
 
         if (!success || !response) {
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                environment_id,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `Failed to deploy`
+            });
+            await updateSuccessActivityLog(activityLogId, false);
             return { success, error, response: null };
         }
 
@@ -548,12 +556,25 @@ async function compileDeployInfo(
     } = flow;
     if (type === SyncConfigType.SYNC && !runs) {
         const error = new NangoError('missing_required_fields_on_deploy');
-
+        await createActivityLogMessage({
+            level: 'error',
+            environment_id,
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `${error}`
+        });
         return { success: false, error, response: null };
     }
 
     if (!syncName || !providerConfigKey || !fileBody) {
         const error = new NangoError('missing_required_fields_on_deploy');
+        await createActivityLogMessage({
+            level: 'error',
+            environment_id,
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `${error}`
+        });
 
         return { success: false, error, response: null };
     }
@@ -562,6 +583,13 @@ async function compileDeployInfo(
 
     if (!config) {
         const error = new NangoError('unknown_provider_config', { providerConfigKey });
+        await createActivityLogMessage({
+            level: 'error',
+            environment_id,
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `${error}`
+        });
 
         return { success: false, error, response: null };
     }
@@ -631,7 +659,7 @@ async function compileDeployInfo(
     if (!file_location) {
         await updateSuccessActivityLog(activityLogId as number, false);
 
-        await createActivityLogMessageAndEnd({
+        await createActivityLogMessage({
             level: 'error',
             environment_id,
             activity_log_id: activityLogId as number,
