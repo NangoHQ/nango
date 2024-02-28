@@ -313,6 +313,7 @@
                         "integrations/all/aircall",
                         "integrations/all/airtable",
                         "integrations/all/amazon",
+                        "integrations/all/anrok",
                         "integrations/all/amplitude",
                         "integrations/all/apollo",
                         "integrations/all/apple-app-store",

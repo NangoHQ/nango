@@ -77,6 +77,17 @@ amazon:
     proxy:
         base_url: https://api.amazon.com
     docs: https://docs.nango.dev/integrations/all/amazon
+anrok:
+    categories:
+        - legal
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anrok.com
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/anrok
 aws:
     categories:
         - dev-tools
