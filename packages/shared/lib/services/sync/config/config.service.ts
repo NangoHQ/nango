@@ -143,7 +143,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             return null;
         }
     } else {
-        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id as number, syncName, nangoConnection.provider_config_key as string, isAction);
+        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id, syncName, nangoConnection.provider_config_key, isAction);
         if (!syncConfigs) {
             return null;
         }
@@ -155,7 +155,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
 
     const nangoConfig: NangoConfigV1 = {
         integrations: {
-            [nangoConnection.provider_config_key as string]: {}
+            [nangoConnection.provider_config_key]: {}
         },
         models: {}
     };

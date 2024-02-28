@@ -165,7 +165,7 @@ class WebhookService {
 
             const response = await backOff(
                 () => {
-                    return axios.post(webhookUrl as string, body, { headers });
+                    return axios.post(webhookUrl, body, { headers });
                 },
                 { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
             );

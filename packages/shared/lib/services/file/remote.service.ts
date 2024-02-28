@@ -271,8 +271,8 @@ class RemoteFileService {
 
         archive.pipe(res);
 
-        archive.append(nangoYaml as Readable, { name: nangoConfigFile });
-        archive.append(tsFile as Readable, { name: `${integrationName}.ts` });
+        archive.append(nangoYaml, { name: nangoConfigFile });
+        archive.append(tsFile, { name: `${integrationName}.ts` });
 
         await archive.finalize();
     }

@@ -287,7 +287,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey as string
+            'Provider-Config-Key': providerConfigKey
         };
 
         return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
@@ -309,7 +309,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey as string
+            'Provider-Config-Key': providerConfigKey
         };
 
         return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });

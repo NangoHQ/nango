@@ -62,7 +62,7 @@ export const formatDataRecords = (
             }
         }
 
-        const external_id = record['id'] as string;
+        const external_id = record['id'];
         formattedRecords[i] = {
             id: uuid.v4(),
             json: record,

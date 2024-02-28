@@ -112,7 +112,7 @@ class FlowController {
             const [firstConfig] = config;
             let providerLookup;
             if (firstConfig?.providerConfigKey) {
-                providerLookup = await configService.getConfigIdByProviderConfigKey(firstConfig?.providerConfigKey as string, environmentId);
+                providerLookup = await configService.getConfigIdByProviderConfigKey(firstConfig?.providerConfigKey, environmentId);
             } else {
                 providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
             }
@@ -267,7 +267,7 @@ class FlowController {
             const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
             const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === provider);
 
-            const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey as string);
+            const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
             const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
 
             if (availableFlows && enabledFlows && unEnabledFlows) {
@@ -311,8 +311,8 @@ class FlowController {
             }
 
             const flow = flowService.getSingleFlowAsStandardConfig(flowName);
-            const provider = await configService.getProviderName(providerConfigKey as string);
-            const flowConfig = await getConfigWithEndpointsByProviderConfigKeyAndName(environment.id, providerConfigKey, flowName as string);
+            const provider = await configService.getProviderName(providerConfigKey);
+            const flowConfig = await getConfigWithEndpointsByProviderConfigKeyAndName(environment.id, providerConfigKey, flowName);
 
             res.send({ flowConfig, unEnabledFlow: flow, provider });
         } catch (e) {

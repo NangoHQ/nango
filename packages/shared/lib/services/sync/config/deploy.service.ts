@@ -100,7 +100,7 @@ export async function deploy(
             return { success, error, response: null };
         }
 
-        flowsWithVersions = response as FlowWithVersion[];
+        flowsWithVersions = response;
     }
 
     if (insertData.length === 0) {
@@ -364,7 +364,7 @@ export async function deployPreBuilt(
             }
         }
 
-        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, nango_config_id as number, sync_name);
+        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, nango_config_id, sync_name);
 
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
@@ -576,7 +576,7 @@ async function compileDeployInfo(
             await createActivityLogMessage({
                 level: 'debug',
                 environment_id,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `A previous sync config was found for ${syncName} with version ${previousSyncAndActionConfig.version}`
             });
@@ -591,7 +591,7 @@ async function compileDeployInfo(
                     syncConfig?.frequency || runs,
                     syncName,
                     environment_id,
-                    activityLogId as number
+                    activityLogId
                 );
 
                 if (!success) {
@@ -605,7 +605,7 @@ async function compileDeployInfo(
 
     const jsFile = typeof fileBody === 'string' ? fileBody : fileBody?.js;
     const file_location = (await remoteFileService.upload(
-        jsFile as string,
+        jsFile,
         `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
         environment_id
     )) as string;
@@ -629,12 +629,12 @@ async function compileDeployInfo(
     });
 
     if (!file_location) {
-        await updateSuccessActivityLog(activityLogId as number, false);
+        await updateSuccessActivityLog(activityLogId, false);
 
         await createActivityLogMessageAndEnd({
             level: 'error',
             environment_id,
-            activity_log_id: activityLogId as number,
+            activity_log_id: activityLogId,
             timestamp: Date.now(),
             content: `There was an error uploading the sync file ${syncName}-v${version}.js`
         });
@@ -653,7 +653,7 @@ async function compileDeployInfo(
             await createActivityLogMessage({
                 level: 'debug',
                 environment_id,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Marking ${ids.length} old sync configs as inactive for ${syncName} with version ${version} as the active sync config`
             });

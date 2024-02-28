@@ -14,7 +14,7 @@ const mockRes = ({ status }: { status: number }) => {
     mock.status = () => status;
     mock.set = vi.fn();
     mock.send = vi.fn();
-    return mock as any;
+    return mock;
 };
 
 class MockRedis {

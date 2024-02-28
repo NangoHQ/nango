@@ -114,7 +114,7 @@ class AuthController {
 
             const salt = crypto.randomBytes(16).toString('base64');
             const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
-            const user = await userService.createUser(email, name, hashedPassword, salt, account!.id);
+            const user = await userService.createUser(email, name, hashedPassword, salt, account.id);
 
             if (user == null) {
                 throw new NangoError('user_creation_failure');
@@ -139,10 +139,10 @@ class AuthController {
                 }
 
                 const webUser: WebUser = {
-                    id: user!.id,
-                    accountId: user!.account_id,
-                    email: user!.email,
-                    name: user!.name
+                    id: user.id,
+                    accountId: user.account_id,
+                    email: user.email,
+                    name: user.name
                 };
                 res.status(200).send({ user: webUser });
             });

@@ -2,7 +2,6 @@ import braintree from 'braintree';
 import {
     Config as ProviderConfig,
     Connection,
-    OAuth2Credentials,
     AuthModes as ProviderAuthModes,
     AuthorizationTokenResponse,
     RefreshTokenResponse,
@@ -63,7 +62,7 @@ class ProviderClient {
             throw new NangoError('wrong_credentials_type');
         }
 
-        const credentials = connection.credentials as OAuth2Credentials;
+        const credentials = connection.credentials;
 
         if (config.provider !== 'facebook' && !credentials.refresh_token) {
             throw new NangoError('missing_refresh_token');
@@ -97,8 +96,8 @@ class ProviderClient {
             throw new NangoError('wrong_credentials_type');
         }
 
-        const credentials = connection.credentials as OAuth2Credentials;
-        const oauthConnection = connection as Connection;
+        const credentials = connection.credentials;
+        const oauthConnection = connection;
 
         switch (config.provider) {
             case 'salesforce':

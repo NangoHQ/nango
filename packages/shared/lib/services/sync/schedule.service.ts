@@ -50,7 +50,7 @@ export const deleteScheduleForSync = async (sync_id: string, environmentId: numb
     const schedule = await getSchedule(sync_id);
 
     if (schedule && syncClient) {
-        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string, environmentId);
+        await syncClient.deleteSyncSchedule(schedule?.schedule_id, environmentId);
     }
 };
 

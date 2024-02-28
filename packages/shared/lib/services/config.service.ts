@@ -52,7 +52,7 @@ class ConfigService {
                     let hasOverrides = false;
                     let templateOverrides;
                     if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
-                        const { alias, ...overrides } = entry as ProviderTemplateAlias;
+                        const { alias, ...overrides } = entry;
                         hasOverrides = true;
                         templateOverrides = overrides;
                     }

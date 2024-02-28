@@ -63,7 +63,7 @@ export class Orchestrator {
                 await createActivityLogMessage({
                     level: 'debug',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
@@ -90,7 +90,7 @@ export class Orchestrator {
                 await createActivityLogMessage({
                     level: 'debug',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
@@ -136,8 +136,8 @@ export class Orchestrator {
     }
 
     public async deleteSync(syncId: string, environmentId: number) {
-        await deleteScheduleForSync(syncId as string, environmentId);
-        await deleteSync(syncId as string);
+        await deleteScheduleForSync(syncId, environmentId);
+        await deleteSync(syncId);
     }
 
     public async deleteSyncRelatedObjects(syncId: string) {
@@ -153,7 +153,7 @@ export class Orchestrator {
             return;
         }
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string, connection.environment_id as number);
+            await this.deleteSync(sync.id as string, connection.environment_id);
         }
     }
 
@@ -177,7 +177,7 @@ export class Orchestrator {
         connectionId?: string
     ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
-        const provider = await configService.getProviderName(providerConfigKey as string);
+        const provider = await configService.getProviderName(providerConfigKey);
 
         const log = {
             level: 'info' as LogLevel,
@@ -188,7 +188,7 @@ export class Orchestrator {
             timestamp: Date.now(),
             connection_id: connectionId || '',
             provider,
-            provider_config_key: providerConfigKey as string,
+            provider_config_key: providerConfigKey,
             environment_id: environmentId
         };
         const activityLogId = await createActivityLog(log);
@@ -202,11 +202,7 @@ export class Orchestrator {
         }
 
         if (connectionId) {
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success || !connection) {
                 return { success: false, error, response: false };
@@ -234,8 +230,8 @@ export class Orchestrator {
                     command,
                     activityLogId,
                     environmentId,
-                    providerConfigKey as string,
-                    connectionId as string,
+                    providerConfigKey,
+                    connectionId,
                     syncName,
                     connection.id
                 );
@@ -274,7 +270,7 @@ export class Orchestrator {
                     activityLogId,
                     environmentId,
                     providerConfigKey,
-                    connection.connection_id as string,
+                    connection.connection_id,
                     sync.name,
                     connection.id
                 );
@@ -307,7 +303,7 @@ export class Orchestrator {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
         if (connectionId) {
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success) {
                 return { success: false, error, response: null };
