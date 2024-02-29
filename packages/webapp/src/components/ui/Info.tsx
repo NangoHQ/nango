@@ -8,7 +8,7 @@ interface InfoProps {
     children: React.ReactNode;
     color?: 'orange' | 'blue' | 'red';
     classNames?: string;
-};
+}
 
 export default function Info({ children, size, padding, verticallyCenter = true, classNames = '', color = 'blue' }: InfoProps) {
     const iconClasses = color === 'blue' ? 'stroke-blue-400' : color === 'red' ? 'stroke-red-500' : 'stroke-amber-500';
@@ -17,9 +17,10 @@ export default function Info({ children, size, padding, verticallyCenter = true,
     const bgOpacity = color === 'blue' ? '' : color === 'red' ? '' : 'bg-opacity-20';
     const textColor = color === 'blue' ? 'text-[#C3E5FA]' : color === 'red' ? 'text-white' : 'text-white';
 
-
     return (
-        <div className={`flex ${verticallyCenter ? 'items-center' : ''} ${bgOpacity} grow ${classNames} ${padding ? padding : 'p-4'} ${background} ${border} rounded`}>
+        <div
+            className={`flex ${verticallyCenter ? 'items-center' : ''} ${bgOpacity} grow ${classNames} ${padding ? padding : 'p-4'} ${background} ${border} rounded`}
+        >
             <InfoIcon size={`${size || 36}`} className={`mr-3 ${verticallyCenter ? '' : 'mt-0.5'} ${iconClasses}`}></InfoIcon>
             <span className={textColor}>{children}</span>
         </div>

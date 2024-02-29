@@ -24,8 +24,8 @@ export default function AccountSettings() {
     const editAccountNameAPI = useEditAccountNameAPI();
 
     const formRef = useRef<HTMLFormElement>(null);
-    const { setVisible, bindings } = useModal()
-    const { setVisible: setInviteVisible, bindings: inviteBindings } = useModal()
+    const { setVisible, bindings } = useModal();
+    const { setVisible: setInviteVisible, bindings: inviteBindings } = useModal();
 
     useEffect(() => {
         const getAccount = async () => {
@@ -85,8 +85,8 @@ export default function AccountSettings() {
         const res = await fetch(`/api/v1/users/${pendingSuspendMember.id}/suspend`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-            },
+                'Content-Type': 'application/json'
+            }
         });
 
         setVisible(false);
@@ -108,14 +108,13 @@ export default function AccountSettings() {
         const res = await fetch('/api/v1/users/invite', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 name: target.name.value,
-                email: target.email.value,
-            }),
+                email: target.email.value
+            })
         });
-
 
         if (res?.status === 200) {
             toast.success('Member invited!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -151,9 +150,9 @@ export default function AccountSettings() {
         const res = await fetch('/api/v1/account/admin/switch', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(payload),
+            body: JSON.stringify(payload)
         });
 
         if (res?.status === 200) {
@@ -161,16 +160,19 @@ export default function AccountSettings() {
         }
     };
 
-
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.AccountSettings}>
             <Modal {...bindings}>
                 <Modal.Title>Suspend Member</Modal.Title>
                 <Modal.Content>
-                  <p>This action cannot be undone, are you sure?</p>
+                    <p>This action cannot be undone, are you sure?</p>
                 </Modal.Content>
-                <Modal.Action placeholder={null} passive onClick={() => cancelSuspendMember()}>Cancel</Modal.Action>
-                <Modal.Action placeholder={null} onClick={() => confirmSuspendMember()}>Submit</Modal.Action>
+                <Modal.Action placeholder={null} passive onClick={() => cancelSuspendMember()}>
+                    Cancel
+                </Modal.Action>
+                <Modal.Action placeholder={null} onClick={() => confirmSuspendMember()}>
+                    Submit
+                </Modal.Action>
             </Modal>
             <Modal {...inviteBindings}>
                 <Modal.Title>Invite Member</Modal.Title>
@@ -181,8 +183,12 @@ export default function AccountSettings() {
                         <button type="submit" className="hidden" />
                     </form>
                 </Modal.Content>
-                <Modal.Action placeholder={null} passive onClick={() => setInviteVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action placeholder={null} onClick={handleSubmit}>Submit</Modal.Action>
+                <Modal.Action placeholder={null} passive onClick={() => setInviteVisible(false)}>
+                    Cancel
+                </Modal.Action>
+                <Modal.Action placeholder={null} onClick={handleSubmit}>
+                    Submit
+                </Modal.Action>
             </Modal>
             <div className="h-full mb-20">
                 <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Account Settings</h2>
@@ -244,51 +250,66 @@ export default function AccountSettings() {
                                 </label>
                                 <div className="flex flex-col mt-2">
                                     <ul className="flex flex-col w-full space-y-4 text-white text-sm">
-                                        {members.filter((m) => !m.suspended).map((member) => (
-                                            <li key={member.id} className={`flex w-full py-2 ${members.filter((m) => !m.suspended).length > 1 ?'border-b border-border-gray': ''} justify-between items-center`}>
-                                                <div className="flex space-x-12">
-                                                    <span className="w-28">{member['name']}</span>
-                                                    <Tooltip text={member['email']} type="dark">
-                                                        <div className="w-48 overflow-hidden truncate">
-                                                            <span className="">{member['email']}</span>
-                                                        </div>
-                                                    </Tooltip>
-                                                </div>
-                                                {!member.suspended && !member.currentUser && (
-                                                    <Tooltip text="Remove member" type="dark">
-                                                        <span
-                                                            className="bg-red-500 cursor-pointer pb-0.5 text-white h-5 w-5 flex items-center justify-center rounded-full"
-                                                            onClick={() => {
-                                                                onSuspendMember(member)
-                                                            }}
-                                                        >
-                                                            x
-                                                        </span>
-                                                    </Tooltip>
-                                                )}
-                                            </li>
-                                        ))}
+                                        {members
+                                            .filter((m) => !m.suspended)
+                                            .map((member) => (
+                                                <li
+                                                    key={member.id}
+                                                    className={`flex w-full py-2 ${members.filter((m) => !m.suspended).length > 1 ? 'border-b border-border-gray' : ''} justify-between items-center`}
+                                                >
+                                                    <div className="flex space-x-12">
+                                                        <span className="w-28">{member['name']}</span>
+                                                        <Tooltip text={member['email']} type="dark">
+                                                            <div className="w-48 overflow-hidden truncate">
+                                                                <span className="">{member['email']}</span>
+                                                            </div>
+                                                        </Tooltip>
+                                                    </div>
+                                                    {!member.suspended && !member.currentUser && (
+                                                        <Tooltip text="Remove member" type="dark">
+                                                            <span
+                                                                className="bg-red-500 cursor-pointer pb-0.5 text-white h-5 w-5 flex items-center justify-center rounded-full"
+                                                                onClick={() => {
+                                                                    onSuspendMember(member);
+                                                                }}
+                                                            >
+                                                                x
+                                                            </span>
+                                                        </Tooltip>
+                                                    )}
+                                                </li>
+                                            ))}
                                     </ul>
                                     {invitedMembers.filter((m) => !m.accepted).length > 0 && (
                                         <>
                                             <h3 className="mt-8 text-text-light-gray text-sm font-semibold mt-4 mb-2">Invited Members</h3>
                                             <ul className="flex flex-col w-full space-y-4 text-white text-sm">
-                                                {invitedMembers.filter((m) => !m.accepted).map((member) => (
-                                                    <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
-                                                        <div className="flex space-x-12">
-                                                            <span className="w-28">{member['name']}</span>
-                                                            <Tooltip text={member['email']} type="dark">
-                                                                <div className="w-48 overflow-hidden truncate">
-                                                                    <span className="">{member['email']}</span>
-                                                                </div>
-                                                            </Tooltip>
-                                                            <Tooltip text="The invite expires on this date" type="dark">
-                                                                <span>{formatDateToUSFormat(member['expires_at'])}</span>
-                                                            </Tooltip>
-                                                        </div>
-                                                        <CopyButton icontype="link" textPrompt="Copy Invite Link" dark text={`${window.location.host}/signup/${member.token}`} />
-                                                    </li>
-                                                ))}
+                                                {invitedMembers
+                                                    .filter((m) => !m.accepted)
+                                                    .map((member) => (
+                                                        <li
+                                                            key={member.id}
+                                                            className="flex w-full py-2 border-b border-border-gray justify-between items-center"
+                                                        >
+                                                            <div className="flex space-x-12">
+                                                                <span className="w-28">{member['name']}</span>
+                                                                <Tooltip text={member['email']} type="dark">
+                                                                    <div className="w-48 overflow-hidden truncate">
+                                                                        <span className="">{member['email']}</span>
+                                                                    </div>
+                                                                </Tooltip>
+                                                                <Tooltip text="The invite expires on this date" type="dark">
+                                                                    <span>{formatDateToUSFormat(member['expires_at'])}</span>
+                                                                </Tooltip>
+                                                            </div>
+                                                            <CopyButton
+                                                                icontype="link"
+                                                                textPrompt="Copy Invite Link"
+                                                                dark
+                                                                text={`${window.location.host}/signup/${member.token}`}
+                                                            />
+                                                        </li>
+                                                    ))}
                                             </ul>
                                         </>
                                     )}
@@ -296,18 +317,23 @@ export default function AccountSettings() {
                                         <>
                                             <h3 className="mt-8 text-text-light-gray text-sm font-semibold mt-4 mb-2">Suspended Members</h3>
                                             <ul className="flex flex-col w-full space-y-4 text-white text-sm">
-                                                {members.filter((m) => m.suspended).map((member) => (
-                                                    <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
-                                                        <div className="flex space-x-12 text-gray-500">
-                                                            <span className="w-28">{member['name']}</span>
-                                                            <Tooltip text={member['email']} type="dark">
-                                                                <div className="w-48 overflow-hidden truncate">
-                                                                    <span className="">{member['email']}</span>
-                                                                </div>
-                                                            </Tooltip>
-                                                        </div>
-                                                    </li>
-                                                ))}
+                                                {members
+                                                    .filter((m) => m.suspended)
+                                                    .map((member) => (
+                                                        <li
+                                                            key={member.id}
+                                                            className="flex w-full py-2 border-b border-border-gray justify-between items-center"
+                                                        >
+                                                            <div className="flex space-x-12 text-gray-500">
+                                                                <span className="w-28">{member['name']}</span>
+                                                                <Tooltip text={member['email']} type="dark">
+                                                                    <div className="w-48 overflow-hidden truncate">
+                                                                        <span className="">{member['email']}</span>
+                                                                    </div>
+                                                                </Tooltip>
+                                                            </div>
+                                                        </li>
+                                                    ))}
                                             </ul>
                                         </>
                                     )}
@@ -323,23 +349,21 @@ export default function AccountSettings() {
                                 <span>Login as a different user</span>
                                 <div className="flex flex-col mt-2">
                                     <form onSubmit={redirectToAccount}>
-                                    <input
-                                        type="text"
-                                        placeholder="Account UUID"
-                                        name="account_uuid"
-                                    className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-1/2 mb-3 appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Login reason"
-                                        name="login_reason"
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
-                                    />
-                                    <button
-                                        className="border-border-blue bg-bg-dark-blue text-black active:ring-border-blue flex h-11 rounded-md border mt-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
-                                    >
-                                        Login To Account
-                                    </button>
+                                        <input
+                                            type="text"
+                                            placeholder="Account UUID"
+                                            name="account_uuid"
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-1/2 mb-3 appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Login reason"
+                                            name="login_reason"
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                        />
+                                        <button className="border-border-blue bg-bg-dark-blue text-black active:ring-border-blue flex h-11 rounded-md border mt-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2">
+                                            Login To Account
+                                        </button>
                                     </form>
                                 </div>
                             </div>

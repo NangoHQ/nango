@@ -21,10 +21,21 @@ export interface FlowProps {
     showSpinner?: boolean;
 }
 
-export default function EnableDisableSync({ flow, provider, providerConfigKey, reload, rawName, connections, endpoints, setFlow, setIsEnabling, showSpinner }: FlowProps) {
+export default function EnableDisableSync({
+    flow,
+    provider,
+    providerConfigKey,
+    reload,
+    rawName,
+    connections,
+    endpoints,
+    setFlow,
+    setIsEnabling,
+    showSpinner
+}: FlowProps) {
     const { setVisible, bindings } = useModal();
     const createFlow = useCreateFlow();
-    const connectionIds = connections.map(connection => connection.id);
+    const connectionIds = connections.map((connection) => connection.id);
 
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
@@ -34,14 +45,15 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
 
     const enableSync = (flow: Flow) => {
         setModalTitle(`Enable ${flow.type}?`);
-        setModalTitleColor('text-white')
-        const content = flow?.type === 'sync' ?
-            'Records will start syncing potentially for multiple connections. This will impact your billing.' :
-            'This will make the action available for immediate use.';
+        setModalTitleColor('text-white');
+        const content =
+            flow?.type === 'sync'
+                ? 'Records will start syncing potentially for multiple connections. This will impact your billing.'
+                : 'This will make the action available for immediate use.';
         setModalContent(content);
         setModalAction(() => () => onEnableSync(flow));
         setVisible(true);
-    }
+    };
 
     const onEnableSync = async (flow: Flow) => {
         const flowPayload = {
@@ -53,13 +65,13 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
             auto_start: flow.auto_start === true,
             track_deletes: flow.track_deletes,
             sync_type: flow.sync_type,
-            models: flow.models.map(model => model.name),
+            models: flow.models.map((model) => model.name),
             scopes: flow.scopes,
             input: flow.input,
             returns: flow.returns,
             metadata: {
                 description: flow.description,
-                scopes: flow.scopes,
+                scopes: flow.scopes
             },
             endpoints: flow.endpoints,
             output: flow.output,
@@ -93,17 +105,17 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
             setIsEnabling(false);
         }
         setVisible(false);
-    }
+    };
 
     const disableSync = (flow: Flow) => {
         if (!flow.is_public) {
             const title = 'Custom syncs cannot be disabled from the UI';
-            const message = flow.pre_built ?
-                'If you want to disable this sync, ask the Nango team or download the code and deploy it as a custom sync.' :
-                'If you want to disable this sync, remove it from your `nango.yaml` configuration file.';
-            setModalTitleColor('text-white')
+            const message = flow.pre_built
+                ? 'If you want to disable this sync, ask the Nango team or download the code and deploy it as a custom sync.'
+                : 'If you want to disable this sync, remove it from your `nango.yaml` configuration file.';
+            setModalTitleColor('text-white');
             setModalTitle(title);
-            setModalContent(message)
+            setModalContent(message);
             setModalAction(null);
             setVisible(true);
 
@@ -111,14 +123,15 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
         }
 
         setModalTitle(`Disable ${flow?.type === 'sync' ? 'sync? (destructive action)' : 'action?'}`);
-        setModalTitleColor('text-pink-600')
-        const content = flow?.type === 'sync' ?
-            'Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.' :
-            'This will make the action unavailable for immediate use.'
+        setModalTitleColor('text-pink-600');
+        const content =
+            flow?.type === 'sync'
+                ? 'Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.'
+                : 'This will make the action unavailable for immediate use.';
         setModalContent(content);
         setModalAction(() => () => onDisableSync(flow));
         setVisible(true);
-    }
+    };
 
     const onDisableSync = async (flow: Flow) => {
         setModalShowSpinner(true);
@@ -126,7 +139,7 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
-            },
+            }
         });
 
         if (res.status === 204) {
@@ -135,7 +148,7 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
             if (endpoints && setFlow) {
                 const { enabledFlows } = endpoints;
                 if (enabledFlows) {
-                    const newFlow = enabledFlows[flow.type === 'sync' ? 'syncs' : 'actions'].find(f => f.name === flow.name) as Flow;
+                    const newFlow = enabledFlows[flow.type === 'sync' ? 'syncs' : 'actions'].find((f) => f.name === flow.name) as Flow;
                     const { version, last_deployed, ...rest } = newFlow;
                     setFlow(rest);
                 }
@@ -148,16 +161,16 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
         }
         setModalShowSpinner(false);
         setVisible(false);
-    }
+    };
 
     const toggleSync = async (flow: Flow) => {
         const active = 'version' in flow && flow.version !== null;
         if (active) {
-            (flow?.type === 'sync' ? await disableSync(flow) : await onDisableSync(flow));
+            flow?.type === 'sync' ? await disableSync(flow) : await onDisableSync(flow);
         } else {
-            (flow?.type === 'sync' ? await enableSync(flow) : await onEnableSync(flow));
+            flow?.type === 'sync' ? await enableSync(flow) : await onEnableSync(flow);
         }
-    }
+    };
 
     return (
         <>

@@ -15,8 +15,8 @@
     "scripts": {
         "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
         "undo:migration": "cd packages/shared/lib/db && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
-        "prettier-format": "prettier --config .prettierrc \"./**/*.ts\" --write",
-        "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
+        "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --write",
+        "prettier-watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts,.tsx",
         "lint:fix": "eslint . --ext .ts,.tsx --fix",
         "ts-build": "tsc -b --clean packages/shared packages/server packages/cli packages/runner packages/jobs packages/persist && tsc -b tsconfig.build.json && npm run postbuild -ws --if-present && tsc -b packages/webapp/tsconfig.json",

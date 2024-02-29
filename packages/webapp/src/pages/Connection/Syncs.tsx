@@ -11,14 +11,7 @@ import {
     StopCircleIcon
 } from '@heroicons/react/24/outline';
 import { UserFacingSyncCommand, SyncResponse, RunSyncCommand } from '../../types';
-import {
-    calculateTotalRuntime,
-    getRunTime,
-    parseLatestSyncResult,
-    formatDateToUSFormat,
-    interpretNextRun,
-    getSimpleDate
-} from '../../utils/utils';
+import { calculateTotalRuntime, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun, getSimpleDate } from '../../utils/utils';
 import { Connection } from '../../types';
 import { useRunSyncAPI } from '../../utils/api';
 
@@ -28,7 +21,7 @@ interface SyncsProps {
     loaded: boolean;
     syncLoaded: boolean;
     setSyncLoaded: (loaded: boolean) => void;
-    env: string
+    env: string;
 }
 
 export default function Syncs(props: SyncsProps) {
@@ -101,26 +94,29 @@ export default function Syncs(props: SyncsProps) {
                 {bubbleType}
             </Link>
         ) : (
-            <div className={styles}>
-                {bubbleType}
-            </div>
+            <div className={styles}>{bubbleType}</div>
         );
     };
 
-    if (!loaded || !syncLoaded || syncs === null) return (
-        <Loading spaceRatio={2.5} className="top-24" />
-    );
+    if (!loaded || !syncLoaded || syncs === null) return <Loading spaceRatio={2.5} className="top-24" />;
 
     return (
         <div className="h-fit rounded-md text-white">
             {!syncs || syncs.length === 0 ? (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
-                    <h2 className="text-xl text-center w-full">No models are syncing for <span className="capitalize">{connection?.provider}</span></h2>
-                    <div className="mt-4 text-gray-400">Start syncing models for <span className="capitalize">{connection?.provider}</span> on the Sync Configuration tab.</div>
-                    <Link to={`/${env}/integration/${connection?.providerConfigKey}#scripts`} className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                    <h2 className="text-xl text-center w-full">
+                        No models are syncing for <span className="capitalize">{connection?.provider}</span>
+                    </h2>
+                    <div className="mt-4 text-gray-400">
+                        Start syncing models for <span className="capitalize">{connection?.provider}</span> on the Sync Configuration tab.
+                    </div>
+                    <Link
+                        to={`/${env}/integration/${connection?.providerConfigKey}#scripts`}
+                        className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300"
+                    >
                         <span className="flex">
-                        <AdjustmentsHorizontalIcon className="flex h-5 w-5 mr-3" />
-                        Script Configuration
+                            <AdjustmentsHorizontalIcon className="flex h-5 w-5 mr-3" />
+                            Script Configuration
                         </span>
                     </Link>
                 </div>
@@ -175,9 +171,9 @@ export default function Syncs(props: SyncsProps) {
                                                     <span className="">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</span>
                                                 )}
                                             </Tooltip>
-                                        ): (
+                                        ) : (
                                             <>
-                                                {sync.latest_sync?.activity_log_id? (
+                                                {sync.latest_sync?.activity_log_id ? (
                                                     <Link
                                                         to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className=""
@@ -200,45 +196,34 @@ export default function Syncs(props: SyncsProps) {
                                                 )}
                                             </>
                                         )}
-                                        {sync.schedule_status === 'RUNNING' && !sync.futureActionTimes && (
-                                            <span className="">-</span>
-                                        )}
-                                        {sync.schedule_status !== 'RUNNING' && (
-                                            <span className="">-</span>
-                                        )}
+                                        {sync.schedule_status === 'RUNNING' && !sync.futureActionTimes && <span className="">-</span>}
+                                        {sync.schedule_status !== 'RUNNING' && <span className="">-</span>}
                                     </div>
-                                    <div className="w-12">
-                                        {getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}
-                                    </div>
+                                    <div className="w-12">{getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}</div>
                                     <div className="w-16 ml-4">
                                         {sync.thirty_day_timestamps ? (
-                                                <span className="w-24 ml-[0.25rem]">
-                                                    {calculateTotalRuntime(sync.thirty_day_timestamps)}
-                                                </span>
-                                            ) : (
-                                                <span className="ml-[0.25rem]">-</span>
-                                            )
-                                        }
+                                            <span className="w-24 ml-[0.25rem]">{calculateTotalRuntime(sync.thirty_day_timestamps)}</span>
+                                        ) : (
+                                            <span className="ml-[0.25rem]">-</span>
+                                        )}
                                     </div>
                                     <div className="relative interact-with-sync">
-                                        <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" onClick={() => toggleDropdown(sync.id)}/>
+                                        <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" onClick={() => toggleDropdown(sync.id)} />
                                         {openDropdownId === sync.id && (
-                                            <div
-                                                className="text-gray-400 absolute z-10 -top-15 left-1 bg-black rounded border border-neutral-700 items-center"
-                                            >
+                                            <div className="text-gray-400 absolute z-10 -top-15 left-1 bg-black rounded border border-neutral-700 items-center">
                                                 <div className="flex flex-col w-full">
                                                     <div
                                                         className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
                                                         onClick={() =>
-                                                                    syncCommand(
-                                                                        sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
-                                                                        sync.nango_connection_id,
-                                                                        sync.schedule_id,
-                                                                        sync.id,
-                                                                        sync.name
-                                                                    )
-                                                                }
-                                                        >
+                                                            syncCommand(
+                                                                sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
+                                                                sync.nango_connection_id,
+                                                                sync.schedule_id,
+                                                                sync.id,
+                                                                sync.name
+                                                            )
+                                                        }
+                                                    >
                                                         {sync.schedule_status !== 'RUNNING' ? (
                                                             <>
                                                                 <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
@@ -283,6 +268,5 @@ export default function Syncs(props: SyncsProps) {
                 </table>
             )}
         </div>
-    )
+    );
 }
-
