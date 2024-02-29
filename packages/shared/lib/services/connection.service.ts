@@ -512,11 +512,7 @@ class ConnectionService {
     }
 
     public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
-        if (connection) {
-            await syncOrchestrator.deleteSyncsByConnection(connection);
-        }
-
-        return await db.knex
+        const del = await db.knex
             .from<Connection>(`_nango_connections`)
             .where({
                 connection_id: connection.connection_id,
@@ -525,6 +521,10 @@ class ConnectionService {
                 deleted: false
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
+
+        await syncOrchestrator.softDeleteSyncsByConnection(connection);
+
+        return del;
     }
 
     public async getConnectionCredentials(
