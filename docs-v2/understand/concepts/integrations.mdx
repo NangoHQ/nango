@@ -33,3 +33,47 @@ Nango stands out by not limiting you to a fixed set of endpoints & use cases. Yo
 # Getting started with using integrations
 
 Check out the authorization [step-by-step guide](/integrate/guides/authorize-an-api) or refer to the reference ([API](/reference/api/integration/list) / [SDK](/reference/sdks/node#integrations)).
+
+# API configurations
+
+API configurations provide Nango with details on authorizing and communicating with external APIs. API configurations are meant to be minimal, so adding support for new APIs is trivial. As a result, many of these API configurations are contributions from our community.
+
+<Tip>
+You can [ask us](https://nango.dev/slack) to add new APIs in &lt;48h or contribute them yourself ([step-by-step guide](/customize/guides/contribute-an-api)).
+</Tip>
+
+### `providers.yaml`
+
+Nango centralizes all API configurations in the [providers.yaml](https://nango.dev/providers.yaml) file, shared by all Nango users. 
+
+For instance, here's how an API configuration might look:
+```yaml
+asana:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://app.asana.com/-/oauth_authorize
+    token_url: https://app.asana.com/-/oauth_token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.asana.com
+    docs: https://docs.nango.dev/integrations/all/asana
+```
+
+Each API configuration in the `providers.yaml` includes several key pieces of information:
+
+- **Authorization methods:** Whether OAuth, API key, or a custom method, Nango supports various ways to authenticate your app with external services. For multiple authorization methods, separate configurations are maintained.
+
+- **End-user-specific data:** Nango captures and stores data specific to your users that is returned during the authorization process. This data is crucial for maintaining individual user connections to external services ([step-by-step guide](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization)).
+
+- **Validation endpoints:** For API key and basic auth methods, configurations may specify endpoints to validate submitted credentials, ensuring they are correct before validating a connection.
+
+- **Custom authorization systems:** APIs requiring unique authorization methods are supported with custom configurations. Nango's team is ready to implement specific handling as needed.
+
+Consult the [reference](/reference/api-configuration) for all configuration options and [past contributions](https://github.com/NangoHQ/nango/pulls?q=is%3Apr+is%3Amerged+label%3Aapi+) for examples.
