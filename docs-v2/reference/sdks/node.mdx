@@ -492,6 +492,187 @@ await nango.deleteConnection('<INTEGRATION-ID>', 'CONNECTION-ID');
 
 Empty response.
 
+# Scripts
+
+
+### Get Scripts Config
+
+Return the configuration for all scripts
+
+```ts
+const scriptsConfig = await nango.getScriptsConfig();
+```
+
+**Example Response**
+
+<Expandable>
+```json
+[
+    {
+        "providerConfigKey": "demo-github-integration",
+        "syncs": [
+            {
+                "name": "github-issue-example",
+                "type": "sync",
+                "models": [
+                    {
+                        "name": "GithubIssue",
+                        "fields": [
+                            {
+                                "name": "id",
+                                "type": "integer"
+                            },
+                            {
+                                "name": "owner",
+                                "type": "string"
+                            },
+                            {
+                                "name": "repo",
+                                "type": "string"
+                            },
+                            {
+                                "name": "issue_number",
+                                "type": "number"
+                            },
+                            {
+                                "name": "title",
+                                "type": "string"
+                            },
+                            {
+                                "name": "author",
+                                "type": "string"
+                            },
+                            {
+                                "name": "author_id",
+                                "type": "string"
+                            },
+                            {
+                                "name": "state",
+                                "type": "string"
+                            },
+                            {
+                                "name": "date_created",
+                                "type": "date"
+                            },
+                            {
+                                "name": "date_last_modified",
+                                "type": "date"
+                            },
+                            {
+                                "name": "body",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                ],
+                "sync_type": "FULL",
+                "runs": "every half hour",
+                "track_deletes": false,
+                "auto_start": false,
+                "last_deployed": "2024-02-28T20:16:38.052Z",
+                "is_public": false,
+                "pre_built": false,
+                "version": "4",
+                "attributes": {},
+                "input": {},
+                "returns": [
+                    "GithubIssue"
+                ],
+                "description": "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n",
+                "scopes": [
+                    "public_repo"
+                ],
+                "endpoints": [
+                    {
+                        "GET": "/github/issue-example"
+                    }
+                ],
+                "nango_yaml_version": "v2",
+                "webhookSubscriptions": []
+            }
+        ],
+        "actions": [
+            {
+                "name": "fetch-issues",
+                "type": "action",
+                "models": [
+                    {
+                        "name": "GithubIssue",
+                        "fields": [
+                            {
+                                "name": "id",
+                                "type": "integer"
+                            },
+                            {
+                                "name": "owner",
+                                "type": "string"
+                            },
+                            {
+                                "name": "repo",
+                                "type": "string"
+                            },
+                            {
+                                "name": "issue_number",
+                                "type": "number"
+                            },
+                            {
+                                "name": "title",
+                                "type": "string"
+                            },
+                            {
+                                "name": "author",
+                                "type": "string"
+                            },
+                            {
+                                "name": "author_id",
+                                "type": "string"
+                            },
+                            {
+                                "name": "state",
+                                "type": "string"
+                            },
+                            {
+                                "name": "date_created",
+                                "type": "date"
+                            },
+                            {
+                                "name": "date_last_modified",
+                                "type": "date"
+                            },
+                            {
+                                "name": "body",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                ],
+                "runs": "",
+                "is_public": false,
+                "pre_built": false,
+                "version": "4",
+                "last_deployed": "2024-02-28T20:16:38.052Z",
+                "attributes": {},
+                "returns": [
+                    "GithubIssue"
+                ],
+                "description": "",
+                "scopes": [],
+                "input": {},
+                "endpoints": [
+                    {
+                        "GET": "/github/issues"
+                    }
+                ],
+                "nango_yaml_version": "v2"
+            }
+        ],
+        "postConnectionScripts": [],
+        "provider": "github"
+    }
+]
+```
+</Expandable>
+
 # Syncs
 
 ### Get records
