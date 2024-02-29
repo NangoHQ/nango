@@ -48,7 +48,7 @@ export default function ProjectSettings() {
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
-    const [envVariables, setEnvVariables] = useState<{ id?: number, name: string; value: string }[]>([]);
+    const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const editCallbackUrlAPI = useEditCallbackUrlAPI();
     const editWebhookUrlAPI = useEditWebhookUrlAPI();
@@ -58,13 +58,13 @@ export default function ProjectSettings() {
     const editHmacKey = useEditHmacKeyAPI();
     const editEnvVariables = useEditEnvVariablesAPI();
 
-    const { setVisible, bindings } = useModal()
-    const { setVisible: setSecretVisible, bindings: secretBindings } = useModal()
+    const { setVisible, bindings } = useModal();
+    const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
     const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
-        setEnvVariables(envVariables.filter((env) => env.id ));
+        setEnvVariables(envVariables.filter((env) => env.id));
         setLoaded(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [env]);
@@ -98,7 +98,7 @@ export default function ProjectSettings() {
 
                 setEnvVariables(account.env_variables);
             }
-       };
+        };
 
         if (!loaded) {
             setLoaded(true);
@@ -163,7 +163,9 @@ export default function ProjectSettings() {
     const handleWebookSendAuth = async (checked: boolean) => {
         setSendAuthWebhook(checked);
         editSendAuthWebhook(checked).then((_) => {
-            toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', { position: toast.POSITION.BOTTOM_CENTER });
+            toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
         });
     };
 
@@ -191,27 +193,30 @@ export default function ProjectSettings() {
         const formData = new FormData(e.target as HTMLFormElement);
         const entries = Array.from(formData.entries());
 
-        const envVariablesArray = entries.reduce((acc, [key, value]) => {
-            // we use the index to match on the name and value
-            // but strip everything before the dash to remove the dynamic aspect
-            // to the name. The dynamic aspect is needed to make sure the values
-            // show correctly when reloading environments
-            const strippedKey = key.split('-')[1];
-            const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
-            if (match) {
-                const type = match[1];
-                const index = parseInt(match[2], 10);
-                if (!acc[index]) {
-                    acc[index] = {} as { name: string; value: string };
+        const envVariablesArray = entries.reduce(
+            (acc, [key, value]) => {
+                // we use the index to match on the name and value
+                // but strip everything before the dash to remove the dynamic aspect
+                // to the name. The dynamic aspect is needed to make sure the values
+                // show correctly when reloading environments
+                const strippedKey = key.split('-')[1];
+                const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
+                if (match) {
+                    const type = match[1];
+                    const index = parseInt(match[2], 10);
+                    if (!acc[index]) {
+                        acc[index] = {} as { name: string; value: string };
+                    }
+                    if (type === 'name') {
+                        acc[index].name = value as string;
+                    } else if (type === 'value') {
+                        acc[index].value = value as string;
+                    }
                 }
-                if (type === 'name') {
-                    acc[index].name = value as string;
-                } else if (type === 'value') {
-                    acc[index].value = value as string;
-                }
-            }
-            return acc;
-        }, [] as Array<{ name: string; value: string }>);
+                return acc;
+            },
+            [] as Array<{ name: string; value: string }>
+        );
 
         const res = await editEnvVariables(envVariablesArray);
 
@@ -228,7 +233,7 @@ export default function ProjectSettings() {
         setEnvVariables(envVariables.filter((_, i) => i !== index));
 
         const strippedEnvVariables = envVariables.filter((_, i) => i !== index).filter((envVariable) => envVariable.name && envVariable.value);
-        const res = await editEnvVariables(strippedEnvVariables as unknown as Array<Record<string,string>>);
+        const res = await editEnvVariables(strippedEnvVariables as unknown as Array<Record<string, string>>);
 
         if (res?.status === 200) {
             toast.success('Environment variables updated!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -247,7 +252,7 @@ export default function ProjectSettings() {
         const res = await fetch('/api/v1/environment/rotate-key', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
@@ -272,7 +277,7 @@ export default function ProjectSettings() {
         const res = await fetch('/api/v1/environment/revert-key', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
@@ -293,11 +298,11 @@ export default function ProjectSettings() {
         }
     };
 
-    const onActivateKey = async(publicKey = true) => {
+    const onActivateKey = async (publicKey = true) => {
         const res = await fetch('/api/v1/environment/activate-key', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
@@ -321,13 +326,13 @@ export default function ProjectSettings() {
         await fetch('/api/v1/environment/slack-notifications-enabled', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 slack_notifications: enabled
             })
         });
-    }
+    };
 
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
@@ -342,16 +347,16 @@ export default function ProjectSettings() {
             toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
             setSlackIsConnected(false);
         }
-    }
+    };
 
     const connectSlack = async () => {
-        const connectionId =  `account-${accountUUID}`;
+        const connectionId = `account-${accountUUID}`;
 
         const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
+                'Content-Type': 'application/json'
+            }
         });
 
         if (res?.status !== 200) {
@@ -363,10 +368,11 @@ export default function ProjectSettings() {
         const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
 
         const nango = new Nango({ host: hostUrl, publicKey });
-        nango.auth(integrationKey, connectionId, {
+        nango
+            .auth(integrationKey, connectionId, {
                 user_scope: [],
                 params: {},
-                hmac: hmacDigest,
+                hmac: hmacDigest
             })
             .then(async () => {
                 await updateSlackNotifications(true);
@@ -390,12 +396,19 @@ export default function ProjectSettings() {
                     <div>
                         <Modal.Title className="text-lg">Activate new public key?</Modal.Title>
                         <Modal.Content>
-                          <p>Make sure your code uses the new public key before activating. All authorization attempts with the previous public key will fail when the new key is activated.</p>
+                            <p>
+                                Make sure your code uses the new public key before activating. All authorization attempts with the previous public key will fail
+                                when the new key is activated.
+                            </p>
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!text-lg" onClick={() => setVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey()}>Activate</Modal.Action>
+                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setVisible(false)}>
+                    Cancel
+                </Modal.Action>
+                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey()}>
+                    Activate
+                </Modal.Action>
             </Modal>
             <Modal {...secretBindings} wrapClassName="!w-max overflow-visible">
                 <div className="flex justify-between">
@@ -407,12 +420,19 @@ export default function ProjectSettings() {
                     <div>
                         <Modal.Title className="text-lg">Activate new secret key?</Modal.Title>
                         <Modal.Content>
-                          <p>Make sure your code uses the new secret key before activating. All requests made with the previous secret key will fail as soon as the new key is activated.</p>
+                            <p>
+                                Make sure your code uses the new secret key before activating. All requests made with the previous secret key will fail as soon
+                                as the new key is activated.
+                            </p>
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!text-lg" onClick={() => setSecretVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>Activate</Modal.Action>
+                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setSecretVisible(false)}>
+                    Cancel
+                </Modal.Action>
+                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>
+                    Activate
+                </Modal.Action>
             </Modal>
             {secretKey && (
                 <div className="h-full mb-20">
@@ -452,7 +472,7 @@ export default function ProjectSettings() {
                                     {publicKeyRotatable && (
                                         <>
                                             <button
-                                                onClick={() => hasPendingPublicKey ? onRevertKey() : onRotateKey()}
+                                                onClick={() => (hasPendingPublicKey ? onRevertKey() : onRotateKey())}
                                                 className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
                                                 {hasPendingPublicKey ? 'Revert' : 'Rotate'}
@@ -520,11 +540,18 @@ export default function ProjectSettings() {
                                     </Tooltip>
                                 </div>
                                 <div className="flex">
-                                    <SecretInput additionalclass="w-full h-11" tall disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
+                                    <SecretInput
+                                        additionalclass="w-full h-11"
+                                        tall
+                                        disabled
+                                        copy={true}
+                                        optionalvalue={secretKey}
+                                        setoptionalvalue={setSecretKey}
+                                    />
                                     {secretKeyRotatable && (
                                         <>
                                             <button
-                                                onClick={() => hasPendingSecretKey ? onRevertKey(false) : onRotateKey(false)}
+                                                onClick={() => (hasPendingSecretKey ? onRevertKey(false) : onRotateKey(false))}
                                                 className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
                                                 {hasPendingSecretKey ? 'Revert' : 'Rotate'}
@@ -551,18 +578,17 @@ export default function ProjectSettings() {
                                 <div>
                                     <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
                                         Slack Alerts
-                                    <Tooltip
-                                        text={
-                                            <div className="flex text-black text-sm">
-                                                {slackIsConnected ?
-                                                    'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.' :
-                                                    'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'
-                                                }
-                                            </div>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
+                                        <Tooltip
+                                            text={
+                                                <div className="flex text-black text-sm">
+                                                    {slackIsConnected
+                                                        ? 'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.'
+                                                        : 'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'}
+                                                </div>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
                                     </label>
                                 </div>
                                 <div className="">
@@ -854,18 +880,13 @@ export default function ProjectSettings() {
                                     </label>
                                     <Tooltip
                                         text={
-                                            <div className="flex text-black text-sm">
-                                                Set environment variables to be used inside sync and action scripts.
-                                            </div>
+                                            <div className="flex text-black text-sm">Set environment variables to be used inside sync and action scripts.</div>
                                         }
                                     >
                                         <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                     </Tooltip>
                                 </div>
-                                <form
-                                    className="mt-2"
-                                    onSubmit={handleEnvVariablesSave}
-                                >
+                                <form className="mt-2" onSubmit={handleEnvVariablesSave}>
                                     {envVariables.map((envVar, index) => (
                                         <div key={envVar.id || `${envVar.name}_${index}`} className="flex items-center mt-2">
                                             <input
@@ -884,14 +905,14 @@ export default function ProjectSettings() {
                                                 required
                                                 autoComplete="new-password"
                                                 type="password"
-                                                onMouseEnter={(e) => e.currentTarget.type = 'text'}
+                                                onMouseEnter={(e) => (e.currentTarget.type = 'text')}
                                                 onMouseLeave={(e) => {
                                                     if (document.activeElement !== e.currentTarget) {
                                                         e.currentTarget.type = 'password';
                                                     }
                                                 }}
-                                                onFocus={(e) => e.currentTarget.type = 'text'}
-                                                onBlur={(e) => e.currentTarget.type = 'password'}
+                                                onFocus={(e) => (e.currentTarget.type = 'text')}
+                                                onBlur={(e) => (e.currentTarget.type = 'password')}
                                                 className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
                                             />
                                             <button
@@ -911,10 +932,7 @@ export default function ProjectSettings() {
                                         >
                                             Add Environment Variable
                                         </button>
-                                        <button
-                                            type="submit"
-                                            className="hover:bg-gray-200 bg-white text-gray-700 flex h-11 rounded-md px-4 pt-3 text-sm"
-                                        >
+                                        <button type="submit" className="hover:bg-gray-200 bg-white text-gray-700 flex h-11 rounded-md px-4 pt-3 text-sm">
                                             Save Environment Variable
                                         </button>
                                     </div>

@@ -97,6 +97,14 @@ export async function deploy(
         );
 
         if (!success || !response) {
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                environment_id,
+                activity_log_id: activityLogId!,
+                timestamp: Date.now(),
+                content: `Failed to deploy`
+            });
+            await updateSuccessActivityLog(activityLogId!, false);
             return { success, error, response: null };
         }
 
@@ -277,7 +285,7 @@ export async function deployPreBuilt(
 
         providerConfigKeys.push(provider_config_key);
 
-        const { type, models, auto_start, runs, model_schema, is_public, attributes = {}, metadata = {} } = config;
+        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {}, input } = config;
         const sync_name = config.name || config.syncName;
 
         if (type === SyncConfigType.SYNC && !runs) {
@@ -373,7 +381,13 @@ export async function deployPreBuilt(
 
         const created_at = new Date();
 
-        const flowData = {
+        const model_schema = JSON.parse(model_schema_string);
+
+        if (typeof input !== 'string' && input?.name) {
+            model_schema.push(input);
+        }
+
+        const flowData: SyncConfig = {
             created_at,
             sync_name,
             nango_config_id,
@@ -382,7 +396,8 @@ export async function deployPreBuilt(
             models,
             active: true,
             runs,
-            model_schema: model_schema as unknown as SyncModelSchema[],
+            input: typeof input !== 'string' ? String(input?.name) : input,
+            model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id,
             deleted: false,
             track_deletes: false,
@@ -401,7 +416,8 @@ export async function deployPreBuilt(
             providerConfigKey: provider_config_key,
             ...flowData,
             last_deployed: created_at,
-            models: JSON.parse(model_schema)
+            input: typeof input !== 'string' ? (input as SyncModelSchema) : String(input),
+            models: model_schema
         });
     }
 
@@ -548,12 +564,25 @@ async function compileDeployInfo(
     } = flow;
     if (type === SyncConfigType.SYNC && !runs) {
         const error = new NangoError('missing_required_fields_on_deploy');
-
+        await createActivityLogMessage({
+            level: 'error',
+            environment_id,
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `${error}`
+        });
         return { success: false, error, response: null };
     }
 
     if (!syncName || !providerConfigKey || !fileBody) {
         const error = new NangoError('missing_required_fields_on_deploy');
+        await createActivityLogMessage({
+            level: 'error',
+            environment_id,
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `${error}`
+        });
 
         return { success: false, error, response: null };
     }
@@ -562,6 +591,13 @@ async function compileDeployInfo(
 
     if (!config) {
         const error = new NangoError('unknown_provider_config', { providerConfigKey });
+        await createActivityLogMessage({
+            level: 'error',
+            environment_id,
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `${error}`
+        });
 
         return { success: false, error, response: null };
     }
@@ -631,7 +667,7 @@ async function compileDeployInfo(
     if (!file_location) {
         await updateSuccessActivityLog(activityLogId, false);
 
-        await createActivityLogMessageAndEnd({
+        await createActivityLogMessage({
             level: 'error',
             environment_id,
             activity_log_id: activityLogId,

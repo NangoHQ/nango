@@ -8,7 +8,7 @@ import { baseUrl as getBaseUrl } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import Button from '../components/ui/button/Button';
-import Info from '../components/ui/Info'
+import Info from '../components/ui/Info';
 import CopyButton from '../components/ui/button/CopyButton';
 import { useGetProjectInfoAPI } from '../utils/api';
 import Spinner from '../components/ui/Spinner';
@@ -50,17 +50,16 @@ export default function GettingStarted() {
     const [syncStillRunning, setSyncStillRunning] = useState(true);
     const analyticsTrack = useAnalyticsTrack();
 
-    const { setVisible, bindings } = useModal()
+    const { setVisible, bindings } = useModal();
 
     const model = 'Issue';
     const endpoint = '/github/lite-issues';
     const providerConfigKey = 'demo-github-integration';
 
-    const env = useStore(state => state.cookieValue);
-    const baseUrl = useStore(state => state.baseUrl);
+    const env = useStore((state) => state.cookieValue);
+    const baseUrl = useStore((state) => state.baseUrl);
 
-    const getProjectInfoAPI = useGetProjectInfoAPI()
-
+    const getProjectInfoAPI = useGetProjectInfoAPI();
 
     useEffect(() => {
         setLoaded(false);
@@ -99,13 +98,13 @@ export default function GettingStarted() {
             const params = {
                 provider_config_key: providerConfigKey,
                 connection_id: connectionId,
-                model,
+                model
             };
 
             const res = await fetch(`/api/v1/onboarding?${new URLSearchParams(params).toString()}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -134,21 +133,22 @@ export default function GettingStarted() {
 const nango = new Nango({ publicKey: '${publicKey}' });
 
 nango.auth('${providerConfigKey}', '${connectionId}')
-`};
+`;
+    };
 
     const webhookSnippet = () => {
         return `{ "${model}": { "added": ${records.length}, "updated": 0, "deleted": 0 }, ...}`;
-    }
+    };
 
     const actionSnippet = () => {
         return `nango.triggerAction('${providerConfigKey}', '${connectionId}', 'create_issue', params);`;
-    }
+    };
 
     const initOnboarding = async () => {
         const res = await fetch(`/api/v1/onboarding`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 provider_config_key: providerConfigKey,
@@ -173,7 +173,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         const res = await fetch(`/api/v1/onboarding/${onboardingId}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ progress })
         });
@@ -186,16 +186,14 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         }
     };
 
-
     const verifyDemoProviderConfigKey = async () => {
         await fetch(`/api/v1/onboarding/verify`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             }
         });
     };
-
 
     const onAuthorize = async () => {
         analyticsTrack('web:getting_started:authorize');
@@ -203,8 +201,9 @@ nango.auth('${providerConfigKey}', '${connectionId}')
 
         await verifyDemoProviderConfigKey();
 
-        nango.auth(providerConfigKey, connectionId, {
-                params: {},
+        nango
+            .auth(providerConfigKey, connectionId, {
+                params: {}
             })
             .then(async () => {
                 await updateProgress(Steps.Authorize);
@@ -218,7 +217,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
 
     const onShowRecords = () => {
         setVisible(true);
-    }
+    };
 
     const fetchRecords = async () => {
         const params = {
@@ -228,21 +227,21 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         const res = await fetch(`/records?${new URLSearchParams(params).toString()}`, {
             method: 'GET',
             headers: {
-                    'Authorization': `Bearer ${secretKey}`,
-                    'Content-Type': 'application/json',
-                    'Provider-Config-Key': providerConfigKey,
-                    'Connection-Id': connectionId
-                }
-            });
-
-            if (res.status !== 200) {
-                const { message } = await res.json();
-                setServerErrorMessage(message);
-                return;
+                Authorization: `Bearer ${secretKey}`,
+                'Content-Type': 'application/json',
+                'Provider-Config-Key': providerConfigKey,
+                'Connection-Id': connectionId
             }
+        });
 
-            const fetchedRecords = await res.json();
-            setRecords(fetchedRecords);
+        if (res.status !== 200) {
+            const { message } = await res.json();
+            setServerErrorMessage(message);
+            return;
+        }
+
+        const fetchedRecords = await res.json();
+        setRecords(fetchedRecords);
     };
 
     let pollingInterval: NodeJS.Timer | null = null;
@@ -273,7 +272,6 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                 pollingInterval = null;
                 setSyncStillRunning(false);
             }
-
         }, 1000);
     };
 
@@ -335,179 +333,196 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!flex !justify-end !text-sm !bg-black !border-0 !h-[100px]" onClick={() => setVisible(false)}>
-                    <Button className="!text-text-light-gray" variant="zombieGray">Close</Button>
+                <Modal.Action
+                    placeholder={null}
+                    passive
+                    className="!flex !justify-end !text-sm !bg-black !border-0 !h-[100px]"
+                    onClick={() => setVisible(false)}
+                >
+                    <Button className="!text-text-light-gray" variant="zombieGray">
+                        Close
+                    </Button>
                 </Modal.Action>
             </Modal>
             <div className="text-white">
                 <div>
-                    <h1 className="text-left text-4xl font-semibold tracking-tight text-white">How integrations work with <span onDoubleClick={resetOnboarding}>Nango</span></h1>
-                    <h2 className="mt-4 text-xl text-text-light-gray">Using GitHub as an example, follow these steps to synchronize external data with the Nango API.</h2>
+                    <h1 className="text-left text-4xl font-semibold tracking-tight text-white">
+                        How integrations work with <span onDoubleClick={resetOnboarding}>Nango</span>
+                    </h1>
+                    <h2 className="mt-4 text-xl text-text-light-gray">
+                        Using GitHub as an example, follow these steps to synchronize external data with the Nango API.
+                    </h2>
                 </div>
                 <div className="border-l border-border-gray">
                     <div className="mt-8 ml-6">
-                        <div className={`p-4 rounded-md relative ${step !== Steps.Authorize ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}>
+                        <div
+                            className={`p-4 rounded-md relative ${step !== Steps.Authorize ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}
+                        >
                             <div className="absolute left-[-2.22rem] top-4 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
-                                <div className={`w-2 h-2 rounded-full ring-1 ${step !== Steps.Authorize ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}></div>
+                                <div
+                                    className={`w-2 h-2 rounded-full ring-1 ${step !== Steps.Authorize ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}
+                                ></div>
                             </div>
                             <h2 className="text-xl">Authorize end users</h2>
                             <h3 className="text-text-light-gray mb-6">Let users authorize your integration (GitHub in this example) in your frontend.</h3>
                             <div className="border border-border-gray rounded-md text-white text-sm py-2">
                                 <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
-                                    <Button type="button" variant="black" className="cursor-default pointer-events-none">Frontend</Button>
+                                    <Button type="button" variant="black" className="cursor-default pointer-events-none">
+                                        Frontend
+                                    </Button>
                                     <CopyButton dark text={authorizeSnippet()} />
                                 </div>
-                                <Prism
-                                    noCopy
-                                    language="typescript"
-                                    className="p-3 transparent-code border-b border-border-gray"
-                                    colorScheme="dark"
-                                >
+                                <Prism noCopy language="typescript" className="p-3 transparent-code border-b border-border-gray" colorScheme="dark">
                                     {authorizeSnippet()}
                                 </Prism>
                                 <div className="px-4 py-4">
                                     {step === Steps.Authorize ? (
-                                        <Button type="button" variant="primary" onClick={onAuthorize}><img className="h-5" src="/images/unlock-icon.svg" alt="" />Authorize Github</Button>
+                                        <Button type="button" variant="primary" onClick={onAuthorize}>
+                                            <img className="h-5" src="/images/unlock-icon.svg" alt="" />
+                                            Authorize Github
+                                        </Button>
                                     ) : (
-                                        <span className="mx-2 text-[#34A853]">
-                                            🎉 Github Authorized!
-                                        </span>
+                                        <span className="mx-2 text-[#34A853]">🎉 Github Authorized!</span>
                                     )}
-
                                 </div>
                                 {serverErrorMessage && <p className="mt-2 mx-4 text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </div>
                     </div>
                     <div className="mt-8 ml-6">
-                        <div className={`p-4 rounded-md relative ${step > Steps.Sync ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}>
+                        <div
+                            className={`p-4 rounded-md relative ${step > Steps.Sync ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}
+                        >
                             <div className="absolute left-[-2.22rem] top-4 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
                                 <div className={`w-2 h-2 rounded-full ring-1 ${step > Steps.Sync ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}></div>
                             </div>
                             <h2 className={`text-xl${step < Steps.Sync ? ' text-text-light-gray' : ''}`}>Synchronize external data</h2>
                             {step >= Steps.Sync && (
                                 <>
-                                <h3 className="text-text-light-gray mb-6">Retrieve GitHub issues from Nango in your backend.</h3>
-                                <div className="border border-border-gray rounded-md text-white text-sm py-2">
-                                    <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
-                                        <div className="space-x-4">
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.Node ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.Node) {
-                                                    setSyncSnippet(nodeSnippet(model, secretKey, connectionId, providerConfigKey));
-                                                    setLanguage(Language.Node);
-                                                  }
-                                                }}
-                                            >
-                                                Node
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.cURL ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.cURL) {
-                                                    setSyncSnippet(curlSnippet(baseUrl, endpoint, secretKey, connectionId, providerConfigKey));
-                                                    setLanguage(Language.cURL);
-                                                  }
-                                                }}
-                                            >
-                                                cURL
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.Python ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.Python) {
-                                                    setSyncSnippet(pythonSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                    setLanguage(Language.Python);
-                                                  }
-                                                }}
-                                            >
-                                                Python
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.PHP ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.PHP) {
-                                                    setSyncSnippet(phpSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                    setLanguage(Language.PHP);
-                                                  }
-                                                }}
-                                            >
-                                                PHP
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.Go ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.Go) {
-                                                    setSyncSnippet(goSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                    setLanguage(Language.Go);
-                                                  }
-                                                }}
-                                            >
-                                                Go
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={`${language === Language.Java ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                  if (language !== Language.Java) {
-                                                    setSyncSnippet(javaSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                    setLanguage(Language.Java);
-                                                  }
-                                                }}
-                                            >
-                                                Java
-                                            </Button>
+                                    <h3 className="text-text-light-gray mb-6">Retrieve GitHub issues from Nango in your backend.</h3>
+                                    <div className="border border-border-gray rounded-md text-white text-sm py-2">
+                                        <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
+                                            <div className="space-x-4">
+                                                <Button
+                                                    type="button"
+                                                    variant={`${language === Language.Node ? 'black' : 'zombie'}`}
+                                                    className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (language !== Language.Node) {
+                                                            setSyncSnippet(nodeSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                            setLanguage(Language.Node);
+                                                        }
+                                                    }}
+                                                >
+                                                    Node
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant={`${language === Language.cURL ? 'black' : 'zombie'}`}
+                                                    className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (language !== Language.cURL) {
+                                                            setSyncSnippet(curlSnippet(baseUrl, endpoint, secretKey, connectionId, providerConfigKey));
+                                                            setLanguage(Language.cURL);
+                                                        }
+                                                    }}
+                                                >
+                                                    cURL
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant={`${language === Language.Python ? 'black' : 'zombie'}`}
+                                                    className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (language !== Language.Python) {
+                                                            setSyncSnippet(pythonSnippet(endpoint, secretKey, connectionId, providerConfigKey));
+                                                            setLanguage(Language.Python);
+                                                        }
+                                                    }}
+                                                >
+                                                    Python
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant={`${language === Language.PHP ? 'black' : 'zombie'}`}
+                                                    className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (language !== Language.PHP) {
+                                                            setSyncSnippet(phpSnippet(endpoint, secretKey, connectionId, providerConfigKey));
+                                                            setLanguage(Language.PHP);
+                                                        }
+                                                    }}
+                                                >
+                                                    PHP
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant={`${language === Language.Go ? 'black' : 'zombie'}`}
+                                                    className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (language !== Language.Go) {
+                                                            setSyncSnippet(goSnippet(endpoint, secretKey, connectionId, providerConfigKey));
+                                                            setLanguage(Language.Go);
+                                                        }
+                                                    }}
+                                                >
+                                                    Go
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant={`${language === Language.Java ? 'black' : 'zombie'}`}
+                                                    className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (language !== Language.Java) {
+                                                            setSyncSnippet(javaSnippet(endpoint, secretKey, connectionId, providerConfigKey));
+                                                            setLanguage(Language.Java);
+                                                        }
+                                                    }}
+                                                >
+                                                    Java
+                                                </Button>
+                                            </div>
+                                            <CopyButton dark text={syncSnippet} />
                                         </div>
-                                        <CopyButton dark text={syncSnippet} />
+                                        <Prism noCopy language="typescript" className="p-3 transparent-code border-b border-border-gray" colorScheme="dark">
+                                            {syncSnippet}
+                                        </Prism>
+                                        <div className="flex items-center px-4 py-4">
+                                            {step === Steps.Sync ? (
+                                                <Button type="button" variant="primary" onClick={onGetRecords}>
+                                                    <img className="h-5" src="/images/chart-icon.svg" alt="" />
+                                                    Retrieve Github Issues
+                                                </Button>
+                                            ) : (
+                                                <>
+                                                    {syncStillRunning ? (
+                                                        <div className="flex items-center">
+                                                            <Spinner size={1} />
+                                                            <span className="ml-2">Please wait while "Issues" are being fetched</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <span className="mx-2 text-[#34A853] mr-4 mt-2">
+                                                                🎉 {records.length >= 15 ? '15+' : records.length} issues retrieved!
+                                                            </span>
+                                                            <Button variant="zombieGray" className="mt-2" onClick={onShowRecords}>
+                                                                Show Data
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                        {serverErrorMessage && <p className="mt-2 mx-4 text-sm text-red-600">{serverErrorMessage}</p>}
                                     </div>
-                                    <Prism
-                                        noCopy
-                                        language="typescript"
-                                        className="p-3 transparent-code border-b border-border-gray"
-                                        colorScheme="dark"
-                                    >
-                                        {syncSnippet}
-                                    </Prism>
-                                    <div className="flex items-center px-4 py-4">
-                                        {step === Steps.Sync ? (
-                                            <Button type="button" variant="primary" onClick={onGetRecords}>
-                                                <img className="h-5" src="/images/chart-icon.svg" alt="" />Retrieve Github Issues
-                                            </Button>
-                                        ) : (
-                                            <>
-                                                {syncStillRunning ? (
-                                                    <div className="flex items-center"><Spinner size={1} /><span className="ml-2">Please wait while "Issues" are being fetched</span></div>
-                                                ) : (
-                                                    <>
-                                                        <span className="mx-2 text-[#34A853] mr-4 mt-2">
-                                                            🎉  {records.length >= 15 ? '15+' : records.length} issues retrieved!
-                                                        </span>
-                                                        <Button variant="zombieGray" className="mt-2" onClick={onShowRecords}>Show Data</Button>
-                                                    </>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                    {serverErrorMessage && <p className="mt-2 mx-4 text-sm text-red-600">{serverErrorMessage}</p>}
-                                </div>
                                 </>
                             )}
                         </div>
                     </div>
                     <div className="mt-8 ml-6">
-                        <div className={`p-4 rounded-md relative ${step > Steps.Receive ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}>
+                        <div
+                            className={`p-4 rounded-md relative ${step > Steps.Receive ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}
+                        >
                             <div className="absolute left-[-2.22rem] top-4 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
                                 <div className={`w-2 h-2 rounded-full ring-1 ${step > Steps.Receive ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}></div>
                             </div>
@@ -520,36 +535,54 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                             {webhookSnippet()}
                                         </Prism>
                                     </div>
-                                    {step === Steps.Receive && (<Button variant="primary" onClick={onWebhookConfirm}>Got it!</Button>)}
+                                    {step === Steps.Receive && (
+                                        <Button variant="primary" onClick={onWebhookConfirm}>
+                                            Got it!
+                                        </Button>
+                                    )}
                                 </>
                             )}
                         </div>
                     </div>
                     <div className="mt-8 ml-6">
-                        <div className={`p-4 rounded-md relative ${step > Steps.Write ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}>
+                        <div
+                            className={`p-4 rounded-md relative ${step > Steps.Write ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}
+                        >
                             <div className="absolute left-[-2.22rem] top-4 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
                                 <div className={`w-2 h-2 rounded-full ring-1 ${step > Steps.Write ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}></div>
                             </div>
                             <h2 className={`text-xl${step < Steps.Write ? ' text-text-light-gray' : ''}`}>Write back to APIs</h2>
                             {step >= Steps.Write && (
                                 <>
-                                    <h3 className="text-text-light-gray mb-6">Push updates back to external APIs, with unified & customizable schemas across APIs.</h3>
+                                    <h3 className="text-text-light-gray mb-6">
+                                        Push updates back to external APIs, with unified & customizable schemas across APIs.
+                                    </h3>
                                     <div className="border border-border-gray rounded-md text-white text-sm py-2 mb-5">
                                         <Prism language="typescript" colorScheme="dark" noCopy className="transparent-code">
                                             {actionSnippet()}
                                         </Prism>
                                     </div>
-                                    {step === Steps.Write && (<Button variant="primary" onClick={onActionConfirm}>Got it!</Button>)}
+                                    {step === Steps.Write && (
+                                        <Button variant="primary" onClick={onActionConfirm}>
+                                            Got it!
+                                        </Button>
+                                    )}
                                 </>
                             )}
                         </div>
                     </div>
                     <div className="pb-8 ml-6">
-                        <div className={`p-4 rounded-md relative ${step > Steps.Ship ? 'mt-8 border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}>
-                            <div className={`absolute left-[-2.22rem] ${step > Steps.Ship ? 'top-4' : 'top-12'} w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center`}>
+                        <div
+                            className={`p-4 rounded-md relative ${step > Steps.Ship ? 'mt-8 border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}
+                        >
+                            <div
+                                className={`absolute left-[-2.22rem] ${step > Steps.Ship ? 'top-4' : 'top-12'} w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center`}
+                            >
                                 <div className={`w-2 h-2 rounded-full ring-1 ${step > Steps.Ship ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}></div>
                             </div>
-                            <h2 className={`text-xl${step < Steps.Write ? ' text-text-light-gray' : ''} ${step > Steps.Ship ? '' : 'mt-8 '}`}>Next: Ship your first integration!</h2>
+                            <h2 className={`text-xl${step < Steps.Write ? ' text-text-light-gray' : ''} ${step > Steps.Ship ? '' : 'mt-8 '}`}>
+                                Next: Ship your first integration!
+                            </h2>
                             {step >= Steps.Ship && (
                                 <>
                                     <h3 className="text-text-light-gray mb-6">Build any integration for any API with Nango.</h3>
@@ -573,11 +606,9 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                     </div>
                 </div>
             </div>
-              <Helmet>
-                <style>
-                  {'.no-border-modal footer { border-top: none !important;}'}
-                </style>
-              </Helmet>
+            <Helmet>
+                <style>{'.no-border-modal footer { border-top: none !important;}'}</style>
+            </Helmet>
         </DashboardLayout>
     );
 }

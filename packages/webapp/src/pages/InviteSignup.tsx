@@ -23,7 +23,7 @@ export default function InviteSignup() {
             const res = await getInvitee(token as string);
 
             if (res?.status === 200) {
-                const invitee = (await res.json());
+                const invitee = await res.json();
                 const { name, email, account_id } = invitee;
                 setName(name);
                 setEmail(email);

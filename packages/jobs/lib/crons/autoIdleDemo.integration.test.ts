@@ -53,7 +53,7 @@ describe('Auto Idle Demo', () => {
         expect(schedMid?.status).toBe(ScheduleStatus.RUNNING);
 
         // Second execution it should pick the old sync
-        await db.knex.from('nango._nango_syncs').update({ updated_at: new Date(Date.now() - 86400 * 2 * 1000) });
+        await db.knex.from('_nango_syncs').update({ updated_at: new Date(Date.now() - 86400 * 2 * 1000) });
         await exec();
 
         const schedAfter = await getSchedule(sync.id!);

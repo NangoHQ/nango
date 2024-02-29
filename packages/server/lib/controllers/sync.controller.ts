@@ -774,7 +774,7 @@ class SyncController {
                 return;
             }
 
-            await syncOrchestrator.deleteSync(syncId, environmentId);
+            await syncOrchestrator.softDeleteSync(syncId, environmentId);
 
             res.sendStatus(204);
         } catch (e) {

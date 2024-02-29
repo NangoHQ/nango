@@ -2,7 +2,7 @@ import { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types';
 
 export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secretKey: string, connectionId: string, providerConfigKey: string) => {
     const model = Array.isArray(models) ? models[0].name : models;
-        return `import { Nango } from '@nangohq/node';
+    return `import { Nango } from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
 const issues = await nango.listRecords({
@@ -10,20 +10,27 @@ const issues = await nango.listRecords({
     connectionId: '${connectionId}',
     model: '${model}'
 });
-`};
+`;
+};
 
-export const nodeActionSnippet = (actionName: string, secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string) => {
+export const nodeActionSnippet = (
+    actionName: string,
+    secretKey: string,
+    connectionId: string,
+    providerConfigKey: string,
+    input?: Record<string, any> | string
+) => {
     let formattedInput = '';
     if (typeof input === 'string') {
         formattedInput = `'<${input}>'`;
     } else if (input && typeof input === 'object') {
         formattedInput = `{
 ${JSON.stringify(input, null, 2)
-  .split('\n')
-  .slice(1)
-  .join('\n')
-  .replace(/^/gm, '    ')
-  .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
+    .split('\n')
+    .slice(1)
+    .join('\n')
+    .replace(/^/gm, '    ')
+    .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
     }
 
     return `import Nango from '@nangohq/node';
@@ -38,10 +45,18 @@ const issues = await nango.triggerAction(
 `;
 };
 
-export const curlSnippet = (baseUrl: string, endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[], secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any> | string, method = 'GET') => {
+export const curlSnippet = (
+    baseUrl: string,
+    endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[],
+    secretKey: string,
+    connectionId: string,
+    providerConfigKey: string,
+    input?: Record<string, any> | string,
+    method = 'GET'
+) => {
     let curlMethod: HTTP_VERB = method as HTTP_VERB;
     if (typeof endpoint !== 'string') {
-        curlMethod = (Object.keys(endpoint)[0]) as HTTP_VERB;
+        curlMethod = Object.keys(endpoint)[0] as HTTP_VERB;
         endpoint = (Array.isArray(endpoint) ? endpoint[0][curlMethod] : endpoint[curlMethod]) as string;
     }
 
@@ -51,14 +66,14 @@ export const curlSnippet = (baseUrl: string, endpoint: string | NangoSyncEndpoin
     } else if (input && typeof input === 'object') {
         formattedInput = `{
 ${JSON.stringify(input, null, 2)
-  .split('\n')
-  .slice(1)
-  .join('\n')
-  .replace(/^/gm, '    ')
-  .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
+    .split('\n')
+    .slice(1)
+    .join('\n')
+    .replace(/^/gm, '    ')
+    .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
     }
 
-        return `
+    return `
     curl --request ${curlMethod} \\
     --url ${baseUrl}/v1${endpoint} \\
     --header 'Authorization: Bearer ${secretKey}' \\
@@ -67,10 +82,10 @@ ${JSON.stringify(input, null, 2)
     --header 'Provider-Config-Key: ${providerConfigKey}' ${formattedInput ? '\\' : ''}
     ${formattedInput ? `--data '${formattedInput}'` : ''}
         `;
-    };
+};
 
 export const pythonSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
-        return`
+    return `
         import requests
 
 url = "https://api.nango.dev/v1${endpoint}"
@@ -84,11 +99,11 @@ headers = {
 response = requests.request("GET", url, headers=headers)
 
 print(response.text)
-        `
+        `;
 };
 
 export const phpSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
-        return`
+    return `
 <?php
 
 $curl = curl_init();
@@ -117,11 +132,11 @@ if ($err) {
   echo "cURL Error #:" . $err;
 } else {
   echo $response;
-}`
+}`;
 };
 
 export const goSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
-        return`
+    return `
 package main
 
 import (
@@ -147,28 +162,29 @@ func main() {
 
 	fmt.Println(res)
 	fmt.Println(string(body))
-}`
+}`;
 };
 
 export const javaSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
-        return`
+    return `
 HttpResponse<String> response = Unirest.get("https://api.nango.dev/v1${endpoint}")
   .header("Authorization", "Bearer ${secretKey}")
   .header("Connection-Id", "${connectionId}")
   .header("Provider-Config-Key", "${providerConfigKey}")
-  .asString();`
+  .asString();`;
 };
 
 export const autoStartSnippet = (secretKey: string, provider: string, sync: string) => {
-        return `import Nango from '@nangohq/node';
+    return `import Nango from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '${secretKey}' });
 
 await nango.startSync('${provider}', ['${sync}'], '<CONNECTION-ID>');
-`};
+`;
+};
 
 export const setMetadaSnippet = (secretKey: string, provider: string, input: Record<string, any>) => {
-        return `import Nango from '@nangohq/node';
+    return `import Nango from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '${secretKey}' });
 
@@ -177,4 +193,5 @@ await nango.setMetadata(
     '<CONNECTION-ID>',
     ${input ? `{\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}` : ''}
 );
-`};
+`;
+};

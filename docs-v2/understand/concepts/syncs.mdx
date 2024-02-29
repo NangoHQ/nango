@@ -14,7 +14,7 @@ Syncs replicate external data into Nango, according to a predefined schedule. Yo
 Syncs are designed to replicate data in a structured manner, transforming it into a list of records that adhere to a predefined model. This model, detailed within the [sync configuration](/understand/concepts/integration-configuration), outlines the fields (and their data types) of the output records.
 
 # Scheduling and execution
-The execution of syncs is based on a schedule that you configure, which can be as frequent as every 5 minutes depending on your plan. Each execution updates the dataset with the latest data from the external API for every connection under the integration. You have the flexibility to start syncs for individual connections or set them to automatically begin for new connections, managed through the [Nango UI](/understand/concepts/ui) or [API](/reference/overview).
+The execution of syncs is based on a schedule that you configure, which can be as frequent as every 5 minutes depending on your plan. Each execution updates the dataset with the latest data from the external API for every connection under the integration. You have the flexibility to start syncs for individual connections or set them to automatically begin for new connections, managed through the Nango UI or [API](/reference/overview).
 
 Sync schedules & executions can be actively managed per connection through the Nango UI or API, including starting/pausing schdules & canceling/triggering executions. [Incremental syncs](#incremental-syncs) let you initiate a full refresh, effectively resetting the synced dataset.
 
@@ -63,5 +63,6 @@ Sync executions are driven by [integration scripts](/understand/concepts/scripts
 
 Syncs can have records that conform to a [unified model](/understand/concepts/api-unification), regardless of the specific external API they originate from. This unification simplifies your integration code, enabling you to handle data from various sources in a consistent manner, thus reducing complexity and the potential for errors.
 
-# Conclusion
-Nango's sync feature streamlines the process of keeping your application's data in sync with external APIs, offering structured data transformation, flexible scheduling, and efficient data management mechanisms. 
+# Getting started with syncs
+
+Check out the syncs [step-by-step guide](/integrate/guides/sync-data-from-an-api) or refer to the reference ([API](/reference/api/sync/records-list) / [SDK](/reference/sdks/node#syncs)).

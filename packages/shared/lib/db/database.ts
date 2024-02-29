@@ -44,7 +44,7 @@ export default db;
 
 export { db as database };
 
-export const schema = (): Knex.QueryBuilder => db.knex.withSchema(db.schema());
+export const schema = (): Knex.QueryBuilder => db.knex.queryBuilder();
 
 export const dbNamespace = '_nango_';
 

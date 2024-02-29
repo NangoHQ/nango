@@ -234,7 +234,7 @@ class FlowController {
                 const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
 
                 for (const sync of syncs) {
-                    await syncOrchestrator.deleteSync(sync.id as string, environmentId);
+                    await syncOrchestrator.softDeleteSync(sync.id!, environmentId);
                 }
             }
 

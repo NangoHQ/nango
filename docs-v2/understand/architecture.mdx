@@ -4,37 +4,9 @@ sidebarTitle: 'Architecture'
 description: 'Learn more about the architecture of Nango.'
 ---
 
-Nango improves the way applications integrate with external APIs by providing a flexible, customizable unified API. Unlike traditional unified APIs that offer a one-size-fits-all solution, Nango empowers developers to tailor the interaction between their app and external APIs, ensuring a perfect fit for their specific needs.
-
-# Core components
-
-- **[Integrations](/understand/concepts/integrations):** The configurations that define how to connect to an external API. Each integration represents a separate external service (like Hubspot or Slack) and includes details such as authentication methods and consumable API endpoints.
-
-- **[Connections](/understand/concepts/connections):** Connections are instances of integrations for individual users or entities. They store the authentication credentials (like OAuth tokens or API keys) that allow Nango to access the external API on behalf of a specific user or entity.
-
-- **[Scripts](/understand/concepts/scripts):** Scripts are the heart of Nango's customization capabilities. They define the logic for how Nango interacts with external APIs, and run on Nango's infrastructure. Scripts are either provided by Nango as [templates](/understand/concepts/templates) or implemented by you. There are different types of scripts:
-
-    - **[Action](/understand/concepts/actions) scripts:** Enable specific tasks (e.g., creating a contact) to be executed with an external API.
-
-    - **[Sync](/understand/concepts/syncs) scripts:** Automate the synchronization of data from external APIs into your app.
-
-    - **[Webhook](/understand/concepts/webhooks) scripts:** Handle incoming webhooks from external APIs for real-time updates.
-
-- **Generated API reference:** Nango automatically generates an API reference for each integration, providing a clear and accessible documentation of available endpoints, actions, and sync operations. This reference is a guide for developers on how to utilize the Nango API to interact with external services.
-
-# A dual architecture
-
-Nango's architecture can be divided into two main parts: the customer app's interaction with Nango, and Nango's interaction with external APIs. This dual approach is what sets Nango apart, offering unprecedented flexibility and customization.
-
-**Customer app to Nango** 
-
-Developers use the unified API provided by Nango to interact with various external services. This part is streamlined and standardized across all Nango integrations, providing a consistent and easy-to-use interface for developers.
-
-**Nango to external APIs** 
-
-Here lies Nango's unique value proposition. Unlike traditional unified APIs, Nango allows developers to customize how it interacts with each external API through scripts. This means that while the interface from the app to Nango remains unified, the communication from Nango to external APIs can be tailored to meet specific requirements.
-
-# Detailed architecture
+<Frame>
+  <img src="/images/architecture.png" />
+</Frame>
 
 **API**
 

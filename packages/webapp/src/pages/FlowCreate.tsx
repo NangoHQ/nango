@@ -7,7 +7,7 @@ import { Sync } from '../types';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';
-import Info from '../components/ui/Info'
+import Info from '../components/ui/Info';
 import Button from '../components/ui/button/Button';
 import Spinner from '../components/ui/Spinner';
 
@@ -17,7 +17,7 @@ interface FlowDetails {
     track_deletes?: boolean;
     returns: string[];
     runs: string;
-    rawName?: string
+    rawName?: string;
     description?: string;
 }
 
@@ -48,7 +48,7 @@ export default function FlowCreate() {
     const [showFrequencyError, setShowFrequencyError] = useState(false);
     const getFlows = useGetFlows();
     const createFlow = useCreateFlow();
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.cookieValue);
 
     const navigate = useNavigate();
 
@@ -67,16 +67,20 @@ export default function FlowCreate() {
                 const integration = Object.keys(availableFlows.integrations)[0];
                 setIntegration(integration);
                 setSelectedFlowName(Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]])[0]);
-                const flowNames = Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]]).filter(name => name !== 'models' && name !== 'rawName')
+                const flowNames = Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]]).filter(
+                    (name) => name !== 'models' && name !== 'rawName'
+                );
                 setFlowNames(flowNames);
-                setPossibleFlowsFromSelection(flowNames.map(name => availableFlows.integrations[integration][name]) as Flow[]);
-                const flow = availableFlows.integrations[Object.keys(availableFlows.integrations)[0]][Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]])[0]] as FlowDetails;
+                setPossibleFlowsFromSelection(flowNames.map((name) => availableFlows.integrations[integration][name]) as Flow[]);
+                const flow = availableFlows.integrations[Object.keys(availableFlows.integrations)[0]][
+                    Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]])[0]
+                ] as FlowDetails;
                 flow.type = flow.type || 'sync';
                 setFlow(flow);
                 updateFrequency(flow.runs);
                 setModels(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]]['models']);
             }
-        }
+        };
         if (!loaded) {
             setLoaded(true);
             getAvailableFlows();
@@ -100,7 +104,7 @@ export default function FlowCreate() {
 
         const flowObject = flows[data['integration'] as string] as Flow;
 
-        const models = Array.isArray(flow?.returns) ? showModels(flow?.returns as string[]) as any : flow?.returns;
+        const models = Array.isArray(flow?.returns) ? (showModels(flow?.returns as string[]) as any) : flow?.returns;
         const flowPayload = {
             provider: data['integration'].toString(),
             type: flow?.type || 'sync',
@@ -108,13 +112,15 @@ export default function FlowCreate() {
             runs: flow?.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
             auto_start: flow?.auto_start !== false,
             models: (Array.isArray(flow?.returns) ? flow?.returns : [flow?.returns]) as string[],
-            model_schema: JSON.stringify(Object.keys(models).map(model => ({
-                name: model,
-                fields: Object.keys(models[model]).map(field => ({
-                    name: field,
-                    type: models[model][field]
+            model_schema: JSON.stringify(
+                Object.keys(models).map((model) => ({
+                    name: model,
+                    fields: Object.keys(models[model]).map((field) => ({
+                        name: field,
+                        type: models[model][field]
+                    }))
                 }))
-            }))),
+            ),
             is_public: true,
             public_route: flowObject.rawName || data['integration'].toString()
         };
@@ -130,14 +136,14 @@ export default function FlowCreate() {
                 position: toast.POSITION.BOTTOM_CENTER
             });
         }
-    }
+    };
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setIntegration(e.target.value);
         setShowFrequencyError(false);
         const flowNamesWithModels = Object.keys(flows[e.target.value]);
-        const flowNames = flowNamesWithModels.filter(name => name !== 'models' && name !== 'rawName');
-        setPossibleFlowsFromSelection(flowNames.map(name => flows[e.target.value][name]) as Flow[]);
+        const flowNames = flowNamesWithModels.filter((name) => name !== 'models' && name !== 'rawName');
+        setPossibleFlowsFromSelection(flowNames.map((name) => flows[e.target.value][name]) as Flow[]);
         setFlowNames(flowNames);
         setSelectedFlowName(flowNames[0]);
         const alreadyAdded = alreadyAddedFlows.find((flow: Sync) => flow.unique_key === e.target.value && flow.sync_name === flowNames[0]);
@@ -146,7 +152,7 @@ export default function FlowCreate() {
         setFlow(flow);
         updateFrequency(flow.runs);
         setModels(flows[e.target.value]['models']);
-    }
+    };
 
     const handleFlowNameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const flow = flows[integration][e.target.value] as FlowDetails;
@@ -160,7 +166,7 @@ export default function FlowCreate() {
 
         const alreadyAdded = alreadyAddedFlows.find((flow: Sync) => flow.unique_key === integration && flow.sync_name === e.target.value);
         setCanAdd(alreadyAdded === undefined);
-    }
+    };
 
     const showModels = (returns: string | string[]) => {
         const builtModels = {} as Flow['models'];
@@ -169,12 +175,12 @@ export default function FlowCreate() {
             return models[returns] ?? returns;
         }
 
-        returns.forEach(returnedModel => {
+        returns.forEach((returnedModel) => {
             builtModels[returnedModel] = models[returnedModel];
         });
 
         return builtModels;
-    }
+    };
 
     const matchDefaultFrequencyValue = (frequency: string): void => {
         const frequencyValue = frequency.match(/\d+/g)?.[0];
@@ -187,10 +193,10 @@ export default function FlowCreate() {
         if (!frequencyValue) {
             setFrequencyValue(1);
             return;
-        };
+        }
 
         setFrequencyValue(Number(frequencyValue));
-    }
+    };
 
     const matchDefaultFrequencyUnit = (frequency: string): void => {
         const frequencyWithoutEvery = frequency.replace('every ', '');
@@ -205,23 +211,23 @@ export default function FlowCreate() {
             case 'min':
             case 'mins':
                 unit = 'minutes';
-            break;
+                break;
             case 'hours':
             case 'hour':
             case 'hr':
             case 'hrs':
             case 'h':
                 unit = 'hours';
-            break;
+                break;
             case 'days':
             case 'day':
             case 'd':
-                unit ='days';
-            break;
+                unit = 'days';
+                break;
         }
 
         setFrequencyUnit(unit);
-    }
+    };
 
     function updateFrequency(frequency: string) {
         matchDefaultFrequencyValue(frequency);
@@ -269,7 +275,7 @@ export default function FlowCreate() {
         link.click();
         document.body.removeChild(link);
         setIsDownloading(false);
-    }
+    };
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
@@ -279,8 +285,20 @@ export default function FlowCreate() {
                     <div className="mx-20 h-fit text-white text-sm">
                         <div className="mb-8">
                             <Info>
-                                If none of the available templates fit your specific needs, you can create your own <a href={`https://docs.nango.dev/customize/guides/create-a-custom-integration`} className="text-[#4E80EE]" rel="noreferrer" target="_blank">custom {flow?.type || 'sync' }s</a>,
-                                or request that we build them for you by reaching out on our <a href="https://nango.dev/slack" className="text-[#4E80EE]" rel="noreferrer" target="_blank">community</a>.
+                                If none of the available templates fit your specific needs, you can create your own{' '}
+                                <a
+                                    href={`https://docs.nango.dev/customize/guides/create-a-custom-integration`}
+                                    className="text-[#4E80EE]"
+                                    rel="noreferrer"
+                                    target="_blank"
+                                >
+                                    custom {flow?.type || 'sync'}s
+                                </a>
+                                , or request that we build them for you by reaching out on our{' '}
+                                <a href="https://nango.dev/slack" className="text-[#4E80EE]" rel="noreferrer" target="_blank">
+                                    community
+                                </a>
+                                .
                             </Info>
                         </div>
                         <form className="space-y-6" onSubmit={handleSave} autoComplete="off">
@@ -300,7 +318,9 @@ export default function FlowCreate() {
                                             defaultValue={Object.keys(flows)[0]}
                                         >
                                             {Object.keys(flows).map((integration, index) => (
-                                                <option key={index} value={integration}>{integration}</option>
+                                                <option key={index} value={integration}>
+                                                    {integration}
+                                                </option>
                                             ))}
                                         </select>
                                     </div>
@@ -322,7 +342,10 @@ export default function FlowCreate() {
                                             value={selectedFlowName}
                                         >
                                             {flowNames.map((flowName, index) => (
-                                                <option key={index} value={flowName}>{flowName} ({(possibleFlowsFromSelection[index]?.type) as unknown as string === 'action' ? 'action' : 'sync'})</option>
+                                                <option key={index} value={flowName}>
+                                                    {flowName} (
+                                                    {(possibleFlowsFromSelection[index]?.type as unknown as string) === 'action' ? 'action' : 'sync'})
+                                                </option>
                                             ))}
                                         </select>
                                     </div>
@@ -371,9 +394,7 @@ export default function FlowCreate() {
                                                 </select>
                                             </div>
                                         </div>
-                                        {showFrequencyError && (
-                                            <span className="block text-red-500">Frequency cannot be less than 5 minutes</span>
-                                        )}
+                                        {showFrequencyError && <span className="block text-red-500">Frequency cannot be less than 5 minutes</span>}
                                     </div>
                                 </div>
                             )}
@@ -407,19 +428,21 @@ export default function FlowCreate() {
                             )}
                             <div className="flex flex-col">
                                 <div className="flex flex-row items-center">
-                                {canAdd !== false && (
-                                    <button type="submit" className="bg-white h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black mr-4">
-                                        Add {flow?.type === 'action' ? 'Action' : 'Sync'}
-                                    </button>
-                                )}
-                                <Button type="button" variant="secondary" onClick={downloadFlow}>Download</Button>
-                                {isDownloading && (
-                                    <span className="ml-4"><Spinner size={2} /></span>
-                                )}
+                                    {canAdd !== false && (
+                                        <button type="submit" className="bg-white h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black mr-4">
+                                            Add {flow?.type === 'action' ? 'Action' : 'Sync'}
+                                        </button>
+                                    )}
+                                    <Button type="button" variant="secondary" onClick={downloadFlow}>
+                                        Download
+                                    </Button>
+                                    {isDownloading && (
+                                        <span className="ml-4">
+                                            <Spinner size={2} />
+                                        </span>
+                                    )}
                                 </div>
-                                {!canAdd && (
-                                    <span className="flex flex-col mt-2 text-red-500">This flow has already been added!</span>
-                                )}
+                                {!canAdd && <span className="flex flex-col mt-2 text-red-500">This flow has already been added!</span>}
                             </div>
                         </form>
                     </div>
