@@ -243,6 +243,8 @@ export class NangoAction {
 
     public ActionError = ActionError;
 
+    private memoizedConnection: { connection: Connection; timestamp: number } | undefined;
+
     constructor(config: NangoProps) {
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
@@ -334,12 +336,12 @@ export class NangoAction {
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
-            const proxyConfig = this.proxyConfig(config);
-            const connection = await this.nango.getConnection(proxyConfig.providerConfigKey, proxyConfig.connectionId);
+            const connection = await this.getConnection();
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
 
+            const proxyConfig = this.proxyConfig(config);
             const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
                 existingActivityLogId: this.activityLogId as number,
                 connection,
@@ -416,7 +418,12 @@ export class NangoAction {
 
     public async getConnection(): Promise<Connection> {
         this.exitSyncIfAborted();
-        return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
+        if (!this.memoizedConnection || Date.now() - this.memoizedConnection.timestamp > 60000) {
+            const connection = await this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
+            this.memoizedConnection = { connection, timestamp: Date.now() };
+            return connection;
+        }
+        return this.memoizedConnection.connection;
     }
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
