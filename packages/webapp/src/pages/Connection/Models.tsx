@@ -224,7 +224,7 @@ export default function Models(props: ModelsProps) {
                                         <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" onClick={() => toggleDropdown(sync.id)}/>
                                         {openDropdownId === sync.id && (
                                             <div
-                                                className="text-gray-400 absolute z-10 -top-15 left-1 bg-black rounded border border-neutral-700 items-center"
+                                                className="text-gray-400 absolute z-10 -top-15 right-1 bg-black rounded border border-neutral-700 items-center"
                                             >
                                                 <div className="flex flex-col w-full">
                                                     <div
