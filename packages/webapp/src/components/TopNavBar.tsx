@@ -1,5 +1,5 @@
 import { isCloud, isEnterprise } from '../utils/utils';
-import { ChatBubbleBottomCenterIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
+import { ChatBubbleBottomCenterIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { useSignout } from '../utils/user';
 
 export default function NavBar() {

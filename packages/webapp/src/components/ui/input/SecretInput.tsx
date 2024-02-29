@@ -3,7 +3,15 @@ import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/outlin
 import classNames from 'classnames';
 import CopyButton from '../button/CopyButton';
 
-type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string, optionalvalue?: string; setoptionalvalue?: (value: string) => void; additionalclass?: string; tall?: boolean; refresh?: () => void };
+type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
+    copy?: boolean;
+    defaultValue?: string;
+    optionalvalue?: string;
+    setoptionalvalue?: (value: string) => void;
+    additionalclass?: string;
+    tall?: boolean;
+    refresh?: () => void;
+};
 
 const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField({ className, copy, ...props }, ref) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);

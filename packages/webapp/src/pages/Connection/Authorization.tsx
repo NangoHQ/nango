@@ -17,9 +17,7 @@ interface AuthorizationProps {
 export default function Authorization(props: AuthorizationProps) {
     const { connection, forceRefresh, loaded } = props;
 
-    if (!loaded) return (
-        <Loading spaceRatio={2.5} className="top-24" />
-    );
+    if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
@@ -107,17 +105,16 @@ export default function Authorization(props: AuthorizationProps) {
                 </Prism>
             </div>
             {(connection?.oauthType === AuthModes.OAuth1 ||
-              connection?.oauthType === AuthModes.OAuth2 ||
-              connection?.oauthType === AuthModes.App ||
-              connection?.oauthType === AuthModes.Custom
-             ) && (
+                connection?.oauthType === AuthModes.OAuth2 ||
+                connection?.oauthType === AuthModes.App ||
+                connection?.oauthType === AuthModes.Custom) && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>
                     <PrismPlus language="json" colorScheme="dark">
                         {JSON.stringify(connection?.rawCredentials, null, 4) || '{}'}
                     </PrismPlus>
                 </div>
-             )}
+            )}
         </div>
-    )
+    );
 }

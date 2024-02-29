@@ -5,7 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { PostHogProvider } from 'posthog-js/react';
-import * as Sentry from "@sentry/react";
+import * as Sentry from '@sentry/react';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const options = {
@@ -14,16 +14,16 @@ const options = {
 };
 
 Sentry.init({
-  dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
-  integrations: [
-    new Sentry.BrowserTracing({
-      tracePropagationTargets: [/^https:\/\/app.nango\.dev\/api/],
-    }),
-    new Sentry.Replay(),
-  ],
-  tracesSampleRate: 0.1,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 0.3,
+    dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
+    integrations: [
+        new Sentry.BrowserTracing({
+            tracePropagationTargets: [/^https:\/\/app.nango\.dev\/api/]
+        }),
+        new Sentry.Replay()
+    ],
+    tracesSampleRate: 0.1,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 0.3
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
