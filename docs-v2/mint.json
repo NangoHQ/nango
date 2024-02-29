@@ -185,9 +185,10 @@
         {
             "group": "Understand Nango",
             "pages": [
+                "understand/core-concepts",
                 "understand/architecture",
                 {
-                    "group": "Concepts",
+                    "group": "All Concepts",
                     "pages": [
                         "understand/concepts/integrations",
                         "understand/concepts/connections",
@@ -196,7 +197,6 @@
                         "understand/concepts/proxy",
                         "understand/concepts/webhooks",
                         "understand/concepts/environments",
-                        "understand/concepts/ui",
                         "understand/concepts/templates",
                         "understand/concepts/cli",
                         "understand/concepts/integrations-folder",
