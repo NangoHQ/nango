@@ -212,8 +212,18 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             <section className="mt-14">
                 <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
-                    <li className={`p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Syncs)}>Syncs</li>
-                    <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
+                    <li
+                        className={`p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        onClick={() => setActiveTab(Tabs.Syncs)}
+                    >
+                        Syncs
+                    </li>
+                    <li
+                        className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        onClick={() => setActiveTab(Tabs.Authorization)}
+                    >
+                        Authorization
+                    </li>
                 </ul>
             </section>
 

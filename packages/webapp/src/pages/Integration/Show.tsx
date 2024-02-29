@@ -127,7 +127,7 @@ export default function ShowIntegration() {
                                 onClick={() => {
                                     navigate(`/${env}/connections/create/${providerConfigKey}`);
                                 }}
-                                >
+                            >
                                 <LinkIcon className="flex h-5 w-5" />
                                 <span className="px-1">Add Connection</span>
                             </Button>
