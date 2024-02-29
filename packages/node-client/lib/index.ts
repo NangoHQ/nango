@@ -18,7 +18,7 @@ import {
     IntegrationWithCreds,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse,
-    StandardNangoConfig,
+    StandardNangoConfig
 } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
