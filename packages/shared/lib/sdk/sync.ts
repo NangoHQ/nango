@@ -226,6 +226,8 @@ interface EnvironmentVariable {
     value: string;
 }
 
+const MEMOIZED_CONNECTION_TTL = 60000;
+
 export class NangoAction {
     private nango: Nango;
     private attributes = {};
@@ -418,7 +420,7 @@ export class NangoAction {
 
     public async getConnection(): Promise<Connection> {
         this.exitSyncIfAborted();
-        if (!this.memoizedConnection || Date.now() - this.memoizedConnection.timestamp > 60000) {
+        if (!this.memoizedConnection || Date.now() - this.memoizedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
             const connection = await this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
             this.memoizedConnection = { connection, timestamp: Date.now() };
             return connection;
