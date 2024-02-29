@@ -1,0 +1,29 @@
+{
+    "files": [],
+    "references": [
+        {
+            "path": "packages/frontend"
+        },
+        {
+            "path": "packages/jobs"
+        },
+        {
+            "path": "packages/node-client"
+        },
+        {
+            "path": "packages/persist"
+        },
+        {
+            "path": "packages/runner"
+        },
+        {
+            "path": "packages/server"
+        },
+        {
+            "path": "packages/shared"
+        },
+        {
+            "path": "packages/webapp"
+        }
+    ]
+}

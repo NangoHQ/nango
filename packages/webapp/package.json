@@ -2,7 +2,33 @@
     "name": "@nangohq/webapp",
     "version": "1.0.0",
     "private": true,
-    "dependencies": {
+    "dependencies": {},
+    "scripts": {
+        "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
+        "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+        "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
+        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject",
+        "start:hosted": "env-cmd -f .env.hosted npm run start",
+        "start:staging": "env-cmd -f .env.staging npm run start",
+        "start:prod": "env-cmd -f .env.prod npm run start",
+        "build:hosted": "env-cmd -f .env.hosted npm run build",
+        "build:enterprise": "env-cmd -f .env.enterprise npm run build",
+        "build:staging": "env-cmd -f .env.staging npm run build",
+        "build:prod": "env-cmd -f .env.prod npm run build"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
         "@geist-ui/core": "^2.3.8",
         "@geist-ui/icons": "^1.0.2",
         "@headlessui/react": "^1.7.12",
@@ -32,34 +58,7 @@
         "swr": "^2.2.5",
         "typescript": "^4.9.5",
         "web-vitals": "^2.1.4",
-        "zustand": "^4.3.9"
-    },
-    "scripts": {
-        "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
-        "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
-        "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
-        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject",
-        "start:hosted": "env-cmd -f .env.hosted npm run start",
-        "start:staging": "env-cmd -f .env.staging npm run start",
-        "start:prod": "env-cmd -f .env.prod npm run start",
-        "build:hosted": "env-cmd -f .env.hosted npm run build",
-        "build:enterprise": "env-cmd -f .env.enterprise npm run build",
-        "build:staging": "env-cmd -f .env.staging npm run build",
-        "build:prod": "env-cmd -f .env.prod npm run build"
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-    },
-    "devDependencies": {
+        "zustand": "^4.3.9",
         "@tailwindcss/forms": "^0.5.3",
         "@types/jest": "^27.5.2",
         "@types/js-cookie": "^3.0.3",

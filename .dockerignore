@@ -12,3 +12,9 @@ docker-compose.yml
 **/nango-data
 dev/
 docs-v2/
+tsconfig.tsbuildinfo
+integration-templates
+tests
+assets/
+vite*.ts
+packages/cli/
