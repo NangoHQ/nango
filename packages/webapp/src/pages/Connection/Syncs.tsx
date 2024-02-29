@@ -15,7 +15,7 @@ import { calculateTotalRuntime, getRunTime, parseLatestSyncResult, formatDateToU
 import { Connection } from '../../types';
 import { useRunSyncAPI } from '../../utils/api';
 
-interface ModelsProps {
+interface SyncsProps {
     syncs: SyncResponse[] | null;
     connection: Connection | null;
     loaded: boolean;
@@ -24,7 +24,7 @@ interface ModelsProps {
     env: string;
 }
 
-export default function Models(props: ModelsProps) {
+export default function Syncs(props: SyncsProps) {
     const { syncs, connection, setSyncLoaded, loaded, syncLoaded, env } = props;
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const runCommandSyncAPI = useRunSyncAPI();
@@ -125,7 +125,7 @@ export default function Models(props: ModelsProps) {
                     <tbody className="flex flex-col space-y-2">
                         <tr>
                             <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
-                                <div className="w-48">Models</div>
+                                <div className="w-48">Synced Models</div>
                                 <div className="w-16">Status</div>
                                 <div className="w-8">Frequency</div>
                                 <div className="w-24">Last Sync Start</div>

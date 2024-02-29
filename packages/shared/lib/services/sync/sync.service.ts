@@ -429,11 +429,8 @@ export const isSyncValid = async (connection_id: string, provider_config_key: st
     return true;
 };
 
-export const deleteSync = async (syncId: string): Promise<string> => {
+export const softDeleteSync = async (syncId: string): Promise<string> => {
     await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-
-    await syncOrchestrator.deleteSyncRelatedObjects(syncId);
-
     return syncId;
 };
 
@@ -657,7 +654,7 @@ export const getAndReconcileDifferences = async (
                         for (const connection of connections) {
                             const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                             if (syncId) {
-                                await syncOrchestrator.deleteSync(syncId.id as string, environmentId);
+                                await syncOrchestrator.softDeleteSync(syncId.id!, environmentId);
                             }
                         }
                     }

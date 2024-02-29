@@ -10,7 +10,7 @@ import APIReference from './APIReference';
 import EndpointReference from './EndpointReference';
 import FlowPage from './FlowPage';
 import Button from '../../components/ui/button/Button';
-import { BuildingOfficeIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { LinkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
@@ -127,9 +127,9 @@ export default function ShowIntegration() {
                                 onClick={() => {
                                     navigate(`/${env}/connections/create/${providerConfigKey}`);
                                 }}
-                            >
-                                <BuildingOfficeIcon className="flex h-5 w-5" />
-                                <span className="px-1">Connect</span>
+                                >
+                                <LinkIcon className="flex h-5 w-5" />
+                                <span className="px-1">Add Connection</span>
                             </Button>
                         </div>
                     </div>

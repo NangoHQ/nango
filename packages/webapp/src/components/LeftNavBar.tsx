@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     SquaresPlusIcon,
-    BuildingOfficeIcon,
+    LinkIcon,
     QueueListIcon,
     AdjustmentsHorizontalIcon,
     EllipsisHorizontalIcon,
@@ -182,9 +182,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 props.selectedItem === LeftNavBarItems.Connections ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <BuildingOfficeIcon
-                                className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Connections ? 'text-white' : 'text-gray-400'}`}
-                            />
+                            <LinkIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Connections ? 'text-white' : 'text-gray-400'}`} />
                             <p>Connections</p>
                         </Link>
                         <Link

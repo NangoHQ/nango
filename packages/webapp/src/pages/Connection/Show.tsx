@@ -15,14 +15,14 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import Info from '../../components/ui/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
-import Models from './Models';
+import Syncs from './Syncs';
 import Authorization from './Authorization';
 import { SyncResponse, Connection } from '../../types';
 
 import { useStore } from '../../store';
 
 export enum Tabs {
-    Models,
+    Syncs,
     Authorization
 }
 
@@ -34,7 +34,7 @@ export default function ShowIntegration() {
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
-    const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Models);
+    const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
     const deleteConnectionAPI = useDeleteConnectionAPI();
     const getSyncAPI = useGetSyncAPI();
@@ -48,7 +48,7 @@ export default function ShowIntegration() {
 
     useEffect(() => {
         if (location.hash === '#models' || location.hash === '#syncs') {
-            setActiveTab(Tabs.Models);
+            setActiveTab(Tabs.Syncs);
         }
         if (location.hash === '#authorization') {
             setActiveTab(Tabs.Authorization);
@@ -212,18 +212,8 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             <section className="mt-14">
                 <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
-                    <li
-                        className={`p-2 rounded ${activeTab === Tabs.Models ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
-                        onClick={() => setActiveTab(Tabs.Models)}
-                    >
-                        Models
-                    </li>
-                    <li
-                        className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
-                        onClick={() => setActiveTab(Tabs.Authorization)}
-                    >
-                        Authorization
-                    </li>
+                    <li className={`p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Syncs)}>Syncs</li>
+                    <li className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`} onClick={() => setActiveTab(Tabs.Authorization)}>Authorization</li>
                 </ul>
             </section>
 
@@ -240,8 +230,8 @@ We could not retrieve and/or refresh your access token due to the following erro
             )}
 
             <section className="mt-10">
-                {activeTab === Tabs.Models && (
-                    <Models syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} env={env} />
+                {activeTab === Tabs.Syncs && (
+                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} env={env} />
                 )}
                 {activeTab === Tabs.Authorization && (
                     <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={syncLoaded} />
