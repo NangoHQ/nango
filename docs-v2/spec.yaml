@@ -658,20 +658,20 @@ paths:
                                                 type: array
                                                 items:
                                                     type: object
-                                                        properties:
-                                                            name:
-                                                                type: string
-                                                                example: "GithubIssue"
-                                                            fields:
-                                                                type: array
-                                                                items:
-                                                                    type: object
-                                                                    name:
-                                                                        type: string
-                                                                        example: "id"
-                                                                    type:
-                                                                        type: string
-                                                                        example: "integer"
+                                                    properties:
+                                                        name:
+                                                            type: string
+                                                            example: "GithubIssue"
+                                                        fields:
+                                                            type: array
+                                                            items:
+                                                                type: object
+                                                                name:
+                                                                    type: string
+                                                                    example: "id"
+                                                                type:
+                                                                    type: string
+                                                                    example: "integer"
                                             last_deployed:
                                                 type: string
                                                 example: "2024-02-28T20:16:38.052Z"
