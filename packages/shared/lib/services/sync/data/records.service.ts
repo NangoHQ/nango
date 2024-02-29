@@ -344,7 +344,6 @@ export async function getAllDataRecords(
                 model
             })
             .orderBy([
-                // use updated_at as the sort, downstream effects
                 { column: 'created_at', order: 'asc' },
                 { column: 'id', order: 'asc' }
             ]);
@@ -459,7 +458,6 @@ export async function getAllDataRecords(
             const cursorRawElement = rawResult[rawResult.length - 1] as SyncDataRecord;
             const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
 
-            // first_seen_at -> last_modified_at
             nextCursor = cursorElement['_nango_metadata']['first_seen_at'] as unknown as string;
             const encodedCursorValue = Buffer.from(`${nextCursor}||${cursorRawElement.id}`).toString('base64');
 
