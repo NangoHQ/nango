@@ -359,9 +359,7 @@ export async function getAllDataRecords(
             }
 
             query = query.where((builder) =>
-                builder
-                    .where('updated_at', '>', cursorSort)
-                    .orWhere((builder) => builder.where('updated_at' as string, '=', cursorSort).andWhere('id', '>', cursorId))
+                builder.where('updated_at', '>', cursorSort).orWhere((builder) => builder.where('updated_at', '=', cursorSort).andWhere('id', '>', cursorId))
             );
         }
 
