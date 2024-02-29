@@ -25,6 +25,7 @@ export async function exec(
 
     const rawNango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
 
+    console.log('Telemetry', process.env['NANGO_TELEMETRY_SDK']);
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
 
     nango.abortSignal = abortController.signal;
