@@ -344,7 +344,7 @@ export async function getAllDataRecords(
                 model
             })
             .orderBy([
-                { column: 'created_at', order: 'asc' },
+                { column: 'updated_at', order: 'asc' },
                 { column: 'id', order: 'asc' }
             ]);
 
@@ -360,8 +360,8 @@ export async function getAllDataRecords(
 
             query = query.where((builder) =>
                 builder
-                    .where('created_at', '>', cursorSort)
-                    .orWhere((builder) => builder.where('created_at' as string, '=', cursorSort).andWhere('id', '>', cursorId))
+                    .where('updated_at', '>', cursorSort)
+                    .orWhere((builder) => builder.where('updated_at' as string, '=', cursorSort).andWhere('id', '>', cursorId))
             );
         }
 
