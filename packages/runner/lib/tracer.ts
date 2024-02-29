@@ -1,9 +1,9 @@
-import ddTrace from 'dd-trace';
+import tracer from 'dd-trace';
 
-ddTrace.init({
+tracer.init({
     service: 'nango-runner'
 });
-ddTrace
+tracer
     .use('pg', {
         enabled: false
     })
@@ -19,5 +19,3 @@ ddTrace
     .use('net', {
         enabled: false
     });
-
-export const tracer = ddTrace;

@@ -6,7 +6,7 @@ import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
-import { tracer } from './tracer.js';
+import tracer from 'dd-trace';
 
 export async function exec(
     nangoProps: NangoProps,
