@@ -5,7 +5,7 @@ import tracer from '../tracer.js';
 const limitJobs = 100;
 const limitSchedules = 100;
 const limitSyncs = 100;
-const limitRecords = 5000;
+const limitRecords = 1000;
 
 export async function deleteSyncsData(): Promise<void> {
     /**
