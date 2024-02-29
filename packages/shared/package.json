@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.38.4",
+    "version": "0.38.5",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
