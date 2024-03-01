@@ -29,8 +29,8 @@ export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, temp
 
     return {
         client: {
-            id: providerConfig.oauth_client_id!,
-            secret: providerConfig.oauth_client_secret!
+            id: providerConfig.oauth_client_id,
+            secret: providerConfig.oauth_client_secret
         },
         auth: {
             tokenHost: tokenUrl.origin,
@@ -94,7 +94,7 @@ export async function getFreshOAuth2Credentials(
         }
 
         await errorManager.report(nangoErr.message, {
-            environmentId: connection.environment_id as number,
+            environmentId: connection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {
@@ -119,7 +119,7 @@ export async function getFreshOAuth2Credentials(
     } catch (e) {
         const error = new NangoError(`refresh_token_parsing_error`);
         await errorManager.report(error.message, {
-            environmentId: connection.environment_id as number,
+            environmentId: connection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {

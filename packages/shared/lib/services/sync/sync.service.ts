@@ -560,7 +560,7 @@ export const getAndReconcileDifferences = async (
                     await createActivityLogMessage({
                         level: 'debug',
                         environment_id: environmentId,
-                        activity_log_id: activityLogId as number,
+                        activity_log_id: activityLogId,
                         timestamp: Date.now(),
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`
                     });
@@ -580,7 +580,7 @@ export const getAndReconcileDifferences = async (
                     await createActivityLogMessage({
                         level: 'debug',
                         environment_id: environmentId,
-                        activity_log_id: activityLogId as number,
+                        activity_log_id: activityLogId,
                         timestamp: Date.now(),
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`
                     });
@@ -596,7 +596,7 @@ export const getAndReconcileDifferences = async (
             await createActivityLogMessage({
                 level: 'debug',
                 environment_id: environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
             });
@@ -606,7 +606,7 @@ export const getAndReconcileDifferences = async (
 
         if (!result) {
             if (activityLogId) {
-                await updateSuccessActivityLog(activityLogId as number, false);
+                await updateSuccessActivityLog(activityLogId, false);
             }
             return null;
         }
@@ -629,7 +629,7 @@ export const getAndReconcileDifferences = async (
                     deletedSyncs.push({
                         name: existingSync.sync_name,
                         providerConfigKey: existingSync.unique_key,
-                        connections: connections?.length as number
+                        connections: connections?.length
                     });
                 } else {
                     deletedActions.push({
@@ -643,12 +643,12 @@ export const getAndReconcileDifferences = async (
                         await createActivityLogMessage({
                             level: 'debug',
                             environment_id: environmentId,
-                            activity_log_id: activityLogId as number,
+                            activity_log_id: activityLogId,
                             timestamp: Date.now(),
                             content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
                         });
                     }
-                    await syncOrchestrator.deleteConfig(existingSync.id as number, environmentId);
+                    await syncOrchestrator.deleteConfig(existingSync.id, environmentId);
 
                     if (existingSync.type === SyncConfigType.SYNC) {
                         for (const connection of connections) {
@@ -667,7 +667,7 @@ export const getAndReconcileDifferences = async (
                         await createActivityLogMessage({
                             level: 'debug',
                             environment_id: environmentId,
-                            activity_log_id: activityLogId as number,
+                            activity_log_id: activityLogId,
                             timestamp: Date.now(),
                             content
                         });
@@ -681,7 +681,7 @@ export const getAndReconcileDifferences = async (
         await createActivityLogMessageAndEnd({
             level: 'debug',
             environment_id: environmentId,
-            activity_log_id: activityLogId as number,
+            activity_log_id: activityLogId,
             timestamp: Date.now(),
             content: 'Sync deploy diff in debug mode process complete successfully.'
         });

@@ -62,7 +62,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
             return;
         }
 
-        const template = configService.getTemplate(integration?.provider as string);
+        const template = configService.getTemplate(integration?.provider);
 
         const activityLogId = connection.connection_config['pendingLog'];
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete

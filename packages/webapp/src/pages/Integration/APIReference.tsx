@@ -40,7 +40,7 @@ export default function APIReference(props: APIReferenceProps) {
                         >
                             integration template
                         </a>{' '}
-                        avalable for this API yet.
+                        available for this API yet.
                     </div>
                     <HelpFooter />
                 </div>
