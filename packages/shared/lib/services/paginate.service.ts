@@ -47,7 +47,7 @@ class PaginationService {
         passPaginationParamsInBody: boolean,
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
-        const cursorPagination: CursorPagination = paginationConfig as CursorPagination;
+        const cursorPagination: CursorPagination = paginationConfig;
 
         let nextCursor: string | undefined;
 
@@ -83,7 +83,7 @@ class PaginationService {
         passPaginationParamsInBody: boolean,
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
-        const linkPagination: LinkPagination = paginationConfig as LinkPagination;
+        const linkPagination: LinkPagination = paginationConfig;
 
         this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
@@ -122,7 +122,7 @@ class PaginationService {
         passPaginationParamsInBody: boolean,
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
-        const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
+        const offsetPagination: OffsetPagination = paginationConfig;
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
         let offset = 0;
 

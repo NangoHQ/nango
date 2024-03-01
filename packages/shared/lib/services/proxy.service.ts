@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import { ApiKeyCredentials, BasicApiCredentials, AuthModes, OAuth2Credentials } from '../models/Auth.js';
+import { ApiKeyCredentials, BasicApiCredentials, AuthModes } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -62,7 +62,7 @@ class ProxyService {
                 activityLogs.push({
                     level: 'error',
                     environment_id: connection.environment_id,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
                 });
@@ -98,7 +98,7 @@ class ProxyService {
         switch (connection.credentials?.type) {
             case AuthModes.OAuth2:
                 {
-                    const credentials = connection.credentials as OAuth2Credentials;
+                    const credentials = connection.credentials;
                     token = credentials?.access_token;
                 }
                 break;

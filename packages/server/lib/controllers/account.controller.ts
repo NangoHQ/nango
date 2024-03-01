@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, User, accountService, userService, errorManager, LogLevel, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
+import { isCloud, accountService, userService, errorManager, LogLevel, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class AccountController {
@@ -111,7 +111,7 @@ class AccountController {
                 return;
             }
 
-            req.login(user as User, (err) => {
+            req.login(user, (err) => {
                 if (err) {
                     next(err);
                     return;
