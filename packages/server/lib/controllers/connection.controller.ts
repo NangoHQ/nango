@@ -4,10 +4,8 @@ import {
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
-    OAuth1Credentials,
     OAuth2Credentials,
     ImportedCredentials,
-    AppCredentials,
     AuthCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     getEnvironmentAndAccountId,
@@ -59,9 +57,9 @@ class ConnectionController {
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
-                connection_id: connectionId as string,
+                connection_id: connectionId,
                 provider: '',
-                provider_config_key: providerConfigKey as string,
+                provider_config_key: providerConfigKey,
                 environment_id: environment.id
             };
 
@@ -143,12 +141,12 @@ class ConnectionController {
             let credentials = null;
 
             if (connection.credentials.type === ProviderAuthModes.OAuth1 || connection.credentials.type === ProviderAuthModes.OAuth2) {
-                credentials = connection.credentials as OAuth2Credentials | OAuth1Credentials;
+                credentials = connection.credentials;
                 rawCredentials = credentials.raw;
             }
 
             if (connection.credentials.type === ProviderAuthModes.App) {
-                credentials = connection.credentials as AppCredentials;
+                credentials = connection.credentials;
                 rawCredentials = credentials.raw;
             }
 
@@ -309,7 +307,7 @@ class ConnectionController {
                 return {
                     id: connection.id,
                     connection_id: connection.connection_id,
-                    provider_config_key: connection.provider as string,
+                    provider_config_key: connection.provider,
                     provider: uniqueKeyToProvider[connection.provider] as string,
                     created: connection.created,
                     metadata: connection.metadata
@@ -379,7 +377,7 @@ class ConnectionController {
                 success,
                 error,
                 response: connection
-            } = await connectionService.getConnection(connectionId as string, integration_key, info?.environmentId as number);
+            } = await connectionService.getConnection(connectionId, integration_key, info?.environmentId as number);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -517,7 +515,7 @@ class ConnectionController {
                 return;
             }
 
-            const template = await configService.getTemplate(provider as string);
+            const template = await configService.getTemplate(provider);
 
             let oAuthCredentials: ImportedCredentials;
             let updatedConnection: ConnectionUpsertResponse = {} as ConnectionUpsertResponse;

@@ -56,7 +56,7 @@ class ParserService {
                 const lineNumber = path.node.loc?.start.line as number;
                 const callee = path.node.callee as t.MemberExpression;
                 if (callee.object?.type === 'Identifier' && callee.object.name === 'nango' && callee.property?.type === 'Identifier') {
-                    if (deprecatedCalls[callee.property.name as string]) {
+                    if (deprecatedCalls[callee.property.name]) {
                         console.warn(
                             chalk.yellow(
                                 `nango.${callee.property.name}() used at line ${lineNumber} is deprecated. Use nango.${

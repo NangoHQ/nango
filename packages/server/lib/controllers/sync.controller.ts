@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { Span } from 'dd-trace';
-import type { LogLevel, Connection, NangoConnection, HTTP_VERB } from '@nangohq/shared';
+import type { LogLevel, NangoConnection, HTTP_VERB } from '@nangohq/shared';
 import tracer from '../tracer.js';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
@@ -217,7 +217,7 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncs(connection as Connection);
+            const syncs = await getSyncs(connection);
 
             res.send(syncs);
         } catch (e) {
@@ -311,11 +311,7 @@ class SyncController {
 
                 return;
             }
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -446,7 +442,7 @@ class SyncController {
                 return;
             }
 
-            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId as number);
+            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId);
 
             res.send(providerConfigKey);
         } catch (e) {

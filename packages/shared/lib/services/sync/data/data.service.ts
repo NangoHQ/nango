@@ -249,7 +249,7 @@ export async function getAddedKeys(response: DataRecord[], dbTable: string, uniq
  */
 export async function getUpdatedKeys(response: DataRecord[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<string[]> {
     const keys: string[] = response.map((data: DataRecord) => String(data[uniqueKey]));
-    const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[uniqueKey]), data['data_hash'] as string]);
+    const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[uniqueKey]), data['data_hash']]);
 
     const rowsToUpdate = await schema()
         .from(dbTable)
