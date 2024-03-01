@@ -456,7 +456,7 @@ export async function getAllDataRecords(
             const cursorRawElement = rawResult[rawResult.length - 1] as SyncDataRecord;
             const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
 
-            nextCursor = cursorElement['_nango_metadata']['first_seen_at'] as unknown as string;
+            nextCursor = cursorElement['_nango_metadata']['last_modified_at'] as unknown as string;
             const encodedCursorValue = Buffer.from(`${nextCursor}||${cursorRawElement.id}`).toString('base64');
 
             return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: encodedCursorValue } };
