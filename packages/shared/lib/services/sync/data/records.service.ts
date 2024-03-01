@@ -63,7 +63,7 @@ export const formatDataRecords = (
             }
         }
 
-        const external_id = record['id'] as string;
+        const external_id = record['id'];
         formattedRecords[i] = {
             id: uuid.v4(),
             json: record,
@@ -359,9 +359,7 @@ export async function getAllDataRecords(
             }
 
             query = query.where((builder) =>
-                builder
-                    .where('created_at', '>', cursorSort)
-                    .orWhere((builder) => builder.where('created_at' as string, '=', cursorSort).andWhere('id', '>', cursorId))
+                builder.where('created_at', '>', cursorSort).orWhere((builder) => builder.where('created_at', '=', cursorSort).andWhere('id', '>', cursorId))
             );
         }
 

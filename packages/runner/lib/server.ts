@@ -41,7 +41,7 @@ function healthProcedure() {
             lastRequestTime = Date.now();
             return next;
         })
-        .query(async () => {
+        .query(() => {
             return { status: 'ok' };
         });
 }
@@ -64,7 +64,7 @@ function runProcedure() {
 function cancelProcedure() {
     return publicProcedure
         .input((input) => input as { syncId: string })
-        .mutation(async ({ input }) => {
+        .mutation(({ input }) => {
             return cancel(input.syncId);
         });
 }

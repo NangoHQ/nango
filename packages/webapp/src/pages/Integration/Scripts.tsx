@@ -45,7 +45,7 @@ export default function Scripts(props: ScriptProps) {
                         >
                             integration template
                         </a>{' '}
-                        avalable for this API yet.
+                        available for this API yet.
                     </div>
                     <HelpFooter />
                 </div>

@@ -505,6 +505,12 @@
                             ]
                         },
                         {
+                            "group": "Scripts",
+                            "pages": [
+                                "reference/api/scripts/config"
+                            ]
+                        },
+                        {
                             "group": "Syncs",
                             "pages": [
                                 "reference/api/sync/records-list",

@@ -75,7 +75,7 @@ class AppStoreAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
+                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
@@ -91,7 +91,7 @@ class AppStoreAuthController {
                 }
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             if (config == null) {
                 await createActivityLogMessageAndEnd({
@@ -107,7 +107,7 @@ class AppStoreAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider as string);
+            const template = await configService.getTemplate(config?.provider);
 
             if (template.auth_mode !== AuthModes.AppStore) {
                 await createActivityLogMessageAndEnd({
@@ -157,14 +157,14 @@ class AppStoreAuthController {
                 await connectionCreationFailedHook(
                     {
                         id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
                         environment_id: environmentId,
                         auth_mode: AuthModes.AppStore,
                         error: `Error during App store credentials auth: ${error?.message}`,
                         operation: AuthOperation.UNKNOWN
                     },
-                    config?.provider as string,
+                    config?.provider,
                     activityLogId
                 );
 
@@ -185,7 +185,7 @@ class AppStoreAuthController {
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
-                config?.provider as string,
+                config?.provider,
                 credentials as unknown as AuthCredentials,
                 connectionConfig,
                 environmentId,
@@ -202,12 +202,12 @@ class AppStoreAuthController {
                         auth_mode: AuthModes.AppStore,
                         operation: updatedConnection.operation
                     },
-                    config?.provider as string,
+                    config?.provider,
                     activityLogId
                 );
             }
 
-            res.status(200).send({ providerConfigKey: providerConfigKey as string, connectionId: connectionId as string });
+            res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 

@@ -96,7 +96,6 @@ export type NangoIntegration = NangoIntegrationV1 | NangoV2Integration;
 interface NangoSyncModelField {
     name: string;
     type: string;
-    description?: string;
 }
 
 export interface NangoSyncModel {

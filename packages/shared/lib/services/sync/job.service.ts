@@ -34,7 +34,7 @@ export const createSyncJob = async (
     } catch (e) {
         if (nangoConnection) {
             await errorManager.report(e, {
-                environmentId: nangoConnection.environment_id as number,
+                environmentId: nangoConnection.environment_id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 metadata: {

@@ -41,7 +41,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
-    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
     const { models, integrations } = configData;
 
     const interfaceDefinitions = modelService.build(models, integrations, debug);

@@ -155,7 +155,7 @@ class ModelService {
 
     public async createModelFile(notify = false) {
         const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
-        const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+        const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
         const { models, integrations } = configData;
         const interfaceDefinitions = modelService.build(models, integrations);
         if (interfaceDefinitions) {
