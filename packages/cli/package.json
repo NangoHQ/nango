@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.38.0",
+    "version": "0.38.5",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -19,14 +19,13 @@
     "scripts": {
         "build": "tsc && npm run copyfiles",
         "copyfiles": "copyfiles -u 1 lib/templates/* dist",
-        "dev": "npm run copyfiles && tsc -w",
         "postbuild": "cp `node -p \"require.resolve('@nangohq/shared/dist/lib/sdk/sync.d.ts')\"` './dist/nango-sync.d.ts'",
         "prepublishOnly": "npm install && npm run build"
     },
     "dependencies": {
         "@babel/traverse": "^7.22.5",
         "@inquirer/prompts": "^2.3.0",
-        "@nangohq/shared": "^0.37.26",
+        "@nangohq/shared": "^0.38.5",
         "@vercel/ncc": "^0.36.1",
         "ajv": "^8.12.0",
         "ajv-errors": "^3.0.0",

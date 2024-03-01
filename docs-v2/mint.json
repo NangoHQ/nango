@@ -185,19 +185,18 @@
         {
             "group": "Understand Nango",
             "pages": [
+                "understand/core-concepts",
                 "understand/architecture",
                 {
-                    "group": "Concepts",
+                    "group": "All Concepts",
                     "pages": [
                         "understand/concepts/integrations",
                         "understand/concepts/connections",
                         "understand/concepts/syncs",
                         "understand/concepts/actions",
-                        "understand/concepts/integration-reference",
                         "understand/concepts/proxy",
                         "understand/concepts/webhooks",
                         "understand/concepts/environments",
-                        "understand/concepts/ui",
                         "understand/concepts/templates",
                         "understand/concepts/cli",
                         "understand/concepts/integrations-folder",
@@ -315,6 +314,7 @@
                         "integrations/all/aircall",
                         "integrations/all/airtable",
                         "integrations/all/amazon",
+                        "integrations/all/anrok",
                         "integrations/all/amplitude",
                         "integrations/all/apollo",
                         "integrations/all/apple-app-store",
@@ -409,6 +409,7 @@
                         "integrations/all/paypal",
                         "integrations/all/pendo",
                         "integrations/all/pennylane",
+                        "integrations/all/pinterest",
                         "integrations/all/pipedrive",
                         "integrations/all/qualtrics",
                         "integrations/all/quickbooks",
@@ -437,6 +438,7 @@
                         "integrations/all/stripe-app",
                         "integrations/all/stripe-express",
                         "integrations/all/survey-monkey",
+                        "integrations/all/teamtailor",
                         "integrations/all/teamwork",
                         "integrations/all/tiktok-accounts",
                         "integrations/all/tiktok-ads",
@@ -502,6 +504,12 @@
                                 "reference/api/connection/set-metadata",
                                 "reference/api/connection/update-metadata",
                                 "reference/api/connection/delete"
+                            ]
+                        },
+                        {
+                            "group": "Scripts",
+                            "pages": [
+                                "reference/api/scripts/config"
                             ]
                         },
                         {

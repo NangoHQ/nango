@@ -3,7 +3,6 @@ const messagesTableName = '_nango_activity_log_messages';
 
 exports.up = function (knex, _) {
     return knex.schema
-        .withSchema('nango')
         .createTable(tableName, function (table) {
             table.increments('id').primary();
             table.integer('account_id').unsigned().notNullable().index();
@@ -21,10 +20,10 @@ exports.up = function (knex, _) {
             table.string('session_id');
             table.timestamps(true, true);
 
-            table.foreign('account_id').references('id').inTable('nango._nango_accounts').onDelete('CASCADE');
+            table.foreign('account_id').references('id').inTable('_nango_accounts').onDelete('CASCADE');
         })
         .then(() => {
-            return knex.schema.withSchema('nango').createTable(messagesTableName, function (table) {
+            return knex.schema.createTable(messagesTableName, function (table) {
                 table.increments('id').primary();
                 table.integer('activity_log_id').unsigned().notNullable();
                 table.enu('level', ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).defaultTo('info').notNullable();
@@ -36,16 +35,13 @@ exports.up = function (knex, _) {
                 table.text('url');
                 table.string('state');
 
-                table.foreign('activity_log_id').references('id').inTable(`nango.${tableName}`).onDelete('CASCADE');
+                table.foreign('activity_log_id').references('id').inTable(tableName).onDelete('CASCADE');
             });
         });
 };
 
 exports.down = function (knex, _) {
-    return knex.schema
-        .withSchema('nango')
-        .dropTable(messagesTableName)
-        .then(() => {
-            return knex.schema.withSchema('nango').dropTable(tableName);
-        });
+    return knex.schema.dropTable(messagesTableName).then(() => {
+        return knex.schema.dropTable(tableName);
+    });
 };

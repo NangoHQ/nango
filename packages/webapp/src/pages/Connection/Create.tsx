@@ -45,7 +45,7 @@ export default function IntegrationCreate() {
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
-    const getProjectInfoAPI = useGetProjectInfoAPI()
+    const getProjectInfoAPI = useGetProjectInfoAPI();
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
@@ -55,7 +55,7 @@ export default function IntegrationCreate() {
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI();
     const { providerConfigKey } = useParams();
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
         setLoaded(false);
@@ -69,7 +69,7 @@ export default function IntegrationCreate() {
                 const hmacDigest = (await res.json())['hmac_digest'];
                 setHmacDigest(hmacDigest);
             }
-        }
+        };
         if (isHmacEnabled && integration?.uniqueKey && connectionId) {
             getHmac();
         }
@@ -104,7 +104,7 @@ export default function IntegrationCreate() {
                 setHostUrl(account.host || baseUrl());
                 setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
                 setHmacDigest(account.hmac_digest ?? '');
-                setIsHmacEnabled(Boolean(account.hmac_key))
+                setIsHmacEnabled(Boolean(account.hmac_key));
             }
         };
 
@@ -136,7 +136,7 @@ export default function IntegrationCreate() {
                 username: apiAuthUsername,
                 password: apiAuthPassword
             };
-        };
+        }
 
         if (authMode === AuthModes.ApiKey) {
             credentials = {
@@ -153,13 +153,12 @@ export default function IntegrationCreate() {
         }
 
         nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
-                user_scope: selectedScopes || [],
-                params: connectionConfigParams || {},
-                authorization_params: authorizationParams || {},
-                hmac: hmacDigest || '',
-                credentials
-
-            })
+            user_scope: selectedScopes || [],
+            params: connectionConfigParams || {},
+            authorization_params: authorizationParams || {},
+            hmac: hmacDigest || '',
+            credentials
+        })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -301,11 +300,12 @@ export default function IntegrationCreate() {
 }`;
         }
 
-
         const connectionConfigStr =
             !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr && !apiAuthString && !appStoreAuthString
                 ? ''
-                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') + ' }';
+                : ', { ' +
+                  [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') +
+                  ' }';
 
         return `import Nango from '@nangohq/frontend';
 
@@ -686,11 +686,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
                                 <div className="flex">
                                     <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) ? (
-                                            <>Start OAuth Flow</>
-                                        ): (
-                                            <>Create Connection</>
-                                        )}
+                                        {authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 ? <>Start OAuth Flow</> : <>Create Connection</>}
                                     </button>
                                     <label htmlFor="email" className="text-text-light-gray block text-sm pt-5 ml-4">
                                         or from your frontend:

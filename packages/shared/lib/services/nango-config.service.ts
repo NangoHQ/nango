@@ -45,7 +45,7 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
     try {
         const yamlConfig = fs.readFileSync(location, 'utf8');
 
-        const configData: NangoConfig = yaml.load(yamlConfig) as unknown as NangoConfig;
+        const configData: NangoConfig = yaml.load(yamlConfig) as NangoConfig;
 
         return Promise.resolve(configData);
     } catch (error) {
@@ -101,7 +101,10 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
         return null;
     }
 
-    const modelData = config.models[modelName] || config.models[`${modelName.slice(0, -1)}`];
+    // if it is an array of models, we still need to be able to recognize it
+    const strippedModelName = modelName.replace(/\[\]/g, '');
+
+    const modelData = config.models[strippedModelName];
 
     for (const fieldName in modelData) {
         const fieldType = modelData[fieldName];
@@ -193,7 +196,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
 
 const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAllowedMethod = false, showMessages = false) => {
     let endpoints: NangoSyncEndpoint[] = [];
-    const endpoint = rawEndpoint.split(' ') as string[];
+    const endpoint = rawEndpoint.split(' ');
 
     if (endpoint.length > 1) {
         const method = singleAllowedMethod ? defaultMethod : (endpoint[0]?.toUpperCase() as HTTP_VERB);
@@ -264,10 +267,10 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
         const integration: NangoV2Integration = config.integrations[providerConfigKey] as NangoV2Integration;
         let provider;
 
-        if (integration!['provider']) {
-            provider = integration!['provider'];
+        if (integration['provider']) {
+            provider = integration['provider'];
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete integration!['provider'];
+            delete integration['provider'];
         }
 
         // check that every endpoint is unique across syncs and actions
@@ -300,8 +303,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             }
 
             if (sync.input) {
-                const modelFields = getFieldsForModel(sync.input as string, config) as { name: string; type: string }[];
-                inputModel.name = sync.input as string;
+                const modelFields = getFieldsForModel(sync.input, config) as { name: string; type: string }[];
+                inputModel.name = sync.input;
                 inputModel.fields = modelFields;
             }
 
@@ -312,7 +315,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         const error = new NangoError('endpoint_output_mismatch', syncName);
                         return { success: false, error, response: null };
                     }
-                    for (const endpoint of sync?.endpoint as string[]) {
+                    for (const endpoint of sync?.endpoint) {
                         endpoints.push(...assignEndpoints(endpoint, 'GET', true, showMessages));
 
                         if (!allEndpoints.includes(endpoint)) {
@@ -323,7 +326,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         }
                     }
                 } else {
-                    endpoints = assignEndpoints(sync?.endpoint as string, 'GET', true, showMessages);
+                    endpoints = assignEndpoints(sync?.endpoint, 'GET', true, showMessages);
 
                     if (sync?.output && Array.isArray(sync?.output) && sync?.output?.length > 1) {
                         const error = new NangoError('endpoint_output_mismatch', syncName);
@@ -357,7 +360,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
             if (sync['webhook-subscriptions']) {
                 if (Array.isArray(sync['webhook-subscriptions'])) {
-                    webhookSubscriptions = sync['webhook-subscriptions'] as string[];
+                    webhookSubscriptions = sync['webhook-subscriptions'];
                 } else {
                     webhookSubscriptions = [sync['webhook-subscriptions'] as string];
                 }
@@ -378,7 +381,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 attributes: sync.attributes || {},
                 input: inputModel,
                 // a sync always returns an array
-                returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
+                returns: Array.isArray(sync.output) ? sync?.output : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints,
@@ -420,8 +423,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         throw new Error(`Model ${modelName} not found included in models definition`);
                     }
                 }
-                const modelFields = getFieldsForModel(action.input as string, config) as { name: string; type: string }[];
-                inputModel.name = action.input as string;
+                const modelFields = getFieldsForModel(action.input, config) as { name: string; type: string }[];
+                inputModel.name = action.input;
                 inputModel.fields = modelFields;
             }
 
@@ -437,7 +440,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                     }
                     actionEndpoint = action?.endpoint[0] as string;
                 } else {
-                    actionEndpoint = action?.endpoint as string;
+                    actionEndpoint = action?.endpoint;
                 }
 
                 endpoints = assignEndpoints(actionEndpoint, 'POST', false, showMessages);

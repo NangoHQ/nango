@@ -77,6 +77,17 @@ amazon:
     proxy:
         base_url: https://api.amazon.com
     docs: https://docs.nango.dev/integrations/all/amazon
+anrok:
+    categories:
+        - legal
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anrok.com
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/anrok
 aws:
     categories:
         - dev-tools
@@ -1405,6 +1416,25 @@ pennylane:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/pennylane
+pinterest:
+    categories:
+        - design
+        - marketing
+        - social
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://www.pinterest.com/oauth
+    token_url: https://api.pinterest.com/v5/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.pinterest.com
+    docs: https://docs.nango.dev/integrations/all/pinterest
 pipedrive:
     categories:
         - crm
@@ -1812,6 +1842,18 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+teamtailor:
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://{connectionConfig.extension}.teamtailor.com
+        retry:
+            after: 'X-Rate-Limit-Reset'
+        headers:
+            Authorization: Token token=${apiKey}
+            X-Api-Version: '20210218'
+    docs: https://docs.nango.dev/integrations/all/teamtailor
 teamwork:
     categories:
         - productivity

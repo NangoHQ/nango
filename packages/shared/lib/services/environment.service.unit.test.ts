@@ -18,38 +18,34 @@ describe('Environment service', () => {
                 default: {
                     schema: actual.schema,
                     knex: {
-                        withSchema: () => {
+                        select: () => {
                             return {
-                                select: () => {
-                                    return {
-                                        from: () =>
-                                            new Proxy(
-                                                {
-                                                    where: ({ secret_key }: { secret_key: string }) => {
-                                                        return {
-                                                            first: () => {
-                                                                if (secret_key === extraAccount.secret_key) {
-                                                                    return Promise.resolve(extraAccount);
-                                                                } else {
-                                                                    return Promise.resolve(null);
-                                                                }
-                                                            }
-                                                        };
-                                                    }
-                                                },
-                                                {
-                                                    get(target, prop, receiver) {
-                                                        if (prop === Symbol.iterator) {
-                                                            return function* () {
-                                                                yield* environmentAccounts;
-                                                            };
+                                from: () =>
+                                    new Proxy(
+                                        {
+                                            where: ({ secret_key }: { secret_key: string }) => {
+                                                return {
+                                                    first: () => {
+                                                        if (secret_key === extraAccount.secret_key) {
+                                                            return Promise.resolve(extraAccount);
+                                                        } else {
+                                                            return Promise.resolve(null);
                                                         }
-                                                        return Reflect.get(target, prop, receiver);
                                                     }
+                                                };
+                                            }
+                                        },
+                                        {
+                                            get(target, prop, receiver) {
+                                                if (prop === Symbol.iterator) {
+                                                    return function* () {
+                                                        yield* environmentAccounts;
+                                                    };
                                                 }
-                                            )
-                                    };
-                                }
+                                                return Reflect.get(target, prop, receiver);
+                                            }
+                                        }
+                                    )
                             };
                         }
                     }

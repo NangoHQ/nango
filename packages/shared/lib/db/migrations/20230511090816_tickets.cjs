@@ -1,7 +1,7 @@
 const tableName = '_nango_unified_tickets';
 
 exports.up = function (knex, _) {
-    return knex.schema.withSchema('nango').createTable(tableName, function (table) {
+    return knex.schema.createTable(tableName, function (table) {
         table.uuid('id').notNullable();
         table.string('external_id').notNullable();
         table.string('title');
@@ -19,12 +19,12 @@ exports.up = function (knex, _) {
         table.integer('nango_connection_id').unsigned().notNullable();
         table.timestamps(true, true);
 
-        table.foreign('nango_connection_id').references('id').inTable('nango._nango_connections').onDelete('CASCADE');
+        table.foreign('nango_connection_id').references('id').inTable('_nango_connections').onDelete('CASCADE');
 
         table.unique(['nango_connection_id', 'external_id']);
     });
 };
 
 exports.down = function (knex, _) {
-    return knex.schema.withSchema('nango').dropTable(tableName);
+    return knex.schema.dropTable(tableName);
 };

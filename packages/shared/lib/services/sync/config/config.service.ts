@@ -143,7 +143,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             return null;
         }
     } else {
-        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id as number, syncName, nangoConnection.provider_config_key as string, isAction);
+        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id, syncName, nangoConnection.provider_config_key, isAction);
         if (!syncConfigs) {
             return null;
         }
@@ -155,7 +155,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
 
     const nangoConfig: NangoConfigV1 = {
         integrations: {
-            [nangoConnection.provider_config_key as string]: {}
+            [nangoConnection.provider_config_key]: {}
         },
         models: {}
     };
@@ -212,7 +212,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             db.knex.raw(
                 `(
                     SELECT json_agg(json_build_object('method', method, 'path', path))
-                    FROM nango._nango_sync_endpoints
+                    FROM _nango_sync_endpoints
                     WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
                 ) as endpoints_object`
             )
@@ -545,7 +545,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
                             'metadata', _nango_connections.metadata
                         )
                     )
-                    FROM nango._nango_connections
+                    FROM _nango_connections
                     WHERE _nango_configs.environment_id = _nango_connections.environment_id
                     AND _nango_configs.unique_key = _nango_connections.provider_config_key
                     AND _nango_configs.deleted = false
@@ -740,7 +740,7 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
             db.knex.raw(
                 `(
                     SELECT json_agg(json_build_object('method', method, 'path', path))
-                    FROM nango._nango_sync_endpoints
+                    FROM _nango_sync_endpoints
                     WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
                 ) as endpoints_object`
             )
@@ -795,7 +795,7 @@ export async function getConfigWithEndpointsByProviderConfigKeyAndName(
             db.knex.raw(
                 `(
                     SELECT json_agg(json_build_object('method', method, 'path', path))
-                    FROM nango._nango_sync_endpoints
+                    FROM _nango_sync_endpoints
                     WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
                 ) as endpoints_object`
             )

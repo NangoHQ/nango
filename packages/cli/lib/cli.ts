@@ -41,7 +41,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
-    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
     const { models, integrations } = configData;
 
     const interfaceDefinitions = modelService.build(models, integrations, debug);
@@ -324,11 +324,11 @@ export const tscWatch = async (debug = false) => {
         compileFile(filePath);
     });
 
+    const compiler = tsNode.create({
+        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+        compilerOptions: JSON.parse(tsconfig).compilerOptions
+    });
     function compileFile(filePath: string) {
-        const compiler = tsNode.create({
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
-        });
-
         try {
             const providerConfiguration = config?.find((config) =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))

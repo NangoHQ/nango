@@ -9,7 +9,7 @@ import { resultOk, type Result, resultErr } from '../../utils/result.js';
 const TABLE = dbNamespace + 'sync_schedules';
 
 export const createSchedule = async (sync_id: string, frequency: string, offset: number, status: ScheduleStatus, schedule_id: string): Promise<void> => {
-    await db.knex.withSchema(db.schema()).from<SyncSchedule>(TABLE).insert({
+    await db.knex.from<SyncSchedule>(TABLE).insert({
         sync_id,
         status,
         schedule_id,
@@ -50,7 +50,7 @@ export const deleteScheduleForSync = async (sync_id: string, environmentId: numb
     const schedule = await getSchedule(sync_id);
 
     if (schedule && syncClient) {
-        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string, environmentId);
+        await syncClient.deleteSyncSchedule(schedule?.schedule_id, environmentId);
     }
 };
 
@@ -117,6 +117,14 @@ export const updateOffset = async (schedule_id: string, offset: number): Promise
     await schema().update({ offset }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
 };
 
-export const deleteSchedulesBySyncId = async (sync_id: string): Promise<void> => {
-    await schema().from<SyncSchedule>(TABLE).where({ sync_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-};
+export async function softDeleteSchedules({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
+    return db
+        .knex('_nango_sync_schedules')
+        .update({
+            deleted: true,
+            deleted_at: db.knex.fn.now()
+        })
+        .whereIn('id', function (sub) {
+            sub.select('id').from('_nango_sync_schedules').where({ deleted: false, sync_id: syncId }).limit(limit);
+        });
+}

@@ -1,4 +1,4 @@
-import { schema, dbNamespace } from '../../db/database.js';
+import db, { schema, dbNamespace } from '../../db/database.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoConnection } from '../../models/Connection.js';
@@ -34,7 +34,7 @@ export const createSyncJob = async (
     } catch (e) {
         if (nangoConnection) {
             await errorManager.report(e, {
-                environmentId: nangoConnection.environment_id as number,
+                environmentId: nangoConnection.environment_id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 metadata: {
@@ -136,10 +136,6 @@ export const addSyncConfigToJob = async (id: number, sync_config_id: number): Pr
     });
 };
 
-export const deleteJobsBySyncId = async (sync_id: string): Promise<void> => {
-    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-};
-
 export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, 'id' | 'job_id' | 'run_id'> | null> => {
     const result = await schema()
         .from<SyncJob>(SYNC_JOB_TABLE)
@@ -175,3 +171,15 @@ export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolea
 
     return false;
 };
+
+export async function softDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
+    return db
+        .knex('_nango_sync_jobs')
+        .update({
+            deleted: true,
+            deleted_at: db.knex.fn.now()
+        })
+        .whereIn('id', function (sub) {
+            sub.select('id').from('_nango_sync_jobs').where({ deleted: false, sync_id: syncId }).limit(limit);
+        });
+}

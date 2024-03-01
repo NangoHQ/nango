@@ -42,6 +42,11 @@ export enum MetricTypes {
     WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
     RUNNER_SDK = 'nango.runner.sdk',
     JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
+    JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',
+    JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
+    JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
+    JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
+    JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes'
 }
@@ -84,15 +89,15 @@ class Telemetry {
         await this.logInstance?.submitLog(params);
     }
 
-    public async increment(metricName: MetricTypes, value?: number) {
-        tracer.dogstatsd.increment(metricName, value || 1);
+    public increment(metricName: MetricTypes, value?: number): void {
+        tracer.dogstatsd.increment(metricName, value ?? 1);
     }
 
-    public async decrement(metricName: MetricTypes, value?: number) {
-        tracer.dogstatsd.decrement(metricName, value || 1);
+    public decrement(metricName: MetricTypes, value?: number): void {
+        tracer.dogstatsd.decrement(metricName, value ?? 1);
     }
 
-    public async duration(metricName: MetricTypes, value: number) {
+    public duration(metricName: MetricTypes, value: number): void {
         tracer.dogstatsd.distribution(metricName, value);
     }
 

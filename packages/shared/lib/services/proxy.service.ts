@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import { ApiKeyCredentials, BasicApiCredentials, AuthModes, OAuth2Credentials } from '../models/Auth.js';
+import { ApiKeyCredentials, BasicApiCredentials, AuthModes } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -42,7 +42,7 @@ class ProxyService {
     ): ServiceResponse<ApplicationConstructedProxyConfiguration> & Activities {
         const activityLogs: ActivityLogMessage[] = [];
         let data = externalConfig.data;
-        const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride } = externalConfig;
+        const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
         const { connection, provider, existingActivityLogId: activityLogId } = internalConfig;
 
         if (!passedEndpoint && !baseUrlOverride) {
@@ -62,7 +62,7 @@ class ProxyService {
                 activityLogs.push({
                     level: 'error',
                     environment_id: connection.environment_id,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
                 });
@@ -98,7 +98,7 @@ class ProxyService {
         switch (connection.credentials?.type) {
             case AuthModes.OAuth2:
                 {
-                    const credentials = connection.credentials as OAuth2Credentials;
+                    const credentials = connection.credentials;
                     token = credentials?.access_token;
                 }
                 break;
@@ -163,7 +163,7 @@ class ProxyService {
             environment_id: connection.environment_id,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
-            content: `Endpoint set to ${endpoint} with retries set to ${retries}`
+            content: `Endpoint set to ${endpoint} with retries set to ${retries} ${retryOn ? `and retryOn set to ${retryOn}` : ''}`
         });
 
         if (headers && headers['Content-Type'] === 'multipart/form-data') {
@@ -195,7 +195,8 @@ class ProxyService {
             connection,
             params: externalConfig.params as Record<string, string>,
             paramsSerializer: externalConfig.paramsSerializer as ParamsSerializerOptions,
-            responseType: externalConfig.responseType as ResponseType
+            responseType: externalConfig.responseType as ResponseType,
+            retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
         };
 
         return { success: true, error: null, response: configBody, activityLogs };
@@ -285,7 +286,8 @@ class ProxyService {
                 error?.response?.headers['x-ratelimit-remaining'] &&
                 error?.response?.headers['x-ratelimit-remaining'] === '0') ||
             error?.response?.status === 429 ||
-            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string)
+            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string) ||
+            config.retryOn?.includes(Number(error?.response?.status))
         ) {
             if (config.retryHeader) {
                 const type = config.retryHeader.at ? 'at' : 'after';

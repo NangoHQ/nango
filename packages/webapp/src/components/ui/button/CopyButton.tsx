@@ -35,7 +35,7 @@ export default function ClipboardButton({ text, icontype = 'clipboard', textProm
     }, [tooltipText, textPrompt]);
 
     return (
-        <Tooltip className="text-xs" text={tooltipText} type={`${dark ? 'dark': 'default'}`}>
+        <Tooltip className="text-xs" text={tooltipText} type={`${dark ? 'dark' : 'default'}`}>
             {icontype === 'link' ? (
                 <Link color="gray" className={`h-4 ml-1 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
             ) : (

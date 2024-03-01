@@ -7,11 +7,7 @@ const DB_TABLE = '_nango_connections';
 const TABLE_PREFIX = '_nango_';
 
 exports.up = async function (knex, _) {
-    const existingCC = await knex.withSchema('nango')
-        .select('id', 'connection_config')
-        .from(DB_TABLE)
-        .whereNotNull('connection_config')
-        .andWhere('connection_config', '!=', '{}');
+    const existingCC = await knex.select('id', 'connection_config').from(DB_TABLE).whereNotNull('connection_config').andWhere('connection_config', '!=', '{}');
 
     for (const record of existingCC) {
         const { id, connection_config } = record;
@@ -25,17 +21,14 @@ exports.up = async function (knex, _) {
                 connection_config[newKey] = connection_config[key];
                 delete connection_config[key];
 
-                await knex.withSchema('nango').update({ connection_config }).from(DB_TABLE).where({ id });
+                await knex.update({ connection_config }).from(DB_TABLE).where({ id });
             }
         }
-
     }
 
     return Promise.resolve();
-
 };
 
 exports.down = async function (knex, _) {
     return Promise.resolve();
 };
-

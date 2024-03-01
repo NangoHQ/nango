@@ -25,7 +25,10 @@ export default function ActionModal({ bindings, modalTitleColor, modalShowSpinne
                                     <h1 className={`${modalTitleColor} text-base mr-3 py-2`}>{modalTitle}</h1>
                                     {modalShowSpinner && <Spinner size={2} />}
                                 </span>
-                                <XMarkIcon className="flex -mt-4 cursor-pointer hover:bg-active-gray h-7 w-7 text-gray-400 p-1" onClick={() => setVisible(false)}/>
+                                <XMarkIcon
+                                    className="flex -mt-4 cursor-pointer hover:bg-active-gray h-7 w-7 text-gray-400 p-1"
+                                    onClick={() => setVisible(false)}
+                                />
                             </div>
                             <div className="mt-2 mb-4 text-sm text-white">{modalContent}</div>
                         </div>

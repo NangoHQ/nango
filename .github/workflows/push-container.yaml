@@ -36,7 +36,7 @@ jobs:
                 echo "Building: '${{ inputs.package }}'"
                 echo "Tags: ${{ inputs.tags }}"
 
-                npm run i
+                npm i
                 npm run ${{ inputs.run-cmd }}
                 node scripts/flows.js
                 docker buildx build -f packages/${{ inputs.package }}/Dockerfile --platform linux/amd64 ${{ inputs.tags }} . --no-cache ${{ env.PUSH }}
