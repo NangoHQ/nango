@@ -297,6 +297,7 @@
                         "integrations/integration-templates/pipedrive",
                         "integrations/integration-templates/salesforce",
                         "integrations/integration-templates/slack",
+                        "integrations/integration-templates/teamtailor",
                         "integrations/integration-templates/workable",
                         "integrations/integration-templates/zendesk",
                         "integrations/integration-templates/zoho-crm"
