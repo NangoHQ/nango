@@ -1,5 +1,5 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, telemetry } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes } from '@nangohq/shared';
 import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
@@ -25,7 +25,6 @@ export async function exec(
 
     const rawNango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
 
-    console.log('Telemetry', process.env['NANGO_TELEMETRY_SDK']);
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
 
     nango.abortSignal = abortController.signal;
@@ -39,10 +38,7 @@ export async function exec(
         })();
     `;
 
-    tracer.dogstatsd.increment('test.runner3', 1);
-    telemetry.increment('test.runner4' as any, 1);
-
-    return tracer.trace(SpanTypes.RUNNER_EXEC, async (span) => {
+    return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.accountId)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
