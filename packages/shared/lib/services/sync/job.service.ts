@@ -172,7 +172,7 @@ export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolea
     return false;
 };
 
-export async function softDeleteJobs(limit: number): Promise<number> {
+export async function softDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
     return db
         .knex('_nango_sync_jobs')
         .update({
@@ -180,11 +180,6 @@ export async function softDeleteJobs(limit: number): Promise<number> {
             deleted_at: db.knex.fn.now()
         })
         .whereIn('id', function (sub) {
-            sub.select('jobs.id')
-                .from('_nango_sync_jobs AS jobs')
-                .join('_nango_syncs AS syncs', 'syncs.id', '=', 'jobs.sync_id')
-                .where('syncs.deleted', true)
-                .andWhere('jobs.deleted', false)
-                .limit(limit);
+            sub.select('id').from('_nango_sync_jobs').where({ deleted: false, sync_id: syncId }).limit(limit);
         });
 }

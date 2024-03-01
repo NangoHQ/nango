@@ -1,10 +1,20 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, logger, MetricTypes, softDeleteSchedules, telemetry, syncDataService, db } from '@nangohq/shared';
+import {
+    errorManager,
+    ErrorSourceEnum,
+    logger,
+    MetricTypes,
+    softDeleteSchedules,
+    telemetry,
+    softDeleteJobs,
+    syncDataService,
+    db,
+    findRecentlyDeletedSync
+} from '@nangohq/shared';
 import tracer from '../tracer.js';
 
-// const limitJobs = 100;
-const limitSchedules = 100;
-const limitSyncs = 10;
+const limitJobs = 1000;
+const limitSchedules = 1000;
 const limitRecords = 1000;
 
 export async function deleteSyncsData(): Promise<void> {
@@ -22,8 +32,6 @@ export async function deleteSyncsData(): Promise<void> {
         }
         telemetry.duration(MetricTypes.JOBS_DELETE_SYNCS_DATA, Date.now() - start);
     });
-
-    Promise.all([exec(), exec()]);
 }
 
 export async function exec(): Promise<void> {
@@ -38,31 +46,29 @@ export async function exec(): Promise<void> {
             return;
         }
 
-        // -----
-        // It simply is not possible right now, table is too big
+        const syncs = await findRecentlyDeletedSync();
 
-        // Soft delete jobs
-        // let countJobs = 0;
-        // do {
-        //     countJobs = await softDeleteJobs(limitJobs);
-        //     logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
-        // } while (countJobs >= limitJobs);
-
-        // -----
-        // Soft delete schedules
-        let countSchedules = 0;
-        do {
-            countSchedules = await softDeleteSchedules(limitSchedules);
-            logger.info(`[deleteSyncs] soft deleted ${countSchedules} schedules`);
-        } while (countSchedules >= limitSchedules);
-
-        // ----
-        // hard delete records
-        const syncs = await syncDataService.findSyncsWithDeletableRecords(limitSyncs);
-        logger.info(`[deleteSyncs] found ${syncs.length} syncs for records`);
         for (const sync of syncs) {
             logger.info(`[deleteSyncs] deleting syncId: ${sync.id}`);
-            await syncDataService.deleteRecordsBySyncId(sync.id!, limitRecords);
+
+            // Soft delete jobs
+            let countJobs = 0;
+            do {
+                countJobs = await softDeleteJobs({ syncId: sync.id, limit: limitJobs });
+                logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
+            } while (countJobs >= limitJobs);
+
+            // -----
+            // Soft delete schedules
+            let countSchedules = 0;
+            do {
+                countSchedules = await softDeleteSchedules({ syncId: sync.id, limit: limitSchedules });
+                logger.info(`[deleteSyncs] soft deleted ${countSchedules} schedules`);
+            } while (countSchedules >= limitSchedules);
+
+            // ----
+            // hard delete records
+            await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
         }
     });
 

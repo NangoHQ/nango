@@ -8,8 +8,7 @@ import type {
     CustomerFacingDataRecord,
     DataRecordWithMetadata,
     GetRecordsResponse,
-    LastAction,
-    Sync
+    LastAction
 } from '../../../models/Sync.js';
 import type { DataResponse } from '../../../models/Data.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
@@ -546,17 +545,7 @@ export async function getRecordsByExternalIds(external_ids: string[], nango_conn
     return result as unknown as SyncDataRecord[];
 }
 
-export async function findSyncsWithDeletableRecords(limit: number): Promise<Pick<Sync, 'id'>[]> {
-    return db.knex
-        .select<Pick<Sync, 'id'>[]>('syncs.id')
-        .from('_nango_sync_data_records AS rec')
-        .join('_nango_syncs AS syncs', 'syncs.id', '=', 'rec.sync_id')
-        .where('syncs.deleted', true)
-        .groupBy('syncs.id')
-        .limit(limit);
-}
-
-export async function deleteRecordsBySyncId(syncId: string, limit: number = 5000): Promise<void> {
+export async function deleteRecordsBySyncId({ syncId, limit = 5000 }: { syncId: string; limit?: number }): Promise<void> {
     let countRecords = 0;
     do {
         countRecords = await db
