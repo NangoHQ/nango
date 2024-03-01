@@ -194,9 +194,9 @@ export default class Nango {
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
-                    privateKeyId: credentials.privateKeyId as string,
-                    issuerId: credentials.issuerId as string,
-                    privateKey: credentials.privateKey as string
+                    privateKeyId: credentials.privateKeyId,
+                    issuerId: credentials.issuerId,
+                    privateKey: credentials.privateKey
                 }
             };
 
@@ -215,7 +215,7 @@ export default class Nango {
         connectionConfigWithCredentials: ConnectionConfig,
         connectionConfig?: ConnectionConfig
     ): Promise<AuthResult> {
-        const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
+        const { params: credentials } = connectionConfigWithCredentials;
 
         if (!credentials) {
             throw new AuthError('You must specify credentials.', 'missingCredentials');

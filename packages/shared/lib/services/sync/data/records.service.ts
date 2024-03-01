@@ -8,8 +8,7 @@ import type {
     CustomerFacingDataRecord,
     DataRecordWithMetadata,
     GetRecordsResponse,
-    LastAction,
-    Sync
+    LastAction
 } from '../../../models/Sync.js';
 import type { DataResponse } from '../../../models/Data.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
@@ -63,7 +62,7 @@ export const formatDataRecords = (
             }
         }
 
-        const external_id = record['id'] as string;
+        const external_id = record['id'];
         formattedRecords[i] = {
             id: uuid.v4(),
             json: record,
@@ -359,9 +358,7 @@ export async function getAllDataRecords(
             }
 
             query = query.where((builder) =>
-                builder
-                    .where('created_at', '>', cursorSort)
-                    .orWhere((builder) => builder.where('created_at' as string, '=', cursorSort).andWhere('id', '>', cursorId))
+                builder.where('created_at', '>', cursorSort).orWhere((builder) => builder.where('created_at', '=', cursorSort).andWhere('id', '>', cursorId))
             );
         }
 
@@ -546,17 +543,14 @@ export async function getRecordsByExternalIds(external_ids: string[], nango_conn
     return result as unknown as SyncDataRecord[];
 }
 
-export async function findSyncsWithDeletableRecords(limit: number): Promise<Pick<Sync, 'id'>[]> {
-    return db.knex
-        .select<Pick<Sync, 'id'>[]>('syncs.id')
-        .from('_nango_sync_data_records AS rec')
-        .join('_nango_syncs AS syncs', 'syncs.id', '=', 'rec.sync_id')
-        .where('syncs.deleted', true)
-        .groupBy('syncs.id')
-        .limit(limit);
-}
-
-export async function deleteRecordsBySyncId(syncId: string, limit: number = 5000): Promise<void> {
+export async function deleteRecordsBySyncId({
+    syncId,
+    limit = 5000
+}: {
+    syncId: string;
+    limit?: number;
+}): Promise<{ totalRecords: number; totalDeletes: number }> {
+    let totalRecords = 0;
     let countRecords = 0;
     do {
         countRecords = await db
@@ -565,8 +559,10 @@ export async function deleteRecordsBySyncId(syncId: string, limit: number = 5000
                 sub.select('id').from('_nango_sync_data_records').where({ sync_id: syncId }).limit(limit);
             })
             .del();
+        totalRecords += countRecords;
     } while (countRecords >= limit);
 
+    let totalDeletes = 0;
     let countDeletes = 0;
     do {
         countDeletes = await db
@@ -575,5 +571,8 @@ export async function deleteRecordsBySyncId(syncId: string, limit: number = 5000
                 sub.select('id').from('_nango_sync_data_records_deletes').where({ sync_id: syncId }).limit(limit);
             })
             .del();
+        totalDeletes += countDeletes;
     } while (countDeletes >= limit);
+
+    return { totalDeletes, totalRecords };
 }

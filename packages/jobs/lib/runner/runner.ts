@@ -1,12 +1,14 @@
 import type { KVStore } from '@nangohq/shared/lib/utils/kvstore/KVStore.js';
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
-import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore } from '@nangohq/shared';
+import { RemoteRunner } from './remote.runner.js';
+import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore, isEnterprise } from '@nangohq/shared';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 
 export enum RunnerType {
     Local = 'local',
-    Render = 'render'
+    Render = 'render',
+    Remote = 'remote'
 }
 
 export interface Runner {
@@ -48,7 +50,15 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
         } catch (err) {}
     }
     const isRender = process.env['IS_RENDER'] === 'true';
-    const runner = isRender ? await RenderRunner.getOrStart(runnerId) : await LocalRunner.getOrStart(runnerId);
+    let runner: Runner;
+    if (isEnterprise()) {
+        runner = await RemoteRunner.getOrStart(runnerId);
+    } else if (isRender) {
+        runner = await RenderRunner.getOrStart(runnerId);
+    } else {
+        runner = await LocalRunner.getOrStart(runnerId);
+    }
+
     await waitForRunner(runner);
     await runnersCache.set(runner);
     return runner;
@@ -86,6 +96,8 @@ class RunnerCache {
                         return LocalRunner.fromJSON(obj);
                     case RunnerType.Render:
                         return RenderRunner.fromJSON(obj);
+                    case RunnerType.Remote:
+                        return RemoteRunner.fromJSON(obj);
                 }
             }
             return undefined;

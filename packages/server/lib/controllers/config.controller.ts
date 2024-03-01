@@ -70,7 +70,7 @@ class ConfigController {
                     };
 
                     if (template && template.auth_mode !== AuthModes.App && template.auth_mode !== AuthModes.Custom) {
-                        integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
+                        integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template);
                     }
 
                     return integration;
@@ -349,7 +349,7 @@ class ConfigController {
                 const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
                 const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === config.provider);
 
-                const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey as string);
+                const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
                 const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
 
                 if (availableFlows && enabledFlows && unEnabledFlows) {

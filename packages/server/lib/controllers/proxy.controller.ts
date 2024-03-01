@@ -282,7 +282,7 @@ class ProxyController {
             }
         });
         if (error?.response?.status) {
-            res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
+            res.writeHead(error?.response?.status, error?.response?.headers as OutgoingHttpHeaders);
         }
         if (errorData) {
             errorData.pipe(stringify).pipe(res);
