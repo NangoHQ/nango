@@ -6,7 +6,7 @@ info:
 servers:
     - url: https://api.nango.dev
       description: Production server
-    - url: http://localhost:3033
+    - url: http://localhost:3003
       description: Local server
 paths:
     /config:
