@@ -1,5 +1,5 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, telemetry } from '@nangohq/shared';
 import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
@@ -38,6 +38,9 @@ export async function exec(
             return module.exports;
         })();
     `;
+
+    tracer.dogstatsd.increment('test.runner3', 1);
+    telemetry.increment('test.runner4' as any, 1);
 
     return tracer.trace(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.accountId)

@@ -14,7 +14,7 @@ import {
     logger
 } from '@nangohq/shared';
 import { SpanTypes } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 
 export async function cronAutoIdleDemo(): Promise<void> {
     schedule('1 * * * *', () => {

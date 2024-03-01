@@ -3,7 +3,7 @@ import { RunnerType } from './runner.js';
 import { ProxyAppRouter, getRunnerClient } from '@nangohq/nango-runner';
 import { getEnv, getPersistAPIUrl } from '@nangohq/shared';
 import api from 'api';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 
 const render = api('@render-api/v1.0#aiie8wizhlp1is9bu');
 render.auth(process.env['RENDER_API_KEY']);
