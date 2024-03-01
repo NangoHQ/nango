@@ -122,7 +122,7 @@ class SyncController {
     // to deprecate
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
+            const { model, delta, updated_after, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -136,7 +136,7 @@ class SyncController {
                 providerConfigKey,
                 environmentId,
                 model as string,
-                delta as string,
+                String(delta || updated_after),
                 offset as string,
                 limit as string,
                 sort_by as string,

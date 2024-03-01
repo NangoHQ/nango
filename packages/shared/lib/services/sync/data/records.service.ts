@@ -314,7 +314,7 @@ export async function getAllDataRecords(
     providerConfigKey: string,
     environmentId: number,
     model: string,
-    delta?: string,
+    updatedAfter?: string,
     limit?: number | string,
     filter?: LastAction,
     cursorValue?: string | null
@@ -374,8 +374,8 @@ export async function getAllDataRecords(
             query = query.limit(101);
         }
 
-        if (delta) {
-            const time = dayjs(delta);
+        if (updatedAfter) {
+            const time = dayjs(updatedAfter);
 
             if (!time.isValid()) {
                 const error = new NangoError('invalid_timestamp');
@@ -469,7 +469,7 @@ export async function getAllDataRecords(
             environmentId: String(environmentId),
             connectionId,
             providerConfigKey,
-            delta: String(delta),
+            delta: String(updatedAfter),
             model,
             error: JSON.stringify(e)
         });

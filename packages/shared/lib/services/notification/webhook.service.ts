@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import dayjs from 'dayjs';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
@@ -145,6 +146,7 @@ class WebhookService {
                 deleted: 0
             },
             syncType,
+            updatedAfter: dayjs(now).toDate().toUTCString(),
             queryTimeStamp: now as unknown as string
         };
 
