@@ -17,7 +17,8 @@ import {
     Integration,
     IntegrationWithCreds,
     SyncStatusResponse,
-    UpdateSyncFrequencyResponse
+    UpdateSyncFrequencyResponse,
+    StandardNangoConfig
 } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
@@ -323,6 +324,25 @@ export class Nango {
         };
 
         return axios.delete(url, { headers: this.enrichHeaders(headers) });
+    }
+
+    /**
+     * =======
+     * SCRIPTS
+     *      CONFIG
+     * =======
+     */
+
+    public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
+        const url = `${this.serverUrl}/scripts/config`;
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+
+        return response.data;
     }
 
     /**
