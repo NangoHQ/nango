@@ -279,7 +279,7 @@ export async function getDataRecords(
                 END as last_action`),
             'json as record'
         );
-        result = encryptionManager.decryptDataRecords(result, 'record') as unknown as DataRecordWithMetadata[];
+        result = encryptionManager.decryptDataRecordsAndAddCursor(result, 'record') as unknown as DataRecordWithMetadata[];
     } else {
         result = await query.select(
             db.knex.raw(`
@@ -301,7 +301,7 @@ export async function getDataRecords(
             `)
         );
 
-        result = encryptionManager.decryptDataRecords(result, 'record') as unknown as RecordWrapCustomerFacingDataRecord;
+        result = encryptionManager.decryptDataRecordsAndAddCursor(result, 'record') as unknown as RecordWrapCustomerFacingDataRecord;
 
         result = result.map((item: { record: CustomerFacingDataRecord }) => item.record);
     }
@@ -441,7 +441,7 @@ export async function getAllDataRecords(
             `)
         );
 
-        const result = encryptionManager.decryptDataRecords(rawResult, 'record') as unknown as SyncDataRecord[];
+        const result = encryptionManager.decryptDataRecordsAndAddCursor(rawResult, 'record') as unknown as SyncDataRecord[];
 
         if (result.length === 0) {
             return { success: true, error: null, response: { records: [], next_cursor: nextCursor } };
@@ -513,7 +513,7 @@ export async function getSingleRecord(external_id: string, nango_connection_id: 
         return null;
     }
 
-    const result = encryptionManager.decryptDataRecords(encryptedRecord, 'json');
+    const result = encryptionManager.decryptDataRecordsAndAddCursor(encryptedRecord, 'json');
 
     if (!result || result.length === 0) {
         return null;
@@ -535,7 +535,7 @@ export async function getRecordsByExternalIds(external_ids: string[], nango_conn
         return [];
     }
 
-    const result = encryptionManager.decryptDataRecords(encryptedRecords, 'json');
+    const result = encryptionManager.decryptDataRecordsAndAddCursor(encryptedRecords, 'json');
 
     if (!result || result.length === 0) {
         return [];

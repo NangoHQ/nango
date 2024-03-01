@@ -233,7 +233,10 @@ class EncryptionManager {
         return encryptedDataRecords;
     }
 
-    public decryptDataRecords(dataRecords: DataRecord[] | null, field = 'json'): DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord | null {
+    public decryptDataRecordsAndAddCursor(
+        dataRecords: DataRecord[] | null,
+        field = 'json'
+    ): DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord | null {
         if (dataRecords === null) {
             return dataRecords;
         }
@@ -257,6 +260,10 @@ class EncryptionManager {
             };
 
             if (record['_nango_metadata']) {
+                const nextCursor = record['_nango_metadata']['last_modified_at'] as unknown as string;
+                const id = record['id'];
+                const encodedCursorValue = Buffer.from(`${nextCursor}||${id}`).toString('base64');
+                record['_nango_metadata']['cursor'] = encodedCursorValue;
                 updatedRecord['_nango_metadata'] = record['_nango_metadata'];
                 decryptedDataRecords.push({ [field]: updatedRecord } as DataRecord);
             } else {
