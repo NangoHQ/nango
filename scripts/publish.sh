@@ -2,6 +2,7 @@
 
 # exit when any command fails
 set -e
+set -x
 
 # function to bump and publish a package
 # $1: package name
@@ -46,3 +47,6 @@ bump_and_npm_publish "nango" "$VERSION"
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
 pushd ./packages/webapp; npm install "@nangohq/frontend@$VERSION"; popd
+
+# DEBUG: show changes in CI
+git diff
