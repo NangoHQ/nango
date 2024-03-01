@@ -7,7 +7,7 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 class AccountService {
     async getAccountById(id: number): Promise<Account | null> {
         try {
-            const result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: id });
+            const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: id });
 
             if (result == null || result.length == 0 || result[0] == null) {
                 return null;
@@ -27,7 +27,7 @@ class AccountService {
 
     async editAccount(name: string, id: number): Promise<void> {
         try {
-            await db.knex.withSchema(db.schema()).update({ name, updated_at: new Date() }).from<Account>(`_nango_accounts`).where({ id });
+            await db.knex.update({ name, updated_at: new Date() }).from<Account>(`_nango_accounts`).where({ id });
         } catch (e) {
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -38,7 +38,7 @@ class AccountService {
     }
 
     async getAccountAndEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<{ accountId: number; environmentId: number } | null> {
-        const account = await db.knex.withSchema(db.schema()).select('id').from<Account>(`_nango_accounts`).where({ uuid: targetAccountUUID });
+        const account = await db.knex.select('id').from<Account>(`_nango_accounts`).where({ uuid: targetAccountUUID });
 
         if (account == null || account.length == 0 || account[0] == null) {
             return null;
@@ -46,7 +46,7 @@ class AccountService {
 
         const accountId = account[0].id;
 
-        const environment = await db.knex.withSchema(db.schema()).select('id').from<Environment>(`_nango_environments`).where({
+        const environment = await db.knex.select('id').from<Environment>(`_nango_environments`).where({
             account_id: accountId,
             name: targetEnvironment
         });
@@ -59,7 +59,7 @@ class AccountService {
     }
 
     async getUUIDFromAccountId(accountId: number): Promise<string | null> {
-        const account = await db.knex.withSchema(db.schema()).select('uuid').from<Account>(`_nango_accounts`).where({ id: accountId });
+        const account = await db.knex.select('uuid').from<Account>(`_nango_accounts`).where({ id: accountId });
 
         if (account == null || account.length == 0 || account[0] == null) {
             return null;

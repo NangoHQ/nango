@@ -74,7 +74,7 @@ class UnAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
+                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
@@ -90,7 +90,7 @@ class UnAuthController {
                 }
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             if (config == null) {
                 await createActivityLogMessageAndEnd({
@@ -106,7 +106,7 @@ class UnAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider as string);
+            const template = await configService.getTemplate(config?.provider);
 
             if (template.auth_mode !== AuthModes.None) {
                 await createActivityLogMessageAndEnd({
@@ -135,9 +135,9 @@ class UnAuthController {
             await updateSuccessActivityLog(activityLogId as number, true);
 
             const [updatedConnection] = await connectionService.upsertUnauthConnection(
-                connectionId as string,
-                providerConfigKey as string,
-                config?.provider as string,
+                connectionId,
+                providerConfigKey,
+                config?.provider,
                 environmentId,
                 accountId
             );
@@ -152,12 +152,12 @@ class UnAuthController {
                         auth_mode: AuthModes.None,
                         operation: updatedConnection.operation
                     },
-                    config?.provider as string,
+                    config?.provider,
                     activityLogId
                 );
             }
 
-            res.status(200).send({ providerConfigKey: providerConfigKey as string, connectionId: connectionId as string });
+            res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 

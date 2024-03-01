@@ -38,7 +38,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
     if (!nangoConnection?.environment_id) {
         environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
     }
-    const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key, environmentId)) as ProviderConfig;
 
     return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, { ...nangoConnection, environment_id: environmentId }, context, debug);
 }
@@ -47,8 +47,8 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const { input, nangoConnection, actionName, activityLogId } = args;
 
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-        nangoConnection?.provider_config_key as string,
-        nangoConnection?.environment_id as number
+        nangoConnection?.provider_config_key,
+        nangoConnection?.environment_id
     )) as ProviderConfig;
 
     const context: Context = Context.current();
@@ -77,7 +77,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
 
-    const initialSyncStillRunning = await isInitialSyncStillRunning(syncId as string);
+    const initialSyncStillRunning = await isInitialSyncStillRunning(syncId);
 
     if (initialSyncStillRunning) {
         const content = `The continuous sync "${syncName}" with sync id ${syncId} did not run because the initial sync is still running. It will attempt to run at the next scheduled time.`;
@@ -86,8 +86,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
             environmentId: String(nangoConnection?.environment_id),
-            connectionId: nangoConnection?.connection_id as string,
-            providerConfigKey: nangoConnection?.provider_config_key as string,
+            connectionId: nangoConnection?.connection_id,
+            providerConfigKey: nangoConnection?.provider_config_key,
             syncName,
             syncId
         });
@@ -103,7 +103,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         if (!nangoConnection?.environment_id) {
             environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
             syncJobId = await createSyncJob(
-                syncId as string,
+                syncId,
                 syncType,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
@@ -112,7 +112,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             );
         } else {
             syncJobId = await createSyncJob(
-                syncId as string,
+                syncId,
                 syncType,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
@@ -121,10 +121,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             );
         }
 
-        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-            nangoConnection?.provider_config_key as string,
-            environmentId
-        )) as ProviderConfig;
+        const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key, environmentId)) as ProviderConfig;
 
         return syncProvider(
             syncConfig,
@@ -145,8 +142,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id as string,
-            provider_config_key: nangoConnection?.provider_config_key as string,
+            connection_id: nangoConnection?.connection_id,
+            provider_config_key: nangoConnection?.provider_config_key,
             provider: '',
             session_id: '',
             environment_id: environmentId,
@@ -162,8 +159,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
         await telemetry.log(LogTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
-            connectionId: nangoConnection?.connection_id as string,
-            providerConfigKey: nangoConnection?.provider_config_key as string,
+            connectionId: nangoConnection?.connection_id,
+            providerConfigKey: nangoConnection?.provider_config_key,
             syncId,
             syncName
         });
@@ -174,8 +171,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             operation: LogActionEnum.SYNC,
             metadata: {
                 syncType,
-                connectionId: nangoConnection?.connection_id as string,
-                providerConfigKey: nangoConnection?.provider_config_key as string,
+                connectionId: nangoConnection?.connection_id,
+                providerConfigKey: nangoConnection?.provider_config_key,
                 syncName
             }
         });
@@ -209,11 +206,11 @@ export async function syncProvider(
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id as string,
-            provider_config_key: nangoConnection?.provider_config_key as string,
+            connection_id: nangoConnection?.connection_id,
+            provider_config_key: nangoConnection?.provider_config_key,
             provider: syncConfig.provider,
             session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection?.environment_id as number,
+            environment_id: nangoConnection?.environment_id,
             operation_name: syncName
         };
         const activityLogId = (await createActivityLog(log)) as number;
@@ -221,7 +218,7 @@ export async function syncProvider(
         if (debug) {
             await createActivityLogMessage({
                 level: 'info',
-                environment_id: nangoConnection?.environment_id as number,
+                environment_id: nangoConnection?.environment_id,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
@@ -254,18 +251,18 @@ export async function syncProvider(
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id as string,
-            provider_config_key: nangoConnection?.provider_config_key as string,
+            connection_id: nangoConnection?.connection_id,
+            provider_config_key: nangoConnection?.provider_config_key,
             provider: syncConfig.provider,
             session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection?.environment_id as number,
+            environment_id: nangoConnection?.environment_id,
             operation_name: syncName
         };
         const content = `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`;
 
         await createActivityLogAndLogMessage(log, {
             level: 'error',
-            environment_id: nangoConnection?.environment_id as number,
+            environment_id: nangoConnection?.environment_id,
             timestamp: Date.now(),
             content
         });
@@ -273,18 +270,18 @@ export async function syncProvider(
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {
             environmentId: String(nangoConnection?.environment_id),
             syncId,
-            connectionId: nangoConnection?.connection_id as string,
-            providerConfigKey: nangoConnection?.provider_config_key as string,
+            connectionId: nangoConnection?.connection_id,
+            providerConfigKey: nangoConnection?.provider_config_key,
             syncName
         });
 
         errorManager.report(content, {
-            environmentId: nangoConnection?.environment_id as number,
+            environmentId: nangoConnection?.environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: action,
             metadata: {
-                connectionId: nangoConnection?.connection_id as string,
-                providerConfigKey: nangoConnection?.provider_config_key as string,
+                connectionId: nangoConnection?.connection_id,
+                providerConfigKey: nangoConnection?.provider_config_key,
                 syncType,
                 syncName
             }
@@ -298,8 +295,8 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     const { input, nangoConnection, activityLogId, parentSyncName } = args;
 
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-        nangoConnection?.provider_config_key as string,
-        nangoConnection?.environment_id as number
+        nangoConnection?.provider_config_key,
+        nangoConnection?.environment_id
     )) as ProviderConfig;
 
     const sync = await getSyncByIdAndName(nangoConnection.id as number, parentSyncName);
@@ -377,8 +374,8 @@ export async function reportFailure(
     await telemetry.log(LogTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
         environmentId: String(nangoConnection?.environment_id),
         name,
-        connectionId: nangoConnection?.connection_id as string,
-        providerConfigKey: nangoConnection?.provider_config_key as string,
+        connectionId: nangoConnection?.connection_id,
+        providerConfigKey: nangoConnection?.provider_config_key,
         error: JSON.stringify(error),
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
@@ -402,10 +399,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
 
         const environmentId = nangoConnection?.environment_id;
 
-        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-            nangoConnection?.provider_config_key as string,
-            environmentId
-        )) as ProviderConfig;
+        const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key, environmentId)) as ProviderConfig;
 
         const lastSyncDate = await getLastSyncDate(syncId);
         const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.INITIAL;
@@ -432,13 +426,13 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
         await syncRun.cancel();
     } catch (e: any) {
         const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e.message || e}`;
-        await errorManager.report(content, {
-            environmentId: workflowArguments.nangoConnection?.environment_id as number,
+        errorManager.report(content, {
+            environmentId: workflowArguments.nangoConnection?.environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.SYNC,
             metadata: {
-                connectionId: workflowArguments.nangoConnection?.connection_id as string,
-                providerConfigKey: workflowArguments.nangoConnection?.provider_config_key as string,
+                connectionId: workflowArguments.nangoConnection?.connection_id,
+                providerConfigKey: workflowArguments.nangoConnection?.provider_config_key,
                 syncName: workflowArguments.syncName,
                 syncId: workflowArguments.syncId
             }

@@ -1,27 +1,17 @@
 import { FlowEndpoint } from '../../../types';
 
 interface HttpLabelProp {
-    path: string
+    path: string;
 }
 
 export function HttpLabel({ endpoint }: { endpoint: FlowEndpoint }) {
     return (
         <>
-            {endpoint['GET'] && (
-                <GET path={endpoint['GET']} />
-            )}
-            {endpoint['POST'] && (
-                <POST path={endpoint['POST']} />
-            )}
-            {endpoint['PUT'] && (
-                <PUT path={endpoint['PUT']} />
-            )}
-            {endpoint['PATCH'] && (
-                <PATCH path={endpoint['PATCH']} />
-            )}
-            {endpoint['DELETE'] && (
-                <DELETE path={endpoint['DELETE']} />
-            )}
+            {endpoint['GET'] && <GET path={endpoint['GET']} />}
+            {endpoint['POST'] && <POST path={endpoint['POST']} />}
+            {endpoint['PUT'] && <PUT path={endpoint['PUT']} />}
+            {endpoint['PATCH'] && <PATCH path={endpoint['PATCH']} />}
+            {endpoint['DELETE'] && <DELETE path={endpoint['DELETE']} />}
         </>
     );
 }

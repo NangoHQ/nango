@@ -45,12 +45,11 @@ export default function UserSettings() {
         const res = await editUserNameAPI(target.name.value);
 
         if (res?.status === 200) {
-            toast.success('User\'s name updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            toast.success("User's name updated!", { position: toast.POSITION.BOTTOM_CENTER });
             setUserEditMode(false);
             setName(target.name.value);
         }
     };
-
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.UserSettings}>

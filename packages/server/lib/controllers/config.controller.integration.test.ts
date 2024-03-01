@@ -18,7 +18,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
     });
 
     it('CREATE provider config handles various missing attributes', async () => {
-        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        const result = await db.knex.select('*').from('_nango_environments');
         const req: any = {
             body: null,
             headers: {
@@ -64,7 +64,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
     });
 
     it('CREATE a provider config successfully and then LIST', async () => {
-        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        const result = await db.knex.select('*').from('_nango_environments');
         const req: any = {
             body: {
                 provider_config_key: 'test',
@@ -120,7 +120,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
 
         await configController.listProviderConfigs({} as Request, listRes as unknown as Response, listNext as NextFunction);
 
-        const existingConfigs = await db.knex.withSchema(db.schema()).select('*').from('_nango_configs').where({ environment_id: 1, deleted: false });
+        const existingConfigs = await db.knex.select('*').from('_nango_configs').where({ environment_id: 1, deleted: false });
 
         const configs = existingConfigs.map((config) => {
             return {
@@ -133,7 +133,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
     });
 
     it('UPDATE and then GET a provider config successfully', async () => {
-        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        const result = await db.knex.select('*').from('_nango_environments');
         const req: any = {
             body: {
                 provider_config_key: 'test',
@@ -238,7 +238,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
     });
 
     it('DELETE a provider config successfully', async () => {
-        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        const result = await db.knex.select('*').from('_nango_environments');
         const req: any = {
             params: {
                 providerConfigKey: 'test'

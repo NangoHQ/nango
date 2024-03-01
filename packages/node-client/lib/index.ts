@@ -17,12 +17,15 @@ import {
     Integration,
     IntegrationWithCreds,
     SyncStatusResponse,
-    UpdateSyncFrequencyResponse
+    UpdateSyncFrequencyResponse,
+    StandardNangoConfig
 } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
+
+export * from './types.js';
 
 interface NangoProps {
     host?: string;
@@ -285,7 +288,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey as string
+            'Provider-Config-Key': providerConfigKey
         };
 
         return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
@@ -307,7 +310,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey as string
+            'Provider-Config-Key': providerConfigKey
         };
 
         return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });
@@ -321,6 +324,25 @@ export class Nango {
         };
 
         return axios.delete(url, { headers: this.enrichHeaders(headers) });
+    }
+
+    /**
+     * =======
+     * SCRIPTS
+     *      CONFIG
+     * =======
+     */
+
+    public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
+        const url = `${this.serverUrl}/scripts/config`;
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+
+        return response.data;
     }
 
     /**
@@ -590,7 +612,7 @@ export class Nango {
 
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress } = config;
+        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress, retryOn } = config;
 
         const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
@@ -618,6 +640,10 @@ export class Nango {
 
         if (decompress) {
             headers['Decompress'] = decompress;
+        }
+
+        if (retryOn) {
+            headers['Retry-On'] = retryOn.join(',');
         }
 
         const options: AxiosRequestConfig = {

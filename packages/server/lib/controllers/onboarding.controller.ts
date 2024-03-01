@@ -12,7 +12,7 @@ import {
     syncDataService,
     SyncCommand
 } from '@nangohq/shared';
-import type { ReportedSyncJobStatus, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
+import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 const syncName = 'github-issues-lite';
@@ -107,7 +107,7 @@ class OnboardingController {
                 return;
             }
 
-            const [job] = status as ReportedSyncJobStatus[];
+            const [job] = status;
 
             res.status(200).json(job);
         } catch (err) {

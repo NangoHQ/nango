@@ -13,10 +13,7 @@ export default function PrismPlus({ children, ...props }: PrismProps) {
 
     const Switch = useCallback(() => {
         return (
-            <span
-                onClick={toggleSecretVisibility}
-                className="rounded px-1 py-1 text-sm text-gray-600 cursor-pointer absolute z-10 -top-7 right-3"
-            >
+            <span onClick={toggleSecretVisibility} className="rounded px-1 py-1 text-sm text-gray-600 cursor-pointer absolute z-10 -top-7 right-3">
                 {isSecretVisible ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
             </span>
         );

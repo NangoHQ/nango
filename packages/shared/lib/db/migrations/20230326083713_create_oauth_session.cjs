@@ -1,5 +1,5 @@
-exports.up = function(knex, _) {
-    return knex.schema.withSchema('nango').createTable('_nango_oauth_sessions', function(table) {
+exports.up = function (knex, _) {
+    return knex.schema.createTable('_nango_oauth_sessions', function (table) {
         table.uuid('id').notNullable();
         table.string('provider_config_key').notNullable();
         table.string('provider').notNullable();
@@ -17,6 +17,6 @@ exports.up = function(knex, _) {
     });
 };
 
-exports.down = function(knex, _) {
-    return knex.schema.withSchema('nango').dropTable('_nango_oauth_sessions');
+exports.down = function (knex, _) {
+    return knex.schema.dropTable('_nango_oauth_sessions');
 };

@@ -16,7 +16,8 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<a
         pool: {
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '20')
-        }
+        },
+        searchPath: 'nango'
     };
 }
 
@@ -43,7 +44,7 @@ export default db;
 
 export { db as database };
 
-export const schema = (): Knex.QueryBuilder => db.knex.withSchema(db.schema());
+export const schema = (): Knex.QueryBuilder => db.knex.queryBuilder();
 
 export const dbNamespace = '_nango_';
 

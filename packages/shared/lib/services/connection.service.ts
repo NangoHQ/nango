@@ -84,32 +84,25 @@ class ConnectionService {
 
             encryptedConnection.updated_at = new Date();
 
-            await db.knex
-                .withSchema(db.schema())
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id, deleted: false })
-                .update(encryptedConnection);
+            await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update(encryptedConnection);
 
             analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
 
-        const [id] = await db.knex
-            .withSchema(db.schema())
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config_id as number,
-                    credentials: parsedRawCredentials,
-                    connection_config: connectionConfig,
-                    environment_id: environment_id,
-                    metadata: metadata || null
-                }),
-                ['id']
-            );
+        const [id] = await db.knex.from<StoredConnection>(`_nango_connections`).insert(
+            encryptionManager.encryptConnection({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                config_id: config_id as number,
+                credentials: parsedRawCredentials,
+                connection_config: connectionConfig,
+                environment_id: environment_id,
+                metadata: metadata || null
+            }),
+            ['id']
+        );
 
         analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
@@ -138,30 +131,23 @@ class ConnectionService {
                 environment_id
             });
             encryptedConnection.updated_at = new Date();
-            await db.knex
-                .withSchema(db.schema())
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id, deleted: false })
-                .update(encryptedConnection);
+            await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update(encryptedConnection);
 
             analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
-        const [id] = await db.knex
-            .withSchema(db.schema())
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptApiConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config_id as number,
-                    credentials,
-                    connection_config: connectionConfig,
-                    environment_id
-                }),
-                ['id']
-            );
+        const [id] = await db.knex.from<StoredConnection>(`_nango_connections`).insert(
+            encryptionManager.encryptApiConnection({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                config_id: config_id as number,
+                credentials,
+                connection_config: connectionConfig,
+                environment_id
+            }),
+            ['id']
+        );
 
         analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, accountId, { provider });
 
@@ -180,7 +166,6 @@ class ConnectionService {
 
         if (storedConnection) {
             await db.knex
-                .withSchema(db.schema())
                 .from<StoredConnection>(`_nango_connections`)
                 .where({ id: storedConnection.id, deleted: false })
                 .update({
@@ -194,7 +179,7 @@ class ConnectionService {
 
             return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
-        const [id] = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert(
+        const [id] = await db.knex.from<StoredConnection>(`_nango_connections`).insert(
             {
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -234,7 +219,7 @@ class ConnectionService {
         if (importedConnection) {
             await connectionCreatedHook(
                 {
-                    id: importedConnection?.id as number,
+                    id: importedConnection?.id,
                     connection_id,
                     provider_config_key,
                     environment_id: environmentId,
@@ -375,13 +360,13 @@ class ConnectionService {
         if (connection != null) {
             const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials;
             if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
-                const creds = credentials as OAuth2Credentials;
+                const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }
 
             if (credentials.type && credentials.type === ProviderAuthModes.App) {
-                const creds = credentials as AppCredentials;
+                const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }
@@ -394,7 +379,6 @@ class ConnectionService {
 
     public async updateConnection(connection: Connection) {
         await db.knex
-            .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .where({
                 connection_id: connection.connection_id,
@@ -406,7 +390,7 @@ class ConnectionService {
     }
 
     public async getMetadata(connection: Connection): Promise<Record<string, string>> {
-        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('metadata').where({
+        const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('metadata').where({
             connection_id: connection.connection_id,
             provider_config_key: connection.provider_config_key,
             environment_id: connection.environment_id,
@@ -421,7 +405,7 @@ class ConnectionService {
     }
 
     public async getConnectionConfig(connection: Connection): Promise<ConnectionConfig> {
-        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('connection_config').where({
+        const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('connection_config').where({
             connection_id: connection.connection_id,
             provider_config_key: connection.provider_config_key,
             environment_id: connection.environment_id,
@@ -437,7 +421,6 @@ class ConnectionService {
 
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
         const result = await db.knex
-            .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config')
             .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
@@ -451,7 +434,6 @@ class ConnectionService {
 
     public async replaceMetadata(connection: Connection, metadata: Metadata) {
         await db.knex
-            .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .where({ id: connection.id as number, deleted: false })
             .update({ metadata });
@@ -459,7 +441,6 @@ class ConnectionService {
 
     public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
         await db.knex
-            .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .where({ id: connection.id as number, deleted: false })
             .update({ connection_config: config });
@@ -483,7 +464,6 @@ class ConnectionService {
 
     public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<Connection[] | null> {
         const result = await db.knex
-            .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId })
@@ -497,7 +477,7 @@ class ConnectionService {
     }
 
     public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<Connection[] | null> {
-        let query = db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('*').where({ environment_id: environmentId });
+        let query = db.knex.from<StoredConnection>(`_nango_connections`).select('*').where({ environment_id: environmentId });
 
         Object.entries(keyValuePairs).forEach(([key, value]) => {
             query = query.andWhereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
@@ -517,7 +497,6 @@ class ConnectionService {
         connectionId?: string
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata }[]> {
         const queryBuilder = db.knex
-            .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' }, 'metadata')
             .where({ environment_id, deleted: false });
@@ -533,12 +512,7 @@ class ConnectionService {
     }
 
     public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
-        if (connection) {
-            await syncOrchestrator.deleteSyncsByConnection(connection);
-        }
-
-        return await db.knex
-            .withSchema(db.schema())
+        const del = await db.knex
             .from<Connection>(`_nango_connections`)
             .where({
                 connection_id: connection.connection_id,
@@ -546,7 +520,11 @@ class ConnectionService {
                 environment_id,
                 deleted: false
             })
-            .update({ deleted: true, deleted_at: new Date() });
+            .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
+
+        await syncOrchestrator.softDeleteSyncsByConnection(connection);
+
+        return del;
     }
 
     public async getConnectionCredentials(
@@ -592,7 +570,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key as string, environmentId);
+        const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key, environmentId);
 
         if (activityLogId) {
             await updateProviderActivityLog(activityLogId, config?.provider as string);
@@ -613,7 +591,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
+        const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider);
 
         if (connection?.credentials?.type === ProviderAuthModes.OAuth2 || connection?.credentials?.type === ProviderAuthModes.App) {
             const {
@@ -621,8 +599,8 @@ class ConnectionService {
                 error,
                 response: credentials
             } = await this.refreshCredentialsIfNeeded(
-                connection as Connection,
-                config as ProviderConfig,
+                connection,
+                config,
                 template as ProviderTemplateOAuth2,
                 activityLogId,
                 environmentId,
@@ -641,7 +619,7 @@ class ConnectionService {
     }
 
     public async updateLastFetched(id: number) {
-        await db.knex.withSchema(db.schema()).from<Connection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
+        await db.knex.from<Connection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
@@ -822,9 +800,9 @@ class ConnectionService {
 
         const credentials: AppStoreCredentials = {
             type: ProviderAuthModes.AppStore,
-            access_token: (rawCredentials as any)?.token,
+            access_token: rawCredentials?.token,
             private_key: Buffer.from(privateKey).toString('base64'),
-            expires_at: (rawCredentials as any)?.expires_at,
+            expires_at: rawCredentials?.expires_at,
             raw: rawCredentials as unknown as Record<string, unknown>
         };
 
@@ -838,7 +816,7 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         activityLogId: number
     ): Promise<void> {
-        const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig as ConnectionConfig);
+        const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
         if (!success || !credentials) {
             console.log(error);
@@ -919,8 +897,8 @@ class ConnectionService {
 
         const credentials: AppCredentials = {
             type: ProviderAuthModes.App,
-            access_token: (rawCredentials as any)?.token,
-            expires_at: (rawCredentials as any)?.expires_at,
+            access_token: rawCredentials?.token,
+            expires_at: rawCredentials?.expires_at,
             raw: rawCredentials as unknown as Record<string, unknown>
         };
 

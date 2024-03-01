@@ -277,7 +277,7 @@ class EncryptionManager {
         const concurrencyLimit = 5;
 
         const encryptAndSave = async (tableName: string, offset: number) => {
-            const dataRecords: DataRecord[] = await db.knex.withSchema(db.schema()).select('*').from<DataRecord>(tableName).limit(chunkSize).offset(offset);
+            const dataRecords: DataRecord[] = await db.knex.select('*').from<DataRecord>(tableName).limit(chunkSize).offset(offset);
 
             if (dataRecords.length === 0) {
                 return false;
@@ -292,7 +292,7 @@ class EncryptionManager {
                     const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
                     dataRecord.json = { encryptedValue, iv, authTag };
 
-                    await db.knex.withSchema(db.schema()).from<DataRecord>(tableName).where('id', dataRecord.id).update(dataRecord).transacting(trx);
+                    await db.knex.from<DataRecord>(tableName).where('id', dataRecord.id).update(dataRecord).transacting(trx);
 
                     await trx.commit();
                 })
@@ -314,8 +314,8 @@ class EncryptionManager {
     }
 
     private async saveDbConfig(dbConfig: DBConfig) {
-        await db.knex.withSchema(db.schema()).from<DBConfig>(`_nango_db_config`).del();
-        await db.knex.withSchema(db.schema()).from<DBConfig>(`_nango_db_config`).insert(dbConfig);
+        await db.knex.from<DBConfig>(`_nango_db_config`).del();
+        await db.knex.from<DBConfig>(`_nango_db_config`).insert(dbConfig);
     }
 
     private async hashEncryptionKey(key: string, salt: string): Promise<string> {
@@ -324,7 +324,7 @@ class EncryptionManager {
     }
 
     public async encryptDatabaseIfNeeded() {
-        const dbConfig: DBConfig | null = await db.knex.withSchema(db.schema()).first().from<DBConfig>('_nango_db_config');
+        const dbConfig: DBConfig | null = await db.knex.first().from<DBConfig>('_nango_db_config');
         const previousEncryptionKeyHash = dbConfig?.encryption_key_hash;
         const encryptionKeyHash = this.key ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
@@ -353,7 +353,7 @@ class EncryptionManager {
     private async encryptDatabase() {
         logger.info('🔐⚙️ Starting encryption of database...');
 
-        const environments: Environment[] = await db.knex.withSchema(db.schema()).select('*').from<Environment>(`_nango_environments`);
+        const environments: Environment[] = await db.knex.select('*').from<Environment>(`_nango_environments`);
 
         for (let environment of environments) {
             if (environment.secret_key_iv && environment.secret_key_tag) {
@@ -361,10 +361,10 @@ class EncryptionManager {
             }
 
             environment = this.encryptEnvironment(environment);
-            await db.knex.withSchema(db.schema()).from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
+            await db.knex.from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
-        const connections: Connection[] = await db.knex.withSchema(db.schema()).select('*').from<Connection>(`_nango_connections`);
+        const connections: Connection[] = await db.knex.select('*').from<Connection>(`_nango_connections`);
 
         for (const connection of connections) {
             if (connection.credentials_iv && connection.credentials_tag) {
@@ -372,10 +372,10 @@ class EncryptionManager {
             }
 
             const storedConnection = this.encryptConnection(connection);
-            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id! }).update(storedConnection);
+            await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id! }).update(storedConnection);
         }
 
-        const providerConfigs: ProviderConfig[] = await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`);
+        const providerConfigs: ProviderConfig[] = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`);
 
         for (let providerConfig of providerConfigs) {
             if (providerConfig.oauth_client_secret_iv && providerConfig.oauth_client_secret_tag) {
@@ -383,13 +383,10 @@ class EncryptionManager {
             }
 
             providerConfig = this.encryptProviderConfig(providerConfig);
-            await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ id: providerConfig.id! }).update(providerConfig);
+            await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id: providerConfig.id! }).update(providerConfig);
         }
 
-        const environmentVariables: EnvironmentVariable[] = await db.knex
-            .withSchema(db.schema())
-            .select('*')
-            .from<EnvironmentVariable>(`_nango_environment_variables`);
+        const environmentVariables: EnvironmentVariable[] = await db.knex.select('*').from<EnvironmentVariable>(`_nango_environment_variables`);
 
         for (const environmentVariable of environmentVariables) {
             if (environmentVariable.value_iv && environmentVariable.value_tag) {
@@ -402,7 +399,6 @@ class EncryptionManager {
             environmentVariable.value_tag = authTag;
 
             await db.knex
-                .withSchema(db.schema())
                 .from<EnvironmentVariable>(`_nango_environment_variables`)
                 .where({ id: environmentVariable.id as number })
                 .update(environmentVariable);
