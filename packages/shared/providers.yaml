@@ -733,6 +733,8 @@ gong-oauth:
     auth_mode: OAUTH2
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
+    token_response_metadata:
+        - api_base_url_for_customer
     authorization_params:
         response_type: code
         access_type: offline
@@ -743,7 +745,7 @@ gong-oauth:
     disable_pkce: true
     token_request_auth_method: basic
     proxy:
-        base_url: https://api.gong.io
+        base_url: ${connectionConfig.api_base_url_for_customer}
     docs: https://docs.nango.dev/integrations/all/gong
 google:
     auth_mode: OAUTH2
