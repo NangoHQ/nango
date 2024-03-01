@@ -56,6 +56,7 @@ export async function exec(): Promise<void> {
             do {
                 countJobs = await softDeleteJobs({ syncId: sync.id, limit: limitJobs });
                 logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
+                telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_JOBS, countJobs);
             } while (countJobs >= limitJobs);
 
             // -----
@@ -64,11 +65,14 @@ export async function exec(): Promise<void> {
             do {
                 countSchedules = await softDeleteSchedules({ syncId: sync.id, limit: limitSchedules });
                 logger.info(`[deleteSyncs] soft deleted ${countSchedules} schedules`);
+                telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_SCHEDULES, countSchedules);
             } while (countSchedules >= limitSchedules);
 
             // ----
             // hard delete records
-            await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
+            const res = await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
+            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalRecords);
+            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_DELETES, res.totalDeletes);
         }
     });
 
