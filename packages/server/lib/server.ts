@@ -131,6 +131,7 @@ app.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncCon
 app.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(syncController));
 app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 app.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+app.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
 app.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
