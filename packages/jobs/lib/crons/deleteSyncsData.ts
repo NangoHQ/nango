@@ -17,7 +17,7 @@ const limitJobs = 1000;
 const limitSchedules = 1000;
 const limitRecords = 1000;
 
-export async function deleteSyncsData(): Promise<void> {
+export function deleteSyncsData(): void {
     /**
      * Clean data from soft deleted syncs.
      * This cron needs to be removed at some point, we need a queue to delete specific provider/connection/sync
