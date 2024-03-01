@@ -248,6 +248,10 @@ class EncryptionManager {
 
             if (!record.encryptedValue) {
                 decryptedDataRecords.push(dataRecord);
+                const nextCursor = record['_nango_metadata']['last_modified_at'] as unknown as string;
+                const id = dataRecord['id'];
+                const encodedCursorValue = Buffer.from(`${nextCursor}||${id}`).toString('base64');
+                record['_nango_metadata']['cursor'] = encodedCursorValue;
                 continue;
             }
 
@@ -261,7 +265,7 @@ class EncryptionManager {
 
             if (record['_nango_metadata']) {
                 const nextCursor = record['_nango_metadata']['last_modified_at'] as unknown as string;
-                const id = record['id'];
+                const id = dataRecord['id'];
                 const encodedCursorValue = Buffer.from(`${nextCursor}||${id}`).toString('base64');
                 record['_nango_metadata']['cursor'] = encodedCursorValue;
                 updatedRecord['_nango_metadata'] = record['_nango_metadata'];
