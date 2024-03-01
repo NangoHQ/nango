@@ -569,147 +569,145 @@ paths:
                                         items:
                                             type: object
                                             properties:
-                                            name:
-                                                type: string
-                                                example: "github-issues"
-                                            type:
-                                                type: string
-                                                example: "sync"
-                                            models:
-                                                type: array
-                                                items:
-                                                    type: object
-                                                    properties:
-                                                    name:
-                                                        type: string
-                                                        example: "GithubIssue"
-                                                    fields:
-                                                        type: array
-                                                        items:
-                                                            type: object
+                                                name:
+                                                    type: string
+                                                    example: "github-issues"
+                                                type:
+                                                    type: string
+                                                    example: "sync"
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
                                                             name:
                                                                 type: string
-                                                                example: "id"
-                                                            type:
+                                                                example: "GithubIssue"
+                                                            fields:
+                                                                type: array
+                                                                items:
+                                                                    type: object
+                                                                    properties:
+                                                                        name:
+                                                                            type: string
+                                                                            example: "title"
+                                                                        type:
+                                                                            type: string
+                                                                            example: "string"
+                                                sync_type:
+                                                    type: string
+                                                    example: "INCREMENTAL"
+                                                runs:
+                                                    type: string
+                                                    example: "every 30 minutes"
+                                                track_deletes:
+                                                    type: boolean
+                                                auto_start:
+                                                    type: boolean
+                                                last_deployed:
+                                                    type: string
+                                                    example: "2024-02-01T09:09:03.502Z"
+                                                is_public:
+                                                    type: boolean
+                                                pre_built:
+                                                    type: boolean
+                                                version:
+                                                    type: string
+                                                    example: "0.0.3"
+                                                attributes:
+                                                    type: object
+                                                input:
+                                                    type: object
+                                                returns:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                        example: "GithubIssue"
+                                                description:
+                                                    type: string
+                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
+                                                scopes:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                        example: "public_repo"
+                                                endpoints:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                nango_yaml_version:
+                                                    type: string
+                                                    example: "v2"
+                                                webhookSubscriptions:
+                                                    type: array
+                                    actions:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                    example: "github-issues"
+                                                type:
+                                                    type: string
+                                                    example: "sync"
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            name:
                                                                 type: string
-                                                                example: "integer"
-                                            sync_type:
-                                                type: string
-                                                example: "FULL"
-                                            runs:
-                                                type: string
-                                                example: "every half hour"
-                                            track_deletes:
-                                                type: boolean
-                                                example: false
-                                            auto_start:
-                                                type: boolean
-                                                example: false
-                                            last_deployed:
-                                                type: string
-                                                example: "2024-02-28T20:16:38.052Z"
-                                            is_public:
-                                                type: boolean
-                                                example: false
-                                            pre_built:
-                                                type: boolean
-                                                example: false
-                                            version:
-                                                type: string
-                                                example: "4"
-                                            attributes:
-                                                type: object
-                                            input:
-                                                type: object
-                                            returns:
-                                                type: array
-                                                items:
+                                                                example: "GithubIssue"
+                                                            fields:
+                                                                type: array
+                                                                items:
+                                                                    type: object
+                                                                    properties:
+                                                                        name:
+                                                                            type: string
+                                                                            example: "id"
+                                                                        type:
+                                                                            type: string
+                                                                            example: "integer"
+                                                last_deployed:
                                                     type: string
-                                                    example: "GithubIssue"
-                                            description:
-                                                type: string
-                                                example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
-                                            scopes:
-                                                type: array
-                                                items:
+                                                    example: "2024-02-28T20:16:38.052Z"
+                                                is_public:
+                                                    type: boolean
+                                                    example: false
+                                                pre_built:
+                                                    type: boolean
+                                                    example: false
+                                                version:
                                                     type: string
-                                                    example: "public_repo"
-                                            endpoints:
-                                                type: array
-                                                items:
+                                                    example: "4"
+                                                attributes:
                                                     type: object
-                                            nango_yaml_version:
-                                                type: string
-                                                example: "v2"
-                                            webhookSubscriptions:
-                                                type: array
-                                actions:
-                                    type: array
-                                    items:
-                                        type: object
-                                        properties:
-                                            name:
-                                                type: string
-                                                example: "github-issues"
-                                            type:
-                                                type: string
-                                                example: "sync"
-                                            models:
-                                                type: array
-                                                items:
+                                                input:
                                                     type: object
-                                                    properties:
-                                                        name:
-                                                            type: string
-                                                            example: "GithubIssue"
-                                                        fields:
-                                                            type: array
-                                                            items:
-                                                                type: object
-                                                                name:
-                                                                    type: string
-                                                                    example: "id"
-                                                                type:
-                                                                    type: string
-                                                                    example: "integer"
-                                            last_deployed:
-                                                type: string
-                                                example: "2024-02-28T20:16:38.052Z"
-                                            is_public:
-                                                type: boolean
-                                                example: false
-                                            pre_built:
-                                                type: boolean
-                                                example: false
-                                            version:
-                                                type: string
-                                                example: "4"
-                                            attributes:
-                                                type: object
-                                            input:
-                                                type: object
-                                            returns:
-                                                type: string
-                                            description:
-                                                type: string
-                                                example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
-                                            scopes:
-                                                type: array
-                                                items:
+                                                returns:
+                                                    type: object
+                                                description:
                                                     type: string
-                                                    example: "public_repo"
-                                            endpoints:
-                                                type: array
-                                                items:
-                                                    type: object
-                                            nango_yaml_version:
-                                                type: string
-                                                example: "v2"
-                                postConnectionScripts:
-                                    type: array
-                                provider:
-                                    type: string
-                                    example: "github"
+                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
+                                                scopes:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                        example: "public_repo"
+                                                endpoints:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                nango_yaml_version:
+                                                    type: string
+                                                    example: "v2"
+                                    postConnectionScripts:
+                                        type: array
+                                    provider:
+                                        type: string
+                                        example: "github"
                 '400':
                     description: Invalid request
                     content:
