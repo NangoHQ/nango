@@ -1,8 +1,8 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, logger, MetricTypes, softDeleteJobs, softDeleteSchedules, telemetry, syncDataService, db } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, logger, MetricTypes, softDeleteSchedules, telemetry, syncDataService, db } from '@nangohq/shared';
 import tracer from '../tracer.js';
 
-const limitJobs = 5;
+// const limitJobs = 100;
 const limitSchedules = 100;
 const limitSyncs = 10;
 const limitRecords = 1000;
@@ -10,7 +10,7 @@ const limitRecords = 1000;
 export async function deleteSyncsData(): Promise<void> {
     /**
      * Clean data from soft deleted syncs.
-     * This cron is to be remove at some point, we need a queue to delete specific provider/connection/sync
+     * This cron needs to be removed at some point, we need a queue to delete specific provider/connection/sync
      */
     cron.schedule('*/20 * * * *', async () => {
         const start = Date.now();
@@ -39,12 +39,14 @@ export async function exec(): Promise<void> {
         }
 
         // -----
+        // It simply is not possible right now, table is too big
+
         // Soft delete jobs
-        let countJobs = 0;
-        do {
-            countJobs = await softDeleteJobs(limitJobs);
-            logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
-        } while (countJobs >= limitJobs);
+        // let countJobs = 0;
+        // do {
+        //     countJobs = await softDeleteJobs(limitJobs);
+        //     logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
+        // } while (countJobs >= limitJobs);
 
         // -----
         // Soft delete schedules
