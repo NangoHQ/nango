@@ -741,8 +741,6 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
 }
 
 export async function findRecentlyDeletedSync(): Promise<{ id: string }[]> {
-    const q = db.knex.from('_nango_syncs').select('_nango_syncs.id').where(db.knex.raw("_nango_syncs.deleted_at >  NOW() - INTERVAL '6h'"));
-    const syncs: { id: string }[] = await q;
-
-    return syncs;
+    const q = db.knex.from('_nango_syncs').select<{ id: string }[]>('_nango_syncs.id').where(db.knex.raw("_nango_syncs.deleted_at >  NOW() - INTERVAL '6h'"));
+    return await q;
 }
