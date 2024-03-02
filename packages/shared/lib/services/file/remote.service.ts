@@ -266,8 +266,10 @@ class RemoteFileService {
             return;
         });
 
+        const timestamp = Math.floor(new Date().getTime() / 1000).toString();
+        const filename = `${timestamp}-nango-integrations.zip`;
         res.setHeader('Content-Type', 'application/zip');
-        res.setHeader('Content-Disposition', `attachment; filename=nango-integrations.zip`);
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
 
         archive.pipe(res);
 

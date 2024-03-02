@@ -76,6 +76,7 @@ export default function FlowPage(props: FlowPageProps) {
 
         if (response.status !== 200) {
             const error = await response.json();
+            setIsDownloading(false);
             toast.error(error.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });

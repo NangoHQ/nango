@@ -27,19 +27,8 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     }, [defaultValue]);
 
     const [enteredValue, setEnteredValue] = useState('');
-    const [isInputFocused, setIsInputFocused] = useState(false);
     const [error, setError] = useState('');
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
-
-    function handleInputFocus() {
-        setIsInputFocused(true);
-    }
-
-    function handleInputBlur() {
-        setTimeout(() => {
-            setIsInputFocused(false);
-        }, 100);
-    }
 
     const [scopes, setScopes] = useState(selectedScopes);
 
@@ -106,19 +95,17 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     value={enteredValue}
                     onChange={(e) => setEnteredValue(e.currentTarget.value)}
                     onKeyDown={handleEnter}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
                     placeholder={`${Boolean(scopes.length) ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                 />
             </div>
             {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
-            {enteredValue !== '' && isInputFocused && (
+            {enteredValue !== '' && (
                 <div
                     className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer"
                     onClick={handleAdd}
                 >
-                    <PlusSmallIcon onClick={handleAdd} className="h-5 w-5 cursor-pointer" />
+                    <PlusSmallIcon className="h-5 w-5" onClick={handleAdd} />
                     <span className="">Add new scope: "{enteredValue}"</span>
                 </div>
             )}
