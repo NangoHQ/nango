@@ -14,7 +14,7 @@ type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
 };
 
 const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField(
-    { className, copy, optionalvalue, setoptionalvalue, defaultValue, ...props },
+    { className, copy, optionalvalue, setoptionalvalue, defaultValue, refresh, ...props },
     ref
 ) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
@@ -47,7 +47,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                     {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
                 </span>
                 {copy && <CopyButton text={value || ''} dark />}
-                {props.refresh && <ArrowPathIcon className="flex h-4 w-4 mr-2 ml-2 cursor-pointer text-gray-500" onClick={props.refresh} />}
+                {refresh && <ArrowPathIcon className="flex h-4 w-4 mr-2 ml-2 cursor-pointer text-gray-500" onClick={refresh} />}
             </span>
         </div>
     );
