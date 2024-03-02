@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
-import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon, XCircleIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
 import { useModal } from '@geist-ui/core';
 import { AuthModes, IntegrationConfig, Account } from '../../types';
@@ -27,6 +27,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const { integration, account } = props;
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
 
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
@@ -161,11 +162,14 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
     const editIntegrationID = () => {
         setShowEditIntegrationIdMenu(true);
+        setIntegrationIdEdit(integrationId);
+        setIsTyping(false);
     };
 
     const onSaveIntegrationID = async () => {
         setShowEditIntegrationIdMenu(false);
         setIntegrationIdEdit('');
+        setIsTyping(false);
 
         if (!integration) {
             return;
@@ -188,6 +192,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const onCancelEditIntegrationID = () => {
         setShowEditIntegrationIdMenu(false);
         setIntegrationIdEdit('');
+        setIsTyping(false);
     };
 
     return (
@@ -214,9 +219,12 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         <div className="flex">
                             <input
                                 value={integrationIdEdit}
-                                onChange={(e) => setIntegrationIdEdit(e.target.value)}
+                                onChange={(e) => {
+                                    setIntegrationIdEdit(e.target.value);
+                                    setIsTyping(true);
+                                }}
                                 className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
-                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         onSaveIntegrationID();
                                     }
@@ -232,9 +240,9 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             )}
                         </div>
                     )}
-                    {showEditIntegrationIdMenu && integrationIdEdit && (
+                    {isTyping && integrationIdEdit && (
                         <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
-                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editIntegrationID()} />
+                            <CheckIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => onSaveIntegrationID()} />
                             <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveIntegrationID()}>
                                 Change the integration ID to: {integrationIdEdit}
                             </span>
