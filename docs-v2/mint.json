@@ -468,6 +468,7 @@
                         "integrations/all/zoho-desk",
                         "integrations/all/zoho-inventory",
                         "integrations/all/zoho-invoice",
+                        "integrations/all/zoho-mail",
                         "integrations/all/zoom"
             ]
         },
