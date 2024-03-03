@@ -300,7 +300,8 @@
                         "integrations/integration-templates/teamtailor",
                         "integrations/integration-templates/workable",
                         "integrations/integration-templates/zendesk",
-                        "integrations/integration-templates/zoho-crm"
+                        "integrations/integration-templates/zoho-crm",
+                        "integrations/integration-templates/zoho-mail"
                     ]
                 }
             ]
