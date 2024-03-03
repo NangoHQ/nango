@@ -9,7 +9,6 @@ export default async function fetchData(nango: NangoSync) {
             paginate: {
                 type: 'link',
                 link_path_in_response_body: 'data.paging.nextPage',
-                cursor_name_in_request: 'cursor',
                 limit_name_in_request: 'limit',
                 response_path: 'data.tasks',
                 limit: 100
