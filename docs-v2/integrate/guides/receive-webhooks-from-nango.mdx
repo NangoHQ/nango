@@ -6,10 +6,10 @@ description: 'Step-by-step guide on how to receive webhooks from Nango.'
 
 Nango sends [webhooks](/understand/concepts/webhooks) notifications to your backend in different cases:
 - **Sync webhook**: new data from syncs is available
-- **Authorization webhook**: an authorization flow completes (successfully & unsuccessfully)  
-- **Webhook forwarding**: a webhook from an external API is received 
+- **Authorization webhook**: an authorization flow completes (successfully & unsuccessfully)
+- **Webhook forwarding**: a webhook from an external API is received
 
-To set this up, go to the _Environment Settings_ tab and configure a _Webhook URL_ to which Nango will send notifications. 
+To set this up, go to the _Environment Settings_ tab and configure a _Webhook URL_ to which Nango will send notifications.
 
 <Tip>
 Webhooks with non-2xx responses are retried with exponential backoff.
@@ -28,7 +28,8 @@ Webhooks from Nango are POST requests with the following body:
     "model": "<string>",
     "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
-    "queryTimeStamp": "<timestamp>", // Null for initial sync runs.
+    "updatedAfter": "<timestamp>", // Null for initial sync runs.
+    "queryTimeStamp": "<timestamp>" // DEPRECATED: Null for initial sync runs.
 }
 ```
 </Tab>
