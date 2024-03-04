@@ -84,6 +84,7 @@ export default function Activity() {
     const [expandedRow, setExpandedRow] = useState(-1);
     const [limit] = useState(20);
     const [logIds, setLogIds] = useState<number[]>([]);
+    const [updateLogs, setUpdateLogs] = useState(false);
 
     const [scripts, setScripts] = useState<string[]>([]);
     const [integrations, setIntegrations] = useState<string[]>([]);
@@ -127,19 +128,24 @@ export default function Activity() {
                         return acc;
                     }, {})
                 );
+                setUpdateLogs(!updateLogs);
             }
         }
     );
 
-    const { error: logActivitiesError } = useSWR(() => (logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null), {
-        onSuccess: (data: ActivityMessageResponse) => {
-            const updatedActivities = activities?.map((activity) => {
-                const messages = data[activity.id];
-                return { ...activity, messages: messages ? messages.reverse() : [] };
-            });
-            setActivities(updatedActivities as ActivityResponse[]);
+    const { error: logActivitiesError } = useSWR(
+        () => (logIds.length > 0 ? `/api/v1/activity-messages?updateLogs=${updateLogs}&logIds=${logIds.join(',')}` : null),
+        {
+            onSuccess: (data: ActivityMessageResponse) => {
+                const updatedActivities = activities?.map((activity) => {
+                    const messages = data[activity.id];
+                    console.log(messages);
+                    return { ...activity, messages: messages ? messages.reverse() : [] };
+                });
+                setActivities(updatedActivities as ActivityResponse[]);
+            }
         }
-    });
+    );
 
     const { data: activityFilters } = useSWR(`/api/v1/activity-filters?env=${env}`);
 
