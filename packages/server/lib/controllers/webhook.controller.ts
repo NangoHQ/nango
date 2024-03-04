@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Span } from 'dd-trace';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import { routeWebhook, featureFlags, environmentService, telemetry, MetricTypes } from '@nangohq/shared';
 
 class WebhookController {
