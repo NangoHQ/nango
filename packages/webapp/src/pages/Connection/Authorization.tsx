@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Prism } from '@mantine/prism';
 import { Loading } from '@geist-ui/core';
 
@@ -18,8 +18,6 @@ interface AuthorizationProps {
 export default function Authorization(props: AuthorizationProps) {
     const { connection, forceRefresh, loaded } = props;
     const [refreshing, setRefreshing] = useState(false);
-
-    useEffect(() => {}, [refreshing]);
 
     const handleForceRefresh = async () => {
         setRefreshing(true);
