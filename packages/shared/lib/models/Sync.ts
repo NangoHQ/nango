@@ -245,6 +245,7 @@ interface RecordMetadata {
     last_modified_at: Date;
     last_action: LastAction;
     deleted_at: Date | null;
+    cursor: string;
 }
 
 export interface DataRecordWithMetadata extends RecordMetadata {
