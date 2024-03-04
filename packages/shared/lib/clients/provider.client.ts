@@ -290,7 +290,7 @@ class ProviderClient {
                 };
             }
 
-            throw new NangoError('tiktok_token_request_error');
+            throw new NangoError('tiktok_token_request_error', response.data);
         } catch (e: any) {
             throw new NangoError('tiktok_token_request_error', e.message);
         }
