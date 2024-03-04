@@ -173,7 +173,7 @@ class SyncController {
                 providerConfigKey,
                 environmentId,
                 model as string,
-                String(delta || updated_after || updatedAfter),
+                String(delta || updated_after),
                 limit as string,
                 filter as LastAction,
                 cursor as string
