@@ -38,7 +38,7 @@ The webhook from Nango is a POST request with the following body ([reference](/r
     "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
     "updatedAfter": "<timestamp>", // Null for initial sync runs.
-    "queryTimeStamp": "<timestamp>" // DEPRECATED: Null for initial sync runs.
+    "queryTimeStamp": "<timestamp>" // DEPRECATED (use updatedAfter): Null for initial sync runs.
 }
 ```
 
@@ -66,7 +66,7 @@ curl -G https://api.nango.dev/records \
   --header 'Connection-Id: <string>' \
   --header 'Provider-Config-Key: <string>' \
   --data-urlencode 'model=<string>'  # The model of the records to fetch.
-  --data-urlencode 'delta=<updatedAfter-from-webhook>' \  # Time cursor to only fetch the updated data.
+  --data-urlencode 'updated_after=<updatedAfter-from-webhook>' \  # Time cursor to only fetch the updated data.
   --data-urlencode 'limit=<number>' \  # Number of records returned (default: 100).
   --data-urlencode 'cursor=<string>' \  # For pagination: use the "next_cursor" property in the previous page's response.
 
