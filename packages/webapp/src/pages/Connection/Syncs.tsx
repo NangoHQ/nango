@@ -37,6 +37,10 @@ export default function Syncs(props: SyncsProps) {
         }
     };
 
+    const hashSync = (sync: SyncResponse) => {
+        return `${sync.id}${JSON.stringify(sync.models)}`;
+    };
+
     useEffect(() => {
         const closeSyncWindow = (e: MouseEvent) => {
             if (!(e.target as HTMLElement).closest('.interact-with-sync')) {
@@ -210,9 +214,9 @@ export default function Syncs(props: SyncsProps) {
                                     <div className="relative interact-with-sync">
                                         <EllipsisHorizontalIcon
                                             className="flex h-5 w-5 cursor-pointer"
-                                            onClick={() => toggleDropdown(`${sync.id}${JSON.stringify(sync.models)}`)}
+                                            onClick={() => toggleDropdown(hashSync(sync))}
                                         />
-                                        {openDropdownHash === `${sync.id}${JSON.stringify(sync.models)}` && (
+                                        {openDropdownHash === hashSync(sync) && (
                                             <div className="text-gray-400 absolute z-10 -top-15 right-1 bg-black rounded border border-neutral-700 items-center">
                                                 <div className="flex flex-col w-full">
                                                     <div
