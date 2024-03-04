@@ -11,6 +11,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
+const stripeAppExpiresIn = 3600;
 
 class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
@@ -222,7 +223,7 @@ class ProviderClient {
                     stripe_publishable_key: response.data['stripe_publishable_key'],
                     stripe_user_id: response.data['stripe_user_id'],
                     token_type: response.data['token_type'],
-                    expires_in: 3600
+                    expires_in: stripeAppExpiresIn
                 };
             }
 
@@ -255,7 +256,7 @@ class ProviderClient {
                     stripe_publishable_key: response.data['stripe_publishable_key'],
                     stripe_user_id: response.data['stripe_user_id'],
                     token_type: response.data['token_type'],
-                    expires_in: 3600
+                    expires_in: stripeAppExpiresIn
                 };
             }
             throw new NangoError('stripe_app_token_refresh_request_error');
