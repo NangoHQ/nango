@@ -14,7 +14,7 @@ import {
     isOk
 } from '@nangohq/shared';
 import { Runner, getOrStartRunner, getRunnerId } from './runner/runner.js';
-import tracer from './tracer.js';
+import tracer from 'dd-trace';
 
 interface ScriptObject {
     context: Context | null;

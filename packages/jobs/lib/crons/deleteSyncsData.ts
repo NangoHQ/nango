@@ -11,7 +11,7 @@ import {
     db,
     findRecentlyDeletedSync
 } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 
 const limitJobs = 1000;
 const limitSchedules = 1000;

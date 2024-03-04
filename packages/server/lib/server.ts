@@ -1,4 +1,4 @@
-import tracer from './tracer.js';
+import tracer from 'dd-trace';
 import './utils/config.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
