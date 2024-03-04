@@ -6,7 +6,7 @@ import CopyButton from '../button/CopyButton';
 type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     copy?: boolean;
     defaultValue?: string;
-    optionalvalue?: string;
+    optionalvalue?: string | null;
     setoptionalvalue?: (value: string) => void;
     additionalclass?: string;
     tall?: boolean;
