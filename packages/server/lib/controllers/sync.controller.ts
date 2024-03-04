@@ -122,7 +122,7 @@ class SyncController {
     // to deprecate
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, updated_after, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
+            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -136,7 +136,7 @@ class SyncController {
                 providerConfigKey,
                 environmentId,
                 model as string,
-                String(delta || updated_after),
+                delta as string,
                 offset as string,
                 limit as string,
                 sort_by as string,
@@ -159,17 +159,21 @@ class SyncController {
 
     public async getAllRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, limit, filter, cursor } = req.query;
+            const { model, delta, updated_after, updatedAfter, limit, filter, cursor } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            if (updatedAfter) {
+                throw new Error('updatedAfter is not the correct param, please use updated_after');
+            }
 
             const { success, error, response } = await syncDataService.getAllDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
                 model as string,
-                delta as string,
+                String(delta || updated_after),
                 limit as string,
                 filter as LastAction,
                 cursor as string
