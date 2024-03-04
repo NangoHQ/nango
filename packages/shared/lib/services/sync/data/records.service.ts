@@ -382,10 +382,7 @@ export async function getAllDataRecords(
                 return { success: false, error, response: null };
             }
 
-            const timeToDate = time.toDate();
-
-            const utcString = timeToDate.toUTCString();
-            query = query.andWhere('updated_at', '>=', utcString);
+            query = query.andWhere('updated_at', '>=', delta);
         }
 
         if (filter) {
