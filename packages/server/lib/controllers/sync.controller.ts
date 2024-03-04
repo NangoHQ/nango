@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { Span } from 'dd-trace';
 import type { LogLevel, NangoConnection, HTTP_VERB } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,

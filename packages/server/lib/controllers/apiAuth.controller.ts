@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import type { LogLevel } from '@nangohq/shared';
 import {
     getAccount,

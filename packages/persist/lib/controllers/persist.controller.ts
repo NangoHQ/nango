@@ -19,7 +19,7 @@ import {
     telemetry,
     MetricTypes
 } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 
 type persistType = 'save' | 'delete' | 'update';
