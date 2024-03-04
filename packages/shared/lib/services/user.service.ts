@@ -28,7 +28,15 @@ class UserService {
     }
 
     async getAnUserByAccountId(accountId: number): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId }).orderBy('id', 'asc').limit(1);
+        const result = await db.knex
+            .select('*')
+            .from<User>(`_nango_users`)
+            .where({
+                account_id: accountId,
+                suspended: false
+            })
+            .orderBy('id', 'asc')
+            .limit(1);
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;

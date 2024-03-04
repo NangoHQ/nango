@@ -7,5 +7,3 @@ tracer.use('pg', {
     service: 'nango-postgres'
 });
 tracer.use('express');
-
-export default tracer;
