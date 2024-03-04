@@ -343,7 +343,7 @@ export async function getAllDataRecords(
                 model
             })
             .orderBy([
-                { column: 'created_at', order: 'asc' },
+                { column: 'updated_at', order: 'asc' },
                 { column: 'id', order: 'asc' }
             ]);
 
@@ -358,7 +358,7 @@ export async function getAllDataRecords(
             }
 
             query = query.where((builder) =>
-                builder.where('created_at', '>', cursorSort).orWhere((builder) => builder.where('created_at', '=', cursorSort).andWhere('id', '>', cursorId))
+                builder.where('updated_at', '>', cursorSort).orWhere((builder) => builder.where('updated_at', '=', cursorSort).andWhere('id', '>', cursorId))
             );
         }
 
@@ -452,7 +452,7 @@ export async function getAllDataRecords(
             const cursorRawElement = rawResult[rawResult.length - 1] as SyncDataRecord;
             const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
 
-            nextCursor = cursorElement['_nango_metadata']['first_seen_at'] as unknown as string;
+            nextCursor = cursorElement['_nango_metadata']['last_modified_at'] as unknown as string;
             const encodedCursorValue = Buffer.from(`${nextCursor}||${cursorRawElement.id}`).toString('base64');
 
             return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: encodedCursorValue } };
