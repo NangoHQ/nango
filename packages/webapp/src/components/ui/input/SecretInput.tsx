@@ -21,8 +21,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
 
     const [changedValue, setChangedValue] = useState(defaultValue);
 
-    // Handle null value in optionalvalue
-    const value = optionalvalue ?? changedValue;
+    const value = optionalvalue === null ? '' : optionalvalue || changedValue;
     const updateValue = setoptionalvalue || setChangedValue;
 
     const top = props.tall ? 'top-2.5' : 'top-0.5';
