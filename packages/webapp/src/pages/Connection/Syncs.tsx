@@ -26,21 +26,21 @@ interface SyncsProps {
 
 export default function Syncs(props: SyncsProps) {
     const { syncs, connection, setSyncLoaded, loaded, syncLoaded, env } = props;
-    const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+    const [openDropdownHash, setOpenDropdownHash] = useState<string | null>(null);
     const runCommandSyncAPI = useRunSyncAPI();
 
-    const toggleDropdown = (id: string) => {
-        if (openDropdownId === id) {
-            setOpenDropdownId(null);
+    const toggleDropdown = (hash: string) => {
+        if (openDropdownHash === hash) {
+            setOpenDropdownHash(null);
         } else {
-            setOpenDropdownId(id);
+            setOpenDropdownHash(hash);
         }
     };
 
     useEffect(() => {
         const closeSyncWindow = (e: MouseEvent) => {
             if (!(e.target as HTMLElement).closest('.interact-with-sync')) {
-                setOpenDropdownId(null);
+                setOpenDropdownHash(null);
             }
         };
 
@@ -208,8 +208,11 @@ export default function Syncs(props: SyncsProps) {
                                         )}
                                     </div>
                                     <div className="relative interact-with-sync">
-                                        <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" onClick={() => toggleDropdown(sync.id)} />
-                                        {openDropdownId === sync.id && (
+                                        <EllipsisHorizontalIcon
+                                            className="flex h-5 w-5 cursor-pointer"
+                                            onClick={() => toggleDropdown(`${sync.id}${JSON.stringify(sync.models)}`)}
+                                        />
+                                        {openDropdownHash === `${sync.id}${JSON.stringify(sync.models)}` && (
                                             <div className="text-gray-400 absolute z-10 -top-15 right-1 bg-black rounded border border-neutral-700 items-center">
                                                 <div className="flex flex-col w-full">
                                                     <div
