@@ -382,7 +382,7 @@ export async function getAllDataRecords(
                 return { success: false, error, response: null };
             }
 
-            query = query.andWhere('updated_at', '>=', delta);
+            query = query.andWhere('updated_at', '>=', updatedAfter);
         }
 
         if (filter) {
