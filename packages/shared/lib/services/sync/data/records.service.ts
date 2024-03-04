@@ -1,7 +1,7 @@
 import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import utc from 'dayjs/plugin/utc.js';
 
 import type {
     DataRecord as SyncDataRecord,
