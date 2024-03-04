@@ -1,6 +1,7 @@
 import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 import type {
     DataRecord as SyncDataRecord,
@@ -18,6 +19,8 @@ import { NangoError } from '../../../utils/error.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
+
+dayjs.extend(utc);
 
 export const formatDataRecords = (
     records: DataResponse[],
@@ -382,7 +385,9 @@ export async function getAllDataRecords(
                 return { success: false, error, response: null };
             }
 
-            query = query.andWhere('updated_at', '>=', delta);
+            const formattedDelta = time.toISOString();
+
+            query = query.andWhere('updated_at', '>=', formattedDelta);
         }
 
         if (filter) {
