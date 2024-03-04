@@ -139,7 +139,6 @@ export default function Activity() {
             onSuccess: (data: ActivityMessageResponse) => {
                 const updatedActivities = activities?.map((activity) => {
                     const messages = data[activity.id];
-                    console.log(messages);
                     return { ...activity, messages: messages ? messages.reverse() : [] };
                 });
                 setActivities(updatedActivities as ActivityResponse[]);
