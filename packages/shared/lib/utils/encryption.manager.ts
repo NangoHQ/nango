@@ -5,7 +5,14 @@ import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import type { EncryptedRecord, CustomerFacingDataRecord, RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord } from '../models/Sync.js';
+import type {
+    EncryptedRecord,
+    CustomerFacingDataRecord,
+    RawDataRecordResult,
+    DataRecord,
+    DataRecordWithMetadata,
+    RecordWrapCustomerFacingDataRecord
+} from '../models/Sync.js';
 import db from '../db/database.js';
 import util from 'util';
 
