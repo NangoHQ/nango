@@ -15,7 +15,6 @@ import {
     analytics,
     AnalyticsTypes,
     isCloud,
-    isEnterprise,
     getBaseUrl,
     NangoError
 } from '@nangohq/shared';
