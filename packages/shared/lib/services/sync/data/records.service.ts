@@ -453,9 +453,7 @@ export async function getAllDataRecords(
             const nextCursor = item.record._nango_metadata.last_modified_at.toString();
             const id = item.id;
             const encodedCursorValue = Buffer.from(`${nextCursor}||${id}`).toString('base64');
-            if (decryptedRecord.record) {
-                decryptedRecord.record['_nango_metadata']['cursor'] = encodedCursorValue;
-            }
+            decryptedRecord.record['_nango_metadata']['cursor'] = encodedCursorValue;
             return decryptedRecord.record;
         });
 
