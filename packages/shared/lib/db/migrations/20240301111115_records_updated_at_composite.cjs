@@ -1,4 +1,3 @@
-const tableName = '_nango_sync_data_records';
 
 exports.config = { transaction: false };
 
