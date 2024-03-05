@@ -519,7 +519,7 @@ export class NangoError extends Error {
 
             case 'incorrect_param':
                 this.status = 400;
-                this.message = `The parameter ${this.payload['incorrect']} is incorrect. Please ${this.payload['correct']}.`;
+                this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
                 break;
 
             default:
