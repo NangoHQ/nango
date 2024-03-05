@@ -6,20 +6,23 @@ import CopyButton from '../button/CopyButton';
 type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     copy?: boolean;
     defaultValue?: string;
-    optionalvalue?: string;
+    optionalvalue?: string | null;
     setoptionalvalue?: (value: string) => void;
     additionalclass?: string;
     tall?: boolean;
     refresh?: () => void;
 };
 
-const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField({ className, copy, ...props }, ref) {
+const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField(
+    { className, copy, optionalvalue, setoptionalvalue, defaultValue, refresh, ...props },
+    ref
+) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
 
-    const [changedValue, setChangedValue] = useState(props.defaultValue);
+    const [changedValue, setChangedValue] = useState(defaultValue);
 
-    const value = props.optionalvalue === null ? '' : props.optionalvalue || changedValue;
-    const updateValue = props.setoptionalvalue || setChangedValue;
+    const value = optionalvalue === null ? '' : optionalvalue || changedValue;
+    const updateValue = setoptionalvalue || setChangedValue;
 
     const top = props.tall ? 'top-2.5' : 'top-0.5';
 
@@ -34,7 +37,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                     'border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none',
                     className
                 )}
-                value={value}
+                value={value || ''}
                 onChange={(e) => updateValue(e.currentTarget.value)}
                 {...props}
             />
@@ -42,8 +45,8 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 <span onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
                 </span>
-                {copy && <CopyButton text={value as string} dark />}
-                {props.refresh && <ArrowPathIcon className="flex h-4 w-4 mr-2 ml-2 cursor-pointer text-gray-500" onClick={props.refresh} />}
+                {copy && <CopyButton text={value || ''} dark />}
+                {refresh && <ArrowPathIcon className="flex h-4 w-4 mr-2 ml-2 cursor-pointer text-gray-500" onClick={refresh} />}
             </span>
         </div>
     );
