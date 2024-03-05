@@ -332,6 +332,7 @@ export function generateResponseModel(models: NangoSyncModel[], output: string, 
             deleted_at: '<date| null>',
             last_action: 'ADDED|UPDATED|DELETED',
             first_seen_at: '<date>',
+            cursor: '<string>',
             last_modified_at: '<date>'
         }
     };

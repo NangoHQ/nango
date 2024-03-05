@@ -809,6 +809,10 @@ paths:
                                                             type: string
                                                             description: The timestamp at which Nango last detected a change to this record
                                                             example: "2023-09-18T15:20:35.941305+00:00"
+                                                        cursor:
+                                                            type: string
+                                                            description: The current cursor of the record. Use this to fetch records updated after this record
+                                                            example: "MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=="
                                     next_cursor:
                                         type: string
                                         description: The base64-encoded cursor for pagination
