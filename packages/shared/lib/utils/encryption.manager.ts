@@ -5,7 +5,7 @@ import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import type { RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord } from '../models/Sync.js';
+import type { CustomerFacingDataRecord, RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord } from '../models/Sync.js';
 import db from '../db/database.js';
 import util from 'util';
 
@@ -272,7 +272,7 @@ class EncryptionManager {
         return decryptedDataRecords as unknown as DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord;
     }
 
-    public decryptDataRecord(dataRecord: RawDataRecordResult): RawDataRecordResult | null {
+    public decryptDataRecord(dataRecord: RawDataRecordResult): CustomerFacingDataRecord | null {
         if (dataRecord === null) {
             return dataRecord;
         }
@@ -280,7 +280,7 @@ class EncryptionManager {
         const record = dataRecord.record;
 
         if (!record['encryptedValue']) {
-            return dataRecord;
+            return record;
         }
 
         const { encryptedValue, iv, authTag } = record;

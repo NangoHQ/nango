@@ -445,7 +445,7 @@ export async function getAllDataRecords(
             return { success: true, error: null, response: { records: [], next_cursor: nextCursor } };
         }
 
-        const customerResult = result.map((item: RawDataRecordResult) => {
+        const customerResult = result.map((item) => {
             const decryptedRecord = encryptionManager.decryptDataRecord(item);
             if (!decryptedRecord) {
                 return decryptedRecord;
@@ -453,8 +453,8 @@ export async function getAllDataRecords(
             const nextCursor = item.record._nango_metadata.last_modified_at.toString();
             const id = item.id;
             const encodedCursorValue = Buffer.from(`${nextCursor}||${id}`).toString('base64');
-            decryptedRecord.record['_nango_metadata']['cursor'] = encodedCursorValue;
-            return decryptedRecord.record;
+            decryptedRecord['_nango_metadata']['cursor'] = encodedCursorValue;
+            return decryptedRecord;
         });
 
         if (customerResult.length > Number(limit || 100)) {
