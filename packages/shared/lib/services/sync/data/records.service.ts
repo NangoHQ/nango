@@ -456,7 +456,7 @@ export async function getAllDataRecords(
             if (decryptedRecord.record) {
                 decryptedRecord.record['_nango_metadata']['cursor'] = encodedCursorValue;
             }
-            return decryptedRecord?.record;
+            return decryptedRecord.record;
         });
 
         if (customerResult.length > Number(limit || 100)) {
