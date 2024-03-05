@@ -322,6 +322,9 @@ export const parseInput = (flow: Flow) => {
 };
 
 export function generateResponseModel(models: NangoSyncModel[], output: string, isSync: boolean): Record<string, any> {
+    if (!output) {
+        return {};
+    }
     const model = models.find((model) => model.name === output);
     const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
     if (!isSync) {
