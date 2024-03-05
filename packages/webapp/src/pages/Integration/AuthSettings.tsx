@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
-import { PencilSquareIcon, XCircleIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
 import { useModal } from '@geist-ui/core';
 import { AuthModes, IntegrationConfig, Account } from '../../types';
@@ -242,7 +242,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     )}
                     {isTyping && integrationIdEdit && (
                         <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
-                            <CheckIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => onSaveIntegrationID()} />
+                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => onSaveIntegrationID()} />
                             <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveIntegrationID()}>
                                 Change the integration ID to: {integrationIdEdit}
                             </span>
