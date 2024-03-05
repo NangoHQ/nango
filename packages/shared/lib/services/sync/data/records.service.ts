@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import type {
     DataRecord as SyncDataRecord,
     RecordWrapCustomerFacingDataRecord,
+    RawDataRecordResult,
     CustomerFacingDataRecord,
     DataRecordWithMetadata,
     GetRecordsResponse,
@@ -420,7 +421,7 @@ export async function getAllDataRecords(
 
         let nextCursor = null;
 
-        const rawResult = await query.select(
+        const result: RawDataRecordResult[] = await query.select(
             db.knex.raw(`
                 jsonb_set(
                     json::jsonb,
@@ -440,19 +441,29 @@ export async function getAllDataRecords(
             `)
         );
 
-        const result = encryptionManager.decryptDataRecordsAndAddCursor(rawResult, 'record') as unknown as SyncDataRecord[];
-
         if (result.length === 0) {
             return { success: true, error: null, response: { records: [], next_cursor: nextCursor } };
         }
 
-        const customerResult = result.map((item) => item.record);
+        const customerResult = result.map((item: RawDataRecordResult) => {
+            const decryptedRecord = encryptionManager.decryptDataRecord(item);
+            if (!decryptedRecord) {
+                return decryptedRecord;
+            }
+            const nextCursor = item.record._nango_metadata.last_modified_at.toString();
+            const id = item.id;
+            const encodedCursorValue = Buffer.from(`${nextCursor}||${id}`).toString('base64');
+            if (decryptedRecord.record) {
+                decryptedRecord.record['_nango_metadata']['cursor'] = encodedCursorValue;
+            }
+            return decryptedRecord?.record;
+        });
 
         if (customerResult.length > Number(limit || 100)) {
             customerResult.pop();
-            rawResult.pop();
+            result.pop();
 
-            const cursorRawElement = rawResult[rawResult.length - 1] as SyncDataRecord;
+            const cursorRawElement = result[result.length - 1] as SyncDataRecord;
             const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
 
             nextCursor = cursorElement['_nango_metadata']['first_seen_at'] as unknown as string;
@@ -463,7 +474,7 @@ export async function getAllDataRecords(
             return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: nextCursor } };
         }
     } catch (e: any) {
-        const errorMessage = 'List records error';
+        const errorMessage = `List records error for model ${model} with error: ${e.message}`;
         await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId,

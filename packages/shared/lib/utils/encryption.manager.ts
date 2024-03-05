@@ -5,7 +5,7 @@ import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import type { DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord } from '../models/Sync.js';
+import type { RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord } from '../models/Sync.js';
 import db from '../db/database.js';
 import util from 'util';
 
@@ -281,6 +281,32 @@ class EncryptionManager {
         }
 
         return decryptedDataRecords as unknown as DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord;
+    }
+
+    public decryptDataRecord(dataRecord: RawDataRecordResult): RawDataRecordResult | null {
+        if (dataRecord === null) {
+            return dataRecord;
+        }
+
+        const record = dataRecord.record;
+
+        if (!record['encryptedValue']) {
+            return dataRecord;
+        }
+
+        const { encryptedValue, iv, authTag } = record;
+
+        const decryptedString = this.decrypt(encryptedValue, iv, authTag);
+
+        const updatedRecord = {
+            ...JSON.parse(decryptedString)
+        };
+
+        if (record['_nango_metadata']) {
+            updatedRecord['_nango_metadata'] = record['_nango_metadata'];
+        }
+
+        return updatedRecord;
     }
 
     public async encryptAllDataRecords(): Promise<void> {

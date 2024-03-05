@@ -218,6 +218,11 @@ export type CustomerFacingDataRecord = {
 
 export type GetRecordsResponse = { records: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; next_cursor?: string | null } | null;
 
+export interface RawDataRecordResult {
+    id: string | number;
+    record: CustomerFacingDataRecord;
+}
+
 export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
 
 export interface DataRecord extends Timestamps {
