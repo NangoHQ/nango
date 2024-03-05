@@ -21,7 +21,7 @@
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
         "@nangohq/node": "^0.38.5",
-        "@sentry/node": "^7.37.2",
+        "@sentry/node": "^7.105.0",
         "@temporalio/client": "^1.9.1",
         "amqplib": "^0.10.3",
         "archiver": "^6.0.1",
