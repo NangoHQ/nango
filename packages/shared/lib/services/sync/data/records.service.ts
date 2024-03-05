@@ -474,7 +474,7 @@ export async function getAllDataRecords(
             return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: nextCursor } };
         }
     } catch (e: any) {
-        const errorMessage = `List records error for model ${model} with error: ${e.message}`;
+        const errorMessage = `List records error for model ${model}`;
         await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId,
