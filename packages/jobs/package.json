@@ -17,9 +17,6 @@
     "dependencies": {
         "@nangohq/nango-runner": "^1.0.0",
         "@nangohq/shared": "^0.38.5",
-        "@octokit/plugin-retry": "^6.0.0",
-        "@octokit/plugin-throttling": "^7.0.0",
-        "@octokit/rest": "^20.0.1",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",
         "@temporalio/worker": "^1.9.1",
