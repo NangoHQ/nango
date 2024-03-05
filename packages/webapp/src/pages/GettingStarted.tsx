@@ -71,7 +71,7 @@ export default function GettingStarted() {
 
     useEffect(() => {
         const getAccount = async () => {
-            let res = await getProjectInfoAPI();
+            const res = await getProjectInfoAPI();
 
             if (res?.status === 200) {
                 const account = (await res.json())['account'];

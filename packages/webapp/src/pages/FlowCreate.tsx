@@ -26,9 +26,7 @@ interface Flow {
     models: Record<string, unknown>;
 }
 
-interface Integration {
-    [key: string]: Flow;
-}
+type Integration = Record<string, Flow>;
 
 export default function FlowCreate() {
     const [loaded, setLoaded] = useState(false);
@@ -104,7 +102,7 @@ export default function FlowCreate() {
 
         const flowObject = flows[data['integration'] as string] as Flow;
 
-        const models = Array.isArray(flow?.returns) ? (showModels(flow?.returns as string[]) as any) : flow?.returns;
+        const models = Array.isArray(flow?.returns) ? (showModels(flow?.returns) as any) : flow?.returns;
         const flowPayload = {
             provider: data['integration'].toString(),
             type: flow?.type || 'sync',

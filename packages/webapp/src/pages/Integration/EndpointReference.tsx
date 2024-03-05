@@ -44,18 +44,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
         if (activeFlow) {
             setSyncSnippet(
                 activeFlow?.type === 'sync'
-                    ? nodeSnippet(activeFlow?.models, account?.secret_key as string, connectionId, integration?.unique_key as string)
-                    : nodeActionSnippet(
-                          activeFlow?.name as string,
-                          account?.secret_key as string,
-                          connectionId,
-                          integration?.unique_key as string,
-                          parseInput(activeFlow as Flow)
-                      )
+                    ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
+                    : nodeActionSnippet(activeFlow?.name, account?.secret_key, connectionId, integration?.unique_key, parseInput(activeFlow))
             );
 
             const jsonModel = generateResponseModel(
-                activeFlow?.models as NangoSyncModel[],
+                activeFlow?.models,
                 Array.isArray(activeFlow?.returns) ? (activeFlow?.returns[0] as string) : activeFlow.returns,
                 activeFlow?.type === 'sync'
             );
@@ -106,17 +100,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                     if (language !== Language.Node) {
                                         setSyncSnippet(
                                             activeFlow?.type === 'sync'
-                                                ? nodeSnippet(
-                                                      activeFlow?.models,
-                                                      account?.secret_key as string,
-                                                      connectionId,
-                                                      integration?.unique_key as string
-                                                  )
+                                                ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
                                                 : nodeActionSnippet(
                                                       activeFlow?.name as string,
-                                                      account?.secret_key as string,
+                                                      account?.secret_key,
                                                       connectionId,
-                                                      integration?.unique_key as string,
+                                                      integration?.unique_key,
                                                       parseInput(activeFlow as Flow)
                                                   )
                                         );
@@ -136,9 +125,9 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                             curlSnippet(
                                                 baseUrl,
                                                 activeFlow?.endpoints[0] as NangoSyncEndpoint,
-                                                account?.secret_key as string,
+                                                account?.secret_key,
                                                 connectionId,
-                                                integration?.unique_key as string,
+                                                integration?.unique_key,
                                                 parseInput(activeFlow as Flow)
                                             )
                                         );
@@ -230,17 +219,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                         if (language !== Language.Node) {
                                             setSyncSnippet(
                                                 activeFlow?.type === 'sync'
-                                                    ? nodeSnippet(
-                                                          activeFlow?.models,
-                                                          account?.secret_key as string,
-                                                          connectionId,
-                                                          integration?.unique_key as string
-                                                      )
+                                                    ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
                                                     : nodeActionSnippet(
                                                           activeFlow?.name as string,
-                                                          account?.secret_key as string,
+                                                          account?.secret_key,
                                                           connectionId,
-                                                          integration?.unique_key as string,
+                                                          integration?.unique_key,
                                                           parseInput(activeFlow as Flow)
                                                       )
                                             );

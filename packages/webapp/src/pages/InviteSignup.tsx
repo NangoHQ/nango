@@ -52,8 +52,8 @@ export default function InviteSignup() {
         const res = await signupAPI(target.name.value, target.email.value, target.password.value, invitedAccountID, token as string);
 
         if (res?.status === 200) {
-            let data = await res.json();
-            let user: User = data['user'];
+            const data = await res.json();
+            const user: User = data['user'];
             signin(user);
             navigate('/');
         } else if (res != null) {
