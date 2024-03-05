@@ -289,7 +289,7 @@ class EncryptionManager {
 
         const updatedRecord = {
             ...JSON.parse(decryptedString)
-        };
+        } as CustomerFacingDataRecord;
 
         if (record['_nango_metadata']) {
             updatedRecord['_nango_metadata'] = record['_nango_metadata'];
