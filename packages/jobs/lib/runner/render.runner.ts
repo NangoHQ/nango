@@ -1,45 +1,9 @@
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import { ProxyAppRouter, getRunnerClient } from '@nangohq/nango-runner';
-import { AxiosResponse, NodeEnv, getEnv, getPersistAPIUrl } from '@nangohq/shared';
+import { NodeEnv, getEnv, getPersistAPIUrl } from '@nangohq/shared';
+import { RenderAPI } from './render.api.js';
 import tracer from 'dd-trace';
-import axios, { AxiosInstance } from 'axios';
-
-export class RenderAPI {
-    httpClient: AxiosInstance;
-    constructor(apiKey: string) {
-        this.httpClient = axios.create({
-            baseURL: 'https://api.render.com/v1',
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                Accept: 'application/json'
-            }
-        });
-    }
-
-    async getServices(params: { name: string; type: string; limit: string }): Promise<AxiosResponse> {
-        return await this.httpClient.get('/services', { params });
-    }
-
-    async createService(data: {
-        type: string;
-        name: string;
-        ownerId: string;
-        image: { ownerId: string; imagePath: string };
-        serviceDetails: { env: string };
-        envVars: { key: string; value: string }[];
-    }): Promise<AxiosResponse> {
-        return await this.httpClient.post('/services', data);
-    }
-
-    async suspendService(params: { serviceId: string }): Promise<AxiosResponse> {
-        return await this.httpClient.post(`/services/${params.serviceId}/suspend`, {});
-    }
-
-    async resumeService(params: { serviceId: string }): Promise<AxiosResponse> {
-        return await this.httpClient.post(`/services/${params.serviceId}/resume`, {});
-    }
-}
 
 const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
 
