@@ -75,6 +75,7 @@ export interface NangoSyncWebhookBody {
     responseResults: SyncResult;
     syncType: SyncType;
     queryTimeStamp: string | null;
+    updatedAfter: string | null;
 }
 
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
@@ -402,10 +403,10 @@ export class Nango {
     public async listRecords<T = any>(
         config: ListRecordsRequestConfig
     ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
-        const { connectionId, providerConfigKey, model, delta, limit, filter, cursor } = config;
+        const { connectionId, providerConfigKey, model, delta, updatedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&delta=${delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&updatedAfter=${updatedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
             filter ? `&filter=${filter}` : ''
         }${cursor ? `&cursor=${cursor}` : ''}`;
 

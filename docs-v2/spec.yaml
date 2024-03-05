@@ -728,12 +728,18 @@ paths:
                   schema:
                       type: string
                   description: The data model to fetch
-                - name: delta
+                - name: updated_after
                   in: query
                   required: false
                   schema:
                       type: string
                   description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
+                - name: delta
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: DEPRECATED (use updated_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
                 - name: limit
                   in: query
                   required: false
@@ -753,7 +759,7 @@ paths:
                   schema:
                       type: string
                       enum: [added, updated, deleted]
-                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the delta parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
+                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the updated_after parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
                 - name: Connection-Id
                   in: header
                   required: true

@@ -469,7 +469,7 @@ export async function getAllDataRecords(
             environmentId: String(environmentId),
             connectionId,
             providerConfigKey,
-            delta: String(updatedAfter),
+            updatedAfter: String(updatedAfter),
             model,
             error: JSON.stringify(e)
         });
