@@ -69,11 +69,7 @@ const App = () => {
             return url.pathname;
         }
 
-        if (env === 'dev') {
-            return isCloud() ? '/dev/getting-started' : '/dev/integrations';
-        } else {
-            return '/prod/integrations';
-        }
+        return env === 'dev' && isCloud() ? '/dev/getting-started' : `/${env}/integrations`;
     };
 
     return (
