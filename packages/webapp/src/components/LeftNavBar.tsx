@@ -154,7 +154,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
-                        {!isEnterprise() && env === 'dev' && (
+                        {isCloud() && env === 'dev' && (
                             <Link
                                 to="/dev/getting-started"
                                 className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${

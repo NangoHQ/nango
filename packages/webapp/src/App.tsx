@@ -69,7 +69,11 @@ const App = () => {
             return url.pathname;
         }
 
-        return env === 'dev' ? '/dev/getting-started' : '/prod/integrations';
+        if (env === 'dev') {
+            return isCloud() ? '/dev/getting-started' : '/dev/integrations';
+        } else {
+            return '/prod/integrations';
+        }
     };
 
     return (
@@ -101,9 +105,11 @@ const App = () => {
             >
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
-                    <Route path="/dev/getting-started" element={<PrivateRoute />}>
-                        <Route path="/dev/getting-started" element={<GettingStarted />} />
-                    </Route>
+                    {isCloud() && (
+                        <Route path="/dev/getting-started" element={<PrivateRoute />}>
+                            <Route path="/dev/getting-started" element={<GettingStarted />} />
+                        </Route>
+                    )}
                     <Route path="/:env/integrations" element={<PrivateRoute />}>
                         <Route path="/:env/integrations" element={<IntegrationList />} />
                     </Route>
