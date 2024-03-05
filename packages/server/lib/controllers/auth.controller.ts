@@ -15,6 +15,7 @@ import {
     analytics,
     AnalyticsTypes,
     isCloud,
+    isEnterprise,
     getBaseUrl,
     NangoError
 } from '@nangohq/shared';
@@ -123,7 +124,7 @@ class AuthController {
             const event = joinedWithToken ? AnalyticsTypes.ACCOUNT_JOINED : AnalyticsTypes.ACCOUNT_CREATED;
             analytics.track(event, account.id, {}, isCloud() ? { email: email } : {});
 
-            if (isCloud() && !joinedWithToken) {
+            if (isCloud() && !isEnterprise() && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.
                 // Harder to do on the self-hosted version because we don't know what OAuth callback to use.
                 await configService.createDefaultProviderConfig(account.id);
