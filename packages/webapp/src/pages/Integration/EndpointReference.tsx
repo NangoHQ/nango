@@ -5,7 +5,7 @@ import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Info from '../../components/ui/Info';
 import EndpointLabel from './components/EndpointLabel';
-import { NangoSyncModel, NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow, Account } from '../../types';
+import { NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow, Account } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
 import { parseInput, generateResponseModel } from '../../utils/utils';
 import { Tabs, SubTabs } from './Show';
