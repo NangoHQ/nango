@@ -38,7 +38,7 @@ The webhook from Nango is a POST request with the following body ([reference](/r
     "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
     "updatedAfter": "<timestamp>", // Null for initial sync runs.
-    "queryTimeStamp": "<timestamp>" // DEPRECATED: (use updatedAfter) Null for initial sync runs.
+    "queryTimeStamp": "<timestamp>" // DEPRECATED: (use updatedAfter) null for initial sync runs.
 }
 ```
 
