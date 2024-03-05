@@ -321,7 +321,7 @@ export const parseInput = (flow: Flow) => {
     return input;
 };
 
-export function generateResponseModel(models: NangoSyncModel[], output: string, isSync: boolean): Record<string, any> {
+export function generateResponseModel(models: NangoSyncModel[], output: string | undefined, isSync: boolean): Record<string, any> {
     if (!output) {
         return {};
     }
