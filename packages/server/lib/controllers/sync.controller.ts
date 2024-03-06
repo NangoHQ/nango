@@ -341,7 +341,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                await this.getRecords(req, res, next);
+                await this.getAllRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
