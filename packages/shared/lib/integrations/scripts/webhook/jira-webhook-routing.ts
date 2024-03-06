@@ -3,10 +3,22 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 
 export default async function route(nango: Nango, integration: ProviderConfig, _headers: Record<string, any>, body: any) {
     if (Array.isArray(body)) {
+        let connectionIds: string[] = [];
         for (const event of body) {
-            await nango.executeScriptForWebhooks(integration, event, 'payload.webhookEvent', 'payload.user.accountId', 'accountId');
+            const responsConnectionIds = await nango.executeScriptForWebhooks(
+                integration,
+                event,
+                'payload.webhookEvent',
+                'payload.user.accountId',
+                'accountId'
+            );
+            if (responsConnectionIds) {
+                connectionIds = connectionIds.concat(responsConnectionIds);
+            }
         }
+
+        return connectionIds;
     } else {
-        await nango.executeScriptForWebhooks(integration, body, 'payload.webhookEvent', 'payload.user.accountId', 'accountId');
+        return await nango.executeScriptForWebhooks(integration, body, 'payload.webhookEvent', 'payload.user.accountId', 'accountId');
     }
 }

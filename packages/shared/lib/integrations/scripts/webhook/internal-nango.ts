@@ -11,14 +11,20 @@ import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
-    executeScriptForWebhooks(integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string, propName?: string): Promise<void>;
+    executeScriptForWebhooks(
+        integration: ProviderConfig,
+        body: any,
+        webhookType: string,
+        connectionIdentifier: string,
+        propName?: string
+    ): Promise<undefined | string[]>;
 }
 
 export const internalNango: InternalNango = {
     getWebhooks: async (environment_id, nango_config_id) => {
         return await getSyncConfigsByConfigIdForWebhook(environment_id, nango_config_id);
     },
-    executeScriptForWebhooks: async (integration, body, webhookType, connectionIdentifier, propName) => {
+    executeScriptForWebhooks: async (integration, body, webhookType, connectionIdentifier, propName): Promise<undefined | string[]> => {
         const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
 
         if (syncConfigsWithWebhooks.length <= 0) {
@@ -106,5 +112,7 @@ export const internalNango: InternalNango = {
                 }
             }
         }
+
+        return connections.map((connection) => connection.connection_id);
     }
 };

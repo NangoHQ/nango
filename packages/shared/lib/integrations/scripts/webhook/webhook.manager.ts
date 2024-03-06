@@ -44,8 +44,9 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
     }
 
     const webhookBodyToForward = res?.parsedBody || body;
+    const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward, headers);
+    await webhookService.forward(integration.environment_id, providerConfigKey, connectionIds, provider, webhookBodyToForward, headers);
 
     await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
         accountId: String(accountId),

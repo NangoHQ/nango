@@ -24,8 +24,11 @@ export default async function route(
     if (payload['type'] === 'url_verification') {
         return { acknowledgementResponse: body['challenge'] };
     } else {
-        await nango.executeScriptForWebhooks(integration, payload, 'type', 'team.id');
+        // the team.id is sometimes stored in the team_id field, and sometimes in the team.id field
+        // so we need to check both
+        const teamId = payload['team_id'] || payload['team']['id'];
+        const connectionIds = await nango.executeScriptForWebhooks(integration, { ...payload, teamId }, 'type', 'teamId');
 
-        return { parsedBody: payload };
+        return { parsedBody: payload, connectionIds };
     }
 }

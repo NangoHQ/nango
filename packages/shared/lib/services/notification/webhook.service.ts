@@ -276,9 +276,10 @@ class WebhookService {
     async forward(
         environment_id: number,
         providerConfigKey: string,
+        connectionIds: string[] | undefined,
         provider: string,
         payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, any>
+        webhookOriginalHeaders: Record<string, string>
     ) {
         const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
@@ -295,7 +296,7 @@ class WebhookService {
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: '',
+            connection_id: connectionIds ? connectionIds.join(',') : '',
             provider_config_key: providerConfigKey,
             provider: provider,
             environment_id: environment_id
@@ -305,6 +306,7 @@ class WebhookService {
 
         const body = {
             from: provider,
+            connectionIds,
             providerConfigKey,
             type: WebhookType.FORWARD,
             payload: payload

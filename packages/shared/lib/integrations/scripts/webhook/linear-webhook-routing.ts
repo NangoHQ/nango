@@ -32,9 +32,9 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody)
     const parsedBody = body as LinearBody;
     console.log(`[webhook/linear] valid ${parsedBody.type}`, { configId: integration.id });
 
-    await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'organizationId', 'organizationId');
+    const connectionIds = await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'organizationId', 'organizationId');
 
-    return { parsedBody };
+    return { parsedBody, connectionIds };
 };
 
 export default route;
