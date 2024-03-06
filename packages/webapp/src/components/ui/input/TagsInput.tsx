@@ -23,7 +23,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     ref
 ) {
     const defaultScopes = useMemo(() => {
-        return !!defaultValue ? defaultValue.split(',') : [];
+        return defaultValue ? defaultValue.split(',') : [];
     }, [defaultValue]);
 
     const [enteredValue, setEnteredValue] = useState('');
@@ -108,7 +108,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     onKeyDown={handleEnter}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
-                    placeholder={`${Boolean(scopes.length) ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
+                    placeholder={`${scopes.length ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                 />
             </div>

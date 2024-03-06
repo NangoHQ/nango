@@ -5,7 +5,7 @@ export default function EndpointLabel({ type, endpoint }: { type: string; endpoi
     return (
         <>
             {typeof endpoint === 'object' ? (
-                <HttpLabel endpoint={endpoint as FlowEndpoint} />
+                <HttpLabel endpoint={endpoint} />
             ) : (
                 <>
                     {(endpoint as unknown as string)?.split(' ').length === 1 && type === 'sync' && <GET path={endpoint as unknown as string} />}
