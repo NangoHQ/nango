@@ -85,6 +85,7 @@ export interface RecordMetadata {
     last_seen_at: Date;
     last_action: LastAction;
     deleted_at: Date | null;
+    cursor: string;
 }
 
 export class Nango {
