@@ -22,7 +22,7 @@ const NON_FORWARDABLE_HEADERS = [
     'connection',
     'keep-alive',
     'content-length',
-    'content-type', // we're sending json
+    'content-type', // we're sending json so don't want this overwritten
     'content-encoding',
     'cookie',
     'set-cookie',
