@@ -13,7 +13,7 @@ import { useStore } from './store';
 import Signup from './pages/Signup';
 import InviteSignup from './pages/InviteSignup';
 import Signin from './pages/Signin';
-import GettingStarted from './pages/GettingStarted';
+import GettingStarted from './pages/GettingStarted/index';
 import IntegrationList from './pages/Integration/List';
 import CreateIntegration from './pages/Integration/Create';
 import ShowIntegration from './pages/Integration/Show';

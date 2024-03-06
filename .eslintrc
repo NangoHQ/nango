@@ -10,6 +10,10 @@
         },
         "project": "tsconfig.json"
     },
+    "env": {
+        "es6": true,
+        "node": true
+    },
     "plugins": [
         "@typescript-eslint",
         "react",
@@ -49,6 +53,40 @@
         "@typescript-eslint/await-thenable": "warn",
         "@typescript-eslint/no-invalid-void-type": "warn",
         "@typescript-eslint/no-base-to-string": "warn",
-        "@typescript-eslint/restrict-plus-operands": "warn"
-    }
+        "@typescript-eslint/restrict-plus-operands": "warn",
+        "react/prop-types": "off"
+    },
+    "overrides": [
+        {
+            "files": [
+                "packages/webapp/**/*.tsx"
+            ],
+            "env": {
+                "browser": true,
+                "es6": true,
+                "node": false
+            },
+            "parserOptions": {
+                "ecmaVersion": 2018,
+                "sourceType": "module",
+                "ecmaFeatures": {
+                    "impliedStrict": true,
+                    "jsx": true
+                },
+                "project": "packages/webapp/tsconfig.json"
+            },
+            "rules": {
+                "no-console": "off",
+                "@typescript-eslint/no-misused-promises": [
+                    "warn",
+                    {
+                        "checksVoidReturn": {
+                            "arguments": false,
+                            "attributes": false
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }

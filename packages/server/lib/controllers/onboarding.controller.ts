@@ -1,23 +1,27 @@
 import type { Request, Response, NextFunction } from 'express';
 import {
     errorManager,
-    initOrUpdateOnboarding,
+    initOnboarding,
     getOnboardingProgress,
     updateOnboardingProgress,
-    configService,
     flowService,
     SyncConfigType,
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncOrchestrator,
     syncDataService,
-    SyncCommand
+    getOnboardingProvider,
+    createOnboardingProvider,
+    DEMO_GITHUB_CONFIG_KEY
 } from '@nangohq/shared';
-import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
+import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 const syncName = 'github-issues-lite';
 
 class OnboardingController {
+    /**
+     * Start an onboarding process
+     */
     async init(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
@@ -28,20 +32,18 @@ class OnboardingController {
 
             const { user, account, environment } = response;
 
-            const onboardingId = await initOrUpdateOnboarding(user.id, account.id);
-
-            const { connection_id, provider_config_key } = req.body;
-            const { success, error } = await syncOrchestrator.runSyncCommand(
-                environment.id,
-                provider_config_key as string,
-                [syncName],
-                SyncCommand.RUN,
-                connection_id
-            );
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
+            if (environment.name !== 'dev') {
+                res.status(400).json({ error: 'onboarding_dev_only' });
                 return;
+            }
+
+            // Create an onboarding state to remember where user left
+            const onboardingId = await initOnboarding(user.id, account.id);
+
+            // Create a default provider if not already there
+            const provider = await getOnboardingProvider(environment.id);
+            if (!provider) {
+                await createOnboardingProvider(environment.id);
             }
 
             if (!onboardingId) {
@@ -58,6 +60,9 @@ class OnboardingController {
         }
     }
 
+    /**
+     * Get the onboarding status
+     */
     async status(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
@@ -65,19 +70,37 @@ class OnboardingController {
                 errorManager.errResFromNangoErr(res, sessionError);
                 return;
             }
+
             const { user, environment } = response;
-            const { connection_id: connectionId, provider_config_key: providerConfigKey, model } = req.query;
+            if (environment.name !== 'dev') {
+                res.status(400).json({ error: 'onboarding_dev_only' });
+                return;
+            }
 
             const status = await getOnboardingProgress(user.id);
+            if (!status) {
+                res.status(404).send({ error: 'no_onboarding' });
+                return;
+            }
 
-            const { response: records } = await syncDataService.getDataRecords(
-                connectionId as string,
-                providerConfigKey as string,
-                environment.id,
-                model as string
-            );
+            const payload: { progress: number; records: CustomerFacingDataRecord[] | null; provider: boolean; connection: boolean; sync: boolean } = {
+                progress: 0,
+                connection: false,
+                provider: false,
+                records: null,
+                sync: false
+            };
+            const { connection_id: connectionId, model } = req.query;
 
-            res.status(200).json({ ...status, records });
+            const provider = await getOnboardingProvider(environment.id);
+            if (!provider) {
+                res.status(200).json(payload);
+                return;
+            }
+
+            const { response: records } = await syncDataService.getAllDataRecords(connectionId as string, provider.unique_key, environment.id, model as string);
+
+            res.status(200).json({ records, provider: true, connection: true, sync: true });
         } catch (err) {
             next(err);
         }
@@ -123,6 +146,11 @@ class OnboardingController {
                 return;
             }
 
+            if (response.environment.name !== 'dev') {
+                res.status(400).json({ error: 'onboarding_dev_only' });
+                return;
+            }
+
             if (!req.body.progress === undefined || req.body.progress === null) {
                 res.status(400).json({
                     error: 'Missing progress'
@@ -157,9 +185,9 @@ class OnboardingController {
                 return;
             }
 
-            const { account, environment } = response;
-            await configService.createDefaultProviderConfigIfNotExisting(account.id);
+            const { environment } = response;
             const githubDemoSync = flowService.getFlow(syncName);
+
             if (!githubDemoSync) {
                 throw new Error('failed_to_find_demo_sync');
             }
@@ -168,7 +196,7 @@ class OnboardingController {
             const config: IncomingPreBuiltFlowConfig[] = [
                 {
                     provider: 'github',
-                    providerConfigKey: configService.DEMO_GITHUB_CONFIG_KEY,
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     type: SyncConfigType.SYNC,
                     name: syncName,
                     runs: githubDemoSync.runs,
@@ -179,9 +207,11 @@ class OnboardingController {
                     public_route: 'github'
                 }
             ];
+            console.log('prit');
 
             await deployPreBuiltSyncConfig(environment.id, config, '');
 
+            console.log('prut');
             res.sendStatus(200);
         } catch (err) {
             next(err);
