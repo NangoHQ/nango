@@ -61,7 +61,7 @@ export function isEnterprise() {
 export function integrationFilesAreRemote() {
     const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
 
-    return isCloud() || (isEnterprise() && useS3);
+    return isEnterprise() && useS3;
 }
 
 export function isStaging() {
