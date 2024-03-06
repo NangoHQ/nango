@@ -710,10 +710,16 @@ const records = await nango.listRecords<ModelName>({
         The name of the model of the data you want to retrieve.
       </ResponseField>
 
-      <ResponseField name="delta" type="string">
+      <ResponseField name="updatedAfter" type="string">
         Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
 
-        In particular, when receiving a webhook from Nango notifying you that new data is available, pass the timestamp you get from the webhook in this `delta` parameter. You will only returned the data that was edited since the previous notification. 
+        In particular, when receiving a webhook from Nango notifying you that new data is available, pass the timestamp you get from the webhook in this `updatedAfter` parameter. You will only returned the data that was edited since the previous notification.
+      </ResponseField>
+
+      <ResponseField name="delta" type="string">
+        DEPRECATED (use updatedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
+
+        In particular, when receiving a webhook from Nango notifying you that new data is available, pass the timestamp you get from the webhook in this `delta` parameter. You will only returned the data that was edited since the previous notification.
       </ResponseField>
 
       <ResponseField name="limit" type="number">
@@ -725,7 +731,7 @@ const records = await nango.listRecords<ModelName>({
       </ResponseField>
 
       <ResponseField name="filter" type="string">
-        Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the delta parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
+        Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the updatedAfter parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
 
         Available options: added, updated, deleted 
       </ResponseField>
@@ -747,7 +753,8 @@ const records = await nango.listRecords<ModelName>({
                     deleted_at: null,
                     last_action: 'ADDED',
                     first_seen_at: '2023-09-18T15:20:35.941305+00:00',
-                    last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+                    last_modified_at: '2023-09-18T15:20:35.941305+00:00',
+                    cursor: 'MjAyNC0wMi0yNlQwMzowMDozOS42MjMzODgtMDU6MDB8fGVlMDYwM2E1LTEwNDktNDA4Zi05YTEwLTJjNzVmNDkwODNjYQ=='
                 }
             },
             ...

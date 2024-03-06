@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SWRConfig } from 'swr';
 import { Routes, Route, Navigate, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { isCloud, isEnterprise } from './utils/utils';
+import { isCloud, isEnterprise, isLocal } from './utils/utils';
 import { fetcher } from './utils/api';
 import { useStore } from './store';
 
@@ -55,6 +55,12 @@ const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
     const env = useStore((state) => state.cookieValue);
     const signout = useSignout();
+    const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
+
+    useEffect(() => {
+        setShowGettingStarted(env === 'dev' && (isCloud() || isLocal()));
+    }, [env, setShowGettingStarted]);
 
     const correctPage = (): string => {
         const url = new URL(window.location.href);
@@ -69,7 +75,7 @@ const App = () => {
             return url.pathname;
         }
 
-        return env === 'dev' && isCloud() ? '/dev/getting-started' : `/${env}/integrations`;
+        return showGettingStarted ? '/dev/getting-started' : `/${env}/integrations`;
     };
 
     return (
@@ -101,7 +107,7 @@ const App = () => {
             >
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
-                    {isCloud() && (
+                    {showGettingStarted && (
                         <Route path="/dev/getting-started" element={<PrivateRoute />}>
                             <Route path="/dev/getting-started" element={<GettingStarted />} />
                         </Route>

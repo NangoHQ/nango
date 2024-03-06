@@ -30,6 +30,7 @@
         "chalk": "^5.3.0",
         "cors": "^2.8.5",
         "dayjs": "^1.11.7",
+        "dayjs-plugin-utc": "^0.1.2",
         "dd-trace": "5.2.0",
         "ejs": "^3.1.5",
         "exponential-backoff": "^3.1.1",

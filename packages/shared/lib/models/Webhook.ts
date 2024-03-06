@@ -16,6 +16,7 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
+    updatedAfter: string | null;
     queryTimeStamp: string | null;
 }
 
