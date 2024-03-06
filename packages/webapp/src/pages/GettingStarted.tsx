@@ -12,7 +12,7 @@ import Info from '../components/ui/Info';
 import CopyButton from '../components/ui/button/CopyButton';
 import { useGetProjectInfoAPI } from '../utils/api';
 import Spinner from '../components/ui/Spinner';
-import { nodeSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../utils/language-snippets';
+import { nodeSnippet, curlSnippet } from '../utils/language-snippets';
 
 import { useStore } from '../store';
 import { useAnalyticsTrack } from '../utils/analytics';
@@ -28,11 +28,7 @@ enum Steps {
 
 enum Language {
     Node = 0,
-    cURL = 1,
-    Python = 2,
-    PHP = 3,
-    Go = 4,
-    Java = 5
+    cURL = 1
 }
 
 export default function GettingStarted() {
@@ -428,58 +424,6 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                     }}
                                                 >
                                                     cURL
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant={`${language === Language.Python ? 'black' : 'zombie'}`}
-                                                    className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                    onClick={() => {
-                                                        if (language !== Language.Python) {
-                                                            setSyncSnippet(pythonSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                            setLanguage(Language.Python);
-                                                        }
-                                                    }}
-                                                >
-                                                    Python
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant={`${language === Language.PHP ? 'black' : 'zombie'}`}
-                                                    className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                    onClick={() => {
-                                                        if (language !== Language.PHP) {
-                                                            setSyncSnippet(phpSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                            setLanguage(Language.PHP);
-                                                        }
-                                                    }}
-                                                >
-                                                    PHP
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant={`${language === Language.Go ? 'black' : 'zombie'}`}
-                                                    className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                    onClick={() => {
-                                                        if (language !== Language.Go) {
-                                                            setSyncSnippet(goSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                            setLanguage(Language.Go);
-                                                        }
-                                                    }}
-                                                >
-                                                    Go
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant={`${language === Language.Java ? 'black' : 'zombie'}`}
-                                                    className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                                    onClick={() => {
-                                                        if (language !== Language.Java) {
-                                                            setSyncSnippet(javaSnippet(endpoint, secretKey, connectionId, providerConfigKey));
-                                                            setLanguage(Language.Java);
-                                                        }
-                                                    }}
-                                                >
-                                                    Java
                                                 </Button>
                                             </div>
                                             <CopyButton dark text={syncSnippet} />

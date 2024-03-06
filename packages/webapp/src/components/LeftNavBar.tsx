@@ -44,6 +44,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const storedEnvs = useStore((state) => state.envs);
     const [envs, setEnvs] = useState<{ name: string }[]>(storedEnvs);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
     const setStoredEnvs = useStore((state) => state.setEnvs);
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setEmail = useStore((state) => state.setEmail);
@@ -154,7 +155,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
-                        {isCloud() && env === 'dev' && (
+                        {showGettingStarted && (
                             <Link
                                 to="/dev/getting-started"
                                 className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
