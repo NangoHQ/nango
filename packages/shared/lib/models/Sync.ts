@@ -216,7 +216,22 @@ export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any> & { id: string | number };
 
+export interface EncryptedRecord {
+    iv: string;
+    authTag: string;
+    encryptedValue: string;
+}
+
+export type EncryptedInternalDataRecord = {
+    _nango_metadata: RecordMetadata;
+} & EncryptedRecord;
+
 export type GetRecordsResponse = { records: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; next_cursor?: string | null } | null;
+
+export interface RawDataRecordResult {
+    id: string | number;
+    record: CustomerFacingDataRecord | EncryptedInternalDataRecord;
+}
 
 export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
 
@@ -245,6 +260,7 @@ interface RecordMetadata {
     last_modified_at: Date;
     last_action: LastAction;
     deleted_at: Date | null;
+    cursor: string;
 }
 
 export interface DataRecordWithMetadata extends RecordMetadata {
