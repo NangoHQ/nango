@@ -23,8 +23,8 @@ export default function Signin() {
         const res = await signinAPI(target.email.value, target.password.value);
 
         if (res?.status === 200) {
-            let data = await res.json();
-            let user: User = data['user'];
+            const data = await res.json();
+            const user: User = data['user'];
             signin(user);
             navigate('/');
         } else if (res?.status === 401) {

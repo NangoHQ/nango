@@ -100,7 +100,7 @@ export default function Activity() {
     const env = useStore((state) => state.cookieValue);
 
     const isInitialMount = useRef(true);
-    const [activityRefs, setActivityRefs] = useState<{ [key: number]: React.RefObject<HTMLTableRowElement> }>({});
+    const [activityRefs, setActivityRefs] = useState<Record<number, React.RefObject<HTMLTableRowElement>>>({});
 
     const [offset, setOffset] = useState(queryParams.offset || 0);
     const [status, setStatus] = useState(queryParams.status || '');

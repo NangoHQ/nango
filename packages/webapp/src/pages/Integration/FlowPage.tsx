@@ -259,7 +259,7 @@ export default function FlowPage(props: FlowPageProps) {
                         {connections && (
                             <span className="flex">
                                 <EnableDisableSync
-                                    flow={flow as Flow}
+                                    flow={flow}
                                     provider={integration.provider}
                                     providerConfigKey={integration.unique_key}
                                     reload={reload}
@@ -297,7 +297,7 @@ export default function FlowPage(props: FlowPageProps) {
                         {flow?.last_deployed && (
                             <div className="flex flex-col w-1/2">
                                 <span className="text-gray-400 text-xs uppercase mb-1">Last Deployed</span>
-                                <div className="text-white">{formatDateToShortUSFormat(flow?.last_deployed as string)}</div>
+                                <div className="text-white">{formatDateToShortUSFormat(flow?.last_deployed)}</div>
                             </div>
                         )}
                     </div>
@@ -470,11 +470,11 @@ export default function FlowPage(props: FlowPageProps) {
                                                                 </div>
                                                                 <CopyButton
                                                                     dark
-                                                                    text={autoStartSnippet(account.secret_key, integration.unique_key, flow?.name as string)}
+                                                                    text={autoStartSnippet(account.secret_key, integration.unique_key, flow?.name)}
                                                                 />
                                                             </div>
                                                             <Prism noCopy language="typescript" className="p-1 transparent-code" colorScheme="dark">
-                                                                {autoStartSnippet(account.secret_key, integration.unique_key, flow?.name as string)}
+                                                                {autoStartSnippet(account.secret_key, integration.unique_key, flow?.name)}
                                                             </Prism>
                                                         </div>
                                                     )}

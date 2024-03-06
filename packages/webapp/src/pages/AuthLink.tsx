@@ -13,9 +13,9 @@ export default function AuthLink() {
         setServerErrorMessage('');
 
         // Required params.
-        let integrationUniqueKey = searchParams.get('integration_unique_key');
-        let connectionId = searchParams.get('connection_id');
-        let publicKey = searchParams.get('public_key') || undefined;
+        const integrationUniqueKey = searchParams.get('integration_unique_key');
+        const connectionId = searchParams.get('connection_id');
+        const publicKey = searchParams.get('public_key') || undefined;
 
         if (!integrationUniqueKey || !connectionId) {
             setServerErrorMessage('Missing Integration ID and/or User ID.');
@@ -28,11 +28,11 @@ export default function AuthLink() {
         }
 
         // Optional params.
-        let host = searchParams.get('host') || baseUrl();
-        let websocketsPath = searchParams.get('websockets_path') || '/';
-        let userScopes = searchParams.get('selected_scopes')?.split(',') || []; // Slack only.
-        let params = searchParams.get('params');
-        let authorizationParams = searchParams.get('authorization_params');
+        const host = searchParams.get('host') || baseUrl();
+        const websocketsPath = searchParams.get('websockets_path') || '/';
+        const userScopes = searchParams.get('selected_scopes')?.split(',') || []; // Slack only.
+        const params = searchParams.get('params');
+        const authorizationParams = searchParams.get('authorization_params');
         const username = searchParams.get('username');
         const password = searchParams.get('password');
         const apiKey = searchParams.get('api_key');
