@@ -321,7 +321,7 @@ class WebhookService {
 
         const headers = {
             ...nangoHeaders,
-            'Source-Content-Type': webhookOriginalHeaders['content-type'],
+            'Source-Payload-Content-Type': webhookOriginalHeaders['content-type'],
             ...this.filterHeaders(webhookOriginalHeaders)
         };
 
