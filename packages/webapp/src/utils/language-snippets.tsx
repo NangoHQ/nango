@@ -5,7 +5,7 @@ export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secre
     return `import { Nango } from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
-const issues = await nango.listRecords({
+const records = await nango.listRecords({
     providerConfigKey: '${providerConfigKey}',
     connectionId: '${connectionId}',
     model: '${model}'
@@ -36,7 +36,7 @@ ${JSON.stringify(input, null, 2)
     return `import Nango from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
-const issues = await nango.triggerAction(
+const response = await nango.triggerAction(
     '${providerConfigKey}',
     '${connectionId}',
     '${actionName}',
