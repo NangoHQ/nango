@@ -18,6 +18,7 @@ const NON_FORWARDABLE_HEADERS = [
     'connection',
     'keep-alive',
     'content-length',
+    'content-type', // we're sending json
     'content-encoding',
     'cookie',
     'set-cookie',
@@ -304,6 +305,7 @@ class WebhookService {
 
         const body = {
             from: provider,
+            providerConfigKey,
             type: WebhookType.FORWARD,
             payload: payload
         };
@@ -312,6 +314,7 @@ class WebhookService {
 
         const headers = {
             ...nangoHeaders,
+            'Source-Content-Type': webhookOriginalHeaders['content-type'],
             ...this.filterHeaders(webhookOriginalHeaders)
         };
 
