@@ -60,7 +60,7 @@ const records = await nango.listRecords<Ticket>({
     providerConfigKey: 'zendesk',
     connectionId: 'user123',
     model: 'ticket',
-    updatedAfter
+    updatedAfter: updatedAfter
 });
 
 saveToDatabase(records);

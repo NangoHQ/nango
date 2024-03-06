@@ -4,13 +4,23 @@ sidebarTitle: 'Get records (Deprecated)'
 openapi: 'GET /sync/records'
 ---
 
-## The `delta` parameter & webhooks
+## Receive webhooks on data updates
 
-If you are receiving webhooks from Nango ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango)), you can use the timestamp you get from the webhook for the `delta` parameter.
+Receive webhooks from Nango when new records are available ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango)).
+
+## Keeping track of where you left off
+
+Each record from this endpoint comes with a synchronization cursor in `_nango_metadata.cursor`.
+
+Save the last fetched record's cursor to track how far you've synced.
+
+By providing the cursor to this endpoint, you'll continue syncing from where you left off, receiving only post-cursor changes.
+
+This same cursor is used to paginate through the results of this endpoint.
 
 ## Response
 
-By default, this returns an array of objects in the data model that you queried with some metadata about each record.
+By default, this returns an array of records in the data model that you queried, with some metadata about each record.
 
 ```json
 [
