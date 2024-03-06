@@ -517,6 +517,11 @@ export class NangoError extends Error {
                 this.message = 'The sync is not currently running so cannot be cancelled';
                 break;
 
+            case 'incorrect_param':
+                this.status = 400;
+                this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

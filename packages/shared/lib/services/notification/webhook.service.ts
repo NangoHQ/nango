@@ -1,4 +1,6 @@
 import axios, { AxiosError } from 'axios';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
@@ -9,6 +11,8 @@ import type { SyncResult } from '../../models/Sync';
 import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
+
+dayjs.extend(utc);
 
 const RETRY_ATTEMPTS = 10;
 
@@ -146,6 +150,7 @@ class WebhookService {
                 deleted: 0
             },
             syncType,
+            updatedAfter: dayjs(now).toDate().toISOString(),
             queryTimeStamp: now as unknown as string
         };
 
