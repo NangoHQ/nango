@@ -58,6 +58,12 @@ export function isEnterprise() {
     return process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
 }
 
+export function integrationFilesAreRemote() {
+    const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
+
+    return isCloud() || (isEnterprise() && useS3);
+}
+
 export function isStaging() {
     return process.env['NODE_ENV'] === NodeEnv.Staging;
 }
