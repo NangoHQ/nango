@@ -5,15 +5,9 @@ export default async function route(nango: Nango, integration: ProviderConfig, _
     if (Array.isArray(body)) {
         let connectionIds: string[] = [];
         for (const event of body) {
-            const responsConnectionIds = await nango.executeScriptForWebhooks(
-                integration,
-                event,
-                'payload.webhookEvent',
-                'payload.user.accountId',
-                'accountId'
-            );
-            if (responsConnectionIds) {
-                connectionIds = connectionIds.concat(responsConnectionIds);
+            const response = await nango.executeScriptForWebhooks(integration, event, 'payload.webhookEvent', 'payload.user.accountId', 'accountId');
+            if (response && response.connectionIds?.length > 0) {
+                connectionIds = connectionIds.concat(response.connectionIds);
             }
         }
 

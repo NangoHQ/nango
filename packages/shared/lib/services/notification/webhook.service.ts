@@ -8,7 +8,7 @@ import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Co
 import type { Environment } from '../../models/Environment';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { SyncResult } from '../../models/Sync';
-import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Webhook.js';
+import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 
@@ -281,7 +281,7 @@ class WebhookService {
     async forward(
         environment_id: number,
         providerConfigKey: string,
-        connectionIds: string[] | undefined,
+        connectionIds: string[],
         provider: string,
         payload: Record<string, any> | null,
         webhookOriginalHeaders: Record<string, string>
@@ -309,7 +309,7 @@ class WebhookService {
 
         const activityLogId = await createActivityLog(log);
 
-        const body = {
+        const body: NangoForwardWebhookBody = {
             from: provider,
             connectionIds,
             providerConfigKey,
