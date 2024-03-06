@@ -159,13 +159,13 @@ class SyncController {
 
     public async getAllRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, updated_after, updatedAfter, limit, filter, cursor, next_cursor } = req.query;
+            const { model, delta, modified_after, modifiedAfter, limit, filter, cursor, next_cursor } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            if (updatedAfter) {
-                const error = new NangoError('incorrect_param', { incorrect: 'updatedAfter', correct: 'updated_after' });
+            if (modifiedAfter) {
+                const error = new NangoError('incorrect_param', { incorrect: 'modifiedAfter', correct: 'modified_after' });
 
                 errorManager.errResFromNangoErr(res, error);
                 return;
@@ -183,7 +183,7 @@ class SyncController {
                 providerConfigKey,
                 environmentId,
                 model as string,
-                (delta || updated_after) as string,
+                (delta || modified_after) as string,
                 limit as string,
                 filter as LastAction,
                 cursor as string
@@ -341,7 +341,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                await this.getRecords(req, res, next);
+                await this.getAllRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
