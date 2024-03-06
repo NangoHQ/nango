@@ -34,7 +34,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
             res = await handler(internalNango, integration, headers, body, rawBody);
         }
     } catch (e) {
-        logger.error('[webhook/manager] error processing incoming webhook', { providerConfigKey, error: e });
+        logger.error(`[webhook/manager] error processing incoming webhook for ${providerConfigKey} - `, e);
 
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
             accountId: String(accountId),
