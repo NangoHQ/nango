@@ -27,7 +27,7 @@ export default async function route(
         // the team.id is sometimes stored in the team_id field, and sometimes in the team.id field
         // so we need to check both
         const teamId = payload['team_id'] || payload['team']['id'];
-        const connectionIds = await nango.executeScriptForWebhooks(integration, { ...payload, teamId }, 'type', 'teamId');
+        const connectionIds = await nango.executeScriptForWebhooks(integration, { ...payload, teamId }, 'type', 'teamId', 'team.id');
 
         return { parsedBody: payload, connectionIds };
     }
