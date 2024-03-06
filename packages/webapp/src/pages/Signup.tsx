@@ -26,8 +26,8 @@ export default function Signup() {
         const res = await signupAPI(target.name.value, target.email.value, target.password.value);
 
         if (res?.status === 200) {
-            let data = await res.json();
-            let user: User = data['user'];
+            const data = await res.json();
+            const user: User = data['user'];
             analyticsTrack('web:account_signup', {
                 user_id: user.id,
                 email: user.email,

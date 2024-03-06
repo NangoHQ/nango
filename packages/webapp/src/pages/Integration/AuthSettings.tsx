@@ -51,7 +51,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
         if (!integration) return;
 
         setModalShowSpinner(true);
-        let res = await deleteIntegrationAPI(integrationId);
+        const res = await deleteIntegrationAPI(integrationId);
 
         if (res?.status === 204) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -151,7 +151,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
                 navigate(`/${env}/integrations`, { replace: true });
             } else if (res != null) {
-                let payload = await res.json();
+                const payload = await res.json();
                 toast.error(payload.type === 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
                     position: toast.POSITION.BOTTOM_CENTER
                 });
@@ -178,7 +178,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
             setIntegrationId(integrationIdEdit);
             navigate(`/${env}/integration/${integrationIdEdit}`, { replace: true });
         } else if (res != null) {
-            let payload = await res.json();
+            const payload = await res.json();
             toast.error(payload.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
@@ -478,7 +478,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
                                 <span className="absolute right-0.5 top-1 flex items-center">
-                                    <CopyButton text={integration?.client_id as string} dark classNames="relative -ml-6" />
+                                    <CopyButton text={integration?.client_id} dark classNames="relative -ml-6" />
                                 </span>
                             </div>
                         </div>
@@ -505,13 +505,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 <span className="text-gray-400 text-xs">Scopes</span>
                             </div>
                             <div className="mt-1">
-                                <TagsInput
-                                    id="scopes"
-                                    name="scopes"
-                                    type="text"
-                                    defaultValue={integration ? (integration?.scopes as string) : ''}
-                                    minLength={1}
-                                />
+                                <TagsInput id="scopes" name="scopes" type="text" defaultValue={integration ? integration?.scopes : ''} minLength={1} />
                             </div>
                         </div>
                     )}
