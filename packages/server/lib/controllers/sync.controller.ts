@@ -159,17 +159,31 @@ class SyncController {
 
     public async getAllRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, limit, filter, cursor } = req.query;
+            const { model, delta, updated_after, updatedAfter, limit, filter, cursor, next_cursor } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            if (updatedAfter) {
+                const error = new NangoError('incorrect_param', { incorrect: 'updatedAfter', correct: 'updated_after' });
+
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            if (next_cursor) {
+                const error = new NangoError('incorrect_param', { incorrect: 'next_cursor', correct: 'cursor' });
+
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             const { success, error, response } = await syncDataService.getAllDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
                 model as string,
-                delta as string,
+                (delta || updated_after) as string,
                 limit as string,
                 filter as LastAction,
                 cursor as string
