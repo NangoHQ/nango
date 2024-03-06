@@ -3,11 +3,12 @@ import db, { schema, dbNamespace } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import configService from './config.service';
 import type { Config } from '../models';
-import { NangoError } from '../utils/error';
 
 export const DEFAULT_GITHUB_CLIENT_ID = process.env['DEFAULT_GITHUB_CLIENT_ID'] || '';
 export const DEFAULT_GITHUB_CLIENT_SECRET = process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '';
 export const DEMO_GITHUB_CONFIG_KEY = 'demo-github-integration';
+export const DEMO_SYNC_NAME = 'github-issues-lite';
+export const DEMO_MODEL = 'Issue';
 
 const TABLE = dbNamespace + 'onboarding_demo_progress';
 
@@ -27,13 +28,8 @@ const mapAnalytics = (progress: number): AnalyticsTypes => {
 };
 
 export const getOnboardingId = async (user_id: number): Promise<number | null> => {
-    const result = await schema().from<Onboarding>(TABLE).select('id').where({ user_id });
-
-    if (!result || result.length == 0 || !result[0]) {
-        return null;
-    }
-
-    return result[0].id;
+    const result = await schema().from<Onboarding>(TABLE).select<Required<Pick<Onboarding, 'id'>>>('id').where({ user_id }).first();
+    return result ? result.id : null;
 };
 
 export const initOnboarding = async (user_id: number, account_id: number): Promise<number | null> => {
@@ -84,7 +80,7 @@ export const getOnboardingProgress = async (user_id: number): Promise<Pick<Onboa
  * Create Default Provider Config
  * @desc create a default Github config only for the dev environment
  */
-export async function createOnboardingProvider(envId: number): Promise<void> {
+export async function createOnboardingProvider({ envId }: { envId: number }): Promise<void> {
     const config: Config = {
         environment_id: envId,
         unique_key: DEMO_GITHUB_CONFIG_KEY,
@@ -97,6 +93,6 @@ export async function createOnboardingProvider(envId: number): Promise<void> {
     await configService.createProviderConfig(config);
 }
 
-export async function getOnboardingProvider(envId: number): Promise<Config | null> {
+export async function getOnboardingProvider({ envId }: { envId: number }): Promise<Config | null> {
     return await configService.getProviderConfig(DEMO_GITHUB_CONFIG_KEY, envId);
 }
