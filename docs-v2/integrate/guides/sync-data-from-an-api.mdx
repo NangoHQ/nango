@@ -37,7 +37,8 @@ The webhook from Nango is a POST request with the following body ([reference](/r
     "model": "<string>",
     "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
-    "queryTimeStamp": "<timestamp>", // Null for initial sync runs.
+    "updatedAfter": "<timestamp>", // Null for initial sync runs.
+    "queryTimeStamp": "<timestamp>" // DEPRECATED: (use updatedAfter) null for initial sync runs.
 }
 ```
 
@@ -51,7 +52,7 @@ Before using webhooks in production, verify their origin ([step-by-step guide](/
 
 # Fetch the latest data
 
-Upon receiving a webhook notification, the time cursor `queryTimeStamp` from the webhook body is used to fetch only the updated data.
+Upon receiving a webhook notification, the time cursor `updatedAfter` from the webhook body is used to fetch only the updated data.
 
 Fetch records using the backend SDK ([reference](/reference/sdks/node#get-records)) or API ([reference](/reference/api/sync/records-list)).
 
@@ -65,7 +66,7 @@ curl -G https://api.nango.dev/records \
   --header 'Connection-Id: <string>' \
   --header 'Provider-Config-Key: <string>' \
   --data-urlencode 'model=<string>'  # The model of the records to fetch.
-  --data-urlencode 'delta=<queryTimeStamp-from-webhook>' \  # Time cursor to only fetch the updated data.
+  --data-urlencode 'updated_after=<updatedAfter-from-webhook>' \  # Time cursor to only fetch the updated data.
   --data-urlencode 'limit=<number>' \  # Number of records returned (default: 100).
   --data-urlencode 'cursor=<string>' \  # For pagination: use the "next_cursor" property in the previous page's response.
   
@@ -83,7 +84,7 @@ const result = await nango.listRecords({
     providerConfigKey: '<string>',
     connectionId: '<string>',
     model: '<string>', //The model of the records to fetch.
-    delta: '<queryTimeStamp-from-webhook>', // Time cursor to only fetch the updated data.
+    updatedAfter: '<updatedAfter-from-webhook>', // Time cursor to only fetch the updated data.
     limit: <number>, // Number of records returned (default: 100).
     cursor: '<string>' // For pagination: use the "next_cursor" property in the previous page's response.
 });
