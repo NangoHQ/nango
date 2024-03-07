@@ -171,13 +171,21 @@ export async function upgradeAction(debug = false) {
         const packagePath = getPackagePath();
         const usePnpm = path.resolve(packagePath, '..').includes('.pnpm');
 
-        const args = usePnpm
-            ? locallyInstalled
-                ? ['add', `nango@${latestVersion}`]
-                : ['add', '-g', `nango@${latestVersion}`]
-            : locallyInstalled
-              ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
-              : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+        let args: string[] = [];
+
+        if (usePnpm) {
+            if (locallyInstalled) {
+                args = ['add', `nango@${latestVersion}`];
+            } else {
+                args = ['add', '-g', `nango@${latestVersion}`];
+            }
+        } else {
+            if (locallyInstalled) {
+                args = ['install', '--no-audit', '--save', `nango@${latestVersion}`];
+            } else {
+                args = ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+            }
+        }
 
         if (debug) {
             printDebug(`Running npm ${args.join(' ')}`);
