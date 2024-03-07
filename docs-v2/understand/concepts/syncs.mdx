@@ -78,7 +78,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
 }
 ```
 
-The `fetchData` function starts on the schedule indicated in your [integration configuration](TODO BB). The `ResponseModel` is configurable via the integration configuration and is auto-imported into your script.
+The `fetchData` function starts on the schedule indicated in your [integration configuration](/understand/concepts/scripts#integration-configuration). The `ResponseModel` is configurable via the integration configuration and is auto-imported into your script.
 
 Unlike actions, the syncs default function doesn't take any input parameters or return anything. Sync inputs are passed via the [connection metadata](/understand/concepts/connections#connection-metadata). And instead of returning data directly like actions, syncs persist records to Nango's cache, calling `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()`. Your application later fetches the records from the cache. 
 
