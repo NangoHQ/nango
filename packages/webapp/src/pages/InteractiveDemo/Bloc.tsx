@@ -11,7 +11,7 @@ export const Bloc: React.FC<{ active: boolean; done: boolean; title: string; sub
     children
 }) => {
     return (
-        <div className="ml-12">
+        <div className="ml-14">
             <div
                 className={cn(
                     'p-5 rounded-lg relative border border-zinc-500',
@@ -20,11 +20,11 @@ export const Bloc: React.FC<{ active: boolean; done: boolean; title: string; sub
                 )}
             >
                 {!noTrack && (
-                    <div className={cn('absolute left-[-2.3rem] top-12 border-l border-zinc-800 h-[calc(100%+2rem)]', done && 'border-emerald-300')}></div>
+                    <div className={cn('absolute left-[-2.6rem] top-[50px] border-l border-zinc-500 h-[calc(100%+6px)]', done && 'border-emerald-300')}></div>
                 )}
-                <div className="absolute left-[-3rem] top-6 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
+                <div className="absolute left-[-3.3rem] top-6 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
                     <div className={cn('rounded-full ring-1 py-1 px-1', done ? 'ring-emerald-300' : 'ring-white', active && 'bg-white')}>
-                        <Logo fill={done ? '#6ee7b7' : active ? 'black' : 'white'} size={12} />
+                        <Logo fill={done ? '#6ee7b7' : active ? 'black' : 'white'} size={active || done ? 18 : 12} />
                     </div>
                 </div>
                 <h2 className={cn('text-xl font-semibold leading-7 text-zinc-500', (active || done) && 'text-white')}>{title}</h2>
@@ -36,9 +36,15 @@ export const Bloc: React.FC<{ active: boolean; done: boolean; title: string; sub
     );
 };
 
-export const Tab: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const Tab: React.FC<{ children: React.ReactNode } & React.ComponentProps<typeof Button>> = ({ children, className, ...props }) => {
     return (
-        <Button type="button" variant="black" size="sm" className="cursor-default bg-zinc-800 pointer-events-none text-zinc-200 px-1.5 !py-0.5 !h-6">
+        <Button
+            type="button"
+            variant="black"
+            size="sm"
+            className={cn('cursor-default bg-zinc-800 pointer-events-none text-zinc-200 px-1.5 !py-0.5 !h-6', className)}
+            {...props}
+        >
             {children}
         </Button>
     );

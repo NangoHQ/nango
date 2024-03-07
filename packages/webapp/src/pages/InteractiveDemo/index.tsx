@@ -9,7 +9,7 @@ import { useGetProjectInfoAPI } from '../../utils/api';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { AuthorizeBloc } from './AuthorizeBloc';
-import { SynchronizeBloc } from './SynchronizeBloc';
+import { FetchBloc } from './FetchBloc';
 import { Steps, providerConfigKey, model } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
@@ -204,7 +204,7 @@ export const InteractiveDemo: React.FC = () => {
         setStep(Steps.Webhooks);
     };
 
-    const onSynchronize = () => {
+    const onFetch = () => {
         analyticsTrack('web:getting_started:sync');
         if (records.length === 0) {
             startPolling();
@@ -244,14 +244,14 @@ export const InteractiveDemo: React.FC = () => {
 
                     <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
 
-                    <SynchronizeBloc
+                    <FetchBloc
                         step={step}
                         connectionId={connectionId}
                         providerConfigKey={providerConfigKey}
                         secretKey={secretKey}
                         records={records}
                         syncStillRunning={syncStillRunning}
-                        onProgress={onSynchronize}
+                        onProgress={onFetch}
                     />
 
                     <ActionBloc step={step} connectionId={connectionId} providerConfigKey={providerConfigKey} onProgress={onActionConfirm} />

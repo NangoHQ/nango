@@ -59,7 +59,7 @@ export const AuthorizeBloc: React.FC<{
         }
     };
 
-    const authorizeSnippet = useMemo<string>(() => {
+    const snippet = useMemo<string>(() => {
         return `import Nango from '@nangohq/frontend';
 
 // Find the public key in your environment settings (safe to reveal).
@@ -74,10 +74,10 @@ nango.auth('${providerConfigKey}', '${connectionId}')
             <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                     <Tab>Frontend</Tab>
-                    <CopyButton dark text={authorizeSnippet} />
+                    <CopyButton dark text={snippet} />
                 </div>
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
-                    {authorizeSnippet}
+                    {snippet}
                 </Prism>
                 <div className="px-5 py-4 bg-zinc-900 rounded-lg">
                     {step === Steps.Start ? (

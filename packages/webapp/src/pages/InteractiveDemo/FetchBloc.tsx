@@ -8,9 +8,10 @@ import { Prism } from '@mantine/prism';
 import Info from '../../components/ui/Info';
 import { Modal, useModal } from '@geist-ui/core';
 import Spinner from '../../components/ui/Spinner';
-import { Bloc } from './Bloc';
+import { Bloc, Tab } from './Bloc';
+import { cn } from '../../utils/utils';
 
-export const SynchronizeBloc: React.FC<{
+export const FetchBloc: React.FC<{
     step: Steps;
     providerConfigKey: string;
     connectionId: string;
@@ -25,7 +26,7 @@ export const SynchronizeBloc: React.FC<{
     const baseUrl = useStore((state) => state.baseUrl);
     const { setVisible, bindings } = useModal();
 
-    const syncSnippet = useMemo<string>(() => {
+    const snippet = useMemo<string>(() => {
         if (language === Language.Node) {
             return nodeSnippet(model, secretKey, connectionId, providerConfigKey);
         } else if (language === Language.cURL) {
@@ -38,7 +39,7 @@ export const SynchronizeBloc: React.FC<{
         <Bloc
             title="Fetch the new data"
             subtitle={<>Fetch sample GitHub issues in your backend, via Nango.</>}
-            active={step === Steps.Fetch}
+            active={step === Steps.Webhooks}
             done={step >= Steps.Fetch}
         >
             <>
@@ -66,13 +67,12 @@ export const SynchronizeBloc: React.FC<{
                         </Button>
                     </Modal.Action>
                 </Modal>
-                <div className="border border-border-gray rounded-md text-white text-sm py-2">
-                    <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
+                <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
+                    <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                         <div className="space-x-4">
-                            <Button
-                                type="button"
-                                variant={`${language === Language.Node ? 'black' : 'zombie'}`}
-                                className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
+                            <Tab
+                                variant={language === Language.Node ? 'black' : 'zombie'}
+                                className={cn('cursor-default', language !== Language.Node && 'cursor-pointer bg-zinc-900 pointer-events-auto')}
                                 onClick={() => {
                                     if (language !== Language.Node) {
                                         setLanguage(Language.Node);
@@ -80,11 +80,10 @@ export const SynchronizeBloc: React.FC<{
                                 }}
                             >
                                 Node
-                            </Button>
-                            <Button
-                                type="button"
-                                variant={`${language === Language.cURL ? 'black' : 'zombie'}`}
-                                className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
+                            </Tab>
+                            <Tab
+                                variant={language === Language.cURL ? 'black' : 'zombie'}
+                                className={cn('cursor-default', language !== Language.cURL && 'cursor-pointer bg-zinc-900 pointer-events-auto')}
                                 onClick={() => {
                                     if (language !== Language.cURL) {
                                         setLanguage(Language.cURL);
@@ -92,12 +91,12 @@ export const SynchronizeBloc: React.FC<{
                                 }}
                             >
                                 cURL
-                            </Button>
+                            </Tab>
                         </div>
-                        <CopyButton dark text={syncSnippet} />
+                        <CopyButton dark text={snippet} />
                     </div>
-                    <Prism noCopy language="typescript" className="p-3 transparent-code border-b border-border-gray" colorScheme="dark">
-                        {syncSnippet}
+                    <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
+                        {snippet}
                     </Prism>
                     <div className="flex items-center px-4 py-4">
                         {step >= Steps.Authorize ? (
@@ -131,81 +130,3 @@ export const SynchronizeBloc: React.FC<{
         </Bloc>
     );
 };
-
-{
-    /* <div className="mt-8 ml-6">
-
-<div className={`p-4 rounded-md relative ${step > Steps.Sync ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}>
-    <div className="absolute left-[-2.22rem] top-4 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
-        <div className={`w-2 h-2 rounded-full ring-1 ${step > Steps.Sync ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}></div>
-    </div>
-    <h2 className={`text-xl${step < Steps.Sync ? ' text-text-light-gray' : ''}`}>Synchronize external data</h2>
-    {step >= Steps.Authorize && (
-        <>
-            <h3 className="text-text-light-gray mb-6">Retrieve GitHub issues from Nango in your backend.</h3>
-            <div className="border border-border-gray rounded-md text-white text-sm py-2">
-                <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
-                    <div className="space-x-4">
-                        <Button
-                            type="button"
-                            variant={`${language === Language.Node ? 'black' : 'zombie'}`}
-                            className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
-                            onClick={() => {
-                                if (language !== Language.Node) {
-                                    setLanguage(Language.Node);
-                                }
-                            }}
-                        >
-                            Node
-                        </Button>
-                        <Button
-                            type="button"
-                            variant={`${language === Language.cURL ? 'black' : 'zombie'}`}
-                            className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
-                            onClick={() => {
-                                if (language !== Language.cURL) {
-                                    setLanguage(Language.cURL);
-                                }
-                            }}
-                        >
-                            cURL
-                        </Button>
-                    </div>
-                    <CopyButton dark text={syncSnippet} />
-                </div>
-                <Prism noCopy language="typescript" className="p-3 transparent-code border-b border-border-gray" colorScheme="dark">
-                    {syncSnippet}
-                </Prism>
-                <div className="flex items-center px-4 py-4">
-                    {step >= Steps.Authorize ? (
-                        <Button type="button" variant="primary" onClick={onProgress}>
-                            <img className="h-5" src="/images/chart-icon.svg" alt="" />
-                            Retrieve GitHub Issues
-                        </Button>
-                    ) : (
-                        <>
-                            {syncStillRunning ? (
-                                <div className="flex items-center">
-                                    <Spinner size={1} />
-                                    <span className="ml-2">Please wait while &ldquo;Issues&rdquo; are being fetched</span>
-                                </div>
-                            ) : (
-                                <>
-                                    <span className="mx-2 text-[#34A853] mr-4 mt-2">
-                                        🎉 {records.length >= 15 ? '15+' : records.length} issues retrieved!
-                                    </span>
-                                    <Button variant="zombieGray" className="mt-2" onClick={() => setVisible(true)}>
-                                        Show Data
-                                    </Button>
-                                </>
-                            )}
-                        </>
-                    )}
-                </div>
-                {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
-            </div>
-        </>
-    )}
-</div>
-</div> */
-}
