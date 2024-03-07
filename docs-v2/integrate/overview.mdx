@@ -43,7 +43,7 @@ Nango uses webhooks to notify your backend when external user data has been adde
     "model": "ticket",
     "providerConfigKey": "zendesk",
     "responseResults": { "ticket": { "added": 2, "updated": 6, "deleted": 0 } },
-    "updatedAfter": "2023-05-31T11:46:13.390Z"
+    "modifiedAfter": "2023-05-31T11:46:13.390Z"
 }
 ```
 
@@ -60,7 +60,7 @@ const records = await nango.listRecords<Ticket>({
     providerConfigKey: 'zendesk',
     connectionId: 'user123',
     model: 'ticket',
-    updatedAfter
+    modifiedAfter: modifiedAfter
 });
 
 saveToDatabase(records);
