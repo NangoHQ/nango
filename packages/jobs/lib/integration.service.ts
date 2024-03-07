@@ -8,6 +8,7 @@ import {
     remoteFileService,
     isCloud,
     isProd,
+    integrationFilesAreRemote,
     ServiceResponse,
     NangoError,
     formatScriptError,
@@ -83,7 +84,7 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncName', syncName);
         try {
             const script: string | null =
-                isCloud() && !optionalLoadLocation
+                (isCloud() || integrationFilesAreRemote()) && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
                     : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 
