@@ -5,6 +5,8 @@ import { useAnalyticsTrack } from '../../utils/analytics';
 import { Steps } from './utils';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import { Bloc, Tab } from './Bloc';
 
 export const AuthorizeBloc: React.FC<{
     step: Steps;
@@ -12,7 +14,7 @@ export const AuthorizeBloc: React.FC<{
     publicKey: string;
     providerConfigKey: string;
     connectionId: string;
-    onProgress: (id: number) => Promise<void>;
+    onProgress: (id: number) => Promise<void> | void;
 }> = ({ step, connectionId, hostUrl, providerConfigKey, publicKey, onProgress }) => {
     const analyticsTrack = useAnalyticsTrack();
     const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,7 @@ export const AuthorizeBloc: React.FC<{
     const authorizeSnippet = useMemo<string>(() => {
         return `import Nango from '@nangohq/frontend';
 
+// Find the public key in your environment settings (safe to reveal).
 const nango = new Nango({ publicKey: '${publicKey}' });
 
 nango.auth('${providerConfigKey}', '${connectionId}')
@@ -67,38 +70,30 @@ nango.auth('${providerConfigKey}', '${connectionId}')
     }, [publicKey, providerConfigKey, connectionId]);
 
     return (
-        <div className="mt-8 ml-6">
-            <div
-                className={`p-4 rounded-md relative ${step !== Steps.Authorize ? 'border border-green-900 bg-gradient-to-r from-[#0C1E1A] to-[#0E1115]' : ''}`}
-            >
-                <div className="absolute left-[-2.22rem] top-4 w-6 h-6 rounded-full ring-black bg-[#0e1014] flex items-center justify-center">
-                    <div className={`w-2 h-2 rounded-full ring-1 ${step !== Steps.Authorize ? 'ring-[#318463]' : 'ring-white'} bg-transparent`}></div>
+        <Bloc title="Authorize an API" subtitle={<>Let users authorize GitHub in your frontend.</>} active={step === Steps.Start} done={step !== Steps.Start}>
+            <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
+                <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
+                    <Tab>Frontend</Tab>
+                    <CopyButton dark text={authorizeSnippet} />
                 </div>
-                <h2 className="text-xl">Authorize end users</h2>
-                <h3 className="text-text-light-gray mb-6">Let users authorize your integration (GitHub in this example) in your frontend.</h3>
-                <div className="border border-border-gray rounded-md text-white text-sm py-2">
-                    <div className="flex justify-between items-center px-4 py-4 border-b border-border-gray">
-                        <Button type="button" variant="black" className="cursor-default pointer-events-none">
-                            Frontend
+                <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
+                    {authorizeSnippet}
+                </Prism>
+                <div className="px-5 py-4 bg-zinc-900 rounded-lg">
+                    {step === Steps.Start ? (
+                        <Button type="button" variant="primary" onClick={onAuthorize}>
+                            <img className="h-5" src="/images/unlock-icon.svg" alt="" />
+                            Authorize GitHub
                         </Button>
-                        <CopyButton dark text={authorizeSnippet} />
-                    </div>
-                    <Prism noCopy language="typescript" className="p-3 transparent-code border-b border-border-gray" colorScheme="dark">
-                        {authorizeSnippet}
-                    </Prism>
-                    <div className="px-4 py-4">
-                        {step === Steps.Authorize ? (
-                            <Button type="button" variant="primary" onClick={onAuthorize}>
-                                <img className="h-5" src="/images/unlock-icon.svg" alt="" />
-                                Authorize GitHub
-                            </Button>
-                        ) : (
-                            <span className="mx-2 text-[#34A853]">🎉 GitHub Authorized!</span>
-                        )}
-                    </div>
-                    {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
+                    ) : (
+                        <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
+                            <CheckCircleIcon className="h-5 w-5" />
+                            Authorized!
+                        </span>
+                    )}
                 </div>
+                {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
             </div>
-        </div>
+        </Bloc>
     );
 };

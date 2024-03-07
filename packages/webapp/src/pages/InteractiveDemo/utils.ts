@@ -1,19 +1,16 @@
 export enum Steps {
-    Authorize = 0,
-    Sync = 1,
-    Receive = 2,
-    Write = 3,
-    Ship = 4,
-    Complete = 5
+    Start = 0,
+    Authorize = 1,
+    Deploy = 2,
+    Webhooks = 3,
+    Fetch = 4,
+    Write = 5,
+    Complete = 6
 }
 
 export enum Language {
     Node = 0,
-    cURL = 1,
-    Python = 2,
-    PHP = 3,
-    Go = 4,
-    Java = 5
+    cURL = 1
 }
 
 export const endpoint = '/github/lite-issues';

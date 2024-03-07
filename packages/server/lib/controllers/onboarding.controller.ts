@@ -15,7 +15,9 @@ import {
     connectionService,
     DEMO_SYNC_NAME,
     DEMO_MODEL,
-    getSyncByIdAndName
+    getSyncByIdAndName,
+    DEFAULT_GITHUB_CLIENT_ID,
+    DEFAULT_GITHUB_CLIENT_SECRET
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -37,6 +39,9 @@ class OnboardingController {
             if (environment.name !== 'dev') {
                 res.status(400).json({ error: 'onboarding_dev_only' });
                 return;
+            }
+            if (!DEFAULT_GITHUB_CLIENT_ID || !DEFAULT_GITHUB_CLIENT_SECRET) {
+                throw new Error('missing_env_var');
             }
 
             // Create an onboarding state to remember where user left
@@ -86,7 +91,7 @@ class OnboardingController {
             }
 
             const payload: { progress: number; records: CustomerFacingDataRecord[] | null; provider: boolean; connection: boolean; sync: boolean } = {
-                progress: 0,
+                progress: status.progress,
                 connection: false,
                 provider: false,
                 sync: false,
@@ -100,6 +105,7 @@ class OnboardingController {
 
             const provider = await getOnboardingProvider({ envId: environment.id });
             if (!provider) {
+                payload.progress = 0;
                 res.status(200).json(payload);
                 return;
             }

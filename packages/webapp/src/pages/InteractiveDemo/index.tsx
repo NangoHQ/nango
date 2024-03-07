@@ -15,12 +15,13 @@ import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
 import { Account } from '../../types';
+import { DeployBloc } from './DeployBloc';
 
 type Interval = ReturnType<typeof setInterval>;
 
-export default function GettingStarted() {
+export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
-    const [step, setStep] = useState<Steps>(Steps.Authorize);
+    const [step, setStep] = useState<Steps>(Steps.Start);
     const [publicKey, setPublicKey] = useState('');
     const [secretKey, setSecretKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
@@ -38,7 +39,7 @@ export default function GettingStarted() {
 
     useEffect(() => {
         if (env !== 'dev') {
-            window.location.href = '/integrations';
+            window.location.href = `/${env}/integrations`;
         }
     }, [env]);
 
@@ -110,11 +111,11 @@ export default function GettingStarted() {
         }
     }, [loaded, setLoaded, connectionId]);
 
-    const updateProgress = async (progress: number) => {
-        const res = await fetch(`/api/v1/onboarding/${onboardingId}`, {
+    const updateProgress = async (args: { id: number; progress: number }) => {
+        const res = await fetch(`/api/v1/onboarding/${args.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ progress })
+            body: JSON.stringify({ progress: args.progress })
         });
 
         if (!res.ok) {
@@ -124,6 +125,14 @@ export default function GettingStarted() {
             return;
         }
     };
+
+    useEffect(() => {
+        if (!onboardingId) {
+            return;
+        }
+
+        void updateProgress({ id: onboardingId, progress: step });
+    }, [onboardingId, step]);
 
     const fetchRecords = async () => {
         const params = { model };
@@ -180,52 +189,48 @@ export default function GettingStarted() {
         setPollingInterval(tmp);
     };
 
-    const onAuthorize = async (id: number) => {
-        await updateProgress(Steps.Authorize);
+    const onAuthorize = (id: number) => {
         setOnboardingId(id);
-        setStep(Steps.Sync);
+        setStep(Steps.Authorize);
     };
 
-    const onSynchronize = async () => {
+    const onDeploy = () => {
+        analyticsTrack('web:getting_started:deploy');
+        setStep(Steps.Deploy);
+    };
+
+    const onWebhookConfirm = () => {
+        analyticsTrack('web:getting_started:webhook');
+        setStep(Steps.Webhooks);
+    };
+
+    const onSynchronize = () => {
         analyticsTrack('web:getting_started:sync');
         if (records.length === 0) {
             startPolling();
         }
-        setStep(Steps.Receive);
-        await updateProgress(Steps.Receive);
-    };
-
-    const onWebhookConfirm = async () => {
-        analyticsTrack('web:getting_started:webhook');
-        setStep(Steps.Write);
-        await updateProgress(Steps.Write);
+        setStep(Steps.Fetch);
     };
 
     const onActionConfirm = () => {
         analyticsTrack('web:getting_started:action');
-        setStep(Steps.Ship);
-        void updateProgress(Steps.Ship);
+        setStep(Steps.Write);
     };
 
-    const resetOnboarding = async () => {
-        if (step !== Steps.Authorize) {
-            setStep(Steps.Authorize);
-            await updateProgress(Steps.Authorize);
-        }
+    const resetOnboarding = () => {
+        setStep(Steps.Start);
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.GettingStarted}>
+        <DashboardLayout selectedItem={LeftNavBarItems.InteractiveDemo}>
             <div className="text-white">
                 <div>
-                    <h1 className="text-left text-4xl font-semibold tracking-tight text-white">
-                        How integrations work with <span onDoubleClick={resetOnboarding}>Nango</span>
+                    <h1 className="text-left text-3xl font-semibold tracking-tight text-white">
+                        <span onDoubleClick={resetOnboarding}>Interactive Demo</span>
                     </h1>
-                    <h2 className="mt-4 text-xl text-text-light-gray">
-                        Using GitHub as an example, follow these steps to synchronize external data with the Nango API.
-                    </h2>
+                    <h2 className="mt-2 text-sm text-zinc-400">Using GitHub as an example, discover how to integrate with Nango in 3 minutes.</h2>
                 </div>
-                <div className="border-l border-border-gray">
+                <div className="flex flex-col gap-8 mt-10">
                     <AuthorizeBloc
                         step={step}
                         connectionId={connectionId}
@@ -234,6 +239,10 @@ export default function GettingStarted() {
                         publicKey={publicKey}
                         onProgress={onAuthorize}
                     />
+
+                    <DeployBloc step={step} onProgress={onDeploy} />
+
+                    <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
 
                     <SynchronizeBloc
                         step={step}
@@ -245,11 +254,9 @@ export default function GettingStarted() {
                         onProgress={onSynchronize}
                     />
 
-                    <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
-
                     <ActionBloc step={step} connectionId={connectionId} providerConfigKey={providerConfigKey} onProgress={onActionConfirm} />
 
-                    <NextBloc step={step} />
+                    {step === Steps.Complete && <NextBloc step={step} />}
                 </div>
             </div>
             <Helmet>
@@ -257,4 +264,4 @@ export default function GettingStarted() {
             </Helmet>
         </DashboardLayout>
     );
-}
+};
