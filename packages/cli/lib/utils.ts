@@ -168,9 +168,16 @@ export async function upgradeAction(debug = false) {
 
         console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
 
-        const args = locallyInstalled
-            ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
-            : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+        const packagePath = getPackagePath();
+        const usePnpm = path.resolve(packagePath, '..').includes('.pnpm');
+
+        const args = usePnpm
+            ? locallyInstalled
+                ? ['add', `nango@${latestVersion}`]
+                : ['add', '-g', `nango@${latestVersion}`]
+            : locallyInstalled
+              ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
+              : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
 
         if (debug) {
             printDebug(`Running npm ${args.join(' ')}`);
