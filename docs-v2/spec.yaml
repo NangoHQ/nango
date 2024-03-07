@@ -747,7 +747,7 @@ paths:
                   schema:
                       type: string
                       enum: [added, updated, deleted]
-                  description: Filter to only show results that have been added or updated or deleted. 
+                  description: Filter to only show results that have been added or updated or deleted.
                 - name: modified_after
                   in: query
                   required: false
