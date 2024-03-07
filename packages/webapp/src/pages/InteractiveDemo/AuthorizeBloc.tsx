@@ -21,7 +21,7 @@ export const AuthorizeBloc: React.FC<{
     const [id, setId] = useState<number | undefined>(undefined);
 
     const onAuthorize = async () => {
-        analyticsTrack('web:getting_started:authorize');
+        analyticsTrack('web:demo:authorize');
         let idTmp = id;
 
         try {
@@ -35,7 +35,7 @@ export const AuthorizeBloc: React.FC<{
                 const json = (await res.json()) as { message?: string };
                 setError(json.message ? json.message : 'An unexpected error occurred');
 
-                analyticsTrack('web:getting_started:authorize_error');
+                analyticsTrack('web:demo:authorize_error');
                 return;
             }
 
@@ -52,7 +52,7 @@ export const AuthorizeBloc: React.FC<{
             const nango = new Nango({ host: hostUrl, publicKey });
             await nango.auth(providerConfigKey, connectionId);
 
-            console.log('on progress');
+            setError(null);
             void onProgress(idTmp);
         } catch (err: unknown) {
             setError(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'An unexpected error occurred');

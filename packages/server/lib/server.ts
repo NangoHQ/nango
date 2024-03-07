@@ -211,6 +211,7 @@ app.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syn
 
 app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
 app.route('/api/v1/onboarding').post(webAuth, onboardingController.init.bind(onboardingController));
+app.route('/api/v1/onboarding/provider').post(webAuth, onboardingController.createProvider.bind(onboardingController));
 app.route('/api/v1/onboarding/verify').post(webAuth, onboardingController.verify.bind(onboardingController));
 app.route('/api/v1/onboarding/:id').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
 app.route('/api/v1/onboarding/sync-status').get(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));

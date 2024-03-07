@@ -71,8 +71,8 @@ export const updateOnboardingProgress = async (id: number, progress: number, use
     }
 };
 
-export const getOnboardingProgress = async (user_id: number): Promise<Pick<Onboarding, 'id' | 'progress'> | undefined> => {
-    const result = await db.knex.from<Onboarding>(TABLE).select<Pick<Onboarding, 'progress' | 'id'>>('progress', 'id').where({ user_id }).first();
+export const getOnboardingProgress = async (user_id: number): Promise<Required<Pick<Onboarding, 'id' | 'progress'>> | undefined> => {
+    const result = await db.knex.from<Onboarding>(TABLE).select<Required<Pick<Onboarding, 'progress' | 'id'>>>('progress', 'id').where({ user_id }).first();
     return result;
 };
 

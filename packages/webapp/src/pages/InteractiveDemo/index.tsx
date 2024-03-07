@@ -14,7 +14,7 @@ import { Steps, providerConfigKey, model } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
-import { Account } from '../../types';
+import { Account, OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
 
 type Interval = ReturnType<typeof setInterval>;
@@ -94,7 +94,7 @@ export const InteractiveDemo: React.FC = () => {
                 return;
             }
 
-            const { progress, id, records: fetchedRecords } = (await res.json()) as { progress: Steps; id?: number; records?: Record<string, unknown>[] };
+            const { progress, id, records: fetchedRecords } = (await res.json()) as OnboardingStatus;
             setStep(progress || 0);
             if (id) {
                 setOnboardingId(id);
@@ -173,7 +173,7 @@ export const InteractiveDemo: React.FC = () => {
                 clearInterval(pollingInterval);
                 setPollingInterval(undefined);
 
-                analyticsTrack('web:getting_started:sync_error');
+                analyticsTrack('web:demo:fetch_error');
                 return;
             }
 
@@ -195,17 +195,16 @@ export const InteractiveDemo: React.FC = () => {
     };
 
     const onDeploy = () => {
-        analyticsTrack('web:getting_started:deploy');
         setStep(Steps.Deploy);
     };
 
     const onWebhookConfirm = () => {
-        analyticsTrack('web:getting_started:webhook');
+        analyticsTrack('web:demo:webhook');
         setStep(Steps.Webhooks);
     };
 
     const onFetch = () => {
-        analyticsTrack('web:getting_started:sync');
+        analyticsTrack('web:demo:fetch');
         if (records.length === 0) {
             startPolling();
         }
@@ -213,7 +212,7 @@ export const InteractiveDemo: React.FC = () => {
     };
 
     const onActionConfirm = () => {
-        analyticsTrack('web:getting_started:action');
+        analyticsTrack('web:demo:action');
         setStep(Steps.Write);
     };
 

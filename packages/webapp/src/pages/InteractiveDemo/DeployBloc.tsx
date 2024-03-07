@@ -5,11 +5,16 @@ import { Steps, endpoint, model, providerConfigKey } from './utils';
 import { Prism } from '@mantine/prism';
 import { useMemo, useState } from 'react';
 import { cn } from '../../utils/utils';
+import { useAnalyticsTrack } from '../../utils/analytics';
 
 type File = 'sync-github-issues.ts' | 'nango.yaml';
 
 export const DeployBloc: React.FC<{ step: Steps; onProgress: () => void }> = ({ step, onProgress }) => {
+    const analyticsTrack = useAnalyticsTrack();
+
     const [file, setFile] = useState<File>('sync-github-issues.ts');
+    const [error, setError] = useState<string | null>(null);
+
     const snippet = useMemo(() => {
         if (file === 'sync-github-issues.ts') {
             return `function fetchData(nango: NangoSync) {
@@ -50,8 +55,30 @@ models:
         }
     }, [file]);
 
-    const onDeploy = () => {
-        onProgress();
+    const onDeploy = async () => {
+        analyticsTrack('web:demo:deploy');
+
+        try {
+            // Setup the onboarding process
+            const res = await fetch(`/api/v1/onboarding/provider`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (res.status !== 200) {
+                const json = (await res.json()) as { message?: string };
+                setError(json.message ? json.message : 'An unexpected error occurred');
+
+                analyticsTrack('web:demo:deploy_error');
+                return;
+            }
+
+            setError(null);
+            onProgress();
+        } catch (err) {
+            setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
+            return;
+        }
     };
 
     return (
@@ -101,6 +128,7 @@ models:
                         </span>
                     )}
                 </div>
+                {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
             </div>
         </Bloc>
     );

@@ -22,6 +22,15 @@ import {
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
+interface OnboardingStatus {
+    id: number;
+    progress: number;
+    records: CustomerFacingDataRecord[] | null;
+    provider: boolean;
+    connection: boolean;
+    sync: boolean;
+}
+
 class OnboardingController {
     /**
      * Start an onboarding process
@@ -46,12 +55,6 @@ class OnboardingController {
 
             // Create an onboarding state to remember where user left
             const onboardingId = await initOnboarding(user.id, account.id);
-
-            // Create a default provider if not already there
-            const provider = await getOnboardingProvider({ envId: environment.id });
-            if (!provider) {
-                await createOnboardingProvider({ envId: environment.id });
-            }
 
             if (!onboardingId) {
                 res.status(500).json({
@@ -90,7 +93,8 @@ class OnboardingController {
                 return;
             }
 
-            const payload: { progress: number; records: CustomerFacingDataRecord[] | null; provider: boolean; connection: boolean; sync: boolean } = {
+            const payload: OnboardingStatus = {
+                id: status.id,
                 progress: status.progress,
                 connection: false,
                 provider: false,
@@ -128,6 +132,31 @@ class OnboardingController {
             const { response: records } = await syncDataService.getAllDataRecords(connectionId, provider.unique_key, environment.id, DEMO_MODEL);
 
             res.status(200).json({ records, provider: true, connection: true, sync: true });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    /**
+     * Create onboarding provider
+     */
+    async createProvider(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            const { environment } = response;
+
+            // Create a default provider if not already there
+            const provider = await getOnboardingProvider({ envId: environment.id });
+            if (!provider) {
+                await createOnboardingProvider({ envId: environment.id });
+            }
+
+            res.status(200).json({ success: true });
         } catch (err) {
             next(err);
         }

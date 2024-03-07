@@ -6,17 +6,17 @@ export const NextBloc: React.FC<{ step: Steps }> = ({ step }) => {
     const analyticsTrack = useAnalyticsTrack();
 
     const onClickExplore = () => {
-        analyticsTrack('web:getting_started:explore');
+        analyticsTrack('web:demo:explore');
         window.open('https://docs.nango.dev/integrations/overview', '_blank');
     };
 
     const onClickGuides = () => {
-        analyticsTrack('web:getting_started:guide');
+        analyticsTrack('web:demo:guide');
         window.open('https://docs.nango.dev/introduction', '_blank');
     };
 
     const onClickJoinCommunity = () => {
-        analyticsTrack('web:getting_started:community');
+        analyticsTrack('web:demo:community');
         window.open('https://nango.dev/slack', '_blank');
     };
 
