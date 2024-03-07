@@ -28,7 +28,7 @@ Webhooks from Nango are POST requests with the following body:
     "model": "<string>",
     "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
-    "updatedAfter": "<timestamp>" // Null on the sync's first execution.
+    "modifiedAfter": "<timestamp>" // Null on the sync's first execution.
 }
 ```
 </Tab>

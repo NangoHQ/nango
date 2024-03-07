@@ -359,6 +359,9 @@ export class Nango {
      * =======
      */
 
+    /**
+     * @deprecated. Use listRecords() instead.
+     */
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
         validateSyncRecordConfiguration(config);

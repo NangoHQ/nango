@@ -747,8 +747,8 @@ paths:
                   schema:
                       type: string
                       enum: [added, updated, deleted]
-                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the updated_after parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
-                - name: updated_after
+                  description: Filter to only show results that have been added or updated or deleted. 
+                - name: modified_after
                   in: query
                   required: false
                   schema:
@@ -759,7 +759,7 @@ paths:
                   required: false
                   schema:
                       type: string
-                  description: DEPRECATED (use updated_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+                  description: DEPRECATED (use modified_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
                 - name: Connection-Id
                   in: header
                   required: true

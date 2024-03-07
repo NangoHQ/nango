@@ -37,7 +37,7 @@ The webhook from Nango is a POST request with the following body ([reference](/r
     "model": "<string>",
     "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
-    "updatedAfter": "<timestamp>" // Null on the sync's first execution.
+    "modifiedAfter": "<timestamp>" // Null on the sync's first execution.
 }
 ```
 
@@ -91,7 +91,7 @@ const result = await nango.listRecords({
 
 This returns an array of records conforming to the specified data model. 
 
-Each record contains useful metadata, including the cursor that you used to fetch the latest updates. 
+Each record contains useful metadata, including the cursor that you use to keep track how far you've synced. 
 
 ```json
 {

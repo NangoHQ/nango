@@ -725,17 +725,17 @@ const records = await nango.listRecords<ModelName>({
       </ResponseField>
 
       <ResponseField name="filter" type="string">
-        Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the updatedAfter parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
+        Filter to only show results that have been added or updated or deleted. 
 
         Available options: added, updated, deleted 
       </ResponseField>
 
-      <ResponseField name="updatedAfter" type="string">
+      <ResponseField name="modifiedAfter" type="string">
         Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
       </ResponseField>
 
       <ResponseField name="delta" type="string">
-        DEPRECATED (use updatedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+        DEPRECATED (use modifiedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
       </ResponseField>
     </Expandable>
   </ResponseField>
