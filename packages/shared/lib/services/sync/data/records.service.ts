@@ -443,26 +443,19 @@ export async function getAllDataRecords(
             return { success: true, error: null, response: { records: [], next_cursor: null } };
         }
 
-        const results = rawResults.flatMap((item) => {
+        const results = rawResults.map((item) => {
             const decryptedRecord = encryptionManager.decryptDataRecord(item);
-            if (!decryptedRecord) {
-                return [];
-            }
-            const lastModifiedAt = item.last_modified_at;
-            const id = item.id;
-            const encodedCursor = Buffer.from(`${lastModifiedAt}||${id}`).toString('base64');
-            return [
-                {
-                    ...decryptedRecord,
-                    _nango_metadata: {
-                        first_seen_at: item.first_seen_at,
-                        last_modified_at: item.last_modified_at,
-                        last_action: item.last_action,
-                        deleted_at: item.deleted_at,
-                        cursor: encodedCursor
-                    }
-                } as CustomerFacingDataRecord
-            ];
+            const encodedCursor = Buffer.from(`${item.last_modified_at}||${item.id}`).toString('base64');
+            return {
+                ...decryptedRecord,
+                _nango_metadata: {
+                    first_seen_at: item.first_seen_at,
+                    last_modified_at: item.last_modified_at,
+                    last_action: item.last_action,
+                    deleted_at: item.deleted_at,
+                    cursor: encodedCursor
+                }
+            } as CustomerFacingDataRecord;
         });
 
         if (results.length > Number(limit || 100)) {
@@ -470,18 +463,12 @@ export async function getAllDataRecords(
             rawResults.pop();
 
             const cursorRawElement = rawResults[rawResults.length - 1];
-
-            if (!cursorRawElement) {
-                return { success: true, error: null, response: { records: results, next_cursor: null } };
+            if (cursorRawElement) {
+                const encodedCursorValue = Buffer.from(`${cursorRawElement.last_modified_at}||${cursorRawElement.id}`).toString('base64');
+                return { success: true, error: null, response: { records: results, next_cursor: encodedCursorValue } };
             }
-
-            const lastModifiedAt = cursorRawElement.last_modified_at;
-            const encodedCursorValue = Buffer.from(`${lastModifiedAt}||${cursorRawElement.id}`).toString('base64');
-
-            return { success: true, error: null, response: { records: results, next_cursor: encodedCursorValue } };
-        } else {
-            return { success: true, error: null, response: { records: results, next_cursor: null } };
         }
+        return { success: true, error: null, response: { records: results, next_cursor: null } };
     } catch (e: any) {
         const errorMessage = `List records error for model ${model}`;
         await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {

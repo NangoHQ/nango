@@ -272,11 +272,7 @@ class EncryptionManager {
         return decryptedDataRecords as unknown as DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord;
     }
 
-    public decryptDataRecord(dataRecord: RawDataRecordResult): UnencryptedRawRecord | null {
-        if (dataRecord === null) {
-            return dataRecord;
-        }
-
+    public decryptDataRecord(dataRecord: RawDataRecordResult): UnencryptedRawRecord {
         const record = dataRecord.record;
 
         if (!record['encryptedValue']) {
@@ -287,11 +283,9 @@ class EncryptionManager {
 
         const decryptedString = this.decrypt(encryptedValue, iv, authTag);
 
-        const updatedRecord = {
+        return {
             ...JSON.parse(decryptedString)
-        };
-
-        return updatedRecord;
+        } as UnencryptedRawRecord;
     }
 
     public async encryptAllDataRecords(): Promise<void> {
