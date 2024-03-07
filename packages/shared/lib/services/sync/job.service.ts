@@ -6,6 +6,8 @@ import { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../m
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
+const SYNC_TIMEOUT_HOURS = 25;
+
 export const createSyncJob = async (
     sync_id: string,
     type: SyncType,
@@ -165,7 +167,11 @@ export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolea
         })
         .first();
 
-    if (result) {
+    // if it has been running for more than 24 hours then we should assume it is stuck
+    const moreThan24Hours =
+        result && result.updated_at ? new Date(result.updated_at).getTime() < new Date().getTime() - SYNC_TIMEOUT_HOURS * 60 * 60 * 1000 : false;
+
+    if (result && !moreThan24Hours) {
         return true;
     }
 
