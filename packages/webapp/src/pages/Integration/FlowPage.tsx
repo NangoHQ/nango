@@ -90,8 +90,9 @@ export default function FlowPage(props: FlowPageProps) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
+        const timestamp = Math.floor(new Date().getTime() / 1000).toString();
         link.href = url;
-        link.download = 'nango-integrations.zip';
+        link.download = timestamp + '-nango-integrations.zip';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
