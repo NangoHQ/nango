@@ -216,7 +216,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 <div className="flex flex-col w-1/2 relative">
                     <span className="text-gray-400 text-xs uppercase mb-1">Integration ID</span>
                     {showEditIntegrationIdMenu ? (
-                        <div className="flex">
+                        <div className="flex items-center">
                             <input
                                 value={integrationIdEdit}
                                 onChange={(e) => {
@@ -230,7 +230,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     }
                                 }}
                             />
-                            <XCircleIcon className="flex h-5 w-5 text-red-400 cursor-pointer hover:text-red-700" onClick={() => onCancelEditIntegrationID()} />
+                            <XCircleIcon
+                                className="flex ml-1 h-5 w-5 text-red-400 cursor-pointer hover:text-red-700"
+                                onClick={() => onCancelEditIntegrationID()}
+                            />
                         </div>
                     ) : (
                         <div className="flex text-white">
