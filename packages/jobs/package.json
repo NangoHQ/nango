@@ -16,7 +16,7 @@
     },
     "dependencies": {
         "@nangohq/nango-runner": "^1.0.0",
-        "@nangohq/shared": "^0.38.5",
+        "@nangohq/shared": "^0.39.0",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",
         "@temporalio/worker": "^1.9.1",

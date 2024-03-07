@@ -8,7 +8,7 @@ import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Co
 import type { Environment } from '../../models/Environment';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { SyncResult } from '../../models/Sync';
-import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Webhook.js';
+import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 
@@ -22,6 +22,7 @@ const NON_FORWARDABLE_HEADERS = [
     'connection',
     'keep-alive',
     'content-length',
+    'content-type', // we're sending json so don't want this overwritten
     'content-encoding',
     'cookie',
     'set-cookie',
@@ -276,13 +277,32 @@ class WebhookService {
             }
         }
     }
-
     async forward(
         environment_id: number,
         providerConfigKey: string,
+        connectionIds: string[],
         provider: string,
         payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, any>
+        webhookOriginalHeaders: Record<string, string>
+    ) {
+        const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
+
+        if (!send || !environmentInfo) {
+            return;
+        }
+
+        for (const connectionId of connectionIds) {
+            await this.forwardHandler(environment_id, providerConfigKey, connectionId, provider, payload, webhookOriginalHeaders);
+        }
+    }
+
+    async forwardHandler(
+        environment_id: number,
+        providerConfigKey: string,
+        connectionId: string,
+        provider: string,
+        payload: Record<string, any> | null,
+        webhookOriginalHeaders: Record<string, string>
     ) {
         const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
@@ -299,7 +319,7 @@ class WebhookService {
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: '',
+            connection_id: connectionId,
             provider_config_key: providerConfigKey,
             provider: provider,
             environment_id: environment_id
@@ -307,8 +327,10 @@ class WebhookService {
 
         const activityLogId = await createActivityLog(log);
 
-        const body = {
+        const body: NangoForwardWebhookBody = {
             from: provider,
+            connectionId,
+            providerConfigKey,
             type: WebhookType.FORWARD,
             payload: payload
         };
@@ -317,6 +339,7 @@ class WebhookService {
 
         const headers = {
             ...nangoHeaders,
+            'X-Nango-Source-Content-Type': webhookOriginalHeaders['content-type'],
             ...this.filterHeaders(webhookOriginalHeaders)
         };
 

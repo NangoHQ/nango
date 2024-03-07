@@ -9,9 +9,12 @@ export type WebhookHandler = (
     rawBody: string
 ) => Promise<WebhookResponse>;
 
-export type WebhookResponse = {
-    acknowledgementResponse?: unknown;
-    parsedBody?: unknown;
-} | void;
+export type WebhookResponse =
+    | {
+          acknowledgementResponse?: unknown;
+          parsedBody?: unknown;
+          connectionIds?: string[] | undefined;
+      }
+    | undefined;
 
 export type WebhookHandlersMap = Record<string, WebhookHandler>;
