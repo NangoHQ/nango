@@ -1847,7 +1847,7 @@ teamtailor:
         - ats
     auth_mode: API_KEY
     proxy:
-        base_url: https://{connectionConfig.extension}.teamtailor.com
+        base_url: https://${connectionConfig.extension}.teamtailor.com
         retry:
             after: 'X-Rate-Limit-Reset'
         headers:
@@ -2214,6 +2214,14 @@ zoho-invoice:
         - invoicing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-invoice
+zoho-mail:
+    categories:
+        - productivity
+        - communication
+    alias: zoho
+    proxy:
+        base_url: https://mail.zoho.${connectionConfig.extension}
+    docs: https://docs.nango.dev/integrations/all/zoho-mail
 zoho-bigin:
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin

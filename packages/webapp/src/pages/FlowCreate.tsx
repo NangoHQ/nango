@@ -26,9 +26,7 @@ interface Flow {
     models: Record<string, unknown>;
 }
 
-interface Integration {
-    [key: string]: Flow;
-}
+type Integration = Record<string, Flow>;
 
 export default function FlowCreate() {
     const [loaded, setLoaded] = useState(false);
@@ -90,6 +88,10 @@ export default function FlowCreate() {
 
     const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!flow) {
+            return;
+        }
+
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
         const frequencyValue = Number(data['frequency']);
@@ -104,14 +106,14 @@ export default function FlowCreate() {
 
         const flowObject = flows[data['integration'] as string] as Flow;
 
-        const models = Array.isArray(flow?.returns) ? (showModels(flow?.returns as string[]) as any) : flow?.returns;
+        const models = Array.isArray(flow?.returns) ? (showModels(flow.returns) as any) : flow?.returns;
         const flowPayload = {
             provider: data['integration'].toString(),
             type: flow?.type || 'sync',
             name: data['flow-name'].toString(),
             runs: flow?.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
             auto_start: flow?.auto_start !== false,
-            models: (Array.isArray(flow?.returns) ? flow?.returns : [flow?.returns]) as string[],
+            models: Array.isArray(flow?.returns) ? flow?.returns : [flow?.returns],
             model_schema: JSON.stringify(
                 Object.keys(models).map((model) => ({
                     name: model,

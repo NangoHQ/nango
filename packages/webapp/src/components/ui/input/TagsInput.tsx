@@ -23,7 +23,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     ref
 ) {
     const defaultScopes = useMemo(() => {
-        return !!defaultValue ? defaultValue.split(',') : [];
+        return defaultValue ? defaultValue.split(',') : [];
     }, [defaultValue]);
 
     const [enteredValue, setEnteredValue] = useState('');

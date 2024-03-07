@@ -1,5 +1,6 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import logger from '../../../logger/console.js';
 import crypto from 'crypto';
 
 export function validate(integration: ProviderConfig, headers: Record<string, any>, body: any): boolean {
@@ -19,7 +20,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     const valid = validate(integration, headers, body);
 
     if (!valid) {
-        console.log('Hubspot webhook signature invalid');
+        logger.error('Hubspot webhook signature invalid');
         return;
     }
 
@@ -29,6 +30,8 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
             return acc;
         }, {});
 
+        let connectionIds: string[] = [];
+
         for (const objectId in groupedByObjectId) {
             const sorted = groupedByObjectId[objectId].sort((a: any, b: any) => {
                 const aIsCreation = a.subscriptionType.endsWith('.creation') ? 1 : 0;
@@ -37,10 +40,15 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
             });
 
             for (const event of sorted) {
-                await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId');
+                const response = await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId');
+                if (response && response.connectionIds?.length > 0) {
+                    connectionIds = connectionIds.concat(response.connectionIds);
+                }
             }
         }
+
+        return { connectionIds };
     } else {
-        await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId');
+        return nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId');
     }
 }

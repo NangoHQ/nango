@@ -59,10 +59,10 @@ export default function ShowIntegration() {
         if (!connectionId || !providerConfigKey) return;
 
         const getConnections = async () => {
-            let res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
+            const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
 
             if (res?.status === 200) {
-                let data = await res.json();
+                const data = await res.json();
                 setConnection(data['connection']);
             } else if (res != null) {
                 setServerErrorMessage(`
@@ -123,10 +123,10 @@ We could not retrieve and/or refresh your access token due to the following erro
 
         setFetchingRefreshToken(true);
 
-        let res = await getConnectionDetailsAPI(connectionId, providerConfigKey, true);
+        const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, true);
 
         if (res?.status === 200) {
-            let data = await res.json();
+            const data = await res.json();
             setConnection(data['connection']);
 
             toast.success('Token refresh success!', { position: toast.POSITION.BOTTOM_CENTER });

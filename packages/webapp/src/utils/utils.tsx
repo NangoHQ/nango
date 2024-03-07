@@ -321,7 +321,10 @@ export const parseInput = (flow: Flow) => {
     return input;
 };
 
-export function generateResponseModel(models: NangoSyncModel[], output: string, isSync: boolean): Record<string, any> {
+export function generateResponseModel(models: NangoSyncModel[], output: string | undefined, isSync: boolean): Record<string, any> {
+    if (!output) {
+        return {};
+    }
     const model = models.find((model) => model.name === output);
     const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
     if (!isSync) {
@@ -332,6 +335,7 @@ export function generateResponseModel(models: NangoSyncModel[], output: string, 
             deleted_at: '<date| null>',
             last_action: 'ADDED|UPDATED|DELETED',
             first_seen_at: '<date>',
+            cursor: '<string>',
             last_modified_at: '<date>'
         }
     };

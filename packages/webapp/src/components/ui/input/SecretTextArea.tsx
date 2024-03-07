@@ -44,7 +44,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
                 <input
                     type="password"
                     value={value}
-                    // @ts-ignore
+                    // @ts-expect-error
                     onChange={(e) => updateValue(e.currentTarget.value)}
                     autoComplete="new-password"
                     className={classNames(

@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { Span } from 'dd-trace';
 import type { LogLevel, NangoConnection, HTTP_VERB } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
@@ -159,17 +159,31 @@ class SyncController {
 
     public async getAllRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, limit, filter, cursor } = req.query;
+            const { model, delta, modified_after, modifiedAfter, limit, filter, cursor, next_cursor } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            if (modifiedAfter) {
+                const error = new NangoError('incorrect_param', { incorrect: 'modifiedAfter', correct: 'modified_after' });
+
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            if (next_cursor) {
+                const error = new NangoError('incorrect_param', { incorrect: 'next_cursor', correct: 'cursor' });
+
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             const { success, error, response } = await syncDataService.getAllDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
                 model as string,
-                delta as string,
+                (delta || modified_after) as string,
                 limit as string,
                 filter as LastAction,
                 cursor as string
@@ -327,7 +341,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                await this.getRecords(req, res, next);
+                await this.getAllRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }

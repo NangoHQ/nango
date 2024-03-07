@@ -34,7 +34,7 @@ export default function Create() {
             const res = await getProvidersAPI();
 
             if (res?.status === 200) {
-                let data = await res.json();
+                const data = await res.json();
                 setProviders(data);
                 setInitialProviders(data);
             }

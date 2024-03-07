@@ -2647,3 +2647,49 @@ integrations:
         Tag: []
         $zia_owner_assignment: string
         $approval_state: string
+  zoho-mail:
+    syncs:
+      zoho-mail-tasks:
+        runs: every 6 hours
+        description: |
+          Fetches a list of all your personal tasks in Zoho mail
+        output: ZohoMailTask
+        sync_type: full
+        endpoint: /zoho-mail/tasks
+        scopes:
+          - ZohoMail.tasks.READ
+    models:
+      ZohoMailTask:
+        id: string
+        serviceType: number
+        modifiedTime: date
+        resourceId: string
+        attachments: []
+        statusStr: string
+        statusValue: number
+        description: string
+        project:
+          name: string
+          id: string
+        isTaskPublished: boolean
+        title: string
+        createdAt: date
+        portalId: number
+        serviceId: string
+        owner:
+          name: string
+          id: number
+        assigneeList: []
+        dependency: []
+        subtasks: []
+        priority: string
+        tags: []
+        followers: []
+        namespaceId: string
+        dependents: []
+        assignee:
+          name: string
+          id: number
+        serviceUniqId: number
+        depUniqId: string
+        status: string

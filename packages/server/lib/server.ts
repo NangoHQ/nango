@@ -1,4 +1,4 @@
-import tracer from './tracer.js';
+import './tracer.js';
 import './utils/config.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
@@ -46,6 +46,7 @@ import {
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
+import tracer from 'dd-trace';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
