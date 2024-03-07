@@ -224,7 +224,7 @@ export default class SyncRun {
                 }
             }
 
-            if (!isCloud() && !integrationFilesAreRemote() && !isPublic && !this.isAction) {
+            if (!isCloud() && !integrationFilesAreRemote() && !isPublic) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation

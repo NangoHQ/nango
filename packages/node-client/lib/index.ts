@@ -75,7 +75,7 @@ export interface NangoSyncWebhookBody {
     responseResults: SyncResult;
     syncType: SyncType;
     queryTimeStamp: string | null;
-    updatedAfter: string | null;
+    modifiedAfter: string | null;
 }
 
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
@@ -359,6 +359,9 @@ export class Nango {
      * =======
      */
 
+    /**
+     * @deprecated. Use listRecords() instead.
+     */
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
         validateSyncRecordConfiguration(config);
@@ -403,10 +406,10 @@ export class Nango {
     public async listRecords<T = any>(
         config: ListRecordsRequestConfig
     ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
-        const { connectionId, providerConfigKey, model, delta, updatedAfter, limit, filter, cursor } = config;
+        const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&updatedAfter=${updatedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&modifiedAfter=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
             filter ? `&filter=${filter}` : ''
         }${cursor ? `&cursor=${cursor}` : ''}`;
 
