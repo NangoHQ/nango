@@ -32,3 +32,11 @@ export interface NangoAuthWebhookBody {
     operation: AuthOperation;
     error?: string;
 }
+
+export interface NangoForwardWebhookBody {
+    from: string;
+    type: WebhookType.FORWARD;
+    connectionId: string;
+    providerConfigKey: string;
+    payload: any;
+}
