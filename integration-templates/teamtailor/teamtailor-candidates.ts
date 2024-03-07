@@ -11,7 +11,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 link_path_in_response_body: 'links.next',
                 limit_name_in_request: 'page[size]',
                 response_path: 'data',
-                limit: 100
+                limit: 30
             }
         };
         for await (const candidate of nango.paginate({ ...config, endpoint })) {
