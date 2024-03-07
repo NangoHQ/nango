@@ -216,23 +216,22 @@ export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any> & { id: string | number };
 
-export interface EncryptedRecord {
+export type EncryptedRawRecord = {
     iv: string;
     authTag: string;
     encryptedValue: string;
-}
+};
 
-export type EncryptedInternalDataRecord = {
-    _nango_metadata: RecordMetadata;
-} & EncryptedRecord;
+export type UnencryptedRawRecord = Record<string, any> & { id: string | number };
 
-export type GetRecordsResponse = { records: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; next_cursor?: string | null } | null;
-
-export interface RawDataRecordResult {
+export type RawDataRecordResult = {
     id: string | number;
-    record: CustomerFacingDataRecord | EncryptedInternalDataRecord;
-}
+    record: UnencryptedRawRecord | EncryptedRawRecord;
+} & RecordMetadata;
 
+export type GetRecordsResponse = { records: CustomerFacingDataRecord[]; next_cursor?: string | null } | null;
+
+// TO DEPRECATE
 export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
 
 export interface DataRecord extends Timestamps {
@@ -256,13 +255,14 @@ export interface DataRecord extends Timestamps {
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
 
 interface RecordMetadata {
-    first_seen_at: Date;
-    last_modified_at: Date;
+    first_seen_at: string;
+    last_modified_at: string;
     last_action: LastAction;
-    deleted_at: Date | null;
+    deleted_at: string | null;
     cursor: string;
 }
 
+// DEPRECATED
 export interface DataRecordWithMetadata extends RecordMetadata {
     record: object;
 }

@@ -25,8 +25,8 @@ export const createConnectionSeeds = async (environmentName = ''): Promise<numbe
 
         for (const [name] of connectionParams) {
             const [result] = (await connectionService.upsertConnection(
-                name as string,
-                name as string,
+                `conn-${name}`,
+                `provider-${name}`,
                 'google',
                 {} as AuthCredentials,
                 {},
