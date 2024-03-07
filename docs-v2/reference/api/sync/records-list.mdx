@@ -4,11 +4,15 @@ sidebarTitle: 'Get records'
 openapi: 'GET /records'
 ---
 
-## The `updated_after` parameter & webhooks
+## Receive webhooks on data updates
 
-If you are receiving the webhooks from Nango ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango)), you can use the timestamp you get from the webhook for the `updated_after` parameter.
+Receive webhooks from Nango when new records are available ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango)).
 
 ## Response
+
+<Tip>
+This endpoint returns a list of records, ordered by modification date ascending. If some records are updated while you paginate through this endpoint, you might see these records multiple times.
+</Tip>
 
 ### Default behaviour
 By default this returns an array of objects in the data model that you queried with some metadata about each record.

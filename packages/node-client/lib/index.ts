@@ -81,10 +81,10 @@ export interface NangoSyncWebhookBody {
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
 
 export interface RecordMetadata {
-    first_seen_at: Date;
-    last_seen_at: Date;
+    first_seen_at: string;
+    last_seen_at: string;
     last_action: LastAction;
-    deleted_at: Date | null;
+    deleted_at: string | null;
     cursor: string;
 }
 
@@ -359,6 +359,9 @@ export class Nango {
      * =======
      */
 
+    /**
+     * @deprecated. Use listRecords() instead.
+     */
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
         validateSyncRecordConfiguration(config);

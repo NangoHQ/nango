@@ -37,8 +37,7 @@ The webhook from Nango is a POST request with the following body ([reference](/r
     "model": "<string>",
     "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
-    "updatedAfter": "<timestamp>", // Null for initial sync runs.
-    "queryTimeStamp": "<timestamp>" // DEPRECATED: (use updatedAfter) null for initial sync runs.
+    "modifiedAfter": "<timestamp>" // Null on the sync's first execution.
 }
 ```
 
@@ -52,9 +51,7 @@ Before using webhooks in production, verify their origin ([step-by-step guide](/
 
 # Fetch the latest data
 
-Upon receiving a webhook notification, the time cursor `updatedAfter` from the webhook body is used to fetch only the updated data.
-
-Fetch records using the backend SDK ([reference](/reference/sdks/node#get-records)) or API ([reference](/reference/api/sync/records-list)).
+Fetch the latest records using the backend SDK ([reference](/reference/sdks/node#get-records)) or API ([reference](/reference/api/sync/records-list)).
 
 <Tabs>
 
@@ -66,11 +63,11 @@ curl -G https://api.nango.dev/records \
   --header 'Connection-Id: <string>' \
   --header 'Provider-Config-Key: <string>' \
   --data-urlencode 'model=<string>'  # The model of the records to fetch.
-  --data-urlencode 'updated_after=<updatedAfter-from-webhook>' \  # Time cursor to only fetch the updated data.
-  --data-urlencode 'limit=<number>' \  # Number of records returned (default: 100).
-  --data-urlencode 'cursor=<string>' \  # For pagination: use the "next_cursor" property in the previous page's response.
+  --data-urlencode 'limit=<number>' \  # For pagination: Number of records returned (default: 100).
+  --data-urlencode 'cursor=<string>' \  # Pass in the cursor of the last fetched record (omit on 1st fetch), then use to paginate through results.
   
 ```
+
 </Tab>
 
 <Tab title="Node SDK">
@@ -84,20 +81,17 @@ const result = await nango.listRecords({
     providerConfigKey: '<string>',
     connectionId: '<string>',
     model: '<string>', //The model of the records to fetch.
-    updatedAfter: '<updatedAfter-from-webhook>', // Time cursor to only fetch the updated data.
-    limit: <number>, // Number of records returned (default: 100).
-    cursor: '<string>' // For pagination: use the "next_cursor" property in the previous page's response.
+    limit: <number>, // For pagination: Number of records returned (default: 100).
+    cursor: '<string>' // Pass in the cursor of the last fetched record (omit on 1st fetch), then use to paginate through results.
 });
 ```
 </Tab>
 
 </Tabs>
 
-<Tip>
- If you consume the API (vs. the SDK), you can use the standard endpoint (above) or a unique generated endpoint described in the _API Reference_ tab of your integration in the Nango UI.
-</Tip>
+This returns an array of records conforming to the specified data model. 
 
-This returns an array of records conforming to the specified data model. Each record contains useful metadata.
+Each record contains useful metadata, including the cursor that you use to keep track how far you've synced. 
 
 ```json
 {
@@ -119,6 +113,16 @@ This returns an array of records conforming to the specified data model. Each re
     next_cursor: "Y3JlYXRlZF9hdF4yMDIzLTExLTE3VDExOjQ3OjE0LjQ0NyswMjowMHxpZF4xYTE2MTYwMS0yMzk5LTQ4MzYtYWFiMi1mNjk1ZWI2YTZhYzI"
 }
 ```
+
+<Tip>
+Each record comes with a synchronization cursor in `_nango_metadata.cursor`.
+
+Save the last fetched record's cursor to track how far you've synced.
+
+By providing the cursor, you'll continue syncing from where you left off, receiving only post-cursor changes.
+
+This same cursor is used to paginate through the results of this endpoint.
+</Tip>
 
 # Write back to APIs (2-way syncing)
 
