@@ -12,7 +12,7 @@ import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRe
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
+import { isCloud, integrationFilesAreRemote, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
@@ -224,7 +224,7 @@ export default class SyncRun {
                 }
             }
 
-            if (!isCloud() && !isPublic && !this.isAction) {
+            if (!isCloud() && !integrationFilesAreRemote() && !isPublic && !this.isAction) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation
