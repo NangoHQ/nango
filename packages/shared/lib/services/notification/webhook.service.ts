@@ -277,11 +277,29 @@ class WebhookService {
             }
         }
     }
-
     async forward(
         environment_id: number,
         providerConfigKey: string,
         connectionIds: string[],
+        provider: string,
+        payload: Record<string, any> | null,
+        webhookOriginalHeaders: Record<string, string>
+    ) {
+        const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
+
+        if (!send || !environmentInfo) {
+            return;
+        }
+
+        for (const connectionId of connectionIds) {
+            await this.forwardHandler(environment_id, providerConfigKey, connectionId, provider, payload, webhookOriginalHeaders);
+        }
+    }
+
+    async forwardHandler(
+        environment_id: number,
+        providerConfigKey: string,
+        connectionId: string,
         provider: string,
         payload: Record<string, any> | null,
         webhookOriginalHeaders: Record<string, string>
@@ -301,7 +319,7 @@ class WebhookService {
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: connectionIds ? connectionIds.join(',') : '',
+            connection_id: connectionId,
             provider_config_key: providerConfigKey,
             provider: provider,
             environment_id: environment_id
@@ -311,7 +329,7 @@ class WebhookService {
 
         const body: NangoForwardWebhookBody = {
             from: provider,
-            connectionIds,
+            connectionId,
             providerConfigKey,
             type: WebhookType.FORWARD,
             payload: payload
