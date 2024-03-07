@@ -5,14 +5,7 @@ import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import type {
-    EncryptedRecord,
-    CustomerFacingDataRecord,
-    RawDataRecordResult,
-    DataRecord,
-    DataRecordWithMetadata,
-    RecordWrapCustomerFacingDataRecord
-} from '../models/Sync.js';
+import type { RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord, UnencryptedRawRecord } from '../models/Sync.js';
 import db from '../db/database.js';
 import util from 'util';
 
@@ -279,30 +272,20 @@ class EncryptionManager {
         return decryptedDataRecords as unknown as DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord;
     }
 
-    public decryptDataRecord(dataRecord: RawDataRecordResult): CustomerFacingDataRecord | null {
-        if (dataRecord === null) {
-            return dataRecord;
-        }
-
+    public decryptDataRecord(dataRecord: RawDataRecordResult): UnencryptedRawRecord {
         const record = dataRecord.record;
 
         if (!record['encryptedValue']) {
-            return record as CustomerFacingDataRecord;
+            return record as UnencryptedRawRecord;
         }
 
-        const { encryptedValue, iv, authTag } = record as EncryptedRecord;
+        const { encryptedValue, iv, authTag } = record;
 
         const decryptedString = this.decrypt(encryptedValue, iv, authTag);
 
-        const updatedRecord = {
+        return {
             ...JSON.parse(decryptedString)
-        } as CustomerFacingDataRecord;
-
-        if (record._nango_metadata) {
-            updatedRecord['_nango_metadata'] = record['_nango_metadata'];
-        }
-
-        return updatedRecord;
+        } as UnencryptedRawRecord;
     }
 
     public async encryptAllDataRecords(): Promise<void> {

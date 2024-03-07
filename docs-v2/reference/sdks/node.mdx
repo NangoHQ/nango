@@ -690,7 +690,7 @@ const records = await nango.listRecords<ModelName>({
 ```
 
 <Warning>
-`nango.getRecords()` is deprecated and  will be removed in future releases as it does not support efficient pagination. Please use `nango.listRecords()` detailed below.
+`nango.getRecords()` is deprecated and will be removed in future releases as it does not support efficient pagination. Please use `nango.listRecords()` detailed below.
 </Warning>
 
 **Parameters**
@@ -710,36 +710,42 @@ const records = await nango.listRecords<ModelName>({
         The name of the model of the data you want to retrieve.
       </ResponseField>
 
-      <ResponseField name="updatedAfter" type="string">
-        Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
+      <ResponseField name="cursor" type="string">
+        Each record from this endpoint comes with a synchronization cursor in `_nango_metadata.cursor`.
 
-        In particular, when receiving a webhook from Nango notifying you that new data is available, pass the timestamp you get from the webhook in this `updatedAfter` parameter. You will only returned the data that was edited since the previous notification.
-      </ResponseField>
+        Save the last fetched record's cursor to track how far you've synced.
 
-      <ResponseField name="delta" type="string">
-        DEPRECATED (use updatedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
+        By providing the cursor to this method, you'll continue syncing from where you left off, receiving only post-cursor changes.
 
-        In particular, when receiving a webhook from Nango notifying you that new data is available, pass the timestamp you get from the webhook in this `delta` parameter. You will only returned the data that was edited since the previous notification.
+        This same cursor is used to paginate through the results of this endpoint.
       </ResponseField>
 
       <ResponseField name="limit" type="number">
         The maximum number of records to return. Defaults to 100. 
       </ResponseField>
 
-      <ResponseField name="cursor" type="string">
-        Base-64-encoded value that can be used to fetch the next page of results. The cursor will be included until there are no more results to paginate through.
-      </ResponseField>
-
       <ResponseField name="filter" type="string">
-        Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the updatedAfter parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
+        Filter to only show results that have been added or updated or deleted. 
 
         Available options: added, updated, deleted 
+      </ResponseField>
+
+      <ResponseField name="modifiedAfter" type="string">
+        Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+      </ResponseField>
+
+      <ResponseField name="delta" type="string">
+        DEPRECATED (use modifiedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
       </ResponseField>
     </Expandable>
   </ResponseField>
 </Expandable>
 
 **Example Response**
+
+<Tip>
+This endpoint returns a list of records, ordered by modification date ascending. If some records are updated while you paginate through this endpoint, you might see these records multiple times.
+</Tip>
 
 <Expandable>
 ```json

@@ -1,14 +1,6 @@
-import { isCloud, isEnterprise } from '../utils/utils';
 import { ChatBubbleBottomCenterIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { useSignout } from '../utils/user';
 
 export default function NavBar() {
-    const signout = useSignout();
-
-    const logoutButtonClicked = async () => {
-        signout();
-    };
-
     return (
         <div className="w-full fixed bg-pure-black z-50 left-[15.8rem]">
             <div className="flex justify-end border-b border-border-gray py-3 mr-[15.8rem]">
@@ -31,14 +23,6 @@ export default function NavBar() {
                         <p>Docs</p>
                         <ArrowTopRightOnSquareIcon className="h-5 ml-2" />
                     </a>
-                    {(isCloud() || isEnterprise()) && (
-                        <button
-                            onClick={logoutButtonClicked}
-                            className="flex items-center h-8 rounded-md ml-4 px-3 text-sm hover:bg-hover-gray text-red-600 font-semibold"
-                        >
-                            <p>Log Out</p>
-                        </button>
-                    )}
                 </div>
             </div>
         </div>
