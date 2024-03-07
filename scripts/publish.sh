@@ -30,7 +30,7 @@ npm install
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-pushd "./packages/shared"; npm install "@nangohq/node@$VERSION"; popd;
+pushd "$GIT_ROOT_DIR/packages/shared"; npm install @nangohq/node@^$VERSION; popd;
 
 # Shared
 node scripts/flows.js
@@ -38,7 +38,7 @@ bump_and_npm_publish "@nangohq/shared" "$VERSION"
 # Update all packages to use the new shared version
 package_dirs=("cli" "server" "runner" "jobs" "persist")
 for dir in "${package_dirs[@]}"; do
-  pushd "./packages/$dir"; npm install "@nangohq/shared@$VERSION"; popd;
+    pushd "$GIT_ROOT_DIR/packages/$dir"; npm install @nangohq/shared@^$VERSION; popd;
 done
 
 # CLI
@@ -46,7 +46,7 @@ bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
-pushd ./packages/webapp; npm install "@nangohq/frontend@$VERSION"; popd
+pushd "$GIT_ROOT_DIR/packages/webapp"; npm install @nangohq/frontend@^$VERSION; popd;
 
 # DEBUG: show changes in CI
 git diff
