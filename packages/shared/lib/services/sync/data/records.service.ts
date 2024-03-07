@@ -421,58 +421,54 @@ export async function getAllDataRecords(
             }
         }
 
-        let nextCursor = null;
-
-        const result: RawDataRecordResult[] = await query.select(
+        const rawResults: RawDataRecordResult[] = await query.select(
+            // PostgreSQL stores timestamp with microseconds precision
+            // however, javascript date only supports milliseconds precision
+            // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
             db.knex.raw(`
-                jsonb_set(
-                    json::jsonb,
-                    '{_nango_metadata}',
-                    jsonb_build_object(
-                        'first_seen_at', created_at,
-                        'last_modified_at', updated_at,
-                        'deleted_at', external_deleted_at,
-                        'last_action',
-                        CASE
-                            WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
-                            WHEN created_at = updated_at THEN 'ADDED'
-                            ELSE 'UPDATED'
-                        END
-                    )
-                ) as record, id
+                id,
+                json as record,
+                to_json(created_at) as first_seen_at,
+                to_json(updated_at) as last_modified_at,
+                to_json(external_deleted_at) as deleted_at,
+                CASE
+                    WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
+                    WHEN created_at = updated_at THEN 'ADDED'
+                    ELSE 'UPDATED'
+                END as last_action
             `)
         );
 
-        if (result.length === 0) {
-            return { success: true, error: null, response: { records: [], next_cursor: nextCursor } };
+        if (rawResults.length === 0) {
+            return { success: true, error: null, response: { records: [], next_cursor: null } };
         }
 
-        const customerResult = result.map((item) => {
+        const results = rawResults.map((item) => {
             const decryptedRecord = encryptionManager.decryptDataRecord(item);
-            if (!decryptedRecord) {
-                return decryptedRecord;
-            }
-            const nextCursor = item.record._nango_metadata.last_modified_at.toString();
-            const id = item.id;
-            const encodedCursorValue = Buffer.from(`${nextCursor}||${id}`).toString('base64');
-            decryptedRecord['_nango_metadata']['cursor'] = encodedCursorValue;
-            return decryptedRecord;
+            const encodedCursor = Buffer.from(`${item.last_modified_at}||${item.id}`).toString('base64');
+            return {
+                ...decryptedRecord,
+                _nango_metadata: {
+                    first_seen_at: item.first_seen_at,
+                    last_modified_at: item.last_modified_at,
+                    last_action: item.last_action,
+                    deleted_at: item.deleted_at,
+                    cursor: encodedCursor
+                }
+            } as CustomerFacingDataRecord;
         });
 
-        if (customerResult.length > Number(limit || 100)) {
-            customerResult.pop();
-            result.pop();
+        if (results.length > Number(limit || 100)) {
+            results.pop();
+            rawResults.pop();
 
-            const cursorRawElement = result[result.length - 1] as SyncDataRecord;
-            const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
-
-            nextCursor = cursorElement['_nango_metadata']['last_modified_at'] as unknown as string;
-            const encodedCursorValue = Buffer.from(`${nextCursor}||${cursorRawElement.id}`).toString('base64');
-
-            return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: encodedCursorValue } };
-        } else {
-            return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: nextCursor } };
+            const cursorRawElement = rawResults[rawResults.length - 1];
+            if (cursorRawElement) {
+                const encodedCursorValue = Buffer.from(`${cursorRawElement.last_modified_at}||${cursorRawElement.id}`).toString('base64');
+                return { success: true, error: null, response: { records: results, next_cursor: encodedCursorValue } };
+            }
         }
+        return { success: true, error: null, response: { records: results, next_cursor: null } };
     } catch (e: any) {
         const errorMessage = `List records error for model ${model}`;
         await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
@@ -510,26 +506,6 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
     }
 
     return { isUnique, nonUniqueKeys };
-}
-
-export async function getSingleRecord(external_id: string, nango_connection_id: number, model: string): Promise<SyncDataRecord | null> {
-    const encryptedRecord = await schema().from<SyncDataRecord>('_nango_sync_data_records').where({
-        nango_connection_id,
-        model,
-        external_id
-    });
-
-    if (!encryptedRecord) {
-        return null;
-    }
-
-    const result = encryptionManager.decryptDataRecords(encryptedRecord, 'json');
-
-    if (!result || result.length === 0) {
-        return null;
-    }
-
-    return result[0] as unknown as SyncDataRecord;
 }
 
 export async function getRecordsByExternalIds(external_ids: string[], nango_connection_id: number, model: string): Promise<SyncDataRecord[]> {
