@@ -35,7 +35,7 @@ class OnboardingController {
     /**
      * Start an onboarding process
      */
-    async init(req: Request, res: Response, next: NextFunction) {
+    async create(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -55,11 +55,17 @@ class OnboardingController {
 
             // Create an onboarding state to remember where user left
             const onboardingId = await initOnboarding(user.id, account.id);
-
             if (!onboardingId) {
                 res.status(500).json({
                     error: 'Failed to create onboarding'
                 });
+            }
+
+            // We create a default provider if not already there
+            // Because we need one to launch authorization straight away
+            const provider = await getOnboardingProvider({ envId: environment.id });
+            if (!provider) {
+                await createOnboardingProvider({ envId: environment.id });
             }
 
             res.status(201).json({
@@ -140,7 +146,7 @@ class OnboardingController {
     /**
      * Create onboarding provider
      */
-    async createProvider(req: Request, res: Response, next: NextFunction) {
+    async deploy(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -149,11 +155,30 @@ class OnboardingController {
             }
 
             const { environment } = response;
+            const githubDemoSync = flowService.getFlow(DEMO_SYNC_NAME);
+            if (!githubDemoSync) {
+                throw new Error('failed_to_find_demo_sync');
+            }
 
-            // Create a default provider if not already there
-            const provider = await getOnboardingProvider({ envId: environment.id });
-            if (!provider) {
-                await createOnboardingProvider({ envId: environment.id });
+            githubDemoSync.runs = 'every 5 minutes';
+            const config: IncomingPreBuiltFlowConfig[] = [
+                {
+                    provider: 'github',
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    type: SyncConfigType.SYNC,
+                    name: DEMO_SYNC_NAME,
+                    runs: githubDemoSync.runs,
+                    auto_start: githubDemoSync.auto_start === true,
+                    models: githubDemoSync.returns,
+                    model_schema: JSON.stringify(githubDemoSync?.models),
+                    is_public: true,
+                    public_route: 'github'
+                }
+            ];
+            const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');
+            if (!deploy.success || deploy.response === null) {
+                errorManager.errResFromNangoErr(res, deploy.error);
+                return;
             }
 
             res.status(200).json({ success: true });
@@ -211,58 +236,18 @@ class OnboardingController {
                 res.status(400).json({ message: 'Missing progress' });
             }
 
-            const id = req.params['id'];
-
-            if (!id) {
-                res.status(400).json({ message: 'Missing id' });
+            const { account, user } = response;
+            const status = await getOnboardingProgress(user.id);
+            if (!status) {
+                res.status(404).send({ message: 'no_onboarding' });
+                return;
             }
 
-            const { account, user } = response;
-
-            await updateOnboardingProgress(Number(id), req.body.progress, user.id, account.id);
+            await updateOnboardingProgress(status.id, req.body.progress, user.id, account.id);
 
             res.status(200).json({
                 success: true
             });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async verify(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { environment } = response;
-            const githubDemoSync = flowService.getFlow(DEMO_SYNC_NAME);
-
-            if (!githubDemoSync) {
-                throw new Error('failed_to_find_demo_sync');
-            }
-
-            githubDemoSync.runs = 'every 5 minutes';
-            const config: IncomingPreBuiltFlowConfig[] = [
-                {
-                    provider: 'github',
-                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    type: SyncConfigType.SYNC,
-                    name: DEMO_SYNC_NAME,
-                    runs: githubDemoSync.runs,
-                    auto_start: githubDemoSync.auto_start === true,
-                    models: githubDemoSync.returns,
-                    model_schema: JSON.stringify(githubDemoSync?.models),
-                    is_public: true,
-                    public_route: 'github'
-                }
-            ];
-
-            await deployPreBuiltSyncConfig(environment.id, config, '');
-
-            res.sendStatus(200);
         } catch (err) {
             next(err);
         }

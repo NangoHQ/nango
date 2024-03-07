@@ -32,9 +32,7 @@ export const DeployBloc: React.FC<{ step: Steps; onProgress: () => void }> = ({ 
   ${providerConfigKey}:
     syncs:
       sync-github-issues:
-        description: |
-          Fetches the Github issues from all a user's repositories.
-          Details: full sync, doesn't track deletes, metadata is not required.
+        description: Fetches the GitHub issues from showcase repository
         scopes: public_repo
         runs: every 5 minutes
         output: ${model}
@@ -42,16 +40,8 @@ export const DeployBloc: React.FC<{ step: Steps; onProgress: () => void }> = ({ 
 models:
   ${model}:
     id: integer
-    owner: string
-    repo: string
-    issue_number: number
     title: string
-    author: string
-    author_id: string
-    state: string
-    date_created: date
-    date_last_modified: date
-    body: string`;
+    url: string`;
         }
     }, [file]);
 
@@ -59,8 +49,8 @@ models:
         analyticsTrack('web:demo:deploy');
 
         try {
-            // Setup the onboarding process
-            const res = await fetch(`/api/v1/onboarding/provider`, {
+            // Deploy the provider
+            const res = await fetch(`/api/v1/onboarding/deploy`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });

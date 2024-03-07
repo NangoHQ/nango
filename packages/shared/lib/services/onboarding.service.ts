@@ -6,7 +6,7 @@ import type { Config } from '../models';
 
 export const DEFAULT_GITHUB_CLIENT_ID = process.env['DEFAULT_GITHUB_CLIENT_ID'] || '';
 export const DEFAULT_GITHUB_CLIENT_SECRET = process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '';
-export const DEMO_GITHUB_CONFIG_KEY = 'demo-github-integration';
+export const DEMO_GITHUB_CONFIG_KEY = 'github-demo';
 export const DEMO_SYNC_NAME = 'github-issues-lite';
 export const DEMO_MODEL = 'Issue';
 

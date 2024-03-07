@@ -26,7 +26,7 @@ export const InteractiveDemo: React.FC = () => {
     const [secretKey, setSecretKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [connectionId, setConnectionId] = useState('');
-    const [, setServerErrorMessage] = useState('');
+    const [, setServerErrorMessage] = useState<string | null>(null);
     const [onboardingId, setOnboardingId] = useState<number>();
     const [records, setRecords] = useState<Record<string, unknown>[]>([]);
     const [syncStillRunning, setSyncStillRunning] = useState(true);
@@ -111,8 +111,8 @@ export const InteractiveDemo: React.FC = () => {
         }
     }, [loaded, setLoaded, connectionId]);
 
-    const updateProgress = async (args: { id: number; progress: number }) => {
-        const res = await fetch(`/api/v1/onboarding/${args.id}`, {
+    const updateProgress = async (args: { progress: number }) => {
+        const res = await fetch(`/api/v1/onboarding`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ progress: args.progress })
@@ -131,7 +131,7 @@ export const InteractiveDemo: React.FC = () => {
             return;
         }
 
-        void updateProgress({ id: onboardingId, progress: step });
+        void updateProgress({ progress: step });
     }, [onboardingId, step]);
 
     const fetchRecords = async () => {
@@ -222,7 +222,7 @@ export const InteractiveDemo: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.InteractiveDemo}>
-            <div className="text-white">
+            <div className="text-white pb-10">
                 <div>
                     <h1 className="text-left text-3xl font-semibold tracking-tight text-white">
                         <span onDoubleClick={resetOnboarding}>Interactive Demo</span>

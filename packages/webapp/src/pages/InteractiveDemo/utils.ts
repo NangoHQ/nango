@@ -15,4 +15,4 @@ export enum Language {
 
 export const endpoint = '/github/lite-issues';
 export const model = 'Issue';
-export const providerConfigKey = 'demo-github-integration';
+export const providerConfigKey = 'github-demo';
