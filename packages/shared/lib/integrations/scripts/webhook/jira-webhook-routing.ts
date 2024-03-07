@@ -13,6 +13,6 @@ export default async function route(nango: Nango, integration: ProviderConfig, _
 
         return connectionIds;
     } else {
-        return await nango.executeScriptForWebhooks(integration, body, 'payload.webhookEvent', 'payload.user.accountId', 'accountId');
+        return nango.executeScriptForWebhooks(integration, body, 'payload.webhookEvent', 'payload.user.accountId', 'accountId');
     }
 }

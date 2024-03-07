@@ -61,12 +61,6 @@ export const internalNango: InternalNango = {
             );
         }
 
-        const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
-
-        if (syncConfigsWithWebhooks.length <= 0) {
-            return { connectionIds: connections?.map((connection) => connection.connection_id) || [] };
-        }
-
         if (!connections || connections.length === 0) {
             await telemetry.log(
                 LogTypes.INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND,
@@ -83,6 +77,12 @@ export const internalNango: InternalNango = {
             );
 
             return { connectionIds: [] };
+        }
+
+        const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
+
+        if (syncConfigsWithWebhooks.length <= 0) {
+            return { connectionIds: connections?.map((connection) => connection.connection_id) };
         }
 
         const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);

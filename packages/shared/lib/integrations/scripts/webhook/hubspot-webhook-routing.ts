@@ -49,6 +49,6 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
 
         return { connectionIds };
     } else {
-        return await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId');
+        return nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId');
     }
 }
