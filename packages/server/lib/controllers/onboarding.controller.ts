@@ -18,6 +18,8 @@ import {
     getSyncByIdAndName,
     DEFAULT_GITHUB_CLIENT_ID,
     DEFAULT_GITHUB_CLIENT_SECRET
+    // SyncStatus,
+    // SyncCommand
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -118,26 +120,41 @@ class OnboardingController {
                 payload.progress = 0;
                 res.status(200).json(payload);
                 return;
+            } else {
+                payload.provider = true;
             }
-            payload.provider = true;
 
-            const connectionExists = await connectionService.checkIfConnectionExists(connectionId, DEMO_SYNC_NAME, environment.id);
+            const connectionExists = await connectionService.checkIfConnectionExists(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id);
             if (!connectionExists) {
+                payload.progress = 0;
                 res.status(200).json(payload);
                 return;
+            } else {
+                payload.connection = true;
             }
-            payload.connection = true;
 
             const sync = await getSyncByIdAndName(connectionExists.id, DEMO_SYNC_NAME);
             if (!sync) {
+                payload.progress = 1;
                 res.status(200).json(payload);
                 return;
+            } else {
+                payload.sync = true;
+                payload.progress = 3;
             }
-            payload.sync = true;
 
-            const { response: records } = await syncDataService.getAllDataRecords(connectionId, provider.unique_key, environment.id, DEMO_MODEL);
+            const getRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
+            if (!getRecords.success) {
+                res.status(400).json({ message: 'failed_to_get_records' });
+                return;
+            } else {
+                payload.records = getRecords.response?.records || [];
+            }
+            if (payload.records.length > 0) {
+                payload.progress = 4;
+            }
 
-            res.status(200).json({ records, provider: true, connection: true, sync: true });
+            res.status(200).json(payload);
         } catch (err) {
             next(err);
         }
@@ -187,7 +204,7 @@ class OnboardingController {
         }
     }
 
-    async checkSyncCompletion(req: Request, res: Response, next: NextFunction) {
+    async checkSyncCompletion(req: Request<unknown, unknown, { connectionId?: string }>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
 
@@ -196,15 +213,17 @@ class OnboardingController {
                 return;
             }
 
-            const { environment } = response;
-            const { connection_id: connectionId, provider_config_key: providerConfigKey } = req.query;
+            if (!req.body || !req.body.connectionId || typeof req.body.connectionId !== 'string') {
+                res.status(400).json({ message: 'connection_id must be a string' });
+                return;
+            }
 
-            // TODO if there are previous jobs then no need for more polling
+            const { environment } = response;
             const {
                 success,
                 error,
                 response: status
-            } = await syncOrchestrator.getSyncStatus(environment.id, providerConfigKey as string, [DEMO_SYNC_NAME], connectionId as string, true);
+            } = await syncOrchestrator.getSyncStatus(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], req.body.connectionId, true);
 
             if (!success || !status) {
                 errorManager.errResFromNangoErr(res, error);
@@ -212,6 +231,10 @@ class OnboardingController {
             }
 
             const [job] = status;
+            if (!job) {
+                res.status(400).json({ message: 'No sync job found' });
+                return;
+            }
 
             res.status(200).json(job);
         } catch (err) {
@@ -219,7 +242,7 @@ class OnboardingController {
         }
     }
 
-    async updateStatus(req: Request, res: Response, next: NextFunction) {
+    async updateStatus(req: Request<unknown, unknown, { progress?: string }>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -232,8 +255,9 @@ class OnboardingController {
                 return;
             }
 
-            if (!req.body.progress === undefined || req.body.progress === null) {
+            if (typeof req.body.progress !== 'number') {
                 res.status(400).json({ message: 'Missing progress' });
+                return;
             }
 
             const { account, user } = response;

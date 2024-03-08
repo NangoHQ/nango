@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 
 import { baseUrl as getBaseUrl } from '../../utils/utils';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -17,8 +16,6 @@ import { WebhookBloc } from './WebhookBloc';
 import { Account, OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
 
-type Interval = ReturnType<typeof setInterval>;
-
 export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
     const [step, setStep] = useState<Steps>(Steps.Start);
@@ -29,8 +26,6 @@ export const InteractiveDemo: React.FC = () => {
     const [, setServerErrorMessage] = useState<string | null>(null);
     const [onboardingId, setOnboardingId] = useState<number>();
     const [records, setRecords] = useState<Record<string, unknown>[]>([]);
-    const [syncStillRunning, setSyncStillRunning] = useState(true);
-    const [pollingInterval, setPollingInterval] = useState<Interval | undefined>(undefined);
     const analyticsTrack = useAnalyticsTrack();
 
     const env = useStore((state) => state.cookieValue);
@@ -42,14 +37,6 @@ export const InteractiveDemo: React.FC = () => {
             window.location.href = `/${env}/integrations`;
         }
     }, [env]);
-
-    useEffect(() => {
-        return () => {
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-            }
-        };
-    }, [pollingInterval]);
 
     useEffect(() => {
         const getAccount = async () => {
@@ -80,9 +67,7 @@ export const InteractiveDemo: React.FC = () => {
     useEffect(() => {
         const getProgress = async () => {
             const params = {
-                provider_config_key: providerConfigKey,
-                connection_id: connectionId,
-                model
+                connection_id: connectionId
             };
 
             const res = await fetch(`/api/v1/onboarding?${new URLSearchParams(params).toString()}`, {
@@ -102,7 +87,6 @@ export const InteractiveDemo: React.FC = () => {
 
             if (fetchedRecords) {
                 setRecords(fetchedRecords);
-                setSyncStillRunning(false);
             }
         };
 
@@ -153,40 +137,8 @@ export const InteractiveDemo: React.FC = () => {
             return;
         }
 
-        const fetchedRecords = (await res.json()) as Record<string, unknown>[];
-        setRecords(fetchedRecords);
-    };
-
-    const startPolling = () => {
-        if (pollingInterval) {
-            return;
-        }
-
-        const tmp = setInterval(async () => {
-            const params = {
-                provider_config_key: providerConfigKey,
-                connection_id: connectionId
-            };
-            const response = await fetch(`/api/v1/onboarding/sync-status?${new URLSearchParams(params).toString()}`);
-
-            if (response.status !== 200) {
-                clearInterval(pollingInterval);
-                setPollingInterval(undefined);
-
-                analyticsTrack('web:demo:fetch_error');
-                return;
-            }
-
-            const data = (await response.json()) as { jobStatus: string };
-
-            if (data.jobStatus === 'SUCCESS') {
-                clearInterval(pollingInterval);
-                await fetchRecords();
-                setSyncStillRunning(false);
-                setPollingInterval(undefined);
-            }
-        }, 1000);
-        setPollingInterval(tmp);
+        const fetchedRecords = (await res.json()) as { records: Record<string, unknown>[] };
+        setRecords(fetchedRecords.records);
     };
 
     const onAuthorize = (id: number) => {
@@ -204,11 +156,8 @@ export const InteractiveDemo: React.FC = () => {
     };
 
     const onFetch = () => {
-        analyticsTrack('web:demo:fetch');
-        if (records.length === 0) {
-            startPolling();
-        }
         setStep(Steps.Fetch);
+        void fetchRecords();
     };
 
     const onActionConfirm = () => {
@@ -249,18 +198,20 @@ export const InteractiveDemo: React.FC = () => {
                         providerConfigKey={providerConfigKey}
                         secretKey={secretKey}
                         records={records}
-                        syncStillRunning={syncStillRunning}
                         onProgress={onFetch}
                     />
 
-                    <ActionBloc step={step} connectionId={connectionId} providerConfigKey={providerConfigKey} onProgress={onActionConfirm} />
+                    <ActionBloc
+                        step={step}
+                        connectionId={connectionId}
+                        providerConfigKey={providerConfigKey}
+                        secretKey={secretKey}
+                        onProgress={onActionConfirm}
+                    />
 
-                    {step === Steps.Complete && <NextBloc step={step} />}
+                    {step >= Steps.Write && <NextBloc />}
                 </div>
             </div>
-            <Helmet>
-                <style>{'.no-border-modal footer { border-top: none !important;}'}</style>
-            </Helmet>
         </DashboardLayout>
     );
 };

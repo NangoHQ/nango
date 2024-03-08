@@ -1,14 +1,14 @@
 import type { Onboarding } from '../models/Onboarding';
 import db, { schema, dbNamespace } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import configService from './config.service';
+import configService from './config.service.js';
 import type { Config } from '../models';
 
 export const DEFAULT_GITHUB_CLIENT_ID = process.env['DEFAULT_GITHUB_CLIENT_ID'] || '';
 export const DEFAULT_GITHUB_CLIENT_SECRET = process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '';
 export const DEMO_GITHUB_CONFIG_KEY = 'github-demo';
-export const DEMO_SYNC_NAME = 'github-issues-lite';
-export const DEMO_MODEL = 'Issue';
+export const DEMO_SYNC_NAME = 'github-issues-demo';
+export const DEMO_MODEL = 'GithubIssueDemo';
 
 const TABLE = dbNamespace + 'onboarding_demo_progress';
 

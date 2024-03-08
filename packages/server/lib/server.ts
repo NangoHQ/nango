@@ -213,7 +213,7 @@ app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(on
 app.route('/api/v1/onboarding').post(webAuth, onboardingController.create.bind(onboardingController));
 app.route('/api/v1/onboarding').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
 app.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy.bind(onboardingController));
-app.route('/api/v1/onboarding/sync-status').get(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
+app.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 
 // Hosted signin
 if (!isCloud() && !isEnterprise()) {

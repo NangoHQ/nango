@@ -32,6 +32,15 @@ integrations:
                 output: GithubRepoFile
                 endpoint: /github/files
                 scopes: repo
+            github-issues-demo:
+                runs: every 5 minutes
+                auto_start: false
+                sync_type: full
+                output: GithubIssueDemo
+                scopes: public_repo
+                description: >
+                    Fetches GitHub issues from our showcase repository.
+                endpoint: /github/demo-issues
         actions:
             github-write-file:
                 scopes: repo
@@ -93,3 +102,7 @@ models:
         url: string
         status: string
         sha: string
+    GithubIssueDemo:
+        id: integer
+        title: string
+        url: string
