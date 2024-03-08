@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { useInviteSignupAPI, useSignupAPI } from '../utils/api';
+import { isEnterprise } from '../utils/utils';
 import { useSignin, User } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
 
@@ -29,7 +30,7 @@ export default function InviteSignup() {
                 setEmail(email);
                 setAccountID(Number(account_id));
             } else {
-                navigate('/signup');
+                isEnterprise() ? navigate('/signin') : navigate('/signup');
             }
         };
 
@@ -100,8 +101,8 @@ export default function InviteSignup() {
                                         autoComplete="email"
                                         defaultValue={invitedEmail}
                                         required
-                                        readOnly
-                                        className="cursor-not-allowed outline-none border-transparent focus:border-transparent focus:ring-0 border-none bg-bg-black text-text-light-gray block h-11 focus:outline-none w-full appearance-none rounded-md px-3 py-2 text-base shadow-sm"
+                                        readOnly={!isEnterprise()}
+                                        className={`${isEnterprise() ? 'focus:border-blue border-border-gray focus:border-blue focus:ring-blue block ' : 'cursor-not-allowed outline-none border-transparent focus:border-transparent focus:ring-0 border-none '}bg-bg-black text-text-light-gray block h-11 focus:outline-none w-full appearance-none rounded-md px-3 py-2 text-base shadow-sm`}
                                     />
                                 </div>
                             </div>
