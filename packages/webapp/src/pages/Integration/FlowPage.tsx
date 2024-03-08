@@ -76,6 +76,7 @@ export default function FlowPage(props: FlowPageProps) {
 
         if (response.status !== 200) {
             const error = await response.json();
+            setIsDownloading(false);
             toast.error(error.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
@@ -89,8 +90,9 @@ export default function FlowPage(props: FlowPageProps) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
+        const timestamp = Math.floor(new Date().getTime() / 1000).toString();
         link.href = url;
-        link.download = 'nango-integrations.zip';
+        link.download = `nango-integrations-${timestamp}.zip`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
