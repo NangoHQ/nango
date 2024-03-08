@@ -303,6 +303,7 @@
                         "integrations/all/affinity",
                         "integrations/all/aircall",
                         "integrations/all/airtable",
+                        "integrations/all/algolia",
                         "integrations/all/amazon",
                         "integrations/all/anrok",
                         "integrations/all/amplitude",

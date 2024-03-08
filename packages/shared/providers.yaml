@@ -61,6 +61,16 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
+algolia:
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.APP_ID}.algolia.net
+        headers:
+            X-Algolia-Application-Id: ${connectionConfig.APP_ID}
+            X-Algolia-API-Key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/algolia
 amazon:
     categories:
         - dev-tools
