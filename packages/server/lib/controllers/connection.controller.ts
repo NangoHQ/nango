@@ -523,7 +523,7 @@ class ConnectionController {
             let runHook = false;
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
+                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config, no_expiration: noExpiration } = req.body;
 
                 const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
                     { access_token, refresh_token, expires_at, expires_in },
@@ -534,6 +534,12 @@ class ConnectionController {
                     errorManager.errRes(res, 'missing_access_token');
                     return;
                 }
+
+                if (!parsedExpiresAt && noExpiration && noExpiration !== true) {
+                    errorManager.errRes(res, 'missing_expires_at');
+                    return;
+                }
+
                 oAuthCredentials = {
                     type: template.auth_mode,
                     access_token,

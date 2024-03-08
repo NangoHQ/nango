@@ -200,6 +200,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'access_token'.`;
                 break;
 
+            case 'missing_expires_at':
+                this.status = 400;
+                this.message = `Importing an OAuth2 token requires the 'expires_at' parameter. If the token doesn't expire pass in the noExpiration parameter`;
+                break;
+
             case 'missing_hmac':
                 this.status = 400;
                 this.message = `Missing param 'hmac'.`;
