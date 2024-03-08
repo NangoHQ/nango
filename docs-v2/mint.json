@@ -45,16 +45,16 @@
         }
     ],
     "topAnchor": {
-        "name": "Overview & Guides"
+        "name": "Documentation"
     },
     "anchors": [
         {
-            "name": "APIs & Integration Templates",
+            "name": "APIs & Templates",
             "icon": "bars",
             "url": "integrations"
         },
         {
-            "name": "Technical Reference",
+            "name": "Reference",
             "icon": "book",
             "url": "reference"
         },
@@ -188,29 +188,18 @@
                 "understand/core-concepts",
                 "understand/architecture",
                 {
-                    "group": "All Concepts",
+                    "group": "All concepts",
                     "pages": [
                         "understand/concepts/integrations",
                         "understand/concepts/connections",
+                        "understand/concepts/scripts",
                         "understand/concepts/syncs",
                         "understand/concepts/actions",
                         "understand/concepts/proxy",
                         "understand/concepts/webhooks",
                         "understand/concepts/environments",
                         "understand/concepts/templates",
-                        "understand/concepts/cli",
-                        "understand/concepts/integrations-folder",
-                        "understand/concepts/scripts",
-                        "understand/concepts/api-configuration",
-                        "understand/concepts/integration-configuration",
                         "understand/concepts/api-unification"
-                    ]
-                },
-                {
-                    "group": "Best practices",
-                    "pages": [
-                        "understand/best-practices/define-an-integration-strategy",
-                        "understand/best-practices/when-to-unify-external-apis"
                     ]
                 }
             ]
@@ -235,7 +224,7 @@
             ]
         },
         {
-            "group": "APIs & Integration Templates",
+            "group": "APIs & Templates",
             "pages": [
                 "integrations/overview",
                 {
@@ -307,7 +296,7 @@
             ]
         },
         {
-            "group": "All Pre-Configured APIs",
+            "group": "Pre-Configured APIs",
             "pages": [
                 "integrations/all/accelo",
                         "integrations/all/adobe",
@@ -474,7 +463,7 @@
             ]
         },
         {
-            "group": "Technical Reference",
+            "group": "Reference",
             "pages": [
                 "reference/overview"
             ]
