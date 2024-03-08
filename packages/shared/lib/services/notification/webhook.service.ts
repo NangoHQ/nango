@@ -156,7 +156,6 @@ class WebhookService {
 
         if (syncType === SyncType.INITIAL) {
             body.queryTimeStamp = null;
-            body.modifiedAfter = null;
         }
 
         if (responseResults.deleted && responseResults.deleted > 0) {
