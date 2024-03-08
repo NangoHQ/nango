@@ -150,12 +150,13 @@ class WebhookService {
                 deleted: 0
             },
             syncType,
-            modifiedAfter: now ? dayjs(now).toDate().toISOString() : null,
+            modifiedAfter: dayjs(now).toDate().toISOString(),
             queryTimeStamp: now as unknown as string
         };
 
         if (syncType === SyncType.INITIAL) {
             body.queryTimeStamp = null;
+            body.modifiedAfter = null;
         }
 
         if (responseResults.deleted && responseResults.deleted > 0) {
