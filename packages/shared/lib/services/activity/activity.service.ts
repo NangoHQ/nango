@@ -248,7 +248,7 @@ export async function getTopLevelLogByEnvironment(
     return logs || [];
 }
 
-export async function activityFilter(environment_id: number, filterColumn: 'connection_id' | 'provider'): Promise<string[]> {
+export async function activityFilter(environment_id: number, filterColumn: 'connection_id' | 'provider_config_key'): Promise<string[]> {
     const logsQuery = db.knex
         .from<ActivityLog>('_nango_activity_logs')
         .where({ environment_id })
