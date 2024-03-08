@@ -1,0 +1,100 @@
+integrations:
+  netsuite:
+    syncs:
+      netsuite-contacts-sync:
+        description: |
+          Fetches all netsuite customers.
+          Details: full sync.
+        runs: every hour
+        output: Contact
+        sync_type: full
+        auto_start: false
+        endpoint: GET /netsuite/contacts
+      netsuite-accounts-sync:
+        description: |
+          Fetches all accounts in netsuite
+          Details: full sync.
+        runs: every hour
+        output: Account
+        sync_type: full
+        auto_start: false
+        endpoint: GET /netsuite/accounts
+    actions:
+      netsuite-create-contact:
+        description: |
+          Creates one or multiple customers in netsuite.
+          Note: Does NOT check if the contacts already exist.
+        input: Contact[]
+        output: ContactActionResponse
+        endpoint: POST /netsuite/contacts
+      netsuite-update-contact:
+        description: |
+          Updates one or multiple customers in netsuite.
+        input: Contact[]
+        output: ContactActionResponse
+        endpoint: PUT /netsuite/contacts
+      netsuite-create-invoice:
+        description: |
+          Creates one or more invoices in netsuite.
+          Note: Does NOT check if the invoice already exists.
+        input: Invoice[]
+        output: InvoiceActionResponse
+        endpoint: POST /netsuite/invoices
+      netsuite-update-invoice:
+        description: |
+          Updates one or more invoices in netsuite.
+        input: Invoice[]
+        output: InvoiceActionResponse
+        endpoint: PUT /netsuite/invoices
+
+models:
+  Contact:
+    id: string
+    name: string
+    external_id: string
+    email: string | null
+    tax_number: string | null
+    address_line_1: string | null
+    address_line_2: string | null
+    city: string | null
+    zip: string | null
+    country: string | null
+    state: string | null
+    phone: string | null
+    subsidiary: string | null
+  FailedContact:
+    __extends: Contact
+    validation_errors: any[]
+  ContactActionResponse:
+    succeededContacts: Contact[]
+    failedContacts: FailedContact[]
+
+  Account:
+    id: string
+    code: string
+    name: string
+    type: string
+    tax_type: string
+    description: string | null
+    class: string
+    bank_account_type: string
+    reporting_code: string
+    reporting_code_name: string
+
+  Invoice:
+    id: string
+    type: string
+    external_contact_id: string
+    issuing_date: date
+    payment_due_date: date | null
+    status: string
+    number: string
+    currency: string
+    purchase_order: string | null
+    fees: InvoiceFee[]
+  FailedInvoice:
+    __extends: Invoice
+    validation_errors: any[]
+  InvoiceActionResponse:
+    succeededInvoices: Invoice[]
+    failedInvoices: FailedInvoice[]
