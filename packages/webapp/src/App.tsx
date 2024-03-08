@@ -140,17 +140,17 @@ const App = () => {
                         <Route path="/:env/project-settings" element={<ProjectSettings />} />
                     </Route>
                     <Route path="/auth-link" element={<AuthLink />} />
-                    {(isCloud() || isEnterprise()) && (
+                    {(isCloud() || isEnterprise() || isLocal()) && (
                         <>
                             <Route path="/:env/account-settings" element={<AccountSettings />} />
                             <Route path="/:env/user-settings" element={<UserSettings />} />
                             <Route path="/signin" element={<Signin />} />
-                            <Route path="/signup" element={<Signup />} />
                             <Route path="/signup/:token" element={<InviteSignup />} />
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
                         </>
                     )}
+                    {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </SentryRoutes>
             </SWRConfig>
