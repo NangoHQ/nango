@@ -150,7 +150,7 @@ class WebhookService {
                 deleted: 0
             },
             syncType,
-            modifiedAfter: dayjs(now).toDate().toISOString(),
+            modifiedAfter: now ? dayjs(now).toDate().toISOString() : null,
             queryTimeStamp: now as unknown as string
         };
 
