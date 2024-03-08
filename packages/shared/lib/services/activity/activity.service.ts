@@ -255,6 +255,7 @@ export async function activityFilter(environment_id: number, filterColumn: 'conn
             environment_id
         })
         .andWhereNot({
+            [filterColumn]: '',
             action: 'sync deploy'
         })
         .whereNotNull(filterColumn)
@@ -266,7 +267,7 @@ export async function activityFilter(environment_id: number, filterColumn: 'conn
 
     const distinctValues: string[] = logs
         .map((log: Record<string, string>) => log[filterColumn] as string)
-        .filter((value: string | undefined): value is string => typeof value === 'string' && value !== '');
+        .filter((value: string | undefined): value is string => typeof value === 'string');
 
     return distinctValues;
 }
