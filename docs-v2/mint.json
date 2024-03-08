@@ -264,6 +264,7 @@
                     "group": "Integration Templates",
                     "icon": "sheet-plastic",
                     "pages": [
+                        "integrations/integration-templates/algolia",
                         "integrations/integration-templates/asana",
                         "integrations/integration-templates/ashby",
                         "integrations/integration-templates/bamboohr",
