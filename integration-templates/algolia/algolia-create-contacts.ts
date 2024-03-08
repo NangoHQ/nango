@@ -20,6 +20,8 @@ export default async function runAction(nango: NangoAction, input: AlgoliaCreate
             objectID: resp.data.objectID
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }
