@@ -362,7 +362,7 @@ paths:
                                     description: (OAuth 2, optional) In seconds.
                                 no_expiration:
                                     type: boolean
-                                    description: (OAuth2, optional) If the provider gives access tokens that don't expire pass in true for this parameter to avoid passing an expiration for the access token.
+                                    description: (OAuth2, optional) If the provider gives access tokens that don't expire, pass in `true` to avoid an import validation error.
                                 oauth_token:
                                     type: string
                                     description: (OAuth 1, required) The client token to be attached to the connection.

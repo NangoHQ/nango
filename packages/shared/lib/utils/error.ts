@@ -202,7 +202,12 @@ export class NangoError extends Error {
 
             case 'missing_expires_at':
                 this.status = 400;
-                this.message = `Importing an OAuth2 token requires the 'expires_at' parameter. If the token doesn't expire pass in the noExpiration parameter`;
+                this.message = `Importing an OAuth2 token requires the 'expires_at' parameter. If the token doesn't expire pass in the 'no_expiration' parameter`;
+                break;
+
+            case 'invalid_expires_at':
+                this.status = 400;
+                this.message = `The provided 'expires_at' parameter is invalid. It should be a valid date`;
                 break;
 
             case 'missing_hmac':

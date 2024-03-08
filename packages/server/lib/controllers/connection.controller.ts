@@ -540,6 +540,11 @@ class ConnectionController {
                     return;
                 }
 
+                if (parsedExpiresAt && isNaN(parsedExpiresAt.getTime())) {
+                    errorManager.errRes(res, 'invalid_expires_at');
+                    return;
+                }
+
                 oAuthCredentials = {
                     type: template.auth_mode,
                     access_token,
