@@ -29,6 +29,7 @@ import {
     slackNotificationService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { NANGO_ADMIN_UUID } from './account.controller.js';
 
 class ConnectionController {
     /**
@@ -369,7 +370,7 @@ class ConnectionController {
             }
 
             const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
-            const nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
+            const nangoAdminUUID = NANGO_ADMIN_UUID;
             const env = 'prod';
 
             const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
