@@ -140,14 +140,17 @@ class ModelService {
                 tsType = `${tsType} | undefined`;
             }
 
-            const isEnum = tsType.includes('|') && !JAVASCRIPT_PRIMITIVES.includes(tsType);
+            if (tsType.includes('|')) {
+                const types = tsType.split('|');
+                const isEnum = types.every((type) => !JAVASCRIPT_PRIMITIVES.includes(type.trim()));
 
-            if (isEnum) {
-                const enumValues = tsType
-                    .split('|')
-                    .map((e) => `'${e.trim()}'`)
-                    .join(' | ');
-                tsType = enumValues;
+                if (isEnum) {
+                    const enumValues = tsType
+                        .split('|')
+                        .map((e) => `'${e.trim()}'`)
+                        .join(' | ');
+                    tsType = enumValues;
+                }
             }
 
             return tsType;
