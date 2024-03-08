@@ -1,6 +1,12 @@
 import type { NangoAction, AlgoliaContact, AlgoliaCreateContactInput } from './models';
 
 export default async function runAction(nango: NangoAction, input: AlgoliaCreateContactInput): Promise<AlgoliaContact> {
+    if (!input.name) {
+        throw new nango.ActionError({
+            message: 'name is a required field'
+        });
+    }
+
     const endpoint = `/1/indexes/contacts`;
 
     try {

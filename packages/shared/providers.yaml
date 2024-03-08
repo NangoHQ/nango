@@ -63,7 +63,7 @@ airtable:
     docs: https://docs.nango.dev/integrations/all/airtable
 algolia:
     categories:
-        - other
+        - search
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.APP_ID}.algolia.net
