@@ -251,7 +251,12 @@ export async function getTopLevelLogByEnvironment(
 export async function activityFilter(environment_id: number, filterColumn: 'connection_id' | 'provider_config_key'): Promise<string[]> {
     const logsQuery = db.knex
         .from<ActivityLog>('_nango_activity_logs')
-        .where({ environment_id })
+        .where({
+            environment_id
+        })
+        .andWhereNot({
+            action: 'sync deploy'
+        })
         .whereNotNull(filterColumn)
         .groupBy(filterColumn)
         .select(filterColumn)
@@ -261,7 +266,7 @@ export async function activityFilter(environment_id: number, filterColumn: 'conn
 
     const distinctValues: string[] = logs
         .map((log: Record<string, string>) => log[filterColumn] as string)
-        .filter((value: string | undefined): value is string => typeof value === 'string');
+        .filter((value: string | undefined): value is string => typeof value === 'string' && value !== '');
 
     return distinctValues;
 }
