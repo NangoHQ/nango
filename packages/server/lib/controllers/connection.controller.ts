@@ -535,7 +535,7 @@ class ConnectionController {
                     return;
                 }
 
-                if (!parsedExpiresAt && noExpiration && noExpiration !== true) {
+                if (!parsedExpiresAt && noExpiration !== true) {
                     errorManager.errRes(res, 'missing_expires_at');
                     return;
                 }
