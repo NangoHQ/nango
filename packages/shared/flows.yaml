@@ -744,7 +744,7 @@ integrations:
         track_deletes: true
         output: OrganizationalUnit
         sync_type: full
-        endpoint: /google-workspace/org-unit
+        endpoint: /google/workspace-org-unit
         scopes:
           - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
           - https://www.googleapis.com/auth/admin.directory.user.readonly
@@ -752,12 +752,12 @@ integrations:
         runs: every hour
         output: User
         sync_type: full
-        endpoint: /google-workspace/users
+        endpoint: /google/workspace-users
       google-workspace-user-access-tokens:
         runs: every hour
         output: GoogleWorkspaceUserToken
         sync_type: full
-        endpoint: /google-workspace/user-access-tokens
+        endpoint: /google/workspace-user-access-tokens
         scopes:
           - https://www.googleapis.com/auth/admin.directory.user.readonly
           - https://www.googleapis.com/auth/admin.directory.user.security
