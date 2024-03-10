@@ -737,7 +737,7 @@ integrations:
         subject: string
         body: string
         threadId: string
-  google-workspace:
+  google:
     syncs:
       google-workspace-org-unit:
         runs: every 6 hours

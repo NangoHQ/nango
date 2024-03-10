@@ -1,5 +1,5 @@
 integrations:
-  google-workspace:
+  google:
     syncs:
       google-workspace-org-unit:
         runs: every 6 hours
