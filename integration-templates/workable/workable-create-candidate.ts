@@ -1,68 +1,4 @@
-import type { NangoAction, WorkableCreateCandidateResponse } from './models';
-
-interface EducationEntry {
-    school: string;
-    degree?: string;
-    field_of_study?: string;
-    start_date?: string;
-    end_date?: string;
-}
-
-interface ExperienceEntry {
-    title: string;
-    summary?: string;
-    start_date?: string;
-    end_date?: string;
-    current?: boolean;
-    company?: string;
-    industry?: string;
-}
-
-interface Answer {
-    question_key: string;
-    body?: string;
-    choices?: string[];
-    checked?: boolean;
-    date?: string;
-    number?: number;
-    file?: {
-        name: string;
-        data: string;
-    };
-}
-
-interface SocialProfile {
-    type: string;
-    name?: string;
-    username?: string;
-    url: string;
-}
-
-interface WorkableCreateCandidateInput {
-    shortcode: string;
-    candidate: {
-        name: string;
-        firstname: string;
-        lastname: string;
-        email: string;
-        headline?: string;
-        summary?: string;
-        address?: string;
-        phone?: string;
-        cover_letter?: string;
-        education_entries?: EducationEntry[];
-        experience_entries?: ExperienceEntry[];
-        answers?: Answer[];
-        skills?: string[];
-        tags?: string[];
-        disqualified?: boolean;
-        disqualification_reason?: string;
-        disqualified_at?: string;
-        social_profiles?: SocialProfile[];
-    };
-    domain?: string;
-    recruiter_key?: string;
-}
+import type { NangoAction, WorkableCreateCandidateResponse, WorkableCreateCandidateInput } from './models';
 
 export default async function runAction(nango: NangoAction, input: WorkableCreateCandidateInput): Promise<WorkableCreateCandidateResponse> {
     if (!input.shortcode) {
@@ -146,6 +82,8 @@ export default async function runAction(nango: NangoAction, input: WorkableCreat
             candidate: resp.data.candidate
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

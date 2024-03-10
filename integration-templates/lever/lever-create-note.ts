@@ -1,15 +1,4 @@
-import type { NangoAction, LeverOpportunityNote } from './models';
-
-interface LeverCreateNoteInput {
-    opportunityId: string;
-    perform_as?: string;
-    note_id?: string;
-    value: string;
-    secret?: boolean;
-    score?: number;
-    notifyFollowers?: boolean;
-    createdAt?: number;
-}
+import type { NangoAction, LeverOpportunityNote, LeverCreateNoteInput } from './models';
 
 export default async function runAction(nango: NangoAction, input: LeverCreateNoteInput): Promise<LeverOpportunityNote> {
     if (!input.opportunityId) {
@@ -58,6 +47,8 @@ export default async function runAction(nango: NangoAction, input: LeverCreateNo
             deletedAt: resp.data.data.deletedAt
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

@@ -1,36 +1,4 @@
-import type { NangoAction, HackerRankWorkTest } from './models';
-
-interface HackerRankWorkCreateTestInput {
-    name: string;
-    starttime: Date;
-    endtime: Date;
-    duration: number;
-    instructions: string;
-    locked: boolean;
-    draft: string;
-    languages: string[];
-    candidate_details: string[];
-    custom_acknowledge_text: string;
-    cutoff_score: number;
-    master_password: string;
-    hide_compile_test: boolean;
-    tags: string[];
-    role_ids: string[];
-    experience: string[];
-    questions: string[];
-    mcq_incorrect_score: number;
-    mcq_correct_score: number;
-    secure: boolean;
-    shuffle_questions: boolean;
-    test_admins: string[];
-    hide_template: boolean;
-    enable_acknowledgement: boolean;
-    enable_proctoring: boolean;
-    candidate_tab_switch: boolean;
-    track_editor_paste: boolean;
-    show_copy_paste_prompt: boolean;
-    ide_config: string;
-}
+import type { NangoAction, HackerRankWorkTest, HackerRankWorkCreateTestInput } from './models';
 
 const mapInputToPostData = (input: HackerRankWorkCreateTestInput): Record<string, any> => {
     return { ...input };
@@ -74,6 +42,8 @@ export default async function runAction(nango: NangoAction, input: HackerRankWor
             permission: resp.data.permission
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

@@ -4,7 +4,7 @@ integrations:
       slack-users:
         runs: every hour
         description: |
-          Syncs information about all Users on the Slack workspace.
+          Syncs information about all Users on the Slack workspace
         output: SlackUser
         sync_type: full
         endpoint: /slack/users
@@ -34,9 +34,12 @@ integrations:
           detection of the channel. For subsequent runs it will sync messages,
           threads & reactions from the last 10 days. Scopes required:
           channels:read, and at least one of
-          channels:history,groups:history,mpim:history,im:history
-        output: SlackMessage
-        sync_type: full
+          channels:history, groups:history, mpim:history, im:history
+        output:
+          - SlackMessage
+          - SlackMessageReply
+          - SlackMessageReaction
+        sync_type: incremental
         endpoint: /slack/messages
         scopes:
           - channels:read

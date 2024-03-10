@@ -7,8 +7,7 @@ integrations:
                 sync_type: full
                 scopes: public_repo
                 description: |
-                    Fetches the Github issues from all a user's repositories.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches Github issues from all a user's repositories
                 endpoint: /github/issues
             github-issues-lite:
                 runs: every day
@@ -17,37 +16,33 @@ integrations:
                 output: Issue
                 scopes: public_repo
                 description: |
-                    Fetches the Github issues but up to a maximum of 15 for demo
-                    purposes.
-                    Details: limited sync, doesn't track deletes, metadata is not required.
-                endpoint: /github/lite-issues
+                    Fetches Github issues but up to a maximum of 15
+                endpoint: /github/issues-lite
             github-list-files:
                 runs: every hour
                 description: |
-                    Lists all the files of a Github repo given a specific branch.
-                    Details: doesn't track deletes, metadata is required.
+                    Lists all the files of a Github repo given a specific branch
                 sync_type: incremental
                 auto_start: false
                 input: GithubIssueRepoInput
                 output: GithubRepoFile
-                endpoint: /github/files
+                endpoint: /github/list-files
                 scopes: repo
         actions:
             github-write-file:
                 scopes: repo
                 input: GithubWriteFileInput
                 output: GithubWriteFileActionResult
-                endpoint: PUT /github/file
+                endpoint: PUT /github/write-file
                 description: |
                     Write content to a particular github file within a repo. If
-                    the file doesn't exist it creates and then writes to it.
+                    the file doesn't exist it creates and then writes to it
             github-list-repos:
                 scopes: read:org
-                endpoint: GET /github/repos
-                output:
-                    - GithubRepo
+                endpoint: GET /github/list-repos
+                output: GithubRepo
                 description: |
-                    List github repos from an organization.
+                    List github repos from an organization
 models:
     Issue:
         id: integer

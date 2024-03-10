@@ -1,15 +1,4 @@
-import type { NangoAction, AshbyCreateNoteResponse } from './models';
-
-interface AshbyCreateNoteInput {
-    candidateId: string;
-    note: string | NoteObject;
-    sendNotifications?: boolean;
-}
-
-interface NoteObject {
-    value: string;
-    type: string;
-}
+import type { NangoAction, AshbyCreateNoteResponse, AshbyCreateNoteInput, NoteObject } from './models';
 
 export default async function runAction(nango: NangoAction, input: AshbyCreateNoteInput): Promise<AshbyCreateNoteResponse> {
     if (!input.candidateId) {
@@ -45,6 +34,8 @@ export default async function runAction(nango: NangoAction, input: AshbyCreateNo
 
         return { id, createdAt, content, author };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }
