@@ -690,6 +690,12 @@ integrations:
           and using the ID field provided by the response
           (https://developers.google.com/drive/picker/reference/results)
         input: DocumentMetadata
+        metadata:
+          description: |
+            Metadata is required to filter on a particular folder, or file(s)
+          scopes:
+            - {"folders": ["<some-id>"]}
+            - {"files": ["<some-id>"]}
         output: Document
         sync_type: full
         endpoint: /google-drive/documents
@@ -731,28 +737,30 @@ integrations:
         subject: string
         body: string
         threadId: string
-  google:
+  google-workspace:
     syncs:
       google-workspace-org-unit:
         runs: every 6 hours
         track_deletes: true
         output: OrganizationalUnit
         sync_type: full
-        endpoint: /google/workspace-org-unit
-        scopes: >-
-          https://www.googleapis.com/auth/admin.directory.orgunit.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
+        endpoint: /google-workspace/org-unit
+        scopes:
+          - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
+          - https://www.googleapis.com/auth/admin.directory.user.readonly
       google-workspace-users:
         runs: every hour
         output: User
         sync_type: full
-        endpoint: /google/workspace-users
+        endpoint: /google-workspace/users
       google-workspace-user-access-tokens:
         runs: every hour
         output: GoogleWorkspaceUserToken
         sync_type: full
-        endpoint: /google/workspace-user-access-tokens
-        scopes: >-
-          https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
+        endpoint: /google-workspace/user-access-tokens
+        scopes:
+          - https://www.googleapis.com/auth/admin.directory.user.readonly
+          - https://www.googleapis.com/auth/admin.directory.user.security
     models:
       OrganizationalUnit:
         id: string
@@ -2201,11 +2209,10 @@ integrations:
       teamtailor-candidates:
         runs: every 6 hours
         description: |
-            Fetches a list of all candidates from your teamtailor account.
-            Details: full sync, doesn't track deletes, metadata is not required.
+            Fetches a list of all candidates from your teamtailor account
         output: TeamtailorCandidate
         sync_type: full
-        endpoint: /teamtailor-candidates/candidates
+        endpoint: /teamtailor/candidates
         scopes:
           - Admin
     models:

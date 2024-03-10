@@ -17,6 +17,12 @@ integrations:
           and using the ID field provided by the response
           (https://developers.google.com/drive/picker/reference/results)
         input: DocumentMetadata
+        metadata:
+          description: |
+            Metadata is required to filter on a particular folder, or file(s)
+          scopes:
+            - {"folders": ["<some-id>"]}
+            - {"files": ["<some-id>"]}
         output: Document
         sync_type: full
         endpoint: /google-drive/documents
@@ -29,7 +35,7 @@ integrations:
           into a buffer and return a base64 encoded string that can later
           be converted into a PDF using an external tool.
         output: string
-        endpoint: /google-drive/fetch-pdf
+        endpoint: POST /google-drive/fetch-pdf
         scopes: https://www.googleapis.com/auth/drive.readonly
 models:
   DocumentMetadata:
