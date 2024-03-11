@@ -74,7 +74,15 @@ models:
     return (
         <Bloc
             title="Deploy an integration"
-            subtitle={<>The following script will sync GitHub issues (from this showcase repo) to Nango. Scripts run on Nango&apos;s architecture.</>}
+            subtitle={
+                <>
+                    The following script will sync GitHub issues (from this{' '}
+                    <a href="https://github.com/NangoHQ/interactive-demo" target="_blank" rel="noreferrer" className="underline">
+                        showcase repo
+                    </a>
+                    ) to Nango. Scripts run on Nango&apos;s architecture.
+                </>
+            }
             active={step === Steps.Authorize}
             done={step >= Steps.Deploy}
         >
@@ -108,7 +116,6 @@ models:
                 <div className="flex items-center px-4 py-4">
                     {step === Steps.Authorize ? (
                         <Button type="button" variant="primary" onClick={onDeploy}>
-                            <img className="h-5" src="/images/unlock-icon.svg" alt="" />
                             Deploy GitHub integration
                         </Button>
                     ) : (

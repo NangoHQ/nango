@@ -101,7 +101,20 @@ export const FetchBloc: React.FC<{
     return (
         <Bloc
             title="Fetch the new data"
-            subtitle={<>Fetch sample GitHub issues in your backend, via Nango.</>}
+            subtitle={
+                <>
+                    Fetch{' '}
+                    <a
+                        href="https://github.com/NangoHQ/interactive-demo/issues?q=is%3Aissue+is%3Aopen+label%3Ademo"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline"
+                    >
+                        sample GitHub
+                    </a>{' '}
+                    issues in your backend, via Nango.
+                </>
+            }
             active={step === Steps.Webhooks}
             done={step >= Steps.Fetch}
         >

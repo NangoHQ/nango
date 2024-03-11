@@ -17,7 +17,10 @@ import {
     DEMO_MODEL,
     getSyncByIdAndName,
     DEFAULT_GITHUB_CLIENT_ID,
-    DEFAULT_GITHUB_CLIENT_SECRET
+    DEFAULT_GITHUB_CLIENT_SECRET,
+    DEMO_SYNC_ACTION,
+    SyncCommand,
+    SyncStatus
     // SyncStatus,
     // SyncCommand
 } from '@nangohq/shared';
@@ -45,7 +48,7 @@ class OnboardingController {
                 return;
             }
 
-            const { user, account, environment } = response;
+            const { user, environment } = response;
 
             if (environment.name !== 'dev') {
                 res.status(400).json({ error: 'onboarding_dev_only' });
@@ -56,7 +59,7 @@ class OnboardingController {
             }
 
             // Create an onboarding state to remember where user left
-            const onboardingId = await initOnboarding(user.id, account.id);
+            const onboardingId = await initOnboarding(user.id);
             if (!onboardingId) {
                 res.status(500).json({
                     error: 'Failed to create onboarding'
@@ -177,7 +180,6 @@ class OnboardingController {
                 throw new Error('failed_to_find_demo_sync');
             }
 
-            githubDemoSync.runs = 'every 5 minutes';
             const config: IncomingPreBuiltFlowConfig[] = [
                 {
                     provider: 'github',
@@ -190,6 +192,16 @@ class OnboardingController {
                     model_schema: JSON.stringify(githubDemoSync?.models),
                     is_public: true,
                     public_route: 'github'
+                },
+                {
+                    provider: 'github',
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    type: SyncConfigType.ACTION,
+                    name: DEMO_SYNC_ACTION,
+                    is_public: true,
+                    runs: 'every day',
+                    models: [],
+                    model_schema: ''
                 }
             ];
             const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');
@@ -236,6 +248,10 @@ class OnboardingController {
                 return;
             }
 
+            if (!job.nextScheduledSyncAt && job.jobStatus === SyncStatus.PAUSED) {
+                await syncOrchestrator.runSyncCommand(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], SyncCommand.RUN_FULL, req.body.connectionId);
+            }
+
             res.status(200).json(job);
         } catch (err) {
             next(err);
@@ -260,14 +276,14 @@ class OnboardingController {
                 return;
             }
 
-            const { account, user } = response;
+            const { user } = response;
             const status = await getOnboardingProgress(user.id);
             if (!status) {
                 res.status(404).send({ message: 'no_onboarding' });
                 return;
             }
 
-            await updateOnboardingProgress(status.id, req.body.progress, user.id, account.id);
+            await updateOnboardingProgress(status.id, req.body.progress);
 
             res.status(200).json({
                 success: true

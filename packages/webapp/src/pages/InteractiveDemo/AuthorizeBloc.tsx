@@ -7,6 +7,7 @@ import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Bloc, Tab } from './Bloc';
+import { GitHubLogoIcon } from '@radix-ui/react-icons';
 
 export const AuthorizeBloc: React.FC<{
     step: Steps;
@@ -82,7 +83,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                 <div className="px-5 py-4 bg-zinc-900 rounded-lg">
                     {step === Steps.Start ? (
                         <Button type="button" variant="primary" onClick={onAuthorize}>
-                            <img className="h-5" src="/images/unlock-icon.svg" alt="" />
+                            <GitHubLogoIcon />
                             Authorize GitHub
                         </Button>
                     ) : (

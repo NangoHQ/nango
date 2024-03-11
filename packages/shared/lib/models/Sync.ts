@@ -57,11 +57,14 @@ export interface Job extends TimestampsAndDeleted {
 
 export interface ReportedSyncJobStatus {
     id?: string;
+    type: SyncType;
     name?: string;
     status: SyncStatus;
     latestResult?: SyncResultByModel;
     jobStatus?: SyncStatus;
     frequency: string;
+    finishedAt: Date;
+    nextScheduledSyncAt: Date | null;
 }
 
 export interface SyncModelSchema {
@@ -216,11 +219,11 @@ export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any> & { id: string | number };
 
-export type EncryptedRawRecord = {
+export interface EncryptedRawRecord {
     iv: string;
     authTag: string;
     encryptedValue: string;
-};
+}
 
 export type UnencryptedRawRecord = Record<string, any> & { id: string | number };
 

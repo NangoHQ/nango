@@ -97,7 +97,6 @@ const issues = await nango.triggerAction(
                 <div className="px-4 py-4">
                     {step === Steps.Fetch ? (
                         <Button type="button" variant="primary" onClick={onDeploy}>
-                            <img className="h-5" src="/images/unlock-icon.svg" alt="" />
                             Create GitHub issue
                         </Button>
                     ) : (

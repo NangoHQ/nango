@@ -15,9 +15,11 @@ import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
 import { Account, OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
+import Spinner from '../../components/ui/Spinner';
 
 export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
+    const [initialLoad, setInitialLoad] = useState(false);
     const [step, setStep] = useState<Steps>(Steps.Start);
     const [publicKey, setPublicKey] = useState('');
     const [secretKey, setSecretKey] = useState('');
@@ -75,6 +77,8 @@ export const InteractiveDemo: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' }
             });
 
+            setInitialLoad(true);
+
             if (res.status !== 200) {
                 return;
             }
@@ -93,7 +97,7 @@ export const InteractiveDemo: React.FC = () => {
         if (connectionId) {
             void getProgress();
         }
-    }, [loaded, setLoaded, connectionId]);
+    }, [setInitialLoad, connectionId]);
 
     const updateProgress = async (args: { progress: number }) => {
         const res = await fetch(`/api/v1/onboarding`, {
@@ -173,43 +177,48 @@ export const InteractiveDemo: React.FC = () => {
         <DashboardLayout selectedItem={LeftNavBarItems.InteractiveDemo}>
             <div className="text-white pb-10">
                 <div>
-                    <h1 className="text-left text-3xl font-semibold tracking-tight text-white">
-                        <span onDoubleClick={resetOnboarding}>Interactive Demo</span>
+                    <h1 className="text-left text-3xl font-semibold tracking-tight text-white flex items-center gap-4">
+                        <span onDoubleClick={resetOnboarding}>Interactive Demo </span>
+                        {(!loaded || !initialLoad) && <Spinner size={1.2} />}
                     </h1>
                     <h2 className="mt-2 text-sm text-zinc-400">Using GitHub as an example, discover how to integrate with Nango in 3 minutes.</h2>
                 </div>
                 <div className="flex flex-col gap-8 mt-10">
-                    <AuthorizeBloc
-                        step={step}
-                        connectionId={connectionId}
-                        hostUrl={hostUrl}
-                        providerConfigKey={providerConfigKey}
-                        publicKey={publicKey}
-                        onProgress={onAuthorize}
-                    />
+                    {loaded && initialLoad && (
+                        <>
+                            <AuthorizeBloc
+                                step={step}
+                                connectionId={connectionId}
+                                hostUrl={hostUrl}
+                                providerConfigKey={providerConfigKey}
+                                publicKey={publicKey}
+                                onProgress={onAuthorize}
+                            />
 
-                    <DeployBloc step={step} onProgress={onDeploy} />
+                            <DeployBloc step={step} onProgress={onDeploy} />
 
-                    <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
+                            <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
 
-                    <FetchBloc
-                        step={step}
-                        connectionId={connectionId}
-                        providerConfigKey={providerConfigKey}
-                        secretKey={secretKey}
-                        records={records}
-                        onProgress={onFetch}
-                    />
+                            <FetchBloc
+                                step={step}
+                                connectionId={connectionId}
+                                providerConfigKey={providerConfigKey}
+                                secretKey={secretKey}
+                                records={records}
+                                onProgress={onFetch}
+                            />
 
-                    <ActionBloc
-                        step={step}
-                        connectionId={connectionId}
-                        providerConfigKey={providerConfigKey}
-                        secretKey={secretKey}
-                        onProgress={onActionConfirm}
-                    />
+                            <ActionBloc
+                                step={step}
+                                connectionId={connectionId}
+                                providerConfigKey={providerConfigKey}
+                                secretKey={secretKey}
+                                onProgress={onActionConfirm}
+                            />
 
-                    {step >= Steps.Write && <NextBloc />}
+                            {step >= Steps.Write && <NextBloc />}
+                        </>
+                    )}
                 </div>
             </div>
         </DashboardLayout>
