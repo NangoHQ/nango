@@ -1,4 +1,6 @@
 import parser from 'cron-parser';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
@@ -359,4 +361,8 @@ export function parseEndpoint(endpoint: string | FlowEndpoint): string {
     }
 
     return Object.values(endpoint)[0];
+}
+
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
 }
