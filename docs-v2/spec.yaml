@@ -360,6 +360,9 @@ paths:
                                 expires_in:
                                     type: integer
                                     description: (OAuth 2, optional) In seconds.
+                                no_expiration:
+                                    type: boolean
+                                    description: (OAuth2, optional) If the provider gives access tokens that don't expire, pass in `true` to avoid an import validation error.
                                 oauth_token:
                                     type: string
                                     description: (OAuth 1, required) The client token to be attached to the connection.
@@ -728,32 +731,38 @@ paths:
                   schema:
                       type: string
                   description: The data model to fetch
-                - name: delta
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                  description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
-                - name: limit
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                  description: The maximum number of records to return. Defaults to 100.
                 - name: cursor
                   in: query
                   required: false
                   schema:
                       type: string
                   description: |
-                    Base 64 encoded value that can be used to fetch the next page of results. The cursor will be included until there are no more results to paginate through.
+                    Each record from this method comes with a synchronization cursor in `_nango_metadata.cursor`. Save the last fetched record's cursor to track how far you've synced. By providing the cursor to this endpoint, you'll continue syncing from where you left off, receiving only post-cursor changes. This same cursor is used to paginate through the results of this endpoint.
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: The maximum number of records to return. Defaults to 100.
                 - name: filter
                   in: query
                   required: false
                   schema:
                       type: string
                       enum: [added, updated, deleted]
-                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the delta parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
+                  description: Filter to only show results that have been added or updated or deleted.
+                - name: modified_after
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records modified after this timestamp are returned, otherwise all records are returned.
+                - name: delta (deprecated)
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: DEPRECATED (use modified_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
                 - name: Connection-Id
                   in: header
                   required: true
@@ -803,6 +812,10 @@ paths:
                                                             type: string
                                                             description: The timestamp at which Nango last detected a change to this record
                                                             example: "2023-09-18T15:20:35.941305+00:00"
+                                                        cursor:
+                                                            type: string
+                                                            description: The current cursor of the record. Use this to fetch records updated after this record
+                                                            example: "MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=="
                                     next_cursor:
                                         type: string
                                         description: The base64-encoded cursor for pagination

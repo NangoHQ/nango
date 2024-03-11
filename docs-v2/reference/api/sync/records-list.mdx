@@ -4,11 +4,15 @@ sidebarTitle: 'Get records'
 openapi: 'GET /records'
 ---
 
-## The `delta` parameter & webhooks
+## Receive webhooks on data updates
 
-If you are receiving the webhooks from Nango ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango)), you can use the timestamp you get from the webhook for the `delta` parameter.
+Receive webhooks from Nango when new records are available ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango)).
 
 ## Response
+
+<Tip>
+This endpoint returns a list of records, ordered by modification date ascending. If some records are updated while you paginate through this endpoint, you might see these records multiple times.
+</Tip>
 
 ### Default behaviour
 By default this returns an array of objects in the data model that you queried with some metadata about each record.
@@ -24,7 +28,8 @@ By default this returns an array of objects in the data model that you queried w
                     deleted_at: null,
                     last_action: 'ADDED',
                     first_seen_at: '2023-09-18T15:20:35.941305+00:00',
-                    last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+                    last_modified_at: '2023-09-18T15:20:35.941305+00:00',
+                    cursor: 'MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=='
                 }
             },
             ...

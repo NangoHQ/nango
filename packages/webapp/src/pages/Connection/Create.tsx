@@ -63,7 +63,7 @@ export default function IntegrationCreate() {
 
     useEffect(() => {
         const getHmac = async () => {
-            let res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
+            const res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
 
             if (res?.status === 200) {
                 const hmacDigest = (await res.json())['hmac_digest'];
@@ -77,14 +77,14 @@ export default function IntegrationCreate() {
 
     useEffect(() => {
         const getIntegrations = async () => {
-            let res = await getIntegrationListAPI();
+            const res = await getIntegrationListAPI();
 
             if (res?.status === 200) {
-                let data = await res.json();
+                const data = await res.json();
                 setIntegrations(data['integrations']);
 
                 if (data['integrations'] && data['integrations'].length > 0) {
-                    let defaultIntegration = providerConfigKey
+                    const defaultIntegration = providerConfigKey
                         ? data['integrations'].find((i: Integration) => i.uniqueKey === providerConfigKey)
                         : data['integrations'][0];
 
@@ -96,7 +96,7 @@ export default function IntegrationCreate() {
         };
 
         const getAccount = async () => {
-            let res = await getProjectInfoAPI();
+            const res = await getProjectInfoAPI();
 
             if (res?.status === 200) {
                 const account = (await res.json())['account'];
@@ -179,15 +179,15 @@ export default function IntegrationCreate() {
             return;
         }
 
-        let params: Record<string, string> = {};
-        for (let i in integration.connectionConfigParams) {
+        const params: Record<string, string> = {};
+        for (const i in integration.connectionConfigParams) {
             params[integration.connectionConfigParams[i]] = '';
         }
         setConnectionConfigParams(params);
     };
 
     const handleIntegrationUniqueKeyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        let integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
+        const integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
 
         if (integration != null) {
             setIntegration(integration);
@@ -201,7 +201,7 @@ export default function IntegrationCreate() {
     };
 
     const handleConnectionConfigParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
+        const params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
         params[e.target.name.replace('connection-config-', '')] = e.target.value;
         setConnectionConfigParams(params);
     };
@@ -217,7 +217,7 @@ export default function IntegrationCreate() {
     };
 
     const snippet = () => {
-        let args = [];
+        const args = [];
 
         if (isStaging() || isHosted()) {
             args.push(`host: '${hostUrl}'`);
@@ -230,7 +230,7 @@ export default function IntegrationCreate() {
             args.push(`publicKey: '${publicKey}'`);
         }
 
-        let argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
+        const argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
 
         let connectionConfigParamsStr = '';
 
@@ -704,7 +704,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                     </div>
                 </div>
             )}
-            {integrations && !!!integrations.length && (
+            {integrations && !integrations.length && (
                 <div className="mx-auto">
                     <div className="mx-16">
                         <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>

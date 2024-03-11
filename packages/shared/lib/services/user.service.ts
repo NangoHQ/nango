@@ -1,5 +1,6 @@
 import db from '../db/database.js';
 import * as uuid from 'uuid';
+import { isEnterprise } from '../utils/utils.js';
 import type { User, InviteUser } from '../models/Admin.js';
 
 class UserService {
@@ -28,7 +29,15 @@ class UserService {
     }
 
     async getAnUserByAccountId(accountId: number): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId }).orderBy('id', 'asc').limit(1);
+        const result = await db.knex
+            .select('*')
+            .from<User>(`_nango_users`)
+            .where({
+                account_id: accountId,
+                suspended: false
+            })
+            .orderBy('id', 'asc')
+            .limit(1);
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -128,6 +137,18 @@ class UserService {
     async getInvitedUserByToken(token: string): Promise<InviteUser | null> {
         const date = new Date();
 
+        if (isEnterprise() && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
+            return {
+                id: 1,
+                email: '',
+                name: '',
+                account_id: 0,
+                invited_by: 0,
+                token: '',
+                expires_at: new Date(),
+                accepted: true
+            };
+        }
         const result = await db.knex.select('*').from<InviteUser>(`_nango_invited_users`).where({ token }).whereRaw('expires_at > ?', date);
 
         if (result == null || result.length == 0 || result[0] == null) {

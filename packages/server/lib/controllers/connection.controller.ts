@@ -29,6 +29,7 @@ import {
     slackNotificationService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { NANGO_ADMIN_UUID } from './account.controller.js';
 
 class ConnectionController {
     /**
@@ -369,7 +370,7 @@ class ConnectionController {
             }
 
             const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
-            const nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
+            const nangoAdminUUID = NANGO_ADMIN_UUID;
             const env = 'prod';
 
             const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
@@ -523,7 +524,7 @@ class ConnectionController {
             let runHook = false;
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
+                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config, no_expiration: noExpiration } = req.body;
 
                 const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
                     { access_token, refresh_token, expires_at, expires_in },
@@ -534,6 +535,17 @@ class ConnectionController {
                     errorManager.errRes(res, 'missing_access_token');
                     return;
                 }
+
+                if (!parsedExpiresAt && noExpiration !== true) {
+                    errorManager.errRes(res, 'missing_expires_at');
+                    return;
+                }
+
+                if (parsedExpiresAt && isNaN(parsedExpiresAt.getTime())) {
+                    errorManager.errRes(res, 'invalid_expires_at');
+                    return;
+                }
+
                 oAuthCredentials = {
                     type: template.auth_mode,
                     access_token,

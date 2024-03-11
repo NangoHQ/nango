@@ -10,7 +10,7 @@ import {
     errorManager,
     userService
 } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {

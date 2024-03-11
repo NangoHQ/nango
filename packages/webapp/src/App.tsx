@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SWRConfig } from 'swr';
 import { Routes, Route, Navigate, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { isCloud, isEnterprise } from './utils/utils';
+import { isCloud, isEnterprise, isLocal } from './utils/utils';
 import { fetcher } from './utils/api';
 import { useStore } from './store';
 
@@ -55,6 +55,12 @@ const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
     const env = useStore((state) => state.cookieValue);
     const signout = useSignout();
+    const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
+
+    useEffect(() => {
+        setShowGettingStarted(env === 'dev' && (isCloud() || isLocal()));
+    }, [env, setShowGettingStarted]);
 
     const correctPage = (): string => {
         const url = new URL(window.location.href);
@@ -69,7 +75,7 @@ const App = () => {
             return url.pathname;
         }
 
-        return env === 'dev' ? '/dev/getting-started' : '/prod/integrations';
+        return showGettingStarted ? '/dev/getting-started' : `/${env}/integrations`;
     };
 
     return (
@@ -101,9 +107,11 @@ const App = () => {
             >
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
-                    <Route path="/dev/getting-started" element={<PrivateRoute />}>
-                        <Route path="/dev/getting-started" element={<GettingStarted />} />
-                    </Route>
+                    {showGettingStarted && (
+                        <Route path="/dev/getting-started" element={<PrivateRoute />}>
+                            <Route path="/dev/getting-started" element={<GettingStarted />} />
+                        </Route>
+                    )}
                     <Route path="/:env/integrations" element={<PrivateRoute />}>
                         <Route path="/:env/integrations" element={<IntegrationList />} />
                     </Route>
@@ -132,17 +140,17 @@ const App = () => {
                         <Route path="/:env/project-settings" element={<ProjectSettings />} />
                     </Route>
                     <Route path="/auth-link" element={<AuthLink />} />
-                    {(isCloud() || isEnterprise()) && (
+                    {(isCloud() || isEnterprise() || isLocal()) && (
                         <>
                             <Route path="/:env/account-settings" element={<AccountSettings />} />
                             <Route path="/:env/user-settings" element={<UserSettings />} />
                             <Route path="/signin" element={<Signin />} />
-                            <Route path="/signup" element={<Signup />} />
                             <Route path="/signup/:token" element={<InviteSignup />} />
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
                         </>
                     )}
+                    {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </SentryRoutes>
             </SWRConfig>

@@ -4,6 +4,7 @@ import webhookService from '../../../services/notification/webhook.service.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { internalNango } from './internal-nango.js';
+import logger from '../../../logger/console.js';
 
 import * as webhookHandlers from './index.js';
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
@@ -33,6 +34,8 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
             res = await handler(internalNango, integration, headers, body, rawBody);
         }
     } catch (e) {
+        logger.error(`[webhook/manager] error processing incoming webhook for ${providerConfigKey} - `, e);
+
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
             accountId: String(accountId),
             environmentId: String(integration.environment_id),
@@ -44,8 +47,9 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
     }
 
     const webhookBodyToForward = res?.parsedBody || body;
+    const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, provider, webhookBodyToForward, headers);
+    await webhookService.forward(integration.environment_id, providerConfigKey, connectionIds, provider, webhookBodyToForward, headers);
 
     await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
         accountId: String(accountId),
