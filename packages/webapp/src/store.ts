@@ -11,11 +11,13 @@ interface State {
     envs: Env[];
     email: string;
     showInteractiveDemo: boolean;
+    debugMode: boolean;
     setCookieValue: (value: string) => void;
     setEnvs: (envs: Env[]) => void;
     setBaseUrl: (value: string) => void;
     setEmail: (value: string) => void;
     setShowInteractiveDemo: (value: boolean) => void;
+    setDebugMode: (value: boolean) => void;
 }
 
 export const useStore = create<State>((set: SetState<State>, get: GetState<State>) => ({
@@ -24,6 +26,7 @@ export const useStore = create<State>((set: SetState<State>, get: GetState<State
     baseUrl: 'https://api.nango.dev',
     email: '',
     showInteractiveDemo: false,
+    debugMode: false,
 
     setCookieValue: (value) => {
         Cookies.set('env', value);
@@ -52,5 +55,9 @@ export const useStore = create<State>((set: SetState<State>, get: GetState<State
 
     setShowInteractiveDemo: (value) => {
         set({ showInteractiveDemo: value });
+    },
+
+    setDebugMode: (value) => {
+        set({ debugMode: value });
     }
 }));
