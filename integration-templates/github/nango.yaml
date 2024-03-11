@@ -57,6 +57,10 @@ integrations:
                     - GithubRepo
                 description: |
                     List github repos from an organization.
+            github-issues-demo-action:
+                endpoint: POST /github/demo-write-issue
+                description: |
+                    Create a GitHub issue in Nango's showcase repository.
 models:
     Issue:
         id: integer
