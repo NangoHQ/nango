@@ -153,9 +153,7 @@ class AccountController {
                 // Modify default session to expires sooner than regular session
                 req.session.cookie.expires = new Date(Date.now() + AUTH_ADMIN_SWITCH_MS);
                 req.session.debugMode = true;
-                logger.info(
-                    `Logged into ${user.account_id} - ${JSON.stringify(req.session)} - ${req.session.cookie.expires.toISOString()} - ${req.session.debugMode}`
-                );
+
                 req.session.save((err) => {
                     if (err) {
                         next(err);
