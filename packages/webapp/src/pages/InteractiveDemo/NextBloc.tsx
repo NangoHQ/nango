@@ -13,12 +13,12 @@ export const NextBloc: React.FC = () => {
 
     const onClickGuides = () => {
         analyticsTrack('web:demo:guide');
-        window.open('https://docs.nango.dev/introduction', '_blank');
+        window.open('https://docs.nango.dev/integrate/guides/authorize-an-api', '_blank');
     };
 
-    const onClickNango = () => {
-        analyticsTrack('web:demo:nango');
-        window.open('https://docs.nango.dev/introduction', '_blank');
+    const onClickLearn = () => {
+        analyticsTrack('web:demo:learn');
+        window.open('https://docs.nango.dev/understand/core-concepts', '_blank');
     };
 
     const onClickJoinCommunity = () => {
@@ -44,7 +44,7 @@ export const NextBloc: React.FC = () => {
                             <RulerSquareIcon />
                             Explore guides
                         </Button>
-                        <Button type="button" variant="secondary" onClick={onClickNango}>
+                        <Button type="button" variant="secondary" onClick={onClickLearn}>
                             <RocketIcon />
                             Learn about Nango
                         </Button>
