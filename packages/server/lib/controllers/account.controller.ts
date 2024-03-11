@@ -62,7 +62,7 @@ class AccountController {
         }
     }
 
-    async switchAccount(req: Request, res: Response, next: NextFunction) {
+    async switchAccount(req: Request<unknown, unknown, { account_uuid?: string; login_reason?: string }>, res: Response, next: NextFunction) {
         if (!AUTH_ADMIN_SWITCH_ENABLED) {
             res.status(400).send('Account switching only allowed in cloud');
 
@@ -100,9 +100,7 @@ class AccountController {
                 return;
             }
 
-            const currentEnvironment = req.cookies['env'] || 'dev';
-
-            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, currentEnvironment);
+            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, response.environment.name);
 
             if (!result) {
                 res.status(400).send({ message: 'Invalid account_uuid' });
@@ -115,17 +113,6 @@ class AccountController {
                 res.status(400).send({ message: 'Cannot switch to account with no users' });
                 return;
             }
-
-            req.login(user, (err) => {
-                if (err) {
-                    next(err);
-                    return;
-                }
-
-                // Modify default session to expires sooner than regular session
-                req.session.cookie.expires = new Date(Date.now() + AUTH_ADMIN_SWITCH_MS);
-                req.session.debugMode = true;
-            });
 
             const log = {
                 level: 'info' as LogLevel,
@@ -147,7 +134,25 @@ class AccountController {
                 content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
             });
 
-            res.status(200).send({ success: true });
+            req.login(user, (err) => {
+                if (err) {
+                    next(err);
+                    return;
+                }
+
+                // Modify default session to expires sooner than regular session
+                req.session.cookie.expires = new Date(Date.now() + AUTH_ADMIN_SWITCH_MS);
+                req.session.debugMode = true;
+
+                req.session.save((err) => {
+                    if (err) {
+                        next(err);
+                        return;
+                    }
+
+                    res.status(200).send({ success: true });
+                });
+            });
         } catch (err) {
             next(err);
         }
