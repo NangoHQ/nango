@@ -185,7 +185,8 @@ class OnboardingController {
 
             const { environment } = response;
             const githubDemoSync = flowService.getFlow(DEMO_SYNC_NAME);
-            if (!githubDemoSync) {
+            const githubDemoAction = flowService.getFlow(DEMO_ACTION_NAME);
+            if (!githubDemoSync || !githubDemoAction) {
                 throw new Error('failed_to_find_demo_sync');
             }
 
@@ -200,7 +201,8 @@ class OnboardingController {
                     models: githubDemoSync.returns,
                     model_schema: JSON.stringify(githubDemoSync?.models),
                     is_public: true,
-                    public_route: 'github'
+                    public_route: 'github',
+                    input: ''
                 },
                 {
                     provider: 'github',
@@ -209,9 +211,10 @@ class OnboardingController {
                     name: DEMO_ACTION_NAME,
                     is_public: true,
                     runs: 'every day',
-                    models: [],
-                    model_schema: '[]',
-                    public_route: 'github'
+                    models: githubDemoAction.returns,
+                    model_schema: JSON.stringify(githubDemoAction?.models),
+                    public_route: 'github',
+                    input: githubDemoAction.input!
                 }
             ];
             const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');

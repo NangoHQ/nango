@@ -148,24 +148,39 @@ export const InteractiveDemo: React.FC = () => {
     const onAuthorize = (id: number) => {
         setOnboardingId(id);
         setStep(Steps.Authorize);
+        setTimeout(() => {
+            document.getElementById('demo-deploy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 16);
     };
 
     const onDeploy = () => {
         setStep(Steps.Deploy);
+        setTimeout(() => {
+            document.getElementById('demo-webhook')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 16);
     };
 
     const onWebhookConfirm = () => {
         analyticsTrack('web:demo:webhook');
         setStep(Steps.Webhooks);
+        setTimeout(() => {
+            document.getElementById('demo-fetch')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 16);
     };
 
     const onFetch = () => {
         void fetchRecords();
         setStep(Steps.Fetch);
+        setTimeout(() => {
+            document.getElementById('demo-action')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 16);
     };
 
     const onActionConfirm = () => {
         setStep(Steps.Write);
+        setTimeout(() => {
+            document.getElementById('demo-next')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 16);
     };
 
     const onClickNext = () => {
@@ -199,28 +214,36 @@ export const InteractiveDemo: React.FC = () => {
                                 onProgress={onAuthorize}
                             />
 
-                            <DeployBloc step={step} onProgress={onDeploy} />
+                            <div id="demo-deploy">
+                                <DeployBloc step={step} onProgress={onDeploy} />
+                            </div>
 
-                            <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
+                            <div id="demo-webhook">
+                                <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
+                            </div>
 
-                            <FetchBloc
-                                step={step}
-                                connectionId={connectionId}
-                                providerConfigKey={providerConfigKey}
-                                secretKey={secretKey}
-                                records={records}
-                                onProgress={onFetch}
-                            />
+                            <div id="demo-fetch">
+                                <FetchBloc
+                                    step={step}
+                                    connectionId={connectionId}
+                                    providerConfigKey={providerConfigKey}
+                                    secretKey={secretKey}
+                                    records={records}
+                                    onProgress={onFetch}
+                                />
+                            </div>
 
-                            <ActionBloc
-                                step={step}
-                                connectionId={connectionId}
-                                providerConfigKey={providerConfigKey}
-                                secretKey={secretKey}
-                                onProgress={onActionConfirm}
-                            />
+                            <div id="demo-action">
+                                <ActionBloc
+                                    step={step}
+                                    connectionId={connectionId}
+                                    providerConfigKey={providerConfigKey}
+                                    secretKey={secretKey}
+                                    onProgress={onActionConfirm}
+                                />
+                            </div>
 
-                            {step >= Steps.Write && <NextBloc onProgress={onClickNext} />}
+                            <div id="demo-next">{step >= Steps.Write && <NextBloc onProgress={onClickNext} />}</div>
                         </>
                     )}
                 </div>
