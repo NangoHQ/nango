@@ -549,7 +549,8 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
 
             if (syncNames === '*') {
-                syncNames = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string).then((syncs) => syncs.map((sync) => sync.name));
+                const syncs = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string);
+                syncNames = syncs.filter((sync) => (connection_id ? sync.connection_id === connection_id : true)).map((sync) => sync.name);
             } else {
                 syncNames = (syncNames as string).split(',');
             }
