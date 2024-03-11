@@ -4,7 +4,7 @@ interface GithubIssueInput {
     title: string;
 }
 
-export default async function runAction(nango: NangoSync, input: GithubIssueInput): Promise<{ status: boolean}> {
+export default async function runAction(nango: NangoSync, input: GithubIssueInput): Promise<{ status: boolean }> {
     // Fetch issues from GitHub
     const res = await nango.post({
         endpoint: '/repos/NangoHQ/interactive-demo/issues',
@@ -18,8 +18,7 @@ Take a look at our [Documentation](https://docs.nango.dev/integrate/guides/perfo
         }
     });
 
-
     return {
-        status: res.status === 201,
+        status: res.status === 201
     };
 }
