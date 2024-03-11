@@ -62,7 +62,7 @@ class AccountController {
         }
     }
 
-    async switchAccount(req: Request, res: Response, next: NextFunction) {
+    async switchAccount(req: Request<unknown, unknown, { account_uuid?: string; login_reason?: string }>, res: Response, next: NextFunction) {
         if (!AUTH_ADMIN_SWITCH_ENABLED) {
             res.status(400).send('Account switching only allowed in cloud');
 
@@ -100,9 +100,7 @@ class AccountController {
                 return;
             }
 
-            const currentEnvironment = req.cookies['env'] || 'dev';
-
-            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, currentEnvironment);
+            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, response.environment.name);
 
             if (!result) {
                 res.status(400).send({ message: 'Invalid account_uuid' });
@@ -125,6 +123,9 @@ class AccountController {
                 // Modify default session to expires sooner than regular session
                 req.session.cookie.expires = new Date(Date.now() + AUTH_ADMIN_SWITCH_MS);
                 req.session.debugMode = true;
+                logger.info(
+                    `Logged into ${user.account_id} - ${JSON.stringify(req.session.user)} - ${req.session.cookie.expires.toISOString()} - ${req.session.debugMode}`
+                );
             });
 
             const log = {
