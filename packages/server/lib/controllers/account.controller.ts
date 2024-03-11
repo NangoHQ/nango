@@ -124,20 +124,6 @@ class AccountController {
                 return;
             }
 
-            req.login(user, (err) => {
-                if (err) {
-                    next(err);
-                    return;
-                }
-
-                // Modify default session to expires sooner than regular session
-                req.session.cookie.expires = new Date(Date.now() + AUTH_ADMIN_SWITCH_MS);
-                req.session.debugMode = true;
-                logger.info(
-                    `Logged into ${user.account_id} - ${JSON.stringify(req.session.user)} - ${req.session.cookie.expires.toISOString()} - ${req.session.debugMode}`
-                );
-            });
-
             const log = {
                 level: 'info' as LogLevel,
                 success: true,
@@ -158,7 +144,27 @@ class AccountController {
                 content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
             });
 
-            res.status(200).send({ success: true });
+            req.login(user, (err) => {
+                if (err) {
+                    next(err);
+                    return;
+                }
+
+                // Modify default session to expires sooner than regular session
+                req.session.cookie.expires = new Date(Date.now() + AUTH_ADMIN_SWITCH_MS);
+                req.session.debugMode = true;
+                logger.info(
+                    `Logged into ${user.account_id} - ${JSON.stringify(req.session)} - ${req.session.cookie.expires.toISOString()} - ${req.session.debugMode}`
+                );
+                req.session.save((err) => {
+                    if (err) {
+                        next(err);
+                        return;
+                    }
+
+                    res.status(200).send({ success: true });
+                });
+            });
         } catch (err) {
             next(err);
         }
