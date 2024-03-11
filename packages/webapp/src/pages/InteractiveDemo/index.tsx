@@ -160,13 +160,17 @@ export const InteractiveDemo: React.FC = () => {
     };
 
     const onFetch = () => {
-        setStep(Steps.Fetch);
         void fetchRecords();
+        setStep(Steps.Fetch);
     };
 
     const onActionConfirm = () => {
-        analyticsTrack('web:demo:action');
         setStep(Steps.Write);
+    };
+
+    const onClickNext = () => {
+        analyticsTrack('web:demo:next');
+        setStep(Steps.Complete);
     };
 
     const resetOnboarding = () => {
@@ -216,7 +220,7 @@ export const InteractiveDemo: React.FC = () => {
                                 onProgress={onActionConfirm}
                             />
 
-                            {step >= Steps.Write && <NextBloc />}
+                            {step >= Steps.Write && <NextBloc onProgress={onClickNext} />}
                         </>
                     )}
                 </div>

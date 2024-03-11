@@ -18,11 +18,15 @@ import {
     getSyncByIdAndName,
     DEFAULT_GITHUB_CLIENT_ID,
     DEFAULT_GITHUB_CLIENT_SECRET,
-    DEMO_SYNC_ACTION,
     SyncCommand,
-    SyncStatus
-    // SyncStatus,
-    // SyncCommand
+    SyncStatus,
+    SyncClient,
+    NangoError,
+    DEMO_ACTION_NAME,
+    createActivityLog,
+    LogActionEnum,
+    isErr,
+    logger
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -38,7 +42,8 @@ interface OnboardingStatus {
 
 class OnboardingController {
     /**
-     * Start an onboarding process
+     * Start an onboarding process.
+     * We create a row in the DB to store the global state and create a GitHub provider so we can launch the oauth process
      */
     async create(req: Request, res: Response, next: NextFunction) {
         try {
@@ -82,7 +87,10 @@ class OnboardingController {
     }
 
     /**
-     * Get the onboarding status
+     * Get the interactive demo status.
+     * We use the progress stored in DB to remember "unprovable step", but most of steps relies on specific data to be present.
+     * So we check if each step has been correctly achieved.
+     * This is particularly useful if we retry, if some parts have failed or if the user has deleted part of the state
      */
     async status(req: Request, res: Response, next: NextFunction) {
         try {
@@ -154,7 +162,7 @@ class OnboardingController {
                 payload.records = getRecords.response?.records || [];
             }
             if (payload.records.length > 0) {
-                payload.progress = 4;
+                payload.progress = status.progress > 4 ? status.progress : 4;
             }
 
             res.status(200).json(payload);
@@ -164,7 +172,8 @@ class OnboardingController {
     }
 
     /**
-     * Create onboarding provider
+     * Create interactive demo Sync and Action
+     * The code can be found in nango-integrations/github
      */
     async deploy(req: Request, res: Response, next: NextFunction) {
         try {
@@ -197,11 +206,12 @@ class OnboardingController {
                     provider: 'github',
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     type: SyncConfigType.ACTION,
-                    name: DEMO_SYNC_ACTION,
+                    name: DEMO_ACTION_NAME,
                     is_public: true,
                     runs: 'every day',
                     models: [],
-                    model_schema: ''
+                    model_schema: '[]',
+                    public_route: 'github'
                 }
             ];
             const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');
@@ -210,12 +220,18 @@ class OnboardingController {
                 return;
             }
 
+            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id);
+
             res.status(200).json({ success: true });
         } catch (err) {
             next(err);
         }
     }
 
+    /**
+     * Check the sync completion state.
+     * It could be replaced by regular API calls.
+     */
     async checkSyncCompletion(req: Request<unknown, unknown, { connectionId?: string }>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
@@ -242,6 +258,15 @@ class OnboardingController {
                 return;
             }
 
+            if (!status || status.length <= 0) {
+                // If for any reason we don't have a sync, because of a partial state
+                logger.info(`[demo] no sync were found ${environment.id}`);
+                await syncOrchestrator.runSyncCommand(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], SyncCommand.RUN_FULL, req.body.connectionId);
+
+                res.status(200).json({ retry: true });
+                return;
+            }
+
             const [job] = status;
             if (!job) {
                 res.status(400).json({ message: 'No sync job found' });
@@ -249,6 +274,8 @@ class OnboardingController {
             }
 
             if (!job.nextScheduledSyncAt && job.jobStatus === SyncStatus.PAUSED) {
+                // If the sync has never run
+                logger.info(`[demo] no job were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], SyncCommand.RUN_FULL, req.body.connectionId);
             }
 
@@ -258,6 +285,9 @@ class OnboardingController {
         }
     }
 
+    /**
+     * Log the progress, this is merely informative and for BI.
+     */
     async updateStatus(req: Request<unknown, unknown, { progress?: string }>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
@@ -288,6 +318,76 @@ class OnboardingController {
             res.status(200).json({
                 success: true
             });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    /**
+     * Trigger an action to write a test GitHub issue
+     */
+    async writeGithubIssue(req: Request<unknown, unknown, { connectionId?: string; title?: string }>, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            if (response.environment.name !== 'dev') {
+                res.status(400).json({ message: 'onboarding_dev_only' });
+                return;
+            }
+
+            if (!req.body?.connectionId || typeof req.body.connectionId !== 'string') {
+                res.status(400).json({ message: 'connection_id must be a string' });
+                return;
+            }
+            if (!req.body?.title || typeof req.body.title !== 'string') {
+                res.status(400).json({ message: 'title must be a string' });
+                return;
+            }
+
+            const { environment } = response;
+            const syncClient = await SyncClient.getInstance();
+            if (!syncClient) {
+                throw new NangoError('failed_to_get_sync_client');
+            }
+
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(req.body.connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id);
+            if (!success || !connection) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const activityLogId = await createActivityLog({
+                level: 'info',
+                success: false,
+                action: LogActionEnum.ACTION,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: connection.connection_id,
+                provider: 'github',
+                provider_config_key: connection.provider_config_key,
+                environment_id: environment.id,
+                operation_name: DEMO_ACTION_NAME
+            });
+            if (!activityLogId) {
+                throw new NangoError('failed_to_create_activity_log');
+            }
+            const actionResponse = await syncClient.triggerAction(connection, DEMO_ACTION_NAME, { title: req.body.title }, activityLogId, environment.id);
+
+            if (isErr(actionResponse)) {
+                errorManager.errResFromNangoErr(res, actionResponse.err);
+                return;
+            }
+
+            res.status(200).json({ success: true });
         } catch (err) {
             next(err);
         }

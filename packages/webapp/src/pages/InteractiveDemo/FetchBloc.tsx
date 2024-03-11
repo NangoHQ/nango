@@ -25,7 +25,7 @@ export const FetchBloc: React.FC<{
     const analyticsTrack = useAnalyticsTrack();
 
     const [language, setLanguage] = useState<Language>(Language.Node);
-    const [error] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [pollingInterval, setPollingInterval] = useState<Interval | undefined>(undefined);
     const [show, setShow] = useState(false);
 
@@ -56,21 +56,24 @@ export const FetchBloc: React.FC<{
         analyticsTrack('web:demo:fetch');
 
         async function poll() {
-            const response = await fetch(`/api/v1/onboarding/sync-status`, {
+            const res = await fetch(`/api/v1/onboarding/sync-status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ connectionId })
             });
 
-            if (response.status !== 200) {
+            if (res.status !== 200) {
                 clearInterval(pollingInterval);
                 setPollingInterval(undefined);
+
+                const json = (await res.json()) as { message?: string };
+                setError(json.message ? json.message : 'An unexpected error occurred');
 
                 analyticsTrack('web:demo:fetch_error');
                 return;
             }
 
-            const data = (await response.json()) as { jobStatus: string };
+            const data = (await res.json()) as { jobStatus: string };
 
             if (data.jobStatus === 'SUCCESS') {
                 clearInterval(pollingInterval);
@@ -191,7 +194,7 @@ export const FetchBloc: React.FC<{
                         </div>
                     )}
                 </div>
-                {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
+                {error && <p className="my-2 mx-4 text-sm text-red-600 ">{error}</p>}
             </div>
         </Bloc>
     );

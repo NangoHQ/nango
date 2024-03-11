@@ -14,6 +14,7 @@ export const DeployBloc: React.FC<{ step: Steps; onProgress: () => void }> = ({ 
 
     const [file, setFile] = useState<File>('sync-github-issues.ts');
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const snippet = useMemo(() => {
         if (file === 'sync-github-issues.ts') {
@@ -47,6 +48,7 @@ models:
 
     const onDeploy = async () => {
         analyticsTrack('web:demo:deploy');
+        setLoading(true);
 
         try {
             // Deploy the provider
@@ -68,6 +70,8 @@ models:
         } catch (err) {
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
             return;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -115,7 +119,7 @@ models:
                 </Prism>
                 <div className="flex items-center px-4 py-4">
                     {step === Steps.Authorize ? (
-                        <Button type="button" variant="primary" onClick={onDeploy}>
+                        <Button type="button" variant="primary" onClick={onDeploy} isLoading={loading}>
                             Deploy GitHub integration
                         </Button>
                     ) : (

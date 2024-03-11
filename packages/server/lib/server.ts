@@ -214,6 +214,7 @@ app.route('/api/v1/onboarding').post(webAuth, onboardingController.create.bind(o
 app.route('/api/v1/onboarding').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
 app.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy.bind(onboardingController));
 app.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
+app.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 // Hosted signin
 if (!isCloud() && !isEnterprise()) {

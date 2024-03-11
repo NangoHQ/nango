@@ -3,27 +3,31 @@ import { ChatBubbleIcon, CubeIcon, RocketIcon, RulerSquareIcon } from '@radix-ui
 import Button from '../../components/ui/button/Button';
 import { useAnalyticsTrack } from '../../utils/analytics';
 
-export const NextBloc: React.FC = () => {
+export const NextBloc: React.FC<{ onProgress: () => void }> = ({ onProgress }) => {
     const analyticsTrack = useAnalyticsTrack();
 
     const onClickExplore = () => {
         analyticsTrack('web:demo:explore');
         window.open('https://docs.nango.dev/integrations/overview', '_blank');
+        onProgress();
     };
 
     const onClickGuides = () => {
         analyticsTrack('web:demo:guide');
         window.open('https://docs.nango.dev/integrate/guides/authorize-an-api', '_blank');
+        onProgress();
     };
 
     const onClickLearn = () => {
         analyticsTrack('web:demo:learn');
         window.open('https://docs.nango.dev/understand/core-concepts', '_blank');
+        onProgress();
     };
 
     const onClickJoinCommunity = () => {
         analyticsTrack('web:demo:community');
         window.open('https://nango.dev/slack', '_blank');
+        onProgress();
     };
 
     return (

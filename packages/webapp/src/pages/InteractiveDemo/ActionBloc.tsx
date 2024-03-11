@@ -7,6 +7,7 @@ import { cn } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useAnalyticsTrack } from '../../utils/analytics';
+import { ExternalLinkIcon } from '@radix-ui/react-icons';
 
 export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; connectionId: string; secretKey: string; onProgress: () => void }> = ({
     step,
@@ -17,6 +18,9 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
 }) => {
     const analyticsTrack = useAnalyticsTrack();
     const [language, setLanguage] = useState<Language>(Language.Node);
+    const [title, setTitle] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const snippet = useMemo(() => {
         return `import { Nango } from '@nangohq/node'
@@ -27,20 +31,21 @@ const nango = new Nango({ secretKey: '${secretKey}' });
 const issues = await nango.triggerAction(
     '${providerConfigKey}',
     '${connectionId}',
-    'issue',
-    { title: 'TBD test issue' }
+    'github-issues-demo-action',
+    { title: ${JSON.stringify(title)} }
 );`;
-    }, [providerConfigKey, connectionId, secretKey]);
-    const [error, setError] = useState<string | null>(null);
+    }, [title, providerConfigKey, connectionId, secretKey]);
 
     const onDeploy = async () => {
         analyticsTrack('web:demo:action');
+        setLoading(true);
 
         try {
             // Deploy the provider
-            const res = await fetch(`/api/v1/onboarding/deploy`, {
+            const res = await fetch(`/api/v1/onboarding/action`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ connectionId, title })
             });
 
             if (res.status !== 200) {
@@ -56,6 +61,8 @@ const issues = await nango.triggerAction(
         } catch (err) {
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
             return;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -67,6 +74,17 @@ const issues = await nango.triggerAction(
             done={step >= Steps.Write}
             noTrack
         >
+            <div className="flex items-center gap-4 mb-4">
+                <div className="border-l pl-4 h-10 flex items-center">Issue Title</div>
+                <div className="flex-grow">
+                    <input
+                        type="text"
+                        placeholder="Enter a GitHub issue title"
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-10 w-1/2 appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                    />
+                </div>
+            </div>
             <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                     <div className="space-x-4">
@@ -96,13 +114,18 @@ const issues = await nango.triggerAction(
                 </Prism>
                 <div className="px-4 py-4">
                     {step === Steps.Fetch ? (
-                        <Button type="button" variant="primary" onClick={onDeploy}>
+                        <Button type="button" variant="primary" onClick={onDeploy} disabled={!title} isLoading={loading}>
                             Create GitHub issue
                         </Button>
                     ) : (
                         <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
                             <CheckCircleIcon className="h-5 w-5" />
                             Issue created!
+                            <a href="https://github.com/NangoHQ/interactive-demo/issues" target="_blank" rel="noreferrer">
+                                <Button variant="secondary">
+                                    View <ExternalLinkIcon />
+                                </Button>
+                            </a>
                         </span>
                     )}
                 </div>

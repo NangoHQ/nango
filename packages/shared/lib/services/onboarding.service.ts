@@ -7,7 +7,7 @@ export const DEFAULT_GITHUB_CLIENT_ID = process.env['DEFAULT_GITHUB_CLIENT_ID'] 
 export const DEFAULT_GITHUB_CLIENT_SECRET = process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '';
 export const DEMO_GITHUB_CONFIG_KEY = 'github-demo';
 export const DEMO_SYNC_NAME = 'github-issues-demo';
-export const DEMO_SYNC_ACTION = 'github-issues-demo-action';
+export const DEMO_ACTION_NAME = 'github-issues-demo-action';
 export const DEMO_MODEL = 'GithubIssueDemo';
 
 const TABLE = dbNamespace + 'onboarding_demo_progress';
