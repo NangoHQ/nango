@@ -404,6 +404,15 @@ integrations:
         output: GithubRepoFile
         endpoint: /github/files
         scopes: repo
+      github-issues-demo:
+        runs: every 5 minutes
+        auto_start: false
+        sync_type: full
+        output: GithubIssueDemo
+        scopes: public_repo
+        description: |
+          Fetches GitHub issues from our showcase repository.
+        endpoint: /github/demo-issues
     actions:
       github-write-file:
         scopes: repo
@@ -420,6 +429,10 @@ integrations:
           - GithubRepo
         description: |
           List github repos from an organization.
+      github-issues-demo-action:
+        endpoint: POST /github/demo-write-issue
+        description: |
+          Create a GitHub issue in Nango's showcase repository.
     models:
       Issue:
         id: integer
@@ -474,6 +487,10 @@ integrations:
         url: string
         status: string
         sha: string
+      GithubIssueDemo:
+        id: integer
+        title: string
+        url: string
   google-calendar:
     syncs:
       google-calendar-events:
@@ -1134,12 +1151,12 @@ integrations:
         output: HubspotContact
         sync_type: full
         endpoint: /hubspot/contacts
-      hubspot-owner:
+      hubspot-owners:
         runs: every day
         output: HubspotOwner
         sync_type: full
         endpoint: /hubspot/owner
-      hubspot-user:
+      hubspot-users:
         runs: every day
         output: HubspotUser
         sync_type: full
@@ -1997,29 +2014,13 @@ integrations:
         channel_id: string
         user_id: string
         reaction_name: string
-  wildix-pbx:
-    syncs:
-      wildix-pbx-colleagues:
-        runs: every 1 hour
-        output: WildixPbxColleague
-        sync_type: full
-        endpoint: /wildix-pbx/colleagues
-    models:
-      WildixPbxColleague:
-        id: string
-        name: string
-        extension: string
-        email: string
-        mobilePhone: string
-        licenseType: string
-        language: string
   teamtailor:
     syncs:
       teamtailor-candidates:
         runs: every 6 hours
         description: |
-            Fetches a list of all candidates from your teamtailor account.
-            Details: full sync, doesn't track deletes, metadata is not required.
+          Fetches a list of all candidates from your teamtailor account.
+          Details: full sync, doesn't track deletes, metadata is not required.
         output: TeamtailorCandidate
         sync_type: full
         endpoint: /teamtailor-candidates/candidates
@@ -2101,6 +2102,22 @@ integrations:
             links:
               self: string
               related: string
+  wildix-pbx:
+    syncs:
+      wildix-pbx-colleagues:
+        runs: every 1 hour
+        output: WildixPbxColleague
+        sync_type: full
+        endpoint: /wildix-pbx/colleagues
+    models:
+      WildixPbxColleague:
+        id: string
+        name: string
+        extension: string
+        email: string
+        mobilePhone: string
+        licenseType: string
+        language: string
   workable:
     syncs:
       workable-candidates:
@@ -2150,7 +2167,7 @@ integrations:
         description: |
           Fetches candidates for the specified job from workable.
           Details: full sync, doesn't track deletes, metadata is not required.
-        output: WorkableCandidate
+        output: WorkableJobsCandidate
         sync_type: full
         endpoint: /workable/jobs-candidates
         scopes:
@@ -2189,12 +2206,32 @@ integrations:
         firstname: string
         lastname: string
         headline: string
-        account:
+        account: &ref_0
           subdomain: string
           name: string
-        job:
+        job: &ref_1
           shortcode: string
           title: string
+        stage: string
+        disqualified: boolean
+        disqualification_reason: string
+        hired_at: date
+        sourced: boolean
+        profile_url: string
+        address: string
+        phone: string
+        email: string
+        domain: string
+        created_at: date
+        updated_at: date
+      WorkableJobsCandidate:
+        id: string
+        name: string
+        firstname: string
+        lastname: string
+        headline: string
+        account: *ref_0
+        job: *ref_1
         stage: string
         disqualified: boolean
         disqualification_reason: string
