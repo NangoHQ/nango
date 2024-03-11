@@ -476,6 +476,7 @@
                     "icon": "cloud",
                     "pages": [
                         "reference/api/authentication",
+                        "reference/api/rate-limits",
                         {
                             "group": "Integrations",
                             "pages": [

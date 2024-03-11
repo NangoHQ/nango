@@ -38,6 +38,29 @@ const nango = new Nango({ secretKey: '<SECRET-KEY>' });
   </ResponseField>
 </Expandable>
 
+# Rate limits
+
+The Nango SDK is rate-limited to prevent abuse and ensure fair usage across all clients. The rate limit is enforced on a per-account basis, with a fixed window of time and a maximum number of requests allowed within that window.
+
+If a client exceeds the rate limit, the API will respond with a 429 `Too Many Requests` status code. In this case, the `Retry-After` header is included, indicating the number of seconds the client should wait before making another request to avoid being rate-limited.
+
+To handle rate limiting gracefully, clients should monitor for the 429 status code and honor the `Retry-After` header value provided in the response.
+
+```js
+// Example:
+try {
+    const res = await nango.listIntegrations();
+    ...
+} catch(err) {
+    if (err.response.status === 429) {
+        const retryAfter = err.response.headers['retry-after'];
+        // wait and retry
+        ...
+    }
+    ...
+}
+```
+
 # Integrations
 
 ### List all integrations
