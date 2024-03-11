@@ -52,6 +52,12 @@
                                                 "enum": "nango yaml schema validation error: sync_type must be either 'incremental' or 'full'."
                                             }
                                         },
+                                        "track_deletes": {
+                                            "type": "boolean",
+                                            "errorMessage": {
+                                                "type": "nango yaml schema validation error: track_deletes must be a boolean."
+                                            }
+                                        },
                                         "auto_start": {
                                             "type": "boolean",
                                             "errorMessage": {

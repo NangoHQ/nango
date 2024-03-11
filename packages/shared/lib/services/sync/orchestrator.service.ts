@@ -400,7 +400,9 @@ export class Orchestrator {
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && status !== SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
-                status = SyncStatus.PAUSED;
+                if (status !== SyncStatus.RUNNING) {
+                    status = SyncStatus.PAUSED;
+                }
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
                 status = SyncStatus.STOPPED;
