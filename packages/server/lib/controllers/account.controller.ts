@@ -1,15 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import {
-    accountService,
-    userService,
-    errorManager,
-    LogLevel,
-    LogActionEnum,
-    createActivityLogAndLogMessage,
-    logger,
-    isCloud,
-    isEnterprise
-} from '@nangohq/shared';
+import { accountService, userService, errorManager, LogLevel, LogActionEnum, createActivityLogAndLogMessage, isCloud, isEnterprise } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 export const AUTH_ENABLED = isCloud() || isEnterprise();
