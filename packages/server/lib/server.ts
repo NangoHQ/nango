@@ -30,7 +30,7 @@ import { AuthClient } from './clients/auth.client.js';
 import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
-import accountController from './controllers/account.controller.js';
+import accountController, { AUTH_ENABLED } from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import {
@@ -142,7 +142,7 @@ app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDepl
 app.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
 // Webapp routes (no auth).
-if (isCloud() || isEnterprise()) {
+if (AUTH_ENABLED) {
     app.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
     app.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
     app.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));

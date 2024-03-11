@@ -19,6 +19,7 @@ import {
     getConfigWithEndpointsByProviderConfigKeyAndName,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName
 } from '@nangohq/shared';
+import { NANGO_ADMIN_UUID } from './account.controller.js';
 
 class FlowController {
     public async getFlows(req: Request, res: Response, next: NextFunction) {
@@ -50,7 +51,7 @@ class FlowController {
             const { accountId } = response;
             const fullAccount = await accountService.getAccountById(accountId);
 
-            if (fullAccount?.uuid !== process.env['NANGO_ADMIN_UUID']) {
+            if (fullAccount?.uuid !== NANGO_ADMIN_UUID) {
                 res.status(401).send('Unauthorized');
                 return;
             }
