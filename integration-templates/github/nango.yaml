@@ -40,7 +40,7 @@ integrations:
                 scopes: public_repo
                 description: >
                     Fetches GitHub issues from our showcase repository.
-                endpoint: /github/demo-issues
+                endpoint: GET /github/demo-issues
         actions:
             github-write-file:
                 scopes: repo

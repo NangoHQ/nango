@@ -19,6 +19,6 @@ Take a look at our [Documentation](https://docs.nango.dev/integrate/guides/perfo
     });
 
     return {
-        status: res.status === 201
+        status: res.status
     };
 }
