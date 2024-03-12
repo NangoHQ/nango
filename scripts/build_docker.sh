@@ -5,10 +5,8 @@ set -e
 ACTION=$1
 ENV=$2 # enterprise | hosted | prod | staging
 GIT_HASH=$3
-POSTHOG_KEY=$4
-SENTRY_KEY=$5
 
-USAGE="./build_docker.sh <build|push> <enterprise | hosted | prod | staging> GIT_HASH POSTHOG_KEY SENTRY_KEY"
+USAGE="./build_docker.sh <build|push> <enterprise | hosted | prod | staging> GIT_HASH"
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
