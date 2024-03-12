@@ -32,3 +32,7 @@ jobs:
       - name: Build image
         run: |
           ./scripts/build_docker.sh staging ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Test image
+        run: |
+          docker run --rm nango:staging

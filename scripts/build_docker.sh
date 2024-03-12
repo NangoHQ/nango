@@ -2,16 +2,22 @@
 
 set -e
 
-ENV=$1 # enterprise | hosted | prod | staging
-GIT_HASH=$2
-POSTHOG_KEY=$3
-SENTRY_KEY=$4
+ACTION=$1
+ENV=$2 # enterprise | hosted | prod | staging
+GIT_HASH=$3
+POSTHOG_KEY=$4
+SENTRY_KEY=$5
 
-USAGE="./build_docker.sh <enterprise | hosted | prod | staging> GIT_HASH POSTHOG_KEY SENTRY_KEY"
+USAGE="./build_docker.sh <build|push> <enterprise | hosted | prod | staging> GIT_HASH POSTHOG_KEY SENTRY_KEY"
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
+if [ "$ACTION" != "push" ] && [ "$ACTION" != "build" ]; then
+  echo -e "${RED}Please specify an action${NC}\n"
+  echo "$USAGE"
+  exit
+fi
 if [ "$ENV" != "enterprise" ] && [ "$ENV" != "hosted" ] && [ "$ENV" != "prod" ] && [ "$ENV" != "staging" ]; then
   echo -e "${RED}Please specify an environment${NC}\n"
   echo "$USAGE"
@@ -33,6 +39,12 @@ cd "$(dirname "$0")"
 tags="-t nango:latest -t nango:${ENV}"
 if [ $GIT_HASH ]; then
   tags+=" -t nango:${ENV}-${GIT_HASH} -t nango:${GIT_HASH}"
+fi
+
+if [ $ACTION == 'build' ]; then
+  tags+=" --output=type=docker"
+else
+  tags+=" --output=type=registry"
 fi
 
 echo ""
