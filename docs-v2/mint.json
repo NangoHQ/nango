@@ -250,6 +250,7 @@
                         "integrations/marketing",
                         "integrations/payment",
                         "integrations/productivity",
+                        "integrations/search",
                         "integrations/social",
                         "integrations/sports",
                         "integrations/storage",
@@ -264,6 +265,7 @@
                     "group": "Integration Templates",
                     "icon": "sheet-plastic",
                     "pages": [
+                        "integrations/integration-templates/algolia",
                         "integrations/integration-templates/asana",
                         "integrations/integration-templates/ashby",
                         "integrations/integration-templates/bamboohr",
@@ -303,6 +305,7 @@
                         "integrations/all/affinity",
                         "integrations/all/aircall",
                         "integrations/all/airtable",
+                        "integrations/all/algolia",
                         "integrations/all/amazon",
                         "integrations/all/anrok",
                         "integrations/all/amplitude",

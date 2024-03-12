@@ -5,6 +5,7 @@ import type { LogLevel, NangoConnection, HTTP_VERB } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
+    Connection,
     getEnvironmentId,
     deploy as deploySyncConfig,
     syncDataService,
@@ -12,6 +13,7 @@ import {
     getSyncs,
     verifyOwnership,
     isSyncValid,
+    getSyncNamesByConnectionId,
     getSyncsByProviderConfigKey,
     SyncClient,
     updateScheduleStatus,
@@ -548,8 +550,26 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
+            let connection: Connection | null = null;
+
+            if (connection_id) {
+                const connectionResult = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
+                const { success: connectionSuccess, error: connectionError } = connectionResult;
+                if (!connectionSuccess || !connectionResult.response) {
+                    errorManager.errResFromNangoErr(res, connectionError);
+                    return;
+                }
+
+                connection = connectionResult.response;
+            }
+
             if (syncNames === '*') {
-                syncNames = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string).then((syncs) => syncs.map((sync) => sync.name));
+                if (connection && connection.id) {
+                    syncNames = await getSyncNamesByConnectionId(connection.id);
+                } else {
+                    const syncs = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string);
+                    syncNames = syncs.map((sync) => sync.name);
+                }
             } else {
                 syncNames = (syncNames as string).split(',');
             }
@@ -558,7 +578,7 @@ class SyncController {
                 success,
                 error,
                 response: syncsWithStatus
-            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames as string[], connection_id as string);
+            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames, connection_id as string, false, connection);
 
             if (!success || !syncsWithStatus) {
                 errorManager.errResFromNangoErr(res, error);
