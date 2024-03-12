@@ -18,14 +18,18 @@ if [ "$ACTION" != "push" ] && [ "$ACTION" != "build" ]; then
   echo "$USAGE"
   exit
 fi
+
 if [ "$ENV" != "enterprise" ] && [ "$ENV" != "hosted" ] && [ "$ENV" != "prod" ] && [ "$ENV" != "staging" ]; then
   echo -e "${RED}Please specify an environment${NC}\n"
   echo "$USAGE"
   exit
 fi
+
 if [ -z $GIT_HASH ]; then
-  echo -e "${YELLOW}GIT_HASH is empty${NC}"
+  echo -e "${RED}GIT_HASH is empty${NC}"
+  exit
 fi
+
 if [ -z $SENTRY_KEY ]; then
   echo -e "${YELLOW}SENTRY_KEY is empty${NC}"
 fi
@@ -36,10 +40,7 @@ fi
 # Move to here no matter where the file was executed
 cd "$(dirname "$0")"
 
-tags="-t nangohq/nango:latest -t nangohq/nango:${ENV}"
-if [ $GIT_HASH ]; then
-  tags+=" -t nangohq/nango:${ENV}-${GIT_HASH} -t nangohq/nango:${GIT_HASH}"
-fi
+tags="-t nangohq/nango:${ENV}-${GIT_HASH}"
 
 if [ $ACTION == 'build' ]; then
   tags+=" --output=type=docker"
