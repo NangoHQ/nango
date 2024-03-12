@@ -12,10 +12,10 @@ on:
         required: true
         type: string
       key_secret_sentry:
-        required: true
+        required: false
         type: string
       key_secret_posthog:
-        required: true
+        required: false
         type: string
 
 jobs:

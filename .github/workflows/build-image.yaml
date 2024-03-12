@@ -15,8 +15,11 @@ jobs:
         group:
           - name: 'staging'
             if: github.ref == 'refs/heads/master'
+            sentry_key: SENTRY_KEY_staging
           - name: 'prod'
             if: github.ref == 'refs/heads/master'
+            sentry_key: SENTRY_KEY_prod
+            posthog_key: POSTHOG_KEY_prod
           - name: 'enterprise'
             if: github.ref == 'refs/heads/master'
 
@@ -25,4 +28,6 @@ jobs:
     with:
       if: ${{ matrix.group.if }}
       name: ${{ matrix.group.foo }}
+      key_secret_sentry: ${{ matrix.group.sentry_key }}
+      key_secret_posthog: ${{ matrix.group.posthog_key }}
 
