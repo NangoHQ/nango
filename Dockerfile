@@ -60,13 +60,6 @@ RUN true \
 # This image must have the minimum amount of layers
 FROM node:18.19.1-bullseye-slim as web
 
-ARG image_env
-ARG git_hash
-
-ENV PORT=8080
-ENV NODE_ENV=production
-ENV IMAGE_ENV $image_env
-ENV GIT_HASH $git_hash
 
 # - Bash is just to be able to log inside the image and have a decent shell
 RUN true \
@@ -82,5 +75,13 @@ WORKDIR /app/nango
 
 # Code
 COPY --from=tmp --chown=node:node /app/tmp /app/nango
+
+ARG image_env
+ARG git_hash
+
+ENV PORT=8080
+ENV NODE_ENV=production
+ENV IMAGE_ENV $image_env
+ENV GIT_HASH $git_hash
 
 EXPOSE 8080

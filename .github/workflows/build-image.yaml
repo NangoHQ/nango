@@ -51,7 +51,6 @@ jobs:
 
   push-other-container:
     runs-on: ubuntu-latest
-    needs: push-staging-container
     env:
       CAN_PUSH: '${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}'
       SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -59,6 +58,14 @@ jobs:
     concurrency:
       group: push-unified-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
+
+    strategy:
+      matrix:
+        test-group:
+          [
+            prod,
+            enterprise
+          ]
 
     steps:
       - name: Check out
@@ -81,20 +88,10 @@ jobs:
       - name: Expose GitHub Runtime
         uses: crazy-max/ghaction-github-runtime@v2
 
-      - name: Build image (prod)
+      - name: Build image (${{ matrix.test-group }})
         run: |
-          ./scripts/build_docker.sh build prod ${{ env.SHA }}
-
-      - name: Build image (hosted)
-        run: |
-          ./scripts/build_docker.sh build hosted ${{ env.SHA }}
-
-      - name: Build image (enterprise)
-        run: |
-          ./scripts/build_docker.sh build enterprise ${{ env.SHA }}
+          ./scripts/build_docker.sh build ${{ matrix.test-group }} ${{ env.SHA }}
 
       - name: Push images
         run: |
-          docker push nangohq/nango:hosted-${{ env.SHA }}
-          docker push nangohq/nango:enterperise-${{ env.SHA }}
-          docker push nangohq/nango:prod-${{ env.SHA }}
+          docker push nangohq/nango:${{ matrix.test-group }}-${{ env.SHA }}
