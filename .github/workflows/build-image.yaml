@@ -21,7 +21,7 @@ jobs:
             if: github.ref == 'refs/heads/master'
 
     secrets: inherit
-    uses: ./.github/workflows/build-image-reusable.yml
+    uses: ./.github/workflows/build-image-reusable.yaml
     with:
       if: ${{ matrix.group.if }}
       name: ${{ matrix.group.foo }}
