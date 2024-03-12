@@ -55,10 +55,6 @@ jobs:
       CAN_PUSH: '${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}'
       SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
-    concurrency:
-      group: push-unified-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
-
     strategy:
       matrix:
         test-group:
@@ -93,5 +89,6 @@ jobs:
           ./scripts/build_docker.sh build ${{ matrix.test-group }} ${{ env.SHA }}
 
       - name: Push images
+        if: env.CAN_PUSH == 'true'
         run: |
           docker push nangohq/nango:${{ matrix.test-group }}-${{ env.SHA }}
