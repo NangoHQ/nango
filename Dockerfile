@@ -32,12 +32,10 @@ RUN true \
 # /!\ It's counter intuitive but do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
 ARG image_env
-ARG git_hash
 ARG posthog_key
 ARG sentry_key
 
 ENV REACT_APP_ENV $image_env
-ENV REACT_APP_PUBLIC_GIT_HASH $git_hash
 ENV REACT_APP_PUBLIC_POSTHOG_HOST https://app.posthog.com
 ENV REACT_APP_PUBLIC_POSTHOG_KEY $posthog_key
 ENV REACT_APP_PUBLIC_SENTRY_KEY $sentry_key
