@@ -171,9 +171,7 @@ export const InteractiveDemo: React.FC = () => {
     const onFetch = () => {
         void fetchRecords();
         setStep(Steps.Fetch);
-        setTimeout(() => {
-            document.getElementById('demo-action')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 16);
+        // We don't scroll automatically to let users check their records
     };
 
     const onActionConfirm = () => {
