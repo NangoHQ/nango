@@ -19,7 +19,7 @@ on:
         type: string
 
 jobs:
-  push-prod-containers:
+  build-container:
     if: ${{ inputs.if }}
 
     runs-on: ubuntu-latest

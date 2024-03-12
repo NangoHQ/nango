@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/build-image-reusable.yaml
     with:
       if: ${{ matrix.group.if }}
-      name: ${{ matrix.group.foo }}
+      name: ${{ matrix.group.name }}
       key_secret_sentry: ${{ matrix.group.sentry_key }}
       key_secret_posthog: ${{ matrix.group.posthog_key }}
 
