@@ -133,7 +133,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             context,
             debug
         );
-    } catch (err: any) {
+    } catch (err) {
         const prettyError = JSON.stringify(err, ['message', 'name'], 2);
         const log = {
             level: 'info' as LogLevel,
@@ -242,7 +242,7 @@ export async function syncProvider(
         const result = await syncRun.run();
 
         return result.response;
-    } catch (err: any) {
+    } catch (err) {
         const prettyError = JSON.stringify(err, ['message', 'name'], 2);
         const log = {
             level: 'info' as LogLevel,
@@ -424,7 +424,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
         }
 
         await syncRun.cancel();
-    } catch (e: any) {
+    } catch (e) {
         const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e.message || e}`;
         errorManager.report(content, {
             environmentId: workflowArguments.nangoConnection?.environment_id,
