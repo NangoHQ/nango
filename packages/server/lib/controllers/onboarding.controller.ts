@@ -211,12 +211,13 @@ class OnboardingController {
                     name: DEMO_ACTION_NAME,
                     is_public: true,
                     runs: 'every day',
-                    models: githubDemoAction.returns,
+                    models: [githubDemoAction.returns as unknown as string],
                     model_schema: JSON.stringify(githubDemoAction?.models),
                     public_route: 'github',
                     input: githubDemoAction.input!
                 }
             ];
+
             const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');
             if (!deploy.success || deploy.response === null) {
                 errorManager.errResFromNangoErr(res, deploy.error);

@@ -3,7 +3,7 @@ integrations:
     actions:
       algolia-create-contacts:
         description: |
-            Action to add a single record contact to an index
+          Action to add a single record contact to an index
         output: AlgoliaContact
         input: AlgoliaCreateContactInput
         endpoint: POST /algolia/create-contacts
@@ -449,6 +449,7 @@ integrations:
       github-issues-demo-action:
         endpoint: POST /github/demo-write-issue
         input: GithubWriteIssueInput
+        output: GithubWriteIssueResult
         description: |
           Create a GitHub issue in Nango's showcase repository.
     models:
@@ -509,8 +510,11 @@ integrations:
         id: integer
         title: string
         url: string
-      GithubWriteIssueDemoInput:
+      GithubWriteIssueInput:
         title: string
+      GithubWriteIssueResult:
+        url: string | undefined
+        status: number
   google-calendar:
     syncs:
       google-calendar-events:
