@@ -36,9 +36,9 @@ fi
 # Move to here no matter where the file was executed
 cd "$(dirname "$0")"
 
-tags="-t nango:latest -t nango:${ENV}"
+tags="-t nangohq/nango:latest -t nangohq/nango:${ENV}"
 if [ $GIT_HASH ]; then
-  tags+=" -t nango:${ENV}-${GIT_HASH} -t nango:${GIT_HASH}"
+  tags+=" -t nangohq/nango:${ENV}-${GIT_HASH} -t nangohq/nango:${GIT_HASH}"
 fi
 
 if [ $ACTION == 'build' ]; then
@@ -48,7 +48,7 @@ else
 fi
 
 echo ""
-echo -e "Building nango:${ENV}\n"
+echo -e "Building nangohq/nango:${ENV}\n"
 
 docker buildx build \
   --platform linux/amd64 \

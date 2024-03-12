@@ -29,13 +29,17 @@ jobs:
           username: '${{ secrets.DOCKER_USERNAME }}'
           password: '${{ secrets.DOCKER_PASSWORD }}'
 
+      # Needed for buildx gha cache to work
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v2
+
       - name: Build image
         run: |
           ./scripts/build_docker.sh build staging ${{ github.event.pull_request.head.sha || github.sha }}
 
       # - name: Test image
       #   run: |
-      #     docker run --rm nango:staging timeout 5 sh -c 'node packages/runner/dist/app.js' 2>/dev/null
+      #     docker run --rm nangohq/nango:staging timeout 5 sh -c 'node packages/runner/dist/app.js' 2>/dev/null
 
       - name: Push image
         run: |
