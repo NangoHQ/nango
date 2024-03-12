@@ -41,7 +41,12 @@ export const initOnboarding = async (user_id: number): Promise<number | null> =>
 };
 
 export const updateOnboardingProgress = async (id: number, progress: number): Promise<void> => {
-    await schema().from<Onboarding>(TABLE).update({ progress }).where({ id });
+    const q = db.knex.from<Onboarding>(TABLE).update({ progress }).where({ id });
+    if (progress === 6) {
+        void q.update('complete', true);
+    }
+
+    await q;
 };
 
 export const getOnboardingProgress = async (user_id: number): Promise<Required<Pick<Onboarding, 'id' | 'progress'>> | undefined> => {

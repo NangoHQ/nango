@@ -150,7 +150,7 @@ export const InteractiveDemo: React.FC = () => {
         setStep(Steps.Authorize);
         setTimeout(() => {
             document.getElementById('demo-deploy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 16);
+        }, 500); // Wait for the popup to close
     };
 
     const onDeploy = () => {

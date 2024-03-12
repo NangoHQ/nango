@@ -20,6 +20,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [title, setTitle] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [url, setUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
     const snippet = useMemo(() => {
@@ -48,15 +49,16 @@ const issues = await nango.triggerAction(
                 body: JSON.stringify({ connectionId, title })
             });
 
-            if (res.status !== 200) {
-                const json = (await res.json()) as { message?: string };
-                setError(json.message ? json.message : 'An unexpected error occurred');
+            const json = (await res.json()) as { message?: string } | { action: { url: string } };
+            if (res.status !== 200 || 'message' in json || !('action' in json)) {
+                setError('message' in json && json.message ? json.message : 'An unexpected error occurred');
 
                 analyticsTrack('web:demo:deploy_error');
                 return;
             }
 
             setError(null);
+            setUrl(json.action.url);
             onProgress();
         } catch (err) {
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
@@ -121,7 +123,7 @@ const issues = await nango.triggerAction(
                         <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
                             <CheckCircleIcon className="h-5 w-5" />
                             Issue created!
-                            <a href="https://github.com/NangoHQ/interactive-demo/issues" target="_blank" rel="noreferrer">
+                            <a href={url || 'https://github.com/NangoHQ/interactive-demo/issues'} target="_blank" rel="noreferrer">
                                 <Button variant="secondary">
                                     View <ExternalLinkIcon />
                                 </Button>

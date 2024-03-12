@@ -60,6 +60,7 @@ integrations:
             github-issues-demo-action:
                 endpoint: POST /github/demo-write-issue
                 input: GithubWriteIssueInput
+                output: GithubWriteIssueResult
                 description: |
                     Create a GitHub issue in Nango's showcase repository.
 models:
@@ -107,9 +108,13 @@ models:
         url: string
         status: string
         sha: string
+
     GithubIssueDemo:
         id: integer
         title: string
         url: string
-    GithubWriteIssueDemoInput:
+    GithubWriteIssueInput:
         title: string
+    GithubWriteIssueResult:
+        url: string | undefined
+        status: number

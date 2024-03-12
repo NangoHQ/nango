@@ -390,7 +390,7 @@ class OnboardingController {
                 return;
             }
 
-            res.status(200).json({ success: true });
+            res.status(200).json({ action: actionResponse.res });
         } catch (err) {
             next(err);
         }
