@@ -22,24 +22,34 @@ COPY package*.json  ./
 RUN true \
   && npm i
 
-# At this stage we copy back all sources, nothing can be cached anymore
+# At this stage we copy back all sources
 COPY . /app/tmp
 
-ARG build_env
-ARG git_hash
-ENV GIT_HASH ${git_hash:-dev}
+# Build the backend separately because it can be cached even we change env vars
+RUN true \
+  && npm run ts-build:docker
 
 # /!\ It's counter intuitive but do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
+ARG image_env
+ARG git_hash
+ARG posthog_key
+ARG sentry_key
 
-# Build
+ENV REACT_APP_ENV $image_env
+ENV REACT_APP_PUBLIC_GIT_HASH $git_hash
+ENV REACT_APP_PUBLIC_POSTHOG_HOST https://app.posthog.com
+ENV REACT_APP_PUBLIC_POSTHOG_KEY $posthog_key
+ENV REACT_APP_PUBLIC_SENTRY_KEY $sentry_key
+
+# Build the frontend
 RUN true \
-  && npm run ts-build:docker \
-  && npm run webapp-build:${build_env:-staging}
+  && npm run -w @nangohq/webapp build
 
 # Clean src
 RUN true \
   && rm -rf packages/*/src \
+  && rm -rf packages/*/lib \
   && rm -rf packages/webapp/public \
   && rm -rf packages/webapp/node_modules
 
@@ -52,8 +62,13 @@ RUN true \
 # This image must have the minimum amount of layers
 FROM node:18.19.1-bullseye-slim as web
 
+ARG image_env
+ARG git_hash
+
 ENV PORT=8080
 ENV NODE_ENV=production
+ENV IMAGE_ENV $image_env
+ENV GIT_HASH $image_env
 
 # - Bash is just to be able to log inside the image and have a decent shell
 RUN true \
