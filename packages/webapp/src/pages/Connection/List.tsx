@@ -187,7 +187,7 @@ export default function ConnectionList() {
                                                     );
                                                 }}
                                             >
-                                                <div className="flex items-center w-2/3">
+                                                <div className="flex items-center w-2/3 gap-2">
                                                     <span>{connectionId}</span>
                                                     <CopyButton dark text={connectionId} />
                                                 </div>
