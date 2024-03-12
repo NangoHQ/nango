@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Prism } from '@mantine/prism';
 import { Loading } from '@geist-ui/core';
 
@@ -16,6 +17,13 @@ interface AuthorizationProps {
 
 export default function Authorization(props: AuthorizationProps) {
     const { connection, forceRefresh, loaded } = props;
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleForceRefresh = async () => {
+        setRefreshing(true);
+        await forceRefresh();
+        setRefreshing(false);
+    };
 
     if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
 
@@ -71,7 +79,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection?.accessToken && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Access Token</span>
-                    <SecretInput disabled defaultValue={connection?.accessToken} copy={true} refresh={() => forceRefresh()} />
+                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.accessToken} copy={true} refresh={handleForceRefresh} />
                 </div>
             )}
             {connection?.oauthToken && (
@@ -89,7 +97,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection?.refreshToken && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Refresh Token</span>
-                    <SecretInput disabled defaultValue={connection?.refreshToken} copy={true} refresh={() => forceRefresh()} />
+                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.refreshToken} copy={true} refresh={handleForceRefresh} />
                 </div>
             )}
             <div className="flex flex-col">

@@ -2,6 +2,7 @@
 
 # exit when any command fails
 set -e
+set -x
 
 # function to bump and publish a package
 # $1: package name
@@ -29,16 +30,23 @@ npm install
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-npm install "@nangohq/node@$VERSION" -w @nangohq/shared
+pushd "$GIT_ROOT_DIR/packages/shared"; npm install @nangohq/node@^$VERSION; popd;
 
 # Shared
 node scripts/flows.js
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-npm install "@nangohq/shared@$VERSION" -w nango -w @nangohq/nango-server -w @nangohq/nango-jobs -w @nangohq/nango-runner -w @nangohq/persist
+# Update all packages to use the new shared version
+package_dirs=("cli" "server" "runner" "jobs" "persist")
+for dir in "${package_dirs[@]}"; do
+    pushd "$GIT_ROOT_DIR/packages/$dir"; npm install @nangohq/shared@^$VERSION; popd;
+done
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
-pushd ./packages/webapp; npm install "@nangohq/frontend@$VERSION"; popd
+pushd "$GIT_ROOT_DIR/packages/webapp"; npm install @nangohq/frontend@^$VERSION; popd;
+
+# DEBUG: show changes in CI
+git diff

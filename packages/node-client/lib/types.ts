@@ -75,6 +75,7 @@ export interface ListRecordsRequestConfig {
     connectionId: string;
     model: string;
     delta?: string;
+    modifiedAfter?: string;
     limit?: number;
     filter?: FilterAction | CombinedFilterAction;
     cursor?: string | null;
@@ -180,4 +181,58 @@ export interface SyncStatusResponse {
 
 export interface UpdateSyncFrequencyResponse {
     frequency: string;
+}
+
+export interface StandardNangoConfig {
+    providerConfigKey: string;
+    rawName?: string;
+    provider?: string;
+    syncs: NangoSyncConfig[];
+    actions: NangoSyncConfig[];
+    postConnectionScripts?: string[];
+}
+
+export enum SyncConfigType {
+    SYNC = 'sync',
+    ACTION = 'action'
+}
+
+interface NangoSyncModelField {
+    name: string;
+    type: string;
+}
+
+export interface NangoSyncModel {
+    name: string;
+    description?: string;
+    fields: NangoSyncModelField[];
+}
+
+export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+
+export type NangoSyncEndpoint = {
+    [key in HTTP_VERB]?: string;
+};
+
+export interface NangoSyncConfig {
+    name: string;
+    type?: SyncConfigType;
+    runs: string;
+    auto_start?: boolean;
+    attributes?: object;
+    description?: string;
+    scopes?: string[];
+    track_deletes?: boolean;
+    returns: string[];
+    models: NangoSyncModel[];
+    endpoints: NangoSyncEndpoint[];
+    is_public?: boolean;
+    pre_built?: boolean;
+    version?: string | null;
+    last_deployed?: string | null;
+
+    input?: NangoSyncModel;
+    sync_type?: SyncType;
+    nango_yaml_version?: string;
+    webhookSubscriptions?: string[];
 }

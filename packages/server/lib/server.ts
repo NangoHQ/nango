@@ -1,4 +1,4 @@
-import tracer from './tracer.js';
+import './tracer.js';
 import './utils/config.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
@@ -30,7 +30,7 @@ import { AuthClient } from './clients/auth.client.js';
 import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
-import accountController from './controllers/account.controller.js';
+import accountController, { AUTH_ENABLED } from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import {
@@ -46,6 +46,7 @@ import {
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
+import tracer from 'dd-trace';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
@@ -131,6 +132,7 @@ app.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncCon
 app.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(syncController));
 app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 app.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+app.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
 app.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
@@ -140,7 +142,7 @@ app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDepl
 app.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
 // Webapp routes (no auth).
-if (isCloud() || isEnterprise()) {
+if (AUTH_ENABLED) {
     app.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
     app.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
     app.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));

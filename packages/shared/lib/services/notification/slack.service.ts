@@ -138,11 +138,11 @@ class SlackService {
         }
 
         const actionResponse = await syncClient.triggerAction<SlackActionResponse>(
-            nangoAdminConnection as NangoConnection,
+            nangoAdminConnection,
             this.actionName,
             payload,
             activityLogId,
-            nangoAdminConnection?.environment_id as number
+            nangoAdminConnection?.environment_id
         );
 
         if (id && isOk(actionResponse) && actionResponse.res.ts) {
@@ -232,10 +232,10 @@ class SlackService {
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: slackConnection?.connection_id as string,
-            provider_config_key: slackConnection?.provider_config_key as string,
+            connection_id: slackConnection?.connection_id,
+            provider_config_key: slackConnection?.provider_config_key,
             provider: this.integrationKey,
-            environment_id: slackConnection?.environment_id as number,
+            environment_id: slackConnection?.environment_id,
             operation_name: this.actionName
         };
 
@@ -304,7 +304,7 @@ class SlackService {
         await createActivityLogMessage({
             level: isOk(actionResponse) ? 'info' : 'error',
             activity_log_id: activityLogId as number,
-            environment_id: slackConnection?.environment_id as number,
+            environment_id: slackConnection?.environment_id,
             timestamp: Date.now(),
             content,
             params: payload as unknown as Record<string, unknown>
@@ -384,10 +384,10 @@ class SlackService {
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: slackConnection?.connection_id as string,
-            provider_config_key: slackConnection?.provider_config_key as string,
+            connection_id: slackConnection?.connection_id,
+            provider_config_key: slackConnection?.provider_config_key,
             provider: this.integrationKey,
-            environment_id: slackConnection?.environment_id as number,
+            environment_id: slackConnection?.environment_id,
             operation_name: this.actionName
         };
 
@@ -410,7 +410,7 @@ class SlackService {
         await createActivityLogMessage({
             level: isOk(actionResponse) ? 'info' : 'error',
             activity_log_id: activityLogId as number,
-            environment_id: slackConnection?.environment_id as number,
+            environment_id: slackConnection?.environment_id,
             timestamp: Date.now(),
             content,
             params: payload as unknown as Record<string, unknown>

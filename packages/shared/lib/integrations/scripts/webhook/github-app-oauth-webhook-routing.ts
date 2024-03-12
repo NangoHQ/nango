@@ -36,7 +36,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         await handleCreateWebhook(integration, body);
     }
 
-    await nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
+    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
 }
 
 async function handleCreateWebhook(integration: ProviderConfig, body: any) {
@@ -62,7 +62,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
             return;
         }
 
-        const template = configService.getTemplate(integration?.provider as string);
+        const template = configService.getTemplate(integration?.provider);
 
         const activityLogId = connection.connection_config['pendingLog'];
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete

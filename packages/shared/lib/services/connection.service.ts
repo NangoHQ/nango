@@ -219,7 +219,7 @@ class ConnectionService {
         if (importedConnection) {
             await connectionCreatedHook(
                 {
-                    id: importedConnection?.id as number,
+                    id: importedConnection?.id,
                     connection_id,
                     provider_config_key,
                     environment_id: environmentId,
@@ -360,13 +360,13 @@ class ConnectionService {
         if (connection != null) {
             const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials;
             if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
-                const creds = credentials as OAuth2Credentials;
+                const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }
 
             if (credentials.type && credentials.type === ProviderAuthModes.App) {
-                const creds = credentials as AppCredentials;
+                const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }
@@ -570,7 +570,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key as string, environmentId);
+        const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key, environmentId);
 
         if (activityLogId) {
             await updateProviderActivityLog(activityLogId, config?.provider as string);
@@ -591,7 +591,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
+        const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider);
 
         if (connection?.credentials?.type === ProviderAuthModes.OAuth2 || connection?.credentials?.type === ProviderAuthModes.App) {
             const {
@@ -599,8 +599,8 @@ class ConnectionService {
                 error,
                 response: credentials
             } = await this.refreshCredentialsIfNeeded(
-                connection as Connection,
-                config as ProviderConfig,
+                connection,
+                config,
                 template as ProviderTemplateOAuth2,
                 activityLogId,
                 environmentId,
@@ -800,9 +800,9 @@ class ConnectionService {
 
         const credentials: AppStoreCredentials = {
             type: ProviderAuthModes.AppStore,
-            access_token: (rawCredentials as any)?.token,
+            access_token: rawCredentials?.token,
             private_key: Buffer.from(privateKey).toString('base64'),
-            expires_at: (rawCredentials as any)?.expires_at,
+            expires_at: rawCredentials?.expires_at,
             raw: rawCredentials as unknown as Record<string, unknown>
         };
 
@@ -816,7 +816,7 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         activityLogId: number
     ): Promise<void> {
-        const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig as ConnectionConfig);
+        const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
         if (!success || !credentials) {
             console.log(error);
@@ -897,8 +897,8 @@ class ConnectionService {
 
         const credentials: AppCredentials = {
             type: ProviderAuthModes.App,
-            access_token: (rawCredentials as any)?.token,
-            expires_at: (rawCredentials as any)?.expires_at,
+            access_token: rawCredentials?.token,
+            expires_at: rawCredentials?.expires_at,
             raw: rawCredentials as unknown as Record<string, unknown>
         };
 

@@ -71,7 +71,7 @@ class AppAuthController {
                 return;
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             if (config == null) {
                 await createActivityLogMessageAndEnd({
@@ -89,7 +89,7 @@ class AppAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider as string);
+            const template = await configService.getTemplate(config?.provider);
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[AuthModes.App] as string);
 
             if (template.auth_mode !== AuthModes.App) {
@@ -185,8 +185,8 @@ class AppAuthController {
                 await connectionCreationFailedHook(
                     {
                         id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
                         environment_id: environmentId,
                         auth_mode: AuthModes.App,
                         error: `Error during app token retrieval call: ${error?.message}`,
@@ -267,8 +267,8 @@ class AppAuthController {
             await connectionCreationFailedHook(
                 {
                     id: -1,
-                    connection_id: connectionId as string,
-                    provider_config_key: providerConfigKey as string,
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
                     environment_id: environmentId,
                     auth_mode: AuthModes.App,
                     error: content,

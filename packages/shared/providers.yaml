@@ -61,6 +61,16 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
+algolia:
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.APP_ID}.algolia.net
+        headers:
+            X-Algolia-Application-Id: ${connectionConfig.APP_ID}
+            X-Algolia-API-Key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/algolia
 amazon:
     categories:
         - dev-tools
@@ -1842,6 +1852,18 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+teamtailor:
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.extension}.teamtailor.com
+        retry:
+            after: 'X-Rate-Limit-Reset'
+        headers:
+            Authorization: Token token=${apiKey}
+            X-Api-Version: '20210218'
+    docs: https://docs.nango.dev/integrations/all/teamtailor
 teamwork:
     categories:
         - productivity
@@ -2202,6 +2224,14 @@ zoho-invoice:
         - invoicing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-invoice
+zoho-mail:
+    categories:
+        - productivity
+        - communication
+    alias: zoho
+    proxy:
+        base_url: https://mail.zoho.${connectionConfig.extension}
+    docs: https://docs.nango.dev/integrations/all/zoho-mail
 zoho-bigin:
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin

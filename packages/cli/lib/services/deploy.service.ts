@@ -168,7 +168,7 @@ class DeployService {
                         config: { method },
                         code,
                         status
-                    } = err?.toJSON() as any;
+                    } = err?.toJSON();
 
                     const errorObject = { message, stack, code, status, url, method };
                     errorMessage = JSON.stringify(errorObject, null, 2);
@@ -285,7 +285,7 @@ class DeployService {
                     syncName,
                     providerConfigKey,
                     models: Array.isArray(models) ? models : [models],
-                    version: version as string,
+                    version: version,
                     runs,
                     track_deletes: flow.track_deletes || false,
                     auto_start: flow.auto_start === false ? false : true,

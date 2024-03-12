@@ -50,7 +50,7 @@ export const deleteScheduleForSync = async (sync_id: string, environmentId: numb
     const schedule = await getSchedule(sync_id);
 
     if (schedule && syncClient) {
-        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string, environmentId);
+        await syncClient.deleteSyncSchedule(schedule?.schedule_id, environmentId);
     }
 };
 
@@ -117,7 +117,7 @@ export const updateOffset = async (schedule_id: string, offset: number): Promise
     await schema().update({ offset }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
 };
 
-export async function softDeleteSchedules(limit: number): Promise<number> {
+export async function softDeleteSchedules({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
     return db
         .knex('_nango_sync_schedules')
         .update({
@@ -125,11 +125,6 @@ export async function softDeleteSchedules(limit: number): Promise<number> {
             deleted_at: db.knex.fn.now()
         })
         .whereIn('id', function (sub) {
-            sub.select('schedules.id')
-                .from('_nango_sync_schedules AS schedules')
-                .join('_nango_syncs AS syncs', 'syncs.id', '=', 'schedules.sync_id')
-                .where('syncs.deleted', true)
-                .andWhere('schedules.deleted', false)
-                .limit(limit);
+            sub.select('id').from('_nango_sync_schedules').where({ deleted: false, sync_id: syncId }).limit(limit);
         });
 }

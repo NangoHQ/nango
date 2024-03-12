@@ -1,15 +1,26 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, logger, MetricTypes, softDeleteJobs, softDeleteSchedules, telemetry, syncDataService } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import {
+    errorManager,
+    ErrorSourceEnum,
+    logger,
+    MetricTypes,
+    softDeleteSchedules,
+    telemetry,
+    softDeleteJobs,
+    syncDataService,
+    db,
+    findRecentlyDeletedSync
+} from '@nangohq/shared';
+import tracer from 'dd-trace';
 
-const limitJobs = 100;
-const limitSchedules = 100;
-const limitSyncs = 100;
-const limitRecords = 5000;
+const limitJobs = 1000;
+const limitSchedules = 1000;
+const limitRecords = 1000;
 
-export async function deleteSyncsData(): Promise<void> {
+export function deleteSyncsData(): void {
     /**
      * Clean data from soft deleted syncs.
+     * This cron needs to be removed at some point, we need a queue to delete specific provider/connection/sync
      */
     cron.schedule('*/20 * * * *', async () => {
         const start = Date.now();
@@ -26,30 +37,44 @@ export async function deleteSyncsData(): Promise<void> {
 export async function exec(): Promise<void> {
     logger.info('[deleteSyncs] starting');
 
-    // -----
-    // Soft delete jobs
-    let countJobs = 0;
-    do {
-        countJobs = await softDeleteJobs(limitJobs);
-        logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
-    } while (countJobs >= limitJobs);
+    await db.knex.transaction(async (trx) => {
+        // Because it's slow and create deadlocks
+        // we need to acquire a Lock that prevents any other duplicate cron to execute the same thing
+        const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [123456789]);
+        if (!rows || rows.length <= 0 || rows[0]!.pg_try_advisory_xact_lock === false) {
+            logger.info(`[deleteSyncs] could not acquire lock, skipping`);
+            return;
+        }
 
-    // -----
-    // Soft delete schedules
-    let countSchedules = 0;
-    do {
-        countSchedules = await softDeleteSchedules(limitSchedules);
-        logger.info(`[deleteSyncs] soft deleted ${countSchedules} schedules`);
-    } while (countSchedules >= limitSchedules);
+        const syncs = await findRecentlyDeletedSync();
 
-    // ----
-    // hard delete records
-    const syncs = await syncDataService.findSyncsWithDeletableRecords(limitSyncs);
-    logger.info(`[deleteSyncs] found ${syncs.length} syncs for records`);
-    for (const sync of syncs) {
-        logger.info(`[oldActivity] deleting syncId: ${sync.id}`);
-        await syncDataService.deleteRecordsBySyncId(sync.id!, limitRecords);
-    }
+        for (const sync of syncs) {
+            logger.info(`[deleteSyncs] deleting syncId: ${sync.id}`);
+
+            // Soft delete jobs
+            let countJobs = 0;
+            do {
+                countJobs = await softDeleteJobs({ syncId: sync.id, limit: limitJobs });
+                logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
+                telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_JOBS, countJobs);
+            } while (countJobs >= limitJobs);
+
+            // -----
+            // Soft delete schedules
+            let countSchedules = 0;
+            do {
+                countSchedules = await softDeleteSchedules({ syncId: sync.id, limit: limitSchedules });
+                logger.info(`[deleteSyncs] soft deleted ${countSchedules} schedules`);
+                telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_SCHEDULES, countSchedules);
+            } while (countSchedules >= limitSchedules);
+
+            // ----
+            // hard delete records
+            const res = await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
+            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalRecords);
+            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_DELETES, res.totalDeletes);
+        }
+    });
 
     logger.info('[deleteSyncs] ✅ done');
 }

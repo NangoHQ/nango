@@ -21,6 +21,7 @@
         "lint:fix": "eslint . --ext .ts,.tsx --fix",
         "ts-build": "tsc -b tsconfig.build.json && npm run postbuild -ws --if-present",
         "ts-build:docker": "tsc -b tsconfig.docker.json",
+        "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
         "docker-build": "docker build -f packages/server/Dockerfile -t nango-server:latest .",
         "webapp-build:hosted": "cd ./packages/webapp && npm run build:hosted && cd ../..",
         "webapp-build:staging": "cd ./packages/webapp && npm run build:staging && cd ../..",

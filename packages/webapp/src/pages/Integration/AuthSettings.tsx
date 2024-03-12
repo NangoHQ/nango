@@ -27,6 +27,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const { integration, account } = props;
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
 
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
@@ -51,7 +52,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
         if (!integration) return;
 
         setModalShowSpinner(true);
-        let res = await deleteIntegrationAPI(integrationId);
+        const res = await deleteIntegrationAPI(integrationId);
 
         if (res?.status === 204) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -151,7 +152,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
                 navigate(`/${env}/integrations`, { replace: true });
             } else if (res != null) {
-                let payload = await res.json();
+                const payload = await res.json();
                 toast.error(payload.type === 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
                     position: toast.POSITION.BOTTOM_CENTER
                 });
@@ -161,11 +162,14 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
     const editIntegrationID = () => {
         setShowEditIntegrationIdMenu(true);
+        setIntegrationIdEdit(integrationId);
+        setIsTyping(false);
     };
 
     const onSaveIntegrationID = async () => {
         setShowEditIntegrationIdMenu(false);
         setIntegrationIdEdit('');
+        setIsTyping(false);
 
         if (!integration) {
             return;
@@ -178,7 +182,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
             setIntegrationId(integrationIdEdit);
             navigate(`/${env}/integration/${integrationIdEdit}`, { replace: true });
         } else if (res != null) {
-            let payload = await res.json();
+            const payload = await res.json();
             toast.error(payload.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
@@ -188,6 +192,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const onCancelEditIntegrationID = () => {
         setShowEditIntegrationIdMenu(false);
         setIntegrationIdEdit('');
+        setIsTyping(false);
     };
 
     return (
@@ -211,18 +216,24 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 <div className="flex flex-col w-1/2 relative">
                     <span className="text-gray-400 text-xs uppercase mb-1">Integration ID</span>
                     {showEditIntegrationIdMenu ? (
-                        <div className="flex">
+                        <div className="flex items-center">
                             <input
                                 value={integrationIdEdit}
-                                onChange={(e) => setIntegrationIdEdit(e.target.value)}
+                                onChange={(e) => {
+                                    setIntegrationIdEdit(e.target.value);
+                                    setIsTyping(true);
+                                }}
                                 className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
-                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         onSaveIntegrationID();
                                     }
                                 }}
                             />
-                            <XCircleIcon className="flex h-5 w-5 text-red-400 cursor-pointer hover:text-red-700" onClick={() => onCancelEditIntegrationID()} />
+                            <XCircleIcon
+                                className="flex ml-1 h-5 w-5 text-red-400 cursor-pointer hover:text-red-700"
+                                onClick={() => onCancelEditIntegrationID()}
+                            />
                         </div>
                     ) : (
                         <div className="flex text-white">
@@ -232,9 +243,9 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             )}
                         </div>
                     )}
-                    {showEditIntegrationIdMenu && integrationIdEdit && (
+                    {isTyping && integrationIdEdit && (
                         <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
-                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editIntegrationID()} />
+                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => onSaveIntegrationID()} />
                             <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveIntegrationID()}>
                                 Change the integration ID to: {integrationIdEdit}
                             </span>
@@ -478,7 +489,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
                                 <span className="absolute right-0.5 top-1 flex items-center">
-                                    <CopyButton text={integration?.client_id as string} dark classNames="relative -ml-6" />
+                                    <CopyButton text={integration?.client_id} dark classNames="relative -ml-6" />
                                 </span>
                             </div>
                         </div>
@@ -505,13 +516,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 <span className="text-gray-400 text-xs">Scopes</span>
                             </div>
                             <div className="mt-1">
-                                <TagsInput
-                                    id="scopes"
-                                    name="scopes"
-                                    type="text"
-                                    defaultValue={integration ? (integration?.scopes as string) : ''}
-                                    minLength={1}
-                                />
+                                <TagsInput id="scopes" name="scopes" type="text" defaultValue={integration ? integration?.scopes : ''} minLength={1} />
                             </div>
                         </div>
                     )}
