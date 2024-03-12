@@ -32,7 +32,7 @@ export const NextBloc: React.FC<{ onProgress: () => void }> = ({ onProgress }) =
 
     return (
         <div className="mt-2">
-            <div className="border-t border-zinc-800 flex pt-6">
+            <div className=" flex pt-6">
                 <div className="w-290px h-240px ml-4">
                     <img src="/images/ship.svg" className="" />
                 </div>

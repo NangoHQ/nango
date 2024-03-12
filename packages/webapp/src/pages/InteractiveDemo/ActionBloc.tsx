@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Prism } from '@mantine/prism';
-import { Language, Steps } from './utils';
+import { Language, Steps, endpointAction, model } from './utils';
 import Button from '../../components/ui/button/Button';
 import { Bloc, Tab } from './Bloc';
 import { cn } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
+import { curlSnippet, nodeActionSnippet } from '../../utils/language-snippets';
+import { useStore } from '../../store';
 
 export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; connectionId: string; secretKey: string; onProgress: () => void }> = ({
     step,
@@ -23,19 +24,15 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
     const [url, setUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
+    const baseUrl = useStore((state) => state.baseUrl);
+
     const snippet = useMemo(() => {
-        return `import { Nango } from '@nangohq/node'
-
-# Find the secret key in your environment settings (must remain confidential).
-const nango = new Nango({ secretKey: '${secretKey}' });
-
-const issues = await nango.triggerAction(
-    '${providerConfigKey}',
-    '${connectionId}',
-    'github-issues-demo-action',
-    { title: ${JSON.stringify(title)} }
-);`;
-    }, [title, providerConfigKey, connectionId, secretKey]);
+        if (language === Language.Node) {
+            return nodeActionSnippet(model, secretKey, connectionId, providerConfigKey, { title }, true);
+        } else {
+            return curlSnippet(baseUrl, endpointAction, secretKey, connectionId, providerConfigKey, `{ title: ${JSON.stringify(title)} }`, 'POST');
+        }
+    }, [title, providerConfigKey, connectionId, secretKey, language, baseUrl]);
 
     const onDeploy = async () => {
         analyticsTrack('web:demo:action');
@@ -76,17 +73,19 @@ const issues = await nango.triggerAction(
             done={step >= Steps.Write}
             noTrack
         >
-            <div className="flex items-center gap-4 mb-4">
-                <div className="border-l pl-4 h-10 flex items-center">Issue Title</div>
-                <div className="flex-grow">
-                    <input
-                        type="text"
-                        placeholder="Enter a GitHub issue title"
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-10 w-1/2 appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
-                    />
+            {step === Steps.Fetch && (
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="border-l pl-4 h-10 flex items-center">Issue Title</div>
+                    <div className="flex-grow">
+                        <input
+                            type="text"
+                            placeholder="Enter a GitHub issue title"
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-10 w-1/2 appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
             <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                     <div className="space-x-4">
@@ -114,14 +113,14 @@ const issues = await nango.triggerAction(
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
                     {snippet}
                 </Prism>
-                <div className="px-4 py-4">
+                <div className="px-6 py-4">
                     {step === Steps.Fetch ? (
                         <Button type="button" variant="primary" onClick={onDeploy} disabled={!title} isLoading={loading}>
                             Create GitHub issue
                         </Button>
                     ) : (
-                        <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
-                            <CheckCircleIcon className="h-5 w-5" />
+                        <span className=" text-emerald-300 text-sm flex items-center h-9 gap-2">
+                            <CheckCircledIcon className="h-5 w-5" />
                             Issue created!
                             <a href={url || 'https://github.com/NangoHQ/interactive-demo/issues'} target="_blank" rel="noreferrer">
                                 <Button variant="secondary">

@@ -1,6 +1,6 @@
 import { Prism } from '@mantine/prism';
 import { ChevronDown, ChevronRight } from '@geist-ui/icons';
-import { Language, Steps, endpoint, model } from './utils';
+import { Language, Steps, endpointSync, model } from './utils';
 import Button from '../../components/ui/button/Button';
 import { useEffect, useMemo, useState } from 'react';
 import { curlSnippet, nodeSnippet } from '../../utils/language-snippets';
@@ -10,7 +10,7 @@ import Spinner from '../../components/ui/Spinner';
 import { Bloc, Tab } from './Bloc';
 import { cn } from '../../utils/utils';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { CheckCircledIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 
 type Interval = ReturnType<typeof setInterval>;
 
@@ -35,7 +35,7 @@ export const FetchBloc: React.FC<{
         if (language === Language.Node) {
             return nodeSnippet(model, secretKey, connectionId, providerConfigKey);
         } else if (language === Language.cURL) {
-            return curlSnippet(baseUrl, endpoint, secretKey, connectionId, providerConfigKey);
+            return curlSnippet(baseUrl, endpointSync, secretKey, connectionId, providerConfigKey);
         }
         return '';
     }, [language, baseUrl, secretKey, connectionId, providerConfigKey]);
@@ -106,14 +106,14 @@ export const FetchBloc: React.FC<{
             title="Fetch the new data"
             subtitle={
                 <>
-                    Fetch{' '}
+                    Fetch GitHub{' '}
                     <a
                         href="https://github.com/NangoHQ/interactive-demo/issues?q=is%3Aissue+is%3Aopen+label%3Ademo"
                         target="_blank"
                         rel="noreferrer"
                         className="underline"
                     >
-                        sample GitHub
+                        sample issues
                     </a>{' '}
                     issues in your backend, via Nango.
                 </>
@@ -148,7 +148,7 @@ export const FetchBloc: React.FC<{
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
                     {snippet}
                 </Prism>
-                <div className="px-4 py-4">
+                <div className="px-6 py-4">
                     {step === Steps.Webhooks && !pollingInterval && (
                         <Button type="button" variant="primary" onClick={startPolling}>
                             <img className="h-5" src="/images/chart-icon.svg" alt="" />
@@ -164,11 +164,11 @@ export const FetchBloc: React.FC<{
 
                     {step > Steps.Webhooks && (
                         <div>
-                            <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
-                                <CheckCircleIcon className="h-5 w-5" />
+                            <span className="text-emerald-300 text-sm flex items-center h-9 gap-2">
+                                <CheckCircledIcon className="h-5 w-5" />
                                 {records.length} issues fetched!
                             </span>
-                            <button className="my-2 mx-2 flex text-zinc-400 text-sm gap-2" onClick={() => setShow(!show)}>
+                            <button className="my-2 flex text-zinc-400 text-sm gap-2 py-0" onClick={() => setShow(!show)}>
                                 {show ? (
                                     <>
                                         <ChevronDown className="h-5 w-5" />
@@ -183,12 +183,12 @@ export const FetchBloc: React.FC<{
                             </button>
                             {show && (
                                 <div>
+                                    <div className="mb-2 p-1.5 bg-amber-300 bg-opacity-20 rounded justify-center items-center gap-2 inline-flex text-xs">
+                                        <InfoCircledIcon className="h-4 w-4" /> Object schemas are customizable and can be unified across APIs.
+                                    </div>
                                     <Prism language="json" colorScheme="dark" className="p-1 transparent-code bg-black" noCopy>
                                         {cleanedRecords}
                                     </Prism>
-                                    <div className="mt-2 p-1.5 bg-amber-300 bg-opacity-20 rounded justify-center items-center gap-2 inline-flex text-xs">
-                                        <ExclamationTriangleIcon className="h-4 w-4" /> Object schemas are customizable and can be unified across APIs.
-                                    </div>
                                 </div>
                             )}
                         </div>

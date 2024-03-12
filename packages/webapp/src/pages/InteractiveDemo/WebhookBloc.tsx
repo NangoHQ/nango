@@ -2,10 +2,15 @@ import { Steps, model } from './utils';
 import Button from '../../components/ui/button/Button';
 import { Prism } from '@mantine/prism';
 import { useMemo } from 'react';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Bloc } from './Bloc';
+import { CheckCircledIcon } from '@radix-ui/react-icons';
 
-export const WebhookBloc: React.FC<{ step: Steps; records: Record<string, unknown>[]; onProgress: () => void }> = ({ step, records, onProgress }) => {
+export const WebhookBloc: React.FC<{ step: Steps; connectionId: string; records: Record<string, unknown>[]; onProgress: () => void }> = ({
+    step,
+    connectionId,
+    records,
+    onProgress
+}) => {
     const date = useMemo(() => {
         // We want a fixed date
         return new Date().toISOString();
@@ -13,13 +18,13 @@ export const WebhookBloc: React.FC<{ step: Steps; records: Record<string, unknow
 
     const snippet = useMemo(() => {
         return `{
-    "connectionId": "<user-email-prefix>", # ID of the user who authorized GitHub.
-    "model": "${model}", # Schema of the synced data.
-    "providerConfigKey": "github-demo", # ID for the integration settings.
-    "responseResults": { "issue": { "added": ${records.length} } }, # Summary of changes.
-    "modifiedAfter": "${date}" # Start time for the reported changes.
+    "connectionId": "${connectionId}",
+    "model": "${model}",
+    "providerConfigKey": "github-demo",
+    "responseResults": { "issue": { "added": ${records.length} } },
+    "modifiedAfter": "${date}"
 }`;
-    }, [records, date]);
+    }, [connectionId, records, date]);
 
     return (
         <Bloc
@@ -32,14 +37,14 @@ export const WebhookBloc: React.FC<{ step: Steps; records: Record<string, unknow
                 <Prism language="json" colorScheme="dark" noCopy className="transparent-code bg-black rounded-t-lg p-3">
                     {snippet}
                 </Prism>
-                <div className="px-5 py-4 bg-zinc-900 rounded-lg">
+                <div className="px-6 py-4 bg-zinc-900 rounded-lg">
                     {step === Steps.Deploy ? (
                         <Button variant="primary" onClick={onProgress}>
                             Got it!
                         </Button>
                     ) : (
-                        <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
-                            <CheckCircleIcon className="h-5 w-5" />
+                        <span className="text-emerald-300 text-sm flex items-center h-9 gap-2">
+                            <CheckCircledIcon className="h-5 w-5" />
                             Done!
                         </span>
                     )}

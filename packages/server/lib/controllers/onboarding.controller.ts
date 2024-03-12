@@ -26,7 +26,9 @@ import {
     createActivityLog,
     LogActionEnum,
     isErr,
-    logger
+    logger,
+    analytics,
+    AnalyticsTypes
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -305,12 +307,12 @@ class OnboardingController {
                 return;
             }
 
-            if (typeof req.body.progress !== 'number') {
+            if (typeof req.body.progress !== 'number' || req.body.progress > 6 || req.body.progress < 0) {
                 res.status(400).json({ message: 'Missing progress' });
                 return;
             }
 
-            const { user } = response;
+            const { user, account } = response;
             const status = await getOnboardingProgress(user.id);
             if (!status) {
                 res.status(404).send({ message: 'no_onboarding' });
@@ -318,6 +320,7 @@ class OnboardingController {
             }
 
             await updateOnboardingProgress(status.id, req.body.progress);
+            void analytics.track(AnalyticsTypes[`DEMO_${req.body.progress as 0}`], account.id, { user_id: user.id });
 
             res.status(200).json({
                 success: true

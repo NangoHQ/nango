@@ -5,9 +5,8 @@ import { useAnalyticsTrack } from '../../utils/analytics';
 import { Steps } from './utils';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Bloc, Tab } from './Bloc';
-import { GitHubLogoIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
 
 export const AuthorizeBloc: React.FC<{
     step: Steps;
@@ -77,19 +76,19 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                     <Tab>Frontend</Tab>
                     <CopyButton dark text={snippet} />
                 </div>
-                <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
+                <Prism noCopy language="typescript" className="p-3 transparent-code bg-black font-['Roboto Mono']" colorScheme="dark">
                     {snippet}
                 </Prism>
-                <div className="px-5 py-4 bg-zinc-900 rounded-lg">
+                <div className="px-6 py-4 bg-zinc-900 rounded-lg">
                     {step === Steps.Start ? (
                         <Button type="button" variant="primary" onClick={onAuthorize}>
                             <GitHubLogoIcon />
                             Authorize GitHub
                         </Button>
                     ) : (
-                        <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
-                            <CheckCircleIcon className="h-5 w-5" />
-                            Authorized!
+                        <span className="text-emerald-300 text-sm flex items-center h-9 gap-2">
+                            <CheckCircledIcon className="h-5 w-5" />
+                            GitHub Authorized!
                         </span>
                     )}
                 </div>

@@ -217,7 +217,7 @@ export const InteractiveDemo: React.FC = () => {
                             </div>
 
                             <div id="demo-webhook">
-                                <WebhookBloc step={step} records={records} onProgress={onWebhookConfirm} />
+                                <WebhookBloc step={step} connectionId={connectionId} records={records} onProgress={onWebhookConfirm} />
                             </div>
 
                             <div id="demo-fetch">

@@ -91,6 +91,9 @@ const App = () => {
                     '.break-all-words .token.string': {
                         wordBreak: 'break-all',
                         whiteSpace: 'normal'
+                    },
+                    '.mantine-Prism-code': {
+                        fontFamily: 'Roboto Mono'
                     }
                 })
             }}

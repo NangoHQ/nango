@@ -1,23 +1,23 @@
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import Button from '../../components/ui/button/Button';
 import { Bloc, Tab } from './Bloc';
-import { Steps, endpoint, model, providerConfigKey } from './utils';
+import { Steps, endpointSync, model, providerConfigKey } from './utils';
 import { Prism } from '@mantine/prism';
 import { useMemo, useState } from 'react';
 import { cn } from '../../utils/utils';
 import { useAnalyticsTrack } from '../../utils/analytics';
+import { CheckCircledIcon } from '@radix-ui/react-icons';
 
-type File = 'sync-github-issues.ts' | 'nango.yaml';
+type File = 'github-issues-demo.ts' | 'nango.yaml';
 
 export const DeployBloc: React.FC<{ step: Steps; onProgress: () => void }> = ({ step, onProgress }) => {
     const analyticsTrack = useAnalyticsTrack();
 
-    const [file, setFile] = useState<File>('sync-github-issues.ts');
+    const [file, setFile] = useState<File>('github-issues-demo.ts');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
     const snippet = useMemo(() => {
-        if (file === 'sync-github-issues.ts') {
+        if (file === 'github-issues-demo.ts') {
             return `function fetchData(nango: NangoSync) {
     // Fetch issues from GitHub.
     const res = await nango.get({ endpoint: '/repos/NangoHQ/interactive-demo/issues' });
@@ -37,7 +37,7 @@ export const DeployBloc: React.FC<{ step: Steps; onProgress: () => void }> = ({ 
         scopes: public_repo
         runs: every 5 minutes
         output: ${model}
-        endpoint: ${endpoint}
+        endpoint: ${endpointSync}
 models:
   ${model}:
     id: integer
@@ -80,11 +80,11 @@ models:
             title="Deploy an integration"
             subtitle={
                 <>
-                    The following script will sync GitHub issues (from this{' '}
+                    The following script runs on Nango&apos;s infrastructure & syncs GitHub
                     <a href="https://github.com/NangoHQ/interactive-demo" target="_blank" rel="noreferrer" className="underline">
-                        showcase repo
+                        sample issues
                     </a>
-                    ) to Nango. Scripts run on Nango&apos;s architecture.
+                    to Nango.
                 </>
             }
             active={step === Steps.Authorize}
@@ -95,12 +95,12 @@ models:
                     <div className="space-x-4">
                         <Tab
                             variant={'zombie'}
-                            className={cn('cursor-default', file !== 'sync-github-issues.ts' && 'cursor-pointer bg-zinc-900 pointer-events-auto')}
+                            className={cn('cursor-default', file !== 'github-issues-demo.ts' && 'cursor-pointer bg-zinc-900 pointer-events-auto')}
                             onClick={() => {
-                                setFile('sync-github-issues.ts');
+                                setFile('github-issues-demo.ts');
                             }}
                         >
-                            ./sync-github-issues.ts <span className="text-zinc-500">(script)</span>
+                            ./github-issues-demo.ts <span className="text-zinc-500">(script)</span>
                         </Tab>
                         <Tab
                             variant={'zombie'}
@@ -117,15 +117,15 @@ models:
                 <Prism noCopy language={file === 'nango.yaml' ? 'yaml' : 'typescript'} className="p-3 transparent-code bg-black" colorScheme="dark">
                     {snippet}
                 </Prism>
-                <div className="flex items-center px-4 py-4">
+                <div className="flex items-center px-6 py-4">
                     {step === Steps.Authorize ? (
                         <Button type="button" variant="primary" onClick={onDeploy} isLoading={loading}>
                             Deploy GitHub integration
                         </Button>
                     ) : (
-                        <span className="mx-2 text-emerald-300 text-sm flex items-center h-9 gap-2">
-                            <CheckCircleIcon className="h-5 w-5" />
-                            GitHub-to-Nango syncing enabled!
+                        <span className="text-emerald-300 text-sm flex items-center h-9 gap-2">
+                            <CheckCircledIcon className="h-5 w-5" />
+                            Integration deployed!
                         </span>
                     )}
                 </div>

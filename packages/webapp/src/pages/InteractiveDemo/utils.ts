@@ -13,6 +13,7 @@ export enum Language {
     cURL = 1
 }
 
-export const endpoint = '/github/lite-issues';
+export const endpointSync = '/github/demo-issues';
+export const endpointAction = '/github/demo-write-issue';
 export const model = 'GithubIssueDemo';
 export const providerConfigKey = 'github-demo';
