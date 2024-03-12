@@ -14,14 +14,14 @@ jobs:
       matrix:
         group:
           - name: 'staging'
-            if: github.ref == 'refs/heads/master'
+            if: true
             sentry_key: SENTRY_KEY_staging
           - name: 'prod'
-            if: github.ref == 'refs/heads/master'
+            if: true
             sentry_key: SENTRY_KEY_prod
             posthog_key: POSTHOG_KEY_prod
           - name: 'enterprise'
-            if: github.ref == 'refs/heads/master'
+            if: ${{ github.ref == 'refs/heads/master' }}
 
     secrets: inherit
     uses: ./.github/workflows/build-image-reusable.yaml
