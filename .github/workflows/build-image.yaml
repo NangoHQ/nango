@@ -46,7 +46,7 @@ jobs:
       - name: Push images
         if: env.CAN_PUSH == 'true'
         run: |
-          docker push staging-${{ env.SHA }}
+          docker push nangohq/nango:staging-${{ env.SHA }}
 
 
   push-other-container:
@@ -56,6 +56,10 @@ jobs:
     env:
       CAN_PUSH: '${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}'
       SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+    concurrency:
+      group: push-unified-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Check out
@@ -92,7 +96,6 @@ jobs:
 
       - name: Push images
         run: |
-          docker push staging-${{ env.SHA }}
-          docker push hosted-${{ env.SHA }}
-          docker push enterperise-${{ env.SHA }}
-          docker push prod-${{ env.SHA }}
+          docker push nangohq/nango:hosted-${{ env.SHA }}
+          docker push nangohq/nango:enterperise-${{ env.SHA }}
+          docker push nangohq/nango:prod-${{ env.SHA }}
