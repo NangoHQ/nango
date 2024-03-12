@@ -292,17 +292,21 @@ export class Orchestrator {
         providerConfigKey: string,
         syncNames: string[],
         connectionId?: string,
-        includeJobStatus = false
+        includeJobStatus = false,
+        optionalConnection?: Connection | null
     ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
-        if (connectionId) {
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
-
-            if (!success) {
-                return { success: false, error, response: null };
+        let connection = optionalConnection;
+        if (connectionId && !connection) {
+            const connectionResult = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+            if (!connectionResult.success || !connectionResult.response) {
+                return { success: false, error: connectionResult.error, response: null };
             }
+            connection = connectionResult.response;
+        }
 
+        if (connection) {
             for (const syncName of syncNames) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
