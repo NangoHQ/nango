@@ -44,6 +44,8 @@ docker buildx build \
   --build-arg git_hash=${GIT_HASH} \
   --build-arg posthog_key=${SENTRY_KEY} \
   --build-arg sentry_key=${POSTHOG_KEY} \
+  --cache-from type=gha \
+  --cache-to type=gha,mode=max \
   --file ../Dockerfile \
-  ${tags} \
+  $tags \
   ../
