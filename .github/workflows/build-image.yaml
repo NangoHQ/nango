@@ -35,7 +35,7 @@ jobs:
 
       - name: Test image
         run: |
-          docker run --rm nango:staging node packages/runner/dist/app.js
+          docker run --rm nango:staging timeout 5 sh -c 'node packages/runner/dist/app.js'
 
       - name: Push image
         run: |
