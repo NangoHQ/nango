@@ -338,7 +338,9 @@ export class NangoAction {
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
-            const connection = await this.getConnection();
+            const { connectionId, providerConfigKey } = config;
+            console.log(config);
+            const connection = await this.getConnection(providerConfigKey, connectionId);
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
@@ -418,10 +420,14 @@ export class NangoAction {
         return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async getConnection(): Promise<Connection> {
+    public async getConnection(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Connection> {
         this.exitSyncIfAborted();
+
+        const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
+        const connectionId = optionalConnectionId || this.connectionId;
+
         if (!this.memoizedConnection || Date.now() - this.memoizedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
+            const connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
             this.memoizedConnection = { connection, timestamp: Date.now() };
             return connection;
         }
