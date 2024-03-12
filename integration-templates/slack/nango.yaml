@@ -14,7 +14,7 @@ integrations:
         runs: every hour
         description: |
           Syncs information about all Slack channels. Which channels get synced
-          (public, private, IMs, group DMs) dependson the scopes. If
+          (public, private, IMs, group DMs) depends on the scopes. If
           joinPublicChannels is set to true, the bot will automatically join all
           public channels as well. Scopes: At least one of channels:read,
           groups:read, mpim:read, im:read. To also join public channels:
@@ -40,7 +40,10 @@ integrations:
           - SlackMessageReply
           - SlackMessageReaction
         sync_type: incremental
-        endpoint: /slack/messages
+        endpoint:
+          - /slack/messages
+          - /slack/messages-reply
+          - /slack/messages-reaction
         scopes:
           - channels:read
           - channels:history

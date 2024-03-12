@@ -5,9 +5,13 @@ integrations:
         runs: every 6 hours
         description: |
           Fetches a list of conversations from Intercom
-        output: IntercomConversation
+        output:
+          - IntercomConversation
+          - IntercomConversationMessage
         sync_type: incremental
-        endpoint: /intercom/conversations
+        endpoint:
+          - /intercom/conversations
+          - /intercom/conversations-message
       intercom-contacts:
         runs: every 6 hours
         description: |
