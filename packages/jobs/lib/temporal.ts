@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
-import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE, isProd, isEnterprise } from '@nangohq/shared';
+import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE, isProd, isEnterprise, logger } from '@nangohq/shared';
 
 const TEMPORAL_WORKER_MAX_CONCURRENCY = parseInt(process.env['TEMPORAL_WORKER_MAX_CONCURRENCY'] || '0') || 500;
 
@@ -17,7 +17,7 @@ export class Temporal {
     }
 
     async start() {
-        console.log('Starting Temporal worker');
+        logger.info('Starting Temporal worker');
 
         if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
             dotenv.config({ path: '../../.env' });
@@ -67,7 +67,7 @@ export class Temporal {
             this.workers = await Promise.all([Worker.create(syncWorker), Worker.create(webhookWorker)]);
             await Promise.all(this.workers.map((worker) => worker.run()));
         } catch (e) {
-            console.log(e);
+            logger.error(e);
         }
     }
 

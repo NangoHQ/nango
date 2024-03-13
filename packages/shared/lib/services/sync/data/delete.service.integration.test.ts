@@ -53,7 +53,7 @@ describe('Data delete service integration tests', () => {
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1
@@ -61,7 +61,7 @@ describe('Data delete service integration tests', () => {
         expect(success).toBe(true);
         expect(error).toBe(undefined);
 
-        const fullRecords = await getFullRecords(nangoConnectionId as number, modelName);
+        const fullRecords = await getFullRecords(nangoConnectionId, modelName);
 
         for (const record of fullRecords) {
             expect(record).toHaveProperty('id');
@@ -93,20 +93,20 @@ describe('Data delete service integration tests', () => {
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
-        await takeSnapshot(meta.nangoConnectionId as number, meta.modelName);
-        const fullRecords = await getFullRecords(nangoConnectionId as number, modelName);
+        await takeSnapshot(meta.nangoConnectionId, meta.modelName);
+        const fullRecords = await getFullRecords(nangoConnectionId, modelName);
         const fullRecordsWithoutPendingDelete = fullRecords.map((record: any) => {
             const { pending_delete, ...rest } = record;
             return rest;
         });
-        const snapshotFullRecords = await getFullSnapshotRecords(nangoConnectionId as number, modelName);
+        const snapshotFullRecords = await getFullSnapshotRecords(nangoConnectionId, modelName);
         expect(fullRecordsWithoutPendingDelete).toEqual(snapshotFullRecords);
     });
 
@@ -119,7 +119,7 @@ describe('Data delete service integration tests', () => {
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1,
@@ -127,7 +127,7 @@ describe('Data delete service integration tests', () => {
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
-        await takeSnapshot(nangoConnectionId as number, modelName);
+        await takeSnapshot(nangoConnectionId, modelName);
 
         const slimmerResults = formattedResults?.slice(0, 80);
 
@@ -135,7 +135,7 @@ describe('Data delete service integration tests', () => {
             slimmerResults as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1,
@@ -144,11 +144,11 @@ describe('Data delete service integration tests', () => {
         expect(slimSuccess).toBe(true);
         expect(slimError).toBe(undefined);
 
-        await clearOldRecords(nangoConnectionId as number, modelName);
-        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'external_id', nangoConnectionId as number, modelName);
+        await clearOldRecords(nangoConnectionId, modelName);
+        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'external_id', nangoConnectionId, modelName);
         expect(deletedKeys?.length).toEqual(20);
 
-        const connection = await connectionService.getConnectionById(nangoConnectionId as number);
+        const connection = await connectionService.getConnectionById(nangoConnectionId);
 
         const { response: recordResponse } = await getAllDataRecords(
             connection?.connection_id as string,
@@ -172,7 +172,7 @@ describe('Data delete service integration tests', () => {
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1,
@@ -180,7 +180,7 @@ describe('Data delete service integration tests', () => {
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
-        await takeSnapshot(nangoConnectionId as number, meta.modelName);
+        await takeSnapshot(nangoConnectionId, meta.modelName);
 
         const slimmerResults = formattedResults?.slice(0, 80);
 
@@ -192,7 +192,7 @@ describe('Data delete service integration tests', () => {
             slimmerResults as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1,
@@ -203,7 +203,7 @@ describe('Data delete service integration tests', () => {
 
         expect(summary?.deletedKeys?.length).toEqual(0);
 
-        const connection = await connectionService.getConnectionById(nangoConnectionId as number);
+        const connection = await connectionService.getConnectionById(nangoConnectionId);
 
         const { response: recordResponse } = await getAllDataRecords(
             connection?.connection_id as string,
@@ -224,10 +224,10 @@ describe('Data delete service integration tests', () => {
         const { modelName, nangoConnectionId, syncId, syncJobId } = meta;
         const { response: formattedResults } = formatDataRecords(
             rawRecords as DataResponse[],
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
-            syncId as string,
-            syncJobId as number,
+            syncId,
+            syncJobId,
             new Date(),
             true
         );
@@ -235,7 +235,7 @@ describe('Data delete service integration tests', () => {
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1,
@@ -243,7 +243,7 @@ describe('Data delete service integration tests', () => {
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
-        await takeSnapshot(nangoConnectionId as number, modelName);
+        await takeSnapshot(nangoConnectionId, modelName);
 
         if (formattedResults) {
             // @ts-expect-error
@@ -252,10 +252,10 @@ describe('Data delete service integration tests', () => {
 
         const { response: updatedFormattedResults } = formatDataRecords(
             rawRecords as DataResponse[],
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
-            syncId as string,
-            syncJobId as number,
+            syncId,
+            syncJobId,
             new Date(),
             true
         );
@@ -264,7 +264,7 @@ describe('Data delete service integration tests', () => {
             updatedFormattedResults as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1,
@@ -274,10 +274,10 @@ describe('Data delete service integration tests', () => {
         expect(updateSuccess).toBe(true);
         expect(updateError).toBe(undefined);
 
-        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'external_id', nangoConnectionId as number, modelName);
+        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'external_id', nangoConnectionId, modelName);
         expect(deletedKeys?.length).toEqual(0);
 
-        const connection = await connectionService.getConnectionById(nangoConnectionId as number);
+        const connection = await connectionService.getConnectionById(nangoConnectionId);
 
         const { response: updatedRecordResponse } = await getAllDataRecords(
             connection?.connection_id as string,

@@ -4,7 +4,7 @@ let nextCursor: string | null = null;
 
 export default async function fetchData(nango: NangoSync) {
     const metadata = (await nango.getMetadata()) || {};
-    let candidatelastsyncToken = metadata['candidatelastsyncToken'] ? String(metadata['candidatelastsyncToken']) : '';
+    const candidatelastsyncToken = metadata['candidatelastsyncToken'] ? String(metadata['candidatelastsyncToken']) : '';
 
     await saveAllCandidates(nango, candidatelastsyncToken);
 }
@@ -38,7 +38,7 @@ async function saveAllCandidates(nango: NangoSync, candidatelastsyncToken: strin
             }
         }
 
-        let metadata = (await nango.getMetadata()) || {};
+        const metadata = (await nango.getMetadata()) || {};
         metadata['candidatelastsyncToken'] = candidatelastsyncToken;
         await nango.setMetadata(metadata);
     } catch (error: any) {

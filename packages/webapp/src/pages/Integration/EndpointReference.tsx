@@ -50,7 +50,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
 
             const jsonModel = generateResponseModel(
                 activeFlow?.models,
-                Array.isArray(activeFlow?.returns) ? (activeFlow?.returns[0] as string) : activeFlow.returns,
+                Array.isArray(activeFlow?.returns) ? activeFlow?.returns[0] : activeFlow.returns,
                 activeFlow?.type === 'sync'
             );
             if (activeFlow?.type === 'sync') {

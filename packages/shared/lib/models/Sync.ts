@@ -216,11 +216,11 @@ export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any> & { id: string | number };
 
-export type EncryptedRawRecord = {
+export interface EncryptedRawRecord {
     iv: string;
     authTag: string;
     encryptedValue: string;
-};
+}
 
 export type UnencryptedRawRecord = Record<string, any> & { id: string | number };
 

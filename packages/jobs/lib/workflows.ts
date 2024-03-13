@@ -50,7 +50,7 @@ const { cancelActivity, reportFailure } = proxyActivities<typeof activities>({
 export async function initialSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     try {
         return await routeSync(args);
-    } catch (e: any) {
+    } catch (e) {
         if (isCancellation(e)) {
             await CancellationScope.nonCancellable(() => cancelActivity(args));
 
@@ -67,7 +67,7 @@ export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean 
         const result = await scheduleAndRouteSync(args);
 
         return result;
-    } catch (e: any) {
+    } catch (e) {
         if (isCancellation(e)) {
             await CancellationScope.nonCancellable(() => cancelActivity(args));
 
@@ -82,7 +82,7 @@ export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean 
 export async function action(args: ActionArgs): Promise<object> {
     try {
         return await runAction(args);
-    } catch (e: any) {
+    } catch (e) {
         await reportFailure(e, args, ACTION_TIMEOUT, ACTION_MAX_ATTEMPTS);
 
         return { success: false };
@@ -92,7 +92,7 @@ export async function action(args: ActionArgs): Promise<object> {
 export async function webhook(args: WebhookArgs): Promise<boolean> {
     try {
         return await runWebhook(args);
-    } catch (e: any) {
+    } catch (e) {
         await reportFailure(e, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
 
         return false;

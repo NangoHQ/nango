@@ -95,7 +95,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     value={enteredValue}
                     onChange={(e) => setEnteredValue(e.currentTarget.value)}
                     onKeyDown={handleEnter}
-                    placeholder={`${Boolean(scopes.length) ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
+                    placeholder={`${scopes.length ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                 />
             </div>

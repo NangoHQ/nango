@@ -22,7 +22,7 @@ describe('Encryption manager tests', () => {
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            nangoConnectionId as number,
+            nangoConnectionId,
             modelName,
             1,
             1
