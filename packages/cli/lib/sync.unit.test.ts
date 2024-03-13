@@ -214,7 +214,7 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
-        expect(generate(false, true)).rejects.toThrow(
+        await expect(generate(false, true)).rejects.toThrow(
             `Model "GithubIssue" doesn't have an id field. This is required to be able to uniquely identify the data record.`
         );
     });
@@ -429,6 +429,15 @@ describe('generate function tests', () => {
         expect(generate(false, true));
         const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
         expect(modelsFile).toContain(`gender: 'male' | null;`);
+    });
+
+    it('should correctly interpret a union literal type with a string and a model', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal-model/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`gender: 'male' | Other`);
+        expect(modelsFile).toContain(`user: User | Account`);
     });
 
     it('should correctly interpret a union types, array types, and record types', async () => {
