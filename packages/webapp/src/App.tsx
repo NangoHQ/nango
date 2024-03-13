@@ -13,7 +13,7 @@ import { useStore } from './store';
 import Signup from './pages/Signup';
 import InviteSignup from './pages/InviteSignup';
 import Signin from './pages/Signin';
-import GettingStarted from './pages/GettingStarted';
+import { InteractiveDemo } from './pages/InteractiveDemo';
 import IntegrationList from './pages/Integration/List';
 import CreateIntegration from './pages/Integration/Create';
 import ShowIntegration from './pages/Integration/Show';
@@ -40,7 +40,7 @@ Sentry.init({
 });
 
 const VALID_PATHS = [
-    'getting-started',
+    'interactive-demo',
     'integration',
     'integrations',
     'syncs',
@@ -55,12 +55,12 @@ const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
     const env = useStore((state) => state.cookieValue);
     const signout = useSignout();
-    const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
-    const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const setShowInteractiveDemo = useStore((state) => state.setShowInteractiveDemo);
+    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
 
     useEffect(() => {
-        setShowGettingStarted(env === 'dev' && (isCloud() || isLocal()));
-    }, [env, setShowGettingStarted]);
+        setShowInteractiveDemo(env === 'dev' && (isCloud() || isLocal()));
+    }, [env, setShowInteractiveDemo]);
 
     const correctPage = (): string => {
         const url = new URL(window.location.href);
@@ -75,7 +75,7 @@ const App = () => {
             return url.pathname;
         }
 
-        return showGettingStarted ? '/dev/getting-started' : `/${env}/integrations`;
+        return showInteractiveDemo ? '/dev/interactive-demo' : `/${env}/integrations`;
     };
 
     return (
@@ -91,6 +91,9 @@ const App = () => {
                     '.break-all-words .token.string': {
                         wordBreak: 'break-all',
                         whiteSpace: 'normal'
+                    },
+                    '.mantine-Prism-code': {
+                        fontFamily: 'Roboto Mono'
                     }
                 })
             }}
@@ -107,9 +110,9 @@ const App = () => {
             >
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
-                    {showGettingStarted && (
-                        <Route path="/dev/getting-started" element={<PrivateRoute />}>
-                            <Route path="/dev/getting-started" element={<GettingStarted />} />
+                    {showInteractiveDemo && (
+                        <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
+                            <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
                         </Route>
                     )}
                     <Route path="/:env/integrations" element={<PrivateRoute />}>

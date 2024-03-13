@@ -24,7 +24,7 @@ export enum LeftNavBarItems {
     Syncs,
     AccountSettings,
     UserSettings,
-    GettingStarted
+    InteractiveDemo
 }
 
 export interface LeftNavBarProps {
@@ -44,7 +44,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const storedEnvs = useStore((state) => state.envs);
     const [envs, setEnvs] = useState<{ name: string }[]>(storedEnvs);
-    const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
     const setStoredEnvs = useStore((state) => state.setEnvs);
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setEmail = useStore((state) => state.setEmail);
@@ -160,15 +160,15 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
-                        {showGettingStarted && (
+                        {showInteractiveDemo && (
                             <Link
-                                to="/dev/getting-started"
+                                to="/dev/interactive-demo"
                                 className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                    props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                                    props.selectedItem === LeftNavBarItems.InteractiveDemo ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                 }`}
                             >
                                 <img className="h-5" src="/images/rocket-icon.svg" alt="" />
-                                <p>Getting Started</p>
+                                <p>Interactive Demo</p>
                             </Link>
                         )}
                         <Link
