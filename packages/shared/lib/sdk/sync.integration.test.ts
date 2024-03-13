@@ -16,7 +16,7 @@ describe('Connection service integration tests', () => {
     });
 
     describe('Nango object tests', () => {
-        it('Should replace existing metadata, overwriting anything existing', async () => {
+        it('Should retrieve connections correctly if different connection credentials are passed in', async () => {
             const connections = await createConnectionSeeds(environmentName);
 
             const [nangoConnectionId, secondNangoConnectionId]: number[] = connections;
