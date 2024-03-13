@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 
-import { baseUrl as getBaseUrl } from '../../utils/utils';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import { useGetProjectInfoAPI } from '../../utils/api';
 
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
@@ -13,17 +11,15 @@ import { Steps, providerConfigKey, model } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
-import { Account, OnboardingStatus } from '../../types';
+import { OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
 import Spinner from '../../components/ui/Spinner';
+import { useEnvironment } from '../../hooks/useEnvironment';
 
 export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
     const [initialLoad, setInitialLoad] = useState(false);
     const [step, setStep] = useState<Steps>(Steps.Start);
-    const [publicKey, setPublicKey] = useState('');
-    const [secretKey, setSecretKey] = useState('');
-    const [hostUrl, setHostUrl] = useState('');
     const [connectionId, setConnectionId] = useState('');
     const [, setServerErrorMessage] = useState<string | null>(null);
     const [onboardingId, setOnboardingId] = useState<number>();
@@ -31,8 +27,7 @@ export const InteractiveDemo: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
 
     const env = useStore((state) => state.cookieValue);
-
-    const getProjectInfoAPI = useGetProjectInfoAPI();
+    const { environment } = useEnvironment();
 
     useEffect(() => {
         if (env !== 'dev') {
@@ -41,30 +36,16 @@ export const InteractiveDemo: React.FC = () => {
     }, [env]);
 
     useEffect(() => {
-        const getAccount = async () => {
-            const res = await getProjectInfoAPI();
-
-            if (res?.status !== 200) {
-                return;
-            }
-
-            const account = ((await res.json()) as { account: Account })['account'];
-            setPublicKey(account.public_key);
-            setSecretKey(account.secret_key);
-            setHostUrl(account.host || getBaseUrl());
-
-            const email = account.email;
-            let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
-            strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
-            setConnectionId(strippedEmail);
-        };
-
-        if (!loaded) {
-            setLoaded(true);
-            void getAccount();
+        if (!environment) {
+            return;
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loaded, setLoaded, getProjectInfoAPI, setPublicKey, setSecretKey]);
+
+        const email = environment.email;
+        let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
+        strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
+        setConnectionId(strippedEmail);
+        setLoaded(true);
+    }, [setLoaded, setConnectionId, environment]);
 
     useEffect(() => {
         const getProgress = async () => {
@@ -128,7 +109,7 @@ export const InteractiveDemo: React.FC = () => {
         const res = await fetch(`/records?${new URLSearchParams(params).toString()}`, {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${secretKey}`,
+                Authorization: `Bearer ${environment?.secret_key}`,
                 'Content-Type': 'application/json',
                 'Provider-Config-Key': providerConfigKey,
                 'Connection-Id': connectionId
@@ -190,6 +171,10 @@ export const InteractiveDemo: React.FC = () => {
         setStep(Steps.Start);
     };
 
+    if (!environment) {
+        return null;
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.InteractiveDemo}>
             <div className="text-white pb-10">
@@ -206,9 +191,9 @@ export const InteractiveDemo: React.FC = () => {
                             <AuthorizeBloc
                                 step={step}
                                 connectionId={connectionId}
-                                hostUrl={hostUrl}
+                                hostUrl={environment.host}
                                 providerConfigKey={providerConfigKey}
-                                publicKey={publicKey}
+                                publicKey={environment.public_key}
                                 onProgress={onAuthorize}
                             />
 
@@ -225,7 +210,7 @@ export const InteractiveDemo: React.FC = () => {
                                     step={step}
                                     connectionId={connectionId}
                                     providerConfigKey={providerConfigKey}
-                                    secretKey={secretKey}
+                                    secretKey={environment.secret_key}
                                     records={records}
                                     onProgress={onFetch}
                                 />
@@ -236,7 +221,7 @@ export const InteractiveDemo: React.FC = () => {
                                     step={step}
                                     connectionId={connectionId}
                                     providerConfigKey={providerConfigKey}
-                                    secretKey={secretKey}
+                                    secretKey={environment.secret_key}
                                     onProgress={onActionConfirm}
                                 />
                             </div>

@@ -115,7 +115,7 @@ const App = () => {
             >
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
-                    <Route path="/:env/integrations" element={<PrivateRoute />}>
+                    <Route element={<PrivateRoute />}>
                         {showInteractiveDemo && (
                             <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
                                 <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
