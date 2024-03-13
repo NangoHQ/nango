@@ -36,5 +36,6 @@ describe('retry', () => {
         } catch (error: any) {
             expect(error.message).toEqual('my error');
         }
+        expect(count).toBe(3);
     });
 });

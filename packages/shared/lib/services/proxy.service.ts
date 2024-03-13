@@ -10,6 +10,7 @@ import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxy
 import { NangoError } from '../utils/error.js';
 import type { ActivityLogMessage } from '../models/Activity.js';
 import type { Template as ProviderTemplate } from '../models/Provider.js';
+import { logger } from '../index.js';
 
 interface Activities {
     activityLogs: ActivityLogMessage[];
@@ -132,7 +133,9 @@ class ProxyService {
         let template: ProviderTemplate | undefined;
         try {
             template = configService.getTemplate(provider);
-        } catch (error) {}
+        } catch {
+            logger.error('failed to getTemplate');
+        }
 
         if (!template || ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride)) {
             activityLogs.push({
