@@ -425,7 +425,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
 
         await syncRun.cancel();
     } catch (e) {
-        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e.message || e}`;
+        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : JSON.stringify(e)}`;
         errorManager.report(content, {
             environmentId: workflowArguments.nangoConnection?.environment_id,
             source: ErrorSourceEnum.PLATFORM,
