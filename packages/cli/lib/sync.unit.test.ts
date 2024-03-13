@@ -440,5 +440,6 @@ describe('generate function tests', () => {
         expect(modelsFile).toContain(`und: string | null | undefined;`);
         expect(modelsFile).toContain(`def: 'male' | string | null | undefined;`);
         expect(modelsFile).toContain(`reference: Other[];`);
+        expect(modelsFile).toContain(`nullableDate: Date | null;`);
     });
 });

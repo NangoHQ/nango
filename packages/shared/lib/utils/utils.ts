@@ -34,7 +34,7 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
-export const JAVASCRIPT_PRIMITIVES = ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'object', 'null'];
+export const JAVASCRIPT_PRIMITIVES = ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'object', 'null', 'Date'];
 
 export function getEnv() {
     if (isStaging()) {

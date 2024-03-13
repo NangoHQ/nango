@@ -18,6 +18,7 @@ models:
     und: string | undefined | null
     def: male | string | undefined | null
     reference: Other[]
+    nullableDate: Date | null
   Other:
     id: string
     yes: number
