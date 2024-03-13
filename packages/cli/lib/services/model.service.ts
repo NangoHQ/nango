@@ -12,8 +12,7 @@ class ModelService {
         const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
             const syncNames = Object.keys(syncObject);
-            for (let i = 0; i < syncNames.length; i++) {
-                const syncName = syncNames[i] as string;
+            for (const syncName of syncNames) {
                 const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
                 if (syncData.returns) {
                     const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
@@ -40,8 +39,7 @@ class ModelService {
             const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
                 const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
                 const syncNames = Object.keys(syncObject);
-                for (let i = 0; i < syncNames.length; i++) {
-                    const syncName = syncNames[i] as string;
+                for (const syncName of syncNames) {
                     const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
                     if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
                         return syncData.returns.includes(modelName);

@@ -72,7 +72,7 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
                 {isJson ? <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre> : <>{prettyJson}</>}
             </>
         );
-    } catch (e) {
+    } catch {
         return <span className="whitespace-normal break-all overflow-wrap">{data?.toString()}</span>;
     }
 };

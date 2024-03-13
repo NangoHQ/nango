@@ -327,7 +327,7 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            const res = resultErr(persistResult?.error!);
+            const res = resultErr(persistResult.error!);
             span.setTag('error', res.err).finish();
             return res;
         }

@@ -381,8 +381,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
             )}
             {(integration?.auth_mode === AuthModes.Basic || integration?.auth_mode === AuthModes.ApiKey) && (
                 <Info size={20} color="blue">
-                    The "{integration?.provider}" integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for
-                    authentication (
+                    The &quot;{integration?.provider}&quot; integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'}{' '}
+                    for authentication (
                     <a
                         href="https://docs.nango.dev/integrate/guides/authorize-an-api"
                         className="text-white underline hover:text-text-light-blue"

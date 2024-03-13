@@ -48,7 +48,7 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
         const configData: NangoConfig = yaml.load(yamlConfig) as NangoConfig;
 
         return Promise.resolve(configData);
-    } catch (error) {
+    } catch {
         console.log(`no nango.yaml config found at ${location}`);
     }
 
@@ -310,12 +310,12 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
             let endpoints: NangoSyncEndpoint[] = [];
             if (sync?.endpoint) {
-                if (Array.isArray(sync?.endpoint)) {
-                    if (sync?.endpoint?.length !== sync?.output?.length) {
+                if (Array.isArray(sync.endpoint)) {
+                    if (sync.endpoint?.length !== sync.output?.length) {
                         const error = new NangoError('endpoint_output_mismatch', syncName);
                         return { success: false, error, response: null };
                     }
-                    for (const endpoint of sync?.endpoint) {
+                    for (const endpoint of sync.endpoint) {
                         endpoints.push(...assignEndpoints(endpoint, 'GET', true, showMessages));
 
                         if (!allEndpoints.includes(endpoint)) {
@@ -326,17 +326,17 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         }
                     }
                 } else {
-                    endpoints = assignEndpoints(sync?.endpoint, 'GET', true, showMessages);
+                    endpoints = assignEndpoints(sync.endpoint, 'GET', true, showMessages);
 
-                    if (sync?.output && Array.isArray(sync?.output) && sync?.output?.length > 1) {
+                    if (sync.output && Array.isArray(sync.output) && sync.output?.length > 1) {
                         const error = new NangoError('endpoint_output_mismatch', syncName);
                         return { success: false, error, response: null };
                     }
 
-                    if (!allEndpoints.includes(sync?.endpoint)) {
-                        allEndpoints.push(sync?.endpoint);
+                    if (!allEndpoints.includes(sync.endpoint)) {
+                        allEndpoints.push(sync.endpoint);
                     } else {
-                        const error = new NangoError('duplicate_endpoint', sync?.endpoint);
+                        const error = new NangoError('duplicate_endpoint', sync.endpoint);
                         return { success: false, error, response: null };
                     }
                 }
