@@ -90,7 +90,7 @@ models:
             active={step === Steps.Authorize}
             done={step >= Steps.Deploy}
         >
-            <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
+            <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                     <div className="space-x-4">
                         <Tab

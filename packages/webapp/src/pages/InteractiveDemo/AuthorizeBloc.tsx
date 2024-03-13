@@ -71,7 +71,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
 
     return (
         <Bloc title="Authorize an API" subtitle={<>Let users authorize GitHub in your frontend.</>} active={step === Steps.Start} done={step !== Steps.Start}>
-            <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
+            <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                     <Tab>Frontend</Tab>
                     <CopyButton dark text={snippet} />

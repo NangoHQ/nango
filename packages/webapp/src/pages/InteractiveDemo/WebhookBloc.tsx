@@ -33,7 +33,7 @@ export const WebhookBloc: React.FC<{ step: Steps; connectionId: string; records:
             active={step === Steps.Deploy}
             done={step >= Steps.Webhooks}
         >
-            <div className="border bg-zinc-900 border-zinc-800 rounded-lg text-white text-sm">
+            <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <Prism language="json" colorScheme="dark" noCopy className="transparent-code bg-black rounded-t-lg p-3">
                     {snippet}
                 </Prism>

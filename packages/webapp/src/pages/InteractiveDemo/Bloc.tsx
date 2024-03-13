@@ -15,7 +15,7 @@ export const Bloc: React.FC<{ active: boolean; done: boolean; title: string; sub
             <div
                 className={cn(
                     'p-5 rounded-lg relative border border-zinc-800',
-                    !active && !done && 'border-zinc-800',
+                    !active && !done && 'border-zinc-900',
                     done && 'border-black bg-gradient-to-r from-emerald-300/20 from-20% to-black to-50%'
                 )}
             >
