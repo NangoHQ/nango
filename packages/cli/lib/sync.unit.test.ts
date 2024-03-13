@@ -214,7 +214,7 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
-        expect(await generate(false, true)).rejects.toThrow(
+        await expect(generate(false, true)).rejects.toThrow(
             `Model "GithubIssue" doesn't have an id field. This is required to be able to uniquely identify the data record.`
         );
     });
