@@ -445,16 +445,16 @@ export class NangoAction {
         const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
         const connectionId = connectionIdOverride || this.connectionId;
 
-        if (
-            !this.memoizedConnections.get(`${providerConfigKey}${connectionId}`) ||
-            Date.now() - this.memoizedConnections.get(`${providerConfigKey}${connectionId}`)!.timestamp > MEMOIZED_CONNECTION_TTL
-        ) {
+        const credentialsPair = `${providerConfigKey}${connectionId}`;
+        const cachedConnection = this.memoizedConnections.get(credentialsPair);
+
+        if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
             const connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
-            this.memoizedConnections.set(`${providerConfigKey}${connectionId}`, { connection, timestamp: Date.now() });
+            this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
 
-        return this.memoizedConnections.get(`${providerConfigKey}${connectionId}`)!.connection;
+        return cachedConnection.connection;
     }
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
