@@ -32,7 +32,7 @@ export class LocalRunner implements Runner {
             let nodePath = '';
             try {
                 nodePath = execSync('which node', { encoding: 'utf-8' }).trim();
-            } catch (err) {
+            } catch {
                 throw new Error('Unable to find node');
             }
 

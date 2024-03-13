@@ -49,12 +49,23 @@
         "@typescript-eslint/no-empty-function": "warn",
         "@typescript-eslint/no-unsafe-enum-comparison": "warn",
         "@typescript-eslint/restrict-template-expressions": "warn",
-        "@typescript-eslint/no-unused-vars": "error",
         "@typescript-eslint/await-thenable": "warn",
         "@typescript-eslint/no-invalid-void-type": "warn",
         "@typescript-eslint/no-base-to-string": "warn",
         "@typescript-eslint/restrict-plus-operands": "warn",
-        "react/prop-types": "off"
+        "react/prop-types": "off",
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "args": "all",
+                "argsIgnorePattern": "^_",
+                "caughtErrors": "all",
+                "caughtErrorsIgnorePattern": "^_",
+                "destructuredArrayIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "ignoreRestSiblings": true
+            }
+        ]
     },
     "overrides": [
         {

@@ -248,7 +248,6 @@ describe('generate function tests', () => {
             }
         };
         const yamlData = yaml.dump(data);
-        console.log(yamlData);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
         await generate(false, true);
         const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
@@ -328,52 +327,52 @@ describe('generate function tests', () => {
         expect(await generate(false, true)).toBeUndefined();
     });
 
-    it('should not complain of try catch not being awaited', async () => {
+    it('should not complain of try catch not being awaited', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(true);
     });
 
-    it('should complain when a return statement is used', async () => {
+    it('should complain when a return statement is used', () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(false);
     });
 
-    it('should not complain when a return statement is used but does not return anything', async () => {
+    it('should not complain when a return statement is used but does not return anything', () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/void-return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(true);
     });
 
-    it('should not complain when a return statement is used in a nested function', async () => {
+    it('should not complain when a return statement is used in a nested function', () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GreenhouseEeoc']);
         expect(noReturnUsed).toBe(true);
     });
 
-    it('should complain of a non try catch not being awaited', async () => {
+    it('should complain of a non try catch not being awaited', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
-    it('should not complain about a correct model', async () => {
+    it('should not complain about a correct model', () => {
         const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
         expect(usedCorrectly).toBe(true);
     });
 
-    it('should not complain about awaiting when it is returned for an action', async () => {
+    it('should not complain about awaiting when it is returned for an action', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/no-async-return.ts`, SyncConfigType.ACTION, ['SomeModel']);
         expect(awaiting).toBe(true);
     });
 
-    it('should complain about an incorrect model', async () => {
+    it('should complain about an incorrect model', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
-    it('should complain if retryOn is used without retries', async () => {
+    it('should complain if retryOn is used without retries', () => {
         const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-bad.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(usedCorrectly).toBe(false);
     });
 
-    it('should not complain if retryOn is used with retries', async () => {
+    it('should not complain if retryOn is used with retries', () => {
         const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-good.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(usedCorrectly).toBe(false);
     });
