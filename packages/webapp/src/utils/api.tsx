@@ -7,6 +7,19 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
     return response.json();
 }
 
+/**
+ * Default SWR fetcher does not throw on HTTP error
+ */
+export async function swrFetcher<TBody>(url: string): Promise<TBody> {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+        throw { json: await res.json(), status: res.status };
+    }
+
+    return await res.json();
+}
+
 export function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
