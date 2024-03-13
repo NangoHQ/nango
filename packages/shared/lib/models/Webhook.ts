@@ -16,6 +16,7 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
+    modifiedAfter: string | null;
     queryTimeStamp: string | null;
 }
 
@@ -30,4 +31,12 @@ export interface NangoAuthWebhookBody {
     success: boolean;
     operation: AuthOperation;
     error?: string;
+}
+
+export interface NangoForwardWebhookBody {
+    from: string;
+    type: WebhookType.FORWARD;
+    connectionId: string;
+    providerConfigKey: string;
+    payload: any;
 }

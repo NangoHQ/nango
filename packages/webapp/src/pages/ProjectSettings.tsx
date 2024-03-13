@@ -71,7 +71,7 @@ export default function ProjectSettings() {
 
     useEffect(() => {
         const getAccount = async () => {
-            let res = await getProjectInfoAPI();
+            const res = await getProjectInfoAPI();
 
             if (res?.status === 200) {
                 const account = (await res.json())['account'];
@@ -215,7 +215,7 @@ export default function ProjectSettings() {
                 }
                 return acc;
             },
-            [] as Array<{ name: string; value: string }>
+            [] as { name: string; value: string }[]
         );
 
         const res = await editEnvVariables(envVariablesArray);
@@ -233,7 +233,7 @@ export default function ProjectSettings() {
         setEnvVariables(envVariables.filter((_, i) => i !== index));
 
         const strippedEnvVariables = envVariables.filter((_, i) => i !== index).filter((envVariable) => envVariable.name && envVariable.value);
-        const res = await editEnvVariables(strippedEnvVariables as unknown as Array<Record<string, string>>);
+        const res = await editEnvVariables(strippedEnvVariables as unknown as Record<string, string>[]);
 
         if (res?.status === 200) {
             toast.success('Environment variables updated!', { position: toast.POSITION.BOTTOM_CENTER });

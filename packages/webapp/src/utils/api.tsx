@@ -55,7 +55,7 @@ export function useSigninAPI() {
                 body: JSON.stringify({ email: email, password: password })
             };
 
-            let res = await fetch('/api/v1/signin', options);
+            const res = await fetch('/api/v1/signin', options);
 
             if (res.status !== 200 && res.status !== 401) {
                 return serverErrorToast();
@@ -71,7 +71,7 @@ export function useSigninAPI() {
 export function useHostedSigninAPI() {
     return async () => {
         try {
-            let res = await fetch('/api/v1/basic', { headers: getHeaders() });
+            const res = await fetch('/api/v1/basic', { headers: getHeaders() });
 
             if (res.status !== 200 && res.status !== 401) {
                 return serverErrorToast();
@@ -89,7 +89,7 @@ export function useGetProjectInfoAPI() {
 
     return async () => {
         try {
-            let res = await fetch('/api/v1/environment', { headers: getHeaders() });
+            const res = await fetch('/api/v1/environment', { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -117,7 +117,7 @@ export function useEditCallbackUrlAPI() {
                 body: JSON.stringify({ callback_url: callbackUrl })
             };
 
-            let res = await fetch('/api/v1/environment/callback', options);
+            const res = await fetch('/api/v1/environment/callback', options);
 
             if (res.status === 401) {
                 return signout();
@@ -145,7 +145,7 @@ export function useEditHmacEnabledAPI() {
                 body: JSON.stringify({ hmac_enabled: hmacEnabled })
             };
 
-            let res = await fetch('/api/v1/environment/hmac-enabled', options);
+            const res = await fetch('/api/v1/environment/hmac-enabled', options);
 
             if (res.status === 401) {
                 return signout();
@@ -173,7 +173,7 @@ export function useEditAlwaysSendWebhookAPI() {
                 body: JSON.stringify({ always_send_webhook: alwaysSendWebhook })
             };
 
-            let res = await fetch('/api/v1/environment/webhook-send', options);
+            const res = await fetch('/api/v1/environment/webhook-send', options);
 
             if (res.status === 401) {
                 return signout();
@@ -201,7 +201,7 @@ export function useEditSendAuthWebhookAPI() {
                 body: JSON.stringify({ send_auth_webhook: sendAuthWebhook })
             };
 
-            let res = await fetch('/api/v1/environment/webhook-auth-send', options);
+            const res = await fetch('/api/v1/environment/webhook-auth-send', options);
 
             if (res.status === 401) {
                 return signout();
@@ -229,7 +229,7 @@ export function useEditHmacKeyAPI() {
                 body: JSON.stringify({ hmac_key: hmacKey })
             };
 
-            let res = await fetch('/api/v1/environment/hmac-key', options);
+            const res = await fetch('/api/v1/environment/hmac-key', options);
 
             if (res.status === 401) {
                 return signout();
@@ -249,7 +249,7 @@ export function useEditHmacKeyAPI() {
 export function useEditEnvVariablesAPI() {
     const signout = useSignout();
 
-    return async (envVariables: Array<Record<string, string>>) => {
+    return async (envVariables: Record<string, string>[]) => {
         try {
             const options = {
                 method: 'POST',
@@ -257,7 +257,7 @@ export function useEditEnvVariablesAPI() {
                 body: JSON.stringify(envVariables)
             };
 
-            let res = await fetch('/api/v1/environment/environment-variables', options);
+            const res = await fetch('/api/v1/environment/environment-variables', options);
 
             if (res.status === 401) {
                 return signout();
@@ -285,7 +285,7 @@ export function useEditWebhookUrlAPI() {
                 body: JSON.stringify({ webhook_url: webhookUrl })
             };
 
-            let res = await fetch('/api/v1/environment/webhook', options);
+            const res = await fetch('/api/v1/environment/webhook', options);
 
             if (res.status === 401) {
                 return signout();
@@ -307,7 +307,7 @@ export function useGetIntegrationListAPI() {
 
     return async () => {
         try {
-            let res = await fetch('/api/v1/integration', { headers: getHeaders() });
+            const res = await fetch('/api/v1/integration', { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -329,7 +329,7 @@ export function useGetIntegrationDetailsAPI() {
 
     return async (providerConfigKey: string) => {
         try {
-            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?include_creds=true`, {
+            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?include_creds=true`, {
                 headers: getHeaders()
             });
 
@@ -377,7 +377,7 @@ export function useCreateIntegrationAPI() {
                 })
             };
 
-            let res = await fetch('/api/v1/integration', options);
+            const res = await fetch('/api/v1/integration', options);
 
             if (res.status === 401) {
                 return signout();
@@ -403,7 +403,7 @@ export function useCreateEmptyIntegrationAPI() {
                 })
             };
 
-            let res = await fetch('/api/v1/integration/new', options);
+            const res = await fetch('/api/v1/integration/new', options);
 
             if (res.status === 401) {
                 return signout();
@@ -445,7 +445,7 @@ export function useEditIntegrationAPI() {
                 })
             };
 
-            let res = await fetch('/api/v1/integration', options);
+            const res = await fetch('/api/v1/integration', options);
 
             if (res.status === 401) {
                 return signout();
@@ -494,7 +494,7 @@ export function useDeleteIntegrationAPI() {
 
     return async (providerConfigKey: string) => {
         try {
-            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}`, {
+            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}`, {
                 headers: getHeaders(),
                 method: 'DELETE'
             });
@@ -519,7 +519,7 @@ export function useGetProvidersAPI() {
 
     return async () => {
         try {
-            let res = await fetch('/api/v1/provider', { headers: getHeaders() });
+            const res = await fetch('/api/v1/provider', { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -541,7 +541,7 @@ export function useGetConnectionListAPI() {
 
     return async () => {
         try {
-            let res = await fetch('/api/v1/connection', { headers: getHeaders() });
+            const res = await fetch('/api/v1/connection', { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -563,7 +563,7 @@ export function useGetConnectionDetailsAPI() {
 
     return async (connectionId: string, providerConfigKey: string, force_refresh: boolean) => {
         try {
-            let res = await fetch(
+            const res = await fetch(
                 `/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(
                     providerConfigKey
                 )}&force_refresh=${force_refresh}`,
@@ -627,7 +627,7 @@ export function useRequestPasswordResetAPI() {
 export function useResetPasswordAPI() {
     return async (token: string, password: string) => {
         try {
-            let res = await fetch(`/api/v1/reset-password`, {
+            const res = await fetch(`/api/v1/reset-password`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ password: password, token: token })

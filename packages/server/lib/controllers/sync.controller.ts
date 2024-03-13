@@ -2,9 +2,10 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { Span } from 'dd-trace';
 import type { LogLevel, NangoConnection, HTTP_VERB } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
+    Connection,
     getEnvironmentId,
     deploy as deploySyncConfig,
     syncDataService,
@@ -12,6 +13,7 @@ import {
     getSyncs,
     verifyOwnership,
     isSyncValid,
+    getSyncNamesByConnectionId,
     getSyncsByProviderConfigKey,
     SyncClient,
     updateScheduleStatus,
@@ -159,17 +161,31 @@ class SyncController {
 
     public async getAllRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, limit, filter, cursor } = req.query;
+            const { model, delta, modified_after, modifiedAfter, limit, filter, cursor, next_cursor } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            if (modifiedAfter) {
+                const error = new NangoError('incorrect_param', { incorrect: 'modifiedAfter', correct: 'modified_after' });
+
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            if (next_cursor) {
+                const error = new NangoError('incorrect_param', { incorrect: 'next_cursor', correct: 'cursor' });
+
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             const { success, error, response } = await syncDataService.getAllDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
                 model as string,
-                delta as string,
+                (delta || modified_after) as string,
                 limit as string,
                 filter as LastAction,
                 cursor as string
@@ -327,7 +343,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                await this.getRecords(req, res, next);
+                await this.getAllRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
@@ -534,8 +550,26 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
+            let connection: Connection | null = null;
+
+            if (connection_id) {
+                const connectionResult = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
+                const { success: connectionSuccess, error: connectionError } = connectionResult;
+                if (!connectionSuccess || !connectionResult.response) {
+                    errorManager.errResFromNangoErr(res, connectionError);
+                    return;
+                }
+
+                connection = connectionResult.response;
+            }
+
             if (syncNames === '*') {
-                syncNames = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string).then((syncs) => syncs.map((sync) => sync.name));
+                if (connection && connection.id) {
+                    syncNames = await getSyncNamesByConnectionId(connection.id);
+                } else {
+                    const syncs = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string);
+                    syncNames = syncs.map((sync) => sync.name);
+                }
             } else {
                 syncNames = (syncNames as string).split(',');
             }
@@ -544,7 +578,7 @@ class SyncController {
                 success,
                 error,
                 response: syncsWithStatus
-            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames as string[], connection_id as string);
+            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames, connection_id as string, false, connection);
 
             if (!success || !syncsWithStatus) {
                 errorManager.errResFromNangoErr(res, error);

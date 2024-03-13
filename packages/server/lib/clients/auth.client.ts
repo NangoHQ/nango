@@ -10,15 +10,6 @@ import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
 import { database } from '@nangohq/shared';
-declare global {
-    namespace Express {
-        interface User {
-            email: string;
-            name: string;
-            id: number;
-        }
-    }
-}
 
 const KnexSessionStore = connectSessionKnex(session);
 

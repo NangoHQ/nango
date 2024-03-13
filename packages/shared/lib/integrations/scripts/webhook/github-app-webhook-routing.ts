@@ -27,5 +27,5 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         }
     }
 
-    await nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
+    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
 }

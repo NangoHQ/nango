@@ -75,6 +75,7 @@ export interface ListRecordsRequestConfig {
     connectionId: string;
     model: string;
     delta?: string;
+    modifiedAfter?: string;
     limit?: number;
     filter?: FilterAction | CombinedFilterAction;
     cursor?: string | null;

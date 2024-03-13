@@ -32,7 +32,7 @@ export default function FlowCard({ flow }: FlowProps) {
                     {flow?.last_deployed && (
                         <span className="flex flex-col">
                             <div className="text-gray-400">LAST DEPLOYED</div>
-                            <div className="text-white">{formatDateToShortUSFormat(flow?.last_deployed as string)}</div>
+                            <div className="text-white">{formatDateToShortUSFormat(flow?.last_deployed)}</div>
                         </span>
                     )}
                 </div>

@@ -6,6 +6,8 @@ import { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../m
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
+const SYNC_TIMEOUT_HOURS = 25;
+
 export const createSyncJob = async (
     sync_id: string,
     type: SyncType,
@@ -165,14 +167,18 @@ export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolea
         })
         .first();
 
-    if (result) {
+    // if it has been running for more than 24 hours then we should assume it is stuck
+    const moreThan24Hours =
+        result && result.updated_at ? new Date(result.updated_at).getTime() < new Date().getTime() - SYNC_TIMEOUT_HOURS * 60 * 60 * 1000 : false;
+
+    if (result && !moreThan24Hours) {
         return true;
     }
 
     return false;
 };
 
-export async function softDeleteJobs(limit: number): Promise<number> {
+export async function softDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
     return db
         .knex('_nango_sync_jobs')
         .update({
@@ -180,11 +186,6 @@ export async function softDeleteJobs(limit: number): Promise<number> {
             deleted_at: db.knex.fn.now()
         })
         .whereIn('id', function (sub) {
-            sub.select('jobs.id')
-                .from('_nango_sync_jobs AS jobs')
-                .join('_nango_syncs AS syncs', 'syncs.id', '=', 'jobs.sync_id')
-                .where('syncs.deleted', true)
-                .andWhere('jobs.deleted', false)
-                .limit(limit);
+            sub.select('id').from('_nango_sync_jobs').where({ deleted: false, sync_id: syncId }).limit(limit);
         });
 }

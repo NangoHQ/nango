@@ -45,16 +45,16 @@
         }
     ],
     "topAnchor": {
-        "name": "Overview & Guides"
+        "name": "Documentation"
     },
     "anchors": [
         {
-            "name": "APIs & Integration Templates",
+            "name": "APIs & Templates",
             "icon": "bars",
             "url": "integrations"
         },
         {
-            "name": "Technical Reference",
+            "name": "Reference",
             "icon": "book",
             "url": "reference"
         },
@@ -188,29 +188,18 @@
                 "understand/core-concepts",
                 "understand/architecture",
                 {
-                    "group": "All Concepts",
+                    "group": "All concepts",
                     "pages": [
                         "understand/concepts/integrations",
                         "understand/concepts/connections",
+                        "understand/concepts/scripts",
                         "understand/concepts/syncs",
                         "understand/concepts/actions",
                         "understand/concepts/proxy",
                         "understand/concepts/webhooks",
                         "understand/concepts/environments",
                         "understand/concepts/templates",
-                        "understand/concepts/cli",
-                        "understand/concepts/integrations-folder",
-                        "understand/concepts/scripts",
-                        "understand/concepts/api-configuration",
-                        "understand/concepts/integration-configuration",
                         "understand/concepts/api-unification"
-                    ]
-                },
-                {
-                    "group": "Best practices",
-                    "pages": [
-                        "understand/best-practices/define-an-integration-strategy",
-                        "understand/best-practices/when-to-unify-external-apis"
                     ]
                 }
             ]
@@ -235,7 +224,7 @@
             ]
         },
         {
-            "group": "APIs & Integration Templates",
+            "group": "APIs & Templates",
             "pages": [
                 "integrations/overview",
                 {
@@ -261,6 +250,7 @@
                         "integrations/marketing",
                         "integrations/payment",
                         "integrations/productivity",
+                        "integrations/search",
                         "integrations/social",
                         "integrations/sports",
                         "integrations/storage",
@@ -275,6 +265,7 @@
                     "group": "Integration Templates",
                     "icon": "sheet-plastic",
                     "pages": [
+                        "integrations/integration-templates/algolia",
                         "integrations/integration-templates/asana",
                         "integrations/integration-templates/ashby",
                         "integrations/integration-templates/bamboohr",
@@ -297,21 +288,24 @@
                         "integrations/integration-templates/pipedrive",
                         "integrations/integration-templates/salesforce",
                         "integrations/integration-templates/slack",
+                        "integrations/integration-templates/teamtailor",
                         "integrations/integration-templates/workable",
                         "integrations/integration-templates/zendesk",
-                        "integrations/integration-templates/zoho-crm"
+                        "integrations/integration-templates/zoho-crm",
+                        "integrations/integration-templates/zoho-mail"
                     ]
                 }
             ]
         },
         {
-            "group": "All Pre-Configured APIs",
+            "group": "Pre-Configured APIs",
             "pages": [
                 "integrations/all/accelo",
                         "integrations/all/adobe",
                         "integrations/all/affinity",
                         "integrations/all/aircall",
                         "integrations/all/airtable",
+                        "integrations/all/algolia",
                         "integrations/all/amazon",
                         "integrations/all/anrok",
                         "integrations/all/amplitude",
@@ -437,6 +431,7 @@
                         "integrations/all/stripe-app",
                         "integrations/all/stripe-express",
                         "integrations/all/survey-monkey",
+                        "integrations/all/teamtailor",
                         "integrations/all/teamwork",
                         "integrations/all/tiktok-accounts",
                         "integrations/all/tiktok-ads",
@@ -466,11 +461,12 @@
                         "integrations/all/zoho-desk",
                         "integrations/all/zoho-inventory",
                         "integrations/all/zoho-invoice",
+                        "integrations/all/zoho-mail",
                         "integrations/all/zoom"
             ]
         },
         {
-            "group": "Technical Reference",
+            "group": "Reference",
             "pages": [
                 "reference/overview"
             ]
@@ -483,6 +479,7 @@
                     "icon": "cloud",
                     "pages": [
                         "reference/api/authentication",
+                        "reference/api/rate-limits",
                         {
                             "group": "Integrations",
                             "pages": [

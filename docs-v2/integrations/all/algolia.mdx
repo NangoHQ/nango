@@ -1,0 +1,32 @@
+---
+title: Algolia
+sidebarTitle: Algolia
+---
+
+API configuration: [`algolia`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Generate an API key in your Algolia account](https://www.algolia.com/doc/guides/security/api-keys/#create-and-manage-your-api-keys)
+-   [Algolia API docs](https://www.algolia.com/doc/rest-api/search)
+-   [Algolia Authentication](https://www.algolia.com/doc/rest-api/search/#authentication)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- Algolia uses API_KEY auth mode with `X-Algolia-API-Key: API_KEY`and `X-Algolia-Application-Id: APP_ID` in the request header to access different endpoints.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/algolia.mdx)</Note>
