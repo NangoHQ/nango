@@ -111,7 +111,7 @@ export class Nango {
 
         try {
             new URL(this.serverUrl);
-        } catch (err) {
+        } catch {
             throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
@@ -208,11 +208,17 @@ export class Nango {
         return response.data;
     }
 
-    public async importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
+    /**
+     * @deprecated This method has been deprecated, please use the REST API to import a connection.
+     */
+    public importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
         throw new Error('This method has been deprecated, please use the REST API to import a connection.');
     }
 
-    public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
+    /**
+     * @deprecated This method has been deprecated, please use the REST API to import a connection.
+     */
+    public createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
         throw new Error('This method has been deprecated, please use the REST API to create a connection.');
     }
 

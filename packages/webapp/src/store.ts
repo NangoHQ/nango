@@ -10,13 +10,13 @@ interface State {
     baseUrl: string;
     envs: Env[];
     email: string;
-    showGettingStarted: boolean;
+    showInteractiveDemo: boolean;
     debugMode: boolean;
     setCookieValue: (value: string) => void;
     setEnvs: (envs: Env[]) => void;
     setBaseUrl: (value: string) => void;
     setEmail: (value: string) => void;
-    setShowGettingStarted: (value: boolean) => void;
+    setShowInteractiveDemo: (value: boolean) => void;
     setDebugMode: (value: boolean) => void;
 }
 
@@ -25,7 +25,7 @@ export const useStore = create<State>((set, get) => ({
     envs: [{ name: 'dev' }, { name: 'prod' }],
     baseUrl: 'https://api.nango.dev',
     email: '',
-    showGettingStarted: false,
+    showInteractiveDemo: false,
     debugMode: false,
 
     setCookieValue: (value) => {
@@ -53,8 +53,8 @@ export const useStore = create<State>((set, get) => ({
         set({ email: value });
     },
 
-    setShowGettingStarted: (value) => {
-        set({ showGettingStarted: value });
+    setShowInteractiveDemo: (value) => {
+        set({ showInteractiveDemo: value });
     },
 
     setDebugMode: (value) => {

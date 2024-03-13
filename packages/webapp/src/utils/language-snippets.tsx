@@ -18,19 +18,25 @@ export const nodeActionSnippet = (
     secretKey: string,
     connectionId: string,
     providerConfigKey: string,
-    input?: Record<string, any> | string
+    input?: Record<string, any> | string,
+    safeInput?: boolean
 ) => {
     let formattedInput = '';
-    if (typeof input === 'string') {
-        formattedInput = `'<${input}>'`;
-    } else if (input && typeof input === 'object') {
-        formattedInput = `{
+    if (!safeInput) {
+        if (typeof input === 'string') {
+            formattedInput = `'<${input}>'`;
+        } else if (input && typeof input === 'object') {
+            formattedInput = `{
 ${JSON.stringify(input, null, 2)
     .split('\n')
     .slice(1)
     .join('\n')
     .replace(/^/gm, '    ')
     .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
+        }
+    } else {
+        formattedInput = `{
+${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}`;
     }
 
     return `import Nango from '@nangohq/node';

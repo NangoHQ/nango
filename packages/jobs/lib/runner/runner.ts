@@ -2,7 +2,7 @@ import type { KVStore } from '@nangohq/shared/lib/utils/kvstore/KVStore.js';
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
 import { RemoteRunner } from './remote.runner.js';
-import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore, isEnterprise } from '@nangohq/shared';
+import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore, isEnterprise, logger } from '@nangohq/shared';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 
 export enum RunnerType {
@@ -16,8 +16,8 @@ export interface Runner {
     id: string;
     client: ProxyAppRouter;
     url: string;
-    suspend(): Promise<void>;
-    toJSON(): any;
+    suspend(): Promise<void> | void;
+    toJSON(): Record<string, any>;
 }
 
 export function getRunnerId(suffix: string): string {
@@ -47,7 +47,9 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
         try {
             await waitForRunner(cachedRunner);
             return cachedRunner;
-        } catch (err) {}
+        } catch (err) {
+            logger.error(err);
+        }
     }
     const isRender = process.env['IS_RENDER'] === 'true';
     let runner: Runner;

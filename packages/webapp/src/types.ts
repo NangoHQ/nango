@@ -276,3 +276,12 @@ export interface IntegrationConfig {
     connections: Connection[];
     docs: string;
 }
+
+export interface OnboardingStatus {
+    id: number;
+    progress: number;
+    records: Record<string, unknown>[] | null;
+    provider: boolean;
+    connection: boolean;
+    sync: boolean;
+}

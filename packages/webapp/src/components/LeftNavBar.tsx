@@ -25,7 +25,7 @@ export enum LeftNavBarItems {
     Syncs,
     AccountSettings,
     UserSettings,
-    GettingStarted
+    InteractiveDemo
 }
 
 export interface LeftNavBarProps {
@@ -41,7 +41,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const navigate = useNavigate();
     const signout = useSignout();
     const { meta } = useMeta();
-    const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
 
     useEffect(() => {
         const closeUserSettings = (e: MouseEvent) => {
@@ -127,15 +127,15 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
-                        {showGettingStarted && (
+                        {showInteractiveDemo && (
                             <Link
-                                to="/dev/getting-started"
+                                to="/dev/interactive-demo"
                                 className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                    props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                                    props.selectedItem === LeftNavBarItems.InteractiveDemo ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                 }`}
                             >
                                 <img className="h-5" src="/images/rocket-icon.svg" alt="" />
-                                <p>Getting Started</p>
+                                <p>Interactive Demo</p>
                             </Link>
                         )}
                         <Link
