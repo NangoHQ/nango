@@ -1,4 +1,21 @@
 integrations:
+  algolia:
+    actions:
+      algolia-create-contacts:
+        description: |
+            Action to add a single record contact to an index
+        output: AlgoliaContact
+        input: AlgoliaCreateContactInput
+        endpoint: POST /algolia/create-contacts
+    models:
+      AlgoliaContact:
+        createdAt: date
+        taskID: number
+        objectID: string
+      AlgoliaCreateContactInput:
+        name: string
+        company: string
+        email: string
   asana:
     syncs:
       asana-tasks:
@@ -429,6 +446,15 @@ integrations:
         output: GithubRepoFile
         endpoint: /github/list-files
         scopes: repo
+      github-issues-demo:
+        runs: every 5 minutes
+        auto_start: false
+        sync_type: full
+        output: GithubIssueDemo
+        scopes: public_repo
+        description: |
+          Fetches GitHub issues from our showcase repository.
+        endpoint: /github/demo-issues
     actions:
       github-write-file:
         scopes: repo
@@ -443,7 +469,11 @@ integrations:
         endpoint: GET /github/list-repos
         output: GithubRepo
         description: |
-          List github repos from an organization
+          List github repos from an organization.
+      github-issues-demo-action:
+        endpoint: POST /github/demo-write-issue
+        description: |
+          Create a GitHub issue in Nango's showcase repository.
     models:
       Issue:
         id: integer
@@ -498,6 +528,10 @@ integrations:
         url: string
         status: string
         sha: string
+      GithubIssueDemo:
+        id: integer
+        title: string
+        url: string
   google-calendar:
     syncs:
       google-calendar-events:
@@ -2301,6 +2335,22 @@ integrations:
             links:
               self: string
               related: string
+  wildix-pbx:
+    syncs:
+      wildix-pbx-colleagues:
+        runs: every 1 hour
+        output: WildixPbxColleague
+        sync_type: full
+        endpoint: /wildix-pbx/colleagues
+    models:
+      WildixPbxColleague:
+        id: string
+        name: string
+        extension: string
+        email: string
+        mobilePhone: string
+        licenseType: string
+        language: string
   workable:
     syncs:
       workable-candidates:
@@ -2389,10 +2439,10 @@ integrations:
         firstname: string
         lastname: string
         headline: string
-        account:
+        account: &ref_0
           subdomain: string
           name: string
-        job:
+        job: &ref_1
           shortcode: string
           title: string
         stage: string
@@ -2408,7 +2458,25 @@ integrations:
         created_at: date
         updated_at: date
       WorkableJobsCandidate:
-        __extends: WorkableCandidate
+        id: string
+        name: string
+        firstname: string
+        lastname: string
+        headline: string
+        account: *ref_0
+        job: *ref_1
+        stage: string
+        disqualified: boolean
+        disqualification_reason: string
+        hired_at: date
+        sourced: boolean
+        profile_url: string
+        address: string
+        phone: string
+        email: string
+        domain: string
+        created_at: date
+        updated_at: date
       WorkableCandidateActivity:
         id: string
         action: string

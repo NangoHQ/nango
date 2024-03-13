@@ -7,7 +7,7 @@ import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
 
 export async function getUserAccountAndEnvironmentFromSession(
-    req: Request
+    req: Request<any, any>
 ): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
     const sessionUser = req.user;
     const currentEnvironment = req.cookies['env'] || 'dev';
