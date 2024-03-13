@@ -1,5 +1,4 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import { isCloud, isEnterprise } from '../utils/utils';
 import { useMeta } from '../hooks/useMeta';
 import { useEffect } from 'react';
 import { useStore } from '../store';
@@ -32,11 +31,7 @@ const PrivateRoute: React.FC = () => {
         return <Navigate to="/signin" replace />;
     }
 
-    if (!isCloud() && !isEnterprise()) {
-        return <Outlet />;
-    }
-
-    return <Navigate to="/signin" replace />;
+    return <Outlet />;
 };
 
 export default PrivateRoute;
