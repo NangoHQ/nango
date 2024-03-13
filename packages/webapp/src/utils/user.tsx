@@ -10,10 +10,6 @@ export interface User {
     name: string;
 }
 
-export function isSignedIn() {
-    return getUser() !== null;
-}
-
 export function useSignin() {
     const analyticsIdentify = useAnalyticsIdentify();
 

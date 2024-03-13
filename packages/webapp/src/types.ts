@@ -250,10 +250,13 @@ export interface Account {
     slack_notifications: boolean;
     websockets_path: string;
     secret_key_rotatable: boolean;
-    env_variables: string[];
+    env_variables: { id?: number; name: string; value: string }[];
     host: string;
     uuid: string;
     email: string;
+    send_auth_webhook: boolean;
+    public_key_rotatable?: boolean;
+    hmac_digest?: string | null;
 }
 
 export interface IntegrationConfig {

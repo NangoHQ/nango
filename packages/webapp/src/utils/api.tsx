@@ -84,28 +84,6 @@ export function useHostedSigninAPI() {
     };
 }
 
-export function useGetProjectInfoAPI() {
-    const signout = useSignout();
-
-    return async () => {
-        try {
-            const res = await fetch('/api/v1/environment', { headers: getHeaders() });
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch (e) {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useEditCallbackUrlAPI() {
     const signout = useSignout();
 
