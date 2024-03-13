@@ -91,8 +91,8 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                             GitHub Authorized!
                         </span>
                     )}
+                    {error && <p className="text-sm text-red-500 py-1">{error}</p>}
                 </div>
-                {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
             </div>
         </Bloc>
     );

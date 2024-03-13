@@ -129,8 +129,8 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
                             </a>
                         </span>
                     )}
+                    {error && <p className="mt-2 text-sm text-red-500 py-1 px-1">{error}</p>}
                 </div>
-                {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
             </div>
         </Bloc>
     );

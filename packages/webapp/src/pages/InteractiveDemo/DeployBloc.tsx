@@ -117,7 +117,7 @@ models:
                 <Prism noCopy language={file === 'nango.yaml' ? 'yaml' : 'typescript'} className="p-3 transparent-code bg-black" colorScheme="dark">
                     {snippet}
                 </Prism>
-                <div className="flex items-center px-6 py-4">
+                <div className="px-6 py-4">
                     {step === Steps.Authorize ? (
                         <Button type="button" variant="primary" onClick={onDeploy} isLoading={loading}>
                             Deploy GitHub integration
@@ -128,8 +128,8 @@ models:
                             Integration deployed!
                         </span>
                     )}
+                    {error && <p className="text-sm text-red-500 py-1">{error}</p>}
                 </div>
-                {error && <p className="mt-2 mx-4 text-sm text-red-600">{error}</p>}
             </div>
         </Bloc>
     );
