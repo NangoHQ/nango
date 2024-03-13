@@ -96,7 +96,7 @@ export class RenderRunner implements Runner {
             }
             return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);
         } catch (err) {
-            throw new Error(`Unable to get runner ${runnerId}: ${err}`);
+            throw new Error(`Unable to get runner ${runnerId}: ${JSON.stringify(err)}`);
         }
     }
 }

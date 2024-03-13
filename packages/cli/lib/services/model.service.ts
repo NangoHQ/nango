@@ -1,7 +1,7 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
-import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import { JAVASCRIPT_PRIMITIVES, NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { SyncConfigType, nangoConfigFile } from '@nangohq/shared';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { TYPES_FILE_NAME, NangoSyncTypesFileLocation } from '../constants.js';
@@ -139,6 +139,20 @@ class ModelService {
             if (hasUndefined) {
                 tsType = `${tsType} | undefined`;
             }
+
+            if (tsType.includes('|')) {
+                const types = tsType.split('|');
+                const hasStringLiteral = types.some((type) => !JAVASCRIPT_PRIMITIVES.includes(type.trim()));
+
+                if (hasStringLiteral) {
+                    const enumValues = tsType
+                        .split('|')
+                        .map((e) => (JAVASCRIPT_PRIMITIVES.includes(e.trim()) ? e.trim() : `'${e.trim()}'`))
+                        .join(' | ');
+                    tsType = enumValues;
+                }
+            }
+
             return tsType;
         } else {
             try {

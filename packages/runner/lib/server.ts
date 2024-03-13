@@ -3,7 +3,7 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import type { NangoProps, RunnerOutput } from '@nangohq/shared';
+import { logger, type NangoProps, type RunnerOutput } from '@nangohq/shared';
 import { exec } from './exec.js';
 import { cancel } from './cancel.js';
 import superjson from 'superjson';
@@ -89,7 +89,7 @@ if (idleMaxDurationMs > 0) {
         if (pendingRequests.size == 0) {
             const idleTimeMs = Date.now() - lastRequestTime;
             if (idleTimeMs > idleMaxDurationMs) {
-                console.log(`Runner '${runnerId}' idle for more than ${idleMaxDurationMs}ms`);
+                logger.info(`Runner '${runnerId}' idle for more than ${idleMaxDurationMs}ms`);
                 // calling jobs service to suspend runner
                 // using fetch instead of jobs trcp client to avoid circular dependency
                 // TODO: use trpc client once jobs doesn't depend on runner
@@ -107,10 +107,10 @@ if (idleMaxDurationMs > 0) {
                             })
                         });
                         if (res.status !== 200) {
-                            console.error(`Error calling ${notifyIdleEndpoint}: ${JSON.stringify(await res.json())}`);
+                            logger.error(`Error calling ${notifyIdleEndpoint}: ${JSON.stringify(await res.json())}`);
                         }
                     } catch (err) {
-                        console.error(`Error calling ${notifyIdleEndpoint}: ${err}`);
+                        logger.error(`Error calling ${notifyIdleEndpoint}: ${JSON.stringify(err)}`);
                     }
                 }
                 lastRequestTime = Date.now(); // reset last request time
