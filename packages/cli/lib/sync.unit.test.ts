@@ -414,4 +414,32 @@ describe('generate function tests', () => {
         expect(error).toBeDefined();
         expect(error?.message).toEqual('Problem validating the nango.yaml file.');
     });
+
+    it('should correctly interpret a string union literal type', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/string-literal/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`gender: 'male' | 'female';`);
+    });
+
+    it('should correctly interpret a union literal type with a string and a primitive', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`gender: 'male' | null;`);
+    });
+
+    it('should correctly interpret a union types, array types, and record types', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-types/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`record: Record<string, string>;`);
+        expect(modelsFile).toContain(`und: string | null | undefined;`);
+        expect(modelsFile).toContain(`def: 'male' | string | null | undefined;`);
+        expect(modelsFile).toContain(`reference: Other[];`);
+        expect(modelsFile).toContain(`nullableDate: Date | null;`);
+    });
 });
