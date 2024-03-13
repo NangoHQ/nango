@@ -80,10 +80,10 @@ models:
             title="Deploy an integration"
             subtitle={
                 <>
-                    The following script runs on Nango&apos;s infrastructure & syncs GitHub
+                    The following script runs on Nango&apos;s infrastructure & syncs GitHub{' '}
                     <a href="https://github.com/NangoHQ/interactive-demo" target="_blank" rel="noreferrer" className="underline">
                         sample issues
-                    </a>
+                    </a>{' '}
                     to Nango.
                 </>
             }
