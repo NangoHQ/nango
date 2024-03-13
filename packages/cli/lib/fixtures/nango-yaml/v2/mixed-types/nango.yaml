@@ -1,0 +1,23 @@
+integrations:
+  unauthenticated:
+    syncs:
+      string-literal-sync:
+        description: Test a string literal union type
+        sync_type: incremental
+        auto_start: true
+        runs: every half hour
+        endpoint: GET /string/literal
+        scopes: public_repo
+        output: StringLiteral
+
+models:
+  StringLiteral:
+    id: integer
+    gender: male | null
+    record: Record<string, string>
+    und: string | undefined | null
+    def: male | string | undefined | null
+    reference: Other[]
+  Other:
+    id: string
+    yes: number

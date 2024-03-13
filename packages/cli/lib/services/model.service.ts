@@ -142,12 +142,12 @@ class ModelService {
 
             if (tsType.includes('|')) {
                 const types = tsType.split('|');
-                const isEnum = types.every((type) => !JAVASCRIPT_PRIMITIVES.includes(type.trim()));
+                const hasStringLiteral = types.some((type) => !JAVASCRIPT_PRIMITIVES.includes(type.trim()));
 
-                if (isEnum) {
+                if (hasStringLiteral) {
                     const enumValues = tsType
                         .split('|')
-                        .map((e) => `'${e.trim()}'`)
+                        .map((e) => (JAVASCRIPT_PRIMITIVES.includes(e.trim()) ? e.trim() : `'${e.trim()}'`))
                         .join(' | ');
                     tsType = enumValues;
                 }
