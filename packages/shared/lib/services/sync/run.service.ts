@@ -12,7 +12,7 @@ import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRe
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { isCloud, integrationFilesAreRemote, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
+import { isCloud, integrationFilesAreRemote, getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
@@ -252,7 +252,7 @@ export default class SyncRun {
             // TODO this only works for dryrun at the moment
             if (this.isAction && syncData.input) {
                 const { input: configInput } = syncData;
-                if (JAVASCRIPT_PRIMITIVES.includes(configInput as unknown as string)) {
+                if (isJsOrTsType(configInput as unknown as string)) {
                     if (typeof this.input !== (configInput as unknown as string)) {
                         const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${configInput}`;
                         await this.reportFailureForResults(message);
@@ -583,7 +583,7 @@ export default class SyncRun {
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
-            } catch (e) {
+            } catch {
                 await errorManager.report('slack notification service reported a failure', {
                     environmentId: this.nangoConnection.environment_id,
                     source: ErrorSourceEnum.PLATFORM,
