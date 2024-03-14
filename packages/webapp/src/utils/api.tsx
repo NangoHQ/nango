@@ -7,6 +7,19 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
     return response.json();
 }
 
+/**
+ * Default SWR fetcher does not throw on HTTP error
+ */
+export async function swrFetcher<TBody>(url: string): Promise<TBody> {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+        throw { json: await res.json(), status: res.status };
+    }
+
+    return await res.json();
+}
+
 export function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
@@ -74,28 +87,6 @@ export function useHostedSigninAPI() {
             const res = await fetch('/api/v1/basic', { headers: getHeaders() });
 
             if (res.status !== 200 && res.status !== 401) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetProjectInfoAPI() {
-    const signout = useSignout();
-
-    return async () => {
-        try {
-            const res = await fetch('/api/v1/environment', { headers: getHeaders() });
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
                 return serverErrorToast();
             }
 
