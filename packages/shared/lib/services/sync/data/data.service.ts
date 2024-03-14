@@ -5,6 +5,7 @@ import { markRecordsForDeletion, syncCreatedAtForAddedRecords, syncUpdateAtForCh
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
+import { logger } from '../../../index.js';
 
 /**
  * Upsert
@@ -87,12 +88,12 @@ export async function upsert(
 
         if (error.code) errorMessage += `Error code: ${error.code}.\n`;
 
-        console.log(`${errorMessage}${error}`);
+        logger.error(`${errorMessage}${error}`);
 
         let errorDetail = '';
         switch (error.code) {
             case '22001': {
-                errorDetail = 'String length exceeds the column’s maximum length (string_data_right_truncation)';
+                errorDetail = "String length exceeds the column's maximum length (string_data_right_truncation)";
                 break;
             }
         }
