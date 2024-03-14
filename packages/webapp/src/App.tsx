@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { isCloud, isEnterprise, isLocal } from './utils/utils';
+import { AUTH_ENABLED, isCloud, isLocal } from './utils/utils';
 import { fetcher } from './utils/api';
 import { useStore } from './store';
 
@@ -100,6 +100,11 @@ const App = () => {
         >
             <SWRConfig
                 value={{
+                    refreshInterval: 15 * 60000,
+                    // Our server is not well configured if we enable that it will just fetch all the time
+                    revalidateIfStale: false,
+                    revalidateOnFocus: false,
+                    revalidateOnReconnect: true,
                     fetcher,
                     onError: (error) => {
                         if (error.status === 401) {
@@ -110,43 +115,31 @@ const App = () => {
             >
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
-                    {showInteractiveDemo && (
-                        <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
-                            <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
-                        </Route>
-                    )}
-                    <Route path="/:env/integrations" element={<PrivateRoute />}>
+                    <Route element={<PrivateRoute />}>
+                        {showInteractiveDemo && (
+                            <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
+                                <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
+                            </Route>
+                        )}
                         <Route path="/:env/integrations" element={<IntegrationList />} />
-                    </Route>
-                    <Route path="/:env/integration/create" element={<PrivateRoute />}>
                         <Route path="/:env/integration/create" element={<CreateIntegration />} />
-                    </Route>
-                    <Route path="/:env/integration/:providerConfigKey" element={<PrivateRoute />}>
                         <Route path="/:env/integration/:providerConfigKey" element={<ShowIntegration />} />
-                    </Route>
-                    <Route path="/:env/connections" element={<PrivateRoute />}>
                         <Route path="/:env/connections" element={<ConnectionList />} />
-                    </Route>
-                    <Route path="/:env/connections/create" element={<PrivateRoute />}>
                         <Route path="/:env/connections/create" element={<ConnectionCreate />} />
-                    </Route>
-                    <Route path="/:env/connections/create/:providerConfigKey" element={<PrivateRoute />}>
                         <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
-                    </Route>
-                    <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
                         <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
-                    </Route>
-                    <Route path="/:env/activity" element={<PrivateRoute />}>
                         <Route path="/:env/activity" element={<Activity />} />
-                    </Route>
-                    <Route path="/:env/project-settings" element={<PrivateRoute />}>
                         <Route path="/:env/project-settings" element={<ProjectSettings />} />
+                        {AUTH_ENABLED && (
+                            <>
+                                <Route path="/:env/account-settings" element={<AccountSettings />} />
+                                <Route path="/:env/user-settings" element={<UserSettings />} />
+                            </>
+                        )}
                     </Route>
                     <Route path="/auth-link" element={<AuthLink />} />
-                    {(isCloud() || isEnterprise() || isLocal()) && (
+                    {AUTH_ENABLED && (
                         <>
-                            <Route path="/:env/account-settings" element={<AccountSettings />} />
-                            <Route path="/:env/user-settings" element={<UserSettings />} />
                             <Route path="/signin" element={<Signin />} />
                             <Route path="/signup/:token" element={<InviteSignup />} />
                             <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -18,7 +18,7 @@ import type {
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
-import { JAVASCRIPT_PRIMITIVES } from '../utils/utils.js';
+import { isJsOrTsType } from '../utils/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -93,7 +93,7 @@ export function loadStandardConfig(configData: NangoConfig, showMessages = false
 function getFieldsForModel(modelName: string, config: NangoConfig): { name: string; type: string }[] | null {
     const modelFields = [];
 
-    if (JAVASCRIPT_PRIMITIVES.includes(modelName)) {
+    if (isJsOrTsType(modelName)) {
         return null;
     }
 
@@ -290,7 +290,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 const syncReturns = Array.isArray(sync.output) ? sync.output : [sync.output];
                 for (const model of syncReturns) {
                     if (!allModels.includes(model)) {
-                        if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
+                        if (!isJsOrTsType(model)) {
                             allModels.push(model);
                         }
                     } else {
@@ -405,7 +405,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 const actionReturns = Array.isArray(action.output) ? action.output : [action.output];
                 for (const model of actionReturns) {
                     if (!allModels.includes(model)) {
-                        if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
+                        if (!isJsOrTsType(model)) {
                             allModels.push(model);
                         }
                     }

@@ -3,7 +3,8 @@ import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import { useEditUserNameAPI, useGetUserAPI } from '../utils/api';
+import { useEditUserNameAPI } from '../utils/api';
+import { useUser } from '../hooks/useUser';
 
 export default function UserSettings() {
     const [loaded, setLoaded] = useState(false);
@@ -11,27 +12,20 @@ export default function UserSettings() {
     const [email, setEmail] = useState('');
     const [userEditMode, setUserEditMode] = useState(false);
 
-    const getUserInfo = useGetUserAPI();
+    const { user, mutate } = useUser();
     const editUserNameAPI = useEditUserNameAPI();
 
     useEffect(() => {
-        const getUser = async () => {
-            const res = await getUserInfo();
-
-            if (res?.status === 200) {
-                const user = (await res.json())['user'];
-                setName(user['name']);
-                setEmail(user['email']);
-            }
-        };
-
-        if (!loaded) {
-            setLoaded(true);
-            getUser();
+        if (!user) {
+            return;
         }
-    }, [getUserInfo, loaded, setLoaded]);
 
-    const handleUserNameEdit = (_: React.SyntheticEvent) => {
+        setName(user.name);
+        setEmail(user.email);
+        setLoaded(true);
+    }, [user, setLoaded]);
+
+    const handleUserNameEdit = () => {
         setUserEditMode(true);
     };
 
@@ -48,8 +42,13 @@ export default function UserSettings() {
             toast.success("User's name updated!", { position: toast.POSITION.BOTTOM_CENTER });
             setUserEditMode(false);
             setName(target.name.value);
+            void mutate();
         }
     };
+
+    if (!loaded) {
+        return null;
+    }
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.UserSettings}>
