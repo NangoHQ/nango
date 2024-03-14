@@ -44,8 +44,7 @@ integrations:
           Fetches a list of all candidates from your ashby account
         metadata:
           description: |
-            Since Ashby doesn't use a lastSyncDate value to increment its sync,
-            we need to store a candidatelastsyncToken which will be used to increment the candidates syncs
+            We need to save a candidatelastsyncToken to track and update candidates' synchronizations
           scopes: candidatelastsyncToken
         sync_type: incremental
         endpoint: /ashby/candidates
@@ -56,8 +55,7 @@ integrations:
           Fetches a list of all jobs from your ashby account
         metadata:
           description: |
-            Since Ashby doesn't use a lastSyncDate value to increment its sync,
-            we need to store a jobslastsyncToken which will be used to increment the jobs syncs
+            We need to save a jobslastsyncToken to track and update jobs' synchronizations
           scopes: jobslastsyncToken
         sync_type: incremental
         endpoint: /ashby/jobs
@@ -724,12 +722,6 @@ integrations:
           and using the ID field provided by the response
           (https://developers.google.com/drive/picker/reference/results)
         input: DocumentMetadata
-        metadata:
-          description: |
-            Metadata is required to filter on a particular folder, or file(s)
-          scopes:
-            - {"folders": ["<some-id>"]}
-            - {"files": ["<some-id>"]}
         output: Document
         sync_type: full
         endpoint: /google-drive/documents
@@ -1662,28 +1654,28 @@ integrations:
       linear-issues:
         runs: every 5min
         description: |
-          Fetch a list of issues from linear
+          Fetch a list of issues from Linear
         output: LinearIssue
         sync_type: incremental
         endpoint: /linear/issues
       linear-projects:
         runs: every 5min
         description: |
-          Fetch a list of projects from linear
+          Fetch a list of projects from Linear
         output: LinearProject
         sync_type: incremental
         endpoint: /linear/projects
       linear-teams:
         runs: every 5min
         description: |
-          Fetch a list of teams from linear
+          Fetch a list of teams from Linear
         output: LinearTeam
         sync_type: incremental
         endpoint: /linear/teams
       linear-roadmaps:
         runs: every 5min
         description: |
-          Fetch a list of roadmaps from linear
+          Fetch a list of roadmaps from Linear
         output: LinearRoadmap
         sync_type: incremental
         endpoint: /linear/roadmaps
@@ -2641,7 +2633,7 @@ integrations:
       zendesk-articles:
         runs: every 6 hours
         description: |
-          Fetches a list of articles in Help center
+          Fetches a list of articles in Help center from zendesk
         output: ZendeskArticle
         sync_type: full
         endpoint: /zendesk/articles
