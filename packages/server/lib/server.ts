@@ -53,7 +53,6 @@ const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
 const app = express();
 
-// Auth
 AuthClient.setup(app);
 
 const { requireUser } = initAuth({
@@ -61,22 +60,19 @@ const { requireUser } = initAuth({
     apiKey: process.env['HOSTED_AUTH_API_KEY'] as string
 });
 
-const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const rateLimitingMiddleware = [rateLimiterMiddleware];
 
 const useHostedAuth = process.env['USE_HOSTED_AUTH'] === 'true';
-const hostedAuth = useHostedAuth
-    ? [requireUser, rateLimiterMiddleware]
-    : [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware];
-const selfHostedAuthWithoutAuthentication = [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
-const selfHostedAuthWithAuthentication = [
-    passport.authenticate('basic', { session: false }),
-    authMiddleware.basicAuth.bind(authMiddleware),
-    rateLimiterMiddleware
-];
-const selfHostedAuth = isBasicAuthEnabled() ? selfHostedAuthWithAuthentication : selfHostedAuthWithoutAuthentication;
 
-const webAuth = AUTH_ENABLED ? hostedAuth : selfHostedAuth;
+const hostedAuthMiddleware = useHostedAuth
+    ? [requireUser, ...rateLimitingMiddleware]
+    : [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), ...rateLimitingMiddleware];
+
+const selfHostedAuthMiddleware = isBasicAuthEnabled()
+    ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), ...rateLimitingMiddleware]
+    : [authMiddleware.noAuth.bind(authMiddleware), ...rateLimitingMiddleware];
+
+const webAuth = AUTH_ENABLED ? hostedAuthMiddleware : selfHostedAuthMiddleware;
 
 app.use(
     express.json({
