@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { Helmet } from 'react-helmet';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
-import { requestErrorToast } from '../utils/api';
+import { requestErrorToast, swrFetcher } from '../utils/api';
 import {
     ChevronsLeft,
     Clock,
@@ -115,6 +115,7 @@ export default function Activity() {
             `${selectedIntegration ? `&integration=${selectedIntegration}` : ''}` +
             `${selectedConnection ? `&connection=${selectedConnection}` : ''}` +
             `${selectedDate ? `&date=${selectedDate}` : ''}`,
+        swrFetcher,
         {
             refreshInterval: 15000,
             keepPreviousData: false
@@ -136,16 +137,15 @@ export default function Activity() {
         }
     }, [activities, error]);
 
-    console.log(expandedRow);
-
     const { data: msgs, error: logActivitiesError } = useSWR<ActivityMessageResponse>(
         () => (logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null),
+        swrFetcher,
         {
             refreshInterval: expandedRow !== -1 ? 5000 : 60000
         }
     );
 
-    const { data: activityFilters } = useSWR(`/api/v1/activity-filters?env=${env}`, {
+    const { data: activityFilters } = useSWR<Record<string, any>>(`/api/v1/activity-filters?env=${env}`, swrFetcher, {
         refreshInterval: 60000
     });
 
