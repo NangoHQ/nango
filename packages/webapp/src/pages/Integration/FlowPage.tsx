@@ -168,6 +168,7 @@ export default function FlowPage(props: FlowPageProps) {
         setModalTitle('Edit sync frequency?');
         setModalContent('This will affect potential many connections. Increased frequencies can increase your billing.');
         setVisible(true);
+        setIsTyping(false);
 
         setModalAction(() => async () => {
             setModalShowSpinner(true);
