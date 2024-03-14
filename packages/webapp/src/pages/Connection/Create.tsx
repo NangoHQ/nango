@@ -175,8 +175,8 @@ export default function IntegrationCreate() {
         }
 
         const params: Record<string, string> = {};
-        for (const i in integration.connectionConfigParams) {
-            params[integration.connectionConfigParams[i]] = '';
+        for (const key of Object.keys(integration.connectionConfigParams)) {
+            params[key] = '';
         }
         setConnectionConfigParams(params);
     };
@@ -205,7 +205,7 @@ export default function IntegrationCreate() {
         try {
             setAuthorizationParams(JSON.parse(e.target.value));
             setAuthorizationParamsError(false);
-        } catch (e) {
+        } catch {
             setAuthorizationParams(null);
             setAuthorizationParamsError(true);
         }

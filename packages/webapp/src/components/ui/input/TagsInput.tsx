@@ -106,7 +106,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     onClick={handleAdd}
                 >
                     <PlusSmallIcon className="h-5 w-5" onClick={handleAdd} />
-                    <span className="">Add new scope: "{enteredValue}"</span>
+                    <span className="">Add new scope: &quot;{enteredValue}&quot;</span>
                 </div>
             )}
             {Boolean(scopes.length) && (
