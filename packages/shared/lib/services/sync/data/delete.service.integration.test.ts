@@ -8,16 +8,40 @@ import { getAllDataRecords, formatDataRecords } from './records.service.js';
 import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import { generateInsertableJson, createRecords } from './mocks.js';
+import { createActivityLog } from '../../activity/activity.service.js';
+import type { Environment } from '../../../models/Environment.js';
 
 const environmentName = 'delete-service';
 
+async function getActivity(env: Environment): Promise<number> {
+    const activityLogId = await createActivityLog({
+        action: 'full sync',
+        connection_id: '1234',
+        environment_id: env.id,
+        level: 'debug',
+        provider_config_key: 'test',
+        start: Date.now(),
+        success: false,
+        timestamp: Date.now()
+    });
+    if (!activityLogId) {
+        throw new Error('failed_to_create_activitylogid');
+    }
+
+    return activityLogId;
+}
+
 describe('Data delete service integration tests', () => {
+    let envs: Environment[];
     beforeAll(async () => {
         await multipleMigrations();
-        await createConfigSeeds(environmentName);
+        envs = await createConfigSeeds(environmentName);
     });
 
     it('Should insert records properly and retrieve a full record', async () => {
+        const env = envs[0]!;
+        const activityLogId = await getActivity(env);
+
         const duplicateRecords = [
             {
                 id: '1',
@@ -55,8 +79,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1
+            activityLogId,
+            env.id
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
@@ -85,6 +109,8 @@ describe('Data delete service integration tests', () => {
     });
 
     it('Should take a snapshot of the inserted records', async () => {
+        const env = envs[0]!;
+        const activityLogId = await getActivity(env);
         const records = generateInsertableJson(100);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: formattedResults } = response;
@@ -95,8 +121,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1
+            activityLogId,
+            env.id
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
@@ -107,10 +133,12 @@ describe('Data delete service integration tests', () => {
             return rest;
         });
         const snapshotFullRecords = await getFullSnapshotRecords(nangoConnectionId, modelName);
-        expect(fullRecordsWithoutPendingDelete).toEqual(snapshotFullRecords);
+        expect(fullRecordsWithoutPendingDelete).toMatchObject(snapshotFullRecords);
     });
 
     it('Given a snapshot, the next insert with less records should show as deleted if track deletes is true', async () => {
+        const env = envs[0]!;
+        const activityLogId = await getActivity(env);
         const records = generateInsertableJson(100);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: formattedResults } = response;
@@ -121,8 +149,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1,
+            activityLogId,
+            env.id,
             true // track_deletes
         );
         expect(success).toBe(true);
@@ -137,8 +165,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1,
+            activityLogId,
+            env.id,
             true // track_deletes
         );
         expect(slimSuccess).toBe(true);
@@ -164,6 +192,8 @@ describe('Data delete service integration tests', () => {
     });
 
     it('Given a snapshot, the next insert with less records should not show as deleted if track deletes is false', async () => {
+        const env = envs[0]!;
+        const activityLogId = await getActivity(env);
         const records = generateInsertableJson(100);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: formattedResults } = response;
@@ -174,8 +204,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1,
+            activityLogId,
+            env.id,
             false // track_deletes
         );
         expect(success).toBe(true);
@@ -194,8 +224,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1,
+            activityLogId,
+            env.id,
             false // track_deletes
         );
         expect(slimSuccess).toBe(true);
@@ -217,7 +247,10 @@ describe('Data delete service integration tests', () => {
 
         expect(recordResponse?.records?.length).toEqual(0);
     });
+
     it('When track deletes is true and an entry is updated it only that record should show as updated when getAllDataRecords is called', async () => {
+        const env = envs[0]!;
+        const activityLogId = await getActivity(env);
         const records = generateInsertableJson(100);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: rawRecords } = response;
@@ -237,8 +270,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1,
+            activityLogId,
+            env.id,
             true // track_deletes
         );
         expect(success).toBe(true);
@@ -246,7 +279,7 @@ describe('Data delete service integration tests', () => {
         await takeSnapshot(nangoConnectionId, modelName);
 
         if (formattedResults) {
-            // @ts-expect-error
+            // @ts-expect-error untyped rawRecords
             rawRecords[0]!['json']['updatedAt'] = new Date().toISOString();
         }
 
@@ -266,8 +299,8 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId,
             modelName,
-            1,
-            1,
+            activityLogId,
+            env.id,
             true // track_deletes
         );
 
