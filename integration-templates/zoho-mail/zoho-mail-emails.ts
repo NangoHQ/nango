@@ -1,6 +1,6 @@
 import type { NangoSync, ZohoMailEmail } from './models';
 
-const LIMIT = 5;
+const LIMIT = 100;
 
 export default async function fetchData(nango: NangoSync) {
     let totalRecords = 0;
@@ -27,6 +27,10 @@ export default async function fetchData(nango: NangoSync) {
                 totalRecords += batchSize;
                 await nango.log(`Saving batch of ${batchSize} email(s) (total email(s): ${totalRecords})`);
                 await nango.batchSave(mappedEmail, 'ZohoMailEmail');
+
+                if (response.data.data.length < LIMIT) {
+                    break;
+                }
 
                 offset += LIMIT;
             } else {
