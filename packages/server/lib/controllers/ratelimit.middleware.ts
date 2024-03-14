@@ -53,7 +53,7 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
 function getKey(req: Request, res: Response): string {
     try {
         return `account-${getAccount(res)}`;
-    } catch (e) {
+    } catch {
         if (req.user) {
             return `user-${req.user.id}`;
         }

@@ -24,6 +24,7 @@ import {
 } from './config/config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
+import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -729,9 +730,9 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         })
         .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
         .where({
-            '_nango_syncs.name': 'github-issues-lite',
+            '_nango_syncs.name': DEMO_SYNC_NAME,
             '_nango_environments.name': 'dev',
-            '_nango_configs.unique_key': 'demo-github-integration',
+            '_nango_configs.unique_key': DEMO_GITHUB_CONFIG_KEY,
             '_nango_configs.provider': 'github',
             '_nango_syncs.deleted': false,
             '_nango_sync_schedules.status': ScheduleStatus.RUNNING

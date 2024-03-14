@@ -171,7 +171,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                             <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">string</span>
                                         </div>
                                         <span className="text-gray-400 mt-2">
-                                            Only return records added, updated or deleted since this timestmap, e.g. ‘2023-05-31T11:46:13.390Z’
+                                            Only return records added, updated or deleted since this timestmap, e.g. &apos;2023-05-31T11:46:13.390Z&apos;
                                         </span>
                                     </div>
                                     <div className="border-t border-neutral-700 mt-4 py-4">
@@ -187,17 +187,19 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                             <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">string</span>
                                         </div>
                                         <span className="text-gray-400 mt-2">
-                                            For pagination: obtained from the "next_cursor" property in the response to fetch the next page of results. The
-                                            cursor will be included until there are no more results to paginate through.
+                                            For pagination: obtained from the &apos;next_cursor&apos; property in the response to fetch the next page of
+                                            results. The cursor will be included until there are no more results to paginate through.
                                         </span>
                                     </div>
                                     <div className="border-t border-neutral-700 mt-4 py-4">
                                         <div className="flex">
                                             <span className="text-indigo-200">filter</span>
-                                            <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">'added' | 'updated' | 'deleted'</span>
+                                            <span className="ml-2 text-gray-400 bg-neutral-800 rounded text-xs px-1 py-1">
+                                                &apos;added&apos; | &apos;updated&apos; | &apos;deleted&apos;
+                                            </span>
                                         </div>
                                         <span className="text-gray-400 mt-2">
-                                            Only return records with the specified change. Accepts comma separated combinations e.g., 'added,updated'.
+                                            Only return records with the specified change. Accepts comma separated combinations e.g., &apos;added,updated&apos;.
                                         </span>
                                     </div>
                                 </div>
