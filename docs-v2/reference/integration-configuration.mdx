@@ -4,6 +4,318 @@ sidebarTitle: 'Integration config (nango.yaml)'
 icon: 'arrow-right-arrow-left'
 ---
 
+Example of an integration configuration: 
+```yaml nango.yaml
+integrations:
+  asana: # Integration ID.
+    syncs:
+      asana-fetch-tasks: # Sync name.
+        description: | # Sync description.
+          Some long description, some long description, some long description,
+          some long description, some long description, some long description.
+        output: AsanaTask # Synced model
+        endpoint: GET /asana/asana-tasks # Generated endpoint to access the synced model.
+        sync_type: incremental # Data is replaced ('full') or upserted ('incremental') on each sync execution. 
+        runs: every 30min # Sync frequency.
+        input:  AsanaProject # Necessary input to execute the sync.
+        scopes: # Required scopes.
+          - scope1
+          - scope2 
+        auto_starts: true # If true, data syncing starts when a new connection is created.
+        track_delete: true # If true, automatically detects deleted records (for full refresh syncs only).
+        webhook_subscriptions: # The types of webhook this sync handles.
+          - subscription1
+          - subscription2
+
+    actions:
+      asana-create-task:
+        description: | # Action description.
+          Some long description, some long description, some long description,
+          some long description, some long description, some long description.
+        output: AsanaTask # Returned model
+        endpoint: POST /asana/asana-tasks # Generated endpoint to trigger to action.
+        input: # Necessary input to execute the action.
+        scopes: # Required scopes.
+          - scope1
+          - scope2 
+        
+        
+models:
+  AsanaTask: # Schema for sync output AND action input/output.
+    id: string # Required unique field for sync output models.
+    project_id: string
+    name: string
+    completed: boolean
+    created_at: date
+    modified_at: date
+
+  AsanaProject: # Schema for sync input.
+    id: string
+```
+
+# Integrations fields
+
+Integration configuration fields are under `integrations.<INTEGRATION-ID>`.
+
+<ResponseField name="syncs" type="object">
+    Lists the syncs for a given integration.
+</ResponseField>
+
+<ResponseField name="actions" type="object">
+    Lists the actions for a given integration.
+</ResponseField>
+
+### Sync fields
+
+Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-NAME>`.
+
+<ResponseField name="description" type="string" required>
+    Describes the sync.
+</ResponseField>
+
+<ResponseField name="output" type="string" required>
+    Defines the schema of the data you want to sync. References a schema from the [Models](#model-fields) section of this configuration file.
+
+    Each sync has a corresponding generated endpoint to fetch the data, configured in the `endpoint` field below.
+</ResponseField>
+
+<ResponseField name="endpoint" type="string" required>
+    Defines the endpoint to use to fetch the output model. 
+    
+    The value is formatted as follows: `<METHOD> <URL-PATH>`.  e.g.: `GET /tasks`. 
+    
+    Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. 
+
+    The method/endpoint combination can be shared across syncs to unify the communication with external APIs.
+</ResponseField>
+
+<ResponseField name="sync_type" type="incremental | full" required>
+    Specifies whether each sync execution replaces all of the data (`full`) or upserts it (`incremental`).
+
+    Learn more about [incremental vs. full refresh](/understand/concepts/syncs#sync-modes-full-refresh-vs-incremental) syncing.
+</ResponseField>
+
+<ResponseField name="runs" type="string">
+    Specifies the frequency of the sync. Supports [ms](https://github.com/vercel/ms) notations. 
+    
+    Defaults to 24h.
+</ResponseField>
+
+<ResponseField name="input" type="string">
+    Defines the schema of the data required to run the sync. References a schema from the [models](#model-fields). 
+
+    Sync inputs are passed from your app to the sync script via the connection metadata ([step-by-step guide](/integrate/guides/advanced/store-customer-specific-data)).
+</ResponseField>
+
+<ResponseField name="scopes" type="string[]">
+    Lists the necessary scopes to execute the sync. 
+
+    This list is just indicative; it doesn't trigger any automatic configuration (yet). List necessary scopes on the external API developer portal and your Nango UI integration settings. 
+
+    Defaults to no scope. 
+</ResponseField>
+
+<ResponseField name="auto_start" type="boolean">
+    If `true`, automatically starts synchronizing between the external API and Nango when a new connection is created. Otherwise, it needs to be triggered via the API or Nango UI.
+
+    Defaults to `true`. 
+</ResponseField>
+
+<ResponseField name="track_delete" type="boolean">
+    If `true`, automatically detects deleted records and flags them when you [fetch the latest data](/integrate/guides/sync-data-from-an-api#fetch-the-latest-data).
+
+    Defaults to `false`. 
+
+    <Info>
+        This setting only applies if `sync_type: full` ([details](/understand/concepts/syncs#detecting-deletions-incremental-vs-full-refresh-syncs)). For incremental syncs, this setting is ignored; instead, you must flag deleted records in the sync script using `nango.batchDelete()` ([reference](/reference/scripts)).
+    </Info>
+</ResponseField>
+
+<ResponseField name="webhook_subscriptions" type="string | string[]">
+    Lists the types of external webhooks the sync script will handle. Multiple syncs can listen to the same subscription. Learn more about handling external webhooks in syncs: [step-by-step guide](/integrate/guides/receive-webhooks-from-an-api#handle-external-webhooks-in-syncs).
+</ResponseField>
+
+### Action fields
+
+Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<ACTION-NAME>`.
+
+<ResponseField name="description" type="string" required>
+    Describes the action.
+</ResponseField>
+
+<ResponseField name="output" type="string" required>
+    Defines the schema of the data returned by the action. References a schema from the [models](#model-fields) section of this configuration file.
+
+    Each action has a corresponding generated endpoint to trigger it, configured in the `endpoint` field below.
+</ResponseField>
+
+<ResponseField name="endpoint" type="string" required>
+    Defines the endpoint to use to trigger the action.
+    
+    The value is formatted as follows: `<METHOD> <URL-PATH>`.  e.g.: `POST /tasks`. 
+    
+    Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. 
+
+    The method/endpoint combination can be shared across actions to unify the communication with external APIs.
+</ResponseField>
+
+<ResponseField name="input" type="string">
+    Defines the schema of the data required to trigger the action. References a schema from the [Models](#model-fields). 
+
+    Action inputs are passed as parameters when triggering the action.
+</ResponseField>
+
+<ResponseField name="scopes" type="string[]">
+    Lists the necessary scopes to trigger the action. 
+
+    This list is just indicative; it doesn't trigger any automatic configuration (yet). List necessary scopes on the external API developer portal and your Nango UI integration settings. 
+
+    Defaults to no scope. 
+</ResponseField>
+
+# Model types
+
+The `models` section contains the schemas referenced in the inputs & outputs of the above `integrations` section. 
+
+### Basic types
+
+For each model, you must define its fields and data types. Data types are based on Typescript types, with some tweaks: 
+
+|`nango.yaml` type|Corresponding Typescript type|
+|-|-|
+|`bool` or `boolean`|`boolean`|
+|`string`|`string`|
+|`char`|`string`|
+|`integer` or `int` or `number`|`number`|
+|`date`|`Date`|
+
+You can also pass existing Typescript types such as `undefined`, `null`, and [more](https://www.typescriptlang.org/docs/handbook/basic-types.html).
+
+### Arrays
+
+Your can use array types if the `[]` notation: 
+```yaml nango.yaml
+models:
+  Folder:
+    files: string[]
+```
+
+### Type & string unions
+
+You can use union types such as: 
+```yaml nango.yaml
+models:
+  User:
+    name: string | null | undefined
+```
+
+You can also use string unions to enforce specific values:
+```yaml nango.yaml
+models:
+  User:
+    gender: m | f
+```
+
+You can mix types and strings in unions:
+```yaml nango.yaml
+models:
+  User:
+    gender: male | female | null
+```
+
 <Info>
-The docs recently underwent a makeover, leaving this page empty. We are working hard to fill in all the missing pages within the next two weeks. Meanwhile, ask any questions on the [community](https://nango.dev/slack).
+When you use the `|` notation, we check each element against known Typescript types, to categorize it as type (if match) or string (if no match). 
 </Info>
+
+### Reference other models
+
+Your can use other models as types: 
+```yaml nango.yaml
+models:
+  User:
+    id: string
+
+  Account:
+    user: User
+```
+
+### Extend types
+
+You can have a model extend the properties of another base model:
+```yaml nango.yaml
+models:
+  Issue:
+    id: integer
+    title: string
+    author: string
+
+  GithubIssue:
+    __extends: Issue
+    issue_number: string
+
+  LinearIssue:
+    __extends: Issue
+    roadmap_id: string
+```
+
+### Dynamic field keys
+
+You can allow dynamic keys in models:
+```yaml nango.yaml
+models:
+  Task:
+    id: string
+    __string: string
+```
+
+# Deploying your configuration
+
+Changes to your integration configuration become active once you deploy them to a Nango environment using the `nango deploy` CLI command. 
+
+These changes can have significant impacts, in particular, if you: 
+- Add a sync
+- Remove a sync or an action
+- Change a model or a script
+
+### Adding a sync
+
+Unless you sync configuration specifies `auto_start=false`, the deployment will kick off the data synchronization between the external API and Nango, for all relevant connections. 
+
+This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Script_ tab.
+
+### Removing a sync
+
+Removing a sync will erase all the cached data related to that sync, for all relevant connections. The synced records will no longer be accessive via the Nango API & SDKs. 
+
+This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Script_ tab.
+
+<Warning>
+Changing the integration ID in your configuration is the equivalent of deleting the sync with the old integration ID, and creating a new one. So, the data cached by the old sync will be deleted (for all relevant connections).
+</Warning>
+
+### Removing an action
+
+Removing an action will cause the failure of any request to trigger this action. 
+
+This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Script_ tab.
+
+### Changing a model or script
+
+For [full refresh syncs](/understand/concepts/syncs#full-refresh-syncs), as the data is replaced on each sync execution, the new model and script logic will apply to all records as soon as the sync executes following the deployment. 
+
+For [incremental syncs](/understand/concepts/syncs#incremental-syncs), you can end up with model disparities, as older records will have outdated content. You will still be able to fetch them from the Nango cache. In some cases, it's better to trigger a full resync via the [API](/reference/api/sync/trigger) or the Nango UI, so that all historical records are fetched again using the new script & model. 
+
+
+# Importing models in scripts
+
+The models defined in your `nango.yaml` configuration are used to generate Typescript models (in the `nango-integrations/models.ts` file). 
+
+You can then import the relevant models from `models.ts` in your integration scripts. 
+
+<Info>
+If your app uses typescript, you can import these same models to enforce strong typing to the Nango API & SDK responses. 
+</Info>
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
