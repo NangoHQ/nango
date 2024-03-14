@@ -56,7 +56,7 @@ export default function Create() {
         }
     };
 
-    const showDocs = (e: any, provider: Provider) => {
+    const showDocs = (e: React.MouseEvent<SVGSVGElement, MouseEvent>, provider: Provider) => {
         e.stopPropagation();
         const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}`;
         window.open(documentationUrl, '_blank');
@@ -110,6 +110,7 @@ export default function Create() {
                     <div className="flex flex-wrap text-white w-full">
                         {providers.map((provider) => (
                             <div
+                                key={provider.name}
                                 className="flex justify-between px-2 p-2 mr-2 mt-4 mb-5 w-[14.7rem] border border-transparent rounded cursor-pointer items-center text-sm hover:bg-hover-gray"
                                 onClick={() => onCreateIntegration(provider.name)}
                             >

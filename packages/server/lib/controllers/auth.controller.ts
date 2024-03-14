@@ -7,7 +7,6 @@ import EmailClient from '../clients/email.client.js';
 import {
     User,
     userService,
-    configService,
     accountService,
     errorManager,
     ErrorSourceEnum,
@@ -16,7 +15,8 @@ import {
     AnalyticsTypes,
     isCloud,
     getBaseUrl,
-    NangoError
+    NangoError,
+    createOnboardingProvider
 } from '@nangohq/shared';
 
 export interface WebUser {
@@ -125,8 +125,10 @@ class AuthController {
 
             if (isCloud() && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.
-                // Harder to do on the self-hosted version because we don't know what OAuth callback to use.
-                await configService.createDefaultProviderConfig(account.id);
+                const env = await environmentService.getByEnvironmentName('dev');
+                if (env) {
+                    await createOnboardingProvider({ envId: env.id });
+                }
             }
 
             if (joinedWithToken) {

@@ -1,6 +1,6 @@
-import type { NangoSync, GithubWriteIssueDemoInput } from './models';
+import type { NangoSync, GithubWriteIssueInput, GithubWriteIssueResult } from './models';
 
-export default async function runAction(nango: NangoSync, input: GithubWriteIssueDemoInput): Promise<{ status: number }> {
+export default async function runAction(nango: NangoSync, input: GithubWriteIssueInput): Promise<GithubWriteIssueResult> {
     // Fetch issues from GitHub
     const res = await nango.post({
         endpoint: '/repos/NangoHQ/interactive-demo/issues',
@@ -15,6 +15,7 @@ Take a look at our [Documentation](https://docs.nango.dev/integrate/guides/perfo
     });
 
     return {
+        url: res.data.html_url,
         status: res.status
     };
 }

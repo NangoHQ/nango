@@ -10,13 +10,22 @@ import {
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
     packageJsonFile,
-    getEnvironmentId
+    getEnvironmentId,
+    Environment
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 
+export interface GetMeta {
+    environments: Environment[];
+    email: string;
+    version: string;
+    baseUrl: string;
+    debugMode: boolean;
+}
+
 class EnvironmentController {
-    async meta(req: Request, res: Response, next: NextFunction) {
+    async meta(req: Request, res: Response<GetMeta>, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {

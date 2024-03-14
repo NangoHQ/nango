@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { Helmet } from 'react-helmet';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
-import { requestErrorToast } from '../utils/api';
+import { requestErrorToast, swrFetcher } from '../utils/api';
 import {
     ChevronsLeft,
     Clock,
@@ -72,7 +72,7 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
                 {isJson ? <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre> : <>{prettyJson}</>}
             </>
         );
-    } catch (e) {
+    } catch {
         return <span className="whitespace-normal break-all overflow-wrap">{data?.toString()}</span>;
     }
 };
@@ -80,11 +80,9 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
 export default function Activity() {
     const navigate = useNavigate();
 
-    const [activities, setActivities] = useState<ActivityResponse[] | null>(null);
     const [expandedRow, setExpandedRow] = useState(-1);
     const [limit] = useState(20);
     const [logIds, setLogIds] = useState<number[]>([]);
-    const [updateLogs, setUpdateLogs] = useState(false);
 
     const [scripts, setScripts] = useState<string[]>([]);
     const [integrations, setIntegrations] = useState<string[]>([]);
@@ -108,45 +106,48 @@ export default function Activity() {
     const [selectedIntegration, setSelectedIntegration] = useState(queryParams.integration || '');
     const [selectedConnection, setSelectedConnection] = useState(queryParams.connection || '');
     const [selectedDate, setDate] = useState(queryParams.date || '');
-    const [filterSet, setFilterSet] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const { error } = useSWR(
+    const { data: activities, error } = useSWR<ActivityResponse[]>(
         `/api/v1/activity?env=${env}&limit=${limit}&offset=${offset}` +
             `${status ? `&status=${status}` : ''}` +
             `${selectedScript ? `&script=${selectedScript}` : ''}` +
             `${selectedIntegration ? `&integration=${selectedIntegration}` : ''}` +
             `${selectedConnection ? `&connection=${selectedConnection}` : ''}` +
             `${selectedDate ? `&date=${selectedDate}` : ''}`,
+        swrFetcher,
         {
-            onSuccess: (data) => {
-                setFilterSet(false);
-                setActivities(data);
-                setLogIds(data.map((activity: ActivityResponse) => activity.id));
-                setActivityRefs(
-                    data.reduce((acc: Record<number, React.RefObject<HTMLTableRowElement>>, activity: ActivityResponse) => {
-                        acc[activity.id] = createRef<HTMLTableRowElement>();
-                        return acc;
-                    }, {})
-                );
-                setUpdateLogs(!updateLogs);
-            }
+            refreshInterval: 15000,
+            keepPreviousData: false
+        }
+    );
+    useEffect(() => {
+        if (activities) {
+            setLogIds(activities.map((activity: ActivityResponse) => activity.id));
+            setActivityRefs(
+                activities.reduce((acc: Record<number, React.RefObject<HTMLTableRowElement>>, activity: ActivityResponse) => {
+                    acc[activity.id] = createRef<HTMLTableRowElement>();
+                    return acc;
+                }, {})
+            );
+            setLoading(false);
+        }
+        if (error) {
+            setLoading(false);
+        }
+    }, [activities, error]);
+
+    const { data: msgs, error: logActivitiesError } = useSWR<ActivityMessageResponse>(
+        () => (logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null),
+        swrFetcher,
+        {
+            refreshInterval: expandedRow !== -1 ? 5000 : 60000
         }
     );
 
-    const { error: logActivitiesError } = useSWR(
-        () => (logIds.length > 0 ? `/api/v1/activity-messages?updateLogs=${updateLogs}&logIds=${logIds.join(',')}` : null),
-        {
-            onSuccess: (data: ActivityMessageResponse) => {
-                const updatedActivities = activities?.map((activity) => {
-                    const messages = data[activity.id];
-                    return { ...activity, messages: messages ? messages.reverse() : [] };
-                });
-                setActivities(updatedActivities as ActivityResponse[]);
-            }
-        }
-    );
-
-    const { data: activityFilters } = useSWR(`/api/v1/activity-filters?env=${env}`);
+    const { data: activityFilters } = useSWR<Record<string, any>>(`/api/v1/activity-filters?env=${env}`, swrFetcher, {
+        refreshInterval: 60000
+    });
 
     useEffect(() => {
         if (queryParams.offset) setOffset(parseInt(queryParams.offset as string, 10));
@@ -233,8 +234,7 @@ export default function Activity() {
     };
 
     const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setActivities([]);
-        setFilterSet(true);
+        setLoading(true);
         const value = e.target.value;
         setStatus(value);
         setOffset(0);
@@ -243,8 +243,7 @@ export default function Activity() {
     };
 
     const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setActivities([]);
-        setFilterSet(true);
+        setLoading(true);
         const value = e.target.value;
         setSelectedScript(value);
         setOffset(0);
@@ -253,8 +252,7 @@ export default function Activity() {
     };
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setActivities([]);
-        setFilterSet(true);
+        setLoading(true);
         const value = e.target.value;
         setSelectedIntegration(value);
         setOffset(0);
@@ -263,8 +261,7 @@ export default function Activity() {
     };
 
     const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setActivities([]);
-        setFilterSet(true);
+        setLoading(true);
         const value = e.target.value;
         setSelectedConnection(value);
         setOffset(0);
@@ -273,8 +270,7 @@ export default function Activity() {
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setActivities([]);
-        setFilterSet(true);
+        setLoading(true);
         const value = e.target.value;
         setDate(value);
         setOffset(0);
@@ -283,8 +279,7 @@ export default function Activity() {
     };
 
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
-        setActivities([]);
-        setFilterSet(true);
+        setLoading(true);
         action('');
         const url = window.location.pathname;
         const searchParams = new URLSearchParams(window.location.search);
@@ -354,7 +349,7 @@ export default function Activity() {
         );
     }
 
-    if (!filterSet && activities === null) {
+    if (!activities) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
                 <Loading spaceRatio={2.5} className="-top-36" />
@@ -528,7 +523,7 @@ export default function Activity() {
                     </div>
                 )}
 
-                {filterSet ? (
+                {loading ? (
                     <Loading spaceRatio={2.5} className="top-48" />
                 ) : (
                     <>
@@ -797,25 +792,28 @@ export default function Activity() {
                                                                     )}
                                                                 </Link>
                                                                 <p className="text-gray-500 w-40">{formatTimestamp(Number(activity.timestamp))}</p>
-                                                                {activity.messages && activity.messages.length > 0 && activity.messages[0] !== null && (
-                                                                    <button
-                                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-hover-gray"
-                                                                        onClick={() => setExpandedRow(activity.id === expandedRow ? -1 : activity.id)}
-                                                                    >
-                                                                        <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
-                                                                    </button>
-                                                                )}
-                                                                {activity.messages && activity.messages.length > 0 && activity.messages[0] && (
-                                                                    <CopyButton icontype="link" dark text={copyActivityLogUrl(activity)} />
-                                                                )}
+                                                                {msgs &&
+                                                                    activity.id in msgs &&
+                                                                    msgs[activity.id].length > 0 &&
+                                                                    msgs[activity.id][0] !== null && (
+                                                                        <>
+                                                                            <button
+                                                                                className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-hover-gray"
+                                                                                onClick={() => setExpandedRow(activity.id === expandedRow ? -1 : activity.id)}
+                                                                            >
+                                                                                <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
+                                                                            </button>
+                                                                            <CopyButton icontype="link" dark text={copyActivityLogUrl(activity)} />
+                                                                        </>
+                                                                    )}
                                                             </div>
-                                                            {activity.id === expandedRow && activity.messages && activity.messages[0] && (
+                                                            {activity.id === expandedRow && msgs && msgs[expandedRow] && (
                                                                 <>
                                                                     <div className="flex flex-col space-y-4 mt-6 font-mono">
-                                                                        {activity.messages.length >= 1000 && (
+                                                                        {msgs[expandedRow].length >= 1000 && (
                                                                             <div className="text-center text-gray-500">[only showing the last 1000 logs]</div>
                                                                         )}
-                                                                        {activity.messages.map((message, index: number) => (
+                                                                        {msgs[expandedRow].map((message, index: number) => (
                                                                             <div key={index} className="flex flex-col max-w-7xl">
                                                                                 <div className="whitespace-normal break-all overflow-wrap">
                                                                                     <span className="text-gray-500">

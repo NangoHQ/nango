@@ -7,6 +7,19 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
     return response.json();
 }
 
+/**
+ * Default SWR fetcher does not throw on HTTP error
+ */
+export async function swrFetcher<TBody>(url: string): Promise<TBody> {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+        throw { json: await res.json(), status: res.status };
+    }
+
+    return await res.json();
+}
+
 export function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
@@ -40,7 +53,7 @@ export function useSignupAPI() {
             };
 
             return fetch('/api/v1/signup', options);
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -62,7 +75,7 @@ export function useSigninAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -78,29 +91,7 @@ export function useHostedSigninAPI() {
             }
 
             return res;
-        } catch (e) {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetProjectInfoAPI() {
-    const signout = useSignout();
-
-    return async () => {
-        try {
-            const res = await fetch('/api/v1/environment', { headers: getHeaders() });
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -128,7 +119,7 @@ export function useEditCallbackUrlAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -156,7 +147,7 @@ export function useEditHmacEnabledAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -184,7 +175,7 @@ export function useEditAlwaysSendWebhookAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -212,7 +203,7 @@ export function useEditSendAuthWebhookAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -240,7 +231,7 @@ export function useEditHmacKeyAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -268,7 +259,7 @@ export function useEditEnvVariablesAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -296,7 +287,7 @@ export function useEditWebhookUrlAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -318,7 +309,7 @@ export function useGetIntegrationListAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -342,7 +333,7 @@ export function useGetIntegrationDetailsAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -384,7 +375,7 @@ export function useCreateIntegrationAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -410,7 +401,7 @@ export function useCreateEmptyIntegrationAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -456,7 +447,7 @@ export function useEditIntegrationAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -483,7 +474,7 @@ export function useEditIntegrationNameAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -508,7 +499,7 @@ export function useDeleteIntegrationAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -530,7 +521,7 @@ export function useGetProvidersAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -552,7 +543,7 @@ export function useGetConnectionListAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -577,7 +568,7 @@ export function useGetConnectionDetailsAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -602,7 +593,7 @@ export function useDeleteConnectionAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -618,7 +609,7 @@ export function useRequestPasswordResetAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -634,7 +625,7 @@ export function useResetPasswordAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -657,7 +648,7 @@ export function useActivityAPI() {
             );
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -672,7 +663,7 @@ export function useGetSyncAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -687,7 +678,7 @@ export function useGetHmacAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -702,7 +693,7 @@ export function useGetAllSyncsAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -718,7 +709,7 @@ export function useRunSyncAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -736,7 +727,7 @@ export function useGetAccountAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -758,7 +749,7 @@ export function useEditAccountNameAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -776,7 +767,7 @@ export function useGetUserAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -798,7 +789,7 @@ export function useEditUserNameAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -820,7 +811,7 @@ export function useEditUserPasswordAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -841,7 +832,7 @@ export function useInviteSignupAPI() {
             }
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -856,7 +847,7 @@ export function useGetFlows() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -872,7 +863,7 @@ export function useCreateFlow() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -887,7 +878,7 @@ export function useGetIntegrationEndpointsAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -902,7 +893,7 @@ export function useGetFlowDetailsAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -918,7 +909,7 @@ export function useUpdateSyncFrequency() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };
@@ -933,7 +924,7 @@ export function useGetConnectionAPI() {
             });
 
             return res;
-        } catch (e) {
+        } catch {
             requestErrorToast();
         }
     };

@@ -34,7 +34,23 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
-export const JAVASCRIPT_PRIMITIVES = ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'object', 'null'];
+export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
+    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
+    builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
+    utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
+};
+
+export function isJsOrTsType(type: string): boolean {
+    const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();
+    if (simpleTypes.includes(type)) {
+        return true;
+    }
+
+    const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
+    const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
+
+    return genericTypeRegex.test(type);
+}
 
 export function getEnv() {
     if (isStaging()) {

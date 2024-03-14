@@ -132,20 +132,28 @@ interface OAuth1Token {
     oAuthTokenSecret: string;
 }
 
-interface AppCredentials extends CredentialsCommon {
+interface AppCredentials {
     type: AuthModes.App;
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
-interface BasicApiCredentials extends CredentialsCommon {
+interface AppStoreCredentials {
+    type?: AuthModes.AppStore;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
+    private_key: string;
+}
+
+interface BasicApiCredentials {
     type: AuthModes.Basic;
     username: string;
     password: string;
 }
 
-interface ApiKeyCredentials extends CredentialsCommon {
+interface ApiKeyCredentials {
     type: AuthModes.ApiKey;
     apiKey: string;
 }
@@ -169,7 +177,16 @@ interface OAuth1Credentials extends CredentialsCommon {
     oauth_token_secret: string;
 }
 
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
+type UnauthCredentials = Record<string, never>;
+
+type AuthCredentials =
+    | OAuth2Credentials
+    | OAuth1Credentials
+    | BasicApiCredentials
+    | ApiKeyCredentials
+    | AppCredentials
+    | AppStoreCredentials
+    | UnauthCredentials;
 
 type Metadata = Record<string, string | Record<string, any>>;
 
@@ -181,7 +198,7 @@ interface Connection {
     connection_id: string;
     connection_config: Record<string, string>;
     environment_id: number;
-    metadata: Metadata | null;
+    metadata?: Metadata | null;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AuthCredentials;
@@ -245,7 +262,10 @@ export class NangoAction {
 
     public ActionError = ActionError;
 
-    private memoizedConnection: { connection: Connection; timestamp: number } | undefined;
+    private memoizedConnections: Map<string, { connection: Connection; timestamp: number } | undefined> = new Map<
+        string,
+        { connection: Connection; timestamp: number }
+    >();
 
     constructor(config: NangoProps) {
         if (config.activityLogId) {
@@ -327,7 +347,7 @@ export class NangoAction {
         };
     }
 
-    protected async exitSyncIfAborted(): Promise<void> {
+    protected exitSyncIfAborted(): void {
         if (this.abortSignal?.aborted) {
             process.exit(0);
         }
@@ -338,7 +358,8 @@ export class NangoAction {
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
-            const connection = await this.getConnection();
+            const { connectionId, providerConfigKey } = config;
+            const connection = await this.getConnection(providerConfigKey, connectionId);
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
@@ -413,19 +434,27 @@ export class NangoAction {
         });
     }
 
-    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials> {
+    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials> {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async getConnection(): Promise<Connection> {
+    public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
         this.exitSyncIfAborted();
-        if (!this.memoizedConnection || Date.now() - this.memoizedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
-            this.memoizedConnection = { connection, timestamp: Date.now() };
+
+        const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
+        const connectionId = connectionIdOverride || this.connectionId;
+
+        const credentialsPair = `${providerConfigKey}${connectionId}`;
+        const cachedConnection = this.memoizedConnections.get(credentialsPair);
+
+        if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
+            const connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
+            this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
-        return this.memoizedConnection.connection;
+
+        return cachedConnection.connection;
     }
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {

@@ -7,7 +7,6 @@ import { Tooltip, useModal, Modal } from '@geist-ui/core';
 import Nango from '@nangohq/frontend';
 
 import {
-    useGetProjectInfoAPI,
     useEditCallbackUrlAPI,
     useEditWebhookUrlAPI,
     useEditHmacEnabledAPI,
@@ -22,9 +21,9 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/input/SecretInput';
 import { useStore } from '../store';
 import Button from '../components/ui/button/Button';
+import { useEnvironment } from '../hooks/useEnvironment';
 
 export default function ProjectSettings() {
-    const [loaded, setLoaded] = useState(false);
     const [secretKey, setSecretKey] = useState('');
     const [secretKeyRotatable, setSecretKeyRotatable] = useState(true);
     const [hasPendingSecretKey, setHasPendingSecretKey] = useState(false);
@@ -44,12 +43,11 @@ export default function ProjectSettings() {
 
     const [hmacKey, setHmacKey] = useState('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
-    const [accountUUID, setAccountUUID] = useState<number>();
+    const [accountUUID, setAccountUUID] = useState<string>();
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
-    const getProjectInfoAPI = useGetProjectInfoAPI();
     const editCallbackUrlAPI = useEditCallbackUrlAPI();
     const editWebhookUrlAPI = useEditWebhookUrlAPI();
     const editHmacEnabled = useEditHmacEnabledAPI();
@@ -62,49 +60,41 @@ export default function ProjectSettings() {
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
     const env = useStore((state) => state.cookieValue);
+    const { environment } = useEnvironment();
 
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id));
-        setLoaded(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [env]);
 
     useEffect(() => {
-        const getAccount = async () => {
-            const res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setSecretKey(account.pending_secret_key || account.secret_key);
-                setSecretKeyRotatable(account.secret_key_rotatable !== false);
-                setHasPendingSecretKey(Boolean(account.pending_secret_key));
-
-                setPublicKey(account.pending_public_key || account.public_key);
-                setPublicKeyRotatable(account.public_key_rotatable !== false);
-                setHasPendingPublicKey(Boolean(account.pending_public_key));
-
-                setCallbackUrl(account.callback_url || defaultCallback());
-
-                setWebhookUrl(account.webhook_url || '');
-                setSendAuthWebhook(account.send_auth_webhook);
-                setHostUrl(account.host);
-                setAccountUUID(account.uuid);
-
-                setHmacEnabled(account.hmac_enabled);
-                setAlwaysSendWebhook(account.always_send_webhook);
-                setHmacKey(account.hmac_key);
-
-                setSlackIsConnected(account.slack_notifications);
-
-                setEnvVariables(account.env_variables);
-            }
-        };
-
-        if (!loaded) {
-            setLoaded(true);
-            getAccount();
+        if (!environment) {
+            return;
         }
-    }, [getProjectInfoAPI, loaded, setLoaded, env]);
+
+        setSecretKey(environment.pending_secret_key || environment.secret_key);
+        setSecretKeyRotatable(environment.secret_key_rotatable !== false);
+        setHasPendingSecretKey(Boolean(environment.pending_secret_key));
+
+        setPublicKey(environment.pending_public_key || environment.public_key);
+        setPublicKeyRotatable(environment.public_key_rotatable !== false);
+        setHasPendingPublicKey(Boolean(environment.pending_public_key));
+
+        setCallbackUrl(environment.callback_url || defaultCallback());
+
+        setWebhookUrl(environment.webhook_url || '');
+        setSendAuthWebhook(environment.send_auth_webhook);
+        setHostUrl(environment.host);
+        setAccountUUID(environment.uuid);
+
+        setHmacEnabled(environment.hmac_enabled);
+        setAlwaysSendWebhook(environment.always_send_webhook);
+        setHmacKey(environment.hmac_key);
+
+        setSlackIsConnected(environment.slack_notifications);
+
+        setEnvVariables(environment.env_variables);
+    }, [environment]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -138,7 +128,7 @@ export default function ProjectSettings() {
         }
     };
 
-    const handleCallbackEdit = (_: React.SyntheticEvent) => {
+    const handleCallbackEdit = () => {
         setCallbackEditMode(true);
     };
 
@@ -147,7 +137,7 @@ export default function ProjectSettings() {
             toast.error('Cannot enable HMAC without an HMAC key.', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
             setHmacEnabled(checked);
-            editHmacEnabled(checked).then((_) => {
+            editHmacEnabled(checked).then(() => {
                 toast.success(checked ? 'HMAC enabled.' : 'HMAC disabled.', { position: toast.POSITION.BOTTOM_CENTER });
             });
         }
@@ -155,14 +145,14 @@ export default function ProjectSettings() {
 
     const handleWebookSendUpdate = async (checked: boolean) => {
         setAlwaysSendWebhook(checked);
-        editAlwaysSendWebhook(checked).then((_) => {
+        editAlwaysSendWebhook(checked).then(() => {
             toast.success(checked ? 'Always send webhooks.' : 'Only send webhhoks on added, updated, or deleted.', { position: toast.POSITION.BOTTOM_CENTER });
         });
     };
 
     const handleWebookSendAuth = async (checked: boolean) => {
         setSendAuthWebhook(checked);
-        editSendAuthWebhook(checked).then((_) => {
+        editSendAuthWebhook(checked).then(() => {
             toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', {
                 position: toast.POSITION.BOTTOM_CENTER
             });
@@ -489,7 +479,8 @@ export default function ProjectSettings() {
                                 </div>
                                 {hasPendingPublicKey && (
                                     <div className=" text-red-500 text-sm">
-                                        Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                        Click &apos;Activate&apos; to use this new key. Until then, Nango expects the old key. After activation the old key
+                                        won&apos;t work.
                                     </div>
                                 )}
                             </div>
@@ -568,7 +559,8 @@ export default function ProjectSettings() {
                                 </div>
                                 {hasPendingSecretKey && (
                                     <div className=" text-red-500 text-sm">
-                                        Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                        Click &apos;Activate&apos; to use this new key. Until then, Nango expects the old key. After activation the old key
+                                        won&apos;t work.
                                     </div>
                                 )}
                             </div>
