@@ -34,7 +34,15 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
-export const JAVASCRIPT_PRIMITIVES = ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'object', 'null', 'Date'];
+export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
+    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
+    builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
+    utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
+};
+
+export function isJsOrTsType(type: string): boolean {
+    return Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat().includes(type);
+}
 
 export function getEnv() {
     if (isStaging()) {
