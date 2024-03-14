@@ -41,7 +41,15 @@ export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
 };
 
 export function isJsOrTsType(type: string): boolean {
-    return Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat().includes(type);
+    const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();
+    if (simpleTypes.includes(type)) {
+        return true;
+    }
+
+    const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
+    const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
+
+    return genericTypeRegex.test(type);
 }
 
 export function getEnv() {
