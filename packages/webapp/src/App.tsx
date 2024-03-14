@@ -28,6 +28,7 @@ import Activity from './pages/Activity';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
+import PageNotFound from './pages/PageNotFound';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -151,6 +152,8 @@ const App = () => {
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
                         </>
                     )}
+                    <Route path="/404" element={<PageNotFound />} />
+
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </SentryRoutes>
             </SWRConfig>

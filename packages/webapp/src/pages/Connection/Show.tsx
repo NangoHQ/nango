@@ -60,8 +60,9 @@ export default function ShowIntegration() {
 
         const getConnections = async () => {
             const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
-
-            if (res?.status === 200) {
+            if (res?.status === 400) {
+                navigate('/404');
+            } else if (res?.status === 200) {
                 const data = await res.json();
                 setConnection(data['connection']);
             } else if (res != null) {

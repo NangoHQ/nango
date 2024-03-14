@@ -46,9 +46,10 @@ export default function ShowIntegration() {
     const { providerConfigKey } = useParams();
 
     const [loaded, setLoaded] = useState(true);
-    const { data, error } = useSWR<{ config: IntegrationConfig; flows: EndpointResponse }>(
+    const { data, error } = useSWR<{ config: IntegrationConfig; flows: EndpointResponse; error?: string; type?: string }>(
         `/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true&loaded=${loaded}`
     );
+
     const { data: accountData, error: accountError } = useSWR<{ account: Account }>(`/api/v1/environment`);
 
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
@@ -58,6 +59,10 @@ export default function ShowIntegration() {
     const navigate = useNavigate();
     const location = useLocation();
     const env = useStore((state) => state.cookieValue);
+
+    if (data?.error) {
+        navigate(`/404`);
+    }
 
     useEffect(() => {
         if (location.hash === '#api') {
