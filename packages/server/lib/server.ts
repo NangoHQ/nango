@@ -1,6 +1,7 @@
 import './tracer.js';
 import './utils/config.js';
 import bodyParser from 'body-parser';
+import { initAuth } from '@propelauth/express';
 import multer from 'multer';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
@@ -55,14 +56,27 @@ const app = express();
 // Auth
 AuthClient.setup(app);
 
-const apiAuth = [authMiddleware.secretKeyAuth, rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth, rateLimiterMiddleware];
-const webAuth =
-    isCloud() || isEnterprise()
-        ? [passport.authenticate('session'), authMiddleware.sessionAuth, rateLimiterMiddleware]
-        : isBasicAuthEnabled()
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth, rateLimiterMiddleware]
-          : [authMiddleware.noAuth, rateLimiterMiddleware];
+const { requireUser } = initAuth({
+    authUrl: process.env['HOSTED_AUTH_URL'] as string,
+    apiKey: process.env['HOSTED_AUTH_API_KEY'] as string
+});
+
+const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+
+const useHostedAuth = process.env['USE_HOSTED_AUTH'] === 'true';
+const hostedAuth = useHostedAuth
+    ? [requireUser, rateLimiterMiddleware]
+    : [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware];
+const selfHostedAuthWithoutAuthentication = [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
+const selfHostedAuthWithAuthentication = [
+    passport.authenticate('basic', { session: false }),
+    authMiddleware.basicAuth.bind(authMiddleware),
+    rateLimiterMiddleware
+];
+const selfHostedAuth = isBasicAuthEnabled() ? selfHostedAuthWithAuthentication : selfHostedAuthWithoutAuthentication;
+
+const webAuth = AUTH_ENABLED ? hostedAuth : selfHostedAuth;
 
 app.use(
     express.json({

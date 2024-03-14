@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { AuthProvider } from '@propelauth/react';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -32,7 +33,9 @@ root.render(
         <ErrorBoundary>
             <PostHogProvider apiKey={process.env.REACT_APP_PUBLIC_POSTHOG_KEY} options={options}>
                 <BrowserRouter>
-                    <App />
+                    <AuthProvider authUrl={process.env.REACT_APP_AUTH_URL!}>
+                        <App />
+                    </AuthProvider>
                 </BrowserRouter>
             </PostHogProvider>
         </ErrorBoundary>

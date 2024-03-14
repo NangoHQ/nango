@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { WithAuthInfoProps, withAuthInfo } from '@propelauth/react';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -35,7 +36,10 @@ const navTextColor = 'text-gray-400';
 const navActiveBg = 'bg-active-gray';
 const navHoverBg = 'hover:bg-hover-gray';
 
-export default function LeftNavBar(props: LeftNavBarProps) {
+const LeftNavBar = withAuthInfo((props: LeftNavBarProps & WithAuthInfoProps) => {
+    console.log(props.isLoggedIn);
+    console.log(props);
+
     const [version, setVersion] = useState<string>('');
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
@@ -259,4 +263,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             </div>
         </div>
     );
-}
+});
+
+export default LeftNavBar;
