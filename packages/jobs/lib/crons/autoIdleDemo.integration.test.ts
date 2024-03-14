@@ -11,7 +11,9 @@ import {
     createSchedule,
     ScheduleStatus,
     SyncClient,
-    resultOk
+    resultOk,
+    DEMO_GITHUB_CONFIG_KEY,
+    DEMO_SYNC_NAME
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
 import { nanoid } from 'nanoid';
@@ -33,15 +35,15 @@ describe('Auto Idle Demo', () => {
         const connName = nanoid();
         const env = await environmentService.createEnvironment(0, envName);
         await configService.createProviderConfig({
-            unique_key: 'demo-github-integration',
+            unique_key: DEMO_GITHUB_CONFIG_KEY,
             provider: 'github',
             environment_id: env!.id,
             oauth_client_id: '',
             oauth_client_secret: ''
         });
-        const conn = await connectionService.upsertConnection(connName, 'demo-github-integration', 'github', {} as any, {}, env!.id, 0);
+        const conn = await connectionService.upsertConnection(connName, DEMO_GITHUB_CONFIG_KEY, 'github', {} as any, {}, env!.id, 0);
         const connId = conn[0]!.id;
-        const sync = (await createSync(connId, 'github-issues-lite'))!;
+        const sync = (await createSync(connId, DEMO_SYNC_NAME))!;
         await createSchedule(sync.id!, '86400', 0, ScheduleStatus.RUNNING, nanoid());
         const schedBefore = await getSchedule(sync.id!);
         expect(schedBefore?.status).toBe(ScheduleStatus.RUNNING);
