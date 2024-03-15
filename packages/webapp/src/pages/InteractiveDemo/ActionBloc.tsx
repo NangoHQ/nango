@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Prism } from '@mantine/prism';
-import { Language, Steps, endpointAction, model } from './utils';
+import { Language, Steps, actionName, endpointAction } from './utils';
 import Button from '../../components/ui/button/Button';
 import { Bloc, Tab } from './Bloc';
 import { cn } from '../../utils/utils';
@@ -28,7 +28,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
 
     const snippet = useMemo(() => {
         if (language === Language.Node) {
-            return nodeActionSnippet(model, secretKey, connectionId, providerConfigKey, { title }, true);
+            return nodeActionSnippet(actionName, secretKey, connectionId, providerConfigKey, { title }, true);
         } else {
             return curlSnippet(baseUrl, endpointAction, secretKey, connectionId, providerConfigKey, `{ title: ${JSON.stringify(title)} }`, 'POST');
         }

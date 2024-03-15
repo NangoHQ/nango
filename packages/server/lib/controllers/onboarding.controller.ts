@@ -268,6 +268,7 @@ class OnboardingController {
                 // If for any reason we don't have a sync, because of a partial state
                 logger.info(`[demo] no sync were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], SyncCommand.RUN_FULL, req.body.connectionId);
+                await syncOrchestrator.runSyncCommand(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], SyncCommand.UNPAUSE, req.body.connectionId);
 
                 res.status(200).json({ retry: true });
                 return;
