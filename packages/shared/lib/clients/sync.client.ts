@@ -120,8 +120,7 @@ class SyncClient {
 
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
-        for (let k = 0; k < syncNames.length; k++) {
-            const syncName = syncNames[k] as string;
+        for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
             const sync = await createSync(nangoConnectionId, syncName);
@@ -328,7 +327,7 @@ class SyncClient {
             });
 
             return schedule;
-        } catch (e) {
+        } catch {
             return false;
         }
     }

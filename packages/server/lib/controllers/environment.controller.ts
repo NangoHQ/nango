@@ -10,25 +10,45 @@ import {
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
     packageJsonFile,
-    getEnvironmentId
+    getEnvironmentId,
+    Environment,
+    getOnboardingProgress
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 
+export interface GetMeta {
+    environments: Environment[];
+    email: string;
+    version: string;
+    baseUrl: string;
+    debugMode: boolean;
+    onboardingComplete: boolean;
+}
+
 class EnvironmentController {
-    async meta(req: Request, res: Response, next: NextFunction) {
+    async meta(req: Request, res: Response<GetMeta>, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
                 errorManager.errResFromNangoErr(res, sessionError);
                 return;
             }
+
             const { account, user } = response;
 
             const environments = await environmentService.getEnvironmentsByAccountId(account.id);
             const version = packageJsonFile().version;
             const baseUrl = getBaseUrl();
-            res.status(200).send({ environments, version, email: user.email, baseUrl, debugMode: req.session.debugMode === true });
+            const onboarding = await getOnboardingProgress(user.id);
+            res.status(200).send({
+                environments,
+                version,
+                email: user.email,
+                baseUrl,
+                debugMode: req.session.debugMode === true,
+                onboardingComplete: onboarding?.complete || false
+            });
         } catch (err) {
             next(err);
         }

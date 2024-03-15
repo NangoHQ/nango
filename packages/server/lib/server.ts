@@ -220,10 +220,11 @@ app.route('/api/v1/flow/:id').delete(webAuth, flowController.deleteFlow.bind(flo
 app.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
-app.route('/api/v1/onboarding').post(webAuth, onboardingController.init.bind(onboardingController));
-app.route('/api/v1/onboarding/verify').post(webAuth, onboardingController.verify.bind(onboardingController));
-app.route('/api/v1/onboarding/:id').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
-app.route('/api/v1/onboarding/sync-status').get(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
+app.route('/api/v1/onboarding').post(webAuth, onboardingController.create.bind(onboardingController));
+app.route('/api/v1/onboarding').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
+app.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy.bind(onboardingController));
+app.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
+app.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 // Hosted signin
 if (!isCloud() && !isEnterprise()) {

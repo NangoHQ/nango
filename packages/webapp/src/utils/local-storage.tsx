@@ -13,7 +13,9 @@ class LocalStorage implements PersistentStorage {
 
         try {
             return JSON.parse(item);
-        } catch {}
+        } catch {
+            console.error('Failed to parse local storage', item);
+        }
 
         return item;
     }

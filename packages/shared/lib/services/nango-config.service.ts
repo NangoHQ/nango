@@ -18,7 +18,7 @@ import type {
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
-import { JAVASCRIPT_PRIMITIVES } from '../utils/utils.js';
+import { isJsOrTsType } from '../utils/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -48,7 +48,7 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
         const configData: NangoConfig = yaml.load(yamlConfig) as NangoConfig;
 
         return Promise.resolve(configData);
-    } catch (error) {
+    } catch {
         console.log(`no nango.yaml config found at ${location}`);
     }
 
@@ -93,7 +93,7 @@ export function loadStandardConfig(configData: NangoConfig, showMessages = false
 function getFieldsForModel(modelName: string, config: NangoConfig): { name: string; type: string }[] | null {
     const modelFields = [];
 
-    if (JAVASCRIPT_PRIMITIVES.includes(modelName)) {
+    if (isJsOrTsType(modelName)) {
         return null;
     }
 
@@ -290,7 +290,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 const syncReturns = Array.isArray(sync.output) ? sync.output : [sync.output];
                 for (const model of syncReturns) {
                     if (!allModels.includes(model)) {
-                        if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
+                        if (!isJsOrTsType(model)) {
                             allModels.push(model);
                         }
                     } else {
@@ -310,12 +310,12 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
             let endpoints: NangoSyncEndpoint[] = [];
             if (sync?.endpoint) {
-                if (Array.isArray(sync?.endpoint)) {
-                    if (sync?.endpoint?.length !== sync?.output?.length) {
+                if (Array.isArray(sync.endpoint)) {
+                    if (sync.endpoint?.length !== sync.output?.length) {
                         const error = new NangoError('endpoint_output_mismatch', syncName);
                         return { success: false, error, response: null };
                     }
-                    for (const endpoint of sync?.endpoint) {
+                    for (const endpoint of sync.endpoint) {
                         endpoints.push(...assignEndpoints(endpoint, 'GET', true, showMessages));
 
                         if (!allEndpoints.includes(endpoint)) {
@@ -326,17 +326,17 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         }
                     }
                 } else {
-                    endpoints = assignEndpoints(sync?.endpoint, 'GET', true, showMessages);
+                    endpoints = assignEndpoints(sync.endpoint, 'GET', true, showMessages);
 
-                    if (sync?.output && Array.isArray(sync?.output) && sync?.output?.length > 1) {
+                    if (sync.output && Array.isArray(sync.output) && sync.output?.length > 1) {
                         const error = new NangoError('endpoint_output_mismatch', syncName);
                         return { success: false, error, response: null };
                     }
 
-                    if (!allEndpoints.includes(sync?.endpoint)) {
-                        allEndpoints.push(sync?.endpoint);
+                    if (!allEndpoints.includes(sync.endpoint)) {
+                        allEndpoints.push(sync.endpoint);
                     } else {
-                        const error = new NangoError('duplicate_endpoint', sync?.endpoint);
+                        const error = new NangoError('duplicate_endpoint', sync.endpoint);
                         return { success: false, error, response: null };
                     }
                 }
@@ -405,7 +405,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 const actionReturns = Array.isArray(action.output) ? action.output : [action.output];
                 for (const model of actionReturns) {
                     if (!allModels.includes(model)) {
-                        if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
+                        if (!isJsOrTsType(model)) {
                             allModels.push(model);
                         }
                     }

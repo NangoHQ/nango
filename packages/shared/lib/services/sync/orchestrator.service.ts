@@ -211,7 +211,7 @@ export class Orchestrator {
             for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection.id as number, syncName);
                 if (!sync) {
-                    throw new Error(`Sync "${syncName}" doest not exists.`);
+                    throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
                 const schedule = await getSchedule(sync.id as string);
                 if (!schedule) {

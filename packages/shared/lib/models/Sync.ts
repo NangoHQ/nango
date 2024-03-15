@@ -57,11 +57,14 @@ export interface Job extends TimestampsAndDeleted {
 
 export interface ReportedSyncJobStatus {
     id?: string;
+    type: SyncType;
     name?: string;
     status: SyncStatus;
     latestResult?: SyncResultByModel;
     jobStatus?: SyncStatus;
     frequency: string;
+    finishedAt: Date;
+    nextScheduledSyncAt: Date | null;
 }
 
 export interface SyncModelSchema {

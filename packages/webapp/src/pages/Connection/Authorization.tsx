@@ -32,7 +32,7 @@ export default function Authorization(props: AuthorizationProps) {
             <div className="flex">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-2">
                         <span className="text-white">{connection?.connectionId}</span>
                         <CopyButton text={connection?.connectionId as string} dark />
                     </div>
