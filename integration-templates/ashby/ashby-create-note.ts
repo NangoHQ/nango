@@ -7,7 +7,7 @@ export default async function runAction(nango: NangoAction, input: AshbyCreateNo
             message: 'candidateId is a required field'
         });
     } else if (typeof input.note === 'object') {
-        const noteObject = input.note;
+        const noteObject: NoteObject = input.note;
         if (!noteObject.value || !noteObject.type) {
             throw new nango.ActionError({
                 message: 'When note is an object, it must have "value" and "type" properties, both of which are required'
