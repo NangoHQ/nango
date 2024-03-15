@@ -7,7 +7,7 @@ import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { AuthorizeBloc } from './AuthorizeBloc';
 import { FetchBloc } from './FetchBloc';
-import { Steps, providerConfigKey, model } from './utils';
+import { Steps, providerConfigKey } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
@@ -21,7 +21,6 @@ export const InteractiveDemo: React.FC = () => {
     const [initialLoad, setInitialLoad] = useState(false);
     const [step, setStep] = useState<Steps>(Steps.Start);
     const [connectionId, setConnectionId] = useState('');
-    const [, setServerErrorMessage] = useState<string | null>(null);
     const [onboardingId, setOnboardingId] = useState<number>();
     const [records, setRecords] = useState<Record<string, unknown>[]>([]);
     const analyticsTrack = useAnalyticsTrack();
@@ -66,9 +65,7 @@ export const InteractiveDemo: React.FC = () => {
 
             const { progress, id, records: fetchedRecords } = (await res.json()) as OnboardingStatus;
             setStep(progress || 0);
-            if (id) {
-                setOnboardingId(id);
-            }
+            setOnboardingId(id);
 
             if (fetchedRecords) {
                 setRecords(fetchedRecords);
@@ -88,9 +85,6 @@ export const InteractiveDemo: React.FC = () => {
         });
 
         if (!res.ok) {
-            const { message } = (await res.json()) as { message: string };
-            setServerErrorMessage(message);
-
             return;
         }
     };
@@ -102,29 +96,6 @@ export const InteractiveDemo: React.FC = () => {
 
         void updateProgress({ progress: step });
     }, [onboardingId, step]);
-
-    const fetchRecords = async () => {
-        const params = { model };
-
-        const res = await fetch(`/records?${new URLSearchParams(params).toString()}`, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${environment?.secret_key}`,
-                'Content-Type': 'application/json',
-                'Provider-Config-Key': providerConfigKey,
-                'Connection-Id': connectionId
-            }
-        });
-
-        if (res.status !== 200) {
-            const { message } = (await res.json()) as { message: string };
-            setServerErrorMessage(message);
-            return;
-        }
-
-        const fetchedRecords = (await res.json()) as { records: Record<string, unknown>[] };
-        setRecords(fetchedRecords.records);
-    };
 
     const onAuthorize = (id: number) => {
         setOnboardingId(id);
@@ -149,9 +120,9 @@ export const InteractiveDemo: React.FC = () => {
         }, 16);
     };
 
-    const onFetch = () => {
-        void fetchRecords();
+    const onFetch = (records: Record<string, unknown>[]) => {
         setStep(Steps.Fetch);
+        setRecords(records);
         // We don't scroll automatically to let users check their records
     };
 
