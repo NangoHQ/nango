@@ -2,6 +2,7 @@ import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import { execSync, spawn, ChildProcess } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
+import { logger } from '@nangohq/shared';
 
 export class LocalRunner implements Runner {
     public client: any;
@@ -14,7 +15,7 @@ export class LocalRunner implements Runner {
         this.client = getRunnerClient(this.url);
     }
 
-    async suspend(): Promise<void> {
+    suspend() {
         this.childProcess.kill();
     }
     toJSON() {
@@ -31,7 +32,7 @@ export class LocalRunner implements Runner {
             let nodePath = '';
             try {
                 nodePath = execSync('which node', { encoding: 'utf-8' }).trim();
-            } catch (err) {
+            } catch {
                 throw new Error('Unable to find node');
             }
 
@@ -40,7 +41,7 @@ export class LocalRunner implements Runner {
             const cmd = nodePath;
             const runnerLocation = `${nangoRunnerPath}`;
             const cmdOptions = [runnerLocation, port.toString(), runnerId];
-            console.log(`[Runner] Starting runner with command: ${cmd} ${cmdOptions.join(' ')} `);
+            logger.info(`[Runner] Starting runner with command: ${cmd} ${cmdOptions.join(' ')} `);
 
             const childProcess = spawn(cmd, cmdOptions, {
                 stdio: [null, null, null]
@@ -52,13 +53,13 @@ export class LocalRunner implements Runner {
 
             if (childProcess.stdout) {
                 childProcess.stdout.on('data', (data) => {
-                    console.log(`[Runner] ${data.toString()} `);
+                    logger.info(`[Runner] ${data.toString()} `);
                 });
             }
 
             if (childProcess.stderr) {
                 childProcess.stderr.on('data', (data) => {
-                    console.log(`[Runner][ERROR] ${data.toString()} `);
+                    logger.info(`[Runner][ERROR] ${data.toString()} `);
                 });
             }
 

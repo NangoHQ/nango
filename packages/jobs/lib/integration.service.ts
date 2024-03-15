@@ -162,7 +162,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 }
 
                 return { success: true, error: null, response: res };
-            } catch (err: any) {
+            } catch (err) {
                 runSpan.setTag('error', err);
 
                 const scriptObject = this.runningScripts.get(syncId);

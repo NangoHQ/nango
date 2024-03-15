@@ -1,7 +1,7 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
-import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import { isJsOrTsType, NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { SyncConfigType, nangoConfigFile } from '@nangohq/shared';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { TYPES_FILE_NAME, NangoSyncTypesFileLocation } from '../constants.js';
@@ -12,8 +12,7 @@ class ModelService {
         const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
             const syncNames = Object.keys(syncObject);
-            for (let i = 0; i < syncNames.length; i++) {
-                const syncName = syncNames[i] as string;
+            for (const syncName of syncNames) {
                 const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
                 if (syncData.returns) {
                     const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
@@ -40,8 +39,7 @@ class ModelService {
             const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
                 const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
                 const syncNames = Object.keys(syncObject);
-                for (let i = 0; i < syncNames.length; i++) {
-                    const syncName = syncNames[i] as string;
+                for (const syncName of syncNames) {
                     const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
                     if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
                         return syncData.returns.includes(modelName);
@@ -68,9 +66,10 @@ class ModelService {
                 })
                 .map((fieldName: string) => {
                     const fieldModel = fields[fieldName] as string | NangoModel;
-                    const fieldType = this.getFieldType(fieldModel, debug, modelName);
+                    const fieldType = this.getFieldType(fieldModel, debug, modelName, models);
                     if (fieldName === '__string') {
-                        return ` [key: string]: ${fields[fieldName]};`;
+                        const dynamicName = fields[fieldName] as unknown as string;
+                        return ` [key: string]: ${dynamicName};`;
                     }
                     return `  ${fieldName}: ${fieldType};`;
                 })
@@ -82,7 +81,7 @@ class ModelService {
         return interfaceDefinitions;
     }
 
-    private getFieldType(rawField: string | NangoModel, debug = false, modelName: string): string {
+    private getFieldType(rawField: string | NangoModel, debug = false, modelName: string, models: NangoModel): string {
         if (typeof rawField === 'string') {
             if (rawField.toString().endsWith(',') || rawField.toString().endsWith(';')) {
                 throw new Error(`Field "${rawField}" in the model ${modelName} ends with a comma or semicolon which is not allowed.`);
@@ -139,15 +138,30 @@ class ModelService {
             if (hasUndefined) {
                 tsType = `${tsType} | undefined`;
             }
+
+            if (tsType.includes('|')) {
+                const types = tsType.split('|');
+                const hasStringLiteral = types.some((type) => !isJsOrTsType(type.trim()) && !Object.keys(models).includes(type.trim()));
+
+                if (hasStringLiteral) {
+                    const enumValues = tsType
+                        .split('|')
+                        .map((e) => (isJsOrTsType(e.trim()) || Object.keys(models).includes(e.trim()) ? e.trim() : `'${e.trim()}'`))
+                        .join(' | ');
+                    tsType = enumValues;
+                }
+            }
+
             return tsType;
         } else {
             try {
                 const nestedFields = Object.keys(rawField)
-                    .map((fieldName: string) => `  ${fieldName}: ${this.getFieldType(rawField[fieldName] as string | NangoModel, debug, modelName)};`)
+                    .map((fieldName: string) => `  ${fieldName}: ${this.getFieldType(rawField[fieldName] as string | NangoModel, debug, modelName, models)};`)
                     .join('\n');
                 return `{\n${nestedFields}\n}`;
             } catch (_) {
-                console.log(chalk.red(`Failed to parse field ${rawField} so just returning it back as a string`));
+                // eslint-disable-next-line no-console
+                console.log(chalk.red(`Failed to parse field ${JSON.stringify(rawField)} so just returning it back as a string`));
                 return String(rawField);
             }
         }
@@ -169,6 +183,7 @@ class ModelService {
         const { success, error, response: config } = await configService.load();
 
         if (!success || !config) {
+            // eslint-disable-next-line no-console
             console.log(chalk.red(error?.message));
             throw new Error('Failed to load config');
         }
@@ -177,6 +192,7 @@ class ModelService {
         fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
         if (notify) {
+            // eslint-disable-next-line no-console
             console.log(chalk.green(`The ${nangoConfigFile} was updated. The interface file (${TYPES_FILE_NAME}) was updated to reflect the updated config`));
         }
     }

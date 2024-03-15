@@ -330,8 +330,7 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
     const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
-        for (let i = 0; i < syncNames.length; i++) {
-            const syncName = syncNames[i] as string;
+        for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
             if (syncData.returns) {
                 const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
@@ -358,8 +357,7 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
         const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
             const syncNames = Object.keys(syncObject);
-            for (let i = 0; i < syncNames.length; i++) {
-                const syncName = syncNames[i] as string;
+            for (const syncName of syncNames) {
                 const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
                 if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
                     return syncData.returns.includes(modelName);
@@ -430,7 +428,7 @@ function getPackagePath(debug = false) {
         }
 
         return packagePath;
-    } catch (e) {
+    } catch {
         throw new Error(
             'Could not find nango package. Please make sure it is installed in your project or installed globally. Reach out to us in the Slack community if you continue to have issues!'
         );

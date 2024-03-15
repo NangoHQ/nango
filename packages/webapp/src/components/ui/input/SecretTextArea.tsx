@@ -44,7 +44,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
                 <input
                     type="password"
                     value={value}
-                    // @ts-expect-error
+                    // @ts-expect-error we are mixing input and textarea props
                     onChange={(e) => updateValue(e.currentTarget.value)}
                     autoComplete="new-password"
                     className={classNames(

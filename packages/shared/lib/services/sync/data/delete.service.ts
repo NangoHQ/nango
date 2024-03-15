@@ -145,7 +145,7 @@ nango_connection_id = ? AND model = ?
         );
 
         return Boolean(result);
-    } catch (err) {
+    } catch {
         return false;
     }
 };
