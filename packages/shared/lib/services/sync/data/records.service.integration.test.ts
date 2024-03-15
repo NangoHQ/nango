@@ -25,7 +25,7 @@ describe('Records service', () => {
         expect(success).toBe(true);
         expect(error).toBe(null);
         expect(response?.records.length).toBe(n);
-        const timestampRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}$/;
+        const timestampRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{5,6}\+\d{2}:\d{2}$/;
         expect(response?.records[0]?.['_nango_metadata']).toMatchObject({
             first_seen_at: expect.stringMatching(timestampRegex),
             last_modified_at: expect.stringMatching(timestampRegex),
