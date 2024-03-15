@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { SWRConfig } from 'swr';
-import { Routes, Route, Navigate, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
@@ -28,6 +28,8 @@ import Activity from './pages/Activity';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
+import { Homepage } from './pages/Homepage';
+import { NotFound } from './pages/NotFound';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -39,18 +41,6 @@ Sentry.init({
     tracesSampleRate: 0.1
 });
 
-const VALID_PATHS = [
-    'interactive-demo',
-    'integration',
-    'integrations',
-    'syncs',
-    'connections',
-    'activity',
-    'project-settings',
-    'user-settings',
-    'account-settings'
-];
-
 const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
     const env = useStore((state) => state.cookieValue);
@@ -61,22 +51,6 @@ const App = () => {
     useEffect(() => {
         setShowInteractiveDemo(env === 'dev' && (isCloud() || isLocal()));
     }, [env, setShowInteractiveDemo]);
-
-    const correctPage = (): string => {
-        const url = new URL(window.location.href);
-        const pathSegments = url.pathname.split('/').filter(Boolean);
-
-        const rawUrl = window.location.href;
-
-        if (VALID_PATHS.some((path) => rawUrl.includes(path))) {
-            const newPathSegments = [env, ...pathSegments];
-            url.pathname = '/' + newPathSegments.join('/');
-
-            return url.pathname;
-        }
-
-        return showInteractiveDemo ? '/dev/interactive-demo' : `/${env}/integrations`;
-    };
 
     return (
         <MantineProvider
@@ -114,7 +88,7 @@ const App = () => {
                 }}
             >
                 <SentryRoutes>
-                    <Route path="/" element={<Navigate to={correctPage()} replace />} />
+                    <Route path="/" element={<Homepage />} />
                     <Route element={<PrivateRoute />}>
                         {showInteractiveDemo && (
                             <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
@@ -147,7 +121,7 @@ const App = () => {
                         </>
                     )}
                     {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<NotFound />} />
                 </SentryRoutes>
             </SWRConfig>
             <ToastContainer />

@@ -1,5 +1,5 @@
 import type { Onboarding } from '../models/Onboarding';
-import db, { schema, dbNamespace } from '../db/database.js';
+import db, { dbNamespace } from '../db/database.js';
 import configService from './config.service.js';
 import type { Config } from '../models';
 
@@ -7,13 +7,13 @@ export const DEFAULT_GITHUB_CLIENT_ID = process.env['DEFAULT_GITHUB_CLIENT_ID'] 
 export const DEFAULT_GITHUB_CLIENT_SECRET = process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '';
 export const DEMO_GITHUB_CONFIG_KEY = 'github-demo';
 export const DEMO_SYNC_NAME = 'github-issues-demo';
-export const DEMO_ACTION_NAME = 'github-issues-demo-action';
+export const DEMO_ACTION_NAME = 'github-create-demo-issue';
 export const DEMO_MODEL = 'GithubIssueDemo';
 
-const TABLE = dbNamespace + 'onboarding_demo_progress';
+const TABLE = `${dbNamespace}onboarding_demo_progress`;
 
 export const getOnboardingId = async (user_id: number): Promise<number | null> => {
-    const result = await schema().from<Onboarding>(TABLE).select<Required<Pick<Onboarding, 'id'>>>('id').where({ user_id }).first();
+    const result = await db.knex.from<Onboarding>(TABLE).select<Required<Pick<Onboarding, 'id'>>>('id').where({ user_id }).first();
     return result ? result.id : null;
 };
 
@@ -24,7 +24,7 @@ export const initOnboarding = async (user_id: number): Promise<number | null> =>
         return onboardingId;
     }
 
-    const result = await schema()
+    const result = await db.knex
         .from<Required<Onboarding>>(TABLE)
         .insert({
             user_id,
@@ -42,15 +42,19 @@ export const initOnboarding = async (user_id: number): Promise<number | null> =>
 
 export const updateOnboardingProgress = async (id: number, progress: number): Promise<void> => {
     const q = db.knex.from<Onboarding>(TABLE).update({ progress }).where({ id });
-    if (progress === 6) {
+    if (progress >= 5) {
         void q.update('complete', true);
     }
 
     await q;
 };
 
-export const getOnboardingProgress = async (user_id: number): Promise<Required<Pick<Onboarding, 'id' | 'progress'>> | undefined> => {
-    const result = await db.knex.from<Onboarding>(TABLE).select<Required<Pick<Onboarding, 'progress' | 'id'>>>('progress', 'id').where({ user_id }).first();
+export const getOnboardingProgress = async (user_id: number): Promise<Required<Pick<Onboarding, 'id' | 'progress' | 'complete'>> | undefined> => {
+    const result = await db.knex
+        .from<Onboarding>(TABLE)
+        .select<Required<Pick<Onboarding, 'progress' | 'id' | 'complete'>>>('progress', 'id', 'complete')
+        .where({ user_id })
+        .first();
     return result;
 };
 
