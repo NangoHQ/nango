@@ -1,9 +1,5 @@
 import type { NangoAction, ZohoMailSendEmailOutput, ZohoMailSendEmailInput } from './models';
 
-const mapInputToPostData = (input: ZohoMailSendEmailInput): Record<string, any> => {
-    return { ...input };
-};
-
 export default async function runAction(nango: NangoAction, input: ZohoMailSendEmailInput): Promise<ZohoMailSendEmailOutput> {
     //we need to enforce accountId to be of type string since accountId contains bigint values 6984040000000000000
     if (!input.accountId || typeof input.accountId !== 'string') {
@@ -22,8 +18,17 @@ export default async function runAction(nango: NangoAction, input: ZohoMailSendE
 
     try {
         const endpoint = `/api/accounts/${input.accountId}/messages`;
-        const postData = mapInputToPostData(input);
-        delete postData.accountId;
+
+        const postData = {
+            fromAddress: input.fromAddress,
+            toAddress: input.toAddress,
+            ccAddress: input.ccAddress,
+            bccAddress: input.bccAddress,
+            subject: input.subject,
+            encoding: input.encoding,
+            mailFormat: input.mailFormat,
+            askReceipt: input.askReceipt
+        };
 
         const resp = await nango.post({
             endpoint: endpoint,

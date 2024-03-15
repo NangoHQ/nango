@@ -1,9 +1,5 @@
 import type { NangoAction, ZohoMailAddUserOutput, ZohoMailAddUserInput } from './models';
 
-const mapInputToPostData = (input: ZohoMailAddUserInput): Record<string, any> => {
-    return { ...input };
-};
-
 export default async function runAction(nango: NangoAction, input: ZohoMailAddUserInput): Promise<ZohoMailAddUserOutput> {
     //zoid is shorter in this 847300000
     if (!input.zoid || typeof input.zoid !== 'number') {
@@ -22,8 +18,18 @@ export default async function runAction(nango: NangoAction, input: ZohoMailAddUs
 
     try {
         const endpoint = `/api/organization/${input.zoid}/accounts`;
-        const postData = mapInputToPostData(input);
-        delete postData.zoid;
+
+        const postData = {
+            primaryEmailAddress: input.primaryEmailAddress,
+            password: input.password,
+            displayName: input.displayName,
+            role: input.role,
+            country: input.country,
+            language: input.language,
+            timeZone: input.timeZone,
+            oneTimePassword: input.oneTimePassword,
+            groupMailList: input.groupMailList
+        };
 
         const resp = await nango.post({
             endpoint: endpoint,
