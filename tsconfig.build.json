@@ -11,6 +11,9 @@
             "path": "packages/jobs"
         },
         {
+            "path": "packages/logs"
+        },
+        {
             "path": "packages/node-client"
         },
         {

@@ -1,0 +1,23 @@
+{
+    "name": "@nangohq/nango-logs",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "scripts": {
+        "create": "knex migrate:make --esm --knexfile ./knexfile.cjs",
+        "migrate": "knex migrate:latest --esm --knexfile ./knexfile.cjs"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/jobs"
+    },
+    "dependencies": {
+        "dotenv-cli": "7.4.1",
+        "knex": "3.1.0",
+        "pg": "8.11.3",
+        "zod": "3.22.4"
+    },
+    "devDependencies": {}
+}
