@@ -16,6 +16,7 @@ import { useStore } from '../store';
 import { isLocal, isCloud, isEnterprise } from '../utils/utils';
 import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
+import { RocketIcon } from '@radix-ui/react-icons';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -127,14 +128,14 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
-                        {showInteractiveDemo && (
+                        {showInteractiveDemo && !meta.onboardingComplete && (
                             <Link
                                 to="/dev/interactive-demo"
                                 className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                     props.selectedItem === LeftNavBarItems.InteractiveDemo ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                 }`}
                             >
-                                <img className="h-5" src="/images/rocket-icon.svg" alt="" />
+                                <RocketIcon />
                                 <p>Interactive Demo</p>
                             </Link>
                         )}
@@ -210,6 +211,20 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                             <UserGroupIcon className="h-5 w-5 mr-2" />
                                             <span>Team</span>
                                         </li>
+
+                                        {showInteractiveDemo && meta.onboardingComplete && (
+                                            <Link
+                                                to="/dev/interactive-demo"
+                                                className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                                    props.selectedItem === LeftNavBarItems.InteractiveDemo
+                                                        ? `${navActiveBg} text-white`
+                                                        : `text-gray-400 ${navHoverBg}`
+                                                }`}
+                                            >
+                                                <RocketIcon />
+                                                <p>Interactive Demo</p>
+                                            </Link>
+                                        )}
                                         <li
                                             className="flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1"
                                             onClick={async () => await signout()}
