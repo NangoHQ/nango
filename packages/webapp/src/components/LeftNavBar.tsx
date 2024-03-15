@@ -38,7 +38,8 @@ const navTextColor = 'text-gray-400';
 const navActiveBg = 'bg-active-gray';
 const navHoverBg = 'hover:bg-hover-gray';
 
-export default function LeftNavBar(props: LeftNavBarProps) {
+const LeftNavBar = withAuthInfo((props: LeftNavBarProps & WithAuthInfoProps) => {
+    console.log(props);
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
     const signout = useSignout();

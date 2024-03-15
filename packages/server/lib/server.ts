@@ -1,7 +1,6 @@
 import './tracer.js';
 import './utils/config.js';
 import bodyParser from 'body-parser';
-import { initAuth } from '@propelauth/express';
 import multer from 'multer';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
@@ -10,7 +9,6 @@ import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import unAuthController from './controllers/unauth.controller.js';
 import appStoreAuthController from './controllers/appStoreAuth.controller.js';
-import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
@@ -20,7 +18,8 @@ import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
-import { rateLimiterMiddleware } from './controllers/ratelimit.middleware.js';
+import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { apiPublicAuth, apiAuth, webAuth } from './middleware/auth.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -40,7 +39,6 @@ import {
     getPort,
     isCloud,
     isEnterprise,
-    isBasicAuthEnabled,
     errorManager,
     getWebsocketsPath,
     packageJsonFile
@@ -54,25 +52,6 @@ const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const app = express();
 
 AuthClient.setup(app);
-
-const { requireUser } = initAuth({
-    authUrl: process.env['HOSTED_AUTH_URL'] as string,
-    apiKey: process.env['HOSTED_AUTH_API_KEY'] as string
-});
-
-const rateLimitingMiddleware = [rateLimiterMiddleware];
-
-const useHostedAuth = process.env['USE_HOSTED_AUTH'] === 'true';
-
-const hostedAuthMiddleware = useHostedAuth
-    ? [requireUser, ...rateLimitingMiddleware]
-    : [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), ...rateLimitingMiddleware];
-
-const selfHostedAuthMiddleware = isBasicAuthEnabled()
-    ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), ...rateLimitingMiddleware]
-    : [authMiddleware.noAuth.bind(authMiddleware), ...rateLimitingMiddleware];
-
-const webAuth = AUTH_ENABLED ? hostedAuthMiddleware : selfHostedAuthMiddleware;
 
 app.use(
     express.json({
