@@ -25,6 +25,7 @@ export enum AnalyticsTypes {
     DEMO_3 = 'demo:step_3',
     DEMO_4 = 'demo:step_4',
     DEMO_5 = 'demo:step_5',
+    DEMO_6 = 'demo:step_6',
     PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
     PRE_APP_AUTH = 'server:pre_appauth',
     PRE_APP_STORE_AUTH = 'server:pre_app_store_auth',
