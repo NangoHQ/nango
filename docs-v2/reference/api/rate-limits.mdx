@@ -10,3 +10,4 @@ Those headers are sent back with every API response:
 - `X-RateLimit-Reset` provides a Unix timestamp representing the time at which the current rate limit window resets, and the remaining request count is replenished.
 
 If a client exceeds the rate limit, the API will respond with a 429 `Too Many Requests` status code. In this case, the `Retry-After` header is included, indicating the number of seconds the client should wait before making another request to avoid being rate-limited.
+
