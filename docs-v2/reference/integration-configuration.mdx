@@ -14,7 +14,7 @@ integrations:
           Some long description, some long description, some long description,
           some long description, some long description, some long description.
         output: AsanaTask # Synced model
-        endpoint: GET /asana/asana-tasks # Generated endpoint to access the synced model.
+        endpoint: GET /tasks # Generated endpoint to access the synced model.
         sync_type: incremental # Data is replaced ('full') or upserted ('incremental') on each sync execution. 
         runs: every 30min # Sync frequency.
         input:  AsanaProject # Necessary input to execute the sync.
@@ -22,7 +22,7 @@ integrations:
           - scope1
           - scope2 
         auto_starts: true # If true, data syncing starts when a new connection is created.
-        track_delete: true # If true, automatically detects deleted records (for full refresh syncs only).
+        track_deletes: true # If true, automatically detects deleted records (for full refresh syncs only).
         webhook_subscriptions: # The types of webhook this sync handles.
           - subscription1
           - subscription2
@@ -33,7 +33,7 @@ integrations:
           Some long description, some long description, some long description,
           some long description, some long description, some long description.
         output: AsanaTask # Returned model
-        endpoint: POST /asana/asana-tasks # Generated endpoint to trigger to action.
+        endpoint: POST /tasks # Generated endpoint to trigger to action.
         input: # Necessary input to execute the action.
         scopes: # Required scopes.
           - scope1
@@ -77,6 +77,25 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
     Defines the schema of the data you want to sync. References a schema from the [Models](#model-fields) section of this configuration file.
 
     Each sync has a corresponding generated endpoint to fetch the data, configured in the `endpoint` field below.
+
+    <Tip>
+      Syncs can have multiple output models. This is useful when there is some form of dependency between the two models, e.g. 
+      - Fetching the data for a model from the external API requires fetching the data from another model first
+      - You want the records of one model to be persisted before the records of another model
+
+      When defining multiple output models, you must define as many endpoints. The 1st endpoint will return the 1st model, the 2nd endpoint the 2nd model, etc. 
+
+      Here's an example: 
+      ```yaml
+        asana-fetch-tasks-and-comments:
+          output:
+            - AsanaTask
+            - AsanaComment
+          endpoint: 
+            - GET /tasks
+            - GET /comments
+      ```
+    </Tip>
 </ResponseField>
 
 <ResponseField name="endpoint" type="string" required>
@@ -121,7 +140,7 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
     Defaults to `true`. 
 </ResponseField>
 
-<ResponseField name="track_delete" type="boolean">
+<ResponseField name="track_deletes" type="boolean">
     If `true`, automatically detects deleted records and flags them when you [fetch the latest data](/integrate/guides/sync-data-from-an-api#fetch-the-latest-data).
 
     Defaults to `false`. 
@@ -236,7 +255,7 @@ models:
     id: string
 
   Account:
-    user: User
+    users: User[]
 ```
 
 ### Extend types
@@ -266,6 +285,14 @@ models:
   Task:
     id: string
     __string: string
+```
+
+Which translates to the following generated Typescript model: 
+```ts
+export interface Task {
+  id: string;
+  [key: string]: string;
+}
 ```
 
 # Deploying your configuration
