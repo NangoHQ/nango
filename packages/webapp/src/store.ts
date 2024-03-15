@@ -25,7 +25,7 @@ export const useStore = create<State>((set, get) => ({
     envs: [{ name: 'dev' }, { name: 'prod' }],
     baseUrl: 'https://api.nango.dev',
     email: '',
-    showInteractiveDemo: false,
+    showInteractiveDemo: true,
     debugMode: false,
 
     setCookieValue: (value) => {

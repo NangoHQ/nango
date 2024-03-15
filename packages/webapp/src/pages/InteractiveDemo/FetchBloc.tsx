@@ -20,14 +20,14 @@ export const FetchBloc: React.FC<{
     connectionId: string;
     secretKey: string;
     records: Record<string, unknown>[];
-    onProgress: () => Promise<void> | void;
+    onProgress: (records: Record<string, unknown>[]) => void;
 }> = ({ step, connectionId, providerConfigKey, secretKey, records, onProgress }) => {
     const analyticsTrack = useAnalyticsTrack();
 
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [error, setError] = useState<string | null>(null);
     const [pollingInterval, setPollingInterval] = useState<Interval | undefined>(undefined);
-    const [show, setShow] = useState(false);
+    const [show, setShow] = useState(true);
 
     const baseUrl = useStore((state) => state.baseUrl);
 
@@ -48,6 +48,36 @@ export const FetchBloc: React.FC<{
         };
     }, [pollingInterval]);
 
+    const fetchRecords = async () => {
+        const params = { model };
+
+        const res = await fetch(`/records?${new URLSearchParams(params).toString()}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${secretKey}`,
+                'Content-Type': 'application/json',
+                'Provider-Config-Key': providerConfigKey,
+                'Connection-Id': connectionId
+            }
+        });
+
+        if (res.status !== 200) {
+            const json = (await res.json()) as { message?: string };
+            setError(json.message ? json.message : 'An unexpected error occurred, please retry');
+            analyticsTrack('web:demo:fetch_error');
+            return;
+        }
+
+        const fetchedRecords = (await res.json()) as { records: Record<string, unknown>[] };
+        if (fetchedRecords.records.length <= 0) {
+            setError('An unexpected error occurred, please retry');
+            return;
+        }
+
+        setError(null);
+        onProgress(fetchedRecords.records);
+    };
+
     const startPolling = () => {
         if (pollingInterval) {
             return;
@@ -67,7 +97,7 @@ export const FetchBloc: React.FC<{
                 setPollingInterval(undefined);
 
                 const json = (await res.json()) as { message?: string };
-                setError(json.message ? json.message : 'An unexpected error occurred');
+                setError(json.message ? json.message : 'An unexpected error occurred, please retry');
 
                 analyticsTrack('web:demo:fetch_error');
                 return;
@@ -78,7 +108,7 @@ export const FetchBloc: React.FC<{
             if (data.jobStatus === 'SUCCESS') {
                 clearInterval(pollingInterval);
                 setPollingInterval(undefined);
-                void onProgress();
+                void fetchRecords();
             }
         }
         const tmp = setInterval(poll, 1000);
