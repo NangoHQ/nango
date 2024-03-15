@@ -42,7 +42,7 @@ export const initOnboarding = async (user_id: number): Promise<number | null> =>
 
 export const updateOnboardingProgress = async (id: number, progress: number): Promise<void> => {
     const q = db.knex.from<Onboarding>(TABLE).update({ progress }).where({ id });
-    if (progress === 6) {
+    if (progress >= 5) {
         void q.update('complete', true);
     }
 
