@@ -1,6 +1,7 @@
 import type { NangoAction, AshbyCreateNoteResponse, AshbyCreateNoteInput, NoteObject } from './models';
 
 export default async function runAction(nango: NangoAction, input: AshbyCreateNoteInput): Promise<AshbyCreateNoteResponse> {
+    //input validation
     if (!input.candidateId) {
         throw new nango.ActionError({
             message: 'candidateId is a required field'
