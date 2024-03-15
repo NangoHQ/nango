@@ -18,7 +18,7 @@ import Button from '../../components/ui/button/Button';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
 import { SyncResponse, Connection } from '../../types';
-
+import PageNotFound from '../PageNotFound';
 import { useStore } from '../../store';
 
 export enum Tabs {
@@ -34,6 +34,7 @@ export default function ShowIntegration() {
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
+    const [pageNotFound, setPageNotFound] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
     const deleteConnectionAPI = useDeleteConnectionAPI();
@@ -61,7 +62,7 @@ export default function ShowIntegration() {
         const getConnections = async () => {
             const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
             if (res?.status === 400) {
-                navigate('/404');
+                setPageNotFound(true);
             } else if (res?.status === 200) {
                 const data = await res.json();
                 setConnection(data['connection']);
@@ -142,6 +143,10 @@ We could not retrieve and/or refresh your access token due to the following erro
             setFetchingRefreshToken(false);
         }, 400);
     };
+
+    if (pageNotFound) {
+        return <PageNotFound />;
+    }
 
     if (!loaded || !syncLoaded) {
         return (

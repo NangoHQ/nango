@@ -17,6 +17,7 @@ import AuthSettings from './AuthSettings';
 import { IntegrationConfig, Flow, Account } from '../../types';
 import { useStore } from '../../store';
 import { requestErrorToast } from '../../utils/api';
+import PageNotFound from '../PageNotFound';
 
 export enum Tabs {
     API,
@@ -60,10 +61,6 @@ export default function ShowIntegration() {
     const location = useLocation();
     const env = useStore((state) => state.cookieValue);
 
-    if (data?.error) {
-        navigate(`/404`);
-    }
-
     useEffect(() => {
         if (location.hash === '#api') {
             setActiveTab(Tabs.API);
@@ -75,6 +72,10 @@ export default function ShowIntegration() {
             setActiveTab(Tabs.Auth);
         }
     }, [location]);
+
+    if (data?.error) {
+        return <PageNotFound />;
+    }
 
     if (error || accountError) {
         requestErrorToast();
