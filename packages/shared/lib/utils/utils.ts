@@ -36,20 +36,23 @@ export enum NodeEnv {
 
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
+    aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],
     builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
     utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
 };
 
 export function isJsOrTsType(type: string): boolean {
+    const baseType = type.replace(/\[\]$/, '');
+
     const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();
-    if (simpleTypes.includes(type)) {
+    if (simpleTypes.includes(baseType)) {
         return true;
     }
 
     const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
     const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
 
-    return genericTypeRegex.test(type);
+    return genericTypeRegex.test(baseType);
 }
 
 export function getEnv() {
