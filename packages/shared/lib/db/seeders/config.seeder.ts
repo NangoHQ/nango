@@ -2,11 +2,12 @@ import { schema } from '../database.js';
 import configService from '../../services/config.service.js';
 import environmentService from '../../services/environment.service.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
+import type { Environment } from '../../models/Environment.js';
 
-export const createConfigSeeds = async (environmentName = ''): Promise<void> => {
-    let result;
+export const createConfigSeeds = async (environmentName = ''): Promise<Environment[]> => {
+    let result: Environment[];
     if (environmentName) {
-        result = [await environmentService.createEnvironment(0, environmentName)];
+        result = [(await environmentService.createEnvironment(0, environmentName))!];
     } else {
         result = await schema().select('*').from('_nango_environments');
     }
@@ -34,4 +35,6 @@ export const createConfigSeeds = async (environmentName = ''): Promise<void> => 
             environment_id
         } as ProviderConfig);
     }
+
+    return result;
 };

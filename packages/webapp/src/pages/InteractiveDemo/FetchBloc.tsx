@@ -27,7 +27,7 @@ export const FetchBloc: React.FC<{
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [error, setError] = useState<string | null>(null);
     const [pollingInterval, setPollingInterval] = useState<Interval | undefined>(undefined);
-    const [show, setShow] = useState(false);
+    const [show, setShow] = useState(true);
 
     const baseUrl = useStore((state) => state.baseUrl);
 
