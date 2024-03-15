@@ -371,6 +371,7 @@ class OAuthController {
                 }
 
                 allAuthParams = { ...allAuthParams, ...authorizationParams }; // Auth params submitted in the request take precedence over the ones defined in the template (including if they are undefined).
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 Object.keys(allAuthParams).forEach((key) => (allAuthParams[key] === undefined ? delete allAuthParams[key] : {})); // Remove undefined values.
 
                 await oAuthSessionService.create(session);
@@ -920,7 +921,7 @@ class OAuthController {
 
             try {
                 parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
-            } catch (e) {
+            } catch {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,

@@ -6,14 +6,14 @@ import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { isCloud, isEnterprise, isLocal } from './utils/utils';
+import { AUTH_ENABLED, isCloud, isLocal } from './utils/utils';
 import { fetcher } from './utils/api';
 import { useStore } from './store';
 
 import Signup from './pages/Signup';
 import InviteSignup from './pages/InviteSignup';
 import Signin from './pages/Signin';
-import GettingStarted from './pages/GettingStarted';
+import { InteractiveDemo } from './pages/InteractiveDemo';
 import IntegrationList from './pages/Integration/List';
 import CreateIntegration from './pages/Integration/Create';
 import ShowIntegration from './pages/Integration/Show';
@@ -41,7 +41,7 @@ Sentry.init({
 });
 
 const VALID_PATHS = [
-    'getting-started',
+    'interactive-demo',
     'integration',
     'integrations',
     'syncs',
@@ -56,12 +56,12 @@ const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
     const env = useStore((state) => state.cookieValue);
     const signout = useSignout();
-    const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
-    const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const setShowInteractiveDemo = useStore((state) => state.setShowInteractiveDemo);
+    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
 
     useEffect(() => {
-        setShowGettingStarted(env === 'dev' && (isCloud() || isLocal()));
-    }, [env, setShowGettingStarted]);
+        setShowInteractiveDemo(env === 'dev' && (isCloud() || isLocal()));
+    }, [env, setShowInteractiveDemo]);
 
     const correctPage = (): string => {
         const url = new URL(window.location.href);
@@ -76,7 +76,7 @@ const App = () => {
             return url.pathname;
         }
 
-        return showGettingStarted ? '/dev/getting-started' : `/${env}/integrations`;
+        return showInteractiveDemo ? '/dev/interactive-demo' : `/${env}/integrations`;
     };
 
     return (
@@ -92,12 +92,20 @@ const App = () => {
                     '.break-all-words .token.string': {
                         wordBreak: 'break-all',
                         whiteSpace: 'normal'
+                    },
+                    '.mantine-Prism-code': {
+                        fontFamily: 'Roboto Mono'
                     }
                 })
             }}
         >
             <SWRConfig
                 value={{
+                    refreshInterval: 15 * 60000,
+                    // Our server is not well configured if we enable that it will just fetch all the time
+                    revalidateIfStale: false,
+                    revalidateOnFocus: false,
+                    revalidateOnReconnect: true,
                     fetcher,
                     onError: (error) => {
                         if (error.status === 401) {
@@ -108,52 +116,39 @@ const App = () => {
             >
                 <SentryRoutes>
                     <Route path="/" element={<Navigate to={correctPage()} replace />} />
-                    {showGettingStarted && (
-                        <Route path="/dev/getting-started" element={<PrivateRoute />}>
-                            <Route path="/dev/getting-started" element={<GettingStarted />} />
-                        </Route>
-                    )}
-                    <Route path="/:env/integrations" element={<PrivateRoute />}>
+                    <Route element={<PrivateRoute />}>
+                        {showInteractiveDemo && (
+                            <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
+                                <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
+                            </Route>
+                        )}
                         <Route path="/:env/integrations" element={<IntegrationList />} />
-                    </Route>
-                    <Route path="/:env/integration/create" element={<PrivateRoute />}>
                         <Route path="/:env/integration/create" element={<CreateIntegration />} />
-                    </Route>
-                    <Route path="/:env/integration/:providerConfigKey" element={<PrivateRoute />}>
                         <Route path="/:env/integration/:providerConfigKey" element={<ShowIntegration />} />
-                    </Route>
-                    <Route path="/:env/connections" element={<PrivateRoute />}>
                         <Route path="/:env/connections" element={<ConnectionList />} />
-                    </Route>
-                    <Route path="/:env/connections/create" element={<PrivateRoute />}>
                         <Route path="/:env/connections/create" element={<ConnectionCreate />} />
-                    </Route>
-                    <Route path="/:env/connections/create/:providerConfigKey" element={<PrivateRoute />}>
                         <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
-                    </Route>
-                    <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
                         <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
-                    </Route>
-                    <Route path="/:env/activity" element={<PrivateRoute />}>
                         <Route path="/:env/activity" element={<Activity />} />
-                    </Route>
-                    <Route path="/:env/project-settings" element={<PrivateRoute />}>
                         <Route path="/:env/project-settings" element={<ProjectSettings />} />
+                        {AUTH_ENABLED && (
+                            <>
+                                <Route path="/:env/account-settings" element={<AccountSettings />} />
+                                <Route path="/:env/user-settings" element={<UserSettings />} />
+                            </>
+                        )}
                     </Route>
                     <Route path="/auth-link" element={<AuthLink />} />
-                    {(isCloud() || isEnterprise()) && (
+                    {AUTH_ENABLED && (
                         <>
-                            <Route path="/:env/account-settings" element={<AccountSettings />} />
-                            <Route path="/:env/user-settings" element={<UserSettings />} />
                             <Route path="/signin" element={<Signin />} />
-                            <Route path="/signup" element={<Signup />} />
                             <Route path="/signup/:token" element={<InviteSignup />} />
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
                         </>
                     )}
                     <Route path="/404" element={<PageNotFound />} />
-
+                    {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </SentryRoutes>
             </SWRConfig>

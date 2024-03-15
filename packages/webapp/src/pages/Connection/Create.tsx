@@ -8,7 +8,7 @@ import { Tooltip } from '@geist-ui/core';
 
 import useSet from '../../hooks/useSet';
 import { isHosted, isStaging, baseUrl } from '../../utils/utils';
-import { useGetIntegrationListAPI, useGetProjectInfoAPI, useGetHmacAPI } from '../../utils/api';
+import { useGetIntegrationListAPI, useGetHmacAPI } from '../../utils/api';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import DashboardLayout from '../../layout/DashboardLayout';
 import TagsInput from '../../components/ui/input/TagsInput';
@@ -17,6 +17,7 @@ import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
 import { AuthModes } from '../../types';
+import { useEnvironment } from '../../hooks/useEnvironment';
 
 interface Integration {
     authMode: AuthModes;
@@ -45,7 +46,6 @@ export default function IntegrationCreate() {
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
-    const getProjectInfoAPI = useGetProjectInfoAPI();
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
@@ -56,6 +56,7 @@ export default function IntegrationCreate() {
     const getHmacAPI = useGetHmacAPI();
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.cookieValue);
+    const { environment } = useEnvironment();
 
     useEffect(() => {
         setLoaded(false);
@@ -95,25 +96,19 @@ export default function IntegrationCreate() {
             }
         };
 
-        const getAccount = async () => {
-            const res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setPublicKey(account.public_key);
-                setHostUrl(account.host || baseUrl());
-                setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
-                setHmacDigest(account.hmac_digest ?? '');
-                setIsHmacEnabled(Boolean(account.hmac_key));
-            }
-        };
+        if (environment) {
+            setPublicKey(environment.public_key);
+            setHostUrl(environment.host || baseUrl());
+            setWebsocketsPath(environment.websockets_path);
+            setHmacDigest(environment.hmac_digest ?? '');
+            setIsHmacEnabled(Boolean(environment.hmac_key));
+        }
 
         if (!loaded) {
             setLoaded(true);
-            getIntegrations();
-            getAccount();
+            void getIntegrations();
         }
-    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, getProjectInfoAPI, setPublicKey, providerConfigKey]);
+    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environment, setPublicKey, providerConfigKey]);
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -180,8 +175,8 @@ export default function IntegrationCreate() {
         }
 
         const params: Record<string, string> = {};
-        for (const i in integration.connectionConfigParams) {
-            params[integration.connectionConfigParams[i]] = '';
+        for (const key of Object.keys(integration.connectionConfigParams)) {
+            params[key] = '';
         }
         setConnectionConfigParams(params);
     };
@@ -210,7 +205,7 @@ export default function IntegrationCreate() {
         try {
             setAuthorizationParams(JSON.parse(e.target.value));
             setAuthorizationParamsError(false);
-        } catch (e) {
+        } catch {
             setAuthorizationParams(null);
             setAuthorizationParamsError(true);
         }

@@ -4,16 +4,16 @@ interface PayloadData {
     properties: string[];
     limit: string;
     after?: string | null;
-    sorts: Array<{
+    sorts: {
         propertyName: string;
         direction: string;
-    }>;
+    }[];
     filterGroups: {
-        filters: Array<{
+        filters: {
             propertyName: string;
             operator: string;
             value: any;
-        }>;
+        }[];
     }[];
 }
 

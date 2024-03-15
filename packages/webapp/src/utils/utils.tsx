@@ -1,4 +1,6 @@
 import parser from 'cron-parser';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
@@ -6,6 +8,8 @@ export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
 export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
+
+export const AUTH_ENABLED = isCloud() || isEnterprise() || isLocal();
 
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
@@ -359,4 +363,8 @@ export function parseEndpoint(endpoint: string | FlowEndpoint): string {
     }
 
     return Object.values(endpoint)[0];
+}
+
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
 }

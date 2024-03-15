@@ -211,7 +211,7 @@ export class Orchestrator {
             for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection.id as number, syncName);
                 if (!sync) {
-                    throw new Error(`Sync "${syncName}" doest not exists.`);
+                    throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
                 const schedule = await getSchedule(sync.id as string);
                 if (!schedule) {
@@ -292,17 +292,21 @@ export class Orchestrator {
         providerConfigKey: string,
         syncNames: string[],
         connectionId?: string,
-        includeJobStatus = false
+        includeJobStatus = false,
+        optionalConnection?: Connection | null
     ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
-        if (connectionId) {
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
-
-            if (!success) {
-                return { success: false, error, response: null };
+        let connection = optionalConnection;
+        if (connectionId && !connection) {
+            const connectionResult = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+            if (!connectionResult.success || !connectionResult.response) {
+                return { success: false, error: connectionResult.error, response: null };
             }
+            connection = connectionResult.response;
+        }
 
+        if (connection) {
             for (const syncName of syncNames) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
@@ -400,7 +404,9 @@ export class Orchestrator {
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && status !== SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
-                status = SyncStatus.PAUSED;
+                if (status !== SyncStatus.RUNNING) {
+                    status = SyncStatus.PAUSED;
+                }
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
                 status = SyncStatus.STOPPED;

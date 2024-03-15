@@ -11,9 +11,7 @@ export default function EndpointLabel({ type, endpoint }: { type: string; endpoi
                     {(endpoint as unknown as string)?.split(' ').length === 1 && type === 'sync' && <GET path={endpoint as unknown as string} />}
                     {(endpoint as unknown as string)?.split(' ').length === 1 && type === 'action' && <POST path={endpoint as unknown as string} />}
                     <HttpLabel
-                        endpoint={
-                            { [(endpoint as unknown as string)?.split(' ')[0] as string]: (endpoint as unknown as string)?.split(' ')[1] } as FlowEndpoint
-                        }
+                        endpoint={{ [(endpoint as unknown as string)?.split(' ')[0]]: (endpoint as unknown as string)?.split(' ')[1] } as FlowEndpoint}
                     />
                 </>
             )}

@@ -3,6 +3,7 @@ import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import superjson from 'superjson';
 import { z } from 'zod';
 import { suspendRunner } from './runner/runner.js';
+import { logger } from '@nangohq/shared';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -24,7 +25,7 @@ export const server = createHTTPServer({
 });
 
 function healthProcedure() {
-    return publicProcedure.query(async () => {
+    return publicProcedure.query(() => {
         return { status: 'ok' };
     });
 }
@@ -32,7 +33,7 @@ function healthProcedure() {
 function idleProcedure() {
     return publicProcedure.input(z.object({ runnerId: z.string().nonempty(), idleTimeMs: z.number() })).mutation(async ({ input }) => {
         const { runnerId, idleTimeMs } = input;
-        console.log(`[IDLE]: runner '${runnerId}' has been idle for ${idleTimeMs}ms. Suspending...`);
+        logger.info(`[IDLE]: runner '${runnerId}' has been idle for ${idleTimeMs}ms. Suspending...`);
         await suspendRunner(runnerId);
         return { status: 'ok' };
     });

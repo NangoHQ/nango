@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.39.0",
+    "version": "0.39.4",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
@@ -17,10 +17,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.348.0",
+        "@aws-sdk/client-s3": "3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "^0.39.0",
+        "@nangohq/node": "^0.39.4",
         "@sentry/node": "^7.105.0",
         "@temporalio/client": "^1.9.1",
         "amqplib": "^0.10.3",
