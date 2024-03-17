@@ -17,12 +17,15 @@ import {
     Integration,
     IntegrationWithCreds,
     SyncStatusResponse,
-    UpdateSyncFrequencyResponse
+    UpdateSyncFrequencyResponse,
+    StandardNangoConfig
 } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
+
+export * from './types.js';
 
 interface NangoProps {
     host?: string;
@@ -72,15 +75,17 @@ export interface NangoSyncWebhookBody {
     responseResults: SyncResult;
     syncType: SyncType;
     queryTimeStamp: string | null;
+    modifiedAfter: string | null;
 }
 
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
 
 export interface RecordMetadata {
-    first_seen_at: Date;
-    last_seen_at: Date;
+    first_seen_at: string;
+    last_seen_at: string;
     last_action: LastAction;
-    deleted_at: Date | null;
+    deleted_at: string | null;
+    cursor: string;
 }
 
 export class Nango {
@@ -106,7 +111,7 @@ export class Nango {
 
         try {
             new URL(this.serverUrl);
-        } catch (err) {
+        } catch {
             throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
@@ -203,11 +208,17 @@ export class Nango {
         return response.data;
     }
 
-    public async importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
+    /**
+     * @deprecated This method has been deprecated, please use the REST API to import a connection.
+     */
+    public importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
         throw new Error('This method has been deprecated, please use the REST API to import a connection.');
     }
 
-    public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
+    /**
+     * @deprecated This method has been deprecated, please use the REST API to import a connection.
+     */
+    public createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
         throw new Error('This method has been deprecated, please use the REST API to create a connection.');
     }
 
@@ -285,7 +296,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey as string
+            'Provider-Config-Key': providerConfigKey
         };
 
         return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
@@ -307,7 +318,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey as string
+            'Provider-Config-Key': providerConfigKey
         };
 
         return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });
@@ -325,6 +336,25 @@ export class Nango {
 
     /**
      * =======
+     * SCRIPTS
+     *      CONFIG
+     * =======
+     */
+
+    public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
+        const url = `${this.serverUrl}/scripts/config`;
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+
+        return response.data;
+    }
+
+    /**
+     * =======
      * SYNCS
      *      GET RECORDS
      *      TRIGGER
@@ -335,6 +365,9 @@ export class Nango {
      * =======
      */
 
+    /**
+     * @deprecated. Use listRecords() instead.
+     */
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
         validateSyncRecordConfiguration(config);
@@ -379,10 +412,10 @@ export class Nango {
     public async listRecords<T = any>(
         config: ListRecordsRequestConfig
     ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
-        const { connectionId, providerConfigKey, model, delta, limit, filter, cursor } = config;
+        const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&delta=${delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&modifiedAfter=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
             filter ? `&filter=${filter}` : ''
         }${cursor ? `&cursor=${cursor}` : ''}`;
 
@@ -590,7 +623,7 @@ export class Nango {
 
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress } = config;
+        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress, retryOn } = config;
 
         const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
@@ -618,6 +651,10 @@ export class Nango {
 
         if (decompress) {
             headers['Decompress'] = decompress;
+        }
+
+        if (retryOn) {
+            headers['Retry-On'] = retryOn.join(',');
         }
 
         const options: AxiosRequestConfig = {

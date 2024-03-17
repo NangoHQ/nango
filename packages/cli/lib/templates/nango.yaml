@@ -25,4 +25,4 @@ models:
     author_id: string
     state: string
     date_created: date
-    date_last_modified:
+    date_last_modified: date

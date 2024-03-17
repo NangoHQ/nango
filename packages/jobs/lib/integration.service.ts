@@ -8,13 +8,14 @@ import {
     remoteFileService,
     isCloud,
     isProd,
+    integrationFilesAreRemote,
     ServiceResponse,
     NangoError,
     formatScriptError,
     isOk
 } from '@nangohq/shared';
 import { Runner, getOrStartRunner, getRunnerId } from './runner/runner.js';
-import tracer from './tracer.js';
+import tracer from 'dd-trace';
 
 interface ScriptObject {
     context: Context | null;
@@ -83,7 +84,7 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncName', syncName);
         try {
             const script: string | null =
-                isCloud() && !optionalLoadLocation
+                (isCloud() || integrationFilesAreRemote()) && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
                     : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 
@@ -161,7 +162,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 }
 
                 return { success: true, error: null, response: res };
-            } catch (err: any) {
+            } catch (err) {
                 runSpan.setTag('error', err);
 
                 const scriptObject = this.runningScripts.get(syncId);

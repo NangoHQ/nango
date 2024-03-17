@@ -1,5 +1,6 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
+import { retry } from '../utils/retry.js';
 
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
     return {
@@ -16,7 +17,8 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<a
         pool: {
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '20')
-        }
+        },
+        searchPath: 'nango'
     };
 }
 
@@ -29,7 +31,10 @@ export class KnexDatabase {
     }
 
     async migrate(directory: string): Promise<any> {
-        return this.knex.migrate.latest({ directory: directory, tableName: '_nango_auth_migrations', schemaName: this.schema() });
+        return retry(async () => await this.knex.migrate.latest({ directory: directory, tableName: '_nango_auth_migrations', schemaName: this.schema() }), {
+            maxAttempts: 4,
+            delayMs: (attempt) => 500 * attempt
+        });
     }
 
     schema() {
@@ -43,7 +48,7 @@ export default db;
 
 export { db as database };
 
-export const schema = (): Knex.QueryBuilder => db.knex.withSchema(db.schema());
+export const schema = (): Knex.QueryBuilder => db.knex.queryBuilder();
 
 export const dbNamespace = '_nango_';
 

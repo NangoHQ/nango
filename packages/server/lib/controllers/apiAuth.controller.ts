@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import type { LogLevel } from '@nangohq/shared';
 import {
     getAccount,
@@ -81,7 +81,7 @@ class ApiAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
+                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
@@ -97,7 +97,7 @@ class ApiAuthController {
                 }
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             if (config == null) {
                 await createActivityLogMessageAndEnd({
@@ -113,7 +113,7 @@ class ApiAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider as string);
+            const template = await configService.getTemplate(config?.provider);
 
             if (template.auth_mode !== AuthModes.ApiKey) {
                 await createActivityLogMessageAndEnd({
@@ -180,9 +180,9 @@ class ApiAuthController {
             await updateSuccessActivityLog(activityLogId as number, true);
 
             const [updatedConnection] = await connectionService.upsertApiConnection(
-                connectionId as string,
-                providerConfigKey as string,
-                config?.provider as string,
+                connectionId,
+                providerConfigKey,
+                config?.provider,
                 credentials,
                 connectionConfig,
                 environmentId,
@@ -199,12 +199,12 @@ class ApiAuthController {
                         auth_mode: AuthModes.ApiKey,
                         operation: updatedConnection.operation
                     },
-                    config?.provider as string,
+                    config?.provider,
                     activityLogId
                 );
             }
 
-            res.status(200).send({ providerConfigKey: providerConfigKey as string, connectionId: connectionId as string });
+            res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
@@ -296,7 +296,7 @@ class ApiAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
+                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
@@ -313,7 +313,7 @@ class ApiAuthController {
 
             const { username = '', password = '' } = req.body;
 
-            const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             if (config == null) {
                 await createActivityLogMessageAndEnd({
@@ -329,7 +329,7 @@ class ApiAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider as string);
+            const template = await configService.getTemplate(config?.provider);
 
             if (template.auth_mode !== AuthModes.Basic) {
                 await createActivityLogMessageAndEnd({
@@ -389,9 +389,9 @@ class ApiAuthController {
             await updateSuccessActivityLog(activityLogId as number, true);
 
             const [updatedConnection] = await connectionService.upsertApiConnection(
-                connectionId as string,
-                providerConfigKey as string,
-                config?.provider as string,
+                connectionId,
+                providerConfigKey,
+                config?.provider,
                 credentials,
                 connectionConfig,
                 environmentId,
@@ -408,12 +408,12 @@ class ApiAuthController {
                         auth_mode: AuthModes.Basic,
                         operation: updatedConnection.operation
                     },
-                    config?.provider as string,
+                    config?.provider,
                     activityLogId
                 );
             }
 
-            res.status(200).send({ providerConfigKey: providerConfigKey as string, connectionId: connectionId as string });
+            res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 

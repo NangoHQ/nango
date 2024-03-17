@@ -3,6 +3,7 @@ extends: default
 rules:
   line-length: disable
   document-start: disable
+  key-duplicates: disable
   truthy:
     check-keys: false
   comments:

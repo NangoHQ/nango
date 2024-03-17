@@ -7,7 +7,6 @@ import { Tooltip, useModal, Modal } from '@geist-ui/core';
 import Nango from '@nangohq/frontend';
 
 import {
-    useGetProjectInfoAPI,
     useEditCallbackUrlAPI,
     useEditWebhookUrlAPI,
     useEditHmacEnabledAPI,
@@ -22,9 +21,9 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/input/SecretInput';
 import { useStore } from '../store';
 import Button from '../components/ui/button/Button';
+import { useEnvironment } from '../hooks/useEnvironment';
 
 export default function ProjectSettings() {
-    const [loaded, setLoaded] = useState(false);
     const [secretKey, setSecretKey] = useState('');
     const [secretKeyRotatable, setSecretKeyRotatable] = useState(true);
     const [hasPendingSecretKey, setHasPendingSecretKey] = useState(false);
@@ -44,12 +43,11 @@ export default function ProjectSettings() {
 
     const [hmacKey, setHmacKey] = useState('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
-    const [accountUUID, setAccountUUID] = useState<number>();
+    const [accountUUID, setAccountUUID] = useState<string>();
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
-    const [envVariables, setEnvVariables] = useState<{ id?: number, name: string; value: string }[]>([]);
-    const getProjectInfoAPI = useGetProjectInfoAPI();
+    const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
     const editCallbackUrlAPI = useEditCallbackUrlAPI();
     const editWebhookUrlAPI = useEditWebhookUrlAPI();
     const editHmacEnabled = useEditHmacEnabledAPI();
@@ -58,53 +56,45 @@ export default function ProjectSettings() {
     const editHmacKey = useEditHmacKeyAPI();
     const editEnvVariables = useEditEnvVariablesAPI();
 
-    const { setVisible, bindings } = useModal()
-    const { setVisible: setSecretVisible, bindings: secretBindings } = useModal()
+    const { setVisible, bindings } = useModal();
+    const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
     const env = useStore((state) => state.cookieValue);
+    const { environment } = useEnvironment();
 
     useEffect(() => {
-        setEnvVariables(envVariables.filter((env) => env.id ));
-        setLoaded(false);
+        setEnvVariables(envVariables.filter((env) => env.id));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [env]);
 
     useEffect(() => {
-        const getAccount = async () => {
-            let res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setSecretKey(account.pending_secret_key || account.secret_key);
-                setSecretKeyRotatable(account.secret_key_rotatable !== false);
-                setHasPendingSecretKey(Boolean(account.pending_secret_key));
-
-                setPublicKey(account.pending_public_key || account.public_key);
-                setPublicKeyRotatable(account.public_key_rotatable !== false);
-                setHasPendingPublicKey(Boolean(account.pending_public_key));
-
-                setCallbackUrl(account.callback_url || defaultCallback());
-
-                setWebhookUrl(account.webhook_url || '');
-                setSendAuthWebhook(account.send_auth_webhook);
-                setHostUrl(account.host);
-                setAccountUUID(account.uuid);
-
-                setHmacEnabled(account.hmac_enabled);
-                setAlwaysSendWebhook(account.always_send_webhook);
-                setHmacKey(account.hmac_key);
-
-                setSlackIsConnected(account.slack_notifications);
-
-                setEnvVariables(account.env_variables);
-            }
-       };
-
-        if (!loaded) {
-            setLoaded(true);
-            getAccount();
+        if (!environment) {
+            return;
         }
-    }, [getProjectInfoAPI, loaded, setLoaded, env]);
+
+        setSecretKey(environment.pending_secret_key || environment.secret_key);
+        setSecretKeyRotatable(environment.secret_key_rotatable !== false);
+        setHasPendingSecretKey(Boolean(environment.pending_secret_key));
+
+        setPublicKey(environment.pending_public_key || environment.public_key);
+        setPublicKeyRotatable(environment.public_key_rotatable !== false);
+        setHasPendingPublicKey(Boolean(environment.pending_public_key));
+
+        setCallbackUrl(environment.callback_url || defaultCallback());
+
+        setWebhookUrl(environment.webhook_url || '');
+        setSendAuthWebhook(environment.send_auth_webhook);
+        setHostUrl(environment.host);
+        setAccountUUID(environment.uuid);
+
+        setHmacEnabled(environment.hmac_enabled);
+        setAlwaysSendWebhook(environment.always_send_webhook);
+        setHmacKey(environment.hmac_key);
+
+        setSlackIsConnected(environment.slack_notifications);
+
+        setEnvVariables(environment.env_variables);
+    }, [environment]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -138,7 +128,7 @@ export default function ProjectSettings() {
         }
     };
 
-    const handleCallbackEdit = (_: React.SyntheticEvent) => {
+    const handleCallbackEdit = () => {
         setCallbackEditMode(true);
     };
 
@@ -147,7 +137,7 @@ export default function ProjectSettings() {
             toast.error('Cannot enable HMAC without an HMAC key.', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
             setHmacEnabled(checked);
-            editHmacEnabled(checked).then((_) => {
+            editHmacEnabled(checked).then(() => {
                 toast.success(checked ? 'HMAC enabled.' : 'HMAC disabled.', { position: toast.POSITION.BOTTOM_CENTER });
             });
         }
@@ -155,15 +145,17 @@ export default function ProjectSettings() {
 
     const handleWebookSendUpdate = async (checked: boolean) => {
         setAlwaysSendWebhook(checked);
-        editAlwaysSendWebhook(checked).then((_) => {
+        editAlwaysSendWebhook(checked).then(() => {
             toast.success(checked ? 'Always send webhooks.' : 'Only send webhhoks on added, updated, or deleted.', { position: toast.POSITION.BOTTOM_CENTER });
         });
     };
 
     const handleWebookSendAuth = async (checked: boolean) => {
         setSendAuthWebhook(checked);
-        editSendAuthWebhook(checked).then((_) => {
-            toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', { position: toast.POSITION.BOTTOM_CENTER });
+        editSendAuthWebhook(checked).then(() => {
+            toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
         });
     };
 
@@ -191,27 +183,30 @@ export default function ProjectSettings() {
         const formData = new FormData(e.target as HTMLFormElement);
         const entries = Array.from(formData.entries());
 
-        const envVariablesArray = entries.reduce((acc, [key, value]) => {
-            // we use the index to match on the name and value
-            // but strip everything before the dash to remove the dynamic aspect
-            // to the name. The dynamic aspect is needed to make sure the values
-            // show correctly when reloading environments
-            const strippedKey = key.split('-')[1];
-            const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
-            if (match) {
-                const type = match[1];
-                const index = parseInt(match[2], 10);
-                if (!acc[index]) {
-                    acc[index] = {} as { name: string; value: string };
+        const envVariablesArray = entries.reduce(
+            (acc, [key, value]) => {
+                // we use the index to match on the name and value
+                // but strip everything before the dash to remove the dynamic aspect
+                // to the name. The dynamic aspect is needed to make sure the values
+                // show correctly when reloading environments
+                const strippedKey = key.split('-')[1];
+                const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
+                if (match) {
+                    const type = match[1];
+                    const index = parseInt(match[2], 10);
+                    if (!acc[index]) {
+                        acc[index] = {} as { name: string; value: string };
+                    }
+                    if (type === 'name') {
+                        acc[index].name = value as string;
+                    } else if (type === 'value') {
+                        acc[index].value = value as string;
+                    }
                 }
-                if (type === 'name') {
-                    acc[index].name = value as string;
-                } else if (type === 'value') {
-                    acc[index].value = value as string;
-                }
-            }
-            return acc;
-        }, [] as Array<{ name: string; value: string }>);
+                return acc;
+            },
+            [] as { name: string; value: string }[]
+        );
 
         const res = await editEnvVariables(envVariablesArray);
 
@@ -228,7 +223,7 @@ export default function ProjectSettings() {
         setEnvVariables(envVariables.filter((_, i) => i !== index));
 
         const strippedEnvVariables = envVariables.filter((_, i) => i !== index).filter((envVariable) => envVariable.name && envVariable.value);
-        const res = await editEnvVariables(strippedEnvVariables as unknown as Array<Record<string,string>>);
+        const res = await editEnvVariables(strippedEnvVariables as unknown as Record<string, string>[]);
 
         if (res?.status === 200) {
             toast.success('Environment variables updated!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -247,7 +242,7 @@ export default function ProjectSettings() {
         const res = await fetch('/api/v1/environment/rotate-key', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
@@ -272,7 +267,7 @@ export default function ProjectSettings() {
         const res = await fetch('/api/v1/environment/revert-key', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
@@ -293,11 +288,11 @@ export default function ProjectSettings() {
         }
     };
 
-    const onActivateKey = async(publicKey = true) => {
+    const onActivateKey = async (publicKey = true) => {
         const res = await fetch('/api/v1/environment/activate-key', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
@@ -321,13 +316,13 @@ export default function ProjectSettings() {
         await fetch('/api/v1/environment/slack-notifications-enabled', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 slack_notifications: enabled
             })
         });
-    }
+    };
 
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
@@ -342,16 +337,16 @@ export default function ProjectSettings() {
             toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
             setSlackIsConnected(false);
         }
-    }
+    };
 
     const connectSlack = async () => {
-        const connectionId =  `account-${accountUUID}`;
+        const connectionId = `account-${accountUUID}`;
 
         const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
+                'Content-Type': 'application/json'
+            }
         });
 
         if (res?.status !== 200) {
@@ -363,10 +358,11 @@ export default function ProjectSettings() {
         const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
 
         const nango = new Nango({ host: hostUrl, publicKey });
-        nango.auth(integrationKey, connectionId, {
+        nango
+            .auth(integrationKey, connectionId, {
                 user_scope: [],
                 params: {},
-                hmac: hmacDigest,
+                hmac: hmacDigest
             })
             .then(async () => {
                 await updateSlackNotifications(true);
@@ -390,12 +386,19 @@ export default function ProjectSettings() {
                     <div>
                         <Modal.Title className="text-lg">Activate new public key?</Modal.Title>
                         <Modal.Content>
-                          <p>Make sure your code uses the new public key before activating. All authorization attempts with the previous public key will fail when the new key is activated.</p>
+                            <p>
+                                Make sure your code uses the new public key before activating. All authorization attempts with the previous public key will fail
+                                when the new key is activated.
+                            </p>
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!text-lg" onClick={() => setVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey()}>Activate</Modal.Action>
+                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setVisible(false)}>
+                    Cancel
+                </Modal.Action>
+                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey()}>
+                    Activate
+                </Modal.Action>
             </Modal>
             <Modal {...secretBindings} wrapClassName="!w-max overflow-visible">
                 <div className="flex justify-between">
@@ -407,12 +410,19 @@ export default function ProjectSettings() {
                     <div>
                         <Modal.Title className="text-lg">Activate new secret key?</Modal.Title>
                         <Modal.Content>
-                          <p>Make sure your code uses the new secret key before activating. All requests made with the previous secret key will fail as soon as the new key is activated.</p>
+                            <p>
+                                Make sure your code uses the new secret key before activating. All requests made with the previous secret key will fail as soon
+                                as the new key is activated.
+                            </p>
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action passive className="!text-lg" onClick={() => setSecretVisible(false)}>Cancel</Modal.Action>
-                <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>Activate</Modal.Action>
+                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setSecretVisible(false)}>
+                    Cancel
+                </Modal.Action>
+                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>
+                    Activate
+                </Modal.Action>
             </Modal>
             {secretKey && (
                 <div className="h-full mb-20">
@@ -452,7 +462,7 @@ export default function ProjectSettings() {
                                     {publicKeyRotatable && (
                                         <>
                                             <button
-                                                onClick={() => hasPendingPublicKey ? onRevertKey() : onRotateKey()}
+                                                onClick={() => (hasPendingPublicKey ? onRevertKey() : onRotateKey())}
                                                 className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
                                                 {hasPendingPublicKey ? 'Revert' : 'Rotate'}
@@ -469,7 +479,8 @@ export default function ProjectSettings() {
                                 </div>
                                 {hasPendingPublicKey && (
                                     <div className=" text-red-500 text-sm">
-                                        Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                        Click &apos;Activate&apos; to use this new key. Until then, Nango expects the old key. After activation the old key
+                                        won&apos;t work.
                                     </div>
                                 )}
                             </div>
@@ -520,11 +531,18 @@ export default function ProjectSettings() {
                                     </Tooltip>
                                 </div>
                                 <div className="flex">
-                                    <SecretInput additionalclass="w-full h-11" tall disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
+                                    <SecretInput
+                                        additionalclass="w-full h-11"
+                                        tall
+                                        disabled
+                                        copy={true}
+                                        optionalvalue={secretKey}
+                                        setoptionalvalue={setSecretKey}
+                                    />
                                     {secretKeyRotatable && (
                                         <>
                                             <button
-                                                onClick={() => hasPendingSecretKey ? onRevertKey(false) : onRotateKey(false)}
+                                                onClick={() => (hasPendingSecretKey ? onRevertKey(false) : onRotateKey(false))}
                                                 className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                             >
                                                 {hasPendingSecretKey ? 'Revert' : 'Rotate'}
@@ -541,7 +559,8 @@ export default function ProjectSettings() {
                                 </div>
                                 {hasPendingSecretKey && (
                                     <div className=" text-red-500 text-sm">
-                                        Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                        Click &apos;Activate&apos; to use this new key. Until then, Nango expects the old key. After activation the old key
+                                        won&apos;t work.
                                     </div>
                                 )}
                             </div>
@@ -551,18 +570,17 @@ export default function ProjectSettings() {
                                 <div>
                                     <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
                                         Slack Alerts
-                                    <Tooltip
-                                        text={
-                                            <div className="flex text-black text-sm">
-                                                {slackIsConnected ?
-                                                    'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.' :
-                                                    'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'
-                                                }
-                                            </div>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
+                                        <Tooltip
+                                            text={
+                                                <div className="flex text-black text-sm">
+                                                    {slackIsConnected
+                                                        ? 'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.'
+                                                        : 'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'}
+                                                </div>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
                                     </label>
                                 </div>
                                 <div className="">
@@ -854,18 +872,13 @@ export default function ProjectSettings() {
                                     </label>
                                     <Tooltip
                                         text={
-                                            <div className="flex text-black text-sm">
-                                                Set environment variables to be used inside sync and action scripts.
-                                            </div>
+                                            <div className="flex text-black text-sm">Set environment variables to be used inside sync and action scripts.</div>
                                         }
                                     >
                                         <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                     </Tooltip>
                                 </div>
-                                <form
-                                    className="mt-2"
-                                    onSubmit={handleEnvVariablesSave}
-                                >
+                                <form className="mt-2" onSubmit={handleEnvVariablesSave}>
                                     {envVariables.map((envVar, index) => (
                                         <div key={envVar.id || `${envVar.name}_${index}`} className="flex items-center mt-2">
                                             <input
@@ -884,14 +897,14 @@ export default function ProjectSettings() {
                                                 required
                                                 autoComplete="new-password"
                                                 type="password"
-                                                onMouseEnter={(e) => e.currentTarget.type = 'text'}
+                                                onMouseEnter={(e) => (e.currentTarget.type = 'text')}
                                                 onMouseLeave={(e) => {
                                                     if (document.activeElement !== e.currentTarget) {
                                                         e.currentTarget.type = 'password';
                                                     }
                                                 }}
-                                                onFocus={(e) => e.currentTarget.type = 'text'}
-                                                onBlur={(e) => e.currentTarget.type = 'password'}
+                                                onFocus={(e) => (e.currentTarget.type = 'text')}
+                                                onBlur={(e) => (e.currentTarget.type = 'password')}
                                                 className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
                                             />
                                             <button
@@ -911,10 +924,7 @@ export default function ProjectSettings() {
                                         >
                                             Add Environment Variable
                                         </button>
-                                        <button
-                                            type="submit"
-                                            className="hover:bg-gray-200 bg-white text-gray-700 flex h-11 rounded-md px-4 pt-3 text-sm"
-                                        >
+                                        <button type="submit" className="hover:bg-gray-200 bg-white text-gray-700 flex h-11 rounded-md px-4 pt-3 text-sm">
                                             Save Environment Variable
                                         </button>
                                     </div>

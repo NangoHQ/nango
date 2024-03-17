@@ -8,14 +8,14 @@ description: 'Step-by-step guide on how to contribute a new API.'
 The simplest way to add a new API is to ask us in the [community](https://nango.dev/slack). We deliver them in &lt;48h.
 </Tip>
 
-If you want to contribute a new API yourself, follow the steps below.
+If you want to contribute a new API yourself, follow the steps below and check out [examples of past contributions](https://github.com/NangoHQ/nango/pulls?q=is%3Apr+is%3Amerged+label%3Aapi+).
 
 # Add an API configuration
 
 Fork the [repo](https://github.com/NangoHQ/nango) and edit the API configurations file ([providers.yaml](https://nango.dev/providers.yaml)).
 
 <Tip>
-Learn more: [understand API configurations](/understand/concepts/api-configuration), [reference](/reference/api-configuration), [all existing API configurations](https://nango.dev/providers.yaml).
+Learn more: [understand API configurations](/understand/concepts/integrations#api-configurations), [reference](/reference/api-configuration), [all existing API configurations](https://nango.dev/providers.yaml).
 </Tip>
 
 # Test the API
@@ -52,6 +52,8 @@ Add a `<api>.mdx` file (e.g. `github.mdx`) for you API to the `docs-v2/integrati
 Reference the page in the `docs-v2/mint.json` file in the `Supported APIs` group in alphabetical order.
 
 # Submit a pull request
+
+Verify your contribution against [examples of past contributions](https://github.com/NangoHQ/nango/pulls?q=is%3Apr+is%3Amerged+label%3Aapi+).
 
 Submit a pull request with the new provider to the Nango repo. Please thoroughly test the integration!
 

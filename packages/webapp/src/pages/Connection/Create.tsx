@@ -8,7 +8,7 @@ import { Tooltip } from '@geist-ui/core';
 
 import useSet from '../../hooks/useSet';
 import { isHosted, isStaging, baseUrl } from '../../utils/utils';
-import { useGetIntegrationListAPI, useGetProjectInfoAPI, useGetHmacAPI } from '../../utils/api';
+import { useGetIntegrationListAPI, useGetHmacAPI } from '../../utils/api';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import DashboardLayout from '../../layout/DashboardLayout';
 import TagsInput from '../../components/ui/input/TagsInput';
@@ -17,6 +17,7 @@ import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
 import { AuthModes } from '../../types';
+import { useEnvironment } from '../../hooks/useEnvironment';
 
 interface Integration {
     authMode: AuthModes;
@@ -45,7 +46,6 @@ export default function IntegrationCreate() {
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
-    const getProjectInfoAPI = useGetProjectInfoAPI()
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
@@ -55,7 +55,8 @@ export default function IntegrationCreate() {
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI();
     const { providerConfigKey } = useParams();
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.cookieValue);
+    const { environment } = useEnvironment();
 
     useEffect(() => {
         setLoaded(false);
@@ -63,13 +64,13 @@ export default function IntegrationCreate() {
 
     useEffect(() => {
         const getHmac = async () => {
-            let res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
+            const res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
 
             if (res?.status === 200) {
                 const hmacDigest = (await res.json())['hmac_digest'];
                 setHmacDigest(hmacDigest);
             }
-        }
+        };
         if (isHmacEnabled && integration?.uniqueKey && connectionId) {
             getHmac();
         }
@@ -77,14 +78,14 @@ export default function IntegrationCreate() {
 
     useEffect(() => {
         const getIntegrations = async () => {
-            let res = await getIntegrationListAPI();
+            const res = await getIntegrationListAPI();
 
             if (res?.status === 200) {
-                let data = await res.json();
+                const data = await res.json();
                 setIntegrations(data['integrations']);
 
                 if (data['integrations'] && data['integrations'].length > 0) {
-                    let defaultIntegration = providerConfigKey
+                    const defaultIntegration = providerConfigKey
                         ? data['integrations'].find((i: Integration) => i.uniqueKey === providerConfigKey)
                         : data['integrations'][0];
 
@@ -95,25 +96,19 @@ export default function IntegrationCreate() {
             }
         };
 
-        const getAccount = async () => {
-            let res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setPublicKey(account.public_key);
-                setHostUrl(account.host || baseUrl());
-                setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
-                setHmacDigest(account.hmac_digest ?? '');
-                setIsHmacEnabled(Boolean(account.hmac_key))
-            }
-        };
+        if (environment) {
+            setPublicKey(environment.public_key);
+            setHostUrl(environment.host || baseUrl());
+            setWebsocketsPath(environment.websockets_path);
+            setHmacDigest(environment.hmac_digest ?? '');
+            setIsHmacEnabled(Boolean(environment.hmac_key));
+        }
 
         if (!loaded) {
             setLoaded(true);
-            getIntegrations();
-            getAccount();
+            void getIntegrations();
         }
-    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, getProjectInfoAPI, setPublicKey, providerConfigKey]);
+    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environment, setPublicKey, providerConfigKey]);
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -136,7 +131,7 @@ export default function IntegrationCreate() {
                 username: apiAuthUsername,
                 password: apiAuthPassword
             };
-        };
+        }
 
         if (authMode === AuthModes.ApiKey) {
             credentials = {
@@ -153,13 +148,12 @@ export default function IntegrationCreate() {
         }
 
         nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
-                user_scope: selectedScopes || [],
-                params: connectionConfigParams || {},
-                authorization_params: authorizationParams || {},
-                hmac: hmacDigest || '',
-                credentials
-
-            })
+            user_scope: selectedScopes || [],
+            params: connectionConfigParams || {},
+            authorization_params: authorizationParams || {},
+            hmac: hmacDigest || '',
+            credentials
+        })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -180,15 +174,15 @@ export default function IntegrationCreate() {
             return;
         }
 
-        let params: Record<string, string> = {};
-        for (let i in integration.connectionConfigParams) {
-            params[integration.connectionConfigParams[i]] = '';
+        const params: Record<string, string> = {};
+        for (const key of Object.keys(integration.connectionConfigParams)) {
+            params[key] = '';
         }
         setConnectionConfigParams(params);
     };
 
     const handleIntegrationUniqueKeyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        let integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
+        const integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
 
         if (integration != null) {
             setIntegration(integration);
@@ -202,7 +196,7 @@ export default function IntegrationCreate() {
     };
 
     const handleConnectionConfigParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
+        const params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
         params[e.target.name.replace('connection-config-', '')] = e.target.value;
         setConnectionConfigParams(params);
     };
@@ -211,14 +205,14 @@ export default function IntegrationCreate() {
         try {
             setAuthorizationParams(JSON.parse(e.target.value));
             setAuthorizationParamsError(false);
-        } catch (e) {
+        } catch {
             setAuthorizationParams(null);
             setAuthorizationParamsError(true);
         }
     };
 
     const snippet = () => {
-        let args = [];
+        const args = [];
 
         if (isStaging() || isHosted()) {
             args.push(`host: '${hostUrl}'`);
@@ -231,7 +225,7 @@ export default function IntegrationCreate() {
             args.push(`publicKey: '${publicKey}'`);
         }
 
-        let argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
+        const argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
 
         let connectionConfigParamsStr = '';
 
@@ -301,11 +295,12 @@ export default function IntegrationCreate() {
 }`;
         }
 
-
         const connectionConfigStr =
             !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr && !apiAuthString && !appStoreAuthString
                 ? ''
-                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') + ' }';
+                : ', { ' +
+                  [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') +
+                  ' }';
 
         return `import Nango from '@nangohq/frontend';
 
@@ -686,11 +681,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
                                 <div className="flex">
                                     <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) ? (
-                                            <>Start OAuth Flow</>
-                                        ): (
-                                            <>Create Connection</>
-                                        )}
+                                        {authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 ? <>Start OAuth Flow</> : <>Create Connection</>}
                                     </button>
                                     <label htmlFor="email" className="text-text-light-gray block text-sm pt-5 ml-4">
                                         or from your frontend:
@@ -708,7 +699,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                     </div>
                 </div>
             )}
-            {integrations && !!!integrations.length && (
+            {integrations && !integrations.length && (
                 <div className="mx-auto">
                     <div className="mx-16">
                         <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>

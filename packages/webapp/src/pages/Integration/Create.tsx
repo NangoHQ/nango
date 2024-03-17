@@ -4,11 +4,7 @@ import _ from 'lodash';
 import { useNavigate } from 'react-router';
 import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
-import {
-    useGetIntegrationDetailsAPI,
-    useGetProvidersAPI,
-    useCreateEmptyIntegrationAPI,
-} from '../../utils/api';
+import { useGetIntegrationDetailsAPI, useGetProvidersAPI, useCreateEmptyIntegrationAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { AuthModes } from '../../types';
@@ -31,14 +27,14 @@ export default function Create() {
     const getProvidersAPI = useGetProvidersAPI();
     const createIntegrationAPI = useCreateEmptyIntegrationAPI();
     const navigate = useNavigate();
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
         const getProviders = async () => {
             const res = await getProvidersAPI();
 
             if (res?.status === 200) {
-                let data = await res.json();
+                const data = await res.json();
                 setProviders(data);
                 setInitialProviders(data);
             }
@@ -58,42 +54,45 @@ export default function Create() {
             const data = await res.json();
             navigate(`/${env}/integration/${data.config.unique_key}#auth`);
         }
-    }
+    };
 
-    const showDocs = (e: any, provider: Provider) => {
+    const showDocs = (e: React.MouseEvent<SVGSVGElement, MouseEvent>, provider: Provider) => {
         e.stopPropagation();
-        const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}` ;
+        const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}`;
         window.open(documentationUrl, '_blank');
-    }
+    };
 
-    const filterProviders = useCallback((value: string) => {
-        if (!value.trim()) {
-            setProviders(initialProviders);
-            return;
-        }
-        const lowercaseValue = value.toLowerCase();
-        const filtered = initialProviders?.filter((provider) =>
-            provider.name.toLowerCase().includes(lowercaseValue) ||
-            provider.categories?.some(category => category.toLowerCase().includes(lowercaseValue))
-        );
-        setProviders(filtered as Provider[]);
-    }, [initialProviders]);
+    const filterProviders = useCallback(
+        (value: string) => {
+            if (!value.trim()) {
+                setProviders(initialProviders);
+                return;
+            }
+            const lowercaseValue = value.toLowerCase();
+            const filtered = initialProviders?.filter(
+                (provider) =>
+                    provider.name.toLowerCase().includes(lowercaseValue) ||
+                    provider.categories?.some((category) => category.toLowerCase().includes(lowercaseValue))
+            );
+            setProviders(filtered as Provider[]);
+        },
+        [initialProviders]
+    );
 
-    const debouncedFilterProviders = useMemo(() =>
-        _.debounce(filterProviders, 300)
-    , [filterProviders]);
+    const debouncedFilterProviders = useMemo(() => _.debounce(filterProviders, 300), [filterProviders]);
 
-    const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-        debouncedFilterProviders(event.currentTarget.value);
-    }, [debouncedFilterProviders]);
+    const handleInputChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
+            debouncedFilterProviders(event.currentTarget.value);
+        },
+        [debouncedFilterProviders]
+    );
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-            {(providers) && (
+            {providers && (
                 <div className="w-full">
-                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-8">
-                        Create Integration
-                    </h2>
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-8">Create Integration</h2>
                     <div className="relative">
                         <div className="h-fit rounded-md text-white text-sm">
                             <MagnifyingGlassIcon className="absolute top-2 left-4 h-5 w-5 text-gray-400" />
@@ -111,6 +110,7 @@ export default function Create() {
                     <div className="flex flex-wrap text-white w-full">
                         {providers.map((provider) => (
                             <div
+                                key={provider.name}
                                 className="flex justify-between px-2 p-2 mr-2 mt-4 mb-5 w-[14.7rem] border border-transparent rounded cursor-pointer items-center text-sm hover:bg-hover-gray"
                                 onClick={() => onCreateIntegration(provider.name)}
                             >
@@ -118,9 +118,7 @@ export default function Create() {
                                     <IntegrationLogo provider={provider.name} height={12} width={12} classNames="mr-2" />
                                     <div className="flex flex-col flex-start">
                                         <span className="flex capitalize">{provider.name.replace(/-/g, ' ')}</span>
-                                        {provider.categories && (
-                                            <span className="flex text-xs text-gray-400">{provider.categories.join(', ')}</span>
-                                        )}
+                                        {provider.categories && <span className="flex text-xs text-gray-400">{provider.categories.join(', ')}</span>}
                                     </div>
                                 </div>
                                 <BookOpenIcon onClick={(e) => showDocs(e, provider)} className="h-5 w-5 text-gray-400 hover:text-white hover:bg-hover-gray" />

@@ -200,6 +200,16 @@ export class NangoError extends Error {
                 this.message = `Missing param 'access_token'.`;
                 break;
 
+            case 'missing_expires_at':
+                this.status = 400;
+                this.message = `Importing an OAuth2 token requires the 'expires_at' parameter. If the token doesn't expire pass in the 'no_expiration' parameter`;
+                break;
+
+            case 'invalid_expires_at':
+                this.status = 400;
+                this.message = `The provided 'expires_at' parameter is invalid. It should be a valid date`;
+                break;
+
             case 'missing_hmac':
                 this.status = 400;
                 this.message = `Missing param 'hmac'.`;
@@ -515,6 +525,11 @@ export class NangoError extends Error {
             case 'sync_job_not_running':
                 this.status = 400;
                 this.message = 'The sync is not currently running so cannot be cancelled';
+                break;
+
+            case 'incorrect_param':
+                this.status = 400;
+                this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
                 break;
 
             default:

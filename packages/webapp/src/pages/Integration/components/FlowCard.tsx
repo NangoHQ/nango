@@ -11,12 +11,8 @@ export default function FlowCard({ flow }: FlowProps) {
     return (
         <div className="p-3">
             <div className="flex space-x-2">
-                {flow?.type === 'sync' && (
-                    <ArrowPathRoundedSquareIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
-                )}
-                {flow?.type === 'action' && (
-                    <BoltIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
-                )}
+                {flow?.type === 'sync' && <ArrowPathRoundedSquareIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />}
+                {flow?.type === 'action' && <BoltIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />}
                 <div className="text-sm font-semibold">{flow?.type === 'sync' ? 'Sync' : 'Action'} Information</div>
             </div>
             <div className="flex mt-3 text-xs items-center justify-between">
@@ -36,7 +32,7 @@ export default function FlowCard({ flow }: FlowProps) {
                     {flow?.last_deployed && (
                         <span className="flex flex-col">
                             <div className="text-gray-400">LAST DEPLOYED</div>
-                            <div className="text-white">{formatDateToShortUSFormat(flow?.last_deployed as string)}</div>
+                            <div className="text-white">{formatDateToShortUSFormat(flow?.last_deployed)}</div>
                         </span>
                     )}
                 </div>
@@ -44,9 +40,7 @@ export default function FlowCard({ flow }: FlowProps) {
             <div className="flex mt-3 text-xs items-center">
                 <span className="flex flex-col w-1/2">
                     <div className="text-gray-400">SOURCE</div>
-                    <div className="text-white">
-                        {'is_public' in flow && flow.is_public ? 'Template' : 'Custom'}
-                    </div>
+                    <div className="text-white">{'is_public' in flow && flow.is_public ? 'Template' : 'Custom'}</div>
                 </span>
                 {flow?.type === 'sync' && 'sync_type' in flow && (
                     <span className="flex flex-col w-1/2">
@@ -60,9 +54,7 @@ export default function FlowCard({ flow }: FlowProps) {
                     <div className="flex mt-3 text-xs items-center justify-between">
                         <span className="flex flex-col">
                             <div className="text-gray-400">FREQUENCY</div>
-                            <div className="text-white">
-                                {flow?.runs ?? '-'}
-                            </div>
+                            <div className="text-white">{flow?.runs ?? '-'}</div>
                         </span>
                         <span className="flex flex-col">
                             <div className="text-gray-400">TRACK DELETES</div>
@@ -73,9 +65,7 @@ export default function FlowCard({ flow }: FlowProps) {
                         {'input' in flow && (
                             <span className="flex flex-col w-1/2">
                                 <div className="text-gray-400">METADATA</div>
-                                <div className="text-white">
-                                    {Object.keys(flow?.input as object).length > 0 ? 'Yes' : 'No'}
-                                </div>
+                                <div className="text-white">{Object.keys(flow?.input as object).length > 0 ? 'Yes' : 'No'}</div>
                             </span>
                         )}
                         <span className="flex flex-col w-1/2">
@@ -88,9 +78,7 @@ export default function FlowCard({ flow }: FlowProps) {
             <div className="flex mt-3 text-xs items-center">
                 <span className="flex flex-col w-1/2">
                     <div className="text-gray-400">ENABLED</div>
-                    <div className="text-amber-500">
-                        {'version' in flow && flow.version !== null ? 'Yes' : 'No'}
-                    </div>
+                    <div className="text-amber-500">{'version' in flow && flow.version !== null ? 'Yes' : 'No'}</div>
                 </span>
             </div>
         </div>

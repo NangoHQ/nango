@@ -1,10 +1,12 @@
 import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 
 import type {
     DataRecord as SyncDataRecord,
     RecordWrapCustomerFacingDataRecord,
+    RawDataRecordResult,
     CustomerFacingDataRecord,
     DataRecordWithMetadata,
     GetRecordsResponse,
@@ -18,6 +20,8 @@ import { NangoError } from '../../../utils/error.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
+
+dayjs.extend(utc);
 
 export const formatDataRecords = (
     records: DataResponse[],
@@ -62,7 +66,7 @@ export const formatDataRecords = (
             }
         }
 
-        const external_id = record['id'] as string;
+        const external_id = record['id'];
         formattedRecords[i] = {
             id: uuid.v4(),
             json: record,
@@ -313,7 +317,7 @@ export async function getAllDataRecords(
     providerConfigKey: string,
     environmentId: number,
     model: string,
-    delta?: string,
+    modifiedAfter?: string,
     limit?: number | string,
     filter?: LastAction,
     cursorValue?: string | null
@@ -343,7 +347,7 @@ export async function getAllDataRecords(
                 model
             })
             .orderBy([
-                { column: 'created_at', order: 'asc' },
+                { column: 'updated_at', order: 'asc' },
                 { column: 'id', order: 'asc' }
             ]);
 
@@ -358,9 +362,7 @@ export async function getAllDataRecords(
             }
 
             query = query.where((builder) =>
-                builder
-                    .where('created_at', '>', cursorSort)
-                    .orWhere((builder) => builder.where('created_at' as string, '=', cursorSort).andWhere('id', '>', cursorId))
+                builder.where('updated_at', '>', cursorSort).orWhere((builder) => builder.where('updated_at', '=', cursorSort).andWhere('id', '>', cursorId))
             );
         }
 
@@ -375,8 +377,8 @@ export async function getAllDataRecords(
             query = query.limit(101);
         }
 
-        if (delta) {
-            const time = dayjs(delta);
+        if (modifiedAfter) {
+            const time = dayjs(modifiedAfter);
 
             if (!time.isValid()) {
                 const error = new NangoError('invalid_timestamp');
@@ -384,10 +386,9 @@ export async function getAllDataRecords(
                 return { success: false, error, response: null };
             }
 
-            const timeToDate = time.toDate();
+            const formattedDelta = time.toISOString();
 
-            const utcString = timeToDate.toUTCString();
-            query = query.andWhere('updated_at', '>=', utcString);
+            query = query.andWhere('updated_at', '>=', formattedDelta);
         }
 
         if (filter) {
@@ -420,57 +421,61 @@ export async function getAllDataRecords(
             }
         }
 
-        let nextCursor = null;
-
-        const rawResult = await query.select(
+        const rawResults: RawDataRecordResult[] = await query.select(
+            // PostgreSQL stores timestamp with microseconds precision
+            // however, javascript date only supports milliseconds precision
+            // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
             db.knex.raw(`
-                jsonb_set(
-                    json::jsonb,
-                    '{_nango_metadata}',
-                    jsonb_build_object(
-                        'first_seen_at', created_at,
-                        'last_modified_at', updated_at,
-                        'deleted_at', external_deleted_at,
-                        'last_action',
-                        CASE
-                            WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
-                            WHEN created_at = updated_at THEN 'ADDED'
-                            ELSE 'UPDATED'
-                        END
-                    )
-                ) as record, id
+                id,
+                json as record,
+                to_json(created_at) as first_seen_at,
+                to_json(updated_at) as last_modified_at,
+                to_json(external_deleted_at) as deleted_at,
+                CASE
+                    WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
+                    WHEN created_at = updated_at THEN 'ADDED'
+                    ELSE 'UPDATED'
+                END as last_action
             `)
         );
 
-        const result = encryptionManager.decryptDataRecords(rawResult, 'record') as unknown as SyncDataRecord[];
-
-        if (result.length === 0) {
-            return { success: true, error: null, response: { records: [], next_cursor: nextCursor } };
+        if (rawResults.length === 0) {
+            return { success: true, error: null, response: { records: [], next_cursor: null } };
         }
 
-        const customerResult = result.map((item) => item.record);
+        const results = rawResults.map((item) => {
+            const decryptedRecord = encryptionManager.decryptDataRecord(item);
+            const encodedCursor = Buffer.from(`${item.last_modified_at}||${item.id}`).toString('base64');
+            return {
+                ...decryptedRecord,
+                _nango_metadata: {
+                    first_seen_at: item.first_seen_at,
+                    last_modified_at: item.last_modified_at,
+                    last_action: item.last_action,
+                    deleted_at: item.deleted_at,
+                    cursor: encodedCursor
+                }
+            } as CustomerFacingDataRecord;
+        });
 
-        if (customerResult.length > Number(limit || 100)) {
-            customerResult.pop();
-            rawResult.pop();
+        if (results.length > Number(limit || 100)) {
+            results.pop();
+            rawResults.pop();
 
-            const cursorRawElement = rawResult[rawResult.length - 1] as SyncDataRecord;
-            const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
-
-            nextCursor = cursorElement['_nango_metadata']['first_seen_at'] as unknown as string;
-            const encodedCursorValue = Buffer.from(`${nextCursor}||${cursorRawElement.id}`).toString('base64');
-
-            return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: encodedCursorValue } };
-        } else {
-            return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: nextCursor } };
+            const cursorRawElement = rawResults[rawResults.length - 1];
+            if (cursorRawElement) {
+                const encodedCursorValue = Buffer.from(`${cursorRawElement.last_modified_at}||${cursorRawElement.id}`).toString('base64');
+                return { success: true, error: null, response: { records: results, next_cursor: encodedCursorValue } };
+            }
         }
+        return { success: true, error: null, response: { records: results, next_cursor: null } };
     } catch (e: any) {
-        const errorMessage = 'List records error';
+        const errorMessage = `List records error for model ${model}`;
         await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId,
             providerConfigKey,
-            delta: String(delta),
+            modifiedAfter: String(modifiedAfter),
             model,
             error: JSON.stringify(e)
         });
@@ -503,31 +508,6 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
     return { isUnique, nonUniqueKeys };
 }
 
-export async function deleteRecordsBySyncId(sync_id: string): Promise<void> {
-    await schema().from<SyncDataRecord>('_nango_sync_data_records').where({ sync_id }).del();
-    await schema().from<SyncDataRecord>('_nango_sync_data_records_deletes').where({ sync_id }).del();
-}
-
-export async function getSingleRecord(external_id: string, nango_connection_id: number, model: string): Promise<SyncDataRecord | null> {
-    const encryptedRecord = await schema().from<SyncDataRecord>('_nango_sync_data_records').where({
-        nango_connection_id,
-        model,
-        external_id
-    });
-
-    if (!encryptedRecord) {
-        return null;
-    }
-
-    const result = encryptionManager.decryptDataRecords(encryptedRecord, 'json');
-
-    if (!result || result.length === 0) {
-        return null;
-    }
-
-    return result[0] as unknown as SyncDataRecord;
-}
-
 export async function getRecordsByExternalIds(external_ids: string[], nango_connection_id: number, model: string): Promise<SyncDataRecord[]> {
     const encryptedRecords = await schema()
         .from<SyncDataRecord>('_nango_sync_data_records')
@@ -548,4 +528,38 @@ export async function getRecordsByExternalIds(external_ids: string[], nango_conn
     }
 
     return result as unknown as SyncDataRecord[];
+}
+
+export async function deleteRecordsBySyncId({
+    syncId,
+    limit = 5000
+}: {
+    syncId: string;
+    limit?: number;
+}): Promise<{ totalRecords: number; totalDeletes: number }> {
+    let totalRecords = 0;
+    let countRecords = 0;
+    do {
+        countRecords = await db
+            .knex('_nango_sync_data_records')
+            .whereIn('id', function (sub) {
+                sub.select('id').from('_nango_sync_data_records').where({ sync_id: syncId }).limit(limit);
+            })
+            .del();
+        totalRecords += countRecords;
+    } while (countRecords >= limit);
+
+    let totalDeletes = 0;
+    let countDeletes = 0;
+    do {
+        countDeletes = await db
+            .knex('_nango_sync_data_records_deletes')
+            .whereIn('id', function (sub) {
+                sub.select('id').from('_nango_sync_data_records_deletes').where({ sync_id: syncId }).limit(limit);
+            })
+            .del();
+        totalDeletes += countDeletes;
+    } while (countDeletes >= limit);
+
+    return { totalDeletes, totalRecords };
 }

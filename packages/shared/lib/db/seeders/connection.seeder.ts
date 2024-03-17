@@ -25,8 +25,8 @@ export const createConnectionSeeds = async (environmentName = ''): Promise<numbe
 
         for (const [name] of connectionParams) {
             const [result] = (await connectionService.upsertConnection(
-                name as string,
-                name as string,
+                `conn-${name}`,
+                `provider-${name}`,
                 'google',
                 {} as AuthCredentials,
                 {},
@@ -44,5 +44,5 @@ export const createConnectionSeeds = async (environmentName = ''): Promise<numbe
 };
 
 export const deleteAllConnectionSeeds = async (): Promise<void> => {
-    await db.knex.raw('TRUNCATE TABLE nango._nango_connections CASCADE');
+    await db.knex.raw('TRUNCATE TABLE _nango_connections CASCADE');
 };

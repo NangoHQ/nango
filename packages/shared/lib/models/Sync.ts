@@ -57,11 +57,14 @@ export interface Job extends TimestampsAndDeleted {
 
 export interface ReportedSyncJobStatus {
     id?: string;
+    type: SyncType;
     name?: string;
     status: SyncStatus;
     latestResult?: SyncResultByModel;
     jobStatus?: SyncStatus;
     frequency: string;
+    finishedAt: Date;
+    nextScheduledSyncAt: Date | null;
 }
 
 export interface SyncModelSchema {
@@ -101,7 +104,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     pre_built?: boolean;
     is_public?: boolean;
     endpoints?: NangoSyncEndpoint[];
-    input?: string;
+    input?: string | SyncModelSchema;
     sync_type?: SyncType | undefined;
     webhook_subscriptions?: string[];
 }
@@ -131,10 +134,11 @@ export interface SlimAction {
 
 export interface SyncDeploymentResult {
     name: string;
-    version: string;
+    version?: string;
     providerConfigKey: string;
     type: SyncConfigType;
     last_deployed?: Date;
+    input?: string | SyncModelSchema;
     models: string | string[];
     id?: number | undefined;
 
@@ -163,6 +167,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     model_schema: string;
+    input?: string | SyncModelSchema;
     endpoints?: NangoSyncEndpoint[];
 }
 
@@ -190,7 +195,6 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     };
     version?: string;
     track_deletes?: boolean;
-    input?: string;
     sync_type?: SyncType;
     webhookSubscriptions?: string[];
 }
@@ -215,8 +219,22 @@ export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any> & { id: string | number };
 
-export type GetRecordsResponse = { records: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; next_cursor?: string | null } | null;
+export interface EncryptedRawRecord {
+    iv: string;
+    authTag: string;
+    encryptedValue: string;
+}
 
+export type UnencryptedRawRecord = Record<string, any> & { id: string | number };
+
+export type RawDataRecordResult = {
+    id: string | number;
+    record: UnencryptedRawRecord | EncryptedRawRecord;
+} & RecordMetadata;
+
+export type GetRecordsResponse = { records: CustomerFacingDataRecord[]; next_cursor?: string | null } | null;
+
+// TO DEPRECATE
 export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
 
 export interface DataRecord extends Timestamps {
@@ -240,12 +258,14 @@ export interface DataRecord extends Timestamps {
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
 
 interface RecordMetadata {
-    first_seen_at: Date;
-    last_modified_at: Date;
+    first_seen_at: string;
+    last_modified_at: string;
     last_action: LastAction;
-    deleted_at: Date | null;
+    deleted_at: string | null;
+    cursor: string;
 }
 
+// DEPRECATED
 export interface DataRecordWithMetadata extends RecordMetadata {
     record: object;
 }

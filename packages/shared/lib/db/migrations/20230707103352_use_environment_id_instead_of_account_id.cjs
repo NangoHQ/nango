@@ -19,31 +19,25 @@ exports.up = async function (knex, _) {
 
     for (const tableObject of tablesToReplace) {
         const { name: tableToReplace, dropForeign, truncate } = tableObject;
-        await knex.schema.withSchema('nango').alterTable(tableToReplace, function (table) {
-            table.integer('environment_id').unsigned().references('id').inTable(`nango.${TABLE_PREFIX}environments`).index();
+        await knex.schema.alterTable(tableToReplace, function (table) {
+            table.integer('environment_id').unsigned().references('id').inTable(`${TABLE_PREFIX}environments`).index();
         });
 
         if (truncate) {
-            await knex.raw('TRUNCATE TABLE ?? CASCADE', ['nango.' + tableToReplace]);
+            await knex.raw('TRUNCATE TABLE ?? CASCADE', [tableToReplace]);
         }
 
-        const records = await knex.withSchema('nango').select('id', 'account_id').from(tableToReplace);
+        const records = await knex.select('id', 'account_id').from(tableToReplace);
 
         for (const record of records) {
-            const environment = await knex.withSchema('nango')
-                .select('id')
-                .from(ENVIRONMENTS_TABLE)
-                .where({
-                    account_id: record.account_id,
-                    name: 'prod'
-                });
-            await knex.withSchema('nango')
-                .update({ environment_id: environment[0].id })
-                .from(tableToReplace)
-                .where({ id: record.id });
+            const environment = await knex.select('id').from(ENVIRONMENTS_TABLE).where({
+                account_id: record.account_id,
+                name: 'prod'
+            });
+            await knex.update({ environment_id: environment[0].id }).from(tableToReplace).where({ id: record.id });
         }
 
-        await knex.schema.withSchema('nango').alterTable(tableToReplace, function (table) {
+        await knex.schema.alterTable(tableToReplace, function (table) {
             if (tableToReplace === `${TABLE_PREFIX}connections`) {
                 table.dropUnique(['provider_config_key', 'connection_id', 'account_id']);
                 table.unique(['provider_config_key', 'connection_id', 'environment_id']);
@@ -57,7 +51,7 @@ exports.up = async function (knex, _) {
 };
 
 exports.down = async function (knex, _) {
-    return knex.schema.withSchema('nango').alterTable(ACCOUNTS_TABLE, function (table) {
+    return knex.schema.alterTable(ACCOUNTS_TABLE, function (table) {
         table.uuid('secret_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();
         table.uuid('public_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();
         table.string('secret_key_iv');

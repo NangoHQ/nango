@@ -1,4 +1,6 @@
 import axios, { AxiosError } from 'axios';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
@@ -6,9 +8,11 @@ import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Co
 import type { Environment } from '../../models/Environment';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { SyncResult } from '../../models/Sync';
-import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody } from '../../models/Webhook.js';
+import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
+
+dayjs.extend(utc);
 
 const RETRY_ATTEMPTS = 10;
 
@@ -18,6 +22,7 @@ const NON_FORWARDABLE_HEADERS = [
     'connection',
     'keep-alive',
     'content-length',
+    'content-type', // we're sending json so don't want this overwritten
     'content-encoding',
     'cookie',
     'set-cookie',
@@ -145,6 +150,7 @@ class WebhookService {
                 deleted: 0
             },
             syncType,
+            modifiedAfter: dayjs(now).toDate().toISOString(),
             queryTimeStamp: now as unknown as string
         };
 
@@ -165,7 +171,7 @@ class WebhookService {
 
             const response = await backOff(
                 () => {
-                    return axios.post(webhookUrl as string, body, { headers });
+                    return axios.post(webhookUrl, body, { headers });
                 },
                 { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
             );
@@ -271,13 +277,32 @@ class WebhookService {
             }
         }
     }
-
     async forward(
         environment_id: number,
         providerConfigKey: string,
+        connectionIds: string[],
         provider: string,
         payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, any>
+        webhookOriginalHeaders: Record<string, string>
+    ) {
+        const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
+
+        if (!send || !environmentInfo) {
+            return;
+        }
+
+        for (const connectionId of connectionIds) {
+            await this.forwardHandler(environment_id, providerConfigKey, connectionId, provider, payload, webhookOriginalHeaders);
+        }
+    }
+
+    async forwardHandler(
+        environment_id: number,
+        providerConfigKey: string,
+        connectionId: string,
+        provider: string,
+        payload: Record<string, any> | null,
+        webhookOriginalHeaders: Record<string, string>
     ) {
         const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
@@ -294,7 +319,7 @@ class WebhookService {
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: '',
+            connection_id: connectionId,
             provider_config_key: providerConfigKey,
             provider: provider,
             environment_id: environment_id
@@ -302,8 +327,10 @@ class WebhookService {
 
         const activityLogId = await createActivityLog(log);
 
-        const body = {
+        const body: NangoForwardWebhookBody = {
             from: provider,
+            connectionId,
+            providerConfigKey,
             type: WebhookType.FORWARD,
             payload: payload
         };
@@ -312,6 +339,7 @@ class WebhookService {
 
         const headers = {
             ...nangoHeaders,
+            'X-Nango-Source-Content-Type': webhookOriginalHeaders['content-type'],
             ...this.filterHeaders(webhookOriginalHeaders)
         };
 

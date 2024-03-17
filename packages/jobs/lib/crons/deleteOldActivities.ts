@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import { deleteLog, deleteLogsMessages, errorManager, ErrorSourceEnum, findOldActivities, logger, MetricTypes, telemetry } from '@nangohq/shared';
-import tracer from '../tracer.js';
+import tracer from 'dd-trace';
 import { setTimeout } from 'node:timers/promises';
 
 // Retention in days
@@ -9,7 +9,7 @@ const limitLog = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_LIMIT'] || '', 10)
 const limitMsg = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_MSG_LIMIT'] || '', 10) || 5000;
 const cpuNice = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_CPU_NICE_MS'] || '', 10) || 200;
 
-export async function deleteOldActivityLogs(): Promise<void> {
+export function deleteOldActivityLogs(): void {
     /**
      * Delete all activity logs older than 15 days
      */

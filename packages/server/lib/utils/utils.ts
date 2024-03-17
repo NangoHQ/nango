@@ -7,7 +7,7 @@ import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
 
 export async function getUserAccountAndEnvironmentFromSession(
-    req: Request
+    req: Request<any, any>
 ): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
     const sessionUser = req.user;
     const currentEnvironment = req.cookies['env'] || 'dev';
@@ -123,26 +123,6 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }
 
-/**
- * A version of JSON.parse that detects Date strings and transforms them back into
- * Date objects. This depends on how dates were serialized obviously.
- *
- * @remarks
- * Source: https://stackoverflow.com/questions/3143070/javascript-regex-iso-datetime
- */
-export function parseJsonDateAware(input: string) {
-    const dateFormat =
-        /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
-    // @ts-expect-error
-    return JSON.parse(input, (key, value) => {
-        if (typeof value === 'string' && dateFormat.test(value)) {
-            return new Date(value);
-        }
-
-        return value;
-    });
-}
-
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
     if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
@@ -247,8 +227,8 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
   <body>
     <noscript>JavaScript is required to proceed with the authentication.</noscript>
     <script type="text/javascript">
-      window.authErrorType = \'\${errorType}\';
-      window.authErrorDesc = \'\${errorDesc}\';
+      window.authErrorType = '\${errorType}';
+      window.authErrorDesc = '\${errorDesc}';
 
       const message = {};
       message.eventType = 'AUTHORIZATION_FAILED';

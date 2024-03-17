@@ -12,7 +12,7 @@ import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRe
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
+import { isCloud, integrationFilesAreRemote, getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
@@ -178,7 +178,7 @@ export default class SyncRun {
             let environment: Environment | null = null;
 
             if (!bypassEnvironment) {
-                environment = await environmentService.getById(this.nangoConnection.environment_id as number);
+                environment = await environmentService.getById(this.nangoConnection.environment_id);
             }
 
             if (!environment && !bypassEnvironment) {
@@ -188,7 +188,7 @@ export default class SyncRun {
                 return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
 
-            const secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
+            const secretKey = optionalSecretKey || (environment ? environment?.secret_key : '');
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
@@ -196,9 +196,9 @@ export default class SyncRun {
             let syncData: NangoIntegrationData;
 
             if (this.isAction) {
-                syncData = (syncObject['actions'] ? syncObject!['actions']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+                syncData = (syncObject['actions'] ? syncObject['actions'][this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
             } else {
-                syncData = (syncObject['syncs'] ? syncObject!['syncs']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+                syncData = (syncObject['syncs'] ? syncObject['syncs'][this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
             }
 
             const { returns: models, track_deletes: trackDeletes, is_public: isPublic } = syncData;
@@ -220,11 +220,11 @@ export default class SyncRun {
                 }
 
                 if (this.syncJobId) {
-                    await addSyncConfigToJob(this.syncJobId as number, syncData.sync_config_id);
+                    await addSyncConfigToJob(this.syncJobId, syncData.sync_config_id);
                 }
             }
 
-            if (!isCloud() && !isPublic && !this.isAction) {
+            if (!isCloud() && !integrationFilesAreRemote() && !isPublic) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation
@@ -252,7 +252,7 @@ export default class SyncRun {
             // TODO this only works for dryrun at the moment
             if (this.isAction && syncData.input) {
                 const { input: configInput } = syncData;
-                if (JAVASCRIPT_PRIMITIVES.includes(configInput as unknown as string)) {
+                if (isJsOrTsType(configInput as unknown as string)) {
                     if (typeof this.input !== (configInput as unknown as string)) {
                         const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${configInput}`;
                         await this.reportFailureForResults(message);
@@ -270,7 +270,7 @@ export default class SyncRun {
                 host: optionalHost || getApiUrl(),
                 accountId: environment?.account_id as number,
                 connectionId: String(this.nangoConnection?.connection_id),
-                environmentId: this.nangoConnection?.environment_id as number,
+                environmentId: this.nangoConnection?.environment_id,
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 provider: this.provider as string,
                 activityLogId: this.activityLogId as number,
@@ -450,7 +450,7 @@ export default class SyncRun {
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
-                    this.activityLogId as number,
+                    this.activityLogId,
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
@@ -486,7 +486,7 @@ export default class SyncRun {
             const modelResult = result[model] as SyncResult;
             added = modelResult.added;
             updated = modelResult.updated;
-            deleted = modelResult.deleted as number;
+            deleted = modelResult.deleted;
         } else {
             // legacy json structure
             added = (result?.['added'] as unknown as number) ?? 0;
@@ -583,9 +583,9 @@ export default class SyncRun {
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
-            } catch (e) {
+            } catch {
                 await errorManager.report('slack notification service reported a failure', {
-                    environmentId: this.nangoConnection.environment_id as number,
+                    environmentId: this.nangoConnection.environment_id,
                     source: ErrorSourceEnum.PLATFORM,
                     operation: LogActionEnum.SYNC,
                     metadata: {
@@ -617,7 +617,7 @@ export default class SyncRun {
         });
 
         await errorManager.report(content, {
-            environmentId: this.nangoConnection.environment_id as number,
+            environmentId: this.nangoConnection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.SYNC,
             metadata: {

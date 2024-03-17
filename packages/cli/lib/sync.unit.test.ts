@@ -214,7 +214,7 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
-        expect(generate(false, true)).rejects.toThrow(
+        await expect(generate(false, true)).rejects.toThrow(
             `Model "GithubIssue" doesn't have an id field. This is required to be able to uniquely identify the data record.`
         );
     });
@@ -248,7 +248,6 @@ describe('generate function tests', () => {
             }
         };
         const yamlData = yaml.dump(data);
-        console.log(yamlData);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
         await generate(false, true);
         const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
@@ -328,51 +327,60 @@ describe('generate function tests', () => {
         expect(await generate(false, true)).toBeUndefined();
     });
 
-    it('should not complain of try catch not being awaited', async () => {
+    it('should not complain of try catch not being awaited', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(true);
     });
 
-    it('should complain when a return statement is used', async () => {
+    it('should complain when a return statement is used', () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(false);
     });
 
-    it('should not complain when a return statement is used but does not return anything', async () => {
+    it('should not complain when a return statement is used but does not return anything', () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/void-return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(true);
     });
 
-    it('should not complain when a return statement is used in a nested function', async () => {
+    it('should not complain when a return statement is used in a nested function', () => {
         const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GreenhouseEeoc']);
         expect(noReturnUsed).toBe(true);
     });
 
-    it('should complain of a non try catch not being awaited', async () => {
+    it('should complain of a non try catch not being awaited', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
-    it('should not complain about a correct model', async () => {
+    it('should not complain about a correct model', () => {
         const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
         expect(usedCorrectly).toBe(true);
     });
 
-    it('should not complain about awaiting when it is returned for an action', async () => {
+    it('should not complain about awaiting when it is returned for an action', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/no-async-return.ts`, SyncConfigType.ACTION, ['SomeModel']);
         expect(awaiting).toBe(true);
     });
 
-    it('should complain about an incorrect model', async () => {
+    it('should complain about an incorrect model', () => {
         const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
+    });
+
+    it('should complain if retryOn is used without retries', () => {
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-bad.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        expect(usedCorrectly).toBe(false);
+    });
+
+    it('should not complain if retryOn is used with retries', () => {
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-good.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        expect(usedCorrectly).toBe(false);
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
         const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid`));
         expect(config).toBeDefined();
-        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid/object.json`), 'utf8');
-        expect(config).toEqual(JSON.parse(json));
+        expect(config).toMatchSnapshot();
     });
 
     it('v1 - should complain about commas at the end of declared types', async () => {
@@ -390,8 +398,7 @@ describe('generate function tests', () => {
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
         const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/valid`));
         expect(config).toBeDefined();
-        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v2/valid/object.json`), 'utf8');
-        expect(config).toEqual(JSON.parse(json));
+        expect(config).toMatchSnapshot();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', async () => {
@@ -406,5 +413,42 @@ describe('generate function tests', () => {
         expect(config).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toEqual('Problem validating the nango.yaml file.');
+    });
+
+    it('should correctly interpret a string union literal type', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/string-literal/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`gender: 'male' | 'female';`);
+    });
+
+    it('should correctly interpret a union literal type with a string and a primitive', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`gender: 'male' | null;`);
+    });
+
+    it('should correctly interpret a union literal type with a string and a model', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal-model/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`gender: 'male' | Other`);
+        expect(modelsFile).toContain(`user: User | Account`);
+    });
+
+    it('should correctly interpret a union types, array types, and record types', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-types/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).toContain(`record: Record<string, string>;`);
+        expect(modelsFile).toContain(`und: string | null | undefined;`);
+        expect(modelsFile).toContain(`def: 'male' | string | null | undefined;`);
+        expect(modelsFile).toContain(`reference: Other[];`);
+        expect(modelsFile).toContain(`nullableDate: Date | null;`);
     });
 });

@@ -7,7 +7,6 @@ import EmailClient from '../clients/email.client.js';
 import {
     User,
     userService,
-    configService,
     accountService,
     errorManager,
     ErrorSourceEnum,
@@ -16,7 +15,8 @@ import {
     AnalyticsTypes,
     isCloud,
     getBaseUrl,
-    NangoError
+    NangoError,
+    createOnboardingProvider
 } from '@nangohq/shared';
 
 export interface WebUser {
@@ -114,7 +114,7 @@ class AuthController {
 
             const salt = crypto.randomBytes(16).toString('base64');
             const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
-            const user = await userService.createUser(email, name, hashedPassword, salt, account!.id);
+            const user = await userService.createUser(email, name, hashedPassword, salt, account.id);
 
             if (user == null) {
                 throw new NangoError('user_creation_failure');
@@ -125,8 +125,10 @@ class AuthController {
 
             if (isCloud() && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.
-                // Harder to do on the self-hosted version because we don't know what OAuth callback to use.
-                await configService.createDefaultProviderConfig(account.id);
+                const env = await environmentService.getByEnvironmentName('dev');
+                if (env) {
+                    await createOnboardingProvider({ envId: env.id });
+                }
             }
 
             if (joinedWithToken) {
@@ -139,10 +141,10 @@ class AuthController {
                 }
 
                 const webUser: WebUser = {
-                    id: user!.id,
-                    accountId: user!.account_id,
-                    email: user!.email,
-                    name: user!.name
+                    id: user.id,
+                    accountId: user.account_id,
+                    email: user.email,
+                    name: user.name
                 };
                 res.status(200).send({ user: webUser });
             });

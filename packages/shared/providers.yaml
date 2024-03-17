@@ -61,6 +61,16 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
+algolia:
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.APP_ID}.algolia.net
+        headers:
+            X-Algolia-Application-Id: ${connectionConfig.APP_ID}
+            X-Algolia-API-Key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/algolia
 amazon:
     categories:
         - dev-tools
@@ -77,6 +87,17 @@ amazon:
     proxy:
         base_url: https://api.amazon.com
     docs: https://docs.nango.dev/integrations/all/amazon
+anrok:
+    categories:
+        - legal
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anrok.com
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/anrok
 aws:
     categories:
         - dev-tools
@@ -1076,6 +1097,11 @@ lever-sandbox:
     proxy:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+lever-basic-sandbox:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.sandbox.lever.co
+    docs: https://docs.nango.dev/integrations/all/lever
 linear:
     categories:
         - productivity
@@ -1405,6 +1431,25 @@ pennylane:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/pennylane
+pinterest:
+    categories:
+        - design
+        - marketing
+        - social
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://www.pinterest.com/oauth
+    token_url: https://api.pinterest.com/v5/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.pinterest.com
+    docs: https://docs.nango.dev/integrations/all/pinterest
 pipedrive:
     categories:
         - crm
@@ -1812,6 +1857,18 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+teamtailor:
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.extension}.teamtailor.com
+        retry:
+            after: 'X-Rate-Limit-Reset'
+        headers:
+            Authorization: Token token=${apiKey}
+            X-Api-Version: '20210218'
+    docs: https://docs.nango.dev/integrations/all/teamtailor
 teamwork:
     categories:
         - productivity
@@ -2172,6 +2229,14 @@ zoho-invoice:
         - invoicing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-invoice
+zoho-mail:
+    categories:
+        - productivity
+        - communication
+    alias: zoho
+    proxy:
+        base_url: https://mail.zoho.${connectionConfig.extension}
+    docs: https://docs.nango.dev/integrations/all/zoho-mail
 zoho-bigin:
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin
@@ -2186,5 +2251,5 @@ zoom:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://developer.zoom.us
+        base_url: https://api.zoom.us/v2
     docs: https://docs.nango.dev/integrations/all/zoom

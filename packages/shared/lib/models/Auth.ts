@@ -143,6 +143,8 @@ export interface CredentialsRefresh {
     promise: Promise<ServiceResponse<OAuth2Credentials>>;
 }
 
+export type UnauthCredentials = Record<string, never>;
+
 export type RefreshTokenResponse = AuthorizationTokenResponse;
 
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {

@@ -80,8 +80,8 @@ class DryRunService {
         }
 
         const nangoConnection = (await getConnection(
-            providerConfigKey as string,
-            connectionId as string,
+            providerConfigKey,
+            connectionId,
             {
                 'Nango-Is-Sync': true,
                 'Nango-Is-Dry-Run': true
@@ -119,7 +119,7 @@ class DryRunService {
             if (debug) {
                 printDebug(`Last sync date supplied as ${suppliedLastSyncDate}`);
             }
-            lastSyncDate = new Date(suppliedLastSyncDate as string);
+            lastSyncDate = new Date(suppliedLastSyncDate);
         }
 
         const result = await compileService.run(debug, syncName);
@@ -133,13 +133,13 @@ class DryRunService {
         let stubbedMetadata;
         try {
             normalizedInput = JSON.parse(actionInput as unknown as string);
-        } catch (e) {
+        } catch {
             normalizedInput = actionInput;
         }
 
         try {
             stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
-        } catch (e) {
+        } catch {
             stubbedMetadata = rawStubbedMetadata;
         }
 
@@ -172,7 +172,7 @@ class DryRunService {
             }
 
             if (syncRun.logMessages && syncRun.logMessages.length > 0) {
-                const logMessages = syncRun.logMessages as unknown[];
+                const logMessages = syncRun.logMessages;
                 let index = 0;
                 const batchCount = 10;
 
@@ -201,7 +201,7 @@ class DryRunService {
             }
 
             process.exit(0);
-        } catch (e) {
+        } catch {
             process.exit(1);
         }
     }

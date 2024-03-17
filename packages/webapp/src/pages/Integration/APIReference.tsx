@@ -16,7 +16,12 @@ interface APIReferenceProps {
 export default function APIReference(props: APIReferenceProps) {
     const { integration, endpoints, setSubTab, setFlow } = props;
 
-    const allFlows = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.actions || []];
+    const allFlows = [
+        ...(endpoints?.enabledFlows?.syncs || []),
+        ...(endpoints?.enabledFlows?.actions || []),
+        ...(endpoints?.unEnabledFlows?.syncs || []),
+        ...(endpoints?.unEnabledFlows?.actions || [])
+    ];
     // if any element in the array has elements in the endpoints array then return true
     const hasEndpoints = allFlows.some((flow) => flow.endpoints.length > 0);
 
@@ -24,8 +29,19 @@ export default function APIReference(props: APIReferenceProps) {
         <div className="h-fit rounded-md text-white text-sm">
             {!hasEndpoints ? (
                 <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
-                    <h2 className="text-xl text-center w-full">Integrate with {integration?.provider}</h2>
-                    <div className="mt-4 text-gray-400">{integration?.provider} does not yet have publicly available endpoints on Nango.</div>
+                    <h2 className="text-xl text-center w-full">No available endpoint</h2>
+                    <div className="mt-4 text-gray-400">
+                        There is no{' '}
+                        <a
+                            className="text-text-blue hover:text-text-light-blue"
+                            href="https://docs.nango.dev/understand/concepts/templates"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            integration template
+                        </a>{' '}
+                        available for this API yet.
+                    </div>
                     <HelpFooter />
                 </div>
             ) : (
@@ -43,13 +59,7 @@ export default function APIReference(props: APIReferenceProps) {
                                 <Fragment key={flowIndex}>
                                     {flow.endpoints.map((endpoint, index: number) => (
                                         <tr key={`tr-${flow.name}-${flowIndex}-${index}`}>
-                                            <EndpointRow
-                                                flow={flow}
-                                                endpoint={endpoint}
-                                                integration={integration}
-                                                setSubTab={setSubTab}
-                                                setFlow={setFlow}
-                                            />
+                                            <EndpointRow flow={flow} endpoint={endpoint} integration={integration} setSubTab={setSubTab} setFlow={setFlow} />
                                         </tr>
                                     ))}
                                 </Fragment>

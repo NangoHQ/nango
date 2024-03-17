@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Prism } from '@mantine/prism';
 import { Loading } from '@geist-ui/core';
 
@@ -16,17 +17,22 @@ interface AuthorizationProps {
 
 export default function Authorization(props: AuthorizationProps) {
     const { connection, forceRefresh, loaded } = props;
+    const [refreshing, setRefreshing] = useState(false);
 
-    if (!loaded) return (
-        <Loading spaceRatio={2.5} className="top-24" />
-    );
+    const handleForceRefresh = async () => {
+        setRefreshing(true);
+        await forceRefresh();
+        setRefreshing(false);
+    };
+
+    if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
             <div className="flex">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-2">
                         <span className="text-white">{connection?.connectionId}</span>
                         <CopyButton text={connection?.connectionId as string} dark />
                     </div>
@@ -73,7 +79,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection?.accessToken && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Access Token</span>
-                    <SecretInput disabled defaultValue={connection?.accessToken} copy={true} refresh={() => forceRefresh()} />
+                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.accessToken} copy={true} refresh={handleForceRefresh} />
                 </div>
             )}
             {connection?.oauthToken && (
@@ -91,7 +97,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection?.refreshToken && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Refresh Token</span>
-                    <SecretInput disabled defaultValue={connection?.refreshToken} copy={true} refresh={() => forceRefresh()} />
+                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.refreshToken} copy={true} refresh={handleForceRefresh} />
                 </div>
             )}
             <div className="flex flex-col">
@@ -107,17 +113,16 @@ export default function Authorization(props: AuthorizationProps) {
                 </Prism>
             </div>
             {(connection?.oauthType === AuthModes.OAuth1 ||
-              connection?.oauthType === AuthModes.OAuth2 ||
-              connection?.oauthType === AuthModes.App ||
-              connection?.oauthType === AuthModes.Custom
-             ) && (
+                connection?.oauthType === AuthModes.OAuth2 ||
+                connection?.oauthType === AuthModes.App ||
+                connection?.oauthType === AuthModes.Custom) && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>
                     <PrismPlus language="json" colorScheme="dark">
                         {JSON.stringify(connection?.rawCredentials, null, 4) || '{}'}
                     </PrismPlus>
                 </div>
-             )}
+            )}
         </div>
-    )
+    );
 }

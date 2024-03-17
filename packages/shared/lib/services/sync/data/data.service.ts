@@ -5,6 +5,7 @@ import { markRecordsForDeletion, syncCreatedAtForAddedRecords, syncUpdateAtForCh
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
+import { logger } from '../../../index.js';
 
 /**
  * Upsert
@@ -87,12 +88,12 @@ export async function upsert(
 
         if (error.code) errorMessage += `Error code: ${error.code}.\n`;
 
-        console.log(`${errorMessage}${error}`);
+        logger.error(`${errorMessage}${error}`);
 
         let errorDetail = '';
         switch (error.code) {
             case '22001': {
-                errorDetail = 'String length exceeds the column’s maximum length (string_data_right_truncation)';
+                errorDetail = "String length exceeds the column's maximum length (string_data_right_truncation)";
                 break;
             }
         }
@@ -249,7 +250,7 @@ export async function getAddedKeys(response: DataRecord[], dbTable: string, uniq
  */
 export async function getUpdatedKeys(response: DataRecord[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<string[]> {
     const keys: string[] = response.map((data: DataRecord) => String(data[uniqueKey]));
-    const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[uniqueKey]), data['data_hash'] as string]);
+    const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[uniqueKey]), data['data_hash']]);
 
     const rowsToUpdate = await schema()
         .from(dbTable)

@@ -1,2561 +1,2756 @@
 integrations:
-  asana:
-    syncs:
-      asana-tasks:
-        runs: every 30min
-        description: |
-          Continuously fetches Asana tasks. This is just a trivial example:
-          it will only get tasks from the first project of the first workspace.
-          Details: full refresh, doesn't support deletes, sync goes to all time,
-          metadata is not required.
-        scopes: default
-        output: AsanaTask
-        sync_type: full
-        endpoint: /asana/asana-tasks
-    models:
-      AsanaTask:
-        id: string
-        project_id: string
-        name: string
-        completed: boolean
-        created_at: date
-        modified_at: date
-  ashby:
-    ashby-candidates:
-      runs: every hour
-      returns:
-        - AshbyCandidate
-      description: |
-        Fetch a list of all candidates from your ashby account.
-        Details: Increamental sync, doesn't track deletes, metadata is required.
-    ashby-jobs:
-      runs: every hour
-      returns:
-        - AshbyJob
-      description: |
-        Fetch a list of all jobs from your ashby account.
-        Details: Increamental sync, doesn't track deletes, metadata is required.
-    ashby-create-application:
-      type: action
-      returns: AshbyCreateApplicationResponse
-      description: |
-        Action to consider a candidate for a job.
-    ashby-create-note:
-      type: action
-      returns: AshbyCreateNoteResponse
-      description: |
-        Action to create a note on a candidate.
-    models:
-      AshbyCandidate:
-        id: string
-        createdAt: date
-        name: string
-        primaryEmailAddress:
-          value: string
-          type: string
-          isPrimary: boolean
-        emailAddresses: []
-        primaryPhoneNumber:
-          value: string
-          type: string
-          isPrimary: boolean
-        phoneNumbers: []
-        socialLinks: []
-        tags: []
-        position: string
-        company: string
-        school: string
-        applicationIds: string[]
-        resumeFileHandle:
-          id: string
-          name: string
-          handle: string
-        fileHandles: []
-        customFields: []
-        profileUrl: string
-        source:
-          id: string
-          title: string
-          isArchived: boolean
-          sourceType:
-            id: string
-            title: string
-            isArchived: boolean
-        creditedToUser:
-          id: string
-          firstName: string
-          lastName: string
-          email: string
-          globalRole: string
-          isEnabled: boolean
-          updatedAt: date
-      AshbyJob:
-        id: string
-        title: string
-        confidential: boolean
-        status: string
-        employmentType: string
-        locationId: string
-        departmentId: string
-        defaultInterviewPlanId: string
-        interviewPlanIds: string[]
-        customFields: []
-        jobPostingIds: string[]
-        customRequisitionId: string
-        hiringTeam: []
-        updatedAt: date
-        location:
-          id: string
-          name: string
-          isArchived: boolean
-          address:
-            postalAddress:
-              addressCountry: string
-              addressRegion: string
-              addressLocality: string
-          isRemote: boolean
-        openings: []
-      AshbyCreateApplicationResponse:
-        id: string
-        createdAt: date
-        updatedAt: date
-        status: string
-        customFields: []
-        candidate:
-          id: string
-          name: string
-          primaryEmailAddress:
-            value: string
-            type: string
-            isPrimary: boolean
-          primaryPhoneNumber:
-            value: string
-            type: string
-            isPrimary: boolean
-        currentInterviewStage:
-          id: string
-          title: string
-          type: string
-          orderInInterviewPlan: number
-          interviewPlanId: string
-        source:
-          id: string
-          title: string
-          isArchived: boolean
-          sourceType:
-            id: string
-            title: string
-            isArchived: boolean
-        archiveReason:
-          id: string
-          text: string
-          reasonType: string
-          isArchived: boolean
-        job:
-          id: string
-          title: string
-          locationId: string
-          departmentId: string
-        creditedToUser:
-          id: string
-          firstName: string
-          lastName: string
-          email: string
-          globalRole: string
-          isEnabled: boolean
-          updatedAt: date
-        hiringTeam: []
-        appliedViaJobPostingId: string
-      AshbyCreateNoteResponse:
-        id: string
-        createdAt: date
-        content: string
-        author:
-          id: string
-          firstName: string
-          lastName: string
-          email: string
-  bamboohr-basic:
-    syncs:
-      bamboohr-employees:
-        runs: every 6 hours
-        description: |
-          Fetches employees from bamboohr.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: BamboohrEmployee
-        sync_type: incremental
-        endpoint: /bamboohr/employees
-        scopes:
-          - default
-    actions:
-      bamboohr-create-employee:
-        description: |
-          Action to create a new employee.
-        output: BamboohrCreateEmployeeResponse
-        endpoint: /bamboohr/create-employee
-    models:
-      BamboohrEmployee:
-        id: string
-        employeeNumber: string
-        firstName: string
-        lastName: string
-        dateOfBirth: date
-        address1: string
-        bestEmail: string
-        workEmail: string
-        jobTitle: string
-        hireDate: date
-        supervisorId: string
-        supervisor: string
-        createdByUserId: string
-        department: string
-        division: string
-        employmentHistoryStatus: string
-        gender: string
-        country: string
-        city: string
-        location: string
-        state: string
-        maritalStatus: string
-        exempt: string
-        payRate: string
-        payType: string
-        payPer: string
-        ssn: string
-        workPhone: string
-        homePhone: string
-      BamboohrCreateEmployeeResponse:
-        status: string
-  clari-copilot:
-    clari-copilot-call:
-      runs: every hour
-      returns:
-        - ClariCopilotCall
-      description: >
-        Fetches calls from your account. For the first sync, it will go back to
-        the past one year.
+    algolia:
+        actions:
+            algolia-create-contacts:
+                description: |
+                    Action to add a single record contact to an index
+                output: AlgoliaContact
+                input: AlgoliaCreateContactInput
+                endpoint: POST /algolia/create-contacts
+        models:
+            AlgoliaContact:
+                createdAt: date
+                taskID: number
+                objectID: string
+            AlgoliaCreateContactInput:
+                name: string
+                company: string
+                email: string
+    asana:
+        syncs:
+            asana-tasks:
+                runs: every 30min
+                description: |
+                    Continuously fetches Asana tasks. This is just a trivial example:
+                    it will only get tasks from the first project of the first workspace.
+                    Details: full refresh, doesn't support deletes, sync goes to all time,
+                    metadata is not required.
+                scopes: default
+                output: AsanaTask
+                sync_type: full
+                endpoint: /asana/asana-tasks
+        models:
+            AsanaTask:
+                id: string
+                project_id: string
+                name: string
+                completed: boolean
+                created_at: date
+                modified_at: date
+    ashby:
+        ashby-candidates:
+            runs: every hour
+            returns:
+                - AshbyCandidate
+            description: |
+                Fetch a list of all candidates from your ashby account.
+                Details: Increamental sync, doesn't track deletes, metadata is required.
+        ashby-jobs:
+            runs: every hour
+            returns:
+                - AshbyJob
+            description: |
+                Fetch a list of all jobs from your ashby account.
+                Details: Increamental sync, doesn't track deletes, metadata is required.
+        ashby-create-application:
+            type: action
+            returns: AshbyCreateApplicationResponse
+            description: |
+                Action to consider a candidate for a job.
+        ashby-create-note:
+            type: action
+            returns: AshbyCreateNoteResponse
+            description: |
+                Action to create a note on a candidate.
+        models:
+            AshbyCandidate:
+                id: string
+                createdAt: date
+                name: string
+                primaryEmailAddress:
+                    value: string
+                    type: string
+                    isPrimary: boolean
+                emailAddresses: []
+                primaryPhoneNumber:
+                    value: string
+                    type: string
+                    isPrimary: boolean
+                phoneNumbers: []
+                socialLinks: []
+                tags: []
+                position: string
+                company: string
+                school: string
+                applicationIds: string[]
+                resumeFileHandle:
+                    id: string
+                    name: string
+                    handle: string
+                fileHandles: []
+                customFields: []
+                profileUrl: string
+                source:
+                    id: string
+                    title: string
+                    isArchived: boolean
+                    sourceType:
+                        id: string
+                        title: string
+                        isArchived: boolean
+                creditedToUser:
+                    id: string
+                    firstName: string
+                    lastName: string
+                    email: string
+                    globalRole: string
+                    isEnabled: boolean
+                    updatedAt: date
+            AshbyJob:
+                id: string
+                title: string
+                confidential: boolean
+                status: string
+                employmentType: string
+                locationId: string
+                departmentId: string
+                defaultInterviewPlanId: string
+                interviewPlanIds: string[]
+                customFields: []
+                jobPostingIds: string[]
+                customRequisitionId: string
+                hiringTeam: []
+                updatedAt: date
+                location:
+                    id: string
+                    name: string
+                    isArchived: boolean
+                    address:
+                        postalAddress:
+                            addressCountry: string
+                            addressRegion: string
+                            addressLocality: string
+                    isRemote: boolean
+                openings: []
+            AshbyCreateApplicationResponse:
+                id: string
+                createdAt: date
+                updatedAt: date
+                status: string
+                customFields: []
+                candidate:
+                    id: string
+                    name: string
+                    primaryEmailAddress:
+                        value: string
+                        type: string
+                        isPrimary: boolean
+                    primaryPhoneNumber:
+                        value: string
+                        type: string
+                        isPrimary: boolean
+                currentInterviewStage:
+                    id: string
+                    title: string
+                    type: string
+                    orderInInterviewPlan: number
+                    interviewPlanId: string
+                source:
+                    id: string
+                    title: string
+                    isArchived: boolean
+                    sourceType:
+                        id: string
+                        title: string
+                        isArchived: boolean
+                archiveReason:
+                    id: string
+                    text: string
+                    reasonType: string
+                    isArchived: boolean
+                job:
+                    id: string
+                    title: string
+                    locationId: string
+                    departmentId: string
+                creditedToUser:
+                    id: string
+                    firstName: string
+                    lastName: string
+                    email: string
+                    globalRole: string
+                    isEnabled: boolean
+                    updatedAt: date
+                hiringTeam: []
+                appliedViaJobPostingId: string
+            AshbyCreateNoteResponse:
+                id: string
+                createdAt: date
+                content: string
+                author:
+                    id: string
+                    firstName: string
+                    lastName: string
+                    email: string
+    bamboohr-basic:
+        syncs:
+            bamboohr-employees:
+                runs: every 6 hours
+                description: |
+                    Fetches employees from bamboohr.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: BamboohrEmployee
+                sync_type: incremental
+                endpoint: /bamboohr/employees
+                scopes:
+                    - default
+        actions:
+            bamboohr-create-employee:
+                description: |
+                    Action to create a new employee.
+                output: BamboohrCreateEmployeeResponse
+                endpoint: /bamboohr/create-employee
+        models:
+            BamboohrEmployee:
+                id: string
+                employeeNumber: string
+                firstName: string
+                lastName: string
+                dateOfBirth: date
+                address1: string
+                bestEmail: string
+                workEmail: string
+                jobTitle: string
+                hireDate: date
+                supervisorId: string
+                supervisor: string
+                createdByUserId: string
+                department: string
+                division: string
+                employmentHistoryStatus: string
+                gender: string
+                country: string
+                city: string
+                location: string
+                state: string
+                maritalStatus: string
+                exempt: string
+                payRate: string
+                payType: string
+                payPer: string
+                ssn: string
+                workPhone: string
+                homePhone: string
+            BamboohrCreateEmployeeResponse:
+                status: string
+    clari-copilot:
+        clari-copilot-call:
+            runs: every hour
+            returns:
+                - ClariCopilotCall
+            description: >
+                Fetches calls from your account. For the first sync, it will go back to
+                the past one year.
 
-        Details: incremental sync, doesn't track deletes, metadata is not
-        required.
-    models:
-      ClariCopilotCall:
-        id: string
-        source_id: string
-        title: string
-        users: []
-        externalParticipants: []
-        status: string
-        bot_not_join_reason: []
-        type: string
-        time: string
-        icaluid: string
-        calendar_id: string
-        recurring_event_id: string
-        original_start_time: string
-        last_modified_time: string
-        audio_url: string
-        video_url: string
-        disposition: string
-        deal_name: string
-        deal_value: string
-        deal_close_date: string
-        deal_stage_before_call: string
-        account_name: string
-        contact_names: []
-        crm_info:
-          source_crm: string
-          deal_id: string
-          account_id: string
-          contact_ids: []
-        bookmark_timestamps: []
-        metrics:
-          talk_listen_ratio: number
-          num_questions_asked: number
-          num_questions_asked_by_reps: number
-          call_duration: number
-          total_speak_duration: number
-          longest_monologue_duration: number
-          longest_monologue_start_time: number
-          engaging_questions: number
-          categories: []
-        call_review_page_url: string
-        deal_stage_live: string
-        transcript: []
-        summary:
-          full_summary: string
-          topics_discussed: []
-          key_action_items: []
-        competitor_sentiments: []
-  confluence:
-    syncs:
-      confluence-spaces:
-        runs: every 4 hours
-        output: ConfluenceSpace
-        sync_type: full
-        endpoint: /confluence/spaces
-      confluence-pages:
-        runs: every 4 hours
-        output: ConfluencePage
-        sync_type: full
-        endpoint: /confluence/pages
-    models:
-      ConfluenceSpace:
-        id: string
-        key: string
-        name: string
-        type: string
-        status: string
-        authorId: string
-        createdAt: string
-        homepageId: string
-        description: string
-      ConfluencePage:
-        id: string
-        title: string
-        type: string
-        status: string
-        authorId: string
-        createdAt: string
-        spaceId: string
-        parentId: string
-        parentType: string
-        position: number
-        version:
-          createdAt: string
-          message: string
-          number: number
-          minorEdit: boolean
-          authorId: string
-        body:
-          storage: object
-          atlas_doc_format: object
-  evaluagent:
-    syncs:
-      evaluagent-users:
-        runs: every day
-        output: EvaluAgentUser
-        sync_type: full
-        endpoint: /evaluagent/users
-      evaluagent-groups:
-        runs: every day
-        output: EvaluAgentGroup
-        sync_type: full
-        endpoint: /evaluagent/groups
-      evaluagent-roles:
-        runs: every day
-        output: EvaluAgentRole
-        sync_type: full
-        endpoint: /evaluagent/roles
-    models:
-      EvaluAgentGroup:
-        id: string
-        name: string
-        level: string
-        active: boolean
-        parent: string
-        hasChildren: boolean
-        isCustomReportingGroup: boolean
-      EvaluAgentUser:
-        id: string
-        forename: string
-        surname: string
-        email: string
-        username: string
-        startDate: date
-        active: boolean
-        thirdPartyId: string | number
-      EvaluAgentRole:
-        id: string
-        title: string
-        name: string
-  github:
-    syncs:
-      github-issues:
-        runs: every half hour
-        output: GithubIssue
-        sync_type: full
-        scopes: public_repo
-        description: |
-          Fetches the Github issues from all a user's repositories.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        endpoint: /github/issues
-      github-issues-lite:
-        runs: every day
-        auto_start: false
-        sync_type: full
-        output: Issue
-        scopes: public_repo
-        description: >
-          Fetches the Github issues but up to a maximum of 15 for demo
+                Details: incremental sync, doesn't track deletes, metadata is not
+                required.
+        models:
+            ClariCopilotCall:
+                id: string
+                source_id: string
+                title: string
+                users: []
+                externalParticipants: []
+                status: string
+                bot_not_join_reason: []
+                type: string
+                time: string
+                icaluid: string
+                calendar_id: string
+                recurring_event_id: string
+                original_start_time: string
+                last_modified_time: string
+                audio_url: string
+                video_url: string
+                disposition: string
+                deal_name: string
+                deal_value: string
+                deal_close_date: string
+                deal_stage_before_call: string
+                account_name: string
+                contact_names: []
+                crm_info:
+                    source_crm: string
+                    deal_id: string
+                    account_id: string
+                    contact_ids: []
+                bookmark_timestamps: []
+                metrics:
+                    talk_listen_ratio: number
+                    num_questions_asked: number
+                    num_questions_asked_by_reps: number
+                    call_duration: number
+                    total_speak_duration: number
+                    longest_monologue_duration: number
+                    longest_monologue_start_time: number
+                    engaging_questions: number
+                    categories: []
+                call_review_page_url: string
+                deal_stage_live: string
+                transcript: []
+                summary:
+                    full_summary: string
+                    topics_discussed: []
+                    key_action_items: []
+                competitor_sentiments: []
+    confluence:
+        syncs:
+            confluence-spaces:
+                runs: every 4 hours
+                output: ConfluenceSpace
+                sync_type: full
+                endpoint: /confluence/spaces
+            confluence-pages:
+                runs: every 4 hours
+                output: ConfluencePage
+                sync_type: full
+                endpoint: /confluence/pages
+        models:
+            ConfluenceSpace:
+                id: string
+                key: string
+                name: string
+                type: string
+                status: string
+                authorId: string
+                createdAt: string
+                homepageId: string
+                description: string
+            ConfluencePage:
+                id: string
+                title: string
+                type: string
+                status: string
+                authorId: string
+                createdAt: string
+                spaceId: string
+                parentId: string
+                parentType: string
+                position: number
+                version:
+                    createdAt: string
+                    message: string
+                    number: number
+                    minorEdit: boolean
+                    authorId: string
+                body:
+                    storage: object
+                    atlas_doc_format: object
+    evaluagent:
+        syncs:
+            evaluagent-users:
+                runs: every day
+                output: EvaluAgentUser
+                sync_type: full
+                endpoint: /evaluagent/users
+            evaluagent-groups:
+                runs: every day
+                output: EvaluAgentGroup
+                sync_type: full
+                endpoint: /evaluagent/groups
+            evaluagent-roles:
+                runs: every day
+                output: EvaluAgentRole
+                sync_type: full
+                endpoint: /evaluagent/roles
+        models:
+            EvaluAgentGroup:
+                id: string
+                name: string
+                level: string
+                active: boolean
+                parent: string
+                hasChildren: boolean
+                isCustomReportingGroup: boolean
+            EvaluAgentUser:
+                id: string
+                forename: string
+                surname: string
+                email: string
+                username: string
+                startDate: date
+                active: boolean
+                thirdPartyId: string | number
+            EvaluAgentRole:
+                id: string
+                title: string
+                name: string
+    github:
+        syncs:
+            github-issues:
+                runs: every half hour
+                output: GithubIssue
+                sync_type: full
+                scopes: public_repo
+                description: |
+                    Fetches the Github issues from all a user's repositories.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                endpoint: /github/issues
+            github-issues-lite:
+                runs: every day
+                auto_start: false
+                sync_type: full
+                output: Issue
+                scopes: public_repo
+                description: >
+                    Fetches the Github issues but up to a maximum of 15 for demo
 
-          purposes.
+                    purposes.
 
-          Details: limited sync, doesn't track deletes, metadata is not
-          required.
-        endpoint: /github/lite-issues
-      github-list-files:
-        runs: every hour
-        description: |
-          Lists all the files of a Github repo given a specific branch.
-          Details: doesn't track deletes, metadata is required.
-        sync_type: incremental
-        auto_start: false
-        input: GithubIssueRepoInput
-        output: GithubRepoFile
-        endpoint: /github/files
-        scopes: repo
-    actions:
-      github-write-file:
-        scopes: repo
-        input: GithubWriteFileInput
-        output: GithubWriteFileActionResult
-        endpoint: PUT /github/file
-        description: |
-          Write content to a particular github file within a repo. If
-          the file doesn't exist it creates and then writes to it.
-      github-list-repos:
-        scopes: read:org
-        endpoint: GET /github/repos
-        output:
-          - GithubRepo
-        description: |
-          List github repos from an organization.
-    models:
-      Issue:
-        id: integer
-        owner: string
-        repo: string
-        issue_number: number
-        title: string
-        author: string
-        author_id: string
-        state: string
-        date_created: date
-        date_last_modified: date
-        body: string
-      GithubIssueRepoInput:
-        owner: string
-        repo: string
-        branch: string
-      GithubIssue:
-        id: integer
-        owner: string
-        repo: string
-        issue_number: number
-        title: string
-        author: string
-        author_id: string
-        state: string
-        date_created: date
-        date_last_modified: date
-        body: string
-      GithubRepo:
-        id: integer
-        owner: string
-        name: string
-        full_name: string
-        description: string
-        url: string
-        date_created: date
-        date_last_modified: date
-      GithubRepoFile:
-        id: string
-        name: string
-        url: string
-        last_modified_date: date
-      GithubWriteFileInput:
-        owner: string
-        repo: string
-        path: string
-        message: string
-        content: string
-        sha: string | undefined
-      GithubWriteFileActionResult:
-        url: string
-        status: string
-        sha: string
-  google-calendar:
-    syncs:
-      google-calendar-events:
-        description: |
-          Sync calendar events on the primary calendar going back one month and
-          save the entire object as specified by the Google API.
-          Details: partial sync, doesn't support deletes, sync goes back one
-          month, metadata is not required.
-        runs: every 5 minutes
-        output: GoogleCalendarEvent
-        sync_type: incremental
-        endpoint: /google-calendar/events
-        scopes: https://www.googleapis.com/auth/calendar.readonly
-      google-calendars:
-        description: |
-          Sync the calendars list of the user.
-          Details: full sync, does support deletes. Sync goes back all time,
-          metadata not required.
-          Required scope(s): https://www.googleapis.com/auth/calendar.readonly
-        track_deletes: true
-        runs: every hour
-        output: GoogleCalendar
-        sync_type: full
-        endpoint: /google-calendar/calendars
-        scopes: https://www.googleapis.com/auth/calendar.readonly
-    models:
-      GoogleCalendar:
-        kind: string
-        etag: string
-        id: string
-        summary: string
-        description: string
-        location: string
-        timeZone: string
-        summaryOverride: string
-        colorId: string
-        backgroundColor: string
-        foregroundColor: string
-        hidden: boolean
-        selected: boolean
-        accessRole: string
-        defaultReminders:
-          - method: string
-            minutes: integer
-        notificationSettings:
-          notifications:
-            - type: string
-              method: string
-        primary: boolean
-        deleted: boolean
-        conferenceProperties:
-          allowedConferenceSolutionTypes:
-            - string
-      GoogleCalendarEvent:
-        kind: string
-        etag: string
-        id: string
-        status: string
-        htmlLink: string
-        created: string
-        updated: string
-        summary: string
-        description: string
-        location: string
-        colorId: string
-        creator:
-          id: string
-          email: string
-          displayName: string
-          self: boolean
-        organizer:
-          id: string
-          email: string
-          displayName: string
-          self: boolean
-        start:
-          date: date
-          dateTime: string
-          timeZone: string
-        end:
-          date: date
-          string: string
-          timeZone: string
-        endTimeUnspecified: boolean
-        recurrence:
-          - string
-        recurringEventId: string
-        originalStartTime:
-          date: date
-          dateTime: string
-          timeZone: string
-        transparency: string
-        visibility: string
-        iCalUID: string
-        sequence: integer
-        attendees:
-          - id: string
-            email: string
-            displayName: string
-            organizer: boolean
-            self: boolean
-            resource: boolean
-            optional: boolean
-            responseStatus: string
-            comment: string
-            additionalGuests: integer
-        attendeesOmitted: boolean
-        extendedProperties:
-          private:
-            key: string
-          shared:
-            key: string
-        hangoutLink: string
-        conferenceData:
-          createRequest:
-            requestId: string
-            conferenceSolutionKey:
-              type: string
-            status:
-              statusCode: string
-          entryPoints:
-            - entryPointType: string
-              uri: string
-              label: string
-              pin: string
-              accessCode: string
-              meetingCode: string
-              passcode: string
-              password: string
-          conferenceSolution:
-            key:
-              type: string
-            name: string
-            iconUri: string
-          conferenceId: string
-          signature: string
-          notes: string
-        gadget:
-          type: string
-          title: string
-          link: string
-          iconLink: string
-          width: integer
-          height: integer
-          display: string
-          preferences:
-            key: string
-        anyoneCanAddSelf: boolean
-        guestsCanInviteOthers: boolean
-        guestsCanModify: boolean
-        guestsCanSeeOtherGuests: boolean
-        privateCopy: boolean
-        locked: boolean
-        reminders:
-          useDefault: boolean
-          overrides:
-            - method: string
-              minutes: integer
-        source:
-          url: string
-          title: string
-        workingLocationProperties:
-          type: string
-          homeOffice: string
-          customLocation:
-            label: string
-          officeLocation:
-            buildingId: string
-            floorId: string
-            floorSectionId: string
-            deskId: string
-            label: string
-        attachments:
-          - fileUrl: string
-            title: string
-            mimeType: string
-            iconLink: string
-            fileId: string
-        eventType: string
-  google-drive:
-    syncs:
-      google-drive-documents:
-        runs: every day
-        track_deletes: true
-        description: |
-          Sync all the content of google drive from a selected file or
-          folders. PDF files won't be parsed but rather should be fetched
-          via the proxy using the "google-drive-fetch-pdf" action.
-          Details: full sync, supports deletes, goes back all time. Metadata
-          required to filter on a particular folder, or file(s). Metadata
-          fields should be {"files": ["<some-id>"]} OR
-          {"folders": ["<some-id>"]}. The ID should be able to be provided
-          by using the Google Picker API
-          (https://developers.google.com/drive/picker/guides/overview)
-          and using the ID field provided by the response
-          (https://developers.google.com/drive/picker/reference/results)
-        input: DocumentMetadata
-        output: Document
-        sync_type: full
-        endpoint: /google-drive/documents
-        scopes: https://www.googleapis.com/auth/drive.readonly
-    actions:
-      google-drive-fetch-pdf:
-        input: string
-        description: |
-          Fetch PDF data given an ID using a responseStream, chunk the data
-          into a buffer and return a base64 encoded string that can later
-          be converted into a PDF using an external tool.
-        output: string
-        endpoint: /google-drive/fetch-pdf
-        scopes: https://www.googleapis.com/auth/drive.readonly
-    models:
-      DocumentMetadata:
-        files: string[] | undefined
-        folders: string[] | undefined
-      Document:
-        id: string
-        url: string
-        content: string
-        title: string
-  google-mail:
-    syncs:
-      gmail-emails:
-        runs: every hour
-        output: GmailEmail
-        sync_type: incremental
-        endpoint: /google-mail/emails
-    models:
-      GmailEmail:
-        id: string
-        sender: string
-        recipients: string
-        date: date
-        subject: string
-        body: string
-        threadId: string
-  google:
-    syncs:
-      google-workspace-org-unit:
-        runs: every 6 hours
-        track_deletes: true
-        output: OrganizationalUnit
-        sync_type: full
-        endpoint: /google/workspace-org-unit
-        scopes: >-
-          https://www.googleapis.com/auth/admin.directory.orgunit.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
-      google-workspace-users:
-        runs: every hour
-        output: User
-        sync_type: full
-        endpoint: /google/workspace-users
-      google-workspace-user-access-tokens:
-        runs: every hour
-        output: GoogleWorkspaceUserToken
-        sync_type: full
-        endpoint: /google/workspace-user-access-tokens
-        scopes: >-
-          https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
-    models:
-      OrganizationalUnit:
-        id: string
-        name: string
-        createdAt: string | null
-        deletedAt: string | null
-        description: string | null
-        path: string | null
-        parentPath: string | null
-        parentId: string | null
-      User:
-        id: string
-        email: string
-        displayName: string | null
-        givenName: string | null
-        familyName: string | null
-        picture: string | null | undefined
-        type: string
-        createdAt: string | null
-        deletedAt: string | null
-        phone:
-          value: string | null | undefined
-          type: string | null | undefined
-        organizationId: string | null | undefined
-        organizationPath: string | null | undefined
-        isAdmin: boolean | null
-        department: string | null
-      GoogleWorkspaceUserToken:
-        id: string
-        user_id: string
-        app_name: string
-        anonymous_app: boolean
-        scopes: string
-    rawName: google-workspace
-  greenhouse-basic:
-    syncs:
-      greenhouse-applications:
-        runs: every 6 hours
-        description: |
-          Fetches all organization's applications from greenhouse.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: GreenhouseApplication
-        sync_type: incremental
-        endpoint: /greenhouse-basic/applications
-        scopes:
-          - default
-      greenhouse-candidates:
-        runs: every 6 hours
-        description: |
-          Fetches all organization's candidates from greenhouse.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: GreenhouseCandidate
-        sync_type: incremental
-        endpoint: /greenhouse-basic/candidates
-        scopes:
-          - default
-      greenhouse-jobs:
-        runs: every 6 hours
-        description: |
-          Fetches all organization's jobs from greenhouse.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: GreenhouseJob
-        sync_type: incremental
-        endpoint: /greenhouse-basic/jobs
-        scopes:
-          - default
-    models:
-      GreenhouseApplication:
-        id: string
-        candidate_id: string
-        prospect: boolean
-        applied_at: date
-        rejected_at: date
-        last_activity_at: date
-        location:
-          address: string
-        source:
-          id: string
-          public_name: string
-        credited_to:
-          id: string
-          first_name: string
-          last_name: string
-          name: string
-          employee_id: string
-        rejection_reason:
-          id: string
-          name: string
-          type:
-            id: string
-            name: string
-        rejection_details:
-          custom_fields: object
-          keyed_custom_fields: object
-        jobs: []
-        job_post_id: string
-        status: string
-        current_stage:
-          id: string
-          name: string
-        answers: []
-        prospective_office:
-          primary_contact_user_id: string
-          parent_id: string
-          name: string
-          location:
-            name: string
-          id: string
-          external_id: string
-          child_ids: []
-        prospective_department:
-          parent_id: string
-          name: string
-          id: string
-          external_id: string
-          child_ids: []
-        prospect_detail:
-          prospect_pool:
-            id: string
-            name: string
-          prospect_stage:
-            id: string
-            name: string
-          prospect_owner:
-            id: string
-            name: string
-        custom_fields: object
-        keyed_custom_fields: object
-        attachments: []
-      GreenhouseCandidate:
-        id: string
-        first_name: string
-        last_name: string
-        company: string
-        title: string
-        created_at: date
-        updated_at: date
-        last_activity: date
-        is_private: boolean
-        photo_url: string
-        attachments: []
-        application_ids: []
-        phone_numbers: []
-        addresses: []
-        email_addresses: []
-        website_addresses: []
-        social_media_addresses: []
-        recruiter:
-          id: string
-          first_name: string
-          last_name: string
-          name: string
-          employee_id: string
-        coordinator:
-          id: string
-          first_name: string
-          last_name: string
-          name: string
-          employee_id: string
-        can_email: boolean
-        tags: []
-        applications: []
-        educations: []
-        employments: []
-        linked_user_ids: string
-        custom_fields: object
-        keyed_custom_fields: object
-      GreenhouseJob:
-        id: string
-        name: string
-        requisition_id: string
-        notes: string
-        confidential: boolean
-        status: string
-        created_at: date
-        opened_at: date
-        closed_at: date
-        updated_at: date
-        is_template: boolean
-        copied_from_id: string
-        departments: []
-        offices: []
-        custom_fields: object
-        keyed_custom_fields: object
-        hiring_team:
-          hiring_managers: []
-          recruiters: []
-          coordinators: []
-          sourcers: []
-        openings: []
-  hackerrank-work:
-    syncs:
-      hackerrank-work-interviews:
-        runs: every 6 hours
-        description: |
-          Fetches interviews from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: HackerRankWorkInterview
-        sync_type: incremental
-        endpoint: /hackerrank-work/interviews
-        scopes:
-          - default
-      hackerrank-work-teams:
-        runs: every 6 hours
-        description: |
-          Fetches teams from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: HackerRankWorkTeam
-        sync_type: incremental
-        endpoint: /hackerrank-work/teams
-        scopes:
-          - default
-      hackerrank-work-tests:
-        runs: every 6 hours
-        description: |
-          Fetches tests from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: HackerRankWorkTest
-        sync_type: incremental
-        endpoint: /hackerrank-work/tests
-        scopes:
-          - default
-      hackerrank-work-users:
-        runs: every 6 hours
-        description: |
-          Fetches users from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: HackerRankWorkUser
-        sync_type: incremental
-        endpoint: /hackerrank-work/users
-        scopes:
-          - default
-    actions:
-      hackerrank-work-create-interview:
-        description: |
-          Action to create an interview on hackerrank work.
-        input: HackerRankWorkCreateInterviewInput
-        output: HackerRankWorkInterview
-        endpoint: /hackerrank-work/create-interview
-    models:
-      HackerRankWorkCreateInterviewInput:
-        id: string
-        status: string
-        created_at: date
-        updated_at: date
-        title: string
-        feedback: string
-        notes: string
-        metadata: object
-        quickpad: boolean
-        ended_at: date
-        timezone: string
-        interview_template_id: string
-        from: date
-        to: date
-        url: string
-        user: string
-        thumbs_up: boolean
-        resume_url: string
-        interviewers: string[]
-        candidate: CandidateInformation
-        result_url: string
-        report_url: string
-      HackerRankWorkInterview:
-        id: string
-        status: string
-        created_at: date
-        updated_at: date
-        title: string
-        feedback: string
-        notes: string
-        metadata: object
-        quickpad: boolean
-        ended_at: date
-        timezone: string
-        interview_template_id: string
-        from: date
-        to: date
-        url: string
-        user: string
-        thumbs_up: boolean
-        resume_url: string
-        interviewers: string[]
-        candidate: CandidateInformation
-        result_url: string
-        report_url: string
-      CandidateInformation:
-        name: string
-        email: string
-      HackerRankWorkTeam:
-        id: string
-        name: string
-        owner: string
-        created_at: date
-        recruiter_count: number
-        developer_count: number
-        interviewer_count: number
-        recruiter_cap: number
-        developer_cap: number
-        interviewer_cap: number
-        logo_id: string
-        library_access: boolean
-        invite_as: string
-        locations: []
-        departments: []
-      HackerRankWorkTest:
-        id: string
-        unique_id: string
-        name: string
-        duration: number
-        owner: string
-        instructions: string
-        created_at: date
-        state: string
-        locked: boolean
-        test_type: string
-        starred: boolean
-        start_time: date
-        end_time: date
-        draft: boolean
-        questions: []
-        sections: object
-        tags: []
-        permission: number
-      HackerRankWorkUser:
-        id: string
-        email: string
-        firstname: string
-        lastname: string
-        country: string
-        role: string
-        status: string
-        phone: string
-        timezone: string
-        questions_permission: number
-        tests_permission: number
-        interviews_permission: number
-        candidates_permission: number
-        shared_questions_permission: number
-        shared_tests_permission: number
-        shared_interviews_permission: number
-        shared_candidates_permission: number
-        created_at: date
-        company_admin: boolean
-        team_admin: boolean
-        company_id: string
-        teams: []
-        activated: boolean
-        last_activity_time: date
-  hibob-service-user:
-    syncs:
-      hibob-employees:
-        runs: every hour
-        description: |
-          Returns a list of all active employees.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: HibobEmployee
-        sync_type: full
-        endpoint: /hibob-service-user/hibob-employees
-    models:
-      HibobEmployee:
-        id: string
-        firstName: string
-        surname: string
-        email: string
-        displayName: string
-        personal:
-          honorific: string
-          shortBirthDate: string
-          gender: string
-        about:
-          avatar: string
-          hobbies: string[]
-        work:
-          reportsTo:
-            id: string
-            firstName: string
-            surname: string
-            email: string
-          title: string
-          department: string
-          site: string
-          startDate: date
-  hubspot:
-    syncs:
-      hubspot-service-tickets:
-        runs: every half hour
-        output: HubspotServiceTicket
-        sync_type: incremental
-        endpoint: /hubspot/service-tickets
-      hubspot-contacts:
-        runs: every day
-        output: HubspotContact
-        sync_type: full
-        endpoint: /hubspot/contacts
-      hubspot-owner:
-        runs: every day
-        output: HubspotOwner
-        sync_type: full
-        endpoint: /hubspot/owner
-      hubspot-user:
-        runs: every day
-        output: HubspotUser
-        sync_type: full
-        endpoint: /hubspot/user
-      hubspot-knowledge-base:
-        runs: every day
-        output: HubspotKnowledgeBase
-        sync_type: full
-        endpoint: /hubspot/knowledge-base
-    models:
-      HubspotServiceTicket:
-        id: integer
-        createdAt: date
-        updatedAt: date
-        isArchived: boolean
-        subject: string
-        content: string
-        objectId: integer
-        ownerId: integer
-        pipeline: integer
-        pipelineStage: integer
-        ticketCategory: string | null
-        ticketPriority: string
-      HubspotOwner:
-        id: integer
-        email: string
-        firstName: string
-        lastName: string
-        userId: integer
-        createdAt: date
-        updatedAt: date
-        archived: boolean
-      HubspotUser:
-        id: integer
-        email: string
-        roleId: integer
-        primaryTeamId: integer
-        superAdmin: boolean
-      HubspotKnowledgeBase:
-        id: string
-        title: string
-        description: string
-        category: string
-        content: string
-        publishDate: number
-      HubspotContact:
-        id: string
-        created_at: string
-        updated_at: string
-        first_name: string
-        last_name: string
-        email: string
-  intercom:
-    syncs:
-      intercom-conversations:
-        runs: every 6 hours
-        output: IntercomConversation
-        sync_type: incremental
-        endpoint: /intercom/conversations
-      intercom-contacts:
-        runs: every 6 hours
-        output: IntercomContact
-        sync_type: full
-        endpoint: /intercom/contacts
-    models:
-      IntercomContact:
-        id: string
-        workspace_id: string
-        external_id: string
-        type: string
-        email: string | null
-        phone: string | null
-        name: string | null
-        created_at: date
-        updated_at: date
-        last_seen_at: date | null
-        last_replied_at: date | null
-      IntercomConversation:
-        id: string
-        created_at: date
-        updated_at: date
-        waiting_since: date | null
-        snoozed_until: date | null
-        title: string
-        contacts:
-          - contact_id: string
-        state: string
-        open: boolean
-        read: boolean
-        priority: string
-      IntercomConversationMessage:
-        id: string
-        conversation_id: string
-        body: string
-        type: string
-        created_at: date
-        updated_at: date | null
-        author:
-          type: string
-          name: string
-          id: string
-  jira:
-    syncs:
-      jira-issues:
-        runs: every 5mins
-        output: JiraIssue
-        sync_type: incremental
-        endpoint: /jira/issues
-    models:
-      JiraIssue:
-        id: integer
-        key: string
-        summary: string
-        issueType: string
-        status: string
-        assignee: string
-        projectKey: string
-        projectName: string
-        createdAt: date
-        updatedAt: date
-  lever:
-    models:
-      LeverOpportunity:
-        id: string
-        name: string
-        headline: string
-        contact: string
-        emails: []
-        phones: []
-        confidentiality: string
-        location: string
-        links: []
-        archived:
-          reason: string
-          archivedAt: number
-        createdAt: number
-        updatedAt: number
-        lastInteractionAt: number
-        lastAdvancedAt: number
-        snoozedUntil: number
-        archivedAt: number
-        archiveReason: string
-        stage: string
-        stageChanges: []
-        owner: string
-        tags: []
-        sources: []
-        origin: string
-        sourcedBy: string
-        applications: []
-        resume: string
-        followers: []
-        urls:
-          list: string
-          show: string
-        dataProtection: object
-        isAnonymized: boolean
-        opportunityLocation: string
-      LeverOpportunityApplication:
-        id: string
-        opportunityId: string
-        candidateId: string
-        createdAt: number
-        type: string
-        posting: string
-        postingHiringManager: string
-        postingOwner: string
-        user: string
-        name: string
-        email: string
-        phone:
-          type: string
-          value: string
-        requisitionForHire:
-          id: string
-          requisitionCode: string
-          hiringManagerOnHire: string
-        ownerId: string
-        hiringManager: string
-        company: string
-        links: []
-        comments: string
-        customQuestions: []
-        archived:
-          reason: string
-          archivedAt: number
-      LeverOpportunityFeedback:
-        id: string
-        type: string
-        text: string
-        instructions: string
-        fields: []
-        baseTemplateId: string
-        interview: string
-        panel: string
-        user: string
-        createdAt: number
-        completedAt: number
-        updatedAt: number
-        deletedAt: number
-      LeverOpportunityInterview:
-        id: string
-        panel: string
-        subject: string
-        note: string
-        interviewers: []
-        timezone: string
-        createdAt: number
-        date: number
-        duration: number
-        location: string
-        feedbackTemplate: string
-        feedbackForms: []
-        feedbackReminder: string
-        user: string
-        stage: string
-        canceledAt: number
-        postings: []
-        gcalEventUrl: string
-      LeverOpportunityNote:
-        id: string
-        text: string
-        fields: []
-        user: string
-        secret: boolean
-        completedAt: number
-        createdAt: number
-        deletedAt: number
-      LeverOpportunityOffer:
-        id: string
-        createdAt: number
-        status: string
-        creator: string
-        fields: []
-        sentDocument:
-          fileName: string
-          uploadedAt: number
-          downloadUrl: string
-        signedDocument:
-          fileName: string
-          uploadedAt: number
-          downloadUrl: string
-      LeverPosting:
-        id: string
-        text: string
-        createdAt: number
-        updatedAt: number
-        user: string
-        owner: string
-        hiringManager: string
-        confidentiality: string
-        categories:
-          team: string
-          department: string
-          location: string
-          allLocations: []
-          commitment: string
-          level: string
-        content:
-          description: string
-          descriptionHtml: string
-          lists: []
-          closing: string
-          closingHtml: string
-        country: string
-        followers: []
-        tags: []
-        state: string
-        distributionChannels: []
-        reqCode: string
-        requisitionCodes: []
-        salaryDescription: string
-        salaryDescriptionHtml: string
-        salaryRange:
-          max: number
-          min: number
-          currency: string
-          interval: string
-        urls:
-          list: string
-          show: string
-          apply: string
-        workplaceType: string
-      LeverPostingApply:
-        id: string
-        text: string
-        customQuestions: []
-        eeoQuestions: []
-        personalInformation: []
-        urls: []
-      LeverStage:
-        id: string
-        text: string
-  linear:
-    syncs:
-      linear-issues:
-        runs: every 5min
-        output: LinearIssue
-        sync_type: incremental
-        endpoint: /linear/issues
-      linear-projects:
-        runs: every 5min
-        output: LinearProject
-        sync_type: incremental
-        endpoint: /linear/projects
-      linear-teams:
-        runs: every 5min
-        output: LinearTeam
-        sync_type: incremental
-        endpoint: /linear/teams
-      linear-roadmaps:
-        runs: every 5min
-        output: LinearRoadmap
-        sync_type: incremental
-        endpoint: /linear/roadmaps
-    models:
-      LinearIssue:
-        id: string
-        assigneeId: string | null
-        creatorId: string | null
-        createdAt: date
-        description: string | null
-        dueDate: date | null
-        projectId: string | null
-        teamId: string
-        title: string
-        status: string
-      LinearTeam:
-        id: string
-        name: string
-        description: string | null
-        createdAt: date
-        updatedAt: date
-      LinearProject:
-        id: string
-        url: string
-        name: string
-        description: string | null
-        createdAt: date
-        updatedAt: date
-        teamId: string
-      LinearRoadmap:
-        id: string
-        name: string
-        description: string | null
-        createdAt: date
-        updatedAt: date
-        teamId: string
-        projectIds: string
-  microsoft-teams:
-    syncs:
-      microsoft-org-unit:
-        runs: every 6 hours
-        description: |
-          Continuously fetches groups from either Microsoft 365 or Azure Active
-          Directory.
-          Details: full refresh, support deletes, goes back all time, metadata
-          is not required.
-        output: OrganizationalUnit
-        sync_type: full
-        endpoint: /microsoft-teams/microsoft-org-unit
-        scopes:
-          - GroupMember.Read.All
-      microsoft-users:
-        runs: every hour
-        description: |
-          Continuously fetches users from either Microsoft 365 or Azure Active
-          Directory given specified
-          groups to sync. Expects an `orgsToSync` metadata property with an
-          array of organization ids.
-          Details: full refresh, doesn't support deletes, goes back all time,
-          metadata is required.
-        output: User
-        sync_type: full
-        endpoint: /microsoft-teams/microsoft-users
-        scopes:
-          - User.Read.All
-    models:
-      OrganizationalUnit:
-        id: string
-        name: string
-        createdAt: string | null
-        deletedAt: string | null
-        description: string | null
-        path: string | null
-        parentPath: string | null
-        parentId: string | null
-      User:
-        id: string
-        email: string
-        displayName: string | null
-        givenName: string | null
-        familyName: string | null
-        picture: string | null | undefined
-        type: string
-        createdAt: string | null
-        deletedAt: string | null
-        phone:
-          value: string | null | undefined
-          type: string | null | undefined
-        organizationId: string | null | undefined
-        organizationPath: string | null | undefined
-        isAdmin: boolean | null
-        department: string | null
-    rawName: microsoft-active-directory
-  next-cloud-ocs:
-    syncs:
-      next-cloud-users:
-        runs: every hour
-        description: |
-          Fetch all users' details from NextCloud account
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: 'N'
-        sync_type: full
-        endpoint: /next-cloud-ocs/next-cloud-users
-        scopes:
-          - default
-    models:
-      NextCloudUser:
-        enabled: boolean
-        id: string
-        lastLogin: number
-        backend: string
-        subadmin: string[]
-        quota:
-          free: number
-          used: number
-          total: number
-          relative: number
-          quota: number
-        manager: string
-        avatarScope: string
-        email: string
-        emailScope: string
-        additional_mail: []
-        additional_mailScope: []
-        displayname: string
-        display_name: string
-        displaynameScope: string
-        phone: string
-        phoneScope: string
-        address: string
-        addressScope: string
-        website: string
-        websiteScope: string
-        twitter: string
-        twitterScope: string
-        fediverse: string
-        fediverseScope: string
-        organisation: string
-        organisationScope: string
-        role: string
-        roleScope: string
-        headline: string
-        headlineScope: string
-        biography: string
-        biographyScope: string
-        profile_enabled: string
-        profile_enabledScope: string
-        groups: string[]
-        language: string
-        locale: string
-        notify_email: boolean
-        backendCapabilities:
-          setDisplayName: boolean
-          setPassword: boolean
-  notion:
-    syncs:
-      notion-pages:
-        runs: every 6 hours
-        description: |
-          Sync pages, subpages, database entries, entries of
-          sub-databases and retrieve only the text content and ignores
-          images, files and other blocks that do not have
-          a `rich_text` property.
-          Details: incremental sync, doesn't support deletes, sync goes to all
-          time, metadata is not required.
-          Required scope(s): none
-        output: NotionPage
-        sync_type: incremental
-        endpoint: /notion/pages
-        scopes: ''
-      notion-rich-pages:
-        runs: every 6 hours
-        track_deletes: true
-        description: |
-          Sync pages, subpages, database entries, entries of
-          sub-databases and maps to full markdown. It transforms
-          images, tables, uploaded files, etc into their markdown counterparts.
-          Details: full sync, tracks deletes, sync goes to all time, metadata is
-          not required.
-          Required scope(s): none
-        output: NotionRichPage
-        sync_type: incremental
-        endpoint: /notion/rich-pages
-        scopes: ''
-    models:
-      NotionPage:
-        id: string
-        url: string
-        content: string
-        parent_page_id: string | undefined
-      NotionRichPage:
-        id: string
-        path: string
-        title: string
-        content: string
-        contentType: string
-        meta: object
-        last_modified: string
-  pipedrive:
-    syncs:
-      pipedrive-activities:
-        runs: every hour
-        description: |
-          Fetches activities from pipedrive.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: PipeDriveActivity
-        sync_type: incremental
-        endpoint: /pipedrive/activities
-        scopes:
-          - activities:read
-      pipedrive-deals:
-        runs: every hour
-        description: |
-          Fetches deals from pipedrive.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: PipeDriveDeal
-        sync_type: incremental
-        endpoint: /pipedrive/deals
-        scopes:
-          - deals:read
-      pipedrive-organizations:
-        runs: every hour
-        description: |
-          Fetches organizations from pipedrive.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: PipeDriveOrganization
-        sync_type: incremental
-        endpoint: /pipedrive/organizations
-        scopes:
-          - contacts:read
-      pipedrive-persons:
-        runs: every half hour
-        description: |
-          Fetches persons from pipedrive.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: PipeDrivePerson
-        sync_type: incremental
-        endpoint: /pipedrive/persons
-        scopes:
-          - contacts:read
-    models:
-      PipeDriveActivity:
-        id: integer
-        done: boolean
-        type: string
-        duration: date
-        subject: string
-        company_id: integer
-        user_id: integer
-        conference_meeting_client: string
-        conference_meeting_url: string
-        conference_meeting_id: string
-        due_date: date
-        due_time: date
-        busy_flag: boolean
-        add_time: date
-        marked_as_done_time: date
-        public_description: string
-        location: string
-        org_id: integer
-        person_id: integer
-        deal_id: integer
-        active_flag: boolean
-        update_time: date
-        update_user_id: integer
-        source_timezone: string
-        lead_id: string
-        location_subpremise: string
-        location_street_number: string
-        location_route: string
-        location_sublocality: string
-        location_locality: string
-        location_admin_area_level_1: string
-        location_admin_area_level_2: string
-        location_country: string
-        location_postal_code: string
-        location_formatted_address: string
-        project_id: integer
-      PipeDriveDeal:
-        id: integer
-        creator_user_id: integer
-        user_id: integer
-        person_id: integer
-        org_id: integer
-        stage_id: integer
-        title: string
-        value: integer
-        currency: string
-        add_time: date
-        update_time: date
-        status: string
-        probability: string
-        lost_reason: string
-        visible_to: string
-        close_time: date
-        pipeline_id: integer
-        won_time: date
-        lost_time: date
-        expected_close_date: date
-        label: string
-      PipeDriveOrganization:
-        id: integer
-        owner_id: integer
-        name: string
-        active_flag: boolean
-        update_time: date
-        delete_time: date
-        add_time: date
-        visible_to: string
-        label: integer
-        address: integer
-        address_subpremise: string
-        address_street_number: string
-        address_route: string
-        address_sublocality: string
-        address_locality: string
-        address_admin_area_level_1: string
-        address_admin_area_level_2: string
-        address_country: string
-        address_postal_code: string
-        address_formatted_address: string
-        cc_email: string
-      PipeDrivePerson:
-        id: integer
-        active_flag: boolean
-        owner_id: integer
-        org_id: integer
-        name: string
-        phone: []
-        email: []
-        update_time: date
-        delete_time: date
-        add_time: date
-        visible_to: string
-        picture_id: integer
-        label: integer
-        cc_email: string
-  salesforce:
-    syncs:
-      salesforce-accounts:
-        runs: every hour
-        output: SalesforceAccount
-        sync_type: incremental
-        endpoint: /salesforce/accounts
-      salesforce-contacts:
-        runs: every hour
-        output: SalesforceContact
-        sync_type: incremental
-        endpoint: /salesforce/contacts
-      salesforce-deals:
-        runs: every hour
-        output: SalesforceDeal
-        sync_type: incremental
-        endpoint: /salesforce/deals
-      salesforce-articles:
-        runs: every day
-        output: SalesforceArticle
-        sync_type: incremental
-        endpoint: /salesforce/articles
-      salesforce-tickets:
-        runs: every day
-        output: SalesforceTicket
-        sync_type: incremental
-        endpoint: /salesforce/tickets
-    models:
-      SalesforceAccount:
-        id: string
-        name: string
-        website: string
-        description: string
-        no_employees: number
-        last_modified_date: string
-      SalesforceContact:
-        id: string
-        first_name: string
-        last_name: string
-        email: string
-        account_id: string
-        last_modified_date: string
-      SalesforceDeal:
-        id: string
-        name: string
-        amount: number
-        stage: string
-        account_id: string
-        last_modified_date: string
-      SalesforceArticle:
-        id: string
-        title: string
-        content: string
-        last_modified_date: string
-      SalesforceTicket:
-        id: string
-        case_number: string
-        subject: string | null
-        account_id: string
-        account_name: string | null
-        contact_id: string
-        contact_name: string | null
-        owner_id: string
-        owner_name: string | null
-        priority: string
-        status: string
-        description: string | null
-        type: string
-        created_date: string
-        closed_date: string
-        origin: string
-        is_closed: boolean
-        is_escalated: boolean
-        conversation:
-          id: string
-          body: string
-          created_date: string
-          created_by: string
-        last_modified_date: string
-  slack:
-    syncs:
-      slack-users:
-        runs: every hour
-        description: |
-          Syncs information about all Users on the Slack workspace.
-        output: SlackUser
-        sync_type: full
-        endpoint: /slack/users
-        scopes:
-          - users:read
-      slack-channels:
-        runs: every hour
-        description: |
-          Syncs information about all Slack channels. Which channels get synced
-          (public, private, IMs, group DMs) dependson the scopes. If
-          joinPublicChannels is set to true, the bot will automatically join all
-          public channels as well. Scopes: At least one of channels:read,
-          groups:read, mpim:read, im:read. To also join public channels:
-          channels:join
-        output: SlackChannel
-        sync_type: full
-        endpoint: /slack/channels
-        scopes:
-          - channels:read
-          - channels:join
-      slack-messages:
-        runs: every hour
-        description: |
-          Syncs Slack messages, thread replies and reactions from messages &
-          thread replies for all channels, group dms and dms the bot is a part
-          of. For every channel it will do an initial full sync on first
-          detection of the channel. For subsequent runs it will sync messages,
-          threads & reactions from the last 10 days. Scopes required:
-          channels:read, and at least one of
-          channels:history,groups:history,mpim:history,im:history
-        output: SlackMessage
-        sync_type: full
-        endpoint: /slack/messages
-        scopes:
-          - channels:read
-          - channels:history
-    models:
-      SlackUser:
-        id: string
-        team_id: string
-        name: string
-        deleted: boolean
-        tz: string
-        tz_label: string
-        tz_offset: number
-        profile:
-          avatar_hash: string
-          real_name: string | null
-          display_name: string | null
-          real_name_normalized: string | null
-          display_name_normalized: string | null
-          email: string | null
-          image_original: string | null
-        is_admin: boolean
-        is_owner: boolean
-        is_primary_owner: boolean
-        is_restricted: boolean
-        is_ultra_restricted: boolean
-        is_bot: boolean
-        updated: number
-        is_app_user: boolean
-        raw_json: string
-      SlackChannel:
-        id: string
-        name: string
-        is_channel: boolean
-        is_group: boolean
-        is_im: boolean
-        created: number
-        creator: string
-        is_archived: boolean
-        is_general: boolean
-        name_normalized: string
-        is_shared: boolean
-        is_private: boolean
-        is_mpim: boolean
-        updated: number
-        num_members: number
-        raw_json: string
-      SlackMessage:
-        id: string
-        ts: string
-        channel_id: string
-        thread_ts: string | null
-        app_id: string | null
-        bot_id: string | null
-        display_as_bot: boolean | null
-        is_locked: boolean | null
-        metadata:
-          event_type: string
-        parent_user_id: string | null
-        subtype: string | null
-        text: string | null
-        topic: string | null
-        user_id: string | null
-        raw_json: string
-      SlackMessageReply:
-        id: string
-        ts: string
-        channel_id: string
-        thread_ts: string | null
-        app_id: string | null
-        bot_id: string | null
-        display_as_bot: boolean | null
-        is_locked: boolean | null
-        metadata:
-          event_type: string
-        parent_user_id: string | null
-        subtype: string | null
-        text: string | null
-        topic: string | null
-        user_id: string | null
-        root:
-          message_id: string | null
-          ts: string
-        raw_json: string
-      SlackMessageReaction:
-        id: string
-        message_ts: string
-        thread_ts: string
-        channel_id: string
-        user_id: string
-        reaction_name: string
-  wildix-pbx:
-    syncs:
-      wildix-pbx-colleagues:
-        runs: every 1 hour
-        output: WildixPbxColleague
-        sync_type: full
-        endpoint: /wildix-pbx/colleagues
-    models:
-      WildixPbxColleague:
-        id: string
-        name: string
-        extension: string
-        email: string
-        mobilePhone: string
-        licenseType: string
-        language: string
-  workable:
-    syncs:
-      workable-candidates:
-        runs: every 6 hours
-        description: |
-          Fetches candidates from workable.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: WorkableCandidate
-        sync_type: incremental
-        endpoint: /workable/candidates
-        scopes:
-          - r_candidates
-      workable-candidates-activities:
-        runs: every 6 hours
-        description: |
-          Fetches activity stream of the given candidate
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: WorkableCandidateActivity
-        sync_type: full
-        endpoint: /workable/candidates-activities
-        scopes:
-          - r_candidates
-      workable-candidates-offer:
-        runs: every 6 hours
-        description: |
-          Fetches candidate's latest offer from workable.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: WorkableCandidateOffer
-        sync_type: full
-        endpoint: /workable/candidates-offer
-        scopes:
-          - r_candidates
-      workable-jobs:
-        runs: every 6 hours
-        description: |
-          Fetches jobs from workable.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
-        output: WorkableJob
-        sync_type: incremental
-        endpoint: /workable/jobs
-        scopes:
-          - r_jobs
-      workable-jobs-candidates:
-        runs: every 6 hours
-        description: |
-          Fetches candidates for the specified job from workable.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: WorkableCandidate
-        sync_type: full
-        endpoint: /workable/jobs-candidates
-        scopes:
-          - r_jobs
-      workable-jobs-questions:
-        runs: every 6 hours
-        description: |
-          Fetches questions for the specified job from workable.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: WorkableJobQuestion
-        sync_type: full
-        endpoint: /workable/jobs-questions
-        scopes:
-          - r_jobs
-      workable-members:
-        runs: every 6 hours
-        description: |
-          Fetches account members from workable.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: WorkableMember
-        sync_type: full
-        endpoint: /workable/members
-        scopes:
-          - r_jobs
-    actions:
-      workable-create-comment:
-        description: |
-          Action to create a comment on the applicant's timeline.
-          Scope(s): w_candidates or w_comments
-        output: WorkableCreateCommentResponse
-        endpoint: /workable/create-comment
-    models:
-      WorkableCandidate:
-        id: string
-        name: string
-        firstname: string
-        lastname: string
-        headline: string
-        account:
-          subdomain: string
-          name: string
-        job:
-          shortcode: string
-          title: string
-        stage: string
-        disqualified: boolean
-        disqualification_reason: string
-        hired_at: date
-        sourced: boolean
-        profile_url: string
-        address: string
-        phone: string
-        email: string
-        domain: string
-        created_at: date
-        updated_at: date
-      WorkableCandidateActivity:
-        id: string
-        action: string
-        stage_name: string
-        created_at: date
-        body: string
-        member:
-          id: string
-          name: string
-        rating: object
-      WorkableCandidateOffer:
-        id: string
-        candidate:
-          id: string
-          name: string
-        created_at: date
-        document_variables: array
-        documents: array
-        state: string
-      WorkableJob:
-        id: string
-        title: string
-        full_title: string
-        shortcode: string
-        code: string
-        state: string
-        sample: boolean
-        department: string
-        department_hierarchy: []
-        url: string
-        application_url: string
-        shortlink: string
-        location:
-          location_str: string
-          country: string
-          country_code: string
-          region: string
-          region_code: string
-          city: string
-          zip_code: string
-          telecommuting: boolean
-          workplace_type: string
-        locations: []
-        salary:
-          salary_from: number
-          salary_to: number
-          salary_currency: string
-        created_at: date
-      WorkableJobQuestion:
-        id: string
-        body: string
-        type: string
-        required: boolean
-        single_answer: boolean
-        choices:
-          id: string
-          body: string
-        supported_file_types: []
-        max_file_size: number
-      WorkableMember:
-        id: string
-        name: string
-        headline: string
-        email: string
-        role: string
-      WorkableCreateCandidateResponse:
-        status: string
-        candidate:
-          __extends: WorkableCandidate
-          image_url: string
-          outbound_mailbox: string
-          uploader_id: string
-          cover_letter: string
-          summary: string
-          education_entries: []
-          experience_entries: []
-          skills: []
-          answers: []
-          resume_url: string
-          tags: []
-          location:
-            location_str: string
-            country: string
-            country_code: string
-            region: string
-            region_code: string
-            city: string
-            zip_code: string
-      WorkableCreateCommentResponse:
-        id: string
-  zendesk:
-    syncs:
-      zendesk-tickets:
-        runs: every 1 hour
-        output: ZendeskTicket
-        sync_type: full
-        endpoint: /zendesk/tickets
-      zendesk-articles:
-        runs: every 6 hours
-        output: ZendeskArticle
-        sync_type: full
-        endpoint: /zendesk/articles
-    models:
-      ZendeskArticle:
-        title: string
-        locale: string
-        user_segment_id: number
-        permission_group_id: number
-        author_id: number
-        body: string
-        comments_disabled: boolean
-        content_tag_ids: []
-        created_at: string
-        draft: boolean
-        edited_at: string
-        html_url: string
-        id: number
-        label_names: []
-        outdated: boolean
-        outdated_locales: []
-        position: number
-        promoted: boolean
-        section_id: number
-        source_locale: string
-        updated_at: string
-        url: string
-        vote_count: number
-        vote_sum: number
-      ZendeskTicket:
-        requester_id: number
-        allow_attachments: boolean
-        allow_channelback: boolean
-        assignee_email: string
-        assignee_id: number
-        attribute_value_ids: number[]
-        brand_id: number
-        collaborator_ids: number[]
-        collaborators: any[]
-        comment: object
-        created_at: string
-        custom_fields: any[]
-        custom_status_id: number
-        description: string
-        due_at: string
-        email_cc_ids: number[]
-        email_ccs: object
-        external_id: string
-        follower_ids: number[]
-        followers: object
-        followup_ids: number[]
-        forum_topic_id: number
-        from_messaging_channel: boolean
-        group_id: number
-        has_incidents: boolean
-        id: number
-        is_public: boolean
-        macro_id: number
-        macro_ids: number[]
-        metadata: object
-        organization_id: number
-        priority: string
-        problem_id: number
-        raw_subject: string
-        recipient: string
-        requester: object
-        safe_update: boolean
-        satisfaction_rating:
-          aliqua38: number
-        sharing_agreement_ids: number[]
-        status: string
-        subject: string
-        submitter_id: number
-        tags: string[]
-        ticket_form_id: number
-        type: string
-        updated_at: string
-        updated_stamp: string
-        url: string
-        via:
-          channel: string
-          source:
-            eu__4: number
-            id__8f: string
-        via_followup_source_id: number
-        via_id: number
-        voice_comment: object
-  zoho-crm:
-    syncs:
-      zoho-crm-accounts:
-        runs: every half hour
-        auto_start: false
-        description: |
-          Fetches accounts from zoho crm.
-          Details: full sync, doesn't track deletes, metadata is not required.
-          Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
-        output: ZohoCRMAccount
-        sync_type: incremental
-        endpoint: /zoho-crm/accounts
-        scopes:
-          - ZohoCRM.modules.accounts.READ
-      zoho-crm-contacts:
-        runs: every half hour
-        auto_start: false
-        description: |
-          Fetches contacts from zoho crm.
-          Details: full sync, doesn't track deletes, metadata is not required.
-          Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
-        output: ZohoCRMContact
-        sync_type: incremental
-        endpoint: /zoho-crm/contacts
-        scopes:
-          - ZohoCRM.modules.contacts.READ
-      zoho-crm-deals:
-        runs: every half hour
-        auto_start: false
-        description: |
-          Fetches deals/opportunities from zoho crm.
-          Details: full sync, doesn't track deletes, metadata is not required.
-          Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
-        output: ZohoCRMDeal
-        sync_type: incremental
-        endpoint: /zoho-crm/deals
-        scopes:
-          - ZohoCRM.modules.deals.READ
-    models:
-      ZohoCRMAccount:
-        Owner:
-          name: string
-          id: string
-          email: string
-        $currency_symbol: string
-        $field_states: string
-        Account_Type: string
-        SIC_Code: string
-        Last_Activity_Time: date
-        Industry: string
-        Account_Site: string
-        $state: string
-        $process_flow: boolean
-        Billing_Country: string
-        $locked_for_me: boolean
-        id: string
-        $approved: boolean
-        $approval:
-          delegate: boolean
-          approve: boolean
-          reject: boolean
-          resubmit: boolean
-        Billing_Street: string
-        Created_Time: date
-        $editable: boolean
-        Billing_Code: string
-        Shipping_City: string
-        Shipping_Country: string
-        Shipping_Code: string
-        Billing_City: string
-        Created_By:
-          name: string
-          id: string
-          email: string
-        $zia_owner_assignment: string
-        Annual_Revenue: integer
-        Shipping_Street: string
-        Ownership: string
-        Description: string
-        Rating: integer
-        Shipping_State: string
-        $review_process:
-          approve: boolean
-          reject: boolean
-          resubmit: boolean
-        Website: string
-        Employees: integer
-        Record_Image: string
-        Modified_By:
-          name: string
-          id: string
-          email: string
-        $review: string
-        Phone: string
-        Account_Name: string
-        Account_Number: string
-        Ticker_Symbol: string
-        Modified_Time: date
-        $orchestration: boolean
-        Parent_Account:
-          name: string
-          id: string
-        $in_merge: boolean
-        Locked__s: boolean
-        Billing_State: string
-        Tag: []
-        Fax: string
-        $approval_state: string
-      ZohoCRMContact:
-        Owner:
-          name: string
-          id: string
-          email: string
-        Email: string
-        $currency_symbol: string
-        $field_states: string
-        Other_Phone: string
-        Mailing_State: string
-        Other_State: string
-        Other_Country: string
-        Last_Activity_Time: date
-        Department: string
-        $state: string
-        Unsubscribed_Mode: string
-        $process_flow: boolean
-        Assistant: string
-        Mailing_Country: string
-        $locked_for_me: string
-        id: string
-        $approved: boolean
-        Reporting_To:
-          name: string
-          id: string
-        $approval:
-          delegate: boolean
-          approve: boolean
-          reject: boolean
-          resubmit: boolean
-        Other_City: string
-        Created_Time: date
-        $editable: boolean
-        Home_Phone: string
-        Created_By:
-          name: string
-          id: string
-          email: string
-        $zia_owner_assignment: string
-        Secondary_Email: string
-        Description: string
-        Vendor_Name:
-          name: string
-          id: string
-        Mailing_Zip: string
-        $review_process:
-          approve: boolean
-          reject: boolean
-          resubmit: boolean
-        Twitter: string
-        Other_Zip: string
-        Mailing_Street: string
-        Salutation: string
-        First_Name: string
-        Full_Name: string
-        Asst_Phone: string
-        Record_Image: string
-        Modified_By:
-          name: string
-          id: string
-          email: string
-        $review: boolean
-        Skype_ID: string
-        Phone: string
-        Account_Name:
-          name: string
-          id: string
-        Email_Opt_Out: boolean
-        Modified_Time: date
-        Date_of_Birth: date
-        Mailing_City: string
-        Unsubscribed_Time: date
-        Title: string
-        Other_Street: string
-        Mobile: string
-        $orchestration: boolean
-        Last_Name: string
-        $in_merge: boolean
-        Locked__s: boolean
-        Lead_Source: string
-        Tag: []
-        Fax: string
-        $approval_state: string
-      ZohoCRMDeal:
-        Owner:
-          name: string
-          id: string
-          email: string
-        Description: string
-        $currency_symbol: string
-        Campaign_Source:
-          name: string
-          id: string
-        $field_states: string
-        $review_process:
-          approve: boolean
-          reject: boolean
-          resubmit: boolean
-        Closing_Date: date
-        Reason_For_Loss__s: string
-        Last_Activity_Time: date
-        Modified_By:
-          name: string
-          id: string
-          email: string
-        $review: string
-        Lead_Conversion_Time: date
-        $state: string
-        $process_flow: boolean
-        Deal_Name: string
-        Expected_Revenue: integer
-        Overall_Sales_Duration: integer
-        Stage: string
-        $locked_for_me: boolean
-        Account_Name:
-          name: string
-          id: string
-        id: string
-        $approved: boolean
-        $approval:
-          delegate: boolean
-          approve: boolean
-          reject: boolean
-          resubmit: boolean
-        Modified_Time: date
-        Created_Time: date
-        Amount: integer
-        Next_Step: string
-        Probability: integer
-        $editable: boolean
-        $orchestration: boolean
-        Contact_Name:
-          name: string
-          id: string
-        Sales_Cycle_Duration: integer
-        Type: string
-        $in_merge: boolean
-        Locked__s: boolean
-        Lead_Source: string
-        Created_By:
-          name: string
-          id: string
-          email: string
-        Tag: []
-        $zia_owner_assignment: string
-        $approval_state: string
+                    Details: limited sync, doesn't track deletes, metadata is not
+                    required.
+                endpoint: /github/lite-issues
+            github-list-files:
+                runs: every hour
+                description: |
+                    Lists all the files of a Github repo given a specific branch.
+                    Details: doesn't track deletes, metadata is required.
+                sync_type: incremental
+                auto_start: false
+                input: GithubIssueRepoInput
+                output: GithubRepoFile
+                endpoint: /github/files
+                scopes: repo
+            github-issues-demo:
+                runs: every 5 minutes
+                auto_start: false
+                sync_type: full
+                output: GithubIssueDemo
+                scopes: public_repo
+                description: |
+                    Fetches GitHub issues from our showcase repository.
+                endpoint: GET /github/demo-issues
+        actions:
+            github-write-file:
+                scopes: repo
+                input: GithubWriteFileInput
+                output: GithubWriteFileActionResult
+                endpoint: PUT /github/file
+                description: |
+                    Write content to a particular github file within a repo. If
+                    the file doesn't exist it creates and then writes to it.
+            github-list-repos:
+                scopes: read:org
+                endpoint: GET /github/repos
+                output:
+                    - GithubRepo
+                description: |
+                    List github repos from an organization.
+            github-create-demo-issue:
+                endpoint: POST /github/create-demo-issue
+                input: GithubCreateIssueInput
+                output: GithubCreateIssueResult
+                description: |
+                    Create a GitHub issue in Nango's showcase repository.
+        models:
+            Issue:
+                id: integer
+                owner: string
+                repo: string
+                issue_number: number
+                title: string
+                author: string
+                author_id: string
+                state: string
+                date_created: date
+                date_last_modified: date
+                body: string
+            GithubIssueRepoInput:
+                owner: string
+                repo: string
+                branch: string
+            GithubIssue:
+                id: integer
+                owner: string
+                repo: string
+                issue_number: number
+                title: string
+                author: string
+                author_id: string
+                state: string
+                date_created: date
+                date_last_modified: date
+                body: string
+            GithubRepo:
+                id: integer
+                owner: string
+                name: string
+                full_name: string
+                description: string
+                url: string
+                date_created: date
+                date_last_modified: date
+            GithubRepoFile:
+                id: string
+                name: string
+                url: string
+                last_modified_date: date
+            GithubWriteFileInput:
+                owner: string
+                repo: string
+                path: string
+                message: string
+                content: string
+                sha: string | undefined
+            GithubWriteFileActionResult:
+                url: string
+                status: string
+                sha: string
+            GithubIssueDemo:
+                id: integer
+                title: string
+                url: string
+            GithubCreateIssueInput:
+                title: string
+            GithubCreateIssueResult:
+                url: string | undefined
+                status: number
+    google-calendar:
+        syncs:
+            google-calendar-events:
+                description: |
+                    Sync calendar events on the primary calendar going back one month and
+                    save the entire object as specified by the Google API.
+                    Details: partial sync, doesn't support deletes, sync goes back one
+                    month, metadata is not required.
+                runs: every 5 minutes
+                output: GoogleCalendarEvent
+                sync_type: incremental
+                endpoint: /google-calendar/events
+                scopes: https://www.googleapis.com/auth/calendar.readonly
+            google-calendars:
+                description: |
+                    Sync the calendars list of the user.
+                    Details: full sync, does support deletes. Sync goes back all time,
+                    metadata not required.
+                    Required scope(s): https://www.googleapis.com/auth/calendar.readonly
+                track_deletes: true
+                runs: every hour
+                output: GoogleCalendar
+                sync_type: full
+                endpoint: /google-calendar/calendars
+                scopes: https://www.googleapis.com/auth/calendar.readonly
+        models:
+            GoogleCalendar:
+                kind: string
+                etag: string
+                id: string
+                summary: string
+                description: string
+                location: string
+                timeZone: string
+                summaryOverride: string
+                colorId: string
+                backgroundColor: string
+                foregroundColor: string
+                hidden: boolean
+                selected: boolean
+                accessRole: string
+                defaultReminders:
+                    - method: string
+                      minutes: integer
+                notificationSettings:
+                    notifications:
+                        - type: string
+                          method: string
+                primary: boolean
+                deleted: boolean
+                conferenceProperties:
+                    allowedConferenceSolutionTypes:
+                        - string
+            GoogleCalendarEvent:
+                kind: string
+                etag: string
+                id: string
+                status: string
+                htmlLink: string
+                created: string
+                updated: string
+                summary: string
+                description: string
+                location: string
+                colorId: string
+                creator:
+                    id: string
+                    email: string
+                    displayName: string
+                    self: boolean
+                organizer:
+                    id: string
+                    email: string
+                    displayName: string
+                    self: boolean
+                start:
+                    date: date
+                    dateTime: string
+                    timeZone: string
+                end:
+                    date: date
+                    string: string
+                    timeZone: string
+                endTimeUnspecified: boolean
+                recurrence:
+                    - string
+                recurringEventId: string
+                originalStartTime:
+                    date: date
+                    dateTime: string
+                    timeZone: string
+                transparency: string
+                visibility: string
+                iCalUID: string
+                sequence: integer
+                attendees:
+                    - id: string
+                      email: string
+                      displayName: string
+                      organizer: boolean
+                      self: boolean
+                      resource: boolean
+                      optional: boolean
+                      responseStatus: string
+                      comment: string
+                      additionalGuests: integer
+                attendeesOmitted: boolean
+                extendedProperties:
+                    private:
+                        key: string
+                    shared:
+                        key: string
+                hangoutLink: string
+                conferenceData:
+                    createRequest:
+                        requestId: string
+                        conferenceSolutionKey:
+                            type: string
+                        status:
+                            statusCode: string
+                    entryPoints:
+                        - entryPointType: string
+                          uri: string
+                          label: string
+                          pin: string
+                          accessCode: string
+                          meetingCode: string
+                          passcode: string
+                          password: string
+                    conferenceSolution:
+                        key:
+                            type: string
+                        name: string
+                        iconUri: string
+                    conferenceId: string
+                    signature: string
+                    notes: string
+                gadget:
+                    type: string
+                    title: string
+                    link: string
+                    iconLink: string
+                    width: integer
+                    height: integer
+                    display: string
+                    preferences:
+                        key: string
+                anyoneCanAddSelf: boolean
+                guestsCanInviteOthers: boolean
+                guestsCanModify: boolean
+                guestsCanSeeOtherGuests: boolean
+                privateCopy: boolean
+                locked: boolean
+                reminders:
+                    useDefault: boolean
+                    overrides:
+                        - method: string
+                          minutes: integer
+                source:
+                    url: string
+                    title: string
+                workingLocationProperties:
+                    type: string
+                    homeOffice: string
+                    customLocation:
+                        label: string
+                    officeLocation:
+                        buildingId: string
+                        floorId: string
+                        floorSectionId: string
+                        deskId: string
+                        label: string
+                attachments:
+                    - fileUrl: string
+                      title: string
+                      mimeType: string
+                      iconLink: string
+                      fileId: string
+                eventType: string
+    google-drive:
+        syncs:
+            google-drive-documents:
+                runs: every day
+                track_deletes: true
+                description: |
+                    Sync all the content of google drive from a selected file or
+                    folders. PDF files won't be parsed but rather should be fetched
+                    via the proxy using the "google-drive-fetch-pdf" action.
+                    Details: full sync, supports deletes, goes back all time. Metadata
+                    required to filter on a particular folder, or file(s). Metadata
+                    fields should be {"files": ["<some-id>"]} OR
+                    {"folders": ["<some-id>"]}. The ID should be able to be provided
+                    by using the Google Picker API
+                    (https://developers.google.com/drive/picker/guides/overview)
+                    and using the ID field provided by the response
+                    (https://developers.google.com/drive/picker/reference/results)
+                input: DocumentMetadata
+                output: Document
+                sync_type: full
+                endpoint: /google-drive/documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+        actions:
+            google-drive-fetch-pdf:
+                input: string
+                description: |
+                    Fetch PDF data given an ID using a responseStream, chunk the data
+                    into a buffer and return a base64 encoded string that can later
+                    be converted into a PDF using an external tool.
+                output: string
+                endpoint: /google-drive/fetch-pdf
+                scopes: https://www.googleapis.com/auth/drive.readonly
+        models:
+            DocumentMetadata:
+                files: string[] | undefined
+                folders: string[] | undefined
+            Document:
+                id: string
+                url: string
+                content: string
+                title: string
+    google-mail:
+        syncs:
+            gmail-emails:
+                runs: every hour
+                output: GmailEmail
+                sync_type: incremental
+                endpoint: /google-mail/emails
+        models:
+            GmailEmail:
+                id: string
+                sender: string
+                recipients: string
+                date: date
+                subject: string
+                body: string
+                threadId: string
+    google:
+        syncs:
+            google-workspace-org-unit:
+                runs: every 6 hours
+                track_deletes: true
+                output: OrganizationalUnit
+                sync_type: full
+                endpoint: /google/workspace-org-unit
+                scopes: >-
+                    https://www.googleapis.com/auth/admin.directory.orgunit.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
+            google-workspace-users:
+                runs: every hour
+                output: User
+                sync_type: full
+                endpoint: /google/workspace-users
+            google-workspace-user-access-tokens:
+                runs: every hour
+                output: GoogleWorkspaceUserToken
+                sync_type: full
+                endpoint: /google/workspace-user-access-tokens
+                scopes: >-
+                    https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
+        models:
+            OrganizationalUnit:
+                id: string
+                name: string
+                createdAt: string | null
+                deletedAt: string | null
+                description: string | null
+                path: string | null
+                parentPath: string | null
+                parentId: string | null
+            User:
+                id: string
+                email: string
+                displayName: string | null
+                givenName: string | null
+                familyName: string | null
+                picture: string | null | undefined
+                type: string
+                createdAt: string | null
+                deletedAt: string | null
+                phone:
+                    value: string | null | undefined
+                    type: string | null | undefined
+                organizationId: string | null | undefined
+                organizationPath: string | null | undefined
+                isAdmin: boolean | null
+                department: string | null
+            GoogleWorkspaceUserToken:
+                id: string
+                user_id: string
+                app_name: string
+                anonymous_app: boolean
+                scopes: string
+        rawName: google-workspace
+    greenhouse-basic:
+        syncs:
+            greenhouse-applications:
+                runs: every 6 hours
+                description: |
+                    Fetches all organization's applications from greenhouse.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: GreenhouseApplication
+                sync_type: incremental
+                endpoint: /greenhouse-basic/applications
+                scopes:
+                    - default
+            greenhouse-candidates:
+                runs: every 6 hours
+                description: |
+                    Fetches all organization's candidates from greenhouse.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: GreenhouseCandidate
+                sync_type: incremental
+                endpoint: /greenhouse-basic/candidates
+                scopes:
+                    - default
+            greenhouse-jobs:
+                runs: every 6 hours
+                description: |
+                    Fetches all organization's jobs from greenhouse.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: GreenhouseJob
+                sync_type: incremental
+                endpoint: /greenhouse-basic/jobs
+                scopes:
+                    - default
+        models:
+            GreenhouseApplication:
+                id: string
+                candidate_id: string
+                prospect: boolean
+                applied_at: date
+                rejected_at: date
+                last_activity_at: date
+                location:
+                    address: string
+                source:
+                    id: string
+                    public_name: string
+                credited_to:
+                    id: string
+                    first_name: string
+                    last_name: string
+                    name: string
+                    employee_id: string
+                rejection_reason:
+                    id: string
+                    name: string
+                    type:
+                        id: string
+                        name: string
+                rejection_details:
+                    custom_fields: object
+                    keyed_custom_fields: object
+                jobs: []
+                job_post_id: string
+                status: string
+                current_stage:
+                    id: string
+                    name: string
+                answers: []
+                prospective_office:
+                    primary_contact_user_id: string
+                    parent_id: string
+                    name: string
+                    location:
+                        name: string
+                    id: string
+                    external_id: string
+                    child_ids: []
+                prospective_department:
+                    parent_id: string
+                    name: string
+                    id: string
+                    external_id: string
+                    child_ids: []
+                prospect_detail:
+                    prospect_pool:
+                        id: string
+                        name: string
+                    prospect_stage:
+                        id: string
+                        name: string
+                    prospect_owner:
+                        id: string
+                        name: string
+                custom_fields: object
+                keyed_custom_fields: object
+                attachments: []
+            GreenhouseCandidate:
+                id: string
+                first_name: string
+                last_name: string
+                company: string
+                title: string
+                created_at: date
+                updated_at: date
+                last_activity: date
+                is_private: boolean
+                photo_url: string
+                attachments: []
+                application_ids: []
+                phone_numbers: []
+                addresses: []
+                email_addresses: []
+                website_addresses: []
+                social_media_addresses: []
+                recruiter:
+                    id: string
+                    first_name: string
+                    last_name: string
+                    name: string
+                    employee_id: string
+                coordinator:
+                    id: string
+                    first_name: string
+                    last_name: string
+                    name: string
+                    employee_id: string
+                can_email: boolean
+                tags: []
+                applications: []
+                educations: []
+                employments: []
+                linked_user_ids: string
+                custom_fields: object
+                keyed_custom_fields: object
+            GreenhouseJob:
+                id: string
+                name: string
+                requisition_id: string
+                notes: string
+                confidential: boolean
+                status: string
+                created_at: date
+                opened_at: date
+                closed_at: date
+                updated_at: date
+                is_template: boolean
+                copied_from_id: string
+                departments: []
+                offices: []
+                custom_fields: object
+                keyed_custom_fields: object
+                hiring_team:
+                    hiring_managers: []
+                    recruiters: []
+                    coordinators: []
+                    sourcers: []
+                openings: []
+    hackerrank-work:
+        syncs:
+            hackerrank-work-interviews:
+                runs: every 6 hours
+                description: |
+                    Fetches interviews from hackerrank work.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: HackerRankWorkInterview
+                sync_type: incremental
+                endpoint: /hackerrank-work/interviews
+                scopes:
+                    - default
+            hackerrank-work-teams:
+                runs: every 6 hours
+                description: |
+                    Fetches teams from hackerrank work.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: HackerRankWorkTeam
+                sync_type: incremental
+                endpoint: /hackerrank-work/teams
+                scopes:
+                    - default
+            hackerrank-work-tests:
+                runs: every 6 hours
+                description: |
+                    Fetches tests from hackerrank work.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: HackerRankWorkTest
+                sync_type: incremental
+                endpoint: /hackerrank-work/tests
+                scopes:
+                    - default
+            hackerrank-work-users:
+                runs: every 6 hours
+                description: |
+                    Fetches users from hackerrank work.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: HackerRankWorkUser
+                sync_type: incremental
+                endpoint: /hackerrank-work/users
+                scopes:
+                    - default
+        actions:
+            hackerrank-work-create-interview:
+                description: |
+                    Action to create an interview on hackerrank work.
+                input: HackerRankWorkCreateInterviewInput
+                output: HackerRankWorkInterview
+                endpoint: /hackerrank-work/create-interview
+        models:
+            HackerRankWorkCreateInterviewInput:
+                id: string
+                status: string
+                created_at: date
+                updated_at: date
+                title: string
+                feedback: string
+                notes: string
+                metadata: object
+                quickpad: boolean
+                ended_at: date
+                timezone: string
+                interview_template_id: string
+                from: date
+                to: date
+                url: string
+                user: string
+                thumbs_up: boolean
+                resume_url: string
+                interviewers: string[]
+                candidate: CandidateInformation
+                result_url: string
+                report_url: string
+            HackerRankWorkInterview:
+                id: string
+                status: string
+                created_at: date
+                updated_at: date
+                title: string
+                feedback: string
+                notes: string
+                metadata: object
+                quickpad: boolean
+                ended_at: date
+                timezone: string
+                interview_template_id: string
+                from: date
+                to: date
+                url: string
+                user: string
+                thumbs_up: boolean
+                resume_url: string
+                interviewers: string[]
+                candidate: CandidateInformation
+                result_url: string
+                report_url: string
+            CandidateInformation:
+                name: string
+                email: string
+            HackerRankWorkTeam:
+                id: string
+                name: string
+                owner: string
+                created_at: date
+                recruiter_count: number
+                developer_count: number
+                interviewer_count: number
+                recruiter_cap: number
+                developer_cap: number
+                interviewer_cap: number
+                logo_id: string
+                library_access: boolean
+                invite_as: string
+                locations: []
+                departments: []
+            HackerRankWorkTest:
+                id: string
+                unique_id: string
+                name: string
+                duration: number
+                owner: string
+                instructions: string
+                created_at: date
+                state: string
+                locked: boolean
+                test_type: string
+                starred: boolean
+                start_time: date
+                end_time: date
+                draft: boolean
+                questions: []
+                sections: object
+                tags: []
+                permission: number
+            HackerRankWorkUser:
+                id: string
+                email: string
+                firstname: string
+                lastname: string
+                country: string
+                role: string
+                status: string
+                phone: string
+                timezone: string
+                questions_permission: number
+                tests_permission: number
+                interviews_permission: number
+                candidates_permission: number
+                shared_questions_permission: number
+                shared_tests_permission: number
+                shared_interviews_permission: number
+                shared_candidates_permission: number
+                created_at: date
+                company_admin: boolean
+                team_admin: boolean
+                company_id: string
+                teams: []
+                activated: boolean
+                last_activity_time: date
+    hibob-service-user:
+        syncs:
+            hibob-employees:
+                runs: every hour
+                description: |
+                    Returns a list of all active employees.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: HibobEmployee
+                sync_type: full
+                endpoint: /hibob-service-user/hibob-employees
+        models:
+            HibobEmployee:
+                id: string
+                firstName: string
+                surname: string
+                email: string
+                displayName: string
+                personal:
+                    honorific: string
+                    shortBirthDate: string
+                    gender: string
+                about:
+                    avatar: string
+                    hobbies: string[]
+                work:
+                    reportsTo:
+                        id: string
+                        firstName: string
+                        surname: string
+                        email: string
+                    title: string
+                    department: string
+                    site: string
+                    startDate: date
+    hubspot:
+        syncs:
+            hubspot-service-tickets:
+                runs: every half hour
+                output: HubspotServiceTicket
+                sync_type: incremental
+                endpoint: /hubspot/service-tickets
+            hubspot-contacts:
+                runs: every day
+                output: HubspotContact
+                sync_type: full
+                endpoint: /hubspot/contacts
+            hubspot-owners:
+                runs: every day
+                output: HubspotOwner
+                sync_type: full
+                endpoint: /hubspot/owner
+            hubspot-users:
+                runs: every day
+                output: HubspotUser
+                sync_type: full
+                endpoint: /hubspot/user
+            hubspot-knowledge-base:
+                runs: every day
+                output: HubspotKnowledgeBase
+                sync_type: full
+                endpoint: /hubspot/knowledge-base
+        models:
+            HubspotServiceTicket:
+                id: integer
+                createdAt: date
+                updatedAt: date
+                isArchived: boolean
+                subject: string
+                content: string
+                objectId: integer
+                ownerId: integer
+                pipeline: integer
+                pipelineStage: integer
+                ticketCategory: string | null
+                ticketPriority: string
+            HubspotOwner:
+                id: integer
+                email: string
+                firstName: string
+                lastName: string
+                userId: integer
+                createdAt: date
+                updatedAt: date
+                archived: boolean
+            HubspotUser:
+                id: integer
+                email: string
+                roleId: integer
+                primaryTeamId: integer
+                superAdmin: boolean
+            HubspotKnowledgeBase:
+                id: string
+                title: string
+                description: string
+                category: string
+                content: string
+                publishDate: number
+            HubspotContact:
+                id: string
+                created_at: string
+                updated_at: string
+                first_name: string
+                last_name: string
+                email: string
+    intercom:
+        syncs:
+            intercom-conversations:
+                runs: every 6 hours
+                output: IntercomConversation
+                sync_type: incremental
+                endpoint: /intercom/conversations
+            intercom-contacts:
+                runs: every 6 hours
+                output: IntercomContact
+                sync_type: full
+                endpoint: /intercom/contacts
+        models:
+            IntercomContact:
+                id: string
+                workspace_id: string
+                external_id: string
+                type: string
+                email: string | null
+                phone: string | null
+                name: string | null
+                created_at: date
+                updated_at: date
+                last_seen_at: date | null
+                last_replied_at: date | null
+            IntercomConversation:
+                id: string
+                created_at: date
+                updated_at: date
+                waiting_since: date | null
+                snoozed_until: date | null
+                title: string
+                contacts:
+                    - contact_id: string
+                state: string
+                open: boolean
+                read: boolean
+                priority: string
+            IntercomConversationMessage:
+                id: string
+                conversation_id: string
+                body: string
+                type: string
+                created_at: date
+                updated_at: date | null
+                author:
+                    type: string
+                    name: string
+                    id: string
+    jira:
+        syncs:
+            jira-issues:
+                runs: every 5mins
+                output: JiraIssue
+                sync_type: incremental
+                endpoint: /jira/issues
+        models:
+            JiraIssue:
+                id: integer
+                key: string
+                summary: string
+                issueType: string
+                status: string
+                assignee: string
+                projectKey: string
+                projectName: string
+                createdAt: date
+                updatedAt: date
+    lever:
+        models:
+            LeverOpportunity:
+                id: string
+                name: string
+                headline: string
+                contact: string
+                emails: []
+                phones: []
+                confidentiality: string
+                location: string
+                links: []
+                archived:
+                    reason: string
+                    archivedAt: number
+                createdAt: number
+                updatedAt: number
+                lastInteractionAt: number
+                lastAdvancedAt: number
+                snoozedUntil: number
+                archivedAt: number
+                archiveReason: string
+                stage: string
+                stageChanges: []
+                owner: string
+                tags: []
+                sources: []
+                origin: string
+                sourcedBy: string
+                applications: []
+                resume: string
+                followers: []
+                urls:
+                    list: string
+                    show: string
+                dataProtection: object
+                isAnonymized: boolean
+                opportunityLocation: string
+            LeverOpportunityApplication:
+                id: string
+                opportunityId: string
+                candidateId: string
+                createdAt: number
+                type: string
+                posting: string
+                postingHiringManager: string
+                postingOwner: string
+                user: string
+                name: string
+                email: string
+                phone:
+                    type: string
+                    value: string
+                requisitionForHire:
+                    id: string
+                    requisitionCode: string
+                    hiringManagerOnHire: string
+                ownerId: string
+                hiringManager: string
+                company: string
+                links: []
+                comments: string
+                customQuestions: []
+                archived:
+                    reason: string
+                    archivedAt: number
+            LeverOpportunityFeedback:
+                id: string
+                type: string
+                text: string
+                instructions: string
+                fields: []
+                baseTemplateId: string
+                interview: string
+                panel: string
+                user: string
+                createdAt: number
+                completedAt: number
+                updatedAt: number
+                deletedAt: number
+            LeverOpportunityInterview:
+                id: string
+                panel: string
+                subject: string
+                note: string
+                interviewers: []
+                timezone: string
+                createdAt: number
+                date: number
+                duration: number
+                location: string
+                feedbackTemplate: string
+                feedbackForms: []
+                feedbackReminder: string
+                user: string
+                stage: string
+                canceledAt: number
+                postings: []
+                gcalEventUrl: string
+            LeverOpportunityNote:
+                id: string
+                text: string
+                fields: []
+                user: string
+                secret: boolean
+                completedAt: number
+                createdAt: number
+                deletedAt: number
+            LeverOpportunityOffer:
+                id: string
+                createdAt: number
+                status: string
+                creator: string
+                fields: []
+                sentDocument:
+                    fileName: string
+                    uploadedAt: number
+                    downloadUrl: string
+                signedDocument:
+                    fileName: string
+                    uploadedAt: number
+                    downloadUrl: string
+            LeverPosting:
+                id: string
+                text: string
+                createdAt: number
+                updatedAt: number
+                user: string
+                owner: string
+                hiringManager: string
+                confidentiality: string
+                categories:
+                    team: string
+                    department: string
+                    location: string
+                    allLocations: []
+                    commitment: string
+                    level: string
+                content:
+                    description: string
+                    descriptionHtml: string
+                    lists: []
+                    closing: string
+                    closingHtml: string
+                country: string
+                followers: []
+                tags: []
+                state: string
+                distributionChannels: []
+                reqCode: string
+                requisitionCodes: []
+                salaryDescription: string
+                salaryDescriptionHtml: string
+                salaryRange:
+                    max: number
+                    min: number
+                    currency: string
+                    interval: string
+                urls:
+                    list: string
+                    show: string
+                    apply: string
+                workplaceType: string
+            LeverPostingApply:
+                id: string
+                text: string
+                customQuestions: []
+                eeoQuestions: []
+                personalInformation: []
+                urls: []
+            LeverStage:
+                id: string
+                text: string
+    linear:
+        syncs:
+            linear-issues:
+                runs: every 5min
+                output: LinearIssue
+                sync_type: incremental
+                endpoint: /linear/issues
+            linear-projects:
+                runs: every 5min
+                output: LinearProject
+                sync_type: incremental
+                endpoint: /linear/projects
+            linear-teams:
+                runs: every 5min
+                output: LinearTeam
+                sync_type: incremental
+                endpoint: /linear/teams
+            linear-roadmaps:
+                runs: every 5min
+                output: LinearRoadmap
+                sync_type: incremental
+                endpoint: /linear/roadmaps
+        models:
+            LinearIssue:
+                id: string
+                assigneeId: string | null
+                creatorId: string | null
+                createdAt: date
+                description: string | null
+                dueDate: date | null
+                projectId: string | null
+                teamId: string
+                title: string
+                status: string
+            LinearTeam:
+                id: string
+                name: string
+                description: string | null
+                createdAt: date
+                updatedAt: date
+            LinearProject:
+                id: string
+                url: string
+                name: string
+                description: string | null
+                createdAt: date
+                updatedAt: date
+                teamId: string
+            LinearRoadmap:
+                id: string
+                name: string
+                description: string | null
+                createdAt: date
+                updatedAt: date
+                teamId: string
+                projectIds: string
+    microsoft-teams:
+        syncs:
+            microsoft-org-unit:
+                runs: every 6 hours
+                description: |
+                    Continuously fetches groups from either Microsoft 365 or Azure Active
+                    Directory.
+                    Details: full refresh, support deletes, goes back all time, metadata
+                    is not required.
+                output: OrganizationalUnit
+                sync_type: full
+                endpoint: /microsoft-teams/microsoft-org-unit
+                scopes:
+                    - GroupMember.Read.All
+            microsoft-users:
+                runs: every hour
+                description: |
+                    Continuously fetches users from either Microsoft 365 or Azure Active
+                    Directory given specified
+                    groups to sync. Expects an `orgsToSync` metadata property with an
+                    array of organization ids.
+                    Details: full refresh, doesn't support deletes, goes back all time,
+                    metadata is required.
+                output: User
+                sync_type: full
+                endpoint: /microsoft-teams/microsoft-users
+                scopes:
+                    - User.Read.All
+        models:
+            OrganizationalUnit:
+                id: string
+                name: string
+                createdAt: string | null
+                deletedAt: string | null
+                description: string | null
+                path: string | null
+                parentPath: string | null
+                parentId: string | null
+            User:
+                id: string
+                email: string
+                displayName: string | null
+                givenName: string | null
+                familyName: string | null
+                picture: string | null | undefined
+                type: string
+                createdAt: string | null
+                deletedAt: string | null
+                phone:
+                    value: string | null | undefined
+                    type: string | null | undefined
+                organizationId: string | null | undefined
+                organizationPath: string | null | undefined
+                isAdmin: boolean | null
+                department: string | null
+        rawName: microsoft-active-directory
+    next-cloud-ocs:
+        syncs:
+            next-cloud-users:
+                runs: every hour
+                description: |
+                    Fetch all users' details from NextCloud account
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: 'N'
+                sync_type: full
+                endpoint: /next-cloud-ocs/next-cloud-users
+                scopes:
+                    - default
+        models:
+            NextCloudUser:
+                enabled: boolean
+                id: string
+                lastLogin: number
+                backend: string
+                subadmin: string[]
+                quota:
+                    free: number
+                    used: number
+                    total: number
+                    relative: number
+                    quota: number
+                manager: string
+                avatarScope: string
+                email: string
+                emailScope: string
+                additional_mail: []
+                additional_mailScope: []
+                displayname: string
+                display_name: string
+                displaynameScope: string
+                phone: string
+                phoneScope: string
+                address: string
+                addressScope: string
+                website: string
+                websiteScope: string
+                twitter: string
+                twitterScope: string
+                fediverse: string
+                fediverseScope: string
+                organisation: string
+                organisationScope: string
+                role: string
+                roleScope: string
+                headline: string
+                headlineScope: string
+                biography: string
+                biographyScope: string
+                profile_enabled: string
+                profile_enabledScope: string
+                groups: string[]
+                language: string
+                locale: string
+                notify_email: boolean
+                backendCapabilities:
+                    setDisplayName: boolean
+                    setPassword: boolean
+    notion:
+        syncs:
+            notion-pages:
+                runs: every 6 hours
+                description: |
+                    Sync pages, subpages, database entries, entries of
+                    sub-databases and retrieve only the text content and ignores
+                    images, files and other blocks that do not have
+                    a `rich_text` property.
+                    Details: incremental sync, doesn't support deletes, sync goes to all
+                    time, metadata is not required.
+                    Required scope(s): none
+                output: NotionPage
+                sync_type: incremental
+                endpoint: /notion/pages
+                scopes: ''
+            notion-rich-pages:
+                runs: every 6 hours
+                track_deletes: true
+                description: |
+                    Sync pages, subpages, database entries, entries of
+                    sub-databases and maps to full markdown. It transforms
+                    images, tables, uploaded files, etc into their markdown counterparts.
+                    Details: full sync, tracks deletes, sync goes to all time, metadata is
+                    not required.
+                    Required scope(s): none
+                output: NotionRichPage
+                sync_type: incremental
+                endpoint: /notion/rich-pages
+                scopes: ''
+        models:
+            NotionPage:
+                id: string
+                url: string
+                content: string
+                parent_page_id: string | undefined
+            NotionRichPage:
+                id: string
+                path: string
+                title: string
+                content: string
+                contentType: string
+                meta: object
+                last_modified: string
+    pipedrive:
+        syncs:
+            pipedrive-activities:
+                runs: every hour
+                description: |
+                    Fetches activities from pipedrive.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: PipeDriveActivity
+                sync_type: incremental
+                endpoint: /pipedrive/activities
+                scopes:
+                    - activities:read
+            pipedrive-deals:
+                runs: every hour
+                description: |
+                    Fetches deals from pipedrive.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: PipeDriveDeal
+                sync_type: incremental
+                endpoint: /pipedrive/deals
+                scopes:
+                    - deals:read
+            pipedrive-organizations:
+                runs: every hour
+                description: |
+                    Fetches organizations from pipedrive.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: PipeDriveOrganization
+                sync_type: incremental
+                endpoint: /pipedrive/organizations
+                scopes:
+                    - contacts:read
+            pipedrive-persons:
+                runs: every half hour
+                description: |
+                    Fetches persons from pipedrive.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: PipeDrivePerson
+                sync_type: incremental
+                endpoint: /pipedrive/persons
+                scopes:
+                    - contacts:read
+        models:
+            PipeDriveActivity:
+                id: integer
+                done: boolean
+                type: string
+                duration: date
+                subject: string
+                company_id: integer
+                user_id: integer
+                conference_meeting_client: string
+                conference_meeting_url: string
+                conference_meeting_id: string
+                due_date: date
+                due_time: date
+                busy_flag: boolean
+                add_time: date
+                marked_as_done_time: date
+                public_description: string
+                location: string
+                org_id: integer
+                person_id: integer
+                deal_id: integer
+                active_flag: boolean
+                update_time: date
+                update_user_id: integer
+                source_timezone: string
+                lead_id: string
+                location_subpremise: string
+                location_street_number: string
+                location_route: string
+                location_sublocality: string
+                location_locality: string
+                location_admin_area_level_1: string
+                location_admin_area_level_2: string
+                location_country: string
+                location_postal_code: string
+                location_formatted_address: string
+                project_id: integer
+            PipeDriveDeal:
+                id: integer
+                creator_user_id: integer
+                user_id: integer
+                person_id: integer
+                org_id: integer
+                stage_id: integer
+                title: string
+                value: integer
+                currency: string
+                add_time: date
+                update_time: date
+                status: string
+                probability: string
+                lost_reason: string
+                visible_to: string
+                close_time: date
+                pipeline_id: integer
+                won_time: date
+                lost_time: date
+                expected_close_date: date
+                label: string
+            PipeDriveOrganization:
+                id: integer
+                owner_id: integer
+                name: string
+                active_flag: boolean
+                update_time: date
+                delete_time: date
+                add_time: date
+                visible_to: string
+                label: integer
+                address: integer
+                address_subpremise: string
+                address_street_number: string
+                address_route: string
+                address_sublocality: string
+                address_locality: string
+                address_admin_area_level_1: string
+                address_admin_area_level_2: string
+                address_country: string
+                address_postal_code: string
+                address_formatted_address: string
+                cc_email: string
+            PipeDrivePerson:
+                id: integer
+                active_flag: boolean
+                owner_id: integer
+                org_id: integer
+                name: string
+                phone: []
+                email: []
+                update_time: date
+                delete_time: date
+                add_time: date
+                visible_to: string
+                picture_id: integer
+                label: integer
+                cc_email: string
+    salesforce:
+        syncs:
+            salesforce-accounts:
+                runs: every hour
+                output: SalesforceAccount
+                sync_type: incremental
+                endpoint: /salesforce/accounts
+            salesforce-contacts:
+                runs: every hour
+                output: SalesforceContact
+                sync_type: incremental
+                endpoint: /salesforce/contacts
+            salesforce-deals:
+                runs: every hour
+                output: SalesforceDeal
+                sync_type: incremental
+                endpoint: /salesforce/deals
+            salesforce-articles:
+                runs: every day
+                output: SalesforceArticle
+                sync_type: incremental
+                endpoint: /salesforce/articles
+            salesforce-tickets:
+                runs: every day
+                output: SalesforceTicket
+                sync_type: incremental
+                endpoint: /salesforce/tickets
+        models:
+            SalesforceAccount:
+                id: string
+                name: string
+                website: string
+                description: string
+                no_employees: number
+                last_modified_date: string
+            SalesforceContact:
+                id: string
+                first_name: string
+                last_name: string
+                email: string
+                account_id: string
+                last_modified_date: string
+            SalesforceDeal:
+                id: string
+                name: string
+                amount: number
+                stage: string
+                account_id: string
+                last_modified_date: string
+            SalesforceArticle:
+                id: string
+                title: string
+                content: string
+                last_modified_date: string
+            SalesforceTicket:
+                id: string
+                case_number: string
+                subject: string | null
+                account_id: string
+                account_name: string | null
+                contact_id: string
+                contact_name: string | null
+                owner_id: string
+                owner_name: string | null
+                priority: string
+                status: string
+                description: string | null
+                type: string
+                created_date: string
+                closed_date: string
+                origin: string
+                is_closed: boolean
+                is_escalated: boolean
+                conversation:
+                    id: string
+                    body: string
+                    created_date: string
+                    created_by: string
+                last_modified_date: string
+    slack:
+        syncs:
+            slack-users:
+                runs: every hour
+                description: |
+                    Syncs information about all Users on the Slack workspace.
+                output: SlackUser
+                sync_type: full
+                endpoint: /slack/users
+                scopes:
+                    - users:read
+            slack-channels:
+                runs: every hour
+                description: |
+                    Syncs information about all Slack channels. Which channels get synced
+                    (public, private, IMs, group DMs) dependson the scopes. If
+                    joinPublicChannels is set to true, the bot will automatically join all
+                    public channels as well. Scopes: At least one of channels:read,
+                    groups:read, mpim:read, im:read. To also join public channels:
+                    channels:join
+                output: SlackChannel
+                sync_type: full
+                endpoint: /slack/channels
+                scopes:
+                    - channels:read
+                    - channels:join
+            slack-messages:
+                runs: every hour
+                description: |
+                    Syncs Slack messages, thread replies and reactions from messages &
+                    thread replies for all channels, group dms and dms the bot is a part
+                    of. For every channel it will do an initial full sync on first
+                    detection of the channel. For subsequent runs it will sync messages,
+                    threads & reactions from the last 10 days. Scopes required:
+                    channels:read, and at least one of
+                    channels:history,groups:history,mpim:history,im:history
+                output: SlackMessage
+                sync_type: full
+                endpoint: /slack/messages
+                scopes:
+                    - channels:read
+                    - channels:history
+        models:
+            SlackUser:
+                id: string
+                team_id: string
+                name: string
+                deleted: boolean
+                tz: string
+                tz_label: string
+                tz_offset: number
+                profile:
+                    avatar_hash: string
+                    real_name: string | null
+                    display_name: string | null
+                    real_name_normalized: string | null
+                    display_name_normalized: string | null
+                    email: string | null
+                    image_original: string | null
+                is_admin: boolean
+                is_owner: boolean
+                is_primary_owner: boolean
+                is_restricted: boolean
+                is_ultra_restricted: boolean
+                is_bot: boolean
+                updated: number
+                is_app_user: boolean
+                raw_json: string
+            SlackChannel:
+                id: string
+                name: string
+                is_channel: boolean
+                is_group: boolean
+                is_im: boolean
+                created: number
+                creator: string
+                is_archived: boolean
+                is_general: boolean
+                name_normalized: string
+                is_shared: boolean
+                is_private: boolean
+                is_mpim: boolean
+                updated: number
+                num_members: number
+                raw_json: string
+            SlackMessage:
+                id: string
+                ts: string
+                channel_id: string
+                thread_ts: string | null
+                app_id: string | null
+                bot_id: string | null
+                display_as_bot: boolean | null
+                is_locked: boolean | null
+                metadata:
+                    event_type: string
+                parent_user_id: string | null
+                subtype: string | null
+                text: string | null
+                topic: string | null
+                user_id: string | null
+                raw_json: string
+            SlackMessageReply:
+                id: string
+                ts: string
+                channel_id: string
+                thread_ts: string | null
+                app_id: string | null
+                bot_id: string | null
+                display_as_bot: boolean | null
+                is_locked: boolean | null
+                metadata:
+                    event_type: string
+                parent_user_id: string | null
+                subtype: string | null
+                text: string | null
+                topic: string | null
+                user_id: string | null
+                root:
+                    message_id: string | null
+                    ts: string
+                raw_json: string
+            SlackMessageReaction:
+                id: string
+                message_ts: string
+                thread_ts: string
+                channel_id: string
+                user_id: string
+                reaction_name: string
+    teamtailor:
+        syncs:
+            teamtailor-candidates:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all candidates from your teamtailor account.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: TeamtailorCandidate
+                sync_type: full
+                endpoint: /teamtailor-candidates/candidates
+                scopes:
+                    - Admin
+        models:
+            TeamtailorCandidate:
+                id: string
+                type: string
+                links:
+                    self: string
+                attributes:
+                    connected: boolean
+                    consent_future_jobs_at: date
+                    created_at: date
+                    updated_at: date
+                    email: string
+                    facebook_id: string
+                    facebook_profile: string
+                    first_name: string
+                    internal: boolean
+                    last_name: string
+                    linkedin_profile: string
+                    linkedin_uid: string
+                    linkedin_url: string
+                    original_resume: string
+                    phone: string
+                    picture: string
+                    pitch: string
+                    referring_site: string
+                    referring_url: string
+                    referred: boolean
+                    resume: string
+                    sourced: boolean
+                    tags: array
+                    unsubscribed: boolean
+                relationships:
+                    activities:
+                        links:
+                            self: string
+                            related: string
+                    department:
+                        links:
+                            self: string
+                            related: string
+                    role:
+                        links:
+                            self: string
+                            related: string
+                    regions:
+                        links:
+                            self: string
+                            related: string
+                    job_applications:
+                        links:
+                            self: string
+                            related: string
+                    questions:
+                        links:
+                            self: string
+                            related: string
+                    answers:
+                        links:
+                            self: string
+                            related: string
+                    locations:
+                        links:
+                            self: string
+                            related: string
+                    uploads:
+                        links:
+                            self: string
+                            related: string
+                    custom_field_values:
+                        links:
+                            self: string
+                            related: string
+                    partner_results:
+                        links:
+                            self: string
+                            related: string
+    wildix-pbx:
+        syncs:
+            wildix-pbx-colleagues:
+                runs: every 1 hour
+                output: WildixPbxColleague
+                sync_type: full
+                endpoint: /wildix-pbx/colleagues
+        models:
+            WildixPbxColleague:
+                id: string
+                name: string
+                extension: string
+                email: string
+                mobilePhone: string
+                licenseType: string
+                language: string
+    workable:
+        syncs:
+            workable-candidates:
+                runs: every 6 hours
+                description: |
+                    Fetches candidates from workable.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: WorkableCandidate
+                sync_type: incremental
+                endpoint: /workable/candidates
+                scopes:
+                    - r_candidates
+            workable-candidates-activities:
+                runs: every 6 hours
+                description: |
+                    Fetches activity stream of the given candidate
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: WorkableCandidateActivity
+                sync_type: full
+                endpoint: /workable/candidates-activities
+                scopes:
+                    - r_candidates
+            workable-candidates-offer:
+                runs: every 6 hours
+                description: |
+                    Fetches candidate's latest offer from workable.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: WorkableCandidateOffer
+                sync_type: full
+                endpoint: /workable/candidates-offer
+                scopes:
+                    - r_candidates
+            workable-jobs:
+                runs: every 6 hours
+                description: |
+                    Fetches jobs from workable.
+                    Details: incremental sync, doesn't track deletes, metadata is not
+                    required.
+                output: WorkableJob
+                sync_type: incremental
+                endpoint: /workable/jobs
+                scopes:
+                    - r_jobs
+            workable-jobs-candidates:
+                runs: every 6 hours
+                description: |
+                    Fetches candidates for the specified job from workable.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: WorkableJobsCandidate
+                sync_type: full
+                endpoint: /workable/jobs-candidates
+                scopes:
+                    - r_jobs
+            workable-jobs-questions:
+                runs: every 6 hours
+                description: |
+                    Fetches questions for the specified job from workable.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: WorkableJobQuestion
+                sync_type: full
+                endpoint: /workable/jobs-questions
+                scopes:
+                    - r_jobs
+            workable-members:
+                runs: every 6 hours
+                description: |
+                    Fetches account members from workable.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                output: WorkableMember
+                sync_type: full
+                endpoint: /workable/members
+                scopes:
+                    - r_jobs
+        actions:
+            workable-create-comment:
+                description: |
+                    Action to create a comment on the applicant's timeline.
+                    Scope(s): w_candidates or w_comments
+                output: WorkableCreateCommentResponse
+                endpoint: /workable/create-comment
+        models:
+            WorkableCandidate:
+                id: string
+                name: string
+                firstname: string
+                lastname: string
+                headline: string
+                account: &ref_0
+                    subdomain: string
+                    name: string
+                job: &ref_1
+                    shortcode: string
+                    title: string
+                stage: string
+                disqualified: boolean
+                disqualification_reason: string
+                hired_at: date
+                sourced: boolean
+                profile_url: string
+                address: string
+                phone: string
+                email: string
+                domain: string
+                created_at: date
+                updated_at: date
+            WorkableJobsCandidate:
+                id: string
+                name: string
+                firstname: string
+                lastname: string
+                headline: string
+                account: *ref_0
+                job: *ref_1
+                stage: string
+                disqualified: boolean
+                disqualification_reason: string
+                hired_at: date
+                sourced: boolean
+                profile_url: string
+                address: string
+                phone: string
+                email: string
+                domain: string
+                created_at: date
+                updated_at: date
+            WorkableCandidateActivity:
+                id: string
+                action: string
+                stage_name: string
+                created_at: date
+                body: string
+                member:
+                    id: string
+                    name: string
+                rating: object
+            WorkableCandidateOffer:
+                id: string
+                candidate:
+                    id: string
+                    name: string
+                created_at: date
+                document_variables: array
+                documents: array
+                state: string
+            WorkableJob:
+                id: string
+                title: string
+                full_title: string
+                shortcode: string
+                code: string
+                state: string
+                sample: boolean
+                department: string
+                department_hierarchy: []
+                url: string
+                application_url: string
+                shortlink: string
+                location:
+                    location_str: string
+                    country: string
+                    country_code: string
+                    region: string
+                    region_code: string
+                    city: string
+                    zip_code: string
+                    telecommuting: boolean
+                    workplace_type: string
+                locations: []
+                salary:
+                    salary_from: number
+                    salary_to: number
+                    salary_currency: string
+                created_at: date
+            WorkableJobQuestion:
+                id: string
+                body: string
+                type: string
+                required: boolean
+                single_answer: boolean
+                choices:
+                    id: string
+                    body: string
+                supported_file_types: []
+                max_file_size: number
+            WorkableMember:
+                id: string
+                name: string
+                headline: string
+                email: string
+                role: string
+            WorkableCreateCandidateResponse:
+                status: string
+                candidate:
+                    __extends: WorkableCandidate
+                    image_url: string
+                    outbound_mailbox: string
+                    uploader_id: string
+                    cover_letter: string
+                    summary: string
+                    education_entries: []
+                    experience_entries: []
+                    skills: []
+                    answers: []
+                    resume_url: string
+                    tags: []
+                    location:
+                        location_str: string
+                        country: string
+                        country_code: string
+                        region: string
+                        region_code: string
+                        city: string
+                        zip_code: string
+            WorkableCreateCommentResponse:
+                id: string
+    zendesk:
+        syncs:
+            zendesk-tickets:
+                runs: every 1 hour
+                output: ZendeskTicket
+                sync_type: full
+                endpoint: /zendesk/tickets
+            zendesk-articles:
+                runs: every 6 hours
+                output: ZendeskArticle
+                sync_type: full
+                endpoint: /zendesk/articles
+        models:
+            ZendeskArticle:
+                title: string
+                locale: string
+                user_segment_id: number
+                permission_group_id: number
+                author_id: number
+                body: string
+                comments_disabled: boolean
+                content_tag_ids: []
+                created_at: string
+                draft: boolean
+                edited_at: string
+                html_url: string
+                id: number
+                label_names: []
+                outdated: boolean
+                outdated_locales: []
+                position: number
+                promoted: boolean
+                section_id: number
+                source_locale: string
+                updated_at: string
+                url: string
+                vote_count: number
+                vote_sum: number
+            ZendeskTicket:
+                requester_id: number
+                allow_attachments: boolean
+                allow_channelback: boolean
+                assignee_email: string
+                assignee_id: number
+                attribute_value_ids: number[]
+                brand_id: number
+                collaborator_ids: number[]
+                collaborators: any[]
+                comment: object
+                created_at: string
+                custom_fields: any[]
+                custom_status_id: number
+                description: string
+                due_at: string
+                email_cc_ids: number[]
+                email_ccs: object
+                external_id: string
+                follower_ids: number[]
+                followers: object
+                followup_ids: number[]
+                forum_topic_id: number
+                from_messaging_channel: boolean
+                group_id: number
+                has_incidents: boolean
+                id: number
+                is_public: boolean
+                macro_id: number
+                macro_ids: number[]
+                metadata: object
+                organization_id: number
+                priority: string
+                problem_id: number
+                raw_subject: string
+                recipient: string
+                requester: object
+                safe_update: boolean
+                satisfaction_rating:
+                    aliqua38: number
+                sharing_agreement_ids: number[]
+                status: string
+                subject: string
+                submitter_id: number
+                tags: string[]
+                ticket_form_id: number
+                type: string
+                updated_at: string
+                updated_stamp: string
+                url: string
+                via:
+                    channel: string
+                    source:
+                        eu__4: number
+                        id__8f: string
+                via_followup_source_id: number
+                via_id: number
+                voice_comment: object
+    zoho-crm:
+        syncs:
+            zoho-crm-accounts:
+                runs: every half hour
+                auto_start: false
+                description: |
+                    Fetches accounts from zoho crm.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
+                output: ZohoCRMAccount
+                sync_type: incremental
+                endpoint: /zoho-crm/accounts
+                scopes:
+                    - ZohoCRM.modules.accounts.READ
+            zoho-crm-contacts:
+                runs: every half hour
+                auto_start: false
+                description: |
+                    Fetches contacts from zoho crm.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
+                output: ZohoCRMContact
+                sync_type: incremental
+                endpoint: /zoho-crm/contacts
+                scopes:
+                    - ZohoCRM.modules.contacts.READ
+            zoho-crm-deals:
+                runs: every half hour
+                auto_start: false
+                description: |
+                    Fetches deals/opportunities from zoho crm.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
+                output: ZohoCRMDeal
+                sync_type: incremental
+                endpoint: /zoho-crm/deals
+                scopes:
+                    - ZohoCRM.modules.deals.READ
+        models:
+            ZohoCRMAccount:
+                Owner:
+                    name: string
+                    id: string
+                    email: string
+                $currency_symbol: string
+                $field_states: string
+                Account_Type: string
+                SIC_Code: string
+                Last_Activity_Time: date
+                Industry: string
+                Account_Site: string
+                $state: string
+                $process_flow: boolean
+                Billing_Country: string
+                $locked_for_me: boolean
+                id: string
+                $approved: boolean
+                $approval:
+                    delegate: boolean
+                    approve: boolean
+                    reject: boolean
+                    resubmit: boolean
+                Billing_Street: string
+                Created_Time: date
+                $editable: boolean
+                Billing_Code: string
+                Shipping_City: string
+                Shipping_Country: string
+                Shipping_Code: string
+                Billing_City: string
+                Created_By:
+                    name: string
+                    id: string
+                    email: string
+                $zia_owner_assignment: string
+                Annual_Revenue: integer
+                Shipping_Street: string
+                Ownership: string
+                Description: string
+                Rating: integer
+                Shipping_State: string
+                $review_process:
+                    approve: boolean
+                    reject: boolean
+                    resubmit: boolean
+                Website: string
+                Employees: integer
+                Record_Image: string
+                Modified_By:
+                    name: string
+                    id: string
+                    email: string
+                $review: string
+                Phone: string
+                Account_Name: string
+                Account_Number: string
+                Ticker_Symbol: string
+                Modified_Time: date
+                $orchestration: boolean
+                Parent_Account:
+                    name: string
+                    id: string
+                $in_merge: boolean
+                Locked__s: boolean
+                Billing_State: string
+                Tag: []
+                Fax: string
+                $approval_state: string
+            ZohoCRMContact:
+                Owner:
+                    name: string
+                    id: string
+                    email: string
+                Email: string
+                $currency_symbol: string
+                $field_states: string
+                Other_Phone: string
+                Mailing_State: string
+                Other_State: string
+                Other_Country: string
+                Last_Activity_Time: date
+                Department: string
+                $state: string
+                Unsubscribed_Mode: string
+                $process_flow: boolean
+                Assistant: string
+                Mailing_Country: string
+                $locked_for_me: string
+                id: string
+                $approved: boolean
+                Reporting_To:
+                    name: string
+                    id: string
+                $approval:
+                    delegate: boolean
+                    approve: boolean
+                    reject: boolean
+                    resubmit: boolean
+                Other_City: string
+                Created_Time: date
+                $editable: boolean
+                Home_Phone: string
+                Created_By:
+                    name: string
+                    id: string
+                    email: string
+                $zia_owner_assignment: string
+                Secondary_Email: string
+                Description: string
+                Vendor_Name:
+                    name: string
+                    id: string
+                Mailing_Zip: string
+                $review_process:
+                    approve: boolean
+                    reject: boolean
+                    resubmit: boolean
+                Twitter: string
+                Other_Zip: string
+                Mailing_Street: string
+                Salutation: string
+                First_Name: string
+                Full_Name: string
+                Asst_Phone: string
+                Record_Image: string
+                Modified_By:
+                    name: string
+                    id: string
+                    email: string
+                $review: boolean
+                Skype_ID: string
+                Phone: string
+                Account_Name:
+                    name: string
+                    id: string
+                Email_Opt_Out: boolean
+                Modified_Time: date
+                Date_of_Birth: date
+                Mailing_City: string
+                Unsubscribed_Time: date
+                Title: string
+                Other_Street: string
+                Mobile: string
+                $orchestration: boolean
+                Last_Name: string
+                $in_merge: boolean
+                Locked__s: boolean
+                Lead_Source: string
+                Tag: []
+                Fax: string
+                $approval_state: string
+            ZohoCRMDeal:
+                Owner:
+                    name: string
+                    id: string
+                    email: string
+                Description: string
+                $currency_symbol: string
+                Campaign_Source:
+                    name: string
+                    id: string
+                $field_states: string
+                $review_process:
+                    approve: boolean
+                    reject: boolean
+                    resubmit: boolean
+                Closing_Date: date
+                Reason_For_Loss__s: string
+                Last_Activity_Time: date
+                Modified_By:
+                    name: string
+                    id: string
+                    email: string
+                $review: string
+                Lead_Conversion_Time: date
+                $state: string
+                $process_flow: boolean
+                Deal_Name: string
+                Expected_Revenue: integer
+                Overall_Sales_Duration: integer
+                Stage: string
+                $locked_for_me: boolean
+                Account_Name:
+                    name: string
+                    id: string
+                id: string
+                $approved: boolean
+                $approval:
+                    delegate: boolean
+                    approve: boolean
+                    reject: boolean
+                    resubmit: boolean
+                Modified_Time: date
+                Created_Time: date
+                Amount: integer
+                Next_Step: string
+                Probability: integer
+                $editable: boolean
+                $orchestration: boolean
+                Contact_Name:
+                    name: string
+                    id: string
+                Sales_Cycle_Duration: integer
+                Type: string
+                $in_merge: boolean
+                Locked__s: boolean
+                Lead_Source: string
+                Created_By:
+                    name: string
+                    id: string
+                    email: string
+                Tag: []
+                $zia_owner_assignment: string
+                $approval_state: string
+    zoho-mail:
+        syncs:
+            zoho-mail-tasks:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all your personal tasks in Zoho mail
+                output: ZohoMailTask
+                sync_type: full
+                endpoint: /zoho-mail/tasks
+                scopes:
+                    - ZohoMail.tasks.READ
+        models:
+            ZohoMailTask:
+                id: string
+                serviceType: number
+                modifiedTime: date
+                resourceId: string
+                attachments: []
+                statusStr: string
+                statusValue: number
+                description: string
+                project:
+                    name: string
+                    id: string
+                isTaskPublished: boolean
+                title: string
+                createdAt: date
+                portalId: number
+                serviceId: string
+                owner:
+                    name: string
+                    id: number
+                assigneeList: []
+                dependency: []
+                subtasks: []
+                priority: string
+                tags: []
+                followers: []
+                namespaceId: string
+                dependents: []
+                assignee:
+                    name: string
+                    id: number
+                serviceUniqId: number
+                depUniqId: string
+                status: string

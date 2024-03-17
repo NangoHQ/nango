@@ -34,7 +34,26 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
-export const JAVASCRIPT_PRIMITIVES = ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'object', 'null'];
+export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
+    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
+    aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],
+    builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
+    utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
+};
+
+export function isJsOrTsType(type: string): boolean {
+    const baseType = type.replace(/\[\]$/, '');
+
+    const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();
+    if (simpleTypes.includes(baseType)) {
+        return true;
+    }
+
+    const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
+    const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
+
+    return genericTypeRegex.test(baseType);
+}
 
 export function getEnv() {
     if (isStaging()) {
@@ -56,6 +75,12 @@ export function isCloud() {
 
 export function isEnterprise() {
     return process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
+}
+
+export function integrationFilesAreRemote() {
+    const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
+
+    return isEnterprise() && useS3;
 }
 
 export function isStaging() {

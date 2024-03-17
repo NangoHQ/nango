@@ -1,16 +1,15 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.service.js';
 import connectionService from '../connection.service.js';
-import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
-import { deleteJobsBySyncId as deleteSyncJobsBySyncId, getLatestSyncJob } from './job.service.js';
-import { deleteRecordsBySyncId } from './data/records.service.js';
+import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
+import { getLatestSyncJob } from './job.service.js';
 import {
     createSync,
-    deleteSync,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
     getSyncByIdAndName,
-    getSyncNamesByConnectionId
+    getSyncNamesByConnectionId,
+    softDeleteSync
 } from './sync.service.js';
 import {
     createActivityLogMessageAndEnd,
@@ -63,7 +62,7 @@ export class Orchestrator {
                 await createActivityLogMessage({
                     level: 'debug',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
@@ -82,7 +81,7 @@ export class Orchestrator {
                     createdSync as Sync,
                     syncConfig as ProviderConfig,
                     syncName,
-                    { ...sync, returns: sync.models },
+                    { ...sync, returns: sync.models, input: '' },
                     debug
                 );
             }
@@ -90,7 +89,7 @@ export class Orchestrator {
                 await createActivityLogMessage({
                     level: 'debug',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
@@ -135,25 +134,20 @@ export class Orchestrator {
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async deleteSync(syncId: string, environmentId: number) {
-        await deleteScheduleForSync(syncId as string, environmentId);
-        await deleteSync(syncId as string);
+    public async softDeleteSync(syncId: string, environmentId: number) {
+        await deleteScheduleForSync(syncId, environmentId);
+        await softDeleteSync(syncId);
     }
 
-    public async deleteSyncRelatedObjects(syncId: string) {
-        await deleteSyncJobsBySyncId(syncId);
-        await deleteSyncSchedulesBySyncId(syncId);
-        await deleteRecordsBySyncId(syncId);
-    }
-
-    public async deleteSyncsByConnection(connection: Connection) {
-        const syncs = await getSyncsByConnectionId(connection.id as number);
+    public async softDeleteSyncsByConnection(connection: Connection) {
+        const syncs = await getSyncsByConnectionId(connection.id!);
 
         if (!syncs) {
             return;
         }
+
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string, connection.environment_id as number);
+            await this.softDeleteSync(sync.id!, connection.environment_id);
         }
     }
 
@@ -165,7 +159,7 @@ export class Orchestrator {
         }
 
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string, environmentId);
+            await this.softDeleteSync(sync.id as string, environmentId);
         }
     }
 
@@ -177,7 +171,7 @@ export class Orchestrator {
         connectionId?: string
     ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
-        const provider = await configService.getProviderName(providerConfigKey as string);
+        const provider = await configService.getProviderName(providerConfigKey);
 
         const log = {
             level: 'info' as LogLevel,
@@ -188,7 +182,7 @@ export class Orchestrator {
             timestamp: Date.now(),
             connection_id: connectionId || '',
             provider,
-            provider_config_key: providerConfigKey as string,
+            provider_config_key: providerConfigKey,
             environment_id: environmentId
         };
         const activityLogId = await createActivityLog(log);
@@ -202,11 +196,7 @@ export class Orchestrator {
         }
 
         if (connectionId) {
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success || !connection) {
                 return { success: false, error, response: false };
@@ -221,7 +211,7 @@ export class Orchestrator {
             for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection.id as number, syncName);
                 if (!sync) {
-                    throw new Error(`Sync "${syncName}" doest not exists.`);
+                    throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
                 const schedule = await getSchedule(sync.id as string);
                 if (!schedule) {
@@ -234,8 +224,8 @@ export class Orchestrator {
                     command,
                     activityLogId,
                     environmentId,
-                    providerConfigKey as string,
-                    connectionId as string,
+                    providerConfigKey,
+                    connectionId,
                     syncName,
                     connection.id
                 );
@@ -274,7 +264,7 @@ export class Orchestrator {
                     activityLogId,
                     environmentId,
                     providerConfigKey,
-                    connection.connection_id as string,
+                    connection.connection_id,
                     sync.name,
                     connection.id
                 );
@@ -302,17 +292,21 @@ export class Orchestrator {
         providerConfigKey: string,
         syncNames: string[],
         connectionId?: string,
-        includeJobStatus = false
+        includeJobStatus = false,
+        optionalConnection?: Connection | null
     ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
-        if (connectionId) {
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
-
-            if (!success) {
-                return { success: false, error, response: null };
+        let connection = optionalConnection;
+        if (connectionId && !connection) {
+            const connectionResult = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+            if (!connectionResult.success || !connectionResult.response) {
+                return { success: false, error: connectionResult.error, response: null };
             }
+            connection = connectionResult.response;
+        }
 
+        if (connection) {
             for (const syncName of syncNames) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
@@ -410,7 +404,9 @@ export class Orchestrator {
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && status !== SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
-                status = SyncStatus.PAUSED;
+                if (status !== SyncStatus.RUNNING) {
+                    status = SyncStatus.PAUSED;
+                }
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
                 status = SyncStatus.STOPPED;

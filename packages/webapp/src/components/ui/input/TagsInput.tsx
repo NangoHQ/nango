@@ -4,45 +4,48 @@ import { X } from '@geist-ui/icons';
 
 import useSet from '../../../hooks/useSet';
 
-type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { defaultValue?: string; selectedScopes?: string[]; addToScopesSet?: (scope: string) => void; removeFromSelectedSet?: (scope: string) => void };
+type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
+    defaultValue?: string;
+    selectedScopes?: string[];
+    addToScopesSet?: (scope: string) => void;
+    removeFromSelectedSet?: (scope: string) => void;
+};
 
-const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput({ className, defaultValue, selectedScopes: optionalSelectedScopes, addToScopesSet: optionalAddToScopesSet, removeFromSelectedSet: optionalRemoveFromSelectedSet, ...props }, ref) {
-  const defaultScopes = useMemo(() => {
-      return !!defaultValue ? defaultValue.split(',') : [];
-  }, [defaultValue]);
+const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput(
+    {
+        className,
+        defaultValue,
+        selectedScopes: optionalSelectedScopes,
+        addToScopesSet: optionalAddToScopesSet,
+        removeFromSelectedSet: optionalRemoveFromSelectedSet,
+        ...props
+    },
+    ref
+) {
+    const defaultScopes = useMemo(() => {
+        return defaultValue ? defaultValue.split(',') : [];
+    }, [defaultValue]);
 
-  const [enteredValue, setEnteredValue] = useState('');
-  const [isInputFocused, setIsInputFocused] = useState(false);
-  const [error, setError] = useState('');
-  const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
+    const [enteredValue, setEnteredValue] = useState('');
+    const [error, setError] = useState('');
+    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
 
-  function handleInputFocus() {
-      setIsInputFocused(true);
-  }
+    const [scopes, setScopes] = useState(selectedScopes);
 
-  function handleInputBlur() {
-      setTimeout(() => {
-          setIsInputFocused(false);
-      }, 100);
-  }
+    useEffect(() => {
+        const selectedScopesStr = JSON.stringify(selectedScopes);
+        const optionalSelectedScopesStr = JSON.stringify(optionalSelectedScopes);
 
-  const [scopes, setScopes] = useState(selectedScopes);
-
-  useEffect(() => {
-    const selectedScopesStr = JSON.stringify(selectedScopes);
-    const optionalSelectedScopesStr = JSON.stringify(optionalSelectedScopes);
-
-    if (optionalSelectedScopesStr !== JSON.stringify(scopes)) {
-      setScopes(optionalSelectedScopes ?? JSON.parse(selectedScopesStr));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(optionalSelectedScopes), JSON.stringify(selectedScopes)]);
-
+        if (optionalSelectedScopesStr !== JSON.stringify(scopes)) {
+            setScopes(optionalSelectedScopes ?? JSON.parse(selectedScopesStr));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(optionalSelectedScopes), JSON.stringify(selectedScopes)]);
 
     useEffect(() => {
         if (defaultScopes.length) {
             defaultScopes.forEach((scope) => {
-                typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
+                typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());
             });
         }
     }, [defaultScopes, addToScopesSet, optionalAddToScopesSet]);
@@ -60,7 +63,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
             if (enteredValue.includes(',')) {
                 const enteredScopes = enteredValue.split(',');
                 enteredScopes.forEach((scope) => {
-                    typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
+                    typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());
                 });
                 setEnteredValue('');
                 setError('');
@@ -92,17 +95,18 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     value={enteredValue}
                     onChange={(e) => setEnteredValue(e.currentTarget.value)}
                     onKeyDown={handleEnter}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    placeholder={`${Boolean(scopes.length) ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
+                    placeholder={`${scopes.length ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                 />
             </div>
             {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
-            {enteredValue !== '' && isInputFocused && (
-                <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer" onClick={handleAdd}>
-                    <PlusSmallIcon onClick={handleAdd} className="h-5 w-5 cursor-pointer" />
-                    <span className="">Add new scope: "{enteredValue}"</span>
+            {enteredValue !== '' && (
+                <div
+                    className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer"
+                    onClick={handleAdd}
+                >
+                    <PlusSmallIcon className="h-5 w-5" onClick={handleAdd} />
+                    <span className="">Add new scope: &quot;{enteredValue}&quot;</span>
                 </div>
             )}
             {Boolean(scopes.length) && (

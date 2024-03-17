@@ -6,5 +6,3 @@ tracer.init({
 tracer.use('pg', {
     service: 'nango-postgres'
 });
-
-export default tracer;

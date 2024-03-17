@@ -6,7 +6,7 @@ import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
-import { tracer } from './tracer.js';
+import tracer from 'dd-trace';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -38,7 +38,7 @@ export async function exec(
         })();
     `;
 
-    return tracer.trace(SpanTypes.RUNNER_EXEC, async (span) => {
+    return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.accountId)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
@@ -85,7 +85,7 @@ export async function exec(
                     return await scriptExports.default(nango);
                 }
             }
-        } catch (error: any) {
+        } catch (error) {
             if (error instanceof ActionError) {
                 const { type, payload } = error;
                 return {
@@ -98,7 +98,7 @@ export async function exec(
                     response: null
                 };
             } else {
-                throw new Error(`Error executing code '${error}'`);
+                throw new Error(`Error executing code '${JSON.stringify(error)}'`);
             }
         } finally {
             span.finish();

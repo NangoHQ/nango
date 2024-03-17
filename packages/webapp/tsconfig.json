@@ -1,7 +1,11 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "lib": ["dom", "dom.iterable", "esnext"],
+        "target": "ES5",
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
         "allowJs": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
@@ -17,8 +21,17 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
     },
-    "references": [{ "path": "../frontend" }],
-    "include": ["src"]
+    "references": [
+        {
+            "path": "../frontend"
+        },
+        {
+            "path": "../server"
+        }
+    ],
+    "include": [
+        "src"
+    ]
 }
