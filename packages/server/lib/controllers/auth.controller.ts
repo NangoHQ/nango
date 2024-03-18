@@ -276,12 +276,14 @@ class AuthController {
                 return;
             }
 
+            const body = req.body;
+
             const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
-                redirectUri: `${getBaseUrl()}/api/v1/social/callback`
+                redirectUri: `${getBaseUrl()}/api/v1/social/callback`,
+                state: body ? Buffer.from(JSON.stringify(body)).toString('base64') : ''
             });
-            console.log(oAuthUrl);
 
             res.send({ url: oAuthUrl });
         } catch (err) {
@@ -289,9 +291,33 @@ class AuthController {
         }
     }
 
+    async createAccountIfNotInvited(state: string, name: string) {
+        const account: { accountId: number; token: string } | null = (state ? JSON.parse(Buffer.from(state, 'base64').toString('ascii')) : null) as {
+            accountId: number;
+            token: string;
+        } | null;
+        const accountId = typeof account?.accountId !== 'undefined' ? account.accountId : null;
+
+        if (accountId === null) {
+            const account = await environmentService.createAccount(`${name}'s Organization`);
+            if (!account) {
+                throw new NangoError('account_creation_failure');
+            }
+            return account.id;
+        } else {
+            const token = account?.token;
+            const validToken = await userService.getInvitedUserByToken(token as string);
+            if (validToken) {
+                await userService.markAcceptedInvite(token as string);
+            }
+        }
+
+        return accountId;
+    }
+
     async socialLoginCallback(req: Request, res: Response, next: NextFunction) {
         try {
-            const { code } = req.query;
+            const { code, state } = req.query;
 
             if (!workos) {
                 errorManager.errRes(res, 'workos_not_configured');
@@ -313,11 +339,10 @@ class AuthController {
                     authorizedUser.firstName || authorizedUser.lastName
                         ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
                         : authorizedUser.email.split('@')[0];
-                const account = await environmentService.createAccount(`${name}'s Organization`);
-                if (!account) {
-                    throw new NangoError('account_creation_failure');
-                }
-                const createdUser = await userService.createUser(authorizedUser.email, name as string, '', '', account.id);
+
+                const accountId = await this.createAccountIfNotInvited(state as string, name as string);
+
+                const createdUser = await userService.createUser(authorizedUser.email, name as string, '', '', accountId);
                 if (!createdUser) {
                     throw new NangoError('user_creation_failure');
                 }
