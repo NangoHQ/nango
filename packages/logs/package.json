@@ -4,8 +4,10 @@
     "type": "module",
     "main": "dist/index.js",
     "scripts": {
-        "create": "knex migrate:make --esm --knexfile ./knexfile.cjs",
-        "migrate": "knex migrate:latest --esm --knexfile ./knexfile.cjs"
+        "dev:migration:create": "npm run knex -- migrate:make",
+        "dev:migration:run": "npm run knex -- migrate:latest ",
+        "knex": "tsx ./node_modules/knex/bin/cli.js --knexfile lib/db/knexfile.ts",
+        "prod:migration:run": "knex --knexfile dist/db/knexfile.js migrate:latest"
     },
     "keywords": [],
     "repository": {

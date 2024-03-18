@@ -1,4 +1,4 @@
-import { envs } from '../env.js';
+import { envs, isProd } from '../env.js';
 import type { Knex } from 'knex';
 
 const url =
@@ -12,10 +12,11 @@ const config: Knex.Config = {
     searchPath: 'logs',
     pool: { min: 2, max: 20 },
     migrations: {
+        extension: isProd ? 'js' : 'ts',
         directory: 'migrations',
-        extension: 'ts',
         disableTransactions: true,
-        tableName: 'migrations'
+        tableName: 'migrations',
+        loadExtensions: [isProd ? '.js' : '.ts']
     }
 };
 

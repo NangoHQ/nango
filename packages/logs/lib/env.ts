@@ -9,7 +9,10 @@ const schema = z.object({
     NANGO_DB_USER: z.string().optional().default('nango'),
     NANGO_DB_NAME: z.string().optional().default('nango'),
     NANGO_DB_PASSWORD: z.string().optional().default('nango'),
-    NANGO_DB_SSL: z.enum(['true', 'false']).optional().default('false')
+    NANGO_DB_SSL: z.enum(['true', 'false']).optional().default('false'),
+    NODE_ENV: z.enum(['production', 'development', 'test']).default('development')
 });
 
 export const envs = schema.parse(process.env);
+
+export const isProd = envs.NODE_ENV === 'production';
