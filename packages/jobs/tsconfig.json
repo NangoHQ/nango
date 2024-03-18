@@ -6,13 +6,14 @@
     },
     "references": [
         {
+            "path": "../logs"
+        },
+        {
             "path": "../shared"
         },
         {
             "path": "../runner"
         }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }

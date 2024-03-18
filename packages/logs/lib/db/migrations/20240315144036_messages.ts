@@ -1,8 +1,9 @@
 import type { Knex } from 'knex';
+import { isStandalone } from '../../env';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`CREATE TABLE "messages" (
-      "id" uuid DEFAULT uuid_generate_v4 (),
+      "id" uuid DEFAULT ${isStandalone ? '' : 'nango.'}uuid_generate_v4 (),
 
       "operation_id" uuid,
       "content" json,
@@ -13,5 +14,5 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-    await knex.raw('DROP TABLE operations');
+    await knex.raw('DROP TABLE messages');
 }

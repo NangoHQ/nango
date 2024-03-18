@@ -1,10 +1,9 @@
 import { describe, beforeAll, it, expect } from 'vitest';
-import { createPartitions } from './helpers';
 import { getOperationContext } from './client';
-import { migrate } from './db/helpers';
-import { getOperation, listOperations } from './operations';
+import { migrate, createPartitions } from './db/helpers';
+import { getOperation, listOperations } from './models/operations';
 import { db } from './db/client';
-import { listMessages } from './messages';
+import { listMessages } from './models/messages';
 
 describe('client', () => {
     beforeAll(async () => {

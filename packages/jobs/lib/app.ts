@@ -5,6 +5,7 @@ import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { logger } from '@nangohq/shared';
+import { createLogsPartitions } from './crons/createLogsPartitions.js';
 
 try {
     const port = parseInt(process.env['NANGO_JOBS_PORT'] || '') || 3005;
@@ -20,6 +21,7 @@ try {
     cronAutoIdleDemo();
     deleteOldActivityLogs();
     deleteSyncsData();
+    createLogsPartitions();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {

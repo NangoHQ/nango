@@ -46,6 +46,7 @@ import {
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
+import { createPartitions, migrate as migrateLogs } from '@nangohq/nango-logs';
 import tracer from 'dd-trace';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
@@ -55,14 +56,14 @@ const app = express();
 // Auth
 AuthClient.setup(app);
 
-const apiAuth = [authMiddleware.secretKeyAuth, rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth, rateLimiterMiddleware];
+const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const webAuth =
     isCloud() || isEnterprise()
-        ? [passport.authenticate('session'), authMiddleware.sessionAuth, rateLimiterMiddleware]
+        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
         : isBasicAuthEnabled()
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth, rateLimiterMiddleware]
-          : [authMiddleware.noAuth, rateLimiterMiddleware];
+          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+          : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 app.use(
     express.json({
@@ -84,6 +85,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 // operator should run migrate.ts once before starting the service.
 if (NANGO_MIGRATE_AT_START === 'true') {
     await migrate();
+    await migrateLogs();
+    await createPartitions();
 } else {
     Logger.info('Not migrating database');
 }

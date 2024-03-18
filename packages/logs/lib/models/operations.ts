@@ -1,5 +1,5 @@
-import { db } from './db/client';
-import type { OperationRow } from './types/operations';
+import { db } from '../db/client';
+import type { OperationRow } from '../types/operations';
 
 export async function listOperations(opts: { limit: number }): Promise<OperationRow[]> {
     return await db.table<OperationRow>('operations').select('*').limit(opts.limit).orderBy('created_at', 'DESC');

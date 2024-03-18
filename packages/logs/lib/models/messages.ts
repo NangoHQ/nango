@@ -1,6 +1,6 @@
-import { db } from './db/client';
-import type { MessageRow } from './types/messages';
-import type { OperationRow } from './types/operations';
+import { db } from '../db/client';
+import type { MessageRow } from '../types/messages';
+import type { OperationRow } from '../types/operations';
 
 export async function listMessages(opts: { operationId: OperationRow['id']; limit: number }): Promise<MessageRow[]> {
     return await db
