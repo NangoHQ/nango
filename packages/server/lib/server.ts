@@ -26,7 +26,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import { AuthClient } from './clients/auth.client.js';
+import { setupAuth } from './clients/auth.client.js';
 import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
@@ -53,16 +53,16 @@ const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const app = express();
 
 // Auth
-AuthClient.setup(app);
+setupAuth(app);
 
-const apiAuth = [authMiddleware.secretKeyAuth, rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth, rateLimiterMiddleware];
+const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const webAuth =
     isCloud() || isEnterprise()
-        ? [passport.authenticate('session'), authMiddleware.sessionAuth, rateLimiterMiddleware]
+        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
         : isBasicAuthEnabled()
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth, rateLimiterMiddleware]
-          : [authMiddleware.noAuth, rateLimiterMiddleware];
+          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+          : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 app.use(
     express.json({

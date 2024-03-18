@@ -147,6 +147,7 @@ describe('Persist API', () => {
     });
 });
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class DBTracker {
     public static persistQueries(model: string) {
         return (query: QueryDetails, step: number) => {
