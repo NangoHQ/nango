@@ -2,7 +2,7 @@ import type { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`CREATE TABLE "messages" (
-      "id" uuid DEFAULT nango.uuid_generate_v4 (),
+      "id" uuid DEFAULT uuid_generate_v4 (),
 
       "operation_id" uuid,
       "content" json,

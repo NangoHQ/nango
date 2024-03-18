@@ -7,7 +7,7 @@ export async function up(knex: Knex): Promise<void> {
     await knex.raw(`CREATE TYPE log_state AS ENUM ('waiting', 'running', 'success', 'failed', 'timeout', 'cancelled')`);
 
     await knex.raw(`CREATE TABLE "operations" (
-    "id" uuid DEFAULT nango.uuid_generate_v4 (),
+    "id" uuid DEFAULT uuid_generate_v4 (),
 
     "account_id" int4 NOT NULL,
     "account_name" varchar(255) NOT NULL,

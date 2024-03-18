@@ -16,10 +16,13 @@
         "directory": "packages/jobs"
     },
     "dependencies": {
+        "@nangohq/shared": "file:../shared",
         "dotenv-cli": "7.4.1",
         "knex": "3.1.0",
         "pg": "8.11.3",
         "zod": "3.22.4"
     },
-    "devDependencies": {}
+    "devDependencies": {
+        "vitest": "1.4.0"
+    }
 }

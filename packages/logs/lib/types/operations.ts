@@ -40,5 +40,5 @@ export interface OperationRow {
     ended_at: string;
 }
 
-export type OperationRequired = 'account_id' | 'account_name';
+export type OperationRequired = 'account_id' | 'account_name' | 'environment_id' | 'environment_name';
 export type OperationCtx = Pick<OperationRow, OperationRequired> & Partial<Exclude<OperationRow, OperationRequired>>;

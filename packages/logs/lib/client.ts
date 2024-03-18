@@ -11,7 +11,7 @@ export class LogContext {
     }
 
     /**
-     * Log to table
+     * ------ Logs
      */
     async log(content: MessageContent, opts?: { id?: string }): Promise<void> {
         const row: MessageRowInsert = {
@@ -36,7 +36,7 @@ export class LogContext {
         await this.log({ type: 'log', level: 'warn', msg, meta, source: 'nango' });
     }
 
-    async err(msg: string, meta: MsgMeta = null): Promise<void> {
+    async error(msg: string, meta: MsgMeta = null): Promise<void> {
         await this.log({ type: 'log', level: 'error', msg, meta, source: 'nango' });
     }
 
@@ -45,7 +45,7 @@ export class LogContext {
     }
 
     /**
-     * ------ STATE
+     * ------ State
      */
     async start(): Promise<void> {
         await db.table<OperationTable>('operations').update({ state: 'running', updated_at: db.fn.now(), started_at: db.fn.now() });
@@ -72,12 +72,19 @@ export class LogContext {
         });
     }
 
+    /**
+     * ------ Private
+     */
     private async state(state: OperationRow['state']): Promise<void> {
-        await db.table<OperationTable>('operations').update({ state, updated_at: db.fn.now() });
+        await db.table<OperationTable>('operations').update({ state, updated_at: db.fn.now(), started_at: db.raw('COALESCE(started_at, NOW())') });
     }
 }
 
 export async function getOperationContext(data: OperationCtx): Promise<LogContext> {
-    const res = await db.table('operations').insert(data).returning<{ id: string }>('id');
-    return new LogContext({ operationId: res.id });
+    const res = await db.table('operations').insert(data).returning<{ id: string }[]>('id');
+    if (!res || res.length <= 0) {
+        throw new Error('failed_to_create_operation');
+    }
+
+    return new LogContext({ operationId: res[0]!.id });
 }
