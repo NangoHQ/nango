@@ -2723,11 +2723,6 @@ integrations:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all your account's emails in Zoho mail
-                metadata:
-                    description: |
-                        We need to save an accountId to track and update emails' synchronizations
-                    scopes:
-                        accountId: string
                 output: ZohoMailEmail
                 sync_type: full
                 endpoint: /zoho-mail/emails
