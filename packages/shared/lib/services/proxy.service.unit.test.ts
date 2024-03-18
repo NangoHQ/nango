@@ -420,6 +420,46 @@ describe('Proxy service Construct URL Tests', () => {
         expect(url).toBe('https://myinstanceurl.com/api/test');
     });
 
+    it('Should handle Proxy base URL interpolation where connection configuration param is present', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.OAuth2,
+                proxy: {
+                    base_url: '${connectionConfig.api_base_url_for_customer} || https://api.gong.io'
+                }
+            },
+            token: { apiKey: 'sweet-secret-token' },
+            endpoint: '/api/test',
+            connection: {
+                connection_config: { api_base_url_for_customer: 'https://company-17.api.gong.io' }
+            }
+        };
+
+        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+
+        expect(url).toBe('https://company-17.api.gong.io/api/test');
+    });
+
+    it('Should handle Proxy base URL interpolation where connection configuration param is absent', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.OAuth2,
+                proxy: {
+                    base_url: '${connectionConfig.api_base_url_for_customer}||https://api.gong.io'
+                }
+            },
+            token: { apiKey: 'sweet-secret-token' },
+            endpoint: '/api/test',
+            connection: {
+                environment_id: 1
+            }
+        };
+
+        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+
+        expect(url).toBe('https://api.gong.io/api/test');
+    });
+
     it('Should strip away the auth token from the headers', () => {
         const headers = {
             Accept: 'application/json',
