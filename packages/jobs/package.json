@@ -15,7 +15,6 @@
         "directory": "packages/jobs"
     },
     "dependencies": {
-        "@nangohq/nango-jobs": "file:../jobs",
         "@nangohq/nango-runner": "^1.0.0",
         "@nangohq/shared": "^0.39.5",
         "@temporalio/activity": "^1.9.1",
