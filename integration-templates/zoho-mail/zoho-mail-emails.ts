@@ -9,6 +9,10 @@ export default async function fetchData(nango: NangoSync) {
     const metadata = (await nango.getMetadata()) || {};
     const accountId = metadata['accountId'] ? String(metadata['accountId']) : '';
 
+    if (!accountId || typeof accountId !== 'string') {
+        throw new Error(`Please set a custom metadata accountId for the connection`);
+    }
+
     try {
         let moreEmails = true;
         while (moreEmails) {

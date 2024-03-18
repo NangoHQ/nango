@@ -2725,7 +2725,7 @@ integrations:
                     Fetches a list of all your account's emails in Zoho mail
                 metadata:
                     description: |
-                        We need to save a an accountId to track and update emails' synchronizations
+                        We need to save an accountId to track and update emails' synchronizations
                     scopes:
                         accountId: string
                 output: ZohoMailEmail
