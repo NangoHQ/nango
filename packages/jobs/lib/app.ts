@@ -12,7 +12,9 @@ try {
     logger.info(`🚀 Jobs service ready at http://localhost:${port}`);
     const temporalNs = process.env['TEMPORAL_NAMESPACE'] || 'default';
     const temporal = new Temporal(temporalNs);
-    await temporal.start();
+
+    // This promise never resolve
+    void temporal.start();
 
     // Register recurring tasks
     cronAutoIdleDemo();

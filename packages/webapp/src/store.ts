@@ -1,4 +1,4 @@
-import { create, SetState, GetState } from 'zustand';
+import { create } from 'zustand';
 import Cookies from 'js-cookie';
 
 interface Env {
@@ -20,12 +20,12 @@ interface State {
     setDebugMode: (value: boolean) => void;
 }
 
-export const useStore = create<State>((set: SetState<State>, get: GetState<State>) => ({
+export const useStore = create<State>((set, get) => ({
     cookieValue: Cookies.get('env') || 'dev',
     envs: [{ name: 'dev' }, { name: 'prod' }],
     baseUrl: 'https://api.nango.dev',
     email: '',
-    showInteractiveDemo: false,
+    showInteractiveDemo: true,
     debugMode: false,
 
     setCookieValue: (value) => {
