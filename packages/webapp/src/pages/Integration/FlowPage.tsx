@@ -158,6 +158,19 @@ export default function FlowPage(props: FlowPageProps) {
             return;
         }
 
+        if (
+            (unit === 'hours' || unit === 'days' || unit === 'minutes') &&
+            !frequencyWithoutEvery.match(/^\d+\s*/) &&
+            frequencyWithoutEvery !== 'hour' &&
+            frequencyWithoutEvery !== 'day' &&
+            frequencyWithoutEvery !== 'minute'
+        ) {
+            setModalTitle('Invalid frequency');
+            setModalContent(`Please specify the number of ${unit}.`);
+            setVisible(true);
+            return;
+        }
+
         if (unit === '') {
             setModalTitle('Invalid frequency unit');
             setModalContent(`The unit "${frequencyUnit}" is not a valid time unit. Valid units are minutes, hours, and days.`);
@@ -184,7 +197,7 @@ export default function FlowPage(props: FlowPageProps) {
         });
     };
 
-    const onCancelFrequncy = () => {
+    const onCancelFrequency = () => {
         setShowFrequencyEditMenu(false);
         setIsTyping(false);
     };
@@ -335,9 +348,12 @@ export default function FlowPage(props: FlowPageProps) {
                                     {showFrequencyEditMenu ? (
                                         <>
                                             <input
-                                                value={frequencyEdit}
+                                                value={
+                                                    frequencyEdit.trim() ? (frequencyEdit.startsWith('every') ? frequencyEdit : `every ${frequencyEdit}`) : ''
+                                                }
                                                 onChange={(e) => {
-                                                    setFrequencyEdit(e.target.value);
+                                                    const newValue = e.target.value.replace(/^every\s+/i, '');
+                                                    setFrequencyEdit(newValue);
                                                     setIsTyping(true);
                                                 }}
                                                 className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
@@ -349,7 +365,7 @@ export default function FlowPage(props: FlowPageProps) {
                                             />
                                             <XCircleIcon
                                                 className="flex h-5 w-5 text-red-400 cursor-pointer hover:text-red-700"
-                                                onClick={() => onCancelFrequncy()}
+                                                onClick={() => onCancelFrequency()}
                                             />
                                         </>
                                     ) : (
