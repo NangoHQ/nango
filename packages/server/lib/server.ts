@@ -55,14 +55,14 @@ const app = express();
 // Auth
 AuthClient.setup(app);
 
-const apiAuth = [authMiddleware.secretKeyAuth, rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth, rateLimiterMiddleware];
+const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const webAuth =
     isCloud() || isEnterprise()
-        ? [passport.authenticate('session'), authMiddleware.sessionAuth, rateLimiterMiddleware]
+        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
         : isBasicAuthEnabled()
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth, rateLimiterMiddleware]
-          : [authMiddleware.noAuth, rateLimiterMiddleware];
+          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+          : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 app.use(
     express.json({
@@ -149,6 +149,8 @@ if (AUTH_ENABLED) {
     app.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
     app.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
     app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+    app.route('/api/v1/social/signup').post(rateLimiterMiddleware, authController.getSocialLogin.bind(authController));
+    app.route('/api/v1/social/callback').get(rateLimiterMiddleware, authController.socialLoginCallback.bind(authController));
 }
 
 // Webapp routes (session auth).

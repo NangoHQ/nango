@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { WorkOS } from '@workos-inc/node';
 import crypto from 'crypto';
 import util from 'util';
 import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -24,6 +25,11 @@ export interface WebUser {
     accountId: number;
     email: string;
     name: string;
+}
+
+let workos: WorkOS | null = null;
+if (process.env['WORKOS_API_KEY']) {
+    workos = new WorkOS(process.env['WORKOS_API_KEY']);
 }
 
 class AuthController {
@@ -258,6 +264,74 @@ class AuthController {
             res.status(200).send(invitee);
         } catch (error) {
             next(error);
+        }
+    }
+
+    async getSocialLogin(req: Request, res: Response, next: NextFunction) {
+        try {
+            const provider = req.query['provider'] as string;
+
+            if (!workos) {
+                errorManager.errRes(res, 'workos_not_configured');
+                return;
+            }
+
+            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+                clientId: process.env['WORKOS_CLIENT_ID'] || '',
+                provider,
+                redirectUri: `${getBaseUrl()}/api/v1/social/callback`
+            });
+            console.log(oAuthUrl);
+
+            res.send({ url: oAuthUrl });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async socialLoginCallback(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { code } = req.query;
+
+            if (!workos) {
+                errorManager.errRes(res, 'workos_not_configured');
+                return;
+            }
+
+            const { user: authorizedUser } = await workos.userManagement.authenticateWithCode({
+                clientId: process.env['WORKOS_CLIENT_ID'] || '',
+                code: code as string
+            });
+
+            let user: User | null = null;
+            const existingUser = await userService.getUserByEmail(authorizedUser.email);
+
+            if (existingUser) {
+                user = existingUser;
+            } else {
+                const name =
+                    authorizedUser.firstName || authorizedUser.lastName
+                        ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
+                        : authorizedUser.email.split('@')[0];
+                const account = await environmentService.createAccount(`${name}'s Organization`);
+                if (!account) {
+                    throw new NangoError('account_creation_failure');
+                }
+                const createdUser = await userService.createUser(authorizedUser.email, name as string, '', '', account.id);
+                if (!createdUser) {
+                    throw new NangoError('user_creation_failure');
+                }
+                user = createdUser;
+            }
+
+            req.login(user, function (err) {
+                if (err) {
+                    return next(err);
+                }
+                res.redirect(`${getBaseUrl()}/dev`);
+            });
+        } catch (err) {
+            next(err);
         }
     }
 }
