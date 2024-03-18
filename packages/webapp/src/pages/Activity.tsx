@@ -98,6 +98,7 @@ export default function Activity() {
     const env = useStore((state) => state.cookieValue);
 
     const isInitialMount = useRef(true);
+    const [msgs, setMsgs] = useState<ActivityMessageResponse>([]);
     const [activityRefs, setActivityRefs] = useState<Record<number, React.RefObject<HTMLTableRowElement>>>({});
 
     const [offset, setOffset] = useState(queryParams.offset || 0);
@@ -137,13 +138,23 @@ export default function Activity() {
         }
     }, [activities, error]);
 
-    const { data: msgs, error: logActivitiesError } = useSWR<ActivityMessageResponse>(
+    const { data: rawMsgs, error: logActivitiesError } = useSWR<ActivityMessageResponse>(
         () => (logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null),
         swrFetcher,
         {
             refreshInterval: expandedRow !== -1 ? 5000 : 60000
         }
     );
+    useEffect(() => {
+        if (!rawMsgs) {
+            return;
+        }
+        const tmp: ActivityMessageResponse = {};
+        for (const [key, list] of Object.entries(rawMsgs)) {
+            tmp[key as unknown as number] = list.reverse();
+        }
+        setMsgs(tmp);
+    }, [rawMsgs]);
 
     const { data: activityFilters } = useSWR<Record<string, any>>(`/api/v1/activity-filters?env=${env}`, swrFetcher, {
         refreshInterval: 60000

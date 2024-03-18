@@ -108,9 +108,7 @@ export const FetchBloc: React.FC<{
             if (data.jobStatus === 'SUCCESS') {
                 clearInterval(pollingInterval);
                 setPollingInterval(undefined);
-                setTimeout(() => {
-                    void fetchRecords();
-                }, 100);
+                void fetchRecords();
             }
         }
         const tmp = setInterval(poll, 1000);
