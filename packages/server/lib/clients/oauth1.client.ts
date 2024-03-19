@@ -100,9 +100,7 @@ export class OAuth1Client {
                         return;
                     }
 
-                    const queryParams = new URLSearchParams(typeof data === 'string' ? data : data?.toString());
-
-                    resolve(Object.fromEntries(queryParams));
+                    resolve(Object.fromEntries(extractQueryParams(data)));
                 }
             );
         });
@@ -128,4 +126,8 @@ export class OAuth1Client {
         const params = new URLSearchParams(queryParams);
         return `${url.href}?${params.toString()}`;
     }
+}
+
+export function extractQueryParams(data: string | Buffer | undefined) {
+    return new URLSearchParams(typeof data === 'string' ? data : data?.toString());
 }
