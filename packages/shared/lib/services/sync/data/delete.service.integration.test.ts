@@ -72,7 +72,7 @@ describe('Data delete service integration tests', () => {
         ];
         const { meta, response } = await createRecords(duplicateRecords, environmentName);
         const { response: formattedResults } = response;
-        const { nangoConnectionId, modelName, syncId, syncJobId } = meta;
+        const { nangoConnectionId, modelName, sync, syncJob } = meta;
         const { error, success } = await DataService.upsert(
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
@@ -102,8 +102,8 @@ describe('Data delete service integration tests', () => {
             expect(record).toHaveProperty('external_deleted_at');
 
             expect(record.nango_connection_id).toBe(nangoConnectionId);
-            expect(record.sync_id).toBe(syncId);
-            expect(record.sync_job_id).toBe(syncJobId);
+            expect(record.sync_id).toBe(sync.id!);
+            expect(record.sync_job_id).toBe(syncJob.id!);
             expect(record.model).toBe(modelName);
         }
     });
@@ -252,15 +252,16 @@ describe('Data delete service integration tests', () => {
         const env = envs[0]!;
         const activityLogId = await getActivity(env);
         const records = generateInsertableJson(100);
-        const { response, meta } = await createRecords(records, environmentName);
-        const { response: rawRecords } = response;
-        const { modelName, nangoConnectionId, syncId, syncJobId } = meta;
+        const {
+            response: { response: rawRecords },
+            meta: { modelName, nangoConnectionId, sync, syncJob }
+        } = await createRecords(records, environmentName);
         const { response: formattedResults } = formatDataRecords(
             rawRecords as DataResponse[],
             nangoConnectionId,
             modelName,
-            syncId,
-            syncJobId,
+            sync.id!,
+            syncJob.id!,
             new Date(),
             true
         );
@@ -287,8 +288,8 @@ describe('Data delete service integration tests', () => {
             rawRecords as DataResponse[],
             nangoConnectionId,
             modelName,
-            syncId,
-            syncJobId,
+            sync.id!,
+            syncJob.id!,
             new Date(),
             true
         );

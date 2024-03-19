@@ -476,7 +476,7 @@ export default class SyncRun {
         const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, updatedResults, model);
 
         if (!syncResult) {
-            this.reportFailureForResults(`The sync job ${this.syncJobId} could not be updated with the results for the model ${model}.`);
+            await this.reportFailureForResults(`The sync job ${this.syncJobId} could not be updated with the results for the model ${model}.`);
             return;
         }
 

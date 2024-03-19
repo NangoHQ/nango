@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { multipleMigrations } from '../../../db/database.js';
 import * as RecordsService from './records.service.js';
 import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
-import { upsertRecords } from './mocks.js';
+import { upsertMockRecords } from './mocks.js';
 
 const environmentName = 'records-service';
 
@@ -15,7 +15,7 @@ describe('Records service', () => {
 
     it('Should retrieve records', async () => {
         const n = 10;
-        const { connection, model } = await upsertRecords(n);
+        const { connection, model } = await upsertMockRecords(n);
         const { success, response, error } = await RecordsService.getAllDataRecords(
             connection.connection_id,
             connection.provider_config_key,
@@ -38,7 +38,7 @@ describe('Records service', () => {
     it('Should paginate the records to retrieve all records', async () => {
         const numOfRecords = 3000;
         const limit = 100;
-        const { connection, model } = await upsertRecords(numOfRecords);
+        const { connection, model } = await upsertMockRecords(numOfRecords);
 
         let cursor = null;
         const allFetchedRecords = [];
@@ -85,7 +85,7 @@ describe('Records service', () => {
     it('Should be able to retrieve 20K records in under 5s with a cursor', async () => {
         const numOfRecords = 20000;
         const limit = 1000;
-        const { connection, model } = await upsertRecords(numOfRecords);
+        const { connection, model } = await upsertMockRecords(numOfRecords);
 
         let cursor: string | undefined | null = null;
         let allRecordsLength = 0;

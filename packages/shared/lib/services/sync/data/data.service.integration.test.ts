@@ -48,7 +48,7 @@ describe('Data service integration tests', () => {
             { id: '5', name: 'Mike Doe' }
         ];
         const sync = await createSyncSeeds(connections[0]);
-        const job = await createSyncJobSeeds(connections[0]);
+        const job = await createSyncJobSeeds(sync.id!);
         const activityLogId = await createActivityLogSeed(1);
         const modelName = Math.random().toString(36).substring(7);
         const { response: formattedResults } = formatDataRecords(duplicateRecords, connections[0] as number, modelName, sync.id as string, job.id as number);
@@ -96,8 +96,7 @@ describe('Data service integration tests', () => {
         });
 
         for (let i = 0; i < sortedRecords?.length; i++) {
-            // @ts-expect-error
-            expect(sortedRecords?.[i]?.id).toEqual(expectedRecords[i].id);
+            expect(sortedRecords?.[i]?.id).toEqual(expectedRecords[i]?.id);
         }
 
         const { response: metaRecords } = await getAllDataRecords(

@@ -6,22 +6,55 @@ import type { DataResponse } from '../../../models/Data.js';
 import connectionService from '../../connection.service.js';
 import * as DataService from './data.service.js';
 import type { Connection } from '../../../models/Connection.js';
+import type { Sync, Job as SyncJob } from '../../../models/Sync.js';
+import { createActivityLog } from '../../activity/activity.service.js';
 
-export async function upsertRecords(n: number): Promise<{ connection: Connection; model: string }> {
-    const activityLogId = 1;
+export async function upsertMockRecords(n: number): Promise<{
+    connection: Connection;
+    model: string;
+    sync: Sync;
+    syncJob: SyncJob;
+    activityLogId: number;
+}> {
+    const mockRecords = generateInsertableJson(n);
+    return upsertRecords(mockRecords);
+}
+
+export async function upsertRecords(toInsert: DataResponse[]): Promise<{
+    connection: Connection;
+    model: string;
+    sync: Sync;
+    syncJob: SyncJob;
+    activityLogId: number;
+}> {
     const environmentId = 1;
     const environmentName = 'mock-records';
-    const toInsert = generateInsertableJson(n);
     const {
         response: { response: records },
-        meta: { modelName, nangoConnectionId }
+        meta: { modelName, nangoConnectionId, sync, syncJob }
     } = await createRecords(toInsert, environmentName);
+    const connection = await connectionService.getConnectionById(nangoConnectionId);
+
     if (!records) {
         throw new Error('Failed to format records');
     }
-    const connection = await connectionService.getConnectionById(nangoConnectionId);
     if (!connection) {
         throw new Error(`Connection '${nangoConnectionId}' not found`);
+    }
+    const activityLogId = await createActivityLog({
+        level: 'info',
+        success: false,
+        environment_id: environmentId,
+        action: 'sync',
+        start: Date.now(),
+        end: Date.now(),
+        timestamp: Date.now(),
+        connection_id: connection.connection_id,
+        provider: connection?.provider_config_key,
+        provider_config_key: connection.provider_config_key
+    });
+    if (!activityLogId) {
+        throw new Error('Failed to create activity log');
     }
     const chunkSize = 1000;
     for (let i = 0; i < records.length; i += chunkSize) {
@@ -40,7 +73,10 @@ export async function upsertRecords(n: number): Promise<{ connection: Connection
     }
     return {
         connection: connection as Connection,
-        model: modelName
+        model: modelName,
+        sync,
+        syncJob,
+        activityLogId
     };
 }
 
@@ -55,7 +91,7 @@ export async function createRecords(records: DataResponse[], environmentName = '
     if (!sync.id) {
         throw new Error('Failed to create sync');
     }
-    const job = await createSyncJobSeeds(nangoConnectionId);
+    const job = await createSyncJobSeeds(sync.id);
     if (!job.id) {
         throw new Error('Failed to create job');
     }
@@ -66,8 +102,8 @@ export async function createRecords(records: DataResponse[], environmentName = '
         meta: {
             nangoConnectionId,
             modelName,
-            syncId: sync.id,
-            syncJobId: job.id
+            sync,
+            syncJob: job
         },
         response
     };
