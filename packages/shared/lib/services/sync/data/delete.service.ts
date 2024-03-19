@@ -46,13 +46,20 @@ export const getDeletedKeys = async (dbTable: string, uniqueKey: string, nangoCo
         };
     });
 
-    await schema()
-        .from<DataRecord>(RECORDS_TABLE)
-        .where({
-            nango_connection_id: nangoConnectionId,
-            model
-        })
-        .insert(deletedResults);
+    // insert the deleted records into the main table in batch of 1000
+    // this is to avoid the error of too many variables in the query
+    await db.knex.transaction(async (trx) => {
+        const chunkSize = 1000;
+        for (let i = 0; i < deletedResults.length; i += chunkSize) {
+            await trx
+                .from<DataRecord>(RECORDS_TABLE)
+                .where({
+                    nango_connection_id: nangoConnectionId,
+                    model
+                })
+                .insert(deletedResults.slice(i, i + chunkSize));
+        }
+    });
 
     return results.map((result: DataRecord) => result.external_id);
 };
