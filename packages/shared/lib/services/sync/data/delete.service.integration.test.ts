@@ -102,8 +102,8 @@ describe('Data delete service integration tests', () => {
             expect(record).toHaveProperty('external_deleted_at');
 
             expect(record.nango_connection_id).toBe(nangoConnectionId);
-            expect(record.sync_id).toBe(sync.id!);
-            expect(record.sync_job_id).toBe(syncJob.id!);
+            expect(record.sync_id).toBe(sync.id);
+            expect(record.sync_job_id).toBe(syncJob.id);
             expect(record.model).toBe(modelName);
         }
     });
@@ -260,8 +260,8 @@ describe('Data delete service integration tests', () => {
             rawRecords as DataResponse[],
             nangoConnectionId,
             modelName,
-            sync.id!,
-            syncJob.id!,
+            sync.id,
+            syncJob.id,
             new Date(),
             true
         );
@@ -288,8 +288,8 @@ describe('Data delete service integration tests', () => {
             rawRecords as DataResponse[],
             nangoConnectionId,
             modelName,
-            sync.id!,
-            syncJob.id!,
+            sync.id,
+            syncJob.id,
             new Date(),
             true
         );

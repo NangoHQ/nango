@@ -55,8 +55,8 @@ describe('SyncRun', () => {
             rawRecords,
             connection.id!,
             model,
-            sync.id!,
-            syncJob.id!,
+            sync.id,
+            syncJob.id,
             undefined, // lastSyncDate
             trackDeletes,
             softDelete
@@ -82,7 +82,7 @@ describe('SyncRun', () => {
                 deleted: summary?.deletedKeys?.length as number
             }
         };
-        await jobService.updateSyncJobResult(syncJob.id!, updatedResults, model);
+        await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
         if (upsertError) {
             throw new Error(`failed to upsert records: ${upsertError}`);
         }
@@ -102,8 +102,8 @@ describe('SyncRun', () => {
             nangoConnection: connection,
             syncName: sync.name,
             syncType: SyncType.INITIAL,
-            syncId: sync.id!,
-            syncJobId: syncJob.id!,
+            syncId: sync.id,
+            syncJobId: syncJob.id,
             activityLogId
         };
         const syncRun = new SyncRun(config);
@@ -114,7 +114,7 @@ describe('SyncRun', () => {
         // Finish the sync
         await syncRun.finishSync([model], new Date(), `v1`, 10, trackDeletes);
 
-        const syncJobResult = await jobService.getLatestSyncJob(sync.id!);
+        const syncJobResult = await jobService.getLatestSyncJob(sync.id);
         const result = {
             added: syncJobResult?.result?.[model]?.added || 0,
             updated: syncJobResult?.result?.[model]?.updated || 0,
@@ -178,6 +178,7 @@ describe('SyncRun', () => {
         integrationService: integrationService as unknown as IntegrationServiceInterface,
         writeToDb: false,
         nangoConnection: {
+            id: 1,
             connection_id: '1234',
             provider_config_key: 'test_key',
             environment_id: 1
@@ -194,6 +195,7 @@ describe('SyncRun', () => {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
             writeToDb: true,
             nangoConnection: {
+                id: 1,
                 connection_id: '1234',
                 provider_config_key: 'test_key',
                 environment_id: 1
