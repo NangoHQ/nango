@@ -69,6 +69,13 @@
                 "ignoreRestSiblings": true
             }
         ],
+        "@typescript-eslint/consistent-type-imports": [
+            "error",
+            {
+                "prefer": "type-imports"
+            }
+        ],
+        // Import
         "import/extensions": [
             "error",
             "always",
@@ -80,12 +87,11 @@
             }
         ],
         "import/no-unresolved": "off",
-        "@typescript-eslint/consistent-type-imports": [
-            "error",
-            {
-                "prefer": "type-imports"
-            }
-        ]
+        "import/no-extraneous-dependencies": "error",
+        "import/no-empty-named-blocks": "error",
+        "import/no-absolute-path": "error",
+        "import/no-self-import": "error",
+        "import/newline-after-import": "error"
     },
     "overrides": [
         {
