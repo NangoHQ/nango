@@ -4,6 +4,10 @@
         "rootDir": ".",
         "outDir": "dist"
     },
-    "references": [{ "path": "../node-client" }],
+    "references": [
+        {
+            "path": "../node-client"
+        }
+    ],
     "include": ["lib/**/*"]
 }
