@@ -68,7 +68,7 @@ export default function InviteSignup() {
             accountId: invitedAccountID,
             token
         };
-        const res = await fetch('/api/v1/social/signup?provider=GoogleOAuth', {
+        const res = await fetch('/api/v1/hosted/signup?provider=GoogleOAuth', {
             method: 'POST',
             body: JSON.stringify(body),
             headers: {

@@ -272,7 +272,7 @@ class AuthController {
         }
     }
 
-    async getSocialLogin(req: Request, res: Response, next: NextFunction) {
+    async getHostedLogin(req: Request, res: Response, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -286,7 +286,7 @@ class AuthController {
             const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
-                redirectUri: `${getBaseUrl()}/api/v1/social/callback`,
+                redirectUri: `${getBaseUrl()}/api/v1/login/callback`,
                 state: body ? Buffer.from(JSON.stringify(body)).toString('base64') : ''
             });
 
@@ -316,7 +316,7 @@ class AuthController {
         return account.id;
     }
 
-    async socialLoginCallback(req: Request, res: Response, next: NextFunction) {
+    async loginCallback(req: Request, res: Response, next: NextFunction) {
         try {
             const { code, state } = req.query;
 

@@ -44,7 +44,7 @@ export default function Signup() {
 
     const googleLogin = async () => {
         analyticsTrack('web:account_signup_google');
-        const res = await fetch('/api/v1/social/signup?provider=GoogleOAuth', {
+        const res = await fetch('/api/v1/hosted/signup?provider=GoogleOAuth', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

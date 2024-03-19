@@ -149,8 +149,8 @@ if (AUTH_ENABLED) {
     app.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
     app.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
     app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
-    app.route('/api/v1/social/signup').post(rateLimiterMiddleware, authController.getSocialLogin.bind(authController));
-    app.route('/api/v1/social/callback').get(rateLimiterMiddleware, authController.socialLoginCallback.bind(authController));
+    app.route('/api/v1/hosted/signup').post(rateLimiterMiddleware, authController.getHostedLogin.bind(authController));
+    app.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
 }
 
 // Webapp routes (session auth).
