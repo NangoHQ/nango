@@ -50,7 +50,7 @@ export default function Signin() {
                                         name="password"
                                         type="password"
                                         placeholder="Password"
-                                        autoComplete="current-password"
+                                        autoComplete="new-password"
                                         required
                                         className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                                     />

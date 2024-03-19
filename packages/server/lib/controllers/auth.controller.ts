@@ -38,6 +38,26 @@ if (process.env['WORKOS_API_KEY']) {
     workos = new WorkOS(process.env['WORKOS_API_KEY']);
 }
 
+const createAccountIfNotInvited = async (state: string, name: string): Promise<number | null> => {
+    const parsedAccount = (state ? JSON.parse(Buffer.from(state, 'base64').toString('ascii')) : null) as InviteAccountState | null;
+    const accountId = typeof parsedAccount?.accountId !== 'undefined' ? parsedAccount.accountId : null;
+
+    if (accountId !== null) {
+        const token = parsedAccount?.token;
+        const validToken = await userService.getInvitedUserByToken(token as string);
+        if (validToken) {
+            await userService.markAcceptedInvite(token as string);
+        }
+
+        return accountId;
+    }
+    const account = await environmentService.createAccount(`${name}'s Organization`);
+    if (!account) {
+        throw new NangoError('account_creation_failure');
+    }
+    return account.id;
+};
+
 class AuthController {
     async signin(req: Request, res: Response, next: NextFunction) {
         try {
@@ -273,7 +293,7 @@ class AuthController {
         }
     }
 
-    async getHostedLogin(req: Request, res: Response, next: NextFunction) {
+    getHostedLogin(req: Request, res: Response, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -295,26 +315,6 @@ class AuthController {
         } catch (err) {
             next(err);
         }
-    }
-
-    async createAccountIfNotInvited(state: string, name: string): Promise<number | null> {
-        const parsedAccount = (state ? JSON.parse(Buffer.from(state, 'base64').toString('ascii')) : null) as InviteAccountState | null;
-        const accountId = typeof parsedAccount?.accountId !== 'undefined' ? parsedAccount.accountId : null;
-
-        if (accountId !== null) {
-            const token = parsedAccount?.token;
-            const validToken = await userService.getInvitedUserByToken(token as string);
-            if (validToken) {
-                await userService.markAcceptedInvite(token as string);
-            }
-
-            return accountId;
-        }
-        const account = await environmentService.createAccount(`${name}'s Organization`);
-        if (!account) {
-            throw new NangoError('account_creation_failure');
-        }
-        return account.id;
     }
 
     async loginCallback(req: Request, res: Response, next: NextFunction) {
@@ -342,7 +342,7 @@ class AuthController {
                         ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
                         : authorizedUser.email.split('@')[0];
 
-                const accountId = await this.createAccountIfNotInvited(state as string, name as string);
+                const accountId = await createAccountIfNotInvited(state as string, name as string);
 
                 if (!accountId) {
                     throw new NangoError('account_creation_failure');
