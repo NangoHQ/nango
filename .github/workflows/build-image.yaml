@@ -1,4 +1,4 @@
-name: Build unified Docker image
+name: '[Release] Build unified Docker image'
 
 on:
     push:
@@ -16,14 +16,14 @@ jobs:
                       if: true
                       sentry_key: SENTRY_KEY_staging
                     - name: 'prod'
-                      if: ${{ github.ref == 'refs/heads/master' }}
+                      if: true
                       sentry_key: SENTRY_KEY_prod
                       posthog_key: POSTHOG_KEY_prod
-                    # - name: 'enterprise'
-                    #   if: ${{ github.ref == 'refs/heads/master' }}
+                    - name: 'enterprise'
+                      if: ${{ github.ref == 'refs/heads/master' }}
 
         secrets: inherit
-        uses: ./.github/actions/build-image
+        uses: ./.github/workflows/build-image-reusable.yaml
         with:
             if: ${{ matrix.group.if }}
             name: ${{ matrix.group.name }}
