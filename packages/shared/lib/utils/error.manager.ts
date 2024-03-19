@@ -1,5 +1,6 @@
 import * as uuid from 'uuid';
-import sentry, { EventHint } from '@sentry/node';
+import type { EventHint } from '@sentry/node';
+import sentry from '@sentry/node';
 import { readFileSync } from 'fs';
 import path from 'path';
 import type { Tracer } from 'dd-trace';

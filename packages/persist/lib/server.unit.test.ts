@@ -1,8 +1,10 @@
 import { expect, describe, it, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import { db, SyncConfig } from '@nangohq/shared';
-import mockDb, { QueryDetails } from 'mock-knex';
+import type { SyncConfig } from '@nangohq/shared';
+import { db } from '@nangohq/shared';
+import type { QueryDetails } from 'mock-knex';
+import mockDb from 'mock-knex';
 
 describe('Persist API', () => {
     const port = 3096;

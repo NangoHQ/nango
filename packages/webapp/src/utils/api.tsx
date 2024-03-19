@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
-import { useSignout } from './user';
-import { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
+import { useSignout } from './user.js';
+import { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types.js';
 
 export async function fetcher(...args: Parameters<typeof fetch>) {
     const response = await fetch(...args);

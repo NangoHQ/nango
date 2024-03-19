@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { Locking } from './locking';
-import { InMemoryKVStore } from '../kvstore/InMemoryStore';
+import { Locking } from './locking.js';
+import { InMemoryKVStore } from '../kvstore/InMemoryStore.js';
 
 describe('Locking', () => {
     let store: InMemoryKVStore;

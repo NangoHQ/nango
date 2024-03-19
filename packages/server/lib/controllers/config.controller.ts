@@ -1,28 +1,30 @@
 import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
+import type {
+    StandardNangoConfig,
+    Template as ProviderTemplate,
+    Config as ProviderConfig,
+    IntegrationWithCreds,
+    Integration as ProviderIntegration,
+    Config
+} from '@nangohq/shared';
 import {
     flowService,
     isHosted,
     getConfigWithEndpointsByProviderConfigKey,
-    StandardNangoConfig,
     AuthModes,
     errorManager,
     NangoError,
     getEnvironmentId,
     getEnvironmentAndAccountId,
-    Template as ProviderTemplate,
     analytics,
     AnalyticsTypes,
     configService,
     environmentService,
-    Config as ProviderConfig,
-    IntegrationWithCreds,
-    Integration as ProviderIntegration,
     connectionService,
     getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey,
     getFlowConfigsByParams,
-    Config,
     getGlobalWebhookReceiveUrl
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';

@@ -1,7 +1,9 @@
-import axios, { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
+import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
+import axios from 'axios';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import { ApiKeyCredentials, BasicApiCredentials, AuthModes } from '../models/Auth.js';
+import type { ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
+import { AuthModes } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 

@@ -1,4 +1,4 @@
-import { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types';
+import { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types.js';
 
 export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secretKey: string, connectionId: string, providerConfigKey: string) => {
     const model = Array.isArray(models) ? models[0].name : models;

@@ -1,7 +1,7 @@
-import storage, { LocalStorageKeys } from '../utils/local-storage';
-import { useLogoutAPI } from '../utils/api';
+import storage, { LocalStorageKeys } from '../utils/local-storage.js';
+import { useLogoutAPI } from '../utils/api.js';
 import { useNavigate } from 'react-router';
-import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
+import { useAnalyticsIdentify, useAnalyticsReset } from './analytics.js';
 
 export interface User {
     id: number;

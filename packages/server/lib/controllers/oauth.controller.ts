@@ -9,6 +9,16 @@ import {
     missesInterpolationParam,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
+import type {
+    LogLevel,
+    Config as ProviderConfig,
+    Template as ProviderTemplate,
+    TemplateOAuth2 as ProviderTemplateOAuth2,
+    OAuthSession,
+    OAuth1RequestTokenResult,
+    AuthCredentials,
+    ConnectionConfig
+} from '@nangohq/shared';
 import {
     getConnectionConfig,
     connectionCreated as connectionCreatedHook,
@@ -26,18 +36,11 @@ import {
     AuthOperation,
     updateSessionId as updateSessionIdActivityLog,
     addEndTime as addEndTimeActivityLog,
-    LogLevel,
     LogActionEnum,
     configService,
     connectionService,
     environmentService,
-    Config as ProviderConfig,
-    Template as ProviderTemplate,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
     AuthModes as ProviderAuthModes,
-    OAuthSession,
-    OAuth1RequestTokenResult,
-    AuthCredentials,
     oauth2Client,
     getAccount,
     getEnvironmentId,
@@ -48,8 +51,7 @@ import {
     LogTypes,
     AnalyticsTypes,
     hmacService,
-    ErrorSourceEnum,
-    ConnectionConfig
+    ErrorSourceEnum
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
