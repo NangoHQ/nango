@@ -628,7 +628,7 @@ class ConnectionService {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
-            case ProviderAuthModes.OAuth2:
+            case ProviderAuthModes.OAuth2: {
                 if (!rawCreds['access_token']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -650,7 +650,9 @@ class ConnectionService {
                 };
 
                 return oauth2Creds;
-            case ProviderAuthModes.OAuth1:
+            }
+
+            case ProviderAuthModes.OAuth1: {
                 if (!rawCreds['oauth_token'] || !rawCreds['oauth_token_secret']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -663,6 +665,7 @@ class ConnectionService {
                 };
 
                 return oauth1Creds;
+            }
 
             default:
                 throw new NangoError(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawCreds, undefined, 2)}`);

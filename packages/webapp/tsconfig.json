@@ -26,6 +26,9 @@
     "references": [
         {
             "path": "../frontend"
+        },
+        {
+            "path": "../server"
         }
     ],
     "include": [

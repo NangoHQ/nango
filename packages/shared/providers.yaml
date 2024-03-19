@@ -1097,6 +1097,11 @@ lever-sandbox:
     proxy:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+lever-basic-sandbox:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.sandbox.lever.co
+    docs: https://docs.nango.dev/integrations/all/lever
 linear:
     categories:
         - productivity
@@ -2246,5 +2251,5 @@ zoom:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://developer.zoom.us
+        base_url: https://api.zoom.us/v2
     docs: https://docs.nango.dev/integrations/all/zoom

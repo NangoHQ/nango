@@ -14,7 +14,9 @@ import {
 
 import { useStore } from '../store';
 import { isLocal, isCloud, isEnterprise } from '../utils/utils';
+import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
+import { RocketIcon } from '@radix-ui/react-icons';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -24,7 +26,7 @@ export enum LeftNavBarItems {
     Syncs,
     AccountSettings,
     UserSettings,
-    GettingStarted
+    InteractiveDemo
 }
 
 export interface LeftNavBarProps {
@@ -36,49 +38,11 @@ const navActiveBg = 'bg-active-gray';
 const navHoverBg = 'hover:bg-hover-gray';
 
 export default function LeftNavBar(props: LeftNavBarProps) {
-    const [version, setVersion] = useState<string>('');
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
-
     const signout = useSignout();
-
-    const storedEnvs = useStore((state) => state.envs);
-    const [envs, setEnvs] = useState<{ name: string }[]>(storedEnvs);
-    const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const setStoredEnvs = useStore((state) => state.setEnvs);
-    const setBaseUrl = useStore((state) => state.setBaseUrl);
-    const setEmail = useStore((state) => state.setEmail);
-    const setDebugMode = useStore((state) => state.setDebugMode);
-
-    useEffect(() => {
-        fetch('/api/v1/meta')
-            .then((res) => {
-                if (res.status === 401) {
-                    return signout();
-                }
-                return res.json();
-            })
-            .then((data) => {
-                if (!data) {
-                    return;
-                }
-
-                if (JSON.stringify(data.environments) !== JSON.stringify(envs)) {
-                    setEnvs(data.environments);
-                    setStoredEnvs(data.environments);
-                    setBaseUrl(data.baseUrl);
-                }
-                if (data.email !== email) {
-                    setEmail(data.email);
-                }
-                setDebugMode(data.debugMode === true);
-                setVersion(data.version);
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const { meta } = useMeta();
+    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
 
     useEffect(() => {
         const closeUserSettings = (e: MouseEvent) => {
@@ -128,6 +92,10 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         window.history.pushState({}, '', newPath);
     };
 
+    if (!meta) {
+        return null;
+    }
+
     return (
         <div className="bg-pure-black">
             <div className="flex-1 ml-3 pr-4 h-full border-r border-border-gray flex flex-col w-60 bg-pure-black z-20 justify-between">
@@ -135,14 +103,14 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     <div className="flex items-center mb-8">
                         <img className="h-6" src="/logo-dark.svg" alt="Nango" />
                         <img className="mt-1 h-5 ml-1" src="/logo-text.svg" alt="Nango" />
-                        <span className="ml-3 text-xs text-black mono">{version}</span>
+                        <span className="ml-3 text-xs text-black mono">{meta.version}</span>
                     </div>
-                    {envs.length === 0 && (
+                    {meta.environments.length === 0 && (
                         <div className="mb-8">
                             <select className="border-border-gray bg-active-gray text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
                         </div>
                     )}
-                    {envs.length > 0 && (
+                    {meta.environments.length > 0 && (
                         <div className="mb-6">
                             <select
                                 id="environment"
@@ -151,7 +119,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 onChange={handleEnvChange}
                                 value={env}
                             >
-                                {envs.map((env) => (
+                                {meta.environments.map((env) => (
                                     <option key={env.name} value={env.name}>
                                         {env.name.slice(0, 1).toUpperCase() + env.name.slice(1)}
                                     </option>
@@ -160,15 +128,15 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
-                        {showGettingStarted && (
+                        {showInteractiveDemo && !meta.onboardingComplete && (
                             <Link
-                                to="/dev/getting-started"
+                                to="/dev/interactive-demo"
                                 className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                    props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                                    props.selectedItem === LeftNavBarItems.InteractiveDemo ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                 }`}
                             >
-                                <img className="h-5" src="/images/rocket-icon.svg" alt="" />
-                                <p>Getting Started</p>
+                                <RocketIcon />
+                                <p>Interactive Demo</p>
                             </Link>
                         )}
                         <Link
@@ -223,7 +191,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
                                     {email.slice(0, 1).toUpperCase()}
                                 </div>
-                                <span className="items-center w-32 text-center text-gray-400 justify-center text-left text-sm truncate">{email}</span>
+                                <span className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{email}</span>
                             </div>
                             <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
                             {(isCloud() || isEnterprise() || isLocal()) && showUserSettings && (
@@ -243,6 +211,20 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                             <UserGroupIcon className="h-5 w-5 mr-2" />
                                             <span>Team</span>
                                         </li>
+
+                                        {showInteractiveDemo && meta.onboardingComplete && (
+                                            <Link
+                                                to="/dev/interactive-demo"
+                                                className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                                    props.selectedItem === LeftNavBarItems.InteractiveDemo
+                                                        ? `${navActiveBg} text-white`
+                                                        : `text-gray-400 ${navHoverBg}`
+                                                }`}
+                                            >
+                                                <RocketIcon />
+                                                <p>Interactive Demo</p>
+                                            </Link>
+                                        )}
                                         <li
                                             className="flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1"
                                             onClick={async () => await signout()}

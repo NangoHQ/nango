@@ -133,13 +133,13 @@ class DryRunService {
         let stubbedMetadata;
         try {
             normalizedInput = JSON.parse(actionInput as unknown as string);
-        } catch (e) {
+        } catch {
             normalizedInput = actionInput;
         }
 
         try {
             stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
-        } catch (e) {
+        } catch {
             stubbedMetadata = rawStubbedMetadata;
         }
 
@@ -201,7 +201,7 @@ class DryRunService {
             }
 
             process.exit(0);
-        } catch (e) {
+        } catch {
             process.exit(1);
         }
     }

@@ -335,9 +335,9 @@ If you do not want to deal with collecting & injecting credentials in requests f
 </Info>
 
 <Tip>
-Every time you fetch the connection with this API endpoint, Nango will check if the access token has expired. If it has, it will refresh it.
+When you fetch the connection with this API endpoint, Nango will check if the access token has expired. If it has, it will refresh it.
 
-**We recommend you always fetch the token just before you use it to make sure it is fresh!**
+We recommend not caching tokens for longer than 5 minutes to ensure they are fresh.
 </Tip>
 
 **Parameters**
@@ -1333,3 +1333,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 - response headers
 - response body
 </Expandable>
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

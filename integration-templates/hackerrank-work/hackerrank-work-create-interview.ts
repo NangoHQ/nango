@@ -50,6 +50,8 @@ export default async function runAction(nango: NangoAction, input: HackerRankWor
             report_url: resp.data.report_url
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.data}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

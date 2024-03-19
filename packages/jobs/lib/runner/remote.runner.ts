@@ -1,3 +1,4 @@
+import { logger } from '@nangohq/shared';
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import { getRunnerClient } from '@nangohq/nango-runner';
@@ -12,8 +13,8 @@ export class RemoteRunner implements Runner {
         this.client = getRunnerClient(this.url);
     }
 
-    async suspend(): Promise<void> {
-        console.warn('cannot suspend a remote runner');
+    suspend() {
+        logger.warn('cannot suspend a remote runner');
     }
 
     toJSON() {

@@ -4,13 +4,10 @@ integrations:
       next-cloud-users:
         runs: every hour
         description: |
-          Fetch all users' details from NextCloud account
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: 'N'
+          Fetches a list of all users' details from NextCloud account
+        output: 'NextCloudUser'
         sync_type: full
         endpoint: /next-cloud-ocs/next-cloud-users
-        scopes:
-          - default
 models:
   NextCloudUser:
     enabled: boolean

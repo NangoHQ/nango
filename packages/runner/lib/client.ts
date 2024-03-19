@@ -1,7 +1,7 @@
 import { CreateTRPCProxyClient, createTRPCProxyClient, httpBatchLink } from '@trpc/client';
 import type { AppRouter } from './server.js';
 import superjson from 'superjson';
-import { fetch, Agent } from 'undici';
+import { fetch, Agent, RequestInit } from 'undici';
 
 export type ProxyAppRouter = CreateTRPCProxyClient<AppRouter>;
 
@@ -11,7 +11,7 @@ export function getRunnerClient(url: string): ProxyAppRouter {
         links: [
             httpBatchLink({
                 url,
-                fetch(url, options) {
+                fetch(url: string, options: RequestInit) {
                     return fetch(url, {
                         ...options,
                         dispatcher: new Agent({

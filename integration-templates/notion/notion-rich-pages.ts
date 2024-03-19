@@ -68,7 +68,7 @@ const paginate = async (nango: NangoSync, method: 'get' | 'post', endpoint: stri
     return results;
 };
 
-type Annotations = {
+interface Annotations {
     bold: boolean;
     italic: boolean;
     strikethrough: boolean;
@@ -94,7 +94,7 @@ type Annotations = {
         | 'purple_background'
         | 'pink_background'
         | 'red_background';
-};
+}
 
 type CalloutIcon =
     | { type: 'emoji'; emoji?: string }
@@ -246,8 +246,8 @@ const blockToMarkdown = async (nango: NangoSync, block: any) => {
             if (has_children) {
                 const tableRows = await fetchBlocks(nango, id);
                 const rowsPromise = tableRows?.map(async (row: any) => {
-                    const { type } = row as any;
-                    const cells = (row as any)[type]['cells'];
+                    const { type } = row;
+                    const cells = row[type]['cells'];
                     const cellStringPromise = cells.map(
                         async (cell: any) =>
                             await blockToMarkdown(nango, {

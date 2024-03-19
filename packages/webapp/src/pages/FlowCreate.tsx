@@ -104,7 +104,7 @@ export default function FlowCreate() {
             setShowFrequencyError(false);
         }
 
-        const flowObject = flows[data['integration'] as string] as Flow;
+        const flowObject = flows[data['integration'] as string];
 
         const models = Array.isArray(flow?.returns) ? (showModels(flow.returns) as any) : flow?.returns;
         const flowPayload = {
@@ -238,7 +238,7 @@ export default function FlowCreate() {
 
     const downloadFlow = async () => {
         setIsDownloading(true);
-        const flowObject = flows[integration] as Flow;
+        const flowObject = flows[integration];
 
         const flowInfo = {
             name: selectedFlowName,

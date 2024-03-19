@@ -1,17 +1,4 @@
-import type { NangoAction, WorkableCreateCommentResponse } from './models';
-
-interface WorkableCreateCommentInput {
-    id: string;
-    member_id: string;
-    comment: {
-        body: string;
-        policy?: string[];
-        attachment?: {
-            name: string;
-            data: string;
-        };
-    };
-}
+import type { NangoAction, WorkableCreateCommentResponse, WorkableCreateCommentInput } from './models';
 
 export default async function runAction(nango: NangoAction, input: WorkableCreateCommentInput): Promise<WorkableCreateCommentResponse> {
     if (!input.id) {
@@ -53,6 +40,8 @@ export default async function runAction(nango: NangoAction, input: WorkableCreat
             id: resp.data.id
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

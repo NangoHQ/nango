@@ -20,10 +20,10 @@ export default async function fetchData(nango: NangoSync) {
         const payload = {
             baseUrlOverride: `https://${connection.connection_config['subdomain']}.wildixin.com`,
             endpoint: '/api/v1/Colleagues/',
-            params: <Params>{
+            params: {
                 start,
                 count: MAX_IN_PAGE
-            }
+            } as Params
         };
 
         const { data } = await nango.get(payload);

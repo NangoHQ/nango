@@ -269,8 +269,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         <div className="flex items-center mb-1">
                             <span className="text-gray-400 text-xs uppercase">Callback Url</span>
                         </div>
-                        <span className="flex items-center">
-                            <span className="text-white mr-3">{account.callback_url || defaultCallback()}</span>
+                        <span className="flex items-center gap-2">
+                            <span className="text-white">{account.callback_url || defaultCallback()}</span>
                             <CopyButton text={account.callback_url || defaultCallback()} dark classNames="" />
                         </span>
                     </div>
@@ -294,8 +294,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
                             </Tooltip>
                         </div>
-                        <span className="flex items-center">
-                            <span className="text-white mr-3">{account.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
+                        <span className="flex items-center gap-2">
+                            <span className="text-white">{account.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
                             <CopyButton text={account.callback_url.replace('oauth/callback', 'app-auth/connect')} dark classNames="" />
                         </span>
                     </div>
@@ -319,8 +319,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
                             </Tooltip>
                         </div>
-                        <div className="flex text-white items-center">
-                            <span className="text-white mr-3">{`${account.webhook_receive_url}/${integrationId}`}</span>
+                        <div className="flex text-white items-center gap-2">
+                            <span className="text-white">{`${account.webhook_receive_url}/${integrationId}`}</span>
                             <CopyButton text={`${account.webhook_receive_url}/${integrationId}`} dark classNames="" />
                         </div>
                     </div>
@@ -341,8 +341,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
                                 </Tooltip>
                             </div>
-                            <div className="flex text-white items-center">
-                                <span className="text-white mr-3">{integration?.webhook_secret}</span>
+                            <div className="flex text-white items-center gap-2">
+                                <span className="text-white">{integration?.webhook_secret}</span>
                                 <CopyButton text={integration?.webhook_secret} dark classNames="" />
                             </div>
                         </div>
@@ -381,8 +381,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
             )}
             {(integration?.auth_mode === AuthModes.Basic || integration?.auth_mode === AuthModes.ApiKey) && (
                 <Info size={20} color="blue">
-                    The "{integration?.provider}" integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for
-                    authentication (
+                    The &quot;{integration?.provider}&quot; integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'}{' '}
+                    for authentication (
                     <a
                         href="https://docs.nango.dev/integrate/guides/authorize-an-api"
                         className="text-white underline hover:text-text-light-blue"

@@ -85,7 +85,7 @@ export async function exec(
                     return await scriptExports.default(nango);
                 }
             }
-        } catch (error: any) {
+        } catch (error) {
             if (error instanceof ActionError) {
                 const { type, payload } = error;
                 return {
@@ -98,7 +98,7 @@ export async function exec(
                     response: null
                 };
             } else {
-                throw new Error(`Error executing code '${error}'`);
+                throw new Error(`Error executing code '${JSON.stringify(error)}'`);
             }
         } finally {
             span.finish();
