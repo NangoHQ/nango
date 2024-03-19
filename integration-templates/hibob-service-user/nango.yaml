@@ -4,8 +4,7 @@ integrations:
       hibob-employees:
         runs: every hour
         description: |
-          Returns a list of all active employees.
-          Details: full sync, doesn't track deletes, metadata is not required.
+          Fetches a list of all active employees
         output: HibobEmployee
         sync_type: full
         endpoint: /hibob-service-user/hibob-employees

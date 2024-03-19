@@ -1,13 +1,4 @@
-import type { NangoAction, AshbyCreateApplicationResponse } from './models';
-
-interface AshbyCreateCandidateInput {
-    candidateId: string;
-    jobId: string;
-    interviewPlanId?: string;
-    interviewStageId?: string;
-    sourceId?: string;
-    creditedToUserId?: string;
-}
+import type { NangoAction, AshbyCreateApplicationResponse, AshbyCreateCandidateInput } from './models';
 
 export default async function runAction(nango: NangoAction, input: AshbyCreateCandidateInput): Promise<AshbyCreateApplicationResponse> {
     if (!input.candidateId) {
@@ -67,6 +58,8 @@ export default async function runAction(nango: NangoAction, input: AshbyCreateCa
             appliedViaJobPostingId
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

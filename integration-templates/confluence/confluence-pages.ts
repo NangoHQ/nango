@@ -9,7 +9,7 @@ export default async function fetchData(nango: NangoSync) {
         baseUrlOverride: `https://api.atlassian.com/ex/confluence/${cloudId}`,
         endpoint: `/wiki/api/v2/pages`,
         paginate: {
-            limit: 250
+            limit: 100
         }
     };
     for await (const pageBatch of nango.paginate(proxyConfig)) {

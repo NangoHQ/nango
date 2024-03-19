@@ -1,23 +1,13 @@
-import type { NangoAction, AshbyCreateNoteResponse } from './models';
-
-interface AshbyCreateNoteInput {
-    candidateId: string;
-    note: string | NoteObject;
-    sendNotifications?: boolean;
-}
-
-interface NoteObject {
-    value: string;
-    type: string;
-}
+import type { NangoAction, AshbyCreateNoteResponse, AshbyCreateNoteInput, NoteObject } from './models';
 
 export default async function runAction(nango: NangoAction, input: AshbyCreateNoteInput): Promise<AshbyCreateNoteResponse> {
+    //input validation
     if (!input.candidateId) {
         throw new nango.ActionError({
             message: 'candidateId is a required field'
         });
     } else if (typeof input.note === 'object') {
-        const noteObject = input.note;
+        const noteObject: NoteObject = input.note;
         if (!noteObject.value || !noteObject.type) {
             throw new nango.ActionError({
                 message: 'When note is an object, it must have "value" and "type" properties, both of which are required'
@@ -45,6 +35,8 @@ export default async function runAction(nango: NangoAction, input: AshbyCreateNo
 
         return { id, createdAt, content, author };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

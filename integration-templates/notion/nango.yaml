@@ -8,13 +8,9 @@ integrations:
           sub-databases and retrieve only the text content and ignores
           images, files and other blocks that do not have
           a `rich_text` property.
-          Details: incremental sync, doesn't support deletes, sync goes to all
-          time, metadata is not required.
-          Required scope(s): none
         output: NotionPage
         sync_type: incremental
         endpoint: /notion/pages
-        scopes: ''
       notion-rich-pages:
         runs: every 6 hours
         track_deletes: true
@@ -22,13 +18,9 @@ integrations:
           Sync pages, subpages, database entries, entries of
           sub-databases and maps to full markdown. It transforms
           images, tables, uploaded files, etc into their markdown counterparts.
-          Details: full sync, tracks deletes, sync goes to all time, metadata is
-          not required.
-          Required scope(s): none
         output: NotionRichPage
         sync_type: incremental
         endpoint: /notion/rich-pages
-        scopes: ''
 models:
   NotionPage:
     id: string

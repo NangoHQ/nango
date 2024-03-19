@@ -1,5 +1,7 @@
 import type { LeverOpportunity, NangoSync } from './models';
 
+const LIMIT = 100;
+
 export default async function fetchData(nango: NangoSync) {
     let totalRecords = 0;
 
@@ -13,7 +15,7 @@ export default async function fetchData(nango: NangoSync) {
                 cursor_name_in_request: 'offset',
                 limit_name_in_request: 'limit',
                 response_path: 'data',
-                limit: 100
+                limit: LIMIT
             }
         };
         for await (const opportunity of nango.paginate({ ...config, endpoint })) {
