@@ -4,11 +4,15 @@ integrations:
       confluence-spaces:
         runs: every 4 hours
         output: ConfluenceSpace
+        description: |
+          Fetches a list of spaces from confluence
         sync_type: full
         endpoint: /confluence/spaces
       confluence-pages:
         runs: every 4 hours
         output: ConfluencePage
+        description: |
+          Fetches a list of pages from confluence
         sync_type: full
         endpoint: /confluence/pages
 models:

@@ -3,11 +3,15 @@ integrations:
     syncs:
       zendesk-tickets:
         runs: every 1 hour
+        description: |
+          Fetches a list of tickets from zendesk
         output: ZendeskTicket
         sync_type: full
         endpoint: /zendesk/tickets
       zendesk-articles:
         runs: every 6 hours
+        description: |
+          Fetches a list of articles in Help center from zendesk
         output: ZendeskArticle
         sync_type: full
         endpoint: /zendesk/articles

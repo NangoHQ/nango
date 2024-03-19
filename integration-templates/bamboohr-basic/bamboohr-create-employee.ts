@@ -53,6 +53,8 @@ export default async function runAction(nango: NangoAction, input: BamboohrEmplo
             status: response.statusText
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

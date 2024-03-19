@@ -29,7 +29,7 @@ integrations:
           into a buffer and return a base64 encoded string that can later
           be converted into a PDF using an external tool.
         output: string
-        endpoint: /google-drive/fetch-pdf
+        endpoint: POST /google-drive/fetch-pdf
         scopes: https://www.googleapis.com/auth/drive.readonly
 models:
   DocumentMetadata:

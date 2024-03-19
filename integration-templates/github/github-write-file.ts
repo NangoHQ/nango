@@ -1,21 +1,6 @@
-import type { NangoSync } from './models';
+import type { NangoSync, GithubWriteFileInput, GithubWriteFileActionResult } from './models';
 
-interface FileActionInput {
-    owner: string; // Owner of the repository
-    repo: string; // Name of the repository
-    path: string; // File path including the name, e.g. 'README.md'
-    message: string; // Commit message
-    content: string; // Content to be saved, should be Base64 encoded
-    sha?: string; // SHA of the file to update, required if updating
-}
-
-interface GithubWriteFileActionResult {
-    url: string; // URL of the file
-    status: string; // 'success' or 'failure'
-    sha: string; // SHA of the file to update, required if updating
-}
-
-export default async function runAction(nango: NangoSync, input: FileActionInput): Promise<GithubWriteFileActionResult> {
+export default async function runAction(nango: NangoSync, input: GithubWriteFileInput): Promise<GithubWriteFileActionResult> {
     const endpoint = `/repos/${input.owner}/${input.repo}/contents/${input.path}`;
 
     let fileSha: string | undefined = undefined;

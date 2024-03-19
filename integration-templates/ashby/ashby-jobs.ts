@@ -41,8 +41,8 @@ async function saveAllJobs(nango: NangoSync, jobslastsyncToken: string) {
         const metadata = (await nango.getMetadata()) || {};
         metadata['jobslastsyncToken'] = jobslastsyncToken;
         await nango.setMetadata(metadata);
-    } catch (error) {
-        console.error('Error occurred while fetching and saving jobs:', error);
+    } catch (error: any) {
+        throw new Error(`Error in saveAllJobs: ${error.message}`);
     }
 }
 
