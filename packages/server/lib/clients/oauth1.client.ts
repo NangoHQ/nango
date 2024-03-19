@@ -100,7 +100,7 @@ export class OAuth1Client {
                         return;
                     }
 
-                    resolve(Object.fromEntries(extractQueryParams(data)));
+                    resolve(extractQueryParams(data));
                 }
             );
         });
@@ -128,6 +128,6 @@ export class OAuth1Client {
     }
 }
 
-export function extractQueryParams(data: string | Buffer | undefined) {
-    return new URLSearchParams(typeof data === 'string' ? data : data?.toString());
+export function extractQueryParams(data: string | Buffer | undefined): Record<string, any> {
+    return Object.fromEntries(new URLSearchParams(typeof data === 'string' ? data : data?.toString()));
 }
