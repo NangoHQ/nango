@@ -12,8 +12,7 @@ export async function migrate(): Promise<void> {
     const dir = path.join(dirname, 'logs/dist/db/migrations');
     await db.raw(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
 
-    const [_, pendingMigrations] = await db.migrate.list({ ...config.migrations, directory: dir });
-    console.log('prout, ', config);
+    const [, pendingMigrations] = (await db.migrate.list({ ...config.migrations, directory: dir })) as [unknown, string[]];
 
     if (pendingMigrations.length === 0) {
         logger.info('[logs] nothing to do');
@@ -25,7 +24,7 @@ export async function migrate(): Promise<void> {
 }
 
 /**
- * Create daily partition.
+ * Create daily partition
  */
 export async function createPartitions(startDay: number = 0): Promise<void> {
     logger.info('[createLogsPartition] starting');

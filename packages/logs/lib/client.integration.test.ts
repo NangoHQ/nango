@@ -4,6 +4,9 @@ import { migrate, createPartitions } from './db/helpers';
 import { getOperation, listOperations } from './models/operations';
 import { db } from './db/client';
 import { listMessages } from './models/messages';
+import type { OperationRequired } from './types/operations';
+
+const operationPayload: OperationRequired = { account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev', type: 'sync' };
 
 describe('client', () => {
     beforeAll(async () => {
@@ -13,9 +16,9 @@ describe('client', () => {
     });
 
     it('should insert an operation', async () => {
-        const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
-
+        const ctx = await getOperationContext(operationPayload);
         expect(ctx).toMatchObject({ operationId: expect.toBeUUID() });
+
         const list = await listOperations({ limit: 1 });
         expect(list).toStrictEqual([
             {
@@ -38,7 +41,7 @@ describe('client', () => {
                 sync_id: null,
                 sync_name: null,
                 title: null,
-                type: null,
+                type: 'sync',
                 updated_at: expect.toBeIsoDate(),
                 user_id: null
             }
@@ -47,9 +50,9 @@ describe('client', () => {
 
     describe('general state', () => {
         it('should set operation as started', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
-
+            const ctx = await getOperationContext(operationPayload);
             await ctx.start();
+
             const operation = await getOperation({ id: ctx.operationId });
 
             expect(operation).toMatchObject({
@@ -62,9 +65,9 @@ describe('client', () => {
         });
 
         it('should set operation as cancelled', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
-
+            const ctx = await getOperationContext(operationPayload);
             await ctx.cancel();
+
             const operation = await getOperation({ id: ctx.operationId });
 
             expect(operation).toMatchObject({
@@ -77,9 +80,9 @@ describe('client', () => {
         });
 
         it('should set operation as timeout', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
-
+            const ctx = await getOperationContext(operationPayload);
             await ctx.timeout();
+
             const operation = await getOperation({ id: ctx.operationId });
 
             expect(operation).toMatchObject({
@@ -92,9 +95,9 @@ describe('client', () => {
         });
 
         it('should set operation as finished', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
-
+            const ctx = await getOperationContext(operationPayload);
             await ctx.finish();
+
             const operation = await getOperation({ id: ctx.operationId });
 
             expect(operation).toMatchObject({
@@ -109,9 +112,9 @@ describe('client', () => {
 
     describe('failed', () => {
         it('should set operation as failed', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
-
+            const ctx = await getOperationContext(operationPayload);
             await ctx.failed();
+
             const operation = await getOperation({ id: ctx.operationId });
 
             expect(operation).toMatchObject({
@@ -122,11 +125,12 @@ describe('client', () => {
                 ended_at: null
             });
         });
-        it('should set operation as failed and finished', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
 
+        it('should set operation as failed and finished', async () => {
+            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev', type: 'sync' });
             await ctx.failed();
             await ctx.finish();
+
             const operation = await getOperation({ id: ctx.operationId });
 
             expect(operation).toMatchObject({
@@ -141,7 +145,7 @@ describe('client', () => {
 
     describe('log type', () => {
         it('should log all types', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev' });
+            const ctx = await getOperationContext(operationPayload);
             await ctx.trace('trace msg');
             await ctx.debug('debug msg');
             await ctx.info('info msg');

@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { isStandalone } from '../../env';
+import { isStandalone } from '../../env.js';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.raw('DROP TYPE IF EXISTS log_level');
@@ -28,14 +28,14 @@ export async function up(knex: Knex): Promise<void> {
     "job_id" int4,
     "user_id" int4,
 
-    "type" varchar(50),
+    "type" varchar(50) NOT NULL,
     "title" varchar(255),
-    "level" log_level DEFAULT 'info',
-    "state" log_state DEFAULT 'waiting',
+    "level" log_level DEFAULT 'info' NOT NULL,
+    "state" log_state DEFAULT 'waiting' NOT NULL,
     "code" varchar(100),
 
-    "created_at" timestamp without time zone DEFAULT NOW(),
-    "updated_at" timestamp without time zone DEFAULT NOW(),
+    "created_at" timestamp without time zone DEFAULT NOW() NOT NULL,
+    "updated_at" timestamp without time zone DEFAULT NOW() NOT NULL,
 
     "started_at" timestamp without time zone,
     "ended_at" timestamp without time zone

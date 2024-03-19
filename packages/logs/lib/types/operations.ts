@@ -1,11 +1,18 @@
 import type { LogLevel } from './global';
 
-export type OperationType = 'success';
+export type OperationType = 'sync';
 export type OperationCode = 'success';
 
 export type OperationState = 'waiting' | 'running' | 'success' | 'failed' | 'timeout' | 'cancelled';
 
+/**
+ * Representation of the Operation table
+ */
 export type OperationTable = { id?: string | undefined } & Omit<OperationRow, 'id'>;
+
+/**
+ * Representation of an Operation row from the DB
+ */
 export interface OperationRow {
     id: string;
 
@@ -29,16 +36,20 @@ export interface OperationRow {
     user_id: string | null;
 
     type: OperationType;
-    title: string;
+    title: string | null;
     level: LogLevel;
     state: OperationState;
-    code: OperationCode;
+    code: OperationCode | null;
 
     created_at: string;
     updated_at: string;
-    started_at: string;
-    ended_at: string;
+    started_at: string | null;
+    ended_at: string | null;
 }
 
-export type OperationRequired = 'account_id' | 'account_name' | 'environment_id' | 'environment_name';
-export type OperationCtx = Pick<OperationRow, OperationRequired> & Partial<Exclude<OperationRow, OperationRequired>>;
+type OperationRequiredField = 'account_id' | 'account_name' | 'environment_id' | 'environment_name' | 'type';
+
+/**
+ * Representation of what is required to insert an Operation
+ */
+export type OperationRequired = Pick<OperationRow, OperationRequiredField> & Partial<Exclude<OperationRow, OperationRequiredField>>;

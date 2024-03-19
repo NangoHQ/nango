@@ -21,7 +21,7 @@ export const envs = schema.parse(process.env);
 
 export const isProd = envs.NODE_ENV === 'production';
 export const isTest = envs.CI === 'true' || envs.VITEST === 'true';
-export const isStandalone = Boolean(envs.NANGO_LOGS_DB_URL);
+export const isStandalone = Boolean(envs.NANGO_LOGS_DB_URL || isTest);
 
 export const filename = fileURLToPath(import.meta.url);
 export const dirname = path.dirname(path.join(filename, '../../'));

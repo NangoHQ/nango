@@ -28,6 +28,9 @@ export type MessageContent =
 
 export type MsgMeta = Record<string, unknown> | null;
 
+/**
+ * Representation of the Message table
+ */
 export interface MessageTable {
     id?: string | undefined;
 
@@ -37,6 +40,9 @@ export interface MessageTable {
     created_at?: string;
 }
 
+/**
+ * Representation of a Message row from the DB
+ */
 export interface MessageRow {
     id: string;
 
@@ -46,4 +52,7 @@ export interface MessageRow {
     created_at: string;
 }
 
+/**
+ * Representation of what is required to insert a Message
+ */
 export type MessageRowInsert = Pick<MessageRow, 'operation_id' | 'content'> & Partial<Pick<MessageRow, 'created_at'>> & { id?: string | undefined };

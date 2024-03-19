@@ -9,7 +9,7 @@ icon: 'code'
 <Tabs>
 
 <Tab title="Sync script">
-```ts
+```ts 
 import type { GithubIssueDemo, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
@@ -54,7 +54,7 @@ export default async function runAction(nango: NangoAction, input: GithubCreateI
 
 Read more about [scripts](/understand/concepts/scripts) to understand what role they play in Nango.
 
-Scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily.
+Scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily. 
 
 <Tip>
 The script helper object shares some methods, but not all, with the [Node backend SDK](/reference/sdks/node), which is why this reference will link to the Node SDK reference a lot.
@@ -68,7 +68,7 @@ HTTP requests in scripts are made with the proxy ([concept]((/understand/concept
 
 
 <Tip>
-There is one simplification to using the proxy in scripts. Because scripts always execute in the context of a specific integration & connection, you do not need to specify the `providerConfigKey` & `connectionId` parameters when calling the proxy from script.
+There is one simplification to using the proxy in scripts. Because scripts always execute in the context of a specific integration & connection, you do not need to specify the `providerConfigKey` & `connectionId` parameters when calling the proxy from script. 
 
 Instead of writing:
 ```ts
@@ -79,7 +79,7 @@ const res = await nango.get({
 });
 ```
 
-You can write:
+You can write:  
 
 ```ts
 const res = await nango.get({ endpoint: '/external-endpoint' });
@@ -88,11 +88,11 @@ const res = await nango.get({ endpoint: '/external-endpoint' });
 
 ### Logging
 
-You can collect logs in scripts. This is particularly useful when:
+You can collect logs in scripts. This is particularly useful when: 
 - developing, to debug your scripts
 - in production, to collect information about script executions & understand issues
 
-Collect logs in scripts as follows:
+Collect logs in scripts as follows: 
 ```ts
 await nango.log("This is a log.");
 ```
@@ -101,19 +101,19 @@ Logs can be viewed & searched in the Nango UI. We plan to make them exportable i
 
 ### Environment variables
 
-Scripts sometimes need to access sensitive variables that should not be revealed directly in the script code.
+Scripts sometimes need to access sensitive variables that should not be revealed directly in the script code. 
 
 For this, you can define environment variables in the Nango UI, in the _Environment Settings_ tab. Then you can retrieve these environment variables from scripts ([reference](/reference/sdks/node#get-environment-variables)).
 
 ### Trigger action
 
-Scripts currently do not support importing files, which limits the ability to share code between scripts.
+Scripts currently do not support importing files, which limits the ability to share code between scripts. 
 
 As a temporary workaround, you can call action scripts from other scripts ([reference](/reference/sdks/node#trigger-an-action)).
 
 ### Paginate through API responses
 
-Follow the pagination [step-by-step guides](/customize/guides/advanced/paginate-api-responses) to learn how to easily paginate through API responses.
+Follow the pagination [step-by-step guides](/customize/guides/advanced/paginate-api-responses) to learn how to easily paginate through API responses. 
 
 ### Manage connection metadata
 
@@ -129,10 +129,10 @@ Sync scripts persist data updates to the Nango cache, which your app later fetch
 
 ### Save records
 
-Upserts records to the Nango cache (i.e. create new records, update existing ones). Each record needs to contain a unique `id` field used to dedupe records.
+Upserts records to the Nango cache (i.e. create new records, update existing ones). Each record needs to contain a unique `id` field used to dedupe records. 
 
 ```js
-const githubIssues: GitHubIssue[] = ...; // Fetch issues from GitHub API.
+const githubIssues: GitHubIssue[] = ...; // Fetch issues from GitHub API. 
 
 await nango.batchSave(githubIssues, 'GitHubIssue');
 ```
@@ -146,7 +146,7 @@ await nango.batchSave(githubIssues, 'GitHubIssue');
 
     <ResponseField name="modelType" type="string" required>
         The model type of the records to persist.
-    </ResponseField>
+    </ResponseField>   
 </Expandable>
 
 ### Delete records
@@ -156,7 +156,7 @@ Marks records as deleted in the Nango cache. Deleted records are still returned 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
 ```js
-const githubIssuesToDelete: { id: string }[] = ...; // Fetch issues to delete from GitHub API.
+const githubIssuesToDelete: { id: string }[] = ...; // Fetch issues to delete from GitHub API. 
 
 await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 ```
@@ -170,7 +170,7 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 
     <ResponseField name="modelType" type="string" required>
         The model type of the records to delete.
-    </ResponseField>
+    </ResponseField>   
 </Expandable>
 
 
@@ -189,7 +189,7 @@ export default async function runAction(nango: NangoAction): Promise<Response> {
 
 ```
 
-In this case, the response to the trigger action call will be:
+In this case, the response to the trigger action call will be: 
 ```json
 {
   "error_type": "action_script_failure",

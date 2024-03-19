@@ -1,9 +1,9 @@
 export * from 'vitest';
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
-/* eslint-disable @typescript-eslint/no-namespace */
 interface CustomMatchers<TR = unknown> {
     toBeIsoDate: () => TR;
+    toBeIsoDateTimezone: () => TR;
     toBeUUID: () => TR;
 }
 

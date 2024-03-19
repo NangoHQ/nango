@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { isStandalone } from '../../env';
+import { isStandalone } from '../../env.js';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`CREATE TABLE "messages" (

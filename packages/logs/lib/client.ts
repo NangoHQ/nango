@@ -1,7 +1,7 @@
-import { db } from './db/client';
-
-import type { OperationCtx, OperationRow, OperationTable } from './types/operations';
-import type { MessageContent, MessageRowInsert, MessageTable, MsgMeta } from './types/messages';
+import type { OperationRequired } from './types/operations.js';
+import type { MessageContent, MessageRowInsert, MsgMeta } from './types/messages.js';
+import { createOperation, setFinish, setRunning, setState } from './models/operations.js';
+import { createMessage } from './models/messages.js';
 
 export class LogContext {
     operationId: string;
@@ -21,7 +21,7 @@ export class LogContext {
                 ...content
             }
         };
-        await db.table<MessageTable>('messages').insert(row);
+        await createMessage(row);
     }
 
     async debug(msg: string, meta: MsgMeta = null): Promise<void> {
@@ -48,43 +48,28 @@ export class LogContext {
      * ------ State
      */
     async start(): Promise<void> {
-        await db.table<OperationTable>('operations').update({ state: 'running', updated_at: db.fn.now(), started_at: db.fn.now() });
+        await setRunning();
     }
 
     async failed(): Promise<void> {
-        await this.state('failed');
+        await setState('failed');
     }
 
     async cancel(): Promise<void> {
-        await this.state('cancelled');
+        await setState('cancelled');
     }
 
     async timeout(): Promise<void> {
-        await this.state('timeout');
+        await setState('timeout');
     }
 
     async finish(): Promise<void> {
-        await db.table<OperationTable>('operations').update({
-            state: db.raw(`CASE WHEN state = 'waiting' OR state = 'running' THEN 'success' ELSE state END`),
-            updated_at: db.fn.now(),
-            started_at: db.raw('COALESCE(started_at, NOW())'),
-            ended_at: db.fn.now()
-        });
-    }
-
-    /**
-     * ------ Private
-     */
-    private async state(state: OperationRow['state']): Promise<void> {
-        await db.table<OperationTable>('operations').update({ state, updated_at: db.fn.now(), started_at: db.raw('COALESCE(started_at, NOW())') });
+        await setFinish();
     }
 }
 
-export async function getOperationContext(data: OperationCtx): Promise<LogContext> {
-    const res = await db.table('operations').insert(data).returning<{ id: string }[]>('id');
-    if (!res || res.length <= 0) {
-        throw new Error('failed_to_create_operation');
-    }
+export async function getOperationContext(data: OperationRequired): Promise<LogContext> {
+    const res = await createOperation(data);
 
-    return new LogContext({ operationId: res[0]!.id });
+    return new LogContext({ operationId: res.id });
 }
