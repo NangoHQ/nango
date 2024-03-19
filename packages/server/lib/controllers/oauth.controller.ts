@@ -54,7 +54,7 @@ import {
     ErrorSourceEnum
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
-import { WSErrBuilder } from '../utils/web-socket-error.js';
+import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 
 class OAuthController {

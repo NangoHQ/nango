@@ -89,7 +89,7 @@ class ProxyController {
             const queryString = querystring.stringify(query);
             const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
-            const headers = this.parseHeaders(req);
+            const headers = parseHeaders(req);
 
             const externalConfig: UserProvidedProxyConfiguration = {
                 endpoint,
@@ -381,31 +381,31 @@ class ProxyController {
             console.error(content);
         }
     }
+}
 
-    /**
-     * Parse Headers
-     * @param {Request} req Express request object
-     */
-    private parseHeaders(req: Request) {
-        const headers = req.rawHeaders;
-        const HEADER_PROXY_LOWER = 'nango-proxy-';
-        const HEADER_PROXY_UPPER = 'Nango-Proxy-';
-        const forwardedHeaders: ForwardedHeaders = {};
+/**
+ * Parse Headers
+ * @param {Request} req Express request object
+ */
+export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
+    const headers = req.rawHeaders;
+    const HEADER_PROXY_LOWER = 'nango-proxy-';
+    const HEADER_PROXY_UPPER = 'Nango-Proxy-';
+    const forwardedHeaders: ForwardedHeaders = {};
 
-        if (!headers) {
-            return forwardedHeaders;
-        }
-
-        for (let i = 0, n = headers.length; i < n; i += 2) {
-            const headerKey = headers[i];
-
-            if (headerKey?.toLowerCase().startsWith(HEADER_PROXY_LOWER) || headerKey?.startsWith(HEADER_PROXY_UPPER)) {
-                forwardedHeaders[headerKey.slice(HEADER_PROXY_LOWER.length)] = headers[i + 1] || '';
-            }
-        }
-
+    if (!headers) {
         return forwardedHeaders;
     }
+
+    for (let i = 0, n = headers.length; i < n; i += 2) {
+        const headerKey = headers[i];
+
+        if (headerKey?.toLowerCase().startsWith(HEADER_PROXY_LOWER) || headerKey?.startsWith(HEADER_PROXY_UPPER)) {
+            forwardedHeaders[headerKey.slice(HEADER_PROXY_LOWER.length)] = headers[i + 1] || '';
+        }
+    }
+
+    return forwardedHeaders;
 }
 
 export default new ProxyController();

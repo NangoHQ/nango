@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
@@ -160,21 +160,13 @@ class DeployService {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
                 }
-            } catch (err: any) {
+            } catch (err) {
                 let errorMessage;
-                if (!err?.response?.data) {
-                    const {
-                        message,
-                        stack,
-                        config: { method },
-                        code,
-                        status
-                    } = err?.toJSON();
-
-                    const errorObject = { message, stack, code, status, url, method };
+                if (err instanceof AxiosError) {
+                    const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
                     errorMessage = JSON.stringify(errorObject, null, 2);
                 } else {
-                    errorMessage = JSON.stringify(err.response.data, null, 2);
+                    errorMessage = JSON.stringify(err, null, 2);
                 }
                 console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                 process.exit(1);
@@ -193,8 +185,8 @@ class DeployService {
     ) {
         await axios
             .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((response: AxiosResponse) => {
-                const results: SyncDeploymentResult[] = response.data;
+            .then((response: AxiosResponse<SyncDeploymentResult[]>) => {
+                const results = response.data;
                 if (results.length === 0) {
                     console.log(chalk.green(`Successfully removed the syncs/actions.`));
                 } else {
@@ -202,8 +194,8 @@ class DeployService {
                     console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
                 }
             })
-            .catch((err: any) => {
-                const errorMessage = JSON.stringify(err.response.data, null, 2);
+            .catch((err) => {
+                const errorMessage = JSON.stringify(err instanceof AxiosError ? err.response?.data : err, null, 2);
                 console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                 process.exit(1);
             });

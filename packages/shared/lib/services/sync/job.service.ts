@@ -2,7 +2,8 @@ import db, { schema, dbNamespace } from '../../db/database.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
+import type { Job as SyncJob, SyncResultByModel } from '../../models/Sync.js';
+import { SyncStatus, SyncType } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
@@ -89,47 +90,49 @@ export const updateLatestJobSyncStatus = async (sync_id: string, status: SyncSta
  * @desc grab any existing results and add them to the current
  */
 export const updateSyncJobResult = async (id: number, result: SyncResultByModel, model: string): Promise<SyncJob> => {
-    const { result: existingResult } = await schema().from<SyncJob>(SYNC_JOB_TABLE).select('result').where({ id }).first();
+    return db.knex.transaction(async (trx) => {
+        const { result: existingResult } = await trx.from<SyncJob>(SYNC_JOB_TABLE).select('result').forUpdate().where({ id }).first();
 
-    if (!existingResult || Object.keys(existingResult).length === 0) {
-        const [updatedRow] = await schema()
-            .from<SyncJob>(SYNC_JOB_TABLE)
-            .where({ id, deleted: false })
-            .update({
-                result
-            })
-            .returning('*');
+        if (!existingResult || Object.keys(existingResult).length === 0) {
+            const [updatedRow] = await trx
+                .from<SyncJob>(SYNC_JOB_TABLE)
+                .where({ id, deleted: false })
+                .update({
+                    result
+                })
+                .returning('*');
 
-        return updatedRow as SyncJob;
-    } else {
-        const { added, updated, deleted } = existingResult[model] || { added: 0, updated: 0, deleted: 0 };
+            return updatedRow as SyncJob;
+        } else {
+            const { added, updated, deleted } = existingResult[model] || { added: 0, updated: 0, deleted: 0 };
 
-        const incomingResult = result[model];
-        const finalResult = {
-            ...existingResult,
-            [model]: {
-                added: Number(added) + Number(incomingResult?.added),
-                updated: Number(updated) + Number(incomingResult?.updated)
+            const incomingResult = result[model];
+            const finalResult = {
+                ...existingResult,
+                [model]: {
+                    added: Number(added) + Number(incomingResult?.added),
+                    updated: Number(updated) + Number(incomingResult?.updated)
+                }
+            };
+
+            const deletedValue = Number(deleted) || 0;
+            const incomingDeletedValue = Number(incomingResult?.deleted) || 0;
+
+            if (deletedValue !== 0 || incomingDeletedValue !== 0) {
+                finalResult[model].deleted = deletedValue + incomingDeletedValue;
             }
-        };
 
-        const deletedValue = Number(deleted) || 0;
-        const incomingDeletedValue = Number(incomingResult?.deleted) || 0;
+            const [updatedRow] = await trx
+                .from<SyncJob>(SYNC_JOB_TABLE)
+                .where({ id, deleted: false })
+                .update({
+                    result: finalResult
+                })
+                .returning('*');
 
-        if (deletedValue !== 0 || incomingDeletedValue !== 0) {
-            finalResult[model].deleted = deletedValue + incomingDeletedValue;
+            return updatedRow as SyncJob;
         }
-
-        const [updatedRow] = await schema()
-            .from<SyncJob>(SYNC_JOB_TABLE)
-            .where({ id, deleted: false })
-            .update({
-                result: finalResult
-            })
-            .returning('*');
-
-        return updatedRow as SyncJob;
-    }
+    });
 };
 
 export const addSyncConfigToJob = async (id: number, sync_config_id: number): Promise<void> => {
