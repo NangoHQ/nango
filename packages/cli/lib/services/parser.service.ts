@@ -1,6 +1,7 @@
 import fs from 'fs';
 import chalk from 'chalk';
-import traverse, { NodePath } from '@babel/traverse';
+import type { NodePath } from '@babel/traverse';
+import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import parser from '@babel/parser';
 import { SyncConfigType } from '@nangohq/shared';

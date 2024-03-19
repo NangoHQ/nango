@@ -1,5 +1,4 @@
-import { useParams } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
@@ -14,7 +13,7 @@ import { LinkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
-import { IntegrationConfig, Flow, Account } from '../../types';
+import type { IntegrationConfig, Flow, Account } from '../../types';
 import { useStore } from '../../store';
 import { requestErrorToast } from '../../utils/api';
 

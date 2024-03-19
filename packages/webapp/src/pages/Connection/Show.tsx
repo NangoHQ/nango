@@ -1,11 +1,8 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Loading } from '@geist-ui/core';
-import { Link } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router';
+import { Loading, useModal, Modal } from '@geist-ui/core';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { useModal, Modal } from '@geist-ui/core';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
@@ -17,7 +14,7 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
-import { SyncResponse, Connection } from '../../types';
+import type { SyncResponse, Connection } from '../../types';
 
 import { useStore } from '../../store';
 
