@@ -39,23 +39,17 @@ export default function Signin() {
     return (
         <>
             <DefaultLayout>
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <div className="bg-bg-dark-gray py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                        <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Reset Password</h2>
+                <div className="flex flex-col justify-center">
+                    <div className="w-80">
+                        <h2 className="mt-4 text-center text-[20px] text-white">Reset password</h2>
                         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
                             <div>
-                                <div className="flex justify-between">
-                                    <div className="flex text-sm">
-                                        <label htmlFor="password" className="text-text-light-gray block text-sm font-semibold">
-                                            New Password
-                                        </label>
-                                    </div>
-                                </div>
                                 <div className="mt-1">
                                     <input
                                         id="password"
                                         name="password"
                                         type="password"
+                                        placeholder="Password"
                                         autoComplete="current-password"
                                         required
                                         className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
@@ -66,7 +60,7 @@ export default function Signin() {
                             <div className="grid">
                                 <button
                                     type="submit"
-                                    className="border-border-blue bg-bg-dark-blue active:ring-border-blue mt-4 flex h-12 place-self-center rounded-md border px-4 pt-3 text-base font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                    className="bg-white flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow active:ring-2 active:ring-offset-2"
                                 >
                                     Reset
                                 </button>
