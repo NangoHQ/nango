@@ -30,13 +30,14 @@ class CompileService {
             await modelService.createModelFile();
         }
 
+        const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
+            compilerOptions
         });
 
         if (debug) {
-            printDebug(`Compiler options: ${JSON.stringify(JSON.parse(tsconfig).compilerOptions, null, 2)}`);
+            printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
         }
 
         const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
@@ -61,7 +62,7 @@ class CompileService {
                     continue;
                 }
 
-                const syncConfig = [...providerConfiguration?.syncs, ...providerConfiguration?.actions].find(
+                const syncConfig = [...(providerConfiguration?.syncs || []), ...(providerConfiguration?.actions || [])].find(
                     (sync) => sync.name === path.basename(filePath, '.ts')
                 );
                 const type = syncConfig?.type || SyncConfigType.SYNC;
@@ -73,7 +74,7 @@ class CompileService {
                     continue;
                 }
                 const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-                const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
+                const jsFilePath = filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
 
                 fs.writeFileSync(jsFilePath, result);
                 console.log(chalk.green(`Compiled "${filePath}" successfully`));

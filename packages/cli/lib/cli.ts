@@ -316,7 +316,7 @@ export const tscWatch = async (debug = false) => {
             const integrationFiles = glob.sync(`./*.ts`);
             for (const file of integrationFiles) {
                 // strip the file to just the last part
-                const strippedFile = file.replace(/^.*[\\\/]/, '');
+                const strippedFile = file.replace(/^.*[\\/]/, '');
                 compileFile(strippedFile);
             }
             return;

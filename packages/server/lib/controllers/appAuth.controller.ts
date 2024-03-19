@@ -21,7 +21,7 @@ import {
     AuthModes
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
-import { WSErrBuilder } from '../utils/web-socket-error.js';
+import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import publisher from '../clients/publisher.client.js';
 
