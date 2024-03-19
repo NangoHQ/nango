@@ -70,6 +70,37 @@
     "overrides": [
         {
             "files": [
+                "packages/frontend/**/*.ts"
+            ],
+            "env": {
+                "browser": true,
+                "es6": true,
+                "node": false
+            },
+            "parserOptions": {
+                "ecmaVersion": 2018,
+                "sourceType": "module",
+                "ecmaFeatures": {
+                    "impliedStrict": true,
+                    "jsx": false
+                },
+                "project": "packages/frontend/tsconfig.json"
+            },
+            "rules": {
+                "no-console": "off",
+                "@typescript-eslint/no-misused-promises": [
+                    "warn",
+                    {
+                        "checksVoidReturn": {
+                            "arguments": false,
+                            "attributes": false
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "files": [
                 "packages/webapp/**/*.tsx"
             ],
             "env": {

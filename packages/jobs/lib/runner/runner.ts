@@ -33,7 +33,7 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
             try {
                 await runner.client.health.query();
                 healthCheck = true;
-            } catch (err) {
+            } catch {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
             }
         }
@@ -103,7 +103,7 @@ class RunnerCache {
                 }
             }
             return undefined;
-        } catch (err) {
+        } catch {
             return undefined;
         }
     }
