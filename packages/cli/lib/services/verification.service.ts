@@ -1,5 +1,5 @@
 import fs from 'fs';
-import glob from 'glob';
+import { glob } from 'glob';
 import chalk from 'chalk';
 import path from 'path';
 import promptly from 'promptly';
