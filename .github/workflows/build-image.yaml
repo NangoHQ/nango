@@ -23,7 +23,7 @@ jobs:
                     #   if: ${{ github.ref == 'refs/heads/master' }}
 
         secrets: inherit
-        uses: ./.github/actions/build-image/action.yaml
+        uses: ./.github/actions/build-image
         with:
             if: ${{ matrix.group.if }}
             name: ${{ matrix.group.name }}
