@@ -3,26 +3,36 @@ integrations:
     syncs:
       salesforce-accounts:
         runs: every hour
+        description: |
+          Fetches a list of accounts from salesforce
         output: SalesforceAccount
         sync_type: incremental
         endpoint: /salesforce/accounts
       salesforce-contacts:
         runs: every hour
+        description: |
+          Fetches a list of contacts from salesforce
         output: SalesforceContact
         sync_type: incremental
         endpoint: /salesforce/contacts
       salesforce-deals:
         runs: every hour
+        description: |
+          Fetches a list of deals from salesforce
         output: SalesforceDeal
         sync_type: incremental
         endpoint: /salesforce/deals
       salesforce-articles:
         runs: every day
+        description: |
+          Fetches a list of articles from salesforce
         output: SalesforceArticle
         sync_type: incremental
         endpoint: /salesforce/articles
       salesforce-tickets:
         runs: every day
+        description: |
+          Fetches a list of tickets from salesforce
         output: SalesforceTicket
         sync_type: incremental
         endpoint: /salesforce/tickets

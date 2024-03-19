@@ -1,36 +1,6 @@
-import type { NangoAction, LeverOpportunity } from './models';
+import type { NangoAction, LeverOpportunity, LeverCreateOpportunityInput } from './models';
 
-interface PhoneEntry {
-    value?: string;
-    type?: string;
-}
-interface ArchievedEntry {
-    archivedAt?: number;
-    reason?: string;
-}
-interface LeverCreateNoteInput {
-    perform_as: string;
-    parse?: boolean;
-    perform_as_posting_owner?: boolean;
-    name?: string;
-    headline?: string;
-    stage?: string;
-    location?: string;
-    phones?: PhoneEntry[];
-    emails?: string;
-    links?: string[];
-    tags?: string[];
-    sources?: string[];
-    origin?: string;
-    owner?: string;
-    followers?: string[];
-    postings?: string[];
-    createdAt?: number;
-    archived?: ArchievedEntry;
-    contact?: string[];
-}
-
-export default async function runAction(nango: NangoAction, input: LeverCreateNoteInput): Promise<LeverOpportunity> {
+export default async function runAction(nango: NangoAction, input: LeverCreateOpportunityInput): Promise<LeverOpportunity> {
     if (!input.perform_as) {
         throw new nango.ActionError({
             message: 'perform_as is the only required field'
@@ -108,6 +78,8 @@ export default async function runAction(nango: NangoAction, input: LeverCreateNo
             opportunityLocation: resp.data.data.opportunityLocation
         };
     } catch (error: any) {
-        throw new Error(`Error in runAction: ${error.message}`);
+        throw new nango.ActionError({
+            message: `Error in runAction: ${error.message}`
+        });
     }
 }

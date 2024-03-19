@@ -3,7 +3,7 @@
 
 import { defineConfig } from 'vite';
 
-process.env = { ...process.env, TZ: 'UTC' };
+process.env.TZ = 'UTC';
 
 export default defineConfig({
     test: {
