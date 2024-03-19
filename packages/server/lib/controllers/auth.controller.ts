@@ -16,6 +16,7 @@ import {
     AnalyticsTypes,
     isCloud,
     getBaseUrl,
+    getBasePublicUrl,
     NangoError,
     createOnboardingProvider
 } from '@nangohq/shared';
@@ -358,7 +359,7 @@ class AuthController {
                 if (err) {
                     return next(err);
                 }
-                res.redirect(`${getBaseUrl()}/`);
+                res.redirect(`${getBasePublicUrl()}/`);
             });
         } catch (err) {
             next(err);
