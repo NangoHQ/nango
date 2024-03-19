@@ -16,11 +16,12 @@ jobs:
                       if: true
                       sentry_key: SENTRY_KEY_staging
                     - name: 'prod'
-                      if: true
+                      if: ${{ github.ref == 'refs/heads/master' }}
                       sentry_key: SENTRY_KEY_prod
                       posthog_key: POSTHOG_KEY_prod
-                    - name: 'enterprise'
-                      if: ${{ github.ref == 'refs/heads/master' }}
+                    # Commented for now
+                    # - name: 'enterprise'
+                    #   if: ${{ github.ref == 'refs/heads/master' }}
 
         secrets: inherit
         uses: ./.github/workflows/build-image-reusable.yaml
