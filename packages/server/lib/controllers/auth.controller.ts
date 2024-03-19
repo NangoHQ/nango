@@ -358,7 +358,7 @@ class AuthController {
                 if (err) {
                     return next(err);
                 }
-                res.redirect(`${getBaseUrl()}/dev`);
+                res.redirect(`${getBaseUrl()}/`);
             });
         } catch (err) {
             next(err);
