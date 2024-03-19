@@ -25,16 +25,17 @@ RUN true \
 # At this stage we copy back all sources
 COPY . /app/tmp
 
-# Build the backend separately because it can be cached even we change env vars
+# Build the backend separately because it can be cached even when we change the env vars
 RUN true \
   && npm run ts-build:docker
 
-# /!\ It's counter intuitive but do not set NODE_ENV=production before building, it will break some modules
+# /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
 ARG image_env
 ARG posthog_key
 ARG sentry_key
 
+# TODO: remove the need for this
 ENV REACT_APP_ENV $image_env
 ENV REACT_APP_PUBLIC_POSTHOG_HOST https://app.posthog.com
 ENV REACT_APP_PUBLIC_POSTHOG_KEY $posthog_key
@@ -57,7 +58,6 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-# This image must have the minimum amount of layers
 FROM node:18.19.1-bullseye-slim as web
 
 
