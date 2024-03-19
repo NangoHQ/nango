@@ -31,7 +31,7 @@
         "@geist-ui/core": "2.3.8",
         "@geist-ui/icons": "1.0.2",
         "@heroicons/react": "2.0.18",
-        "@mantine/core": "7.6.2",
+        "@mantine/core": "6.0.11",
         "@mantine/prism": "5.10.5",
         "@nangohq/frontend": "^0.39.5",
         "@nangohq/server": "file:../server",
