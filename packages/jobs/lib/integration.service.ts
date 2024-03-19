@@ -1,20 +1,18 @@
 import type { Context } from '@temporalio/activity';
+import type { IntegrationServiceInterface, NangoIntegrationData, NangoProps, ServiceResponse } from '@nangohq/shared';
 import {
-    IntegrationServiceInterface,
     createActivityLogMessage,
-    NangoIntegrationData,
-    NangoProps,
     localFileService,
     remoteFileService,
     isCloud,
     isProd,
     integrationFilesAreRemote,
-    ServiceResponse,
     NangoError,
     formatScriptError,
     isOk
 } from '@nangohq/shared';
-import { Runner, getOrStartRunner, getRunnerId } from './runner/runner.js';
+import type { Runner } from './runner/runner.js';
+import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
 
 interface ScriptObject {

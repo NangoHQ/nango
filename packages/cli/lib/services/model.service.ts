@@ -1,8 +1,8 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
-import { isJsOrTsType, NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { SyncConfigType, nangoConfigFile } from '@nangohq/shared';
+import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import { isJsOrTsType, SyncConfigType, nangoConfigFile } from '@nangohq/shared';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { TYPES_FILE_NAME, NangoSyncTypesFileLocation } from '../constants.js';
 import configService from './config.service.js';

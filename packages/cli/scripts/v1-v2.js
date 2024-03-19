@@ -54,6 +54,7 @@ function convertYAML(inputYAML) {
                     }
                     data.integrations[integration].actions[taskName] = task;
 
+                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                     delete data.integrations[integration][taskName];
                 } else if (task.runs) {
                     change.type = 'sync';
@@ -101,6 +102,7 @@ function convertYAML(inputYAML) {
                     }
                     data.integrations[integration].syncs[taskName] = task;
 
+                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                     delete data.integrations[integration][taskName];
                 }
                 if (change.changes.length > 0) {

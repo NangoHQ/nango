@@ -1,5 +1,5 @@
 import fs from 'fs';
-import glob from 'glob';
+import { glob } from 'glob';
 import chalk from 'chalk';
 import path from 'path';
 import promptly from 'promptly';
@@ -18,7 +18,7 @@ class VerificationService {
         if (debug) {
             printDebug(`Current full working directory is read as: ${cwd}`);
         }
-        const currentDirectorySplit = cwd.split(/[\/\\]/);
+        const currentDirectorySplit = cwd.split(/[/\\]/);
         const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
         if (debug) {

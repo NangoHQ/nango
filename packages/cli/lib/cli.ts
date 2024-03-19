@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import * as tsNode from 'ts-node';
-import glob from 'glob';
+import { glob } from 'glob';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -316,7 +316,7 @@ export const tscWatch = async (debug = false) => {
             const integrationFiles = glob.sync(`./*.ts`);
             for (const file of integrationFiles) {
                 // strip the file to just the last part
-                const strippedFile = file.replace(/^.*[\\\/]/, '');
+                const strippedFile = file.replace(/^.*[\\/]/, '');
                 compileFile(strippedFile);
             }
             return;

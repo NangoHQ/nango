@@ -27,8 +27,8 @@
     "devDependencies": {
         "@types/mock-knex": "^0.4.8",
         "@types/node": "^18.7.6",
-        "mock-knex": "^0.4.13",
         "node-fetch": "^3.3.2",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "1.4.0"
     }
 }
