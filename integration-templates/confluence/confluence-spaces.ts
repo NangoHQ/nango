@@ -18,7 +18,7 @@ export default async function fetchData(nango: NangoSync) {
         endpoint: `/wiki/api/v2/spaces`,
         retries: 10,
         paginate: {
-            limit: 250
+            limit: 100
         }
     };
     for await (const spaceBatch of nango.paginate(proxyConfig)) {

@@ -1,6 +1,6 @@
 import type { LeverOpportunityOffer, NangoSync } from './models';
 
-const LIMIT = 100000;
+const LIMIT = 100;
 
 export default async function fetchData(nango: NangoSync) {
     let totalRecords = 0;

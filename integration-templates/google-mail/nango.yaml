@@ -3,6 +3,8 @@ integrations:
     syncs:
       gmail-emails:
         runs: every hour
+        description: |
+          Fetches a list of emails from gmail
         output: GmailEmail
         sync_type: incremental
         endpoint: /google-mail/emails
