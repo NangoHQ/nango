@@ -1,28 +1,35 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
-import stream, { Readable, Transform, TransformCallback, PassThrough } from 'stream';
-import url, { UrlWithParsedQuery } from 'url';
+import type { TransformCallback } from 'stream';
+import type stream from 'stream';
+import { Readable, Transform, PassThrough } from 'stream';
+import type { UrlWithParsedQuery } from 'url';
+import url from 'url';
 import querystring from 'querystring';
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
 import { backOff } from 'exponential-backoff';
-import { ActivityLogMessage, NangoError } from '@nangohq/shared';
-import { updateProvider as updateProviderActivityLog, updateEndpoint as updateEndpointActivityLog } from '@nangohq/shared';
-
+import type {
+    ActivityLogMessage,
+    HTTP_VERB,
+    LogLevel,
+    LogAction,
+    UserProvidedProxyConfiguration,
+    InternalProxyConfiguration,
+    ApplicationConstructedProxyConfiguration
+} from '@nangohq/shared';
 import {
+    NangoError,
+    updateProvider as updateProviderActivityLog,
+    updateEndpoint as updateEndpointActivityLog,
     createActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
-    HTTP_VERB,
-    LogLevel,
-    LogAction,
     LogActionEnum,
     errorManager,
-    UserProvidedProxyConfiguration,
     getAccount,
     getEnvironmentId,
-    InternalProxyConfiguration,
-    ApplicationConstructedProxyConfiguration,
     ErrorSourceEnum,
     proxyService,
     connectionService,

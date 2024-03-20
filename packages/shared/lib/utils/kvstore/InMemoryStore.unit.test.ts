@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { InMemoryKVStore } from './InMemoryStore';
+import { InMemoryKVStore } from './InMemoryStore.js';
 
 describe('InMemoryKVStore', () => {
     let store: InMemoryKVStore;

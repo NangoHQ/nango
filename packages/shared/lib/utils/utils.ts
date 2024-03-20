@@ -41,7 +41,11 @@ export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
 };
 
-export function isJsOrTsType(type: string): boolean {
+export function isJsOrTsType(type?: string): boolean {
+    if (!type) {
+        return false;
+    }
+
     const baseType = type.replace(/\[\]$/, '');
 
     const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();

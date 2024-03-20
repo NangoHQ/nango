@@ -1,14 +1,5 @@
-import {
-    ActionError,
-    NangoError,
-    formatScriptError,
-    IntegrationServiceInterface,
-    NangoIntegrationData,
-    NangoSync,
-    NangoProps,
-    localFileService,
-    RunnerOutput
-} from '@nangohq/shared';
+import type { IntegrationServiceInterface, NangoIntegrationData, NangoProps, RunnerOutput } from '@nangohq/shared';
+import { ActionError, NangoError, formatScriptError, NangoSync, localFileService } from '@nangohq/shared';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';

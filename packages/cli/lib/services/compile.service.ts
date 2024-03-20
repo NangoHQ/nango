@@ -1,6 +1,6 @@
 import fs from 'fs';
 import * as tsNode from 'ts-node';
-import glob from 'glob';
+import { glob } from 'glob';
 import chalk from 'chalk';
 import path from 'path';
 import { SyncConfigType } from '@nangohq/shared';

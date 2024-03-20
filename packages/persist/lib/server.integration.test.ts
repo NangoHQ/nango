@@ -1,6 +1,7 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
+import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment } from '@nangohq/shared';
 import {
     multipleMigrations,
     createActivityLog,
@@ -8,13 +9,8 @@ import {
     connectionService,
     createSync,
     createSyncJob,
-    AuthCredentials,
-    Connection,
-    Sync,
-    Job as SyncJob,
     SyncType,
     SyncStatus,
-    Environment,
     db
 } from '@nangohq/shared';
 

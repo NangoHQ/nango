@@ -1,7 +1,7 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
 
-import {
-    AuthModes,
+import type {
     CredentialsCommon,
     OAuth1Credentials,
     OAuth2Credentials,
@@ -20,6 +20,7 @@ import {
     UpdateSyncFrequencyResponse,
     StandardNangoConfig
 } from './types.js';
+import { AuthModes } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';

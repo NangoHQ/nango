@@ -1,16 +1,18 @@
-import type { Request, Response } from 'express';
-import type { NextFunction } from 'express';
-import {
+import type { Request, Response, NextFunction } from 'express';
+import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
-    AuthModes as ProviderAuthModes,
     OAuth2Credentials,
     ImportedCredentials,
     AuthCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
-    getEnvironmentAndAccountId,
     ConnectionList,
     LogLevel,
+    ConnectionUpsertResponse
+} from '@nangohq/shared';
+import {
+    AuthModes as ProviderAuthModes,
+    getEnvironmentAndAccountId,
     LogActionEnum,
     configService,
     connectionService,
@@ -20,7 +22,6 @@ import {
     analytics,
     AnalyticsTypes,
     AuthOperation,
-    ConnectionUpsertResponse,
     NangoError,
     createActivityLogAndLogMessage,
     environmentService,

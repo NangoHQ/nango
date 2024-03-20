@@ -1,5 +1,6 @@
 import type { Response } from 'express';
-import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
 import { isCloud, isEnterprise, isLocal } from '../../utils/utils.js';
