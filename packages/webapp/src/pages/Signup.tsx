@@ -45,6 +45,8 @@ export default function Signup() {
         }
     };
 
+    const tempShowAuth = false;
+
     return (
         <>
             <DefaultLayout>
@@ -108,7 +110,7 @@ export default function Signup() {
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
-                        {MANAGED_AUTH_ENABLED && (
+                        {MANAGED_AUTH_ENABLED && tempShowAuth && (
                             <>
                                 <div className="flex items-center justify-center my-4 text-xs">
                                     <div className="border-t border-gray-600 flex-grow mr-7"></div>
