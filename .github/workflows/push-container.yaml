@@ -23,21 +23,19 @@ jobs:
             - uses: docker/setup-buildx-action@v3
             - uses: actions/setup-node@v3
               with:
-                node-version: '18.x'
+                  node-version: '18.x'
             - uses: docker/login-action@v3
               if: env.CAN_PUSH == 'true'
               with:
-                username: ${{ secrets.DOCKER_USERNAME }}
-                password: ${{ secrets.DOCKER_PASSWORD }}
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
             - name: Build and push container
               env:
-                PUSH: ${{ (env.CAN_PUSH == 'true') && '--push' || '' }}
+                  PUSH: ${{ (env.CAN_PUSH == 'true') && '--push' || '' }}
               run: |
-                echo "Building: '${{ inputs.package }}'"
-                echo "Tags: ${{ inputs.tags }}"
+                  echo "Building: '${{ inputs.package }}'"
+                  echo "Tags: ${{ inputs.tags }}"
 
-                npm i
-                npm run ${{ inputs.run-cmd }}
-                node scripts/flows.js
-                docker buildx build -f packages/${{ inputs.package }}/Dockerfile --platform linux/amd64 ${{ inputs.tags }} . --no-cache ${{ env.PUSH }}
-
+                  npm i
+                  npm run ${{ inputs.run-cmd }}
+                  docker buildx build -f packages/${{ inputs.package }}/Dockerfile --platform linux/amd64 ${{ inputs.tags }} . --no-cache ${{ env.PUSH }}

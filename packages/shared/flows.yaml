@@ -3,7 +3,7 @@ integrations:
         actions:
             algolia-create-contacts:
                 description: |
-                    Action to add a single record contact to an index in Asana
+                    Action to add a single record contact to an index
                 output: AlgoliaContact
                 input: AlgoliaCreateContactInput
                 endpoint: POST /algolia/create-contacts
@@ -20,8 +20,9 @@ integrations:
         syncs:
             asana-tasks:
                 runs: every 30min
-                description: |
-                    Fetches tasks from Asana, retrieving tasks from only the first project of the first workspace
+                description: >
+                    Fetches a list of tasks from Asana, retrieving tasks from only the
+                    first project of the first workspace
                 scopes:
                     - default
                 output: AsanaTask
@@ -43,8 +44,9 @@ integrations:
                 description: |
                     Fetches a list of all candidates from your ashby account
                 metadata:
-                    description: |
-                        We need to save a candidatelastsyncToken to track and update candidates' synchronizations
+                    description: >
+                        We need to save a candidatelastsyncToken to track and update
+                        candidates' synchronizations
                     scopes: candidatelastsyncToken
                 sync_type: incremental
                 endpoint: /ashby/candidates
@@ -54,8 +56,9 @@ integrations:
                 description: |
                     Fetches a list of all jobs from your ashby account
                 metadata:
-                    description: |
-                        We need to save a jobslastsyncToken to track and update jobs' synchronizations
+                    description: >
+                        We need to save a jobslastsyncToken to track and update jobs'
+                        synchronizations
                     scopes: jobslastsyncToken
                 sync_type: incremental
                 endpoint: /ashby/jobs
@@ -270,8 +273,9 @@ integrations:
             clari-copilot-call:
                 runs: every hour
                 output: ClariCopilotCall
-                description: |
-                    Fetches a list of calls from your account. For the first sync, it will go back to the past one year
+                description: >
+                    Fetches a list of calls from your account. For the first sync, it will
+                    go back to the past one year
                 sync_type: incremental
                 endpoint: /clari-copilot/call
         models:
@@ -452,7 +456,7 @@ integrations:
                 scopes: public_repo
                 description: |
                     Fetches GitHub issues from our showcase repository.
-                endpoint: /github/demo-issues
+                endpoint: GET /github/demo-issues
         actions:
             github-write-file:
                 scopes: repo
@@ -468,10 +472,10 @@ integrations:
                 output: GithubRepo
                 description: |
                     List github repos from an organization.
-            github-issues-demo-action:
-                endpoint: POST /github/demo-write-issue
-                input: GithubWriteIssueInput
-                output: GithubWriteIssueResult
+            github-create-demo-issue:
+                endpoint: POST /github/create-demo-issue
+                input: GithubCreateIssueInput
+                output: GithubCreateIssueResult
                 description: |
                     Create a GitHub issue in Nango's showcase repository.
         models:
@@ -532,9 +536,9 @@ integrations:
                 id: integer
                 title: string
                 url: string
-            GithubWriteIssueInput:
+            GithubCreateIssueInput:
                 title: string
-            GithubWriteIssueResult:
+            GithubCreateIssueResult:
                 url: string | undefined
                 status: number
     google-calendar:
@@ -741,7 +745,7 @@ integrations:
                     into a buffer and return a base64 encoded string that can later
                     be converted into a PDF using an external tool.
                 output: string
-                endpoint: /google-drive/fetch-pdf
+                endpoint: POST /google-drive/fetch-pdf
                 scopes: https://www.googleapis.com/auth/drive.readonly
         models:
             DocumentMetadata:
@@ -1349,106 +1353,7 @@ integrations:
                 projectName: string
                 createdAt: date
                 updatedAt: date
-    lever-basic:
-        actions:
-            lever-create-note:
-                description: |
-                    Action to create a note and add it to a candidate profile in Lever
-                output: LeverOpportunityNote
-                input: LeverCreateNoteInput
-                endpoint: POST /lever/create-note
-                scopes:
-                    - notes:write:admin
-            lever-create-opportunity:
-                description: |
-                    Action to create candidates and opportunities in Lever
-                output: LeverOpportunity
-                input: LeverCreateOpportunityInput
-                endpoint: POST /lever/create-opportunity
-                scopes:
-                    - opportunities:write:admin
-        syncs:
-            lever-opportunities:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all pipeline opportunities for contacts in Lever
-                output: LeverOpportunity
-                sync_type: incremental
-                endpoint: /lever/opportunities
-                scopes:
-                    - opportunities:read:admin
-            lever-opportunities-applications:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all applications for a candidate in Lever
-                output: LeverOpportunityApplication
-                sync_type: full
-                endpoint: /lever/opportunities-applications
-                scopes:
-                    - applications:read:admin
-            lever-opportunities-feedbacks:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all feedback forms for a candidate for a specific Opportunity in lever
-                output: LeverOpportunityFeedback
-                sync_type: full
-                endpoint: /lever/opportunities-feedbacks
-                scopes:
-                    - feedback:read:admin
-            lever-opportunities-interviews:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all interviewers for a specific Opportunity in lever
-                output: LeverOpportunityInterview
-                sync_type: full
-                endpoint: /lever/opportunities-interviews
-                scopes:
-                    - interviews:read:admin
-            lever-opportunities-notes:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all notes for a specific candidate in lever
-                output: LeverOpportunityNote
-                sync_type: full
-                endpoint: /lever/opportunities-notes
-                scopes:
-                    - notes:read:admin
-            lever-opportunities-offers:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all offers for a specific candidate in lever.
-                output: LeverOpportunityOffer
-                sync_type: full
-                endpoint: /lever/opportunities-offers
-                scopes:
-                    - offers:write:admin
-            lever-postings:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all postings in Lever
-                output: LeverPosting
-                sync_type: full
-                endpoint: /lever/postings
-                scopes:
-                    - postings:read:admin
-            lever-postings-apply:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all questions included in a posting’s application form in Lever
-                output: LeverPostingApply
-                sync_type: full
-                endpoint: /lever/postings-apply
-                scopes:
-                    - postings:read:admin
-            lever-stage:
-                runs: every 6 hours
-                description: |
-                    Fetches a list of all pipeline stages in Lever
-                output: LeverStage
-                sync_type: full
-                endpoint: /lever/stage
-                scopes:
-                    - stages:read:admin
+    lever:
         models:
             LeverOpportunity:
                 id: string
@@ -1661,28 +1566,28 @@ integrations:
             linear-issues:
                 runs: every 5min
                 description: |
-                    Fetch a list of issues from Linear
+                    Fetches a list of issues from Linear
                 output: LinearIssue
                 sync_type: incremental
                 endpoint: /linear/issues
             linear-projects:
                 runs: every 5min
                 description: |
-                    Fetch a list of projects from Linear
+                    Fetches a list of projects from Linear
                 output: LinearProject
                 sync_type: incremental
                 endpoint: /linear/projects
             linear-teams:
                 runs: every 5min
                 description: |
-                    Fetch a list of teams from Linear
+                    Fetches a list of teams from Linear
                 output: LinearTeam
                 sync_type: incremental
                 endpoint: /linear/teams
             linear-roadmaps:
                 runs: every 5min
                 description: |
-                    Fetch a list of roadmaps from Linear
+                    Fetches a list of roadmaps from Linear
                 output: LinearRoadmap
                 sync_type: incremental
                 endpoint: /linear/roadmaps
@@ -1781,8 +1686,8 @@ integrations:
             next-cloud-users:
                 runs: every hour
                 description: |
-                    Fetch a list of all users' details from NextCloud account
-                output: 'NextCloudUser'
+                    Fetches a list of all users' details from NextCloud account
+                output: NextCloudUser
                 sync_type: full
                 endpoint: /next-cloud-ocs/next-cloud-users
         models:
@@ -2234,7 +2139,7 @@ integrations:
             teamtailor-candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all candidates from your teamtailor account
+                    Fetches a list of all candidates from your teamtailor account.
                 output: TeamtailorCandidate
                 sync_type: full
                 endpoint: /teamtailor/candidates
@@ -2320,6 +2225,8 @@ integrations:
         syncs:
             wildix-pbx-colleagues:
                 runs: every 1 hour
+                description: |
+                    Fetches a list of users from PBX
                 output: WildixPbxColleague
                 sync_type: full
                 endpoint: /wildix-pbx/colleagues
