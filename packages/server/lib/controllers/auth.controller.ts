@@ -334,7 +334,7 @@ class AuthController {
             const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
-                redirectUri: `${getBaseUrl()}/api/v1/login/callback`
+                redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`
             });
 
             res.send({ url: oAuthUrl });
@@ -381,7 +381,7 @@ class AuthController {
             const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
-                redirectUri: `${getBaseUrl()}/api/v1/login/callback`,
+                redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`,
                 state: JSON.stringify(inviteParams)
             });
 
