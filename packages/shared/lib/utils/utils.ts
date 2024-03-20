@@ -421,7 +421,7 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
 }
 
 export function packageJsonFile(): PackageJson {
-    const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/shared/package.json' : '../shared/package.json';
+    const localPath = '../../package.json';
     return JSON.parse(readFileSync(resolve(dirname(), localPath)).toString('utf-8'));
 }
 
