@@ -21,19 +21,22 @@ import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
-import type {
-    Job as SyncJob,
-    Schedule as SyncSchedule,
+import type { Job as SyncJob, Schedule as SyncSchedule } from '../../models/Sync.js';
+import { NangoError } from '../../utils/error.js';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
+import type { ServiceResponse } from '../../models/Generic';
+import {
+    SyncStatus,
+    ScheduleStatus,
+    SyncConfigType,
     SyncDeploymentResult,
     IncomingFlowConfig,
     Sync,
     SyncType,
+    SyncCommand,
+    CommandToActivityLog,
     ReportedSyncJobStatus
 } from '../../models/Sync.js';
-import { NangoError } from '../../utils/error.js';
-import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { ServiceResponse } from '../../models/Generic';
-import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
