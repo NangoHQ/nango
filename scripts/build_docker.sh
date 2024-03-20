@@ -47,14 +47,14 @@ else
 fi
 
 echo ""
-echo -e "Building nangohq/nango:${ENV}\n"
+echo -e "Building nangohq/nango:$ENV\n"
 
 docker buildx build \
   --platform linux/amd64 \
-  --build-arg image_env=${ENV} \
-  --build-arg git_hash=${GIT_HASH} \
-  --build-arg posthog_key=${SENTRY_KEY} \
-  --build-arg sentry_key=${POSTHOG_KEY} \
+  --build-arg image_env="$ENV" \
+  --build-arg git_hash="$GIT_HASH" \
+  --build-arg posthog_key="$SENTRY_KEY" \
+  --build-arg sentry_key="$POSTHOG_KEY" \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
   --file ../Dockerfile \

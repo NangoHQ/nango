@@ -1,7 +1,7 @@
 # ------------------
 # New tmp image
 # ------------------
-FROM node:18.19.1-bullseye-slim AS tmp
+FROM node:18.19.1-bullseye-slim AS build
 
 # Setup the app WORKDIR
 WORKDIR /app/tmp
@@ -74,7 +74,7 @@ USER node
 WORKDIR /app/nango
 
 # Code
-COPY --from=tmp --chown=node:node /app/tmp /app/nango
+COPY --from=build --chown=node:node /app/tmp /app/nango
 
 ARG image_env
 ARG git_hash
