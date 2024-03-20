@@ -472,7 +472,7 @@
             ]
         },
         {
-            "group": "Use Integrations",
+            "group": "Use Integrations - Reference",
             "pages": [
                 {
                     "group": "HTTP API",
@@ -556,12 +556,12 @@
             ]
         },
         {
-            "group": "Build Integrations",
+            "group": "Build Integrations - Reference",
             "pages": [
                 "reference/cli",
                 "reference/api-configuration",
-                "reference/integration-configuration",
-                "reference/scripts"
+                "reference/scripts",
+                "reference/integration-configuration"
             ]
         }
     ],

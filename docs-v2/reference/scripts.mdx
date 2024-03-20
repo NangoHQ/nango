@@ -1,6 +1,6 @@
 ---
-title: 'Scripts reference'
-sidebarTitle: 'Scripts'
+title: 'Integration scripts'
+sidebarTitle: 'Integration scripts'
 icon: 'code'
 ---
 
@@ -52,9 +52,9 @@ export default async function runAction(nango: NangoAction, input: GithubCreateI
 
 </Tabs>
 
-Read more about [scripts](/understand/concepts/scripts) to understand what role they play in Nango.
+Read more about [integration scripts](/understand/concepts/scripts) to understand what role they play in Nango.
 
-Scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily. 
+Integration scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily. 
 
 <Tip>
 The script helper object shares some methods, but not all, with the [Node backend SDK](/reference/sdks/node), which is why this reference will link to the Node SDK reference a lot.
@@ -64,11 +64,11 @@ The script helper object shares some methods, but not all, with the [Node backen
 
 ### HTTP requests
 
-HTTP requests in scripts are made with the proxy ([concept]((/understand/concepts/proxy)) / [step-by-step guide](/integrate/guides/proxy-requests-to-an-api) / [reference](/reference/sdks/node#proxy)).
+HTTP requests in integration scripts are made with the proxy ([concept]((/understand/concepts/proxy)) / [step-by-step guide](/integrate/guides/proxy-requests-to-an-api) / [reference](/reference/sdks/node#proxy)).
 
 
 <Tip>
-There is one simplification to using the proxy in scripts. Because scripts always execute in the context of a specific integration & connection, you do not need to specify the `providerConfigKey` & `connectionId` parameters when calling the proxy from script. 
+There is one simplification to using the proxy in integration scripts. Because integration scripts always execute in the context of a specific integration & connection, you do not need to specify the `providerConfigKey` & `connectionId` parameters when calling the proxy from integration script. 
 
 Instead of writing:
 ```ts
@@ -88,11 +88,11 @@ const res = await nango.get({ endpoint: '/external-endpoint' });
 
 ### Logging
 
-You can collect logs in scripts. This is particularly useful when: 
-- developing, to debug your scripts
-- in production, to collect information about script executions & understand issues
+You can collect logs in integration scripts. This is particularly useful when: 
+- developing, to debug your integration scripts
+- in production, to collect information about integration script executions & understand issues
 
-Collect logs in scripts as follows: 
+Collect logs in integration scripts as follows: 
 ```ts
 await nango.log("This is a log.");
 ```
@@ -101,15 +101,15 @@ Logs can be viewed & searched in the Nango UI. We plan to make them exportable i
 
 ### Environment variables
 
-Scripts sometimes need to access sensitive variables that should not be revealed directly in the script code. 
+Integration scripts sometimes need to access sensitive variables that should not be revealed directly in the integration script code. 
 
-For this, you can define environment variables in the Nango UI, in the _Environment Settings_ tab. Then you can retrieve these environment variables from scripts ([reference](/reference/sdks/node#get-environment-variables)).
+For this, you can define environment variables in the Nango UI, in the _Environment Settings_ tab. Then you can retrieve these environment variables from integration scripts ([reference](/reference/sdks/node#get-environment-variables)).
 
 ### Trigger action
 
-Scripts currently do not support importing files, which limits the ability to share code between scripts. 
+Integration scripts currently do not support importing files, which limits the ability to share code between integration scripts. 
 
-As a temporary workaround, you can call action scripts from other scripts ([reference](/reference/sdks/node#trigger-an-action)).
+As a temporary workaround, you can call action scripts from other integration scripts ([reference](/reference/sdks/node#trigger-an-action)).
 
 ### Paginate through API responses
 
