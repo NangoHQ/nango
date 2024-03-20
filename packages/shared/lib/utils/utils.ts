@@ -422,7 +422,7 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
 
 export function packageJsonFile(): PackageJson {
     const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/shared/package.json' : '../shared/package.json';
-    return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
+    return JSON.parse(readFileSync(resolve(dirname(), localPath)).toString('utf-8'));
 }
 
 export function safeStringify(obj: any): string {

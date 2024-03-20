@@ -1,9 +1,7 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, dirname, UserType, isCloud, isStaging } from '../utils/utils.js';
+import { getBaseUrl, localhostUrl, UserType, isCloud, isStaging, packageJsonFile } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
-import { readFileSync } from 'fs';
-import path from 'path';
 import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
@@ -52,7 +50,7 @@ class Analytics {
             if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
-                this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../package.json'), 'utf8')).version;
+                this.packageVersion = packageJsonFile().version;
             }
         } catch (e) {
             errorManager.report(e, {
