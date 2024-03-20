@@ -1,6 +1,7 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import yaml from 'js-yaml';
+import { exec } from 'node:child_process';
 
 const rootDir = './integration-templates';
 
@@ -60,4 +61,6 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
     }
 });
 
-fs.writeFileSync(path.join('./packages/shared', 'flows.yaml'), yaml.dump(output));
+const filePath = path.join('./packages/shared', 'flows.yaml');
+fs.writeFileSync(filePath, yaml.dump(output));
+exec(`npx prettier ${filePath} -w`);
