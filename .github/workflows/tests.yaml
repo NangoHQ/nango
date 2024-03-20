@@ -7,7 +7,6 @@ on:
             - staging/**
     pull_request:
 
-
 concurrency:
     group: tests-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
@@ -21,6 +20,9 @@ jobs:
 
         steps:
             - uses: actions/checkout@v3
+              with:
+                  fetch-depth: '0'
+
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v3
               with:
@@ -28,3 +30,16 @@ jobs:
             - run: npm run build:hosted
             - run: npm run test:unit
             - run: npm run test:integration
+
+            - name: Make sure flows.yaml is compiled
+              run: |
+                  node ./scripts/flows.js
+
+                  REPO_DIRTY=$(git status --short)
+                  if [[ ! -z "$REPO_DIRTY" ]]; then
+                    git log -p
+                    echo ""
+                    echo -e "\r⛔️ flows.yaml hasn't been compiled, please run:"
+                    echo -e "node ./scripts/flows.js"
+                    exit 1
+                  fi

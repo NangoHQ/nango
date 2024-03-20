@@ -64,5 +64,7 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
 const filePath = path.join('./packages/shared', 'flows.yaml');
 fs.writeFileSync(filePath, yaml.dump(output));
 exec(`npx prettier ${filePath} -w`, (error) => {
-    console.error(error);
+    if (error) {
+        console.error('An error occured during prettier', error);
+    }
 });
