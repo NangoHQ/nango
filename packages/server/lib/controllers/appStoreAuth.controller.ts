@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { LogLevel } from '@nangohq/shared';
+import type { LogLevel, AuthCredentials } from '@nangohq/shared';
 import {
     getAccount,
     getEnvironmentId,
@@ -12,7 +12,6 @@ import {
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     AuthOperation,
-    AuthCredentials,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,

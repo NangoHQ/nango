@@ -204,11 +204,11 @@ interface Connection {
     credentials: AuthCredentials;
 }
 
-export class ActionError extends Error {
+export class ActionError<T = Record<string, unknown>> extends Error {
     type: string;
     payload?: Record<string, unknown>;
 
-    constructor(payload?: Record<string, unknown>) {
+    constructor(payload?: T) {
         super();
         this.type = 'action_script_runtime_error';
         if (payload) {
@@ -512,7 +512,7 @@ export class NangoAction {
 
         const lastArg = args[args.length - 1];
 
-        const isUserDefinedLevel = (object: UserLogParameters | any): boolean => {
+        const isUserDefinedLevel = (object: UserLogParameters): boolean => {
             return typeof lastArg === 'object' && 'level' in object;
         };
 

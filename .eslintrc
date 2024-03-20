@@ -28,7 +28,10 @@
         "plugin:react/recommended",
         "plugin:react/jsx-runtime",
         "plugin:prettier/recommended",
-        "plugin:react-hooks/recommended"
+        "plugin:react-hooks/recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:import/recommended"
     ],
     "rules": {
         "no-console": 1, // Means warning
@@ -65,7 +68,30 @@
                 "varsIgnorePattern": "^_",
                 "ignoreRestSiblings": true
             }
-        ]
+        ],
+        "@typescript-eslint/consistent-type-imports": [
+            "error",
+            {
+                "prefer": "type-imports"
+            }
+        ],
+        // Import
+        "import/extensions": [
+            "error",
+            "always",
+            {
+                "json": "always",
+                "js": "always",
+                "ts": "never",
+                "ignorePackages": true
+            }
+        ],
+        "import/no-unresolved": "off",
+        "import/no-extraneous-dependencies": "error",
+        "import/no-empty-named-blocks": "error",
+        "import/no-absolute-path": "error",
+        "import/no-self-import": "error",
+        "import/newline-after-import": "error"
     },
     "overrides": [
         {
@@ -127,7 +153,9 @@
                             "attributes": false
                         }
                     }
-                ]
+                ],
+                // unnecessary when bundling
+                "import/extensions": "off"
             }
         }
     ]

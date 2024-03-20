@@ -2,7 +2,8 @@ import db, { schema, dbNamespace } from '../../db/database.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
+import type { Job as SyncJob, SyncResultByModel } from '../../models/Sync.js';
+import { SyncStatus, SyncType } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 

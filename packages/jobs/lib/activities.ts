@@ -1,17 +1,14 @@
 import { Context, CancelledFailure } from '@temporalio/activity';
 import { TimeoutFailure, TerminatedFailure } from '@temporalio/client';
+import type { Config as ProviderConfig, LogLevel, ServiceResponse, NangoConnection } from '@nangohq/shared';
 import {
     createSyncJob,
     SyncStatus,
     SyncType,
-    Config as ProviderConfig,
     configService,
     createActivityLog,
-    LogLevel,
     LogActionEnum,
     syncRunService,
-    ServiceResponse,
-    NangoConnection,
     environmentService,
     createActivityLogMessage,
     createActivityLogAndLogMessage,

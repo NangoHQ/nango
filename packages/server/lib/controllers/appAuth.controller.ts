@@ -1,8 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { AuthCredentials, NangoError } from '@nangohq/shared';
 import {
     environmentService,
-    AuthCredentials,
-    NangoError,
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     findActivityLogBySession,

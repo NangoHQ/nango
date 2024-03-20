@@ -954,6 +954,7 @@ hubspot:
     categories:
         - marketing
         - support
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token

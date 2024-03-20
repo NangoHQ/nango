@@ -1,11 +1,9 @@
-import type { Request, Response } from 'express';
-import type { NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { Span } from 'dd-trace';
-import type { LogLevel, NangoConnection, HTTP_VERB } from '@nangohq/shared';
+import type { LogLevel, NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig, LastAction } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
-    Connection,
     getEnvironmentId,
     deploy as deploySyncConfig,
     syncDataService,
@@ -23,7 +21,6 @@ import {
     createActivityLog,
     getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
-    IncomingFlowConfig,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
     CommandToActivityLog,
@@ -33,7 +30,6 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
-    LastAction,
     configService,
     syncOrchestrator,
     getAttributes,
