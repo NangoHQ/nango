@@ -1,5 +1,5 @@
 ---
-title: 'CLI reference'
+title: 'CLI'
 sidebarTitle: 'CLI'
 icon: 'terminal'
 ---
@@ -45,9 +45,9 @@ nango [command] --help
 | Command | Description | Details |
 | - | - | - |
 | `nango init` | Creates the `nango-integrations` directory with a demo Github integration. | Generates `models.ts`, but not the compiled `.js` files. |
-| `nango dev` | Necessary to edit sync configurations and scripts.  | Watches the `nango.yaml` and sync scripts, re-generates `models.ts` and compiled `.js` files. |
-| `nango generate` | Generates an sync script `.ts` file with initial scaffold when new syncs appear in your `nango.yaml`. | Re-generates `models.ts`, not the compiled `.js` files. |
-| `nango dryrun <params>` | Lets you test sync scripts locally. | |
+| `nango dev` | Necessary to edit integration configurations and scripts. | Watches the `nango.yaml` and integration scripts, re-generates `models.ts` and compiled `.js` files. |
+| `nango generate` | Generates an integration script `.ts` file with initial scaffold when new syncs appear in your `nango.yaml`. | Re-generates `models.ts`, not the compiled `.js` files. |
+| `nango dryrun <params>` | Lets you test integration scripts locally. | |
 | `nango deploy <env>` | Lets you deploy your sync to your `dev` or `prod environment` | Generates the compiled `.js` files. |
 
 
