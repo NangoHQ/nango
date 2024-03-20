@@ -17,6 +17,7 @@ import { isLocal, isCloud, isEnterprise } from '../utils/utils';
 import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
 import { RocketIcon } from '@radix-ui/react-icons';
+import { useEnvironment } from '../hooks/useEnvironment';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -42,6 +43,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const navigate = useNavigate();
     const signout = useSignout();
     const { meta } = useMeta();
+    const { mutate } = useEnvironment();
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
 
     useEffect(() => {
@@ -66,6 +68,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         const newEnv = e.target.value;
         Cookies.set('env', newEnv);
         setCookieValue(newEnv);
+        void mutate();
 
         const pathSegments = window.location.pathname.split('/').filter(Boolean);
 
