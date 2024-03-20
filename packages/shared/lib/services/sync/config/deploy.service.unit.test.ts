@@ -1,5 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
-import { IncomingFlowConfig, SyncConfigType } from '../../../models/Sync.js';
+import type { IncomingFlowConfig } from '../../../models/Sync.js';
+import { SyncConfigType } from '../../../models/Sync.js';
 import environmentService from '../../environment.service.js';
 import * as SyncConfigService from './config.service.js';
 import * as SyncService from '../sync.service.js';

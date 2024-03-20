@@ -2,9 +2,8 @@ import { vi, expect, describe, it, beforeEach } from 'vitest';
 import axios from 'axios';
 import environmentService from '../environment.service.js';
 import { SyncType } from '../../models/Sync.js';
-import type { RecentlyCreatedConnection } from '../../models/Connection.js';
+import type { RecentlyCreatedConnection, NangoConnection } from '../../models/Connection.js';
 import WebhookService from './webhook.service.js';
-import type { NangoConnection } from '../../models/Connection.js';
 import type { Environment } from '../../models/Environment';
 import { mockCreateActivityLog } from '../activity/mocks.js';
 

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
-import db from '../db/database.js';
+import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
 import type {
@@ -30,18 +30,16 @@ import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConn
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
-import {
+import type {
     AppCredentials,
-    AuthModes as ProviderAuthModes,
     AppStoreCredentials,
     OAuth2Credentials,
     ImportedCredentials,
     ApiKeyCredentials,
     BasicApiCredentials,
-    AuthOperation,
     ConnectionUpsertResponse
 } from '../models/Auth.js';
-import { schema } from '../db/database.js';
+import { AuthModes as ProviderAuthModes, AuthOperation } from '../models/Auth.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import { Locking } from '../utils/lock/locking.js';

@@ -12,18 +12,19 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
-import { LogActionEnum, LogLevel } from '../../../models/Activity.js';
+import type { LogLevel } from '../../../models/Activity.js';
+import { LogActionEnum } from '../../../models/Activity.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
-import {
+import type {
     SyncModelSchema,
     IncomingFlowConfig,
     SyncConfig,
     SyncDeploymentResult,
     SyncConfigResult,
-    SyncConfigType,
     IncomingPreBuiltFlowConfig,
     SyncEndpoint
 } from '../../../models/Sync.js';
+import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { getEnv } from '../../../utils/utils.js';

@@ -1,12 +1,16 @@
-import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
+import type { ScheduleDescription } from '@temporalio/client';
+import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import ms, { StringValue } from 'ms';
+import type { StringValue } from 'ms';
+import ms from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
-import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
+import type { Sync, SyncWithSchedule } from '../models/Sync.js';
+import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
 import type { ServiceResponse } from '../models/Generic.js';
-import { LogActionEnum, LogLevel } from '../models/Activity.js';
+import type { LogLevel } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Activity.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import {
     createActivityLog,

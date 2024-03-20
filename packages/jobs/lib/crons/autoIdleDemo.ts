@@ -11,9 +11,9 @@ import {
     updateScheduleStatus,
     isErr,
     findPausableDemoSyncs,
-    logger
+    logger,
+    SpanTypes
 } from '@nangohq/shared';
-import { SpanTypes } from '@nangohq/shared';
 import tracer from 'dd-trace';
 
 export function cronAutoIdleDemo(): void {
