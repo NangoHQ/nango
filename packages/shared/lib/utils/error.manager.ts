@@ -33,7 +33,7 @@ class ErrorManager {
     constructor() {
         try {
             if (isCloud() && process.env['SENTRY_DNS']) {
-                const packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
+                const packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../package.json'), 'utf8')).version;
                 sentry.init({
                     dsn: process.env['SENTRY_DNS'],
                     beforeSend(event: ErrorEvent, _: EventHint) {

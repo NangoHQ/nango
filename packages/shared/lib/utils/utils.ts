@@ -160,8 +160,8 @@ export function isValidHttpUrl(str: string) {
     }
 }
 
-export function dirname() {
-    return path.dirname(fileURLToPath(import.meta.url));
+export function dirname(thisFile?: string) {
+    return path.dirname(fileURLToPath(thisFile || import.meta.url));
 }
 
 export function parseTokenExpirationDate(expirationDate: any): Date {

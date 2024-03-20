@@ -1,4 +1,5 @@
-import { GenericContainer, StartedTestContainer, TestContainer, Wait } from 'testcontainers';
+import type { StartedTestContainer, TestContainer } from 'testcontainers';
+import { GenericContainer, Wait } from 'testcontainers';
 
 let startedContainer: StartedTestContainer;
 
@@ -21,7 +22,6 @@ export const setup = async () => {
     process.env['NANGO_DB_USER'] = 'postgres';
     process.env['NANGO_DB_PORT'] = port.toString();
     process.env['NANGO_DB_NAME'] = 'postgres';
-    process.env['NANGO_DB_MIGRATION_FOLDER'] = './packages/shared/lib/db/migrations';
     process.env['TELEMETRY'] = 'false';
 };
 

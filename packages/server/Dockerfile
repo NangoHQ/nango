@@ -1,7 +1,6 @@
 FROM node:18-slim
 
 ENV SERVER_RUN_MODE=DOCKERIZED
-ENV NANGO_DB_MIGRATION_FOLDER=./packages/shared/lib/db/migrations
 
 RUN apt-get update \
     && apt-get install -y ca-certificates \

@@ -1,6 +1,10 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
 import { retry } from '../utils/retry.js';
+import { dirname } from '../utils/utils.js';
+import path from 'node:path';
+
+export const pathMigrations = process.env['NANGO_DB_MIGRATION_FOLDER'] || path.join(dirname(import.meta.url), './migrations');
 
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
     return {
@@ -18,7 +22,14 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<a
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '20')
         },
-        searchPath: 'nango'
+        searchPath: 'nango',
+        migrations: {
+            extension: 'cjs',
+            directory: pathMigrations,
+            loadExtensions: ['.cjs'],
+            tableName: '_nango_auth_migrations',
+            schemaName: 'nango'
+        }
     };
 }
 
@@ -57,7 +68,7 @@ export const multipleMigrations = async (): Promise<void> => {
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 
         const [_, pendingMigrations] = await db.knex.migrate.list({
-            directory: String(process.env['NANGO_DB_MIGRATION_FOLDER'])
+            directory: pathMigrations
         });
 
         if (pendingMigrations.length === 0) {
@@ -65,7 +76,7 @@ export const multipleMigrations = async (): Promise<void> => {
         } else {
             console.log('Migrations pending, running migrations.');
             await db.knex.migrate.latest({
-                directory: String(process.env['NANGO_DB_MIGRATION_FOLDER'])
+                directory: pathMigrations
             });
             console.log('Migrations completed.');
         }

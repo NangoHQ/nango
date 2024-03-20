@@ -52,7 +52,7 @@ class Analytics {
             if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
-                this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
+                this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../package.json'), 'utf8')).version;
             }
         } catch (e) {
             errorManager.report(e, {

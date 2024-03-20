@@ -18,7 +18,6 @@ services:
         image: nangohq/nango-server:hosted
         container_name: nango-server
         environment:
-            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
@@ -45,10 +44,10 @@ services:
             - nango
 
     nango-redis:
-        image: "redis:latest"
+        image: 'redis:latest'
         container_name: nango-redis
         ports:
-            - "6379:6379"
+            - '6379:6379'
         networks:
             - nango
 
