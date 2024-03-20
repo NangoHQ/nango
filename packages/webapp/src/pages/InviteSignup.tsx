@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useInviteSignupAPI, useSignupAPI } from '../utils/api';
-import { isEnterprise } from '../utils/utils';
-import { useSignin, User } from '../utils/user';
+import { MANAGED_AUTH_ENABLED, isEnterprise } from '../utils/utils';
+import { useSignin } from '../utils/user';
+import type { User } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
+import GoogleButton from '../components/ui/button/Auth/Google';
 
 export default function InviteSignup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -18,6 +20,8 @@ export default function InviteSignup() {
     const signupAPI = useSignupAPI();
 
     const { token } = useParams();
+
+    const tempShowAuth = false;
 
     useEffect(() => {
         const getInvite = async () => {
@@ -66,14 +70,11 @@ export default function InviteSignup() {
     return (
         <>
             <DefaultLayout>
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <div className="bg-bg-dark-gray py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <div className="flex flex-col justify-center">
+                    <div className="flex flex-col justify-center w-80 mx-4">
                         <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Sign up</h2>
                         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
                             <div>
-                                <label htmlFor="name" className="text-text-light-gray block text-sm font-semibold">
-                                    Name
-                                </label>
                                 <div className="mt-1">
                                     <input
                                         id="name"
@@ -82,17 +83,15 @@ export default function InviteSignup() {
                                         autoComplete="name"
                                         defaultValue={invitedName}
                                         required
+                                        placeholder="Name"
                                         minLength={1}
                                         maxLength={100}
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-blue focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                        className="border-border-gray bg-dark-600 placeholder-dark-500 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                    Email
-                                </label>
                                 <div className="mt-1">
                                     <input
                                         id="email"
@@ -100,27 +99,26 @@ export default function InviteSignup() {
                                         type="email"
                                         autoComplete="email"
                                         defaultValue={invitedEmail}
+                                        placeholder="Email"
                                         required
                                         readOnly={!isEnterprise()}
-                                        className={`${isEnterprise() ? 'focus:border-blue border-border-gray focus:border-blue focus:ring-blue block ' : 'cursor-not-allowed outline-none border-transparent focus:border-transparent focus:ring-0 border-none '}bg-bg-black text-text-light-gray block h-11 focus:outline-none w-full appearance-none rounded-md px-3 py-2 text-base shadow-sm`}
+                                        className={`${isEnterprise() ? '' : 'cursor-not-allowed outline-none border-transparent focus:border-transparent focus:ring-0 border-none '}bg-bg-black text-text-light-gray block h-11 focus:outline-none w-full appearance-none rounded-md px-3 py-2 text-[14px] shadow-sm`}
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label htmlFor="password" className="text-text-light-gray block text-sm font-semibold">
-                                    Password
-                                </label>
                                 <div className="mt-1">
                                     <input
                                         id="password"
                                         name="password"
                                         type="password"
+                                        placeholder="Password"
                                         autoComplete="current-password"
                                         required
                                         minLength={8}
                                         maxLength={50}
-                                        className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                                        className="border-border-gray bg-dark-600 placeholder-dark-500 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
                                     />
                                 </div>
                             </div>
@@ -128,38 +126,42 @@ export default function InviteSignup() {
                             <div className="grid">
                                 <button
                                     type="submit"
-                                    className="border-border-blue bg-bg-dark-blue active:ring-border-blue mt-4 flex h-12 place-self-center rounded-md border px-4 pt-3 text-base font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                    className="bg-white flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow hover:border-2 active:ring-2 active:ring-offset-2"
                                 >
                                     Sign up
                                 </button>
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
+                        {MANAGED_AUTH_ENABLED && tempShowAuth && (
+                            <>
+                                <div className="flex items-center justify-center my-4 text-xs">
+                                    <div className="border-t border-gray-600 flex-grow mr-7"></div>
+                                    <span className="text-dark-500">or continue with</span>
+                                    <div className="border-t border-gray-600 flex-grow ml-7"></div>
+                                </div>
+                                <GoogleButton
+                                    text="Sign up with Google"
+                                    invitedAccountID={invitedAccountID}
+                                    token={token}
+                                    setServerErrorMessage={setServerErrorMessage}
+                                />
+                            </>
+                        )}
                     </div>
-                    <div className="grid">
-                        <div className="mt-4 flex place-self-center text-sm">
-                            <p className="text-text-light-gray">Already have an account?</p>
-                            <Link to="/signin" className="text-text-blue hover:text-text-light-blue ml-1">
-                                Sign in
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="grid">
-                        <div className="mt-4 flex place-self-center text-sm">
-                            <p className="text-text-light-gray">By signing up, you agree to our</p>
-                            <a href="https://www.nango.dev/terms" target="_blank" rel="noreferrer" className="text-text-blue hover:text-text-light-blue ml-1">
-                                Terms of Service
-                            </a>
-                            <p className="text-text-light-gray ml-1">and</p>
-                            <a
-                                href="https://www.nango.dev/privacy-policy"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-text-blue hover:text-text-light-blue ml-1"
-                            >
-                                Privacy Policy
-                            </a>
-                            <p className="text-text-light-gray">.</p>
+                    <div className="grid w-full">
+                        <div className="mt-8 flex text-xs">
+                            <p className="text-dark-500">
+                                By signing in, you agree to our
+                                <a href="https://www.nango.dev/terms" target="_blank" rel="noreferrer" className="text-white ml-1">
+                                    Terms of Service
+                                </a>
+                                <span className="text-dark-500 ml-1">and</span>
+                                <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noreferrer" className="text-white ml-1">
+                                    Privacy Policy
+                                </a>
+                                <span className="text-dark-500">.</span>
+                            </p>
                         </div>
                     </div>
                 </div>
