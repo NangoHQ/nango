@@ -1,4 +1,5 @@
-import axios, { AxiosError } from 'axios';
+import type { AxiosError } from 'axios';
+import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
@@ -6,9 +7,11 @@ import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
 import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Connection.js';
 import type { Environment } from '../../models/Environment';
-import { LogActionEnum, LogLevel } from '../../models/Activity.js';
+import type { LogLevel } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Activity.js';
 import type { SyncResult } from '../../models/Sync';
-import { WebhookType, NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
+import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
+import { WebhookType } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 
@@ -288,6 +291,11 @@ class WebhookService {
         const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
         if (!send || !environmentInfo) {
+            return;
+        }
+
+        if (!connectionIds || connectionIds.length === 0) {
+            await this.forwardHandler(environment_id, providerConfigKey, '', provider, payload, webhookOriginalHeaders);
             return;
         }
 
