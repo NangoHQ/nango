@@ -30,13 +30,15 @@ import { AuthClient } from './clients/auth.client.js';
 import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
-import accountController, { AUTH_ENABLED } from './controllers/account.controller.js';
+import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import {
     getGlobalOAuthCallbackUrl,
     environmentService,
     getPort,
+    AUTH_ENABLED,
+    HOSTED_AUTH_ENABLED,
     isCloud,
     isEnterprise,
     isBasicAuthEnabled,
@@ -149,7 +151,11 @@ if (AUTH_ENABLED) {
     app.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
     app.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
     app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+}
+
+if (HOSTED_AUTH_ENABLED) {
     app.route('/api/v1/hosted/signup').post(rateLimiterMiddleware, authController.getHostedLogin.bind(authController));
+    app.route('/api/v1/hosted/signup/:token').post(rateLimiterMiddleware, authController.getHostedLoginWithInvite.bind(authController));
     app.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
 }
 

@@ -10,6 +10,10 @@ import {
     userService,
     accountService,
     errorManager,
+    Result,
+    isOk,
+    resultOk,
+    resultErr,
     ErrorSourceEnum,
     environmentService,
     analytics,
@@ -28,8 +32,10 @@ export interface WebUser {
     name: string;
 }
 
-interface InviteAccountState {
+interface InviteAccountBody {
     accountId: number;
+}
+interface InviteAccountState extends InviteAccountBody {
     token: string;
 }
 
@@ -38,24 +44,39 @@ if (process.env['WORKOS_API_KEY']) {
     workos = new WorkOS(process.env['WORKOS_API_KEY']);
 }
 
-const createAccountIfNotInvited = async (state: string, name: string): Promise<number | null> => {
-    const parsedAccount = (state ? JSON.parse(Buffer.from(state, 'base64').toString('ascii')) : null) as InviteAccountState | null;
-    const accountId = typeof parsedAccount?.accountId !== 'undefined' ? parsedAccount.accountId : null;
+const allowedProviders = ['GoogleOAuth'];
 
-    if (accountId !== null) {
-        const token = parsedAccount?.token;
-        const validToken = await userService.getInvitedUserByToken(token as string);
-        if (validToken) {
-            await userService.markAcceptedInvite(token as string);
+const parseState = (state: string): Result<InviteAccountState, Error> => {
+    try {
+        const parsed = JSON.parse(Buffer.from(state, 'base64').toString('ascii')) as InviteAccountState;
+        return resultOk(parsed);
+    } catch {
+        const error = new Error('Invalid state');
+        return resultErr(error);
+    }
+};
+
+const createAccountIfNotInvited = async (name: string, state?: string): Promise<number | null> => {
+    if (!state) {
+        const account = await environmentService.createAccount(`${name}'s Organization`);
+        if (!account) {
+            throw new NangoError('account_creation_failure');
         }
+        return account.id;
+    }
 
+    const parsedState: Result<InviteAccountState> = parseState(state);
+
+    if (isOk(parsedState)) {
+        const { accountId, token } = parsedState.res;
+        const validToken = await userService.getInvitedUserByToken(token);
+        if (validToken) {
+            await userService.markAcceptedInvite(token);
+        }
         return accountId;
     }
-    const account = await environmentService.createAccount(`${name}'s Organization`);
-    if (!account) {
-        throw new NangoError('account_creation_failure');
-    }
-    return account.id;
+
+    return null;
 };
 
 class AuthController {
@@ -297,18 +318,68 @@ class AuthController {
         try {
             const provider = req.query['provider'] as string;
 
+            if (!provider || !allowedProviders.includes(provider)) {
+                errorManager.errRes(res, 'invalid_provider');
+                return;
+            }
+
             if (!workos) {
                 errorManager.errRes(res, 'workos_not_configured');
                 return;
             }
 
-            const body = req.body;
+            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+                clientId: process.env['WORKOS_CLIENT_ID'] || '',
+                provider,
+                redirectUri: `${getBaseUrl()}/api/v1/login/callback`
+            });
+
+            res.send({ url: oAuthUrl });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    getHostedLoginWithInvite(req: Request, res: Response, next: NextFunction) {
+        try {
+            const provider = req.query['provider'] as string;
+
+            if (!provider || !allowedProviders.includes(provider)) {
+                errorManager.errRes(res, 'invalid_provider');
+                return;
+            }
+
+            const token = req.params['token'] as string;
+
+            const body: InviteAccountBody = req.body as InviteAccountBody;
+
+            if (!body || body.accountId !== undefined) {
+                errorManager.errRes(res, 'missing_params');
+                return;
+            }
+
+            if (!provider || !token) {
+                errorManager.errRes(res, 'missing_params');
+                return;
+            }
+
+            if (!workos) {
+                errorManager.errRes(res, 'workos_not_configured');
+                return;
+            }
+
+            const accountId = body.accountId;
+
+            const inviteParams: InviteAccountState = {
+                accountId,
+                token
+            };
 
             const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${getBaseUrl()}/api/v1/login/callback`,
-                state: body ? Buffer.from(JSON.stringify(body)).toString('base64') : ''
+                state: JSON.stringify(inviteParams)
             });
 
             res.send({ url: oAuthUrl });
@@ -323,6 +394,11 @@ class AuthController {
 
             if (!workos) {
                 errorManager.errRes(res, 'workos_not_configured');
+                return;
+            }
+
+            if (!code) {
+                errorManager.errRes(res, 'missing_hosted_login_callback_code');
                 return;
             }
 
@@ -363,7 +439,11 @@ class AuthController {
                 }
                 accountId = account.id;
             } else {
-                accountId = await createAccountIfNotInvited(state as string, name as string);
+                if (!name) {
+                    throw new NangoError('missing_name_for_account_creation');
+                }
+
+                accountId = await createAccountIfNotInvited(name, state as string);
 
                 if (!accountId) {
                     throw new NangoError('account_creation_failure');

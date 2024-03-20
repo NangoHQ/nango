@@ -24,11 +24,13 @@ export default function GoogleButton({ text, setServerErrorMessage, invitedAccou
 
         if (invitedAccountID && token) {
             postBody.body = JSON.stringify({
-                accountId: invitedAccountID,
-                token
+                accountId: invitedAccountID
             });
         }
-        const res = await fetch('/api/v1/hosted/signup?provider=GoogleOAuth', postBody);
+        console.log(invitedAccountID, token);
+        const endpoint = token ? `/api/v1/hosted/signup/${token}?provider=GoogleOAuth` : '/api/v1/hosted/signup?provider=GoogleOAuth';
+
+        const res = await fetch(endpoint, postBody);
 
         if (res?.status === 200) {
             const data = await res.json();
@@ -42,6 +44,7 @@ export default function GoogleButton({ text, setServerErrorMessage, invitedAccou
     return (
         <button
             onClick={googleLogin}
+            type="button"
             className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm w-full text-sm font-medium text-white bg-dark-600 hover:bg-gray-700"
         >
             <svg xmlns="http://www.w3.org/2000/svg" width="18px" className="inline" viewBox="0 0 512 512">

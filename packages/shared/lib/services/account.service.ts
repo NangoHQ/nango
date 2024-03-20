@@ -2,6 +2,7 @@ import db from '../db/database.js';
 import type { Account } from '../models/Admin';
 import type { Environment } from '../models/Environment';
 import { LogActionEnum } from '../models/Activity.js';
+import environmentService from './environment.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 class AccountService {
@@ -77,11 +78,28 @@ class AccountService {
             if (!newAccount || newAccount.length == 0 || !newAccount[0]) {
                 throw new Error('Failed to create account');
             }
+            await environmentService.createDefaultEnvironments(newAccount[0]['id']);
 
             return newAccount[0];
         }
 
         return account[0];
+    }
+
+    /**
+     * Create Account
+     * @desc create a new account and assign to the default environmenets
+     */
+    async createAccount(name: string): Promise<Account | null> {
+        const result: void | Pick<Account, 'id'> = await db.knex.from<Account>(`_nango_accounts`).insert({ name: name }, ['id']);
+
+        if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
+            await environmentService.createDefaultEnvironments(result[0]['id']);
+
+            return result[0];
+        }
+
+        return null;
     }
 }
 

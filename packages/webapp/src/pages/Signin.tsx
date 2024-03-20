@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { useSigninAPI } from '../utils/api';
 import { useSignin, User } from '../utils/user';
-import { isCloud } from '../utils/utils';
+import { HOSTED_AUTH_ENABLED } from '../utils/utils';
 import DefaultLayout from '../layout/DefaultLayout';
 import GoogleButton from '../components/ui/button/Auth/Google';
 
@@ -86,7 +86,7 @@ export default function Signin() {
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
 
-                            {isCloud() && (
+                            {HOSTED_AUTH_ENABLED && (
                                 <>
                                     <div className="flex items-center justify-center my-4 text-xs">
                                         <div className="border-t border-gray-600 flex-grow mr-7"></div>
