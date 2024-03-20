@@ -67,6 +67,22 @@ class AccountService {
 
         return account[0].uuid;
     }
+
+    async getOrCreateAccount(name: string): Promise<Account> {
+        const account: Account[] = await db.knex.select('id').from<Account>(`_nango_accounts`).where({ name });
+
+        if (account == null || account.length == 0 || !account[0]) {
+            const newAccount: Account[] = await db.knex.insert({ name, created_at: new Date() }).into<Account>(`_nango_accounts`).returning('*');
+
+            if (!newAccount || newAccount.length == 0 || !newAccount[0]) {
+                throw new Error('Failed to create account');
+            }
+
+            return newAccount[0];
+        }
+
+        return account[0];
+    }
 }
 
 export default new AccountService();

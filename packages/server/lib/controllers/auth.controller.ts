@@ -326,33 +326,53 @@ class AuthController {
                 return;
             }
 
-            const { user: authorizedUser } = await workos.userManagement.authenticateWithCode({
+            const { user: authorizedUser, organizationId } = await workos.userManagement.authenticateWithCode({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 code: code as string
             });
 
-            let user: User | null = null;
             const existingUser = await userService.getUserByEmail(authorizedUser.email);
 
             if (existingUser) {
-                user = existingUser;
-            } else {
-                const name =
-                    authorizedUser.firstName || authorizedUser.lastName
-                        ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
-                        : authorizedUser.email.split('@')[0];
+                req.login(existingUser, function (err) {
+                    if (err) {
+                        return next(err);
+                    }
+                    res.redirect(`${getBasePublicUrl()}/`);
+                });
 
-                const accountId = await createAccountIfNotInvited(state as string, name as string);
+                return;
+            }
+
+            const name =
+                authorizedUser.firstName || authorizedUser.lastName
+                    ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
+                    : authorizedUser.email.split('@')[0];
+
+            let accountId: number | null = null;
+
+            if (organizationId) {
+                // in this case we have a pre registered organization with workos
+                // let's make sure it exists in our system
+                const organization = await workos.organizations.getOrganization(organizationId);
+
+                const account = await accountService.getOrCreateAccount(organization.name);
+
+                if (!account) {
+                    throw new NangoError('account_creation_failure');
+                }
+                accountId = account.id;
+            } else {
+                accountId = await createAccountIfNotInvited(state as string, name as string);
 
                 if (!accountId) {
                     throw new NangoError('account_creation_failure');
                 }
+            }
 
-                const createdUser = await userService.createUser(authorizedUser.email, name as string, '', '', accountId);
-                if (!createdUser) {
-                    throw new NangoError('user_creation_failure');
-                }
-                user = createdUser;
+            const user = await userService.createUser(authorizedUser.email, name as string, '', '', accountId);
+            if (!user) {
+                throw new NangoError('user_creation_failure');
             }
 
             req.login(user, function (err) {
