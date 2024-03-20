@@ -10,12 +10,10 @@ describe('Encryption manager tests', () => {
     });
 
     it('Should be able to encrypt and insert 2000 records under 2 seconds', async () => {
-        const environmentName = 'encrypt-records';
-
         const records = generateInsertableJson(2000);
-        const { response, meta } = await createRecords(records, environmentName);
+        const { response, meta } = await createRecords(records);
         const { response: formattedResults } = response;
-        const { modelName, nangoConnectionId } = meta;
+        const { modelName, nangoConnectionId, env } = meta;
         const start = Date.now();
 
         const { error, success } = await upsert(
@@ -25,7 +23,7 @@ describe('Encryption manager tests', () => {
             nangoConnectionId,
             modelName,
             1,
-            1
+            env.id
         );
 
         expect(success).toBe(true);

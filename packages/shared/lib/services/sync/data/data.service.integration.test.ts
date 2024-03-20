@@ -9,15 +9,19 @@ import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
 import { createActivityLogSeed } from '../../../db/seeders/activity.seeder.js';
 import type { DataRecord, CustomerFacingDataRecord } from '../../../models/Sync.js';
+import type { Environment } from '../../../models/Environment.js';
+import { createEnvironmentSeed } from '../../../db/seeders/environment.seeder.js';
 
-describe('Data service integration tests', () => {
+describe('Data service integration tests', async () => {
+    let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
-        await createConfigSeeds();
+        env = await createEnvironmentSeed();
+        await createConfigSeeds(env);
     });
 
     it('Should insert records properly and retrieve', async () => {
-        const connections = await createConnectionSeeds();
+        const connections = await createConnectionSeeds(env);
 
         const duplicateRecords = [
             {
@@ -58,8 +62,8 @@ describe('Data service integration tests', () => {
             'external_id',
             activityLogId,
             modelName,
-            1,
-            1
+            activityLogId,
+            env.id
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
@@ -76,7 +80,7 @@ describe('Data service integration tests', () => {
         const { response } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
-            1,
+            env.id,
             modelName,
             undefined,
             100
@@ -102,7 +106,7 @@ describe('Data service integration tests', () => {
         const { response: metaRecords } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
-            1,
+            env.id,
             modelName,
             undefined, // delta
             undefined, // limit
@@ -119,7 +123,7 @@ describe('Data service integration tests', () => {
         const { response: regularRecords } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
-            1,
+            env.id,
             modelName,
             undefined, // delta
             undefined, // offset

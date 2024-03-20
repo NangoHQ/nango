@@ -1,9 +1,10 @@
-import { expect, describe, it, beforeAll, afterAll, vi, afterEach } from 'vitest';
+import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import SyncRun from './run.service.js';
 import * as ConfigService from './config/config.service.js';
 import environmentService from '../environment.service.js';
 import LocalFileService from '../file/local.service.js';
-import { IntegrationServiceInterface, Sync, SyncType, Job as SyncJob, SyncResult } from '../../models/Sync.js';
+import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
+import { SyncStatus, SyncType } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 import { multipleMigrations } from '../../db/database.js';
 import * as dataMocks from './data/mocks.js';
@@ -28,7 +29,7 @@ class integrationServiceMock implements IntegrationServiceInterface {
 
 const integrationService = new integrationServiceMock();
 
-describe('SyncRun', () => {
+describe('Running sync', () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
@@ -37,93 +38,7 @@ describe('SyncRun', () => {
         await clearDb();
     });
 
-    afterEach(async () => {
-        await clearRecords();
-    });
-
-    const persist = async (
-        rawRecords: DataResponse[],
-        activityLogId: number,
-        model: string,
-        connection: Connection,
-        sync: Sync,
-        syncJob: SyncJob,
-        trackDeletes: boolean,
-        softDelete: boolean
-    ) => {
-        const { response: records } = recordsService.formatDataRecords(
-            rawRecords,
-            connection.id!,
-            model,
-            sync.id,
-            syncJob.id,
-            undefined, // lastSyncDate
-            trackDeletes,
-            softDelete
-        );
-        if (!records) {
-            throw new Error(`failed to format records`);
-        }
-        const { error: upsertError, summary } = await dataService.upsert(
-            records,
-            '_nango_sync_data_records',
-            'external_id',
-            connection.id!,
-            model,
-            activityLogId,
-            connection.environment_id,
-            trackDeletes,
-            softDelete
-        );
-        const updatedResults = {
-            [model]: {
-                added: summary?.addedKeys.length as number,
-                updated: summary?.updatedKeys.length as number,
-                deleted: summary?.deletedKeys?.length as number
-            }
-        };
-        await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
-        if (upsertError) {
-            throw new Error(`failed to upsert records: ${upsertError}`);
-        }
-    };
-
-    const verifySyncRun = async (initialRecords: DataResponse[], newRecords: DataResponse[], trackDeletes: boolean, expectedResult: SyncResult) => {
-        // Write initial records
-        const { connection, model, sync, syncJob, activityLogId } = await dataMocks.upsertRecords(initialRecords);
-        if (trackDeletes) {
-            await deleteService.takeSnapshot(connection.id!, model);
-        }
-
-        // Create a new SyncRun
-        const config = {
-            integrationService: integrationService,
-            writeToDb: true,
-            nangoConnection: connection,
-            syncName: sync.name,
-            syncType: SyncType.INITIAL,
-            syncId: sync.id,
-            syncJobId: syncJob.id,
-            activityLogId
-        };
-        const syncRun = new SyncRun(config);
-
-        // Save records
-        await persist(newRecords, activityLogId, model, connection, sync, syncJob, trackDeletes, false);
-
-        // Finish the sync
-        await syncRun.finishSync([model], new Date(), `v1`, 10, trackDeletes);
-
-        const syncJobResult = await jobService.getLatestSyncJob(sync.id);
-        const result = {
-            added: syncJobResult?.result?.[model]?.added || 0,
-            updated: syncJobResult?.result?.[model]?.updated || 0,
-            deleted: syncJobResult?.result?.[model]?.deleted || 0
-        };
-        expect(result).toEqual(expectedResult);
-    };
-
-    it(`with track_deletes=false`, () => {
+    describe(`with track_deletes=false`, () => {
         const trackDeletes = false;
         it(`should report no records have changed`, async () => {
             const rawRecords = [
@@ -131,7 +46,12 @@ describe('SyncRun', () => {
                 { id: '2', name: 'b' }
             ];
             const expectedResult = { added: 0, updated: 0, deleted: 0 };
-            await verifySyncRun(rawRecords, rawRecords, trackDeletes, expectedResult);
+            const records = await verifySyncRun(rawRecords, rawRecords, trackDeletes, expectedResult);
+            records.forEach((record) => {
+                expect(record._nango_metadata.first_seen_at).toEqual(record._nango_metadata.last_modified_at);
+                expect(record._nango_metadata.deleted_at).toBeNull();
+                expect(record._nango_metadata.last_action).toEqual('ADDED');
+            });
         });
 
         it(`should report one record has been added and one modified`, async () => {
@@ -144,10 +64,31 @@ describe('SyncRun', () => {
                 { id: '3', name: 'c' }
             ];
             const expectedResult = { added: 1, updated: 1, deleted: 0 };
-            await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
+            const records = await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
+
+            records
+                .filter((record) => record.id == 1)
+                .forEach((record) => {
+                    expect(record['name']).toEqual('A');
+                    expect(record._nango_metadata.first_seen_at < record._nango_metadata.last_modified_at).toBeTruthy();
+                    expect(record._nango_metadata.deleted_at).toBeNull();
+                    expect(record._nango_metadata.last_action).toEqual('UPDATED');
+                });
+            records
+                .filter((record) => record.id == 2)
+                .forEach((record) => {
+                    expect(record._nango_metadata.first_seen_at).toEqual(record._nango_metadata.last_modified_at);
+                    expect(record._nango_metadata.last_action).toEqual('ADDED'); // record was added as part of the initial save
+                });
+            records
+                .filter((record) => record.id == 3)
+                .forEach((record) => {
+                    expect(record._nango_metadata.first_seen_at).toEqual(record._nango_metadata.last_modified_at);
+                    expect(record._nango_metadata.last_action).toEqual('ADDED');
+                });
         });
     });
-    it(`with track_deletes=true`, () => {
+    describe(`with track_deletes=true`, () => {
         const trackDeletes = true;
         it(`should report no records have changed`, async () => {
             const rawRecords = [
@@ -155,7 +96,12 @@ describe('SyncRun', () => {
                 { id: '2', name: 'b' }
             ];
             const expectedResult = { added: 0, updated: 0, deleted: 0 };
-            await verifySyncRun(rawRecords, rawRecords, trackDeletes, expectedResult);
+            const records = await verifySyncRun(rawRecords, rawRecords, trackDeletes, expectedResult);
+            records.forEach((record) => {
+                expect(record._nango_metadata.first_seen_at).toEqual(record._nango_metadata.last_modified_at);
+                expect(record._nango_metadata.deleted_at).toBeNull();
+                expect(record._nango_metadata.last_action).toEqual('ADDED');
+            });
         });
 
         it(`should report one record has been added, one updated and one deleted`, async () => {
@@ -168,7 +114,28 @@ describe('SyncRun', () => {
                 { id: '3', name: 'c' }
             ];
             const expectedResult = { added: 1, updated: 1, deleted: 1 };
-            await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
+            const records = await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
+            records
+                .filter((record) => record.id == 1)
+                .forEach((record) => {
+                    expect(record['name']).toEqual('A');
+                    expect(record._nango_metadata.first_seen_at < record._nango_metadata.last_modified_at).toBeTruthy();
+                    expect(record._nango_metadata.deleted_at).toBeNull();
+                    expect(record._nango_metadata.last_action).toEqual('UPDATED');
+                });
+            records
+                .filter((record) => record.id == 2)
+                .forEach((record) => {
+                    expect(record._nango_metadata.first_seen_at < record._nango_metadata.last_modified_at).toBeTruthy();
+                    expect(record._nango_metadata.deleted_at).not.toBeNull();
+                    expect(record._nango_metadata.last_action).toEqual('DELETED');
+                });
+            records
+                .filter((record) => record.id == 3)
+                .forEach((record) => {
+                    expect(record._nango_metadata.first_seen_at).toEqual(record._nango_metadata.last_modified_at);
+                    expect(record._nango_metadata.last_action).toEqual('ADDED');
+                });
         });
     });
 });
@@ -297,7 +264,95 @@ describe('SyncRun', () => {
 const clearDb = async () => {
     await db.knex.raw(`DROP SCHEMA nango CASCADE`);
 };
-const clearRecords = async () => {
-    await db.knex.raw(`TRUNCATE TABLE _nango_sync_data_records`);
-    await db.knex.raw(`TRUNCATE TABLE _nango_sync_data_records_deletes`);
+
+const persist = async (
+    rawRecords: DataResponse[],
+    activityLogId: number,
+    model: string,
+    connection: Connection,
+    sync: Sync,
+    syncJob: SyncJob,
+    trackDeletes: boolean,
+    softDelete: boolean
+) => {
+    const { response: records } = recordsService.formatDataRecords(
+        rawRecords,
+        connection.id!,
+        model,
+        sync.id,
+        syncJob.id,
+        undefined, // lastSyncDate
+        trackDeletes,
+        softDelete
+    );
+    if (!records) {
+        throw new Error(`failed to format records`);
+    }
+    const { error: upsertError, summary } = await dataService.upsert(
+        records,
+        '_nango_sync_data_records',
+        'external_id',
+        connection.id!,
+        model,
+        activityLogId,
+        connection.environment_id,
+        trackDeletes,
+        softDelete
+    );
+    const updatedResults = {
+        [model]: {
+            added: summary?.addedKeys.length as number,
+            updated: summary?.updatedKeys.length as number,
+            deleted: summary?.deletedKeys?.length as number
+        }
+    };
+    await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
+    if (upsertError) {
+        throw new Error(`failed to upsert records: ${upsertError}`);
+    }
+};
+
+const verifySyncRun = async (initialRecords: DataResponse[], newRecords: DataResponse[], trackDeletes: boolean, expectedResult: SyncResult) => {
+    // Write initial records
+    const { connection, model, sync, activityLogId } = await dataMocks.upsertRecords(initialRecords);
+    if (trackDeletes) {
+        await deleteService.takeSnapshot(connection.id!, model);
+    }
+
+    // Create a new SyncRun
+    const syncJob = (await jobService.createSyncJob(sync.id, SyncType.INCREMENTAL, SyncStatus.RUNNING, 'test-job-id', connection)) as SyncJob;
+    if (!syncJob) {
+        throw new Error('Fail to create sync job');
+    }
+    const config = {
+        integrationService: integrationService,
+        writeToDb: true,
+        nangoConnection: connection,
+        syncName: sync.name,
+        syncType: SyncType.INITIAL,
+        syncId: sync.id,
+        syncJobId: syncJob.id,
+        activityLogId
+    };
+    const syncRun = new SyncRun(config);
+
+    // Save records
+    await persist(newRecords, activityLogId, model, connection, sync, syncJob, trackDeletes, false);
+
+    // Finish the sync
+    await syncRun.finishSync([model], new Date(), `v1`, 10, trackDeletes);
+
+    const syncJobResult = await jobService.getLatestSyncJob(sync.id);
+    const result = {
+        added: syncJobResult?.result?.[model]?.added || 0,
+        updated: syncJobResult?.result?.[model]?.updated || 0,
+        deleted: syncJobResult?.result?.[model]?.deleted || 0
+    };
+    expect(result).toEqual(expectedResult);
+
+    const { response } = await recordsService.getAllDataRecords(connection.connection_id, connection.provider_config_key, connection.environment_id, model);
+    if (response) {
+        return response.records;
+    }
+    throw new Error('cannot fetch records');
 };

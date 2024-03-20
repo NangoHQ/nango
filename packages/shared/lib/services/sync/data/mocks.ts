@@ -1,5 +1,6 @@
 import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
+import { createEnvironmentSeed } from '../../../db/seeders/environment.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
 import { formatDataRecords } from './records.service.js';
 import type { DataResponse } from '../../../models/Data.js';
@@ -8,8 +9,10 @@ import * as DataService from './data.service.js';
 import type { Connection } from '../../../models/Connection.js';
 import type { Sync, Job as SyncJob } from '../../../models/Sync.js';
 import { createActivityLog } from '../../activity/activity.service.js';
+import type { Environment } from '../../../models/Environment.js';
 
-export async function upsertMockRecords(n: number): Promise<{
+export async function upsertNRecords(n: number): Promise<{
+    env: Environment;
     connection: Connection;
     model: string;
     sync: Sync;
@@ -21,18 +24,17 @@ export async function upsertMockRecords(n: number): Promise<{
 }
 
 export async function upsertRecords(toInsert: DataResponse[]): Promise<{
+    env: Environment;
     connection: Connection;
     model: string;
     sync: Sync;
     syncJob: SyncJob;
     activityLogId: number;
 }> {
-    const environmentId = 1;
-    const environmentName = 'mock-records';
     const {
         response: { response: records },
-        meta: { modelName, nangoConnectionId, sync, syncJob }
-    } = await createRecords(toInsert, environmentName);
+        meta: { env, modelName, nangoConnectionId, sync, syncJob }
+    } = await createRecords(toInsert);
     const connection = await connectionService.getConnectionById(nangoConnectionId);
 
     if (!records) {
@@ -44,7 +46,7 @@ export async function upsertRecords(toInsert: DataResponse[]): Promise<{
     const activityLogId = await createActivityLog({
         level: 'info',
         success: false,
-        environment_id: environmentId,
+        environment_id: env.id,
         action: 'sync',
         start: Date.now(),
         end: Date.now(),
@@ -65,13 +67,14 @@ export async function upsertRecords(toInsert: DataResponse[]): Promise<{
             nangoConnectionId,
             modelName,
             activityLogId,
-            environmentId
+            env.id
         );
         if (!success) {
             throw new Error(`Failed to upsert records: ${error}`);
         }
     }
     return {
+        env,
         connection: connection as Connection,
         model: modelName,
         sync,
@@ -80,8 +83,11 @@ export async function upsertRecords(toInsert: DataResponse[]): Promise<{
     };
 }
 
-export async function createRecords(records: DataResponse[], environmentName = '') {
-    const connections = await createConnectionSeeds(environmentName);
+export async function createRecords(records: DataResponse[]) {
+    const envName = Math.random().toString(36).substring(7);
+    const env = await createEnvironmentSeed(envName);
+
+    const connections = await createConnectionSeeds(env);
 
     const [nangoConnectionId]: number[] = connections;
     if (!nangoConnectionId) {
@@ -100,6 +106,7 @@ export async function createRecords(records: DataResponse[], environmentName = '
 
     return {
         meta: {
+            env,
             nangoConnectionId,
             modelName,
             sync,
