@@ -5,12 +5,11 @@ import util from 'util';
 import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
-import type { User } from '@nangohq/shared';
+import type { User, Result } from '@nangohq/shared';
 import {
     userService,
     accountService,
     errorManager,
-    Result,
     isOk,
     resultOk,
     resultErr,
@@ -58,7 +57,7 @@ const parseState = (state: string): Result<InviteAccountState, Error> => {
 
 const createAccountIfNotInvited = async (name: string, state?: string): Promise<number | null> => {
     if (!state) {
-        const account = await environmentService.createAccount(`${name}'s Organization`);
+        const account = await accountService.createAccount(`${name}'s Organization`);
         if (!account) {
             throw new NangoError('account_creation_failure');
         }
@@ -158,7 +157,7 @@ class AuthController {
                 account = await accountService.getAccountById(Number(req.body['account_id']));
                 joinedWithToken = true;
             } else {
-                account = await environmentService.createAccount(`${name}'s Organization`);
+                account = await accountService.createAccount(`${name}'s Organization`);
             }
 
             if (account == null) {
