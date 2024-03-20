@@ -473,7 +473,7 @@ integrations:
                 description: |
                     List github repos from an organization.
             github-create-demo-issue:
-                endpoint: POST /github/create-demo-issue
+                endpoint: POST /githusb/create-demo-issue
                 input: GithubCreateIssueInput
                 output: GithubCreateIssueResult
                 description: |
