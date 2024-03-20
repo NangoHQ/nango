@@ -66,5 +66,6 @@ fs.writeFileSync(filePath, yaml.dump(output));
 exec(`npx prettier ${filePath} -w`, (error) => {
     if (error) {
         console.error('An error occured during prettier', error);
+        process.exit(1);
     }
 });
