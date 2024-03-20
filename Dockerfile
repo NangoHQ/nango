@@ -7,7 +7,7 @@ FROM node:18.19.1-bullseye-slim AS tmp
 WORKDIR /app/tmp
 
 # Copy and install dependencies separately from the app's code
-# To leverage Docker's cache when no dependency has change
+# To leverage Docker's cache when no dependency has changed
 COPY packages/frontend/package.json ./packages/frontend/package.json
 COPY packages/jobs/package.json ./packages/jobs/package.json
 COPY packages/node-client/package.json ./packages/node-client/package.json
