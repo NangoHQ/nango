@@ -39,8 +39,12 @@ interface InviteAccountState extends InviteAccountBody {
 }
 
 let workos: WorkOS | null = null;
-if (process.env['WORKOS_API_KEY']) {
+if (process.env['WORKOS_API_KEY'] && process.env['WORKOS_CLIENT_ID']) {
     workos = new WorkOS(process.env['WORKOS_API_KEY']);
+} else {
+    if (isCloud()) {
+        throw new NangoError('workos_not_configured');
+    }
 }
 
 const allowedProviders = ['GoogleOAuth'];
