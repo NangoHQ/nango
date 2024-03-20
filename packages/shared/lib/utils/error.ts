@@ -542,9 +542,9 @@ export class NangoError extends Error {
                 this.message = `WorkOS is not configured. Please reach out to support to obtain valid WorkOS credentials.`;
                 break;
 
-            case 'missing_hosted_login_callback_code':
+            case 'missing_managed_login_callback_code':
                 this.status = 400;
-                this.message = `Missing param 'code' for the hosted login callback.`;
+                this.message = `Missing param 'code' for the managed login callback.`;
                 break;
 
             case 'missing_name_for_account_creation':

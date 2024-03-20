@@ -27,8 +27,7 @@ export default function GoogleButton({ text, setServerErrorMessage, invitedAccou
                 accountId: invitedAccountID
             });
         }
-        console.log(invitedAccountID, token);
-        const endpoint = token ? `/api/v1/hosted/signup/${token}?provider=GoogleOAuth` : '/api/v1/hosted/signup?provider=GoogleOAuth';
+        const endpoint = token ? `/api/v1/managed/signup/${token}?provider=GoogleOAuth` : '/api/v1/managed/signup?provider=GoogleOAuth';
 
         const res = await fetch(endpoint, postBody);
 

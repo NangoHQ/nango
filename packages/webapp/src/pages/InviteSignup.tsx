@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useInviteSignupAPI, useSignupAPI } from '../utils/api';
-import { HOSTED_AUTH_ENABLED, isEnterprise } from '../utils/utils';
-import { useSignin, User } from '../utils/user';
+import { MANAGED_AUTH_ENABLED, isEnterprise } from '../utils/utils';
+import { useSignin } from '../utils/user';
+import type { User } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
 import GoogleButton from '../components/ui/button/Auth/Google';
 
@@ -130,7 +131,7 @@ export default function InviteSignup() {
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
-                        {HOSTED_AUTH_ENABLED && (
+                        {MANAGED_AUTH_ENABLED && (
                             <>
                                 <div className="flex items-center justify-center my-4 text-xs">
                                     <div className="border-t border-gray-600 flex-grow mr-7"></div>

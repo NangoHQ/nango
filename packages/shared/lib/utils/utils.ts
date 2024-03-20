@@ -35,7 +35,7 @@ export enum NodeEnv {
 }
 
 export const AUTH_ENABLED = isCloud() || isEnterprise();
-export const HOSTED_AUTH_ENABLED = isCloud() || isLocal();
+export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
 
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],

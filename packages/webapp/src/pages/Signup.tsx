@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAnalyticsTrack } from '../utils/analytics';
-import { HOSTED_AUTH_ENABLED } from '../utils/utils';
+import { MANAGED_AUTH_ENABLED } from '../utils/utils';
 import { useSignupAPI } from '../utils/api';
-import { useSignin, User } from '../utils/user';
+import type { User } from '../utils/user';
+import { useSignin } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
 import GoogleButton from '../components/ui/button/Auth/Google';
 
@@ -107,7 +108,7 @@ export default function Signup() {
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
-                        {HOSTED_AUTH_ENABLED && (
+                        {MANAGED_AUTH_ENABLED && (
                             <>
                                 <div className="flex items-center justify-center my-4 text-xs">
                                     <div className="border-t border-gray-600 flex-grow mr-7"></div>

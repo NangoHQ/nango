@@ -313,7 +313,7 @@ class AuthController {
         }
     }
 
-    getHostedLogin(req: Request, res: Response, next: NextFunction) {
+    getManagedLogin(req: Request, res: Response, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -339,7 +339,7 @@ class AuthController {
         }
     }
 
-    getHostedLoginWithInvite(req: Request, res: Response, next: NextFunction) {
+    getManagedLoginWithInvite(req: Request, res: Response, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -397,7 +397,7 @@ class AuthController {
             }
 
             if (!code) {
-                errorManager.errRes(res, 'missing_hosted_login_callback_code');
+                errorManager.errRes(res, 'missing_managed_login_callback_code');
                 return;
             }
 

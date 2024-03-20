@@ -39,7 +39,7 @@ import {
     environmentService,
     getPort,
     AUTH_ENABLED,
-    HOSTED_AUTH_ENABLED,
+    MANAGED_AUTH_ENABLED,
     isCloud,
     isEnterprise,
     isBasicAuthEnabled,
@@ -154,9 +154,9 @@ if (AUTH_ENABLED) {
     app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
 }
 
-if (HOSTED_AUTH_ENABLED) {
-    app.route('/api/v1/hosted/signup').post(rateLimiterMiddleware, authController.getHostedLogin.bind(authController));
-    app.route('/api/v1/hosted/signup/:token').post(rateLimiterMiddleware, authController.getHostedLoginWithInvite.bind(authController));
+if (MANAGED_AUTH_ENABLED) {
+    app.route('/api/v1/managed/signup').post(rateLimiterMiddleware, authController.getManagedLogin.bind(authController));
+    app.route('/api/v1/managed/signup/:token').post(rateLimiterMiddleware, authController.getManagedLoginWithInvite.bind(authController));
     app.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
 }
 
