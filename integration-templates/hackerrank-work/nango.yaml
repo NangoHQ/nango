@@ -4,54 +4,44 @@ integrations:
       hackerrank-work-interviews:
         runs: every 6 hours
         description: |
-          Fetches interviews from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
+          Fetches a list of interviews from hackerrank work
         output: HackerRankWorkInterview
         sync_type: incremental
         endpoint: /hackerrank-work/interviews
-        scopes:
-          - default
       hackerrank-work-teams:
         runs: every 6 hours
         description: |
-          Fetches teams from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
+          Fetches a list of teams from hackerrank work
         output: HackerRankWorkTeam
         sync_type: incremental
         endpoint: /hackerrank-work/teams
-        scopes:
-          - default
       hackerrank-work-tests:
         runs: every 6 hours
         description: |
-          Fetches tests from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
+          Fetches a list of tests from hackerrank work
         output: HackerRankWorkTest
         sync_type: incremental
         endpoint: /hackerrank-work/tests
-        scopes:
-          - default
       hackerrank-work-users:
         runs: every 6 hours
         description: |
-          Fetches users from hackerrank work.
-          Details: incremental sync, doesn't track deletes, metadata is not
-          required.
+          Fetches a list of users from hackerrank work
         output: HackerRankWorkUser
         sync_type: incremental
         endpoint: /hackerrank-work/users
-        scopes:
-          - default
     actions:
+      hackerrank-work-create-test:
+        description: |
+          Action to create a test on hackerrank work
+        input: HackerRankWorkCreateTestInput
+        output: HackerRankWorkTest
+        endpoint: POST /hackerrank-work/create-test
       hackerrank-work-create-interview:
         description: |
-          Action to create an interview on hackerrank work.
+          Action to create an interview on hackerrank work
         input: HackerRankWorkCreateInterviewInput
         output: HackerRankWorkInterview
-        endpoint: /hackerrank-work/create-interview
+        endpoint: POST /hackerrank-work/create-interview
 models:
   HackerRankWorkCreateInterviewInput:
     __extends: HackerRankWorkInterview
@@ -143,3 +133,33 @@ models:
     teams: []
     activated: boolean
     last_activity_time: date
+  HackerRankWorkCreateTestInput:
+    name: string
+    starttime: Date
+    endtime: Date
+    duration: number
+    instructions: string
+    locked: boolean
+    draft: string
+    languages: string[]
+    candidate_details: string[]
+    custom_acknowledge_text: string
+    cutoff_score: number
+    master_password: string
+    hide_compile_test: boolean
+    tags: string[]
+    role_ids: string[]
+    experience: string[]
+    questions: string[]
+    mcq_incorrect_score: number
+    mcq_correct_score: number
+    secure: boolean
+    shuffle_questions: boolean
+    test_admins: string[]
+    hide_template: boolean
+    enable_acknowledgement: boolean
+    enable_proctoring: boolean
+    candidate_tab_switch: boolean
+    track_editor_paste: boolean
+    show_copy_paste_prompt: boolean
+    ide_config: string

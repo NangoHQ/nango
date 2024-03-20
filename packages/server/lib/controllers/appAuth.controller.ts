@@ -1,8 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { AuthCredentials, NangoError } from '@nangohq/shared';
 import {
     environmentService,
-    AuthCredentials,
-    NangoError,
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     findActivityLogBySession,
@@ -21,7 +20,7 @@ import {
     AuthModes
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
-import { WSErrBuilder } from '../utils/web-socket-error.js';
+import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import publisher from '../clients/publisher.client.js';
 

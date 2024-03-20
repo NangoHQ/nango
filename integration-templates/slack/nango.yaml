@@ -4,7 +4,7 @@ integrations:
       slack-users:
         runs: every hour
         description: |
-          Syncs information about all Users on the Slack workspace.
+          Syncs information about all Users on the Slack workspace
         output: SlackUser
         sync_type: full
         endpoint: /slack/users
@@ -14,7 +14,7 @@ integrations:
         runs: every hour
         description: |
           Syncs information about all Slack channels. Which channels get synced
-          (public, private, IMs, group DMs) dependson the scopes. If
+          (public, private, IMs, group DMs) depends on the scopes. If
           joinPublicChannels is set to true, the bot will automatically join all
           public channels as well. Scopes: At least one of channels:read,
           groups:read, mpim:read, im:read. To also join public channels:
@@ -34,10 +34,16 @@ integrations:
           detection of the channel. For subsequent runs it will sync messages,
           threads & reactions from the last 10 days. Scopes required:
           channels:read, and at least one of
-          channels:history,groups:history,mpim:history,im:history
-        output: SlackMessage
-        sync_type: full
-        endpoint: /slack/messages
+          channels:history, groups:history, mpim:history, im:history
+        output:
+          - SlackMessage
+          - SlackMessageReply
+          - SlackMessageReaction
+        sync_type: incremental
+        endpoint:
+          - /slack/messages
+          - /slack/messages-reply
+          - /slack/messages-reaction
         scopes:
           - channels:read
           - channels:history

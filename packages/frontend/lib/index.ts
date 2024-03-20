@@ -73,7 +73,7 @@ export default class Nango {
             // The websockets path is considered relative to the baseUrl, and with the protocol updated
             const websocketUrl = new URL(config.websocketsPath, baseUrl);
             this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
-        } catch (err) {
+        } catch {
             throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
     }
@@ -112,7 +112,7 @@ export default class Nango {
 
         try {
             new URL(url);
-        } catch (err) {
+        } catch {
             throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
 
@@ -421,7 +421,7 @@ class AuthorizationModal {
         const data = JSON.parse(message.data);
 
         switch (data.message_type) {
-            case WSMessageType.ConnectionAck:
+            case WSMessageType.ConnectionAck: {
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Connection ack received. Opening modal...');
                 }
@@ -429,6 +429,7 @@ class AuthorizationModal {
                 const wsClientId = data.ws_client_id;
                 this.open(wsClientId);
                 break;
+            }
             case WSMessageType.Error:
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Error received. Rejecting authorization...');

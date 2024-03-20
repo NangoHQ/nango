@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { Loading } from '@geist-ui/core';
-import { Link } from 'react-router-dom';
-import _ from 'lodash';
+import debounce from 'lodash/debounce';
+import uniq from 'lodash/uniq';
 
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import CopyButton from '../../components/ui/button/CopyButton';
 import { requestErrorToast } from '../../utils/api';
@@ -40,7 +39,7 @@ export default function ConnectionList() {
     }, [data]);
 
     const debouncedSearch = useCallback(
-        _.debounce((value: string) => {
+        debounce((value: string) => {
             if (!value.trim()) {
                 setFilteredConnections(data?.connections || []);
                 return;
@@ -90,7 +89,7 @@ export default function ConnectionList() {
         );
     }
 
-    const providers: string[] = _.uniq(data['connections'].map((connection: Connection) => connection.provider_config_key));
+    const providers: string[] = uniq(data['connections'].map((connection: Connection) => connection.provider_config_key));
 
     function formatDate(creationDate: string): string {
         const inputDate = new Date(creationDate);

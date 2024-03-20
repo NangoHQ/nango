@@ -1,9 +1,204 @@
 ---
-title: 'Scripts'
-sidebarTitle: 'Scripts'
+title: 'Integration scripts'
+sidebarTitle: 'Integration scripts'
 icon: 'code'
 ---
 
-<Info>
-The docs recently underwent a makeover, leaving this page empty. We are working hard to fill in all the missing pages within the next two weeks. Meanwhile, ask any questions on the [community](https://nango.dev/slack).
-</Info>
+# Examples
+
+<Tabs>
+
+<Tab title="Sync script">
+```ts 
+import type { GithubIssueDemo, NangoSync } from './models';
+
+export default async function fetchData(nango: NangoSync) {
+    // Fetch issues from GitHub.
+    const res = await nango.get({
+        endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
+    });
+
+    // Map issues to your preferred schema.
+    const issues: GithubIssueDemo[] = res.data.map(({ id, title, html_url }: any) => {
+        return { id, title, url: html_url };
+    });
+
+    // Persist issues to the Nango cache.
+    await nango.batchSave(issues, 'GithubIssueDemo');
+}
+```
+</Tab>
+
+<Tab title="Action script">
+```ts
+import type { NangoAction, GithubCreateIssueInput, GithubCreateIssueResult } from './models';
+
+export default async function runAction(nango: NangoAction, input: GithubCreateIssueInput): Promise<GithubCreateIssueResult> {
+    // Create a GitHub issue.
+    const res = await nango.post({
+        endpoint: '/repos/NangoHQ/interactive-demo/issues',
+        data: {
+            title: `[demo] ${input.title}`,
+            body: `The body of the issue.`,
+            labels: ['automatic']
+        }
+    });
+
+    // Send response.
+    return { url: res.data.html_url, status: res.status };
+}
+```
+</Tab>
+
+</Tabs>
+
+Read more about [integration scripts](/understand/concepts/scripts) to understand what role they play in Nango.
+
+Integration scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily. 
+
+<Tip>
+The script helper object shares some methods, but not all, with the [Node backend SDK](/reference/sdks/node), which is why this reference will link to the Node SDK reference a lot.
+</Tip>
+
+# Common helper methods
+
+### HTTP requests
+
+HTTP requests in integration scripts are made with the proxy ([concept]((/understand/concepts/proxy)) / [step-by-step guide](/integrate/guides/proxy-requests-to-an-api) / [reference](/reference/sdks/node#proxy)).
+
+
+<Tip>
+There is one simplification to using the proxy in integration scripts. Because integration scripts always execute in the context of a specific integration & connection, you do not need to specify the `providerConfigKey` & `connectionId` parameters when calling the proxy from integration script. 
+
+Instead of writing:
+```ts
+const res = await nango.get({
+    endpoint: '/external-endpoint',
+    providerConfigKey: '<string>',
+    connectionId: '<string>'
+});
+```
+
+You can write:  
+
+```ts
+const res = await nango.get({ endpoint: '/external-endpoint' });
+```
+</Tip>
+
+### Logging
+
+You can collect logs in integration scripts. This is particularly useful when: 
+- developing, to debug your integration scripts
+- in production, to collect information about integration script executions & understand issues
+
+Collect logs in integration scripts as follows: 
+```ts
+await nango.log("This is a log.");
+```
+
+Logs can be viewed & searched in the Nango UI. We plan to make them exportable in the future as well.
+
+### Environment variables
+
+Integration scripts sometimes need to access sensitive variables that should not be revealed directly in the integration script code. 
+
+For this, you can define environment variables in the Nango UI, in the _Environment Settings_ tab. Then you can retrieve these environment variables from integration scripts ([reference](/reference/sdks/node#get-environment-variables)).
+
+### Trigger action
+
+Integration scripts currently do not support importing files, which limits the ability to share code between integration scripts. 
+
+As a temporary workaround, you can call action scripts from other integration scripts ([reference](/reference/sdks/node#trigger-an-action)).
+
+### Paginate through API responses
+
+Follow the pagination [step-by-step guides](/customize/guides/advanced/paginate-api-responses) to learn how to easily paginate through API responses. 
+
+### Manage connection metadata
+
+[Retrieve](/reference/sdks/node#get-connection-metadata), [edit](/reference/sdks/node#edit-connection-metadata) or [override](/reference/sdks/node#set-connection-metadata) the connection metadata.
+
+### Get connection
+
+Get the connection details, including the API credentials ([reference](/reference/sdks/node#get-a-connection-with-credentials)).
+
+# Sync-specific helper methods
+
+Sync scripts persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/integrate/guides/sync-data-from-an-api)).
+
+### Save records
+
+Upserts records to the Nango cache (i.e. create new records, update existing ones). Each record needs to contain a unique `id` field used to dedupe records. 
+
+```js
+const githubIssues: GitHubIssue[] = ...; // Fetch issues from GitHub API. 
+
+await nango.batchSave(githubIssues, 'GitHubIssue');
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="recordList" type="Model[]" required>
+        The list of records to persist.
+    </ResponseField>
+
+    <ResponseField name="modelType" type="string" required>
+        The model type of the records to persist.
+    </ResponseField>   
+</Expandable>
+
+### Delete records
+
+Marks records as deleted in the Nango cache. Deleted records are still returned when you fetch them, but they are marked as deleted in the record's metadata (i.e. soft delete).
+
+The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
+
+```js
+const githubIssuesToDelete: { id: string }[] = ...; // Fetch issues to delete from GitHub API. 
+
+await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="recordList" type="{ id: string }[]" required>
+        The list of records to delete.
+    </ResponseField>
+
+    <ResponseField name="modelType" type="string" required>
+        The model type of the records to delete.
+    </ResponseField>   
+</Expandable>
+
+
+# Action-specific helper methods
+
+### `ActionError`
+
+You can use `ActionError` in an action script to return a descriptive error to your app when needed:
+```ts
+
+export default async function runAction(nango: NangoAction): Promise<Response> {
+    // Something went wrong...
+
+    throw new ActionError({ any_key: 'any_value' });
+}
+
+```
+
+In this case, the response to the trigger action call will be: 
+```json
+{
+  "error_type": "action_script_failure",
+  "payload": {
+    "any_key": "any_value"
+  }
+}
+```
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

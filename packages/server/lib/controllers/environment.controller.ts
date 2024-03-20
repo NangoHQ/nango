@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { Environment } from '@nangohq/shared';
 import {
     accountService,
     hmacService,
@@ -11,7 +12,6 @@ import {
     getGlobalWebhookReceiveUrl,
     packageJsonFile,
     getEnvironmentId,
-    Environment,
     getOnboardingProgress
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';

@@ -335,9 +335,9 @@ If you do not want to deal with collecting & injecting credentials in requests f
 </Info>
 
 <Tip>
-Every time you fetch the connection with this API endpoint, Nango will check if the access token has expired. If it has, it will refresh it.
+When you fetch the connection with this API endpoint, Nango will check if the access token has expired. If it has, it will refresh it.
 
-**We recommend you always fetch the token just before you use it to make sure it is fresh!**
+We recommend not caching tokens for longer than 5 minutes to ensure they are fresh.
 </Tip>
 
 **Parameters**
@@ -515,12 +515,12 @@ await nango.deleteConnection('<INTEGRATION-ID>', 'CONNECTION-ID');
 
 Empty response.
 
-# Scripts
+# Integration scripts
 
 
-### Get scripts config
+### Get integration scripts config
 
-Return the configuration for all scripts
+Return the configuration for all integration scripts
 
 ```ts
 const scriptsConfig = await nango.getScriptsConfig();

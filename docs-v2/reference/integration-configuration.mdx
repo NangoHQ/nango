@@ -4,7 +4,10 @@ sidebarTitle: 'Integration config (nango.yaml)'
 icon: 'arrow-right-arrow-left'
 ---
 
-Example of an integration configuration: 
+Integrations are configured in the `nango.yaml` file, which lives in your code base ([learn more](/understand/concepts/scripts#integration-configuration)).
+
+# Example
+
 ```yaml nango.yaml
 integrations:
   asana: # Integration ID.
@@ -302,7 +305,7 @@ Changes to your integration configuration become active once you deploy them to 
 These changes can have significant impacts, in particular, if you: 
 - Add a sync
 - Remove a sync or an action
-- Change a model or a script
+- Change a model or an integration script
 
 ### Adding a sync
 

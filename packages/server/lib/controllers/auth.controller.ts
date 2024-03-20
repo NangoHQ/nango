@@ -5,8 +5,8 @@ import util from 'util';
 import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
+import type { User } from '@nangohq/shared';
 import {
-    User,
     userService,
     accountService,
     errorManager,

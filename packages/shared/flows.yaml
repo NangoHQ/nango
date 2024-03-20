@@ -3,7 +3,7 @@ integrations:
         actions:
             algolia-create-contacts:
                 description: |
-                    Action to add a single record contact to an index
+                    Action to add a single record contact to an index in Asana
                 output: AlgoliaContact
                 input: AlgoliaCreateContactInput
                 endpoint: POST /algolia/create-contacts
@@ -21,14 +21,12 @@ integrations:
             asana-tasks:
                 runs: every 30min
                 description: |
-                    Continuously fetches Asana tasks. This is just a trivial example:
-                    it will only get tasks from the first project of the first workspace.
-                    Details: full refresh, doesn't support deletes, sync goes to all time,
-                    metadata is not required.
-                scopes: default
+                    Fetches tasks from Asana, retrieving tasks from only the first project of the first workspace
+                scopes:
+                    - default
                 output: AsanaTask
                 sync_type: full
-                endpoint: /asana/asana-tasks
+                endpoint: /asana/tasks
         models:
             AsanaTask:
                 id: string
@@ -38,30 +36,42 @@ integrations:
                 created_at: date
                 modified_at: date
     ashby:
-        ashby-candidates:
-            runs: every hour
-            returns:
-                - AshbyCandidate
-            description: |
-                Fetch a list of all candidates from your ashby account.
-                Details: Increamental sync, doesn't track deletes, metadata is required.
-        ashby-jobs:
-            runs: every hour
-            returns:
-                - AshbyJob
-            description: |
-                Fetch a list of all jobs from your ashby account.
-                Details: Increamental sync, doesn't track deletes, metadata is required.
-        ashby-create-application:
-            type: action
-            returns: AshbyCreateApplicationResponse
-            description: |
-                Action to consider a candidate for a job.
-        ashby-create-note:
-            type: action
-            returns: AshbyCreateNoteResponse
-            description: |
-                Action to create a note on a candidate.
+        syncs:
+            ashby-candidates:
+                runs: every hour
+                output: AshbyCandidate
+                description: |
+                    Fetches a list of all candidates from your ashby account
+                metadata:
+                    description: |
+                        We need to save a candidatelastsyncToken to track and update candidates' synchronizations
+                    scopes: candidatelastsyncToken
+                sync_type: incremental
+                endpoint: /ashby/candidates
+            ashby-jobs:
+                runs: every hour
+                output: AshbyJob
+                description: |
+                    Fetches a list of all jobs from your ashby account
+                metadata:
+                    description: |
+                        We need to save a jobslastsyncToken to track and update jobs' synchronizations
+                    scopes: jobslastsyncToken
+                sync_type: incremental
+                endpoint: /ashby/jobs
+        actions:
+            ashby-create-application:
+                output: AshbyCreateApplicationResponse
+                input: AshbyCreateCandidateInput
+                description: |
+                    Action to consider a candidate for a job
+                endpoint: POST /ashby/create-application
+            ashby-create-note:
+                output: AshbyCreateNoteResponse
+                input: AshbyCreateNoteInput
+                description: |
+                    Action to create a note on a candidate.
+                endpoint: POST /ashby/create-note
         models:
             AshbyCandidate:
                 id: string
@@ -192,24 +202,36 @@ integrations:
                     firstName: string
                     lastName: string
                     email: string
+            AshbyCreateCandidateInput:
+                candidateId: string
+                jobId: string
+                interviewPlanId: string | undefined
+                interviewStageId: string | undefined
+                sourceId: string | undefined
+                creditedToUserId: string | undefined
+            AshbyCreateNoteInput:
+                candidateId: string
+                note: string | NoteObject
+                sendNotifications: boolean | undefined
+            NoteObject:
+                value: string
+                type: string
     bamboohr-basic:
         syncs:
             bamboohr-employees:
                 runs: every 6 hours
                 description: |
-                    Fetches employees from bamboohr.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of current employees from bamboohr
                 output: BamboohrEmployee
                 sync_type: incremental
                 endpoint: /bamboohr/employees
-                scopes:
-                    - default
         actions:
             bamboohr-create-employee:
                 description: |
-                    Action to create a new employee.
+                    Action to create a new employee
                 output: BamboohrCreateEmployeeResponse
-                endpoint: /bamboohr/create-employee
+                input: BamboohrEmployee
+                endpoint: POST /bamboohr/create-employee
         models:
             BamboohrEmployee:
                 id: string
@@ -244,16 +266,14 @@ integrations:
             BamboohrCreateEmployeeResponse:
                 status: string
     clari-copilot:
-        clari-copilot-call:
-            runs: every hour
-            returns:
-                - ClariCopilotCall
-            description: >
-                Fetches calls from your account. For the first sync, it will go back to
-                the past one year.
-
-                Details: incremental sync, doesn't track deletes, metadata is not
-                required.
+        syncs:
+            clari-copilot-call:
+                runs: every hour
+                output: ClariCopilotCall
+                description: |
+                    Fetches a list of calls from your account. For the first sync, it will go back to the past one year
+                sync_type: incremental
+                endpoint: /clari-copilot/call
         models:
             ClariCopilotCall:
                 id: string
@@ -308,11 +328,15 @@ integrations:
             confluence-spaces:
                 runs: every 4 hours
                 output: ConfluenceSpace
+                description: |
+                    Fetches a list of spaces from confluence
                 sync_type: full
                 endpoint: /confluence/spaces
             confluence-pages:
                 runs: every 4 hours
                 output: ConfluencePage
+                description: |
+                    Fetches a list of pages from confluence
                 sync_type: full
                 endpoint: /confluence/pages
         models:
@@ -351,16 +375,22 @@ integrations:
             evaluagent-users:
                 runs: every day
                 output: EvaluAgentUser
+                description: |
+                    Fetches a list of users from evaluagent
                 sync_type: full
                 endpoint: /evaluagent/users
             evaluagent-groups:
                 runs: every day
                 output: EvaluAgentGroup
+                description: |
+                    Fetches a list of groups from evaluagent
                 sync_type: full
                 endpoint: /evaluagent/groups
             evaluagent-roles:
                 runs: every day
                 output: EvaluAgentRole
+                description: |
+                    Fetches a list of roles from evaluagent
                 sync_type: full
                 endpoint: /evaluagent/roles
         models:
@@ -393,8 +423,7 @@ integrations:
                 sync_type: full
                 scopes: public_repo
                 description: |
-                    Fetches the Github issues from all a user's repositories.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches Github issues from all a user's repositories
                 endpoint: /github/issues
             github-issues-lite:
                 runs: every day
@@ -402,24 +431,18 @@ integrations:
                 sync_type: full
                 output: Issue
                 scopes: public_repo
-                description: >
-                    Fetches the Github issues but up to a maximum of 15 for demo
-
-                    purposes.
-
-                    Details: limited sync, doesn't track deletes, metadata is not
-                    required.
-                endpoint: /github/lite-issues
+                description: |
+                    Fetches Github issues but up to a maximum of 15
+                endpoint: /github/issues-lite
             github-list-files:
                 runs: every hour
                 description: |
-                    Lists all the files of a Github repo given a specific branch.
-                    Details: doesn't track deletes, metadata is required.
+                    Lists all the files of a Github repo given a specific branch
                 sync_type: incremental
                 auto_start: false
                 input: GithubIssueRepoInput
                 output: GithubRepoFile
-                endpoint: /github/files
+                endpoint: /github/list-files
                 scopes: repo
             github-issues-demo:
                 runs: every 5 minutes
@@ -429,27 +452,26 @@ integrations:
                 scopes: public_repo
                 description: |
                     Fetches GitHub issues from our showcase repository.
-                endpoint: GET /github/demo-issues
+                endpoint: /github/demo-issues
         actions:
             github-write-file:
                 scopes: repo
                 input: GithubWriteFileInput
                 output: GithubWriteFileActionResult
-                endpoint: PUT /github/file
+                endpoint: PUT /github/write-file
                 description: |
                     Write content to a particular github file within a repo. If
-                    the file doesn't exist it creates and then writes to it.
+                    the file doesn't exist it creates and then writes to it
             github-list-repos:
                 scopes: read:org
-                endpoint: GET /github/repos
-                output:
-                    - GithubRepo
+                endpoint: GET /github/list-repos
+                output: GithubRepo
                 description: |
                     List github repos from an organization.
-            github-create-demo-issue:
-                endpoint: POST /github/create-demo-issue
-                input: GithubCreateIssueInput
-                output: GithubCreateIssueResult
+            github-issues-demo-action:
+                endpoint: POST /github/demo-write-issue
+                input: GithubWriteIssueInput
+                output: GithubWriteIssueResult
                 description: |
                     Create a GitHub issue in Nango's showcase repository.
         models:
@@ -510,9 +532,9 @@ integrations:
                 id: integer
                 title: string
                 url: string
-            GithubCreateIssueInput:
+            GithubWriteIssueInput:
                 title: string
-            GithubCreateIssueResult:
+            GithubWriteIssueResult:
                 url: string | undefined
                 status: number
     google-calendar:
@@ -520,9 +542,7 @@ integrations:
             google-calendar-events:
                 description: |
                     Sync calendar events on the primary calendar going back one month and
-                    save the entire object as specified by the Google API.
-                    Details: partial sync, doesn't support deletes, sync goes back one
-                    month, metadata is not required.
+                    save the entire object as specified by the Google API
                 runs: every 5 minutes
                 output: GoogleCalendarEvent
                 sync_type: incremental
@@ -530,10 +550,7 @@ integrations:
                 scopes: https://www.googleapis.com/auth/calendar.readonly
             google-calendars:
                 description: |
-                    Sync the calendars list of the user.
-                    Details: full sync, does support deletes. Sync goes back all time,
-                    metadata not required.
-                    Required scope(s): https://www.googleapis.com/auth/calendar.readonly
+                    Sync the calendars list of the user
                 track_deletes: true
                 runs: every hour
                 output: GoogleCalendar
@@ -739,6 +756,8 @@ integrations:
         syncs:
             gmail-emails:
                 runs: every hour
+                description: |
+                    Fetches a list of emails from gmail
                 output: GmailEmail
                 sync_type: incremental
                 endpoint: /google-mail/emails
@@ -759,8 +778,9 @@ integrations:
                 output: OrganizationalUnit
                 sync_type: full
                 endpoint: /google/workspace-org-unit
-                scopes: >-
-                    https://www.googleapis.com/auth/admin.directory.orgunit.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
+                scopes:
+                    - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
+                    - https://www.googleapis.com/auth/admin.directory.user.readonly
             google-workspace-users:
                 runs: every hour
                 output: User
@@ -771,8 +791,9 @@ integrations:
                 output: GoogleWorkspaceUserToken
                 sync_type: full
                 endpoint: /google/workspace-user-access-tokens
-                scopes: >-
-                    https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
+                scopes:
+                    - https://www.googleapis.com/auth/admin.directory.user.readonly
+                    - https://www.googleapis.com/auth/admin.directory.user.security
         models:
             OrganizationalUnit:
                 id: string
@@ -812,36 +833,24 @@ integrations:
             greenhouse-applications:
                 runs: every 6 hours
                 description: |
-                    Fetches all organization's applications from greenhouse.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of all organization's applications from greenhouse
                 output: GreenhouseApplication
                 sync_type: incremental
                 endpoint: /greenhouse-basic/applications
-                scopes:
-                    - default
             greenhouse-candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches all organization's candidates from greenhouse.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of all organization's candidates from greenhouse
                 output: GreenhouseCandidate
                 sync_type: incremental
                 endpoint: /greenhouse-basic/candidates
-                scopes:
-                    - default
             greenhouse-jobs:
                 runs: every 6 hours
                 description: |
-                    Fetches all organization's jobs from greenhouse.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of all organization's jobs from greenhouse
                 output: GreenhouseJob
                 sync_type: incremental
                 endpoint: /greenhouse-basic/jobs
-                scopes:
-                    - default
         models:
             GreenhouseApplication:
                 id: string
@@ -971,54 +980,44 @@ integrations:
             hackerrank-work-interviews:
                 runs: every 6 hours
                 description: |
-                    Fetches interviews from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of interviews from hackerrank work
                 output: HackerRankWorkInterview
                 sync_type: incremental
                 endpoint: /hackerrank-work/interviews
-                scopes:
-                    - default
             hackerrank-work-teams:
                 runs: every 6 hours
                 description: |
-                    Fetches teams from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of teams from hackerrank work
                 output: HackerRankWorkTeam
                 sync_type: incremental
                 endpoint: /hackerrank-work/teams
-                scopes:
-                    - default
             hackerrank-work-tests:
                 runs: every 6 hours
                 description: |
-                    Fetches tests from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of tests from hackerrank work
                 output: HackerRankWorkTest
                 sync_type: incremental
                 endpoint: /hackerrank-work/tests
-                scopes:
-                    - default
             hackerrank-work-users:
                 runs: every 6 hours
                 description: |
-                    Fetches users from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of users from hackerrank work
                 output: HackerRankWorkUser
                 sync_type: incremental
                 endpoint: /hackerrank-work/users
-                scopes:
-                    - default
         actions:
+            hackerrank-work-create-test:
+                description: |
+                    Action to create a test on hackerrank work
+                input: HackerRankWorkCreateTestInput
+                output: HackerRankWorkTest
+                endpoint: POST /hackerrank-work/create-test
             hackerrank-work-create-interview:
                 description: |
-                    Action to create an interview on hackerrank work.
+                    Action to create an interview on hackerrank work
                 input: HackerRankWorkCreateInterviewInput
                 output: HackerRankWorkInterview
-                endpoint: /hackerrank-work/create-interview
+                endpoint: POST /hackerrank-work/create-interview
         models:
             HackerRankWorkCreateInterviewInput:
                 id: string
@@ -1129,13 +1128,42 @@ integrations:
                 teams: []
                 activated: boolean
                 last_activity_time: date
+            HackerRankWorkCreateTestInput:
+                name: string
+                starttime: Date
+                endtime: Date
+                duration: number
+                instructions: string
+                locked: boolean
+                draft: string
+                languages: string[]
+                candidate_details: string[]
+                custom_acknowledge_text: string
+                cutoff_score: number
+                master_password: string
+                hide_compile_test: boolean
+                tags: string[]
+                role_ids: string[]
+                experience: string[]
+                questions: string[]
+                mcq_incorrect_score: number
+                mcq_correct_score: number
+                secure: boolean
+                shuffle_questions: boolean
+                test_admins: string[]
+                hide_template: boolean
+                enable_acknowledgement: boolean
+                enable_proctoring: boolean
+                candidate_tab_switch: boolean
+                track_editor_paste: boolean
+                show_copy_paste_prompt: boolean
+                ide_config: string
     hibob-service-user:
         syncs:
             hibob-employees:
                 runs: every hour
                 description: |
-                    Returns a list of all active employees.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of all active employees
                 output: HibobEmployee
                 sync_type: full
                 endpoint: /hibob-service-user/hibob-employees
@@ -1167,26 +1195,36 @@ integrations:
         syncs:
             hubspot-service-tickets:
                 runs: every half hour
+                description: |
+                    Fetches a list of service tickets from Hubspot
                 output: HubspotServiceTicket
                 sync_type: incremental
                 endpoint: /hubspot/service-tickets
             hubspot-contacts:
                 runs: every day
+                description: |
+                    Fetches a list of contacts from Hubspot
                 output: HubspotContact
                 sync_type: full
                 endpoint: /hubspot/contacts
             hubspot-owners:
                 runs: every day
+                description: |
+                    Fetches a list of owners from Hubspot
                 output: HubspotOwner
                 sync_type: full
                 endpoint: /hubspot/owner
             hubspot-users:
                 runs: every day
+                description: |
+                    Fetches a list of users from Hubspot
                 output: HubspotUser
                 sync_type: full
                 endpoint: /hubspot/user
             hubspot-knowledge-base:
                 runs: every day
+                description: |
+                    Fetches a list of knowledge base from Hubspot
                 output: HubspotKnowledgeBase
                 sync_type: full
                 endpoint: /hubspot/knowledge-base
@@ -1237,11 +1275,19 @@ integrations:
         syncs:
             intercom-conversations:
                 runs: every 6 hours
-                output: IntercomConversation
+                description: |
+                    Fetches a list of conversations from Intercom
+                output:
+                    - IntercomConversation
+                    - IntercomConversationMessage
                 sync_type: incremental
-                endpoint: /intercom/conversations
+                endpoint:
+                    - /intercom/conversations
+                    - /intercom/conversations-message
             intercom-contacts:
                 runs: every 6 hours
+                description: |
+                    Fetches a list of contacts from Intercom
                 output: IntercomContact
                 sync_type: full
                 endpoint: /intercom/contacts
@@ -1286,6 +1332,8 @@ integrations:
         syncs:
             jira-issues:
                 runs: every 5mins
+                description: |
+                    Fetches a list of issues from Jira
                 output: JiraIssue
                 sync_type: incremental
                 endpoint: /jira/issues
@@ -1301,7 +1349,106 @@ integrations:
                 projectName: string
                 createdAt: date
                 updatedAt: date
-    lever:
+    lever-basic:
+        actions:
+            lever-create-note:
+                description: |
+                    Action to create a note and add it to a candidate profile in Lever
+                output: LeverOpportunityNote
+                input: LeverCreateNoteInput
+                endpoint: POST /lever/create-note
+                scopes:
+                    - notes:write:admin
+            lever-create-opportunity:
+                description: |
+                    Action to create candidates and opportunities in Lever
+                output: LeverOpportunity
+                input: LeverCreateOpportunityInput
+                endpoint: POST /lever/create-opportunity
+                scopes:
+                    - opportunities:write:admin
+        syncs:
+            lever-opportunities:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all pipeline opportunities for contacts in Lever
+                output: LeverOpportunity
+                sync_type: incremental
+                endpoint: /lever/opportunities
+                scopes:
+                    - opportunities:read:admin
+            lever-opportunities-applications:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all applications for a candidate in Lever
+                output: LeverOpportunityApplication
+                sync_type: full
+                endpoint: /lever/opportunities-applications
+                scopes:
+                    - applications:read:admin
+            lever-opportunities-feedbacks:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all feedback forms for a candidate for a specific Opportunity in lever
+                output: LeverOpportunityFeedback
+                sync_type: full
+                endpoint: /lever/opportunities-feedbacks
+                scopes:
+                    - feedback:read:admin
+            lever-opportunities-interviews:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all interviewers for a specific Opportunity in lever
+                output: LeverOpportunityInterview
+                sync_type: full
+                endpoint: /lever/opportunities-interviews
+                scopes:
+                    - interviews:read:admin
+            lever-opportunities-notes:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all notes for a specific candidate in lever
+                output: LeverOpportunityNote
+                sync_type: full
+                endpoint: /lever/opportunities-notes
+                scopes:
+                    - notes:read:admin
+            lever-opportunities-offers:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all offers for a specific candidate in lever.
+                output: LeverOpportunityOffer
+                sync_type: full
+                endpoint: /lever/opportunities-offers
+                scopes:
+                    - offers:write:admin
+            lever-postings:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all postings in Lever
+                output: LeverPosting
+                sync_type: full
+                endpoint: /lever/postings
+                scopes:
+                    - postings:read:admin
+            lever-postings-apply:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all questions included in a posting’s application form in Lever
+                output: LeverPostingApply
+                sync_type: full
+                endpoint: /lever/postings-apply
+                scopes:
+                    - postings:read:admin
+            lever-stage:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all pipeline stages in Lever
+                output: LeverStage
+                sync_type: full
+                endpoint: /lever/stage
+                scopes:
+                    - stages:read:admin
         models:
             LeverOpportunity:
                 id: string
@@ -1474,25 +1621,68 @@ integrations:
             LeverStage:
                 id: string
                 text: string
+            LeverCreateNoteInput:
+                opportunityId: string
+                perform_as: string | undefined
+                note_id: string | undefined
+                value: string | undefined
+                secret: boolean | undefined
+                score: number | undefined
+                notifyFollowers: boolean | undefined
+                createdAt: number | undefined
+            PhoneEntry:
+                value: string | undefined
+                type: string | undefined
+            ArchievedEntry:
+                archivedAt: number | undefined
+                reason: string | undefined
+            LeverCreateOpportunityInput:
+                perform_as: string
+                parse: boolean | undefined
+                perform_as_posting_owner: boolean | undefined
+                name: string | undefined
+                headline: string | undefined
+                stage: string | undefined
+                location: string | undefined
+                phones: PhoneEntry[] | undefined
+                emails: string | undefined
+                links: string[] | undefined
+                tags: string[] | undefined
+                sources: string[] | undefined
+                origin: string | undefined
+                owner: string | undefined
+                followers: string[] | undefined
+                postings: string[] | undefined
+                createdAt: number | undefined
+                archived: ArchievedEntry | undefined
+                contact: string[] | undefined
     linear:
         syncs:
             linear-issues:
                 runs: every 5min
+                description: |
+                    Fetch a list of issues from Linear
                 output: LinearIssue
                 sync_type: incremental
                 endpoint: /linear/issues
             linear-projects:
                 runs: every 5min
+                description: |
+                    Fetch a list of projects from Linear
                 output: LinearProject
                 sync_type: incremental
                 endpoint: /linear/projects
             linear-teams:
                 runs: every 5min
+                description: |
+                    Fetch a list of teams from Linear
                 output: LinearTeam
                 sync_type: incremental
                 endpoint: /linear/teams
             linear-roadmaps:
                 runs: every 5min
+                description: |
+                    Fetch a list of roadmaps from Linear
                 output: LinearRoadmap
                 sync_type: incremental
                 endpoint: /linear/roadmaps
@@ -1591,13 +1781,10 @@ integrations:
             next-cloud-users:
                 runs: every hour
                 description: |
-                    Fetch all users' details from NextCloud account
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                output: 'N'
+                    Fetch a list of all users' details from NextCloud account
+                output: 'NextCloudUser'
                 sync_type: full
                 endpoint: /next-cloud-ocs/next-cloud-users
-                scopes:
-                    - default
         models:
             NextCloudUser:
                 enabled: boolean
@@ -1656,13 +1843,9 @@ integrations:
                     sub-databases and retrieve only the text content and ignores
                     images, files and other blocks that do not have
                     a `rich_text` property.
-                    Details: incremental sync, doesn't support deletes, sync goes to all
-                    time, metadata is not required.
-                    Required scope(s): none
                 output: NotionPage
                 sync_type: incremental
                 endpoint: /notion/pages
-                scopes: ''
             notion-rich-pages:
                 runs: every 6 hours
                 track_deletes: true
@@ -1670,13 +1853,9 @@ integrations:
                     Sync pages, subpages, database entries, entries of
                     sub-databases and maps to full markdown. It transforms
                     images, tables, uploaded files, etc into their markdown counterparts.
-                    Details: full sync, tracks deletes, sync goes to all time, metadata is
-                    not required.
-                    Required scope(s): none
                 output: NotionRichPage
                 sync_type: incremental
                 endpoint: /notion/rich-pages
-                scopes: ''
         models:
             NotionPage:
                 id: string
@@ -1696,8 +1875,7 @@ integrations:
             pipedrive-activities:
                 runs: every hour
                 description: |
-                    Fetches activities from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of activities from pipedrive
                 output: PipeDriveActivity
                 sync_type: incremental
                 endpoint: /pipedrive/activities
@@ -1706,8 +1884,7 @@ integrations:
             pipedrive-deals:
                 runs: every hour
                 description: |
-                    Fetches deals from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of deals from pipedrive
                 output: PipeDriveDeal
                 sync_type: incremental
                 endpoint: /pipedrive/deals
@@ -1716,8 +1893,7 @@ integrations:
             pipedrive-organizations:
                 runs: every hour
                 description: |
-                    Fetches organizations from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of organizations from pipedrive
                 output: PipeDriveOrganization
                 sync_type: incremental
                 endpoint: /pipedrive/organizations
@@ -1726,8 +1902,7 @@ integrations:
             pipedrive-persons:
                 runs: every half hour
                 description: |
-                    Fetches persons from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches persons from pipedrive
                 output: PipeDrivePerson
                 sync_type: incremental
                 endpoint: /pipedrive/persons
@@ -1834,26 +2009,36 @@ integrations:
         syncs:
             salesforce-accounts:
                 runs: every hour
+                description: |
+                    Fetches a list of accounts from salesforce
                 output: SalesforceAccount
                 sync_type: incremental
                 endpoint: /salesforce/accounts
             salesforce-contacts:
                 runs: every hour
+                description: |
+                    Fetches a list of contacts from salesforce
                 output: SalesforceContact
                 sync_type: incremental
                 endpoint: /salesforce/contacts
             salesforce-deals:
                 runs: every hour
+                description: |
+                    Fetches a list of deals from salesforce
                 output: SalesforceDeal
                 sync_type: incremental
                 endpoint: /salesforce/deals
             salesforce-articles:
                 runs: every day
+                description: |
+                    Fetches a list of articles from salesforce
                 output: SalesforceArticle
                 sync_type: incremental
                 endpoint: /salesforce/articles
             salesforce-tickets:
                 runs: every day
+                description: |
+                    Fetches a list of tickets from salesforce
                 output: SalesforceTicket
                 sync_type: incremental
                 endpoint: /salesforce/tickets
@@ -1914,7 +2099,7 @@ integrations:
             slack-users:
                 runs: every hour
                 description: |
-                    Syncs information about all Users on the Slack workspace.
+                    Syncs information about all Users on the Slack workspace
                 output: SlackUser
                 sync_type: full
                 endpoint: /slack/users
@@ -1924,7 +2109,7 @@ integrations:
                 runs: every hour
                 description: |
                     Syncs information about all Slack channels. Which channels get synced
-                    (public, private, IMs, group DMs) dependson the scopes. If
+                    (public, private, IMs, group DMs) depends on the scopes. If
                     joinPublicChannels is set to true, the bot will automatically join all
                     public channels as well. Scopes: At least one of channels:read,
                     groups:read, mpim:read, im:read. To also join public channels:
@@ -1944,10 +2129,16 @@ integrations:
                     detection of the channel. For subsequent runs it will sync messages,
                     threads & reactions from the last 10 days. Scopes required:
                     channels:read, and at least one of
-                    channels:history,groups:history,mpim:history,im:history
-                output: SlackMessage
-                sync_type: full
-                endpoint: /slack/messages
+                    channels:history, groups:history, mpim:history, im:history
+                output:
+                    - SlackMessage
+                    - SlackMessageReply
+                    - SlackMessageReaction
+                sync_type: incremental
+                endpoint:
+                    - /slack/messages
+                    - /slack/messages-reply
+                    - /slack/messages-reaction
                 scopes:
                     - channels:read
                     - channels:history
@@ -2043,11 +2234,10 @@ integrations:
             teamtailor-candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all candidates from your teamtailor account.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of all candidates from your teamtailor account
                 output: TeamtailorCandidate
                 sync_type: full
-                endpoint: /teamtailor-candidates/candidates
+                endpoint: /teamtailor/candidates
                 scopes:
                     - Admin
         models:
@@ -2147,9 +2337,7 @@ integrations:
             workable-candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches candidates from workable.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of candidates from workable
                 output: WorkableCandidate
                 sync_type: incremental
                 endpoint: /workable/candidates
@@ -2158,8 +2346,7 @@ integrations:
             workable-candidates-activities:
                 runs: every 6 hours
                 description: |
-                    Fetches activity stream of the given candidate
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of activity streams of the given candidate
                 output: WorkableCandidateActivity
                 sync_type: full
                 endpoint: /workable/candidates-activities
@@ -2168,8 +2355,7 @@ integrations:
             workable-candidates-offer:
                 runs: every 6 hours
                 description: |
-                    Fetches candidate's latest offer from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches candidate's latest offer from workable
                 output: WorkableCandidateOffer
                 sync_type: full
                 endpoint: /workable/candidates-offer
@@ -2178,9 +2364,7 @@ integrations:
             workable-jobs:
                 runs: every 6 hours
                 description: |
-                    Fetches jobs from workable.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of jobs from workable
                 output: WorkableJob
                 sync_type: incremental
                 endpoint: /workable/jobs
@@ -2189,8 +2373,7 @@ integrations:
             workable-jobs-candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches candidates for the specified job from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of candidates for the specified job from workable
                 output: WorkableJobsCandidate
                 sync_type: full
                 endpoint: /workable/jobs-candidates
@@ -2199,8 +2382,7 @@ integrations:
             workable-jobs-questions:
                 runs: every 6 hours
                 description: |
-                    Fetches questions for the specified job from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of questions for the specified job from workable
                 output: WorkableJobQuestion
                 sync_type: full
                 endpoint: /workable/jobs-questions
@@ -2209,20 +2391,28 @@ integrations:
             workable-members:
                 runs: every 6 hours
                 description: |
-                    Fetches account members from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of account members from workable
                 output: WorkableMember
                 sync_type: full
                 endpoint: /workable/members
                 scopes:
                     - r_jobs
         actions:
+            workable-create-candidate:
+                description: |
+                    Action to create a candidate at the specified job
+                scopes:
+                    - w_candidates
+                output: WorkableCreateCandidateResponse
+                input: WorkableCreateCandidateInput
+                endpoint: POST /workable/create-candidate
             workable-create-comment:
                 description: |
-                    Action to create a comment on the applicant's timeline.
-                    Scope(s): w_candidates or w_comments
+                    Action to create a comment on the applicant's timeline
+                scopes:
+                    - w_candidates or w_comments
                 output: WorkableCreateCommentResponse
-                endpoint: /workable/create-comment
+                endpoint: POST /workable/create-comment
         models:
             WorkableCandidate:
                 id: string
@@ -2358,15 +2548,81 @@ integrations:
                         zip_code: string
             WorkableCreateCommentResponse:
                 id: string
+            WorkableCreateCandidateInput:
+                shortcode: string
+                candidate:
+                    name: string
+                    firstname: string
+                    lastname: string
+                    email: string
+                    headline: string | undefined
+                    summary: string | undefined
+                    address: string | undefined
+                    phone: string | undefined
+                    cover_letter: string | undefined
+                    education_entries: EducationEntry[] | undefined
+                    experience_entries: ExperienceEntry[] | undefined
+                    answers: Answer[] | undefined
+                    skills: string[] | undefined
+                    tags: string[] | undefined
+                    disqualified: boolean | undefined
+                    disqualification_reason: string | undefined
+                    disqualified_at: string | undefined
+                    social_profiles: SocialProfile[] | undefined
+                domain: string | undefined
+                recruiter_key: string | undefined
+            EducationEntry:
+                school: string
+                degree: string | undefined
+                field_of_study: string | undefined
+                start_date: string | undefined
+                end_date: string | undefined
+            ExperienceEntry:
+                title: string
+                summary: string | undefined
+                start_date: string | undefined
+                end_date: string | undefined
+                current: boolean | undefined
+                company: string | undefined
+                industry: string | undefined
+            Answer:
+                question_key: string
+                body: string | undefined
+                choices: string[]
+                checked: boolean | undefined
+                date: string | undefined
+                number: number | undefined
+                file:
+                    name: string
+                    data: string
+            SocialProfile:
+                type: string
+                name: string | undefined
+                username: string | undefined
+                url: string
+            WorkableCreateCommentInput:
+                id: string
+                member_id: string
+                comment:
+                    body: string
+                    policy: string[] | undefined
+                    attachment: Attachment | undefined
+            Attachment:
+                name: string
+                data: string
     zendesk:
         syncs:
             zendesk-tickets:
                 runs: every 1 hour
+                description: |
+                    Fetches a list of tickets from zendesk
                 output: ZendeskTicket
                 sync_type: full
                 endpoint: /zendesk/tickets
             zendesk-articles:
                 runs: every 6 hours
+                description: |
+                    Fetches a list of articles in Help center from zendesk
                 output: ZendeskArticle
                 sync_type: full
                 endpoint: /zendesk/articles
@@ -2460,9 +2716,7 @@ integrations:
                 runs: every half hour
                 auto_start: false
                 description: |
-                    Fetches accounts from zoho crm.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                    Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
+                    Fetches a list of accounts from zoho crm
                 output: ZohoCRMAccount
                 sync_type: incremental
                 endpoint: /zoho-crm/accounts
@@ -2472,9 +2726,7 @@ integrations:
                 runs: every half hour
                 auto_start: false
                 description: |
-                    Fetches contacts from zoho crm.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                    Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
+                    Fetches a list of contacts from zoho crm
                 output: ZohoCRMContact
                 sync_type: incremental
                 endpoint: /zoho-crm/contacts
@@ -2484,9 +2736,7 @@ integrations:
                 runs: every half hour
                 auto_start: false
                 description: |
-                    Fetches deals/opportunities from zoho crm.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                    Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
+                    Fetches a list of deals/opportunities from zoho crm
                 output: ZohoCRMDeal
                 sync_type: incremental
                 endpoint: /zoho-crm/deals
@@ -2719,6 +2969,32 @@ integrations:
                 endpoint: /zoho-mail/tasks
                 scopes:
                     - ZohoMail.tasks.READ
+            zoho-mail-emails:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all your account's emails in Zoho mail
+                output: ZohoMailEmail
+                sync_type: full
+                endpoint: /zoho-mail/emails
+                scopes:
+                    - ZohoMail.messages.READ
+        actions:
+            zoho-mail-send-email:
+                description: |
+                    An action to send an email in zoho mail
+                output: ZohoMailSendEmailOutput
+                input: ZohoMailSendEmailInput
+                endpoint: POST /zoho-mail/send-email
+                scopes:
+                    - ZohoMail.messages.CREATE
+            zoho-mail-add-user:
+                description: |
+                    An action to add a user to the organization in zoho mail
+                output: ZohoMailAddUserOutput
+                input: ZohoMailAddUserInput
+                endpoint: POST /zoho-mail/add-user
+                scopes:
+                    - ZohoMail.organization.accounts.CREATE
         models:
             ZohoMailTask:
                 id: string
@@ -2754,3 +3030,49 @@ integrations:
                 serviceUniqId: number
                 depUniqId: string
                 status: string
+            ZohoMailEmail:
+                summary: string
+                sentDateInGMT: string
+                calendarType: number
+                subject: string
+                messageId: string
+                flagid: string
+                status2: string
+                priority: string
+                hasInline: string
+                toAddress: string
+                folderId: string
+                ccAddress: string
+                hasAttachment: string
+                size: string
+                sender: string
+                receivedTime: string
+                fromAddress: string
+                status: string
+            ZohoMailSendEmailInput:
+                accountId: string
+                fromAddress: string
+                toAddress: string
+                ccAddress: string
+                bccAddress: string
+                subject: string
+                encoding: string
+                mailFormat: string
+                askReceipt: string
+            ZohoMailSendEmailOutput:
+                status: object
+                data: object
+            ZohoMailAddUserInput:
+                zoid: number
+                primaryEmailAddress: string
+                password: string
+                displayName: string
+                role: string
+                country: string
+                language: string
+                timeZone: string
+                oneTimePassword: boolean
+                groupMailList: string[]
+            ZohoMailAddUserOutput:
+                status: object
+                data: object

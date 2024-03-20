@@ -1,21 +1,17 @@
 import type { NextFunction, Request, Response } from 'express';
+import type { LogLevel, DataResponse, DataRecord, UpsertResponse, Result } from '@nangohq/shared';
 import {
     createActivityLogMessage,
-    LogLevel,
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
     updateSyncJobResult,
-    DataResponse,
     dataService,
     syncDataService,
     getSyncConfigByJobId,
-    DataRecord,
-    UpsertResponse,
     resultOk,
     resultErr,
     isOk,
-    Result,
     telemetry,
     MetricTypes
 } from '@nangohq/shared';

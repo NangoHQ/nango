@@ -404,6 +404,9 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             if (action.output) {
                 const actionReturns = Array.isArray(action.output) ? action.output : [action.output];
                 for (const model of actionReturns) {
+                    if (!model) {
+                        continue;
+                    }
                     if (!allModels.includes(model)) {
                         if (!isJsOrTsType(model)) {
                             allModels.push(model);

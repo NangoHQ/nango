@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import tracer from 'dd-trace';
-import type { LogLevel } from '@nangohq/shared';
+import type { LogLevel, ApiKeyCredentials, BasicApiCredentials } from '@nangohq/shared';
 import {
     getAccount,
     getEnvironmentId,
@@ -11,8 +11,6 @@ import {
     AuthOperation,
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
-    ApiKeyCredentials,
-    BasicApiCredentials,
     connectionTest as connectionTestHook,
     isErr,
     createActivityLogMessage,

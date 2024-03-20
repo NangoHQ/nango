@@ -31,6 +31,7 @@
     "devDependencies": {
         "@types/connect-timeout": "^0.0.39",
         "@types/node": "^18.7.6",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "1.4.0"
     }
 }

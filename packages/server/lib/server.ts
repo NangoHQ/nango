@@ -22,11 +22,12 @@ import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './controllers/ratelimit.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
-import { WebSocketServer, WebSocket } from 'ws';
+import type { WebSocket } from 'ws';
+import { WebSocketServer } from 'ws';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import { AuthClient } from './clients/auth.client.js';
+import { setupAuth } from './clients/auth.client.js';
 import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
@@ -55,7 +56,7 @@ const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const app = express();
 
 // Auth
-AuthClient.setup(app);
+setupAuth(app);
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
