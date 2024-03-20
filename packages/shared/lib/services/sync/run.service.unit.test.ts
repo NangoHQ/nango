@@ -3,7 +3,8 @@ import SyncRun from './run.service.js';
 import * as ConfigService from './config/config.service.js';
 import environmentService from '../environment.service.js';
 import LocalFileService from '../file/local.service.js';
-import { IntegrationServiceInterface, SyncType } from '../../models/Sync.js';
+import type { IntegrationServiceInterface } from '../../models/Sync.js';
+import { SyncType } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {

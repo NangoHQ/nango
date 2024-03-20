@@ -1,5 +1,6 @@
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
+import type { Schedule as SyncSchedule, SyncCommand } from '../../models/Sync.js';
+import { ScheduleStatus, SyncCommandToScheduleStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
