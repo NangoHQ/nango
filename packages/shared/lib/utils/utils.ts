@@ -34,6 +34,9 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
+export const AUTH_ENABLED = isCloud() || isEnterprise();
+export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
+
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
     aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],

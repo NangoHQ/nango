@@ -295,22 +295,10 @@ class EnvironmentService {
         return null;
     }
 
-    /**
-     * Create Account
-     * @desc create a new account and assign to the default environmenets
-     */
-    async createAccount(name: string): Promise<Account | null> {
-        const result: void | Pick<Account, 'id'> = await db.knex.from<Account>(`_nango_accounts`).insert({ name: name }, ['id']);
-
-        if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-            for (const defaultEnvironment of defaultEnvironments) {
-                await this.createEnvironment(result[0]['id'], defaultEnvironment);
-            }
-
-            return result[0];
+    async createDefaultEnvironments(accountId: number): Promise<void> {
+        for (const environment of defaultEnvironments) {
+            await this.createEnvironment(accountId, environment);
         }
-
-        return null;
     }
 
     async getEnvironmentName(id: number): Promise<string | null> {

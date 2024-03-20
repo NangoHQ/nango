@@ -56,7 +56,7 @@
         "ms": "2.1.3",
         "postcss": "8.4.35",
         "postcss-loader": "8.1.1",
-        "posthog-js": "1.57.2",
+        "posthog-js": "1.116.2",
         "query-string": "8.1.0",
         "react": "18.2.0",
         "react-code-blocks": "0.0.9-0",

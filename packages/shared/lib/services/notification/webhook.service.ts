@@ -294,6 +294,11 @@ class WebhookService {
             return;
         }
 
+        if (!connectionIds || connectionIds.length === 0) {
+            await this.forwardHandler(environment_id, providerConfigKey, '', provider, payload, webhookOriginalHeaders);
+            return;
+        }
+
         for (const connectionId of connectionIds) {
             await this.forwardHandler(environment_id, providerConfigKey, connectionId, provider, payload, webhookOriginalHeaders);
         }
