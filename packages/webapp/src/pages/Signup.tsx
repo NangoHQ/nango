@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAnalyticsTrack } from '../utils/analytics';
+import { isCloud } from '../utils/utils';
 import { useSignupAPI } from '../utils/api';
 import { useSignin, User } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
@@ -106,12 +107,16 @@ export default function Signup() {
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
-                        <div className="flex items-center justify-center my-4 text-xs">
-                            <div className="border-t border-gray-600 flex-grow mr-7"></div>
-                            <span className="text-dark-500">or continue with</span>
-                            <div className="border-t border-gray-600 flex-grow ml-7"></div>
-                        </div>
-                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} />
+                        {isCloud() && (
+                            <>
+                                <div className="flex items-center justify-center my-4 text-xs">
+                                    <div className="border-t border-gray-600 flex-grow mr-7"></div>
+                                    <span className="text-dark-500">or continue with</span>
+                                    <div className="border-t border-gray-600 flex-grow ml-7"></div>
+                                </div>
+                                <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} />
+                            </>
+                        )}
                     </div>
                     <div className="grid text-xs">
                         <div className="mt-7 flex place-self-center">

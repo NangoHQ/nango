@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useInviteSignupAPI, useSignupAPI } from '../utils/api';
-import { isEnterprise } from '../utils/utils';
+import { isCloud, isEnterprise } from '../utils/utils';
 import { useSignin, User } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
 import GoogleButton from '../components/ui/button/Auth/Google';
@@ -130,17 +130,21 @@ export default function InviteSignup() {
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
-                        <div className="flex items-center justify-center my-4 text-xs">
-                            <div className="border-t border-gray-600 flex-grow mr-7"></div>
-                            <span className="text-dark-500">or continue with</span>
-                            <div className="border-t border-gray-600 flex-grow ml-7"></div>
-                        </div>
-                        <GoogleButton
-                            text="Sign up with Google"
-                            invitedAccountID={invitedAccountID}
-                            token={token}
-                            setServerErrorMessage={setServerErrorMessage}
-                        />
+                        {isCloud() && (
+                            <>
+                                <div className="flex items-center justify-center my-4 text-xs">
+                                    <div className="border-t border-gray-600 flex-grow mr-7"></div>
+                                    <span className="text-dark-500">or continue with</span>
+                                    <div className="border-t border-gray-600 flex-grow ml-7"></div>
+                                </div>
+                                <GoogleButton
+                                    text="Sign up with Google"
+                                    invitedAccountID={invitedAccountID}
+                                    token={token}
+                                    setServerErrorMessage={setServerErrorMessage}
+                                />
+                            </>
+                        )}
                     </div>
                     <div className="grid w-full">
                         <div className="mt-8 flex text-xs">
