@@ -42,7 +42,7 @@ services:
         depends_on:
             - nango-db
         volumes:
-            - "${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-server/src/packages/shared/dist/lib/nango-integrations"
+            - '${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-server/src/packages/shared/dist/nango-integrations'
         networks:
             - nango
 
@@ -64,7 +64,7 @@ services:
             - nango-db
             - temporal
         volumes:
-            - "${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-jobs/src/packages/shared/dist/lib/nango-integrations"
+            - '${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-jobs/src/packages/shared/dist/nango-integrations'
         networks:
             - nango
 
