@@ -532,13 +532,14 @@ export async function deleteRecordsBySyncId({ syncId, limit = 5000 }: { syncId: 
     return { totalDeletedRecords };
 }
 
-// Mark all records that don't belong to currentGeneration as deleted
+// Mark all non-deleted records that don't belong to currentGeneration as deleted
 export async function markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, generation: number): Promise<SyncDataRecord[]> {
     return schema()
         .from<SyncDataRecord>(RECORDS_TABLE)
         .where({
             nango_connection_id: connectionId,
-            model
+            model,
+            external_is_deleted: false
         })
         .whereNot({
             sync_job_id: generation
