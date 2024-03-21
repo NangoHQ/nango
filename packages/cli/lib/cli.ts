@@ -299,7 +299,7 @@ export const tscWatch = async (debug = false) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        compileFile(listFile(`./${filePath}`));
+        compileFile(listFile(filePath));
     });
 
     watcher.on('unlink', (filePath: string) => {
