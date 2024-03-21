@@ -17,9 +17,13 @@ class FlowService {
     public getAllAvailableFlows(): Config {
         try {
             const flowPath = path.join(dirname(import.meta.url), '../../flows.yaml');
-            const flows = yaml.load(fs.readFileSync(flowPath).toString());
+            const flows = yaml.load(fs.readFileSync(flowPath).toString()) as Config;
 
-            return flows as Config;
+            if (flows === undefined || !('integrations' in flows) || Object.keys(flows.integrations).length <= 0) {
+                throw new Error('empty_flows');
+            }
+
+            return flows;
         } catch (err) {
             errorManager.report(`failed_to_find_flows, ${JSON.stringify(err)}`);
             return {} as Config;
