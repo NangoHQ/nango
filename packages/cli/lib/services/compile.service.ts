@@ -1,6 +1,6 @@
 import fs from 'fs';
 import * as tsNode from 'ts-node';
-import glob from 'glob';
+import { glob } from 'glob';
 import chalk from 'chalk';
 import path from 'path';
 import { SyncConfigType } from '@nangohq/shared';
@@ -30,16 +30,17 @@ class CompileService {
             await modelService.createModelFile();
         }
 
+        const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
+            compilerOptions
         });
 
         if (debug) {
-            printDebug(`Compiler options: ${JSON.stringify(JSON.parse(tsconfig).compilerOptions, null, 2)}`);
+            printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
         }
 
-        const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
+        const integrationFiles = listFilesToCompile({ syncName });
         let success = true;
 
         const { success: loadSuccess, error, response: config } = await configService.load('', debug);
@@ -51,34 +52,31 @@ class CompileService {
 
         const modelNames = configService.getModelNames(config);
 
-        for (const filePath of integrationFiles) {
+        for (const file of integrationFiles) {
             try {
-                const providerConfiguration = config.find((config) =>
-                    [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
-                );
+                const providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
 
                 if (!providerConfiguration) {
                     continue;
                 }
 
-                const syncConfig = [...providerConfiguration?.syncs, ...providerConfiguration?.actions].find(
-                    (sync) => sync.name === path.basename(filePath, '.ts')
+                const syncConfig = [...(providerConfiguration?.syncs || []), ...(providerConfiguration?.actions || [])].find(
+                    (sync) => sync.name === file.baseName
                 );
                 const type = syncConfig?.type || SyncConfigType.SYNC;
 
-                if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
-                    if (syncName && filePath.includes(syncName)) {
+                if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
+                    if (syncName && file.inputPath.includes(syncName)) {
                         success = false;
                     }
                     continue;
                 }
-                const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-                const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
+                const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
 
-                fs.writeFileSync(jsFilePath, result);
-                console.log(chalk.green(`Compiled "${filePath}" successfully`));
+                fs.writeFileSync(file.outputPath, result);
+                console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
             } catch (error) {
-                console.error(`Error compiling "${filePath}":`);
+                console.error(`Error compiling "${file.inputPath}":`);
                 console.error(error);
                 success = false;
             }
@@ -86,6 +84,30 @@ class CompileService {
 
         return success;
     }
+}
+
+export interface ListedFile {
+    inputPath: string;
+    outputPath: string;
+    baseName: string;
+}
+
+export function getFileToCompile(filePath: string): ListedFile {
+    if (!filePath.startsWith('./')) {
+        filePath = `./${filePath}`;
+    }
+    return {
+        inputPath: filePath,
+        outputPath: filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`),
+        baseName: path.basename(filePath, '.ts')
+    };
+}
+export function listFilesToCompile({ cwd, syncName }: { cwd?: string; syncName?: string | undefined } = {}): ListedFile[] {
+    const files = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`, { dotRelative: true, cwd: cwd || process.cwd() });
+
+    return files.map((filePath) => {
+        return getFileToCompile(filePath);
+    });
 }
 
 const compileService = new CompileService();

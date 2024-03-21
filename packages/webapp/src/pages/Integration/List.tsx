@@ -1,7 +1,6 @@
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { Loading } from '@geist-ui/core';
-import { Link } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
 
 import DashboardLayout from '../../layout/DashboardLayout';

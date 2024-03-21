@@ -18,7 +18,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "^0.39.5",
+        "@nangohq/shared": "^0.39.8",
         "dd-trace": "5.2.0",
         "express": "^4.18.2",
         "zod": "^3.22.4",
@@ -27,8 +27,8 @@
     "devDependencies": {
         "@types/mock-knex": "^0.4.8",
         "@types/node": "^18.7.6",
-        "mock-knex": "^0.4.13",
         "node-fetch": "^3.3.2",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "1.4.0"
     }
 }

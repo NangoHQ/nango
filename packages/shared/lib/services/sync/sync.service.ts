@@ -1,18 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import {
-    SyncConfigType,
-    IncomingFlowConfig,
-    SyncAndActionDifferences,
-    Sync,
-    Job as SyncJob,
-    SyncStatus,
-    SyncWithSchedule,
-    SlimSync,
-    SlimAction,
-    SyncCommand,
-    ScheduleStatus
-} from '../../models/Sync.js';
+import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
+import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';

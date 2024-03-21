@@ -22,21 +22,24 @@ import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './controllers/ratelimit.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
-import { WebSocketServer, WebSocket } from 'ws';
+import type { WebSocket } from 'ws';
+import { WebSocketServer } from 'ws';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import { AuthClient } from './clients/auth.client.js';
+import { setupAuth } from './clients/auth.client.js';
 import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
-import accountController, { AUTH_ENABLED } from './controllers/account.controller.js';
+import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import {
     getGlobalOAuthCallbackUrl,
     environmentService,
     getPort,
+    AUTH_ENABLED,
+    MANAGED_AUTH_ENABLED,
     isCloud,
     isEnterprise,
     isBasicAuthEnabled,
@@ -54,7 +57,7 @@ const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const app = express();
 
 // Auth
-AuthClient.setup(app);
+setupAuth(app);
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -152,6 +155,12 @@ if (AUTH_ENABLED) {
     app.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
     app.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
     app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+}
+
+if (MANAGED_AUTH_ENABLED) {
+    app.route('/api/v1/managed/signup').post(rateLimiterMiddleware, authController.getManagedLogin.bind(authController));
+    app.route('/api/v1/managed/signup/:token').post(rateLimiterMiddleware, authController.getManagedLoginWithInvite.bind(authController));
+    app.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
 }
 
 // Webapp routes (session auth).

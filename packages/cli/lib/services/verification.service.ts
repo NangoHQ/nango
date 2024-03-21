@@ -1,13 +1,11 @@
 import fs from 'fs';
-import glob from 'glob';
 import chalk from 'chalk';
-import path from 'path';
 import promptly from 'promptly';
 import { exec } from 'child_process';
 
 import { nangoConfigFile, loadLocalNangoConfig, determineVersion } from '@nangohq/shared';
 import configService from './config.service.js';
-import compileService from './compile.service.js';
+import compileService, { listFilesToCompile } from './compile.service.js';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
@@ -18,7 +16,7 @@ class VerificationService {
         if (debug) {
             printDebug(`Current full working directory is read as: ${cwd}`);
         }
-        const currentDirectorySplit = cwd.split(/[\/\\]/);
+        const currentDirectorySplit = cwd.split(/[/\\]/);
         const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
         if (debug) {
@@ -132,9 +130,9 @@ class VerificationService {
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = glob.sync(`./*.ts`);
+        const tsFiles = listFilesToCompile();
 
-        const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
+        const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 
         const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName));
 

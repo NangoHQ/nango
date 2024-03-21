@@ -4,11 +4,13 @@ interface DefaultLayoutI {
 
 export default function DefaultLayout({ children }: DefaultLayoutI) {
     return (
-        <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                <img className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
+        <div className="flex min-h-full flex-col justify-center py-10 sm:px-6 lg:px-8">
+            <div className="bg-dark-800 border border-[#141417] shadow shadow-zinc-900 p-12 mx-auto px-16">
+                <div className="">
+                    <img className="mx-auto h-14 w-auto" src="/logo-dark.svg" alt="Nango" />
+                </div>
+                {children}
             </div>
-            {children}
         </div>
     );
 }

@@ -1,7 +1,8 @@
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import { AuthModes, Template } from '../models/index.js';
+import type { Template } from '../models/index.js';
+import { AuthModes } from '../models/index.js';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
 import { NangoAction } from './sync.js';

@@ -34,6 +34,9 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
+export const AUTH_ENABLED = isCloud() || isEnterprise();
+export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
+
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
     aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],
@@ -41,7 +44,11 @@ export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
 };
 
-export function isJsOrTsType(type: string): boolean {
+export function isJsOrTsType(type?: string): boolean {
+    if (!type) {
+        return false;
+    }
+
     const baseType = type.replace(/\[\]$/, '');
 
     const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();
@@ -156,8 +163,8 @@ export function isValidHttpUrl(str: string) {
     }
 }
 
-export function dirname() {
-    return path.dirname(fileURLToPath(import.meta.url));
+export function dirname(thisFile?: string) {
+    return path.dirname(fileURLToPath(thisFile || import.meta.url));
 }
 
 export function parseTokenExpirationDate(expirationDate: any): Date {
@@ -416,9 +423,15 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
     return Object.fromEntries(arr) as Record<string, string>;
 }
 
+let packageJsonCache: PackageJson | undefined;
 export function packageJsonFile(): PackageJson {
-    const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/shared/package.json' : '../shared/package.json';
-    return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
+    if (packageJsonCache) {
+        return packageJsonCache;
+    }
+
+    const localPath = '../../package.json';
+    packageJsonCache = JSON.parse(readFileSync(resolve(dirname(), localPath)).toString('utf-8')) as PackageJson;
+    return packageJsonCache;
 }
 
 export function safeStringify(obj: any): string {

@@ -3,7 +3,8 @@ import chalk from 'chalk';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-import ms, { StringValue } from 'ms';
+import type { StringValue } from 'ms';
+import ms from 'ms';
 import type {
     NangoConfig,
     NangoConfigV1,
@@ -404,6 +405,9 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             if (action.output) {
                 const actionReturns = Array.isArray(action.output) ? action.output : [action.output];
                 for (const model of actionReturns) {
+                    if (!model) {
+                        continue;
+                    }
                     if (!allModels.includes(model)) {
                         if (!isJsOrTsType(model)) {
                             allModels.push(model);

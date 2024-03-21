@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import _ from 'lodash';
-import { useNavigate } from 'react-router';
+import debounce from 'lodash/debounce';
+import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
 import { useGetIntegrationDetailsAPI, useGetProvidersAPI, useCreateEmptyIntegrationAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { AuthModes } from '../../types';
+import type { AuthModes } from '../../types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { useStore } from '../../store';
 
@@ -79,7 +79,7 @@ export default function Create() {
         [initialProviders]
     );
 
-    const debouncedFilterProviders = useMemo(() => _.debounce(filterProviders, 300), [filterProviders]);
+    const debouncedFilterProviders = useMemo(() => debounce(filterProviders, 300), [filterProviders]);
 
     const handleInputChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {

@@ -1,6 +1,7 @@
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
-import { ProxyAppRouter, getRunnerClient } from '@nangohq/nango-runner';
+import type { ProxyAppRouter } from '@nangohq/nango-runner';
+import { getRunnerClient } from '@nangohq/nango-runner';
 import { NodeEnv, getEnv, getPersistAPIUrl } from '@nangohq/shared';
 import { RenderAPI } from './render.api.js';
 import tracer from 'dd-trace';

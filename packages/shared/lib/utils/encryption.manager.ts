@@ -1,4 +1,5 @@
-import crypto, { CipherGCMTypes } from 'crypto';
+import type { CipherGCMTypes } from 'crypto';
+import crypto from 'crypto';
 import logger from '../logger/console.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';

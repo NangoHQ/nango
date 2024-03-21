@@ -17,7 +17,7 @@
     "dependencies": {
         "@nangohq/nango-logs": "file:../logs",
         "@nangohq/nango-runner": "^1.0.0",
-        "@nangohq/shared": "^0.39.5",
+        "@nangohq/shared": "^0.39.8",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",
         "@temporalio/worker": "^1.9.1",
@@ -43,6 +43,7 @@
         "@types/md5": "^2.3.2",
         "@types/node": "^18.7.6",
         "nodemon": "^3.0.1",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "1.4.0"
     }
 }
