@@ -1,3 +1,4 @@
+import { customAlphabet } from 'nanoid';
 import { z } from 'zod';
 
 export function initGlobalEnv() {
@@ -27,3 +28,8 @@ export function initLogsEnv() {
 
     return schema.parse(process.env);
 }
+
+export const alphabet = '346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz';
+export const minSize = 8;
+export const maxSize = 20;
+export const nanoid = customAlphabet(alphabet, maxSize);

@@ -1,52 +1,62 @@
-import type { OperationRequired } from './types/operations.js';
-import type { MessageRow, MessageRowInsert, MsgMeta } from './types/messages.js';
-import { createOperation, setFinish, setRunning, setState } from './models/operations.js';
-import { createMessage } from './models/messages.js';
-import { nanoid } from './es/helpers.js';
+import type { MessageRow, MessageRowInsert, MessageMeta, OperationRowInsert } from './types/messages.js';
+import { createOperation, setFinish, setRunning, setState, createMessage } from './models/messages.js';
+import { nanoid } from './utils.js';
 
 export class LogContext {
-    operationId: string;
+    parentId: string;
 
-    constructor(opts: { operationId: string }) {
-        this.operationId = opts.operationId;
+    constructor(opts: { parentId: string }) {
+        this.parentId = opts.parentId;
     }
 
     /**
      * ------ Logs
      */
     async log(data: MessageRowInsert): Promise<void> {
-        const row: MessageRowInsert = {
-            operationId: this.operationId,
+        const row: MessageRow = {
             ...data,
+            id: data.id || nanoid(),
+            parentId: this.parentId,
 
-            id: data.id || nanoid()
+            source: data.source || 'nango',
+            level: data.level || 'info',
+            title: data.title || null,
+            code: data.code || null,
+            state: data.state || 'waiting',
+
+            meta: data.meta || null,
+            error: data.error || null,
+            request: data.request || null,
+            response: data.response || null,
+
+            createdAt: data.createdAt || new Date().toISOString()
         };
         await createMessage(row);
     }
 
-    async debug(message: string, meta: MsgMeta = null): Promise<void> {
+    async debug(message: string, meta: MessageMeta = null): Promise<void> {
         await this.log({ type: 'log', level: 'debug', message, meta, source: 'nango' });
     }
 
-    async info(message: string, meta: MsgMeta = null): Promise<void> {
+    async info(message: string, meta: MessageMeta = null): Promise<void> {
         await this.log({ type: 'log', level: 'info', message, meta, source: 'nango' });
     }
 
-    async warn(message: string, meta: MsgMeta = null): Promise<void> {
+    async warn(message: string, meta: MessageMeta = null): Promise<void> {
         await this.log({ type: 'log', level: 'warn', message, meta, source: 'nango' });
     }
 
-    async error(message: string, meta: MsgMeta = null): Promise<void> {
+    async error(message: string, meta: MessageMeta = null): Promise<void> {
         await this.log({ type: 'log', level: 'error', message, meta, source: 'nango' });
     }
 
-    async trace(message: string, meta: MsgMeta = null): Promise<void> {
+    async trace(message: string, meta: MessageMeta = null): Promise<void> {
         await this.log({ type: 'log', level: 'trace', message, meta, source: 'nango' });
     }
 
-    async http(message: string, request: MessageRow['request'], response: MessageRow['response'], meta: MsgMeta = null): Promise<void> {
-        const level: MessageRow['level'] = response && response.code >= 400 ? 'error' : 'info';
-        await this.log({ type: 'http', level, message, request, response, meta, source: 'nango' });
+    async http(message: string, data: Pick<MessageRow, 'request' | 'response' | 'meta'>): Promise<void> {
+        const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
+        await this.log({ type: 'http', level, message, ...data, source: 'nango' });
     }
 
     /**
@@ -73,8 +83,39 @@ export class LogContext {
     }
 }
 
-export async function getOperationContext(data: OperationRequired): Promise<LogContext> {
-    const res = await createOperation(data);
+export async function getOperationContext(data: OperationRowInsert): Promise<LogContext> {
+    const id = data.id || nanoid();
+    const res = await createOperation({
+        ...data,
+        id,
+        source: data.source || 'nango',
+        level: data.level || 'info',
+        meta: data.meta || null,
 
-    return new LogContext({ operationId: res.id });
+        environmentId: data.environmentId || null,
+        environmentName: data.environmentName || null,
+
+        configId: data.configId || null,
+        configName: data.configName || null,
+
+        connectionId: data.connectionId || null,
+        connectionName: data.connectionName || null,
+
+        syncId: data.syncId || null,
+        syncName: data.syncName || null,
+
+        jobId: data.jobId || null,
+
+        userId: data.userId || null,
+        title: data.title || null,
+        code: data.code || null,
+        state: data.state || 'waiting',
+
+        createdAt: data.createdAt || new Date().toISOString(),
+        updatedAt: data.updatedAt || new Date().toISOString(),
+        startedAt: data.startedAt || null,
+        endedAt: data.endedAt || null
+    });
+
+    return new LogContext({ parentId: res.id });
 }

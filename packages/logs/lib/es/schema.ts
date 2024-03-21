@@ -1,9 +1,10 @@
 import type { estypes } from '@elastic/elasticsearch';
-import type { OperationRow } from '../types/operations';
-import type { MessageRow } from '../types/messages';
+import type { MessageRow, OperationRow } from '../types/messages';
 
-const operations: Record<keyof OperationRow, estypes.MappingProperty> = {
+const messages: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
+
+    parentId: { type: 'keyword' },
 
     accountId: { type: 'keyword' },
     accountName: { type: 'keyword' },
@@ -30,19 +31,6 @@ const operations: Record<keyof OperationRow, estypes.MappingProperty> = {
     state: { type: 'keyword' },
     code: { type: 'keyword' },
 
-    createdAt: { type: 'date' },
-    updatedAt: { type: 'date' },
-    startedAt: { type: 'date' },
-    endedAt: { type: 'date' }
-};
-
-const messages: Record<keyof MessageRow, estypes.MappingProperty> = {
-    id: { type: 'keyword' },
-
-    operationId: { type: 'keyword' },
-
-    level: { type: 'keyword' },
-    type: { type: 'keyword' },
     source: { type: 'keyword' },
 
     message: { type: 'text' },
@@ -64,16 +52,13 @@ const messages: Record<keyof MessageRow, estypes.MappingProperty> = {
         }
     },
 
-    createdAt: { type: 'date' }
+    createdAt: { type: 'date' },
+    updatedAt: { type: 'date' },
+    startedAt: { type: 'date' },
+    endedAt: { type: 'date' }
 };
 
 export const indices: estypes.IndicesCreateRequest[] = [
-    {
-        index: 'operations',
-        mappings: {
-            properties: operations
-        }
-    },
     {
         index: 'messages',
         mappings: {
