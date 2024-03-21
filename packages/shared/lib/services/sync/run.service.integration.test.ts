@@ -1,20 +1,19 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
+import db from '../../db/database.js';
 import SyncRun from './run.service.js';
-import * as ConfigService from './config/config.service.js';
 import environmentService from '../environment.service.js';
 import LocalFileService from '../file/local.service.js';
-import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import { SyncStatus, SyncType } from '../../models/Sync.js';
-import type { Environment } from '../../models/Environment.js';
-import { multipleMigrations } from '../../db/database.js';
+import * as database from '../../db/database.js';
 import * as dataMocks from './data/mocks.js';
 import * as dataService from './data/data.service.js';
 import * as recordsService from './data/records.service.js';
-import * as deleteService from './data/delete.service.js';
 import * as jobService from './job.service.js';
+import * as configService from './config/config.service.js';
+import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
+import type { Environment } from '../../models/Environment.js';
 import type { DataResponse } from '../../models/Data.js';
 import type { Connection } from '../../models/Connection.js';
-import db from '../../db/database.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -31,7 +30,7 @@ const integrationService = new integrationServiceMock();
 
 describe('Running sync', () => {
     beforeAll(async () => {
-        await multipleMigrations();
+        await database.multipleMigrations();
     });
 
     afterAll(async () => {
@@ -138,6 +137,22 @@ describe('Running sync', () => {
                 });
         });
     });
+    describe(`with softDelete=true`, () => {
+        const softDelete = true;
+        it(`should report records have been deleted`, async () => {
+            const rawRecords = [
+                { id: '1', name: 'a' },
+                { id: '2', name: 'b' }
+            ];
+            const expectedResult = { added: 0, updated: 0, deleted: 0 };
+            const records = await verifySyncRun(rawRecords, rawRecords, false, expectedResult, softDelete);
+            records.forEach((record) => {
+                expect(record._nango_metadata.deleted_at).toEqual(record._nango_metadata.last_modified_at);
+                expect(record._nango_metadata.deleted_at).not.toBeNull();
+                expect(record._nango_metadata.last_action).toEqual('DELETED');
+            });
+        });
+    });
 });
 
 describe('SyncRun', () => {
@@ -202,7 +217,7 @@ describe('SyncRun', () => {
             } as Environment);
         });
 
-        vi.spyOn(ConfigService, 'getSyncConfig').mockImplementation(() => {
+        vi.spyOn(configService, 'getSyncConfig').mockImplementation(() => {
             return Promise.resolve({
                 integrations: {
                     test_key: {
@@ -272,33 +287,13 @@ const persist = async (
     connection: Connection,
     sync: Sync,
     syncJob: SyncJob,
-    trackDeletes: boolean,
     softDelete: boolean
 ) => {
-    const { response: records } = recordsService.formatDataRecords(
-        rawRecords,
-        connection.id!,
-        model,
-        sync.id,
-        syncJob.id,
-        undefined, // lastSyncDate
-        trackDeletes,
-        softDelete
-    );
+    const { response: records } = recordsService.formatDataRecords(rawRecords, connection.id!, model, sync.id, syncJob.id, softDelete);
     if (!records) {
         throw new Error(`failed to format records`);
     }
-    const { error: upsertError, summary } = await dataService.upsert(
-        records,
-        '_nango_sync_data_records',
-        'external_id',
-        connection.id!,
-        model,
-        activityLogId,
-        connection.environment_id,
-        trackDeletes,
-        softDelete
-    );
+    const { error: upsertError, summary } = await dataService.upsert(records, connection.id!, model, activityLogId, connection.environment_id, softDelete);
     const updatedResults = {
         [model]: {
             added: summary?.addedKeys.length as number,
@@ -312,12 +307,15 @@ const persist = async (
     }
 };
 
-const verifySyncRun = async (initialRecords: DataResponse[], newRecords: DataResponse[], trackDeletes: boolean, expectedResult: SyncResult) => {
+const verifySyncRun = async (
+    initialRecords: DataResponse[],
+    newRecords: DataResponse[],
+    trackDeletes: boolean,
+    expectedResult: SyncResult,
+    softDelete: boolean = false
+) => {
     // Write initial records
     const { connection, model, sync, activityLogId } = await dataMocks.upsertRecords(initialRecords);
-    if (trackDeletes) {
-        await deleteService.takeSnapshot(connection.id!, model);
-    }
 
     // Create a new SyncRun
     const syncJob = (await jobService.createSyncJob(sync.id, SyncType.INCREMENTAL, SyncStatus.RUNNING, 'test-job-id', connection)) as SyncJob;
@@ -337,7 +335,7 @@ const verifySyncRun = async (initialRecords: DataResponse[], newRecords: DataRes
     const syncRun = new SyncRun(config);
 
     // Save records
-    await persist(newRecords, activityLogId, model, connection, sync, syncJob, trackDeletes, false);
+    await persist(newRecords, activityLogId, model, connection, sync, syncJob, softDelete);
 
     // Finish the sync
     await syncRun.finishSync([model], new Date(), `v1`, 10, trackDeletes);

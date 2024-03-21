@@ -60,15 +60,7 @@ export async function upsertRecords(toInsert: DataResponse[]): Promise<{
     }
     const chunkSize = 1000;
     for (let i = 0; i < records.length; i += chunkSize) {
-        const { error, success } = await DataService.upsert(
-            records.slice(i, i + chunkSize),
-            '_nango_sync_data_records',
-            'external_id',
-            nangoConnectionId,
-            modelName,
-            activityLogId,
-            env.id
-        );
+        const { error, success } = await DataService.upsert(records.slice(i, i + chunkSize), nangoConnectionId, modelName, activityLogId, env.id);
         if (!success) {
             throw new Error(`Failed to upsert records: ${error}`);
         }

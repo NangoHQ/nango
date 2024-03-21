@@ -56,15 +56,7 @@ describe('Data service integration tests', async () => {
         const activityLogId = await createActivityLogSeed(1);
         const modelName = Math.random().toString(36).substring(7);
         const { response: formattedResults } = formatDataRecords(duplicateRecords, connections[0] as number, modelName, sync.id, job.id);
-        const { error, success } = await DataService.upsert(
-            formattedResults as unknown as DataRecord[],
-            '_nango_sync_data_records',
-            'external_id',
-            activityLogId,
-            modelName,
-            activityLogId,
-            env.id
-        );
+        const { error, success } = await DataService.upsert(formattedResults as unknown as DataRecord[], activityLogId, modelName, activityLogId, env.id);
         expect(success).toBe(true);
         expect(error).toBe(undefined);
 

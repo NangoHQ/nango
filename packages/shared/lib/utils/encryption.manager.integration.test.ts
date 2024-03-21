@@ -2,7 +2,7 @@ import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '../db/database.js';
 import { generateInsertableJson, createRecords } from '../services/sync/data/mocks.js';
 import type { DataRecord } from '../models/Sync.js';
-import { upsert } from '../services/sync/data/data.service.js';
+import * as DataService from '../services/sync/data/data.service.js';
 
 describe('Encryption manager tests', () => {
     beforeAll(async () => {
@@ -16,15 +16,7 @@ describe('Encryption manager tests', () => {
         const { modelName, nangoConnectionId, env } = meta;
         const start = Date.now();
 
-        const { error, success } = await upsert(
-            formattedResults as unknown as DataRecord[],
-            '_nango_sync_data_records',
-            'external_id',
-            nangoConnectionId,
-            modelName,
-            1,
-            env.id
-        );
+        const { error, success } = await DataService.upsert(formattedResults as unknown as DataRecord[], nangoConnectionId, modelName, 1, env.id);
 
         expect(success).toBe(true);
         expect(error).toBe(undefined);
