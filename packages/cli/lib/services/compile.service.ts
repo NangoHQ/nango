@@ -40,7 +40,7 @@ class CompileService {
             printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
         }
 
-        const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
+        const integrationFiles = listFiles({ cwd: './', syncName });
         let success = true;
 
         const { success: loadSuccess, error, response: config } = await configService.load('', debug);
@@ -52,34 +52,31 @@ class CompileService {
 
         const modelNames = configService.getModelNames(config);
 
-        for (const filePath of integrationFiles) {
+        for (const file of integrationFiles) {
             try {
-                const providerConfiguration = config.find((config) =>
-                    [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
-                );
+                const providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
 
                 if (!providerConfiguration) {
                     continue;
                 }
 
                 const syncConfig = [...(providerConfiguration?.syncs || []), ...(providerConfiguration?.actions || [])].find(
-                    (sync) => sync.name === path.basename(filePath, '.ts')
+                    (sync) => sync.name === file.baseName
                 );
                 const type = syncConfig?.type || SyncConfigType.SYNC;
 
-                if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
-                    if (syncName && filePath.includes(syncName)) {
+                if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
+                    if (syncName && file.inputPath.includes(syncName)) {
                         success = false;
                     }
                     continue;
                 }
-                const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-                const jsFilePath = filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
+                const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
 
-                fs.writeFileSync(jsFilePath, result);
-                console.log(chalk.green(`Compiled "${filePath}" successfully`));
+                fs.writeFileSync(file.outputPath, result);
+                console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
             } catch (error) {
-                console.error(`Error compiling "${filePath}":`);
+                console.error(`Error compiling "${file.inputPath}":`);
                 console.error(error);
                 success = false;
             }
@@ -87,6 +84,18 @@ class CompileService {
 
         return success;
     }
+}
+
+export function listFiles({ cwd, syncName }: { cwd?: string; syncName?: string | undefined }): { inputPath: string; outputPath: string; baseName: string }[] {
+    const files = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`, { dotRelative: true, cwd: cwd || process.cwd() });
+
+    return files.map((filePath) => {
+        return {
+            inputPath: filePath,
+            outputPath: filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`),
+            baseName: path.basename(filePath, '.ts')
+        };
+    });
 }
 
 const compileService = new CompileService();
