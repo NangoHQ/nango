@@ -409,6 +409,7 @@ export default class SyncRun {
                 const deletedRecords = await recordsService.markNonCurrentGenerationRecordsAsDeleted(
                     this.nangoConnection.id as number,
                     model,
+                    this.syncId as string,
                     this.syncJobId as number
                 );
                 deletedKeys = deletedRecords.flatMap((r) => (r.id ? [r.id] : []));
