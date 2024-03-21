@@ -7,6 +7,7 @@ import { loadStandardConfig } from './nango-config.service.js';
 import remoteFileService from './file/remote.service.js';
 import type { NangoConfig, NangoIntegration, NangoSyncConfig, NangoModelV1, StandardNangoConfig } from '../models/NangoConfig.js';
 import type { HTTP_VERB } from '../models/Generic.js';
+import { errorManager } from '../index.js';
 
 export interface Config {
     integrations: NangoIntegration & NangoModelV1;
@@ -15,11 +16,12 @@ export interface Config {
 class FlowService {
     public getAllAvailableFlows(): Config {
         try {
-            const flowPath = path.join(dirname(), '../../../flows.yaml');
+            const flowPath = path.join(dirname(import.meta.url), '../../flows.yaml');
             const flows = yaml.load(fs.readFileSync(flowPath).toString());
 
             return flows as Config;
-        } catch (_e) {
+        } catch (err) {
+            errorManager.report(`failed_to_find_flows, ${JSON.stringify(err)}`);
             return {} as Config;
         }
     }
