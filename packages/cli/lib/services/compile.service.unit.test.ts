@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listFile, listFiles } from './compile.service';
+import { getFileToCompile, listFilesToCompile } from './compile.service';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -7,7 +7,7 @@ const thisFolder = path.dirname(fileURLToPath(import.meta.url));
 
 describe('listFiles', () => {
     it('should list files with glob', () => {
-        const files = listFiles({ cwd: thisFolder });
+        const files = listFilesToCompile({ cwd: thisFolder });
         expect(files.length).toBeGreaterThan(1);
         expect(files[0]).toStrictEqual({
             baseName: 'verification.service',
@@ -17,7 +17,7 @@ describe('listFiles', () => {
     });
 
     it('should list files with syncName', () => {
-        const files = listFiles({ syncName: 'compile.service', cwd: thisFolder });
+        const files = listFilesToCompile({ syncName: 'compile.service', cwd: thisFolder });
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',
@@ -27,7 +27,7 @@ describe('listFiles', () => {
     });
 
     it('should add correct invalid path ', () => {
-        const file = listFile('foobar.ts');
+        const file = getFileToCompile('foobar.ts');
         expect(file).toStrictEqual({
             baseName: 'foobar',
             inputPath: './foobar.ts',

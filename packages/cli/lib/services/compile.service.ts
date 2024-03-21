@@ -40,7 +40,7 @@ class CompileService {
             printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
         }
 
-        const integrationFiles = listFiles({ cwd: './', syncName });
+        const integrationFiles = listFilesToCompile({ syncName });
         let success = true;
 
         const { success: loadSuccess, error, response: config } = await configService.load('', debug);
@@ -92,7 +92,7 @@ export interface ListedFile {
     baseName: string;
 }
 
-export function listFile(filePath: string): ListedFile {
+export function getFileToCompile(filePath: string): ListedFile {
     if (!filePath.startsWith('./')) {
         filePath = `./${filePath}`;
     }
@@ -102,11 +102,11 @@ export function listFile(filePath: string): ListedFile {
         baseName: path.basename(filePath, '.ts')
     };
 }
-export function listFiles({ cwd, syncName }: { cwd?: string; syncName?: string | undefined }): ListedFile[] {
+export function listFilesToCompile({ cwd, syncName }: { cwd?: string; syncName?: string | undefined } = {}): ListedFile[] {
     const files = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`, { dotRelative: true, cwd: cwd || process.cwd() });
 
     return files.map((filePath) => {
-        return listFile(filePath);
+        return getFileToCompile(filePath);
     });
 }
 

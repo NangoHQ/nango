@@ -18,7 +18,7 @@ import modelService from './services/model.service.js';
 import parserService from './services/parser.service.js';
 import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import type { ListedFile } from './services/compile.service.js';
-import { listFile, listFiles } from './services/compile.service.js';
+import { getFileToCompile, listFilesToCompile } from './services/compile.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -299,7 +299,7 @@ export const tscWatch = async (debug = false) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        compileFile(listFile(filePath));
+        compileFile(getFileToCompile(filePath));
     });
 
     watcher.on('unlink', (filePath: string) => {
@@ -314,20 +314,22 @@ export const tscWatch = async (debug = false) => {
     watcher.on('change', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             // config file changed, re-compile each ts file
-            const integrationFiles = listFiles({});
+            const integrationFiles = listFilesToCompile();
             for (const file of integrationFiles) {
                 compileFile(file);
             }
             return;
         }
-        compileFile(listFile(filePath));
+        compileFile(getFileToCompile(filePath));
     });
 
-    const compiler = tsNode.create({
-        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-        compilerOptions: JSON.parse(tsconfig).compilerOptions
-    });
     function compileFile(file: ListedFile) {
+        // This needs to be re-declared each time
+        const compiler = tsNode.create({
+            skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+            compilerOptions: JSON.parse(tsconfig).compilerOptions
+        });
+
         try {
             const providerConfiguration = config?.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
             if (!providerConfiguration) {
