@@ -86,15 +86,27 @@ class CompileService {
     }
 }
 
-export function listFiles({ cwd, syncName }: { cwd?: string; syncName?: string | undefined }): { inputPath: string; outputPath: string; baseName: string }[] {
+export interface ListedFile {
+    inputPath: string;
+    outputPath: string;
+    baseName: string;
+}
+
+export function listFile(filePath: string): ListedFile {
+    if (!filePath.startsWith('./')) {
+        filePath = `./${filePath}`;
+    }
+    return {
+        inputPath: filePath,
+        outputPath: filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`),
+        baseName: path.basename(filePath, '.ts')
+    };
+}
+export function listFiles({ cwd, syncName }: { cwd?: string; syncName?: string | undefined }): ListedFile[] {
     const files = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`, { dotRelative: true, cwd: cwd || process.cwd() });
 
     return files.map((filePath) => {
-        return {
-            inputPath: filePath,
-            outputPath: filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`),
-            baseName: path.basename(filePath, '.ts')
-        };
+        return listFile(filePath);
     });
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listFiles } from './compile.service';
+import { listFile, listFiles } from './compile.service';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -23,6 +23,15 @@ describe('listFiles', () => {
             baseName: 'compile.service',
             inputPath: './compile.service.ts',
             outputPath: './dist/compile.service.js'
+        });
+    });
+
+    it('should add correct invalid path ', () => {
+        const file = listFile('foobar.ts');
+        expect(file).toStrictEqual({
+            baseName: 'foobar',
+            inputPath: './foobar.ts',
+            outputPath: './dist/foobar.js'
         });
     });
 });

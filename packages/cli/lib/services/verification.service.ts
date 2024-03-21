@@ -132,7 +132,7 @@ class VerificationService {
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = glob.sync(`./*.ts`);
+        const tsFiles = glob.sync(`./*.ts`, { dotRelative: true });
 
         const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
 
