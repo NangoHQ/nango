@@ -3,12 +3,7 @@
     "version": "1.0.0",
     "type": "module",
     "main": "dist/index.js",
-    "scripts": {
-        "dev:migration:create": "npm run knex -- migrate:make",
-        "dev:migration:run": "npm run knex -- migrate:latest",
-        "knex": "tsx ../../node_modules/knex/bin/cli.js --knexfile lib/db/knexfile.ts",
-        "prod:migration:run": "knex --knexfile dist/db/knexfile.js migrate:latest"
-    },
+    "scripts": {},
     "keywords": [],
     "repository": {
         "type": "git",
@@ -16,9 +11,9 @@
         "directory": "packages/jobs"
     },
     "dependencies": {
+        "@elastic/elasticsearch": "8.12.2",
         "@nangohq/shared": "file:../shared",
-        "knex": "3.1.0",
-        "pg": "8.11.3",
+        "nanoid": "5.0.6",
         "zod": "3.22.4"
     },
     "devDependencies": {

@@ -16,24 +16,24 @@ export type OperationTable = { id?: string | undefined } & Omit<OperationRow, 'i
 export interface OperationRow {
     id: string;
 
-    account_id: string;
-    account_name: string;
+    accountId: string;
+    accountName: string;
 
-    environment_id: string | null;
-    environment_name: string | null;
+    environmentId: string | null;
+    environmentName: string | null;
 
-    config_id: string | null;
-    config_name: string | null;
+    configId: string | null;
+    configName: string | null;
 
-    connection_id: string | null;
-    connection_name: string | null;
+    connectionId: string | null;
+    connectionName: string | null;
 
-    sync_id: string | null;
-    sync_name: string | null;
+    syncId: string | null;
+    syncName: string | null;
 
-    job_id: string | null;
+    jobId: string | null;
 
-    user_id: string | null;
+    userId: string | null;
 
     type: OperationType;
     title: string | null;
@@ -41,13 +41,13 @@ export interface OperationRow {
     state: OperationState;
     code: OperationCode | null;
 
-    created_at: string;
-    updated_at: string;
-    started_at: string | null;
-    ended_at: string | null;
+    createdAt: string;
+    updatedAt: string;
+    startedAt: string | null;
+    endedAt: string | null;
 }
 
-type OperationRequiredField = 'account_id' | 'account_name' | 'environment_id' | 'environment_name' | 'type';
+type OperationRequiredField = 'accountId' | 'accountName' | 'environmentId' | 'environmentName' | 'type';
 
 /**
  * Representation of what is required to insert an Operation

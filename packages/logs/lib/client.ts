@@ -1,7 +1,8 @@
 import type { OperationRequired } from './types/operations.js';
-import type { MessageContent, MessageRowInsert, MsgMeta } from './types/messages.js';
+import type { MessageRow, MessageRowInsert, MsgMeta } from './types/messages.js';
 import { createOperation, setFinish, setRunning, setState } from './models/operations.js';
 import { createMessage } from './models/messages.js';
+import { nanoid } from './es/helpers.js';
 
 export class LogContext {
     operationId: string;
@@ -13,35 +14,39 @@ export class LogContext {
     /**
      * ------ Logs
      */
-    async log(content: MessageContent, opts?: { id?: string }): Promise<void> {
+    async log(data: MessageRowInsert): Promise<void> {
         const row: MessageRowInsert = {
-            id: opts?.id,
-            operation_id: this.operationId,
-            content: {
-                ...content
-            }
+            operationId: this.operationId,
+            ...data,
+
+            id: data.id || nanoid()
         };
         await createMessage(row);
     }
 
-    async debug(msg: string, meta: MsgMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'debug', msg, meta, source: 'nango' });
+    async debug(message: string, meta: MsgMeta = null): Promise<void> {
+        await this.log({ type: 'log', level: 'debug', message, meta, source: 'nango' });
     }
 
-    async info(msg: string, meta: MsgMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'info', msg, meta, source: 'nango' });
+    async info(message: string, meta: MsgMeta = null): Promise<void> {
+        await this.log({ type: 'log', level: 'info', message, meta, source: 'nango' });
     }
 
-    async warn(msg: string, meta: MsgMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'warn', msg, meta, source: 'nango' });
+    async warn(message: string, meta: MsgMeta = null): Promise<void> {
+        await this.log({ type: 'log', level: 'warn', message, meta, source: 'nango' });
     }
 
-    async error(msg: string, meta: MsgMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'error', msg, meta, source: 'nango' });
+    async error(message: string, meta: MsgMeta = null): Promise<void> {
+        await this.log({ type: 'log', level: 'error', message, meta, source: 'nango' });
     }
 
-    async trace(msg: string, meta: MsgMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'trace', msg, meta, source: 'nango' });
+    async trace(message: string, meta: MsgMeta = null): Promise<void> {
+        await this.log({ type: 'log', level: 'trace', message, meta, source: 'nango' });
+    }
+
+    async http(message: string, request: MessageRow['request'], response: MessageRow['response'], meta: MsgMeta = null): Promise<void> {
+        const level: MessageRow['level'] = response && response.code >= 400 ? 'error' : 'info';
+        await this.log({ type: 'http', level, message, request, response, meta, source: 'nango' });
     }
 
     /**

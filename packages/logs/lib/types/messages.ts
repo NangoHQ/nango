@@ -1,44 +1,6 @@
 import type { LogLevel } from './global';
 
-export type MessageContent =
-    | {
-          type: 'log';
-          level: LogLevel;
-          source: 'nango' | 'user';
-          msg: string;
-          meta: MsgMeta;
-      }
-    | {
-          type: 'error';
-          level: 'error';
-          source: 'nango' | 'user';
-          msg: string;
-          err: Error;
-          meta: MsgMeta;
-      }
-    | {
-          type: 'http';
-          level: LogLevel;
-          source: 'nango' | 'user';
-          msg: string;
-          // req: RequestOptions;
-          // res: Response;
-          meta: MsgMeta;
-      };
-
 export type MsgMeta = Record<string, unknown> | null;
-
-/**
- * Representation of the Message table
- */
-export interface MessageTable {
-    id?: string | undefined;
-
-    operation_id: string;
-    content: MessageContent;
-
-    created_at?: string;
-}
 
 /**
  * Representation of a Message row from the DB
@@ -46,13 +8,28 @@ export interface MessageTable {
 export interface MessageRow {
     id: string;
 
-    operation_id: string;
-    content: MessageContent;
+    operationId: string;
+    level: LogLevel;
+    type: 'log' | 'http';
+    source: 'nango' | 'user';
+    message: string;
 
-    created_at: string;
+    error: Error | null;
+    request: {
+        url: string;
+        headers: Record<string, string>;
+    } | null;
+    response: {
+        code: number;
+        headers: Record<string, string>;
+    } | null;
+    meta: MsgMeta;
+
+    createdAt: string;
 }
 
 /**
  * Representation of what is required to insert a Message
  */
-export type MessageRowInsert = Pick<MessageRow, 'operation_id' | 'content'> & Partial<Pick<MessageRow, 'created_at'>> & { id?: string | undefined };
+export type MessageRowInsert = Pick<MessageRow, 'type' | 'message'> &
+    Partial<Pick<MessageRow, 'operationId' | 'meta' | 'createdAt' | 'source' | 'error' | 'level' | 'request' | 'response'>> & { id?: string | undefined };
