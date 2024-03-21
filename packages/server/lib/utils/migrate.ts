@@ -1,11 +1,13 @@
-import Logger from '../utils/logger.js';
-import { encryptionManager, KnexDatabase } from '@nangohq/shared';
+import logger from '../utils/logger.js';
+import { encryptionManager, KnexDatabase, pathMigrations } from '@nangohq/shared';
 
 export default async function migrate() {
     const db = new KnexDatabase({ timeoutMs: 0 }); // Disable timeout for migrations
-    Logger.info('Migrating database ...');
+    logger.info(`Migrating database ... ${pathMigrations}`);
+
     await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
-    await db.migrate(process.env['NANGO_DB_MIGRATION_FOLDER'] || '../shared/lib/db/migrations');
+    await db.migrate(pathMigrations);
     await encryptionManager.encryptDatabaseIfNeeded();
-    Logger.info('✅ Migrated database');
+
+    logger.info('✅ Migrated database');
 }

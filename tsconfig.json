@@ -1,10 +1,11 @@
 {
-  "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
-  "compilerOptions": {
-    "ignoreDeprecations": "5.0",
-    "declaration": true,
-    "sourceMap": true,
-    "composite": true,
-    "checkJs": false
-  }
+    "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
+    "compilerOptions": {
+        "ignoreDeprecations": "5.0",
+        "declaration": true,
+        "sourceMap": true,
+        "composite": true,
+        "checkJs": false,
+        "allowJs": true
+    }
 }

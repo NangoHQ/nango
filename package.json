@@ -13,8 +13,10 @@
         "packages/webapp"
     ],
     "scripts": {
-        "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
-        "undo:migration": "cd packages/shared/lib/db && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
+        "knex": "tsx ./node_modules/knex/bin/cli.js --knexfile packages/shared/lib/db/knexfile.ts",
+        "create:migration": "npm run knex -- migrate:make $1",
+        "undo:migration": "npm run knex -- migrate:rollback",
+        "run:migration": "npm run knex -- migrate:latest",
         "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --write",
         "prettier-watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts,.tsx",

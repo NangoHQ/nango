@@ -1,14 +1,12 @@
 import * as uuid from 'uuid';
 import type { EventHint } from '@sentry/node';
 import sentry from '@sentry/node';
-import { readFileSync } from 'fs';
-import path from 'path';
 import type { Tracer } from 'dd-trace';
 import type { ErrorEvent } from '@sentry/types';
 import logger from '../logger/console.js';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
-import { isCloud, getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
+import { isCloud, getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, isApiAuthenticated, isUserAuthenticated, packageJsonFile } from './utils.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
@@ -33,7 +31,7 @@ class ErrorManager {
     constructor() {
         try {
             if (isCloud() && process.env['SENTRY_DNS']) {
-                const packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
+                const packageVersion = packageJsonFile().version;
                 sentry.init({
                     dsn: process.env['SENTRY_DNS'],
                     beforeSend(event: ErrorEvent, _: EventHint) {
