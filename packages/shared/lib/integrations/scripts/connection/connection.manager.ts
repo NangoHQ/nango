@@ -1,6 +1,7 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '../../../models/Connection.js';
-import { LogLevel, LogActionEnum } from '../../../models/Activity.js';
+import type { LogLevel } from '../../../models/Activity.js';
+import { LogActionEnum } from '../../../models/Activity.js';
 import { createActivityLogAndLogMessage } from '../../../services/activity/activity.service.js';
 import type { HTTP_VERB } from '../../../models/Generic.js';
 import type { UserProvidedProxyConfiguration } from '../../../models/Proxy.js';

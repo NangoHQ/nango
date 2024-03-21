@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Publisher, WebSocketClientId } from './publisher.client';
+import type { WebSocketClientId } from './publisher.client';
+import { Publisher } from './publisher.client';
 import type { WebSocket } from 'ws';
 import * as uuid from 'uuid';
 

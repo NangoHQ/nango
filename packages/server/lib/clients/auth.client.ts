@@ -4,12 +4,11 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { dirname, isCloud, isBasicAuthEnabled, userService } from '@nangohq/shared';
+import { dirname, isCloud, isBasicAuthEnabled, userService, database } from '@nangohq/shared';
 import crypto from 'crypto';
 import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
-import { database } from '@nangohq/shared';
 
 const KnexSessionStore = connectSessionKnex(session);
 

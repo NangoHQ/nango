@@ -1,5 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
-import FlowService, { Config } from './flow.service';
+import type { Config } from './flow.service';
+import FlowService from './flow.service';
 
 const flows = {
     integrations: {

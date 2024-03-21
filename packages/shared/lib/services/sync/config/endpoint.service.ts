@@ -1,6 +1,7 @@
 import { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
-import { SyncConfig, SyncConfigType } from '../../../models/Sync.js';
+import type { SyncConfig } from '../../../models/Sync.js';
+import { SyncConfigType } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { HTTP_VERB } from '../../../models/Generic.js';
 import { OpenApiBuilder } from 'openapi3-ts/oas31';

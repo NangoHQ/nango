@@ -11,7 +11,8 @@ import integrationPostConnectionScript from '../integrations/scripts/connection/
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
 import { isCloud, isLocal, isEnterprise } from '../utils/utils.js';
-import { Result, resultOk, resultErr } from '../utils/result.js';
+import type { Result } from '../utils/result.js';
+import { resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';
 
 export const connectionCreated = async (

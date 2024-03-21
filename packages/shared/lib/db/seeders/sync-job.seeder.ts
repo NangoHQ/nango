@@ -1,7 +1,8 @@
 import db from '../database.js';
 import * as jobService from '../../services/sync/job.service.js';
 import { createSyncSeeds } from './sync.seeder.js';
-import { Job, SyncType, SyncStatus } from '../../models/Sync.js';
+import type { Job } from '../../models/Sync.js';
+import { SyncType, SyncStatus } from '../../models/Sync.js';
 
 export const createSyncJobSeeds = async (connectionId = 1): Promise<Job> => {
     const sync = await createSyncSeeds(connectionId);
