@@ -146,7 +146,8 @@ describe('Running sync', () => {
             expect(record._nango_metadata.last_action).toEqual('DELETED');
 
             // records '2' should be back
-            await runJob(initialRecords, activityLogId, model, connection, sync, trackDeletes, false);
+            const result = await runJob(initialRecords, activityLogId, model, connection, sync, trackDeletes, false);
+            expect(result).toEqual({ added: 1, updated: 0, deleted: 0 });
 
             const recordsAfter = await getRecords(connection, model);
             const recordAfter = recordsAfter.find((record) => record.id == 2);
@@ -308,7 +309,7 @@ const runJob = async (
     sync: Sync,
     trackDeletes: boolean,
     softDelete: boolean
-) => {
+): Promise<SyncResult> => {
     // create new sync job
     const syncJob = (await jobService.createSyncJob(sync.id, SyncType.INCREMENTAL, SyncStatus.RUNNING, 'test-job-id', connection)) as SyncJob;
     if (!syncJob) {
@@ -345,6 +346,13 @@ const runJob = async (
     await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
     // finish the sync
     await syncRun.finishSync([model], new Date(), `v1`, 10, trackDeletes);
+
+    const syncJobResult = await jobService.getLatestSyncJob(sync.id);
+    return {
+        added: syncJobResult?.result?.[model]?.added || 0,
+        updated: syncJobResult?.result?.[model]?.updated || 0,
+        deleted: syncJobResult?.result?.[model]?.deleted || 0
+    };
 };
 
 const verifySyncRun = async (
@@ -358,14 +366,8 @@ const verifySyncRun = async (
     const { connection, model, sync, activityLogId } = await dataMocks.upsertRecords(initialRecords);
 
     // Run job to save new records
-    await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, softDelete);
+    const result = await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, softDelete);
 
-    const syncJobResult = await jobService.getLatestSyncJob(sync.id);
-    const result = {
-        added: syncJobResult?.result?.[model]?.added || 0,
-        updated: syncJobResult?.result?.[model]?.updated || 0,
-        deleted: syncJobResult?.result?.[model]?.deleted || 0
-    };
     expect(result).toEqual(expectedResult);
 
     const records = await getRecords(connection, model);

@@ -188,8 +188,11 @@ export async function getAddedKeys(response: DataRecord[], nangoConnectionId: nu
 
     const knownKeys: string[] = (await schema()
         .from(RECORDS_TABLE)
-        .where('nango_connection_id', nangoConnectionId)
-        .where('model', model)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model,
+            external_deleted_at: null
+        })
         .whereIn('external_id', keys)
         .pluck('external_id')) as unknown as string[];
 
@@ -212,8 +215,10 @@ export async function getUpdatedKeys(response: DataRecord[], nangoConnectionId: 
     const rowsToUpdate = await schema()
         .from(RECORDS_TABLE)
         .pluck('external_id')
-        .where('nango_connection_id', nangoConnectionId)
-        .where('model', model)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
+        })
         .whereIn('external_id', keys)
         .whereNotIn(['external_id', 'data_hash'], keysWithHash);
 
