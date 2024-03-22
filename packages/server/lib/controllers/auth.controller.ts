@@ -181,7 +181,7 @@ class AuthController {
 
             if (isCloud() && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.
-                const env = await environmentService.getByEnvironmentName('dev');
+                const env = await environmentService.getByEnvironmentName(account.id, 'dev');
                 if (env) {
                     await createOnboardingProvider({ envId: env.id });
                 }
