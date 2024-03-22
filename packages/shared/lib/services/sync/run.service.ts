@@ -42,7 +42,7 @@ interface SyncRunConfig {
     debug?: boolean;
     input?: object;
 
-    logMessages?: unknown[] | undefined;
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
 
     temporalContext?: Context;
@@ -65,7 +65,10 @@ export default class SyncRun {
     debug?: boolean;
     input?: object;
 
-    logMessages?: unknown[] | undefined = [];
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined = {
+        counts: { updated: 0, added: 0, deleted: 0 },
+        messages: []
+    };
     stubbedMetadata?: Metadata | undefined = undefined;
 
     temporalContext?: Context;

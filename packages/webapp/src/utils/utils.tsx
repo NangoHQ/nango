@@ -275,26 +275,7 @@ export function createExampleForType(type: string): any {
         return {};
     }
 
-    const rawType = type.replace('|', '').replace('null', '').replace('undefined', '').trim();
-
-    switch (rawType) {
-        case 'string':
-            return '<string>';
-        case 'integer':
-            return '<number>';
-        case 'boolean':
-            return '<boolean>';
-        case 'number':
-            return '<number>';
-        case 'object':
-            return '<object>';
-        case 'array':
-            return '<array>';
-        case 'date':
-            return '<date>';
-        default:
-            return '';
-    }
+    return `<${type}>`;
 }
 
 export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean | string | number> {

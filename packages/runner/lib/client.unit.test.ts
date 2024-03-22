@@ -32,7 +32,11 @@ describe('Runner client', () => {
             dryRun: true,
             attributes: {},
             track_deletes: false,
-            logMessages: [],
+            logMessages: {
+                counts: { updated: 0, added: 0, deleted: 0 },
+                messages: []
+            },
+
             stubbedMetadata: {}
         };
         const jsCode = `
