@@ -1,5 +1,4 @@
-import type { Request, Response } from 'express';
-import type { NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { activityFilter, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';

@@ -1,14 +1,13 @@
-import {
+import type {
     Config as ProviderConfig,
     TemplateOAuth2 as ProviderTemplateOAuth2,
-    AuthModes as ProviderAuthModes,
     Template as ProviderTemplate,
     OAuth2Credentials,
-    OAuthAuthorizationMethod,
-    OAuthBodyFormat,
     Connection
 } from '../models/index.js';
-import { AuthorizationCode, AccessToken } from 'simple-oauth2';
+import { AuthModes as ProviderAuthModes, OAuthAuthorizationMethod, OAuthBodyFormat } from '../models/index.js';
+import type { AccessToken } from 'simple-oauth2';
+import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import { LogActionEnum } from '../models/Activity.js';

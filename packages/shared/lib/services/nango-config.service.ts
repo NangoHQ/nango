@@ -3,7 +3,8 @@ import chalk from 'chalk';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-import ms, { StringValue } from 'ms';
+import type { StringValue } from 'ms';
+import ms from 'ms';
 import type {
     NangoConfig,
     NangoConfigV1,

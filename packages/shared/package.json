@@ -1,10 +1,10 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.39.5",
+    "version": "0.39.8",
     "description": "Nango's shared components.",
     "type": "module",
-    "main": "dist/lib/index.js",
-    "typings": "dist/lib/index.d.ts",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
     "scripts": {
         "build": "rimraf dist && tsc",
         "prepublishOnly": "npm install && npm run build"
@@ -20,7 +20,7 @@
         "@aws-sdk/client-s3": "3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "^0.39.5",
+        "@nangohq/node": "^0.39.8",
         "@sentry/node": "^7.105.0",
         "@temporalio/client": "^1.9.1",
         "amqplib": "^0.10.3",
@@ -75,5 +75,10 @@
         "@types/uuid": "^9.0.0",
         "typescript": "^5.3.3",
         "vitest": "1.4.0"
-    }
+    },
+    "files": [
+        "dist/**/*",
+        "flows.yaml",
+        "providers.yaml"
+    ]
 }

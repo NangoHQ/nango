@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.39.5",
+    "version": "0.39.8",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -19,15 +19,15 @@
     "scripts": {
         "build": "tsc && npm run copyfiles",
         "copyfiles": "copyfiles -u 1 lib/templates/* dist",
-        "postbuild": "cp `node -p \"require.resolve('@nangohq/shared/dist/lib/sdk/sync.d.ts')\"` './dist/nango-sync.d.ts'",
+        "postbuild": "cp `node -p \"require.resolve('@nangohq/shared/dist/sdk/sync.d.ts')\"` './dist/nango-sync.d.ts'",
         "prepublishOnly": "npm install && npm run build"
     },
     "dependencies": {
+        "@babel/parser": "^7.22.5",
         "@babel/traverse": "^7.22.5",
         "@babel/types": "^7.22.5",
-        "@babel/parser": "^7.22.5",
         "@inquirer/prompts": "^2.3.0",
-        "@nangohq/shared": "^0.39.5",
+        "@nangohq/shared": "^0.39.8",
         "@vercel/ncc": "^0.36.1",
         "ajv": "^8.12.0",
         "ajv-errors": "^3.0.0",
@@ -68,10 +68,10 @@
         "@types/promptly": "^3.0.2",
         "babel-loader": "^9.1.2",
         "esbuild": "^0.17.19",
+        "vitest": "^1.4.0",
         "webpack": "^5.85.1",
         "webpack-cli": "^5.1.3",
-        "webpack-node-externals": "^3.0.0",
-        "vitest": "^1.4.0"
+        "webpack-node-externals": "^3.0.0"
     },
     "engines": {
         "node": ">=16.7"

@@ -143,7 +143,10 @@ class DryRunService {
             stubbedMetadata = rawStubbedMetadata;
         }
 
-        const logMessages: string[] = [];
+        const logMessages = {
+            counts: { updated: 0, added: 0, deleted: 0 },
+            messages: []
+        };
 
         const syncRun = new syncRunService({
             integrationService,
@@ -171,8 +174,8 @@ class DryRunService {
                 console.log(JSON.stringify(results, null, 2));
             }
 
-            if (syncRun.logMessages && syncRun.logMessages.length > 0) {
-                const logMessages = syncRun.logMessages;
+            if (syncRun.logMessages && syncRun.logMessages.messages.length > 0) {
+                const logMessages = syncRun.logMessages.messages;
                 let index = 0;
                 const batchCount = 10;
 
@@ -183,12 +186,13 @@ class DryRunService {
                     }
                 };
 
+                console.log(chalk.yellow(`The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`));
                 console.log(chalk.yellow('The following log messages were generated:'));
 
                 displayBatch();
 
-                while (index < syncRun.logMessages.length) {
-                    const remaining = syncRun.logMessages.length - index;
+                while (index < syncRun.logMessages.messages.length) {
+                    const remaining = syncRun.logMessages.messages.length - index;
                     const confirmation = await promptly.confirm(
                         `There are ${remaining} logs messages remaining. Would you like to see the next 10 log messages? (y/n)`
                     );

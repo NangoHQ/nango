@@ -1,5 +1,6 @@
-import { expect, describe, it, vi } from 'vitest';
-import FlowService, { Config } from './flow.service';
+import { expect, describe, it, vi, afterEach } from 'vitest';
+import type { Config } from './flow.service';
+import FlowService from './flow.service';
 
 const flows = {
     integrations: {
@@ -137,6 +138,10 @@ const flows = {
 };
 
 describe('Flow service tests', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('Fetch a flow config by providing a name', () => {
         vi.spyOn(FlowService, 'getAllAvailableFlows').mockImplementation(() => {
             return flows as unknown as Config;
@@ -145,5 +150,35 @@ describe('Flow service tests', () => {
         const flow = FlowService.getFlow('github-issues-lite');
         expect(flow).not.toBeNull();
         expect(flow?.models).not.toBeUndefined();
+    });
+
+    it('should get flows.yaml', () => {
+        const flows = FlowService.getAllAvailableFlows();
+        expect(flows).not.toStrictEqual({});
+        expect(flows).toHaveProperty('integrations');
+        expect(Object.keys(flows.integrations).length).toBeGreaterThan(20);
+        expect(flows.integrations['asana']).toStrictEqual({
+            models: {
+                AsanaTask: {
+                    completed: 'boolean',
+                    created_at: 'date',
+                    id: 'string',
+                    modified_at: 'date',
+                    name: 'string',
+                    project_id: 'string'
+                }
+            },
+            syncs: {
+                'asana-tasks': {
+                    description: `Fetches a list of tasks from Asana, retrieving tasks from only the first project of the first workspace
+`,
+                    endpoint: '/asana/tasks',
+                    output: 'AsanaTask',
+                    runs: 'every 30min',
+                    scopes: ['default'],
+                    sync_type: 'full'
+                }
+            }
+        });
     });
 });

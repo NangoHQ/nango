@@ -556,10 +556,10 @@ paths:
 
     /scripts/config:
         get:
-            description: Return the configuration for all scripts
+            description: Return the configuration for all integration scripts
             responses:
                 '200':
-                    description: Successfully returned scripts config
+                    description: Successfully returned integration scripts config
                     content:
                         application/json:
                             schema:

@@ -1,7 +1,8 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncResult, SyncType, SyncStatus, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
+import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
+import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
@@ -41,7 +42,7 @@ interface SyncRunConfig {
     debug?: boolean;
     input?: object;
 
-    logMessages?: unknown[] | undefined;
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
 
     temporalContext?: Context;
@@ -64,7 +65,10 @@ export default class SyncRun {
     debug?: boolean;
     input?: object;
 
-    logMessages?: unknown[] | undefined = [];
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined = {
+        counts: { updated: 0, added: 0, deleted: 0 },
+        messages: []
+    };
     stubbedMetadata?: Metadata | undefined = undefined;
 
     temporalContext?: Context;

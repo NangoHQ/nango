@@ -81,9 +81,9 @@ class EnvironmentService {
 
                     if (envSecretKey === secretKey) {
                         const env = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
-                        const environment = await this.getByEnvironmentName(env);
+                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ secret_key: secretKey, name: env }).first();
 
-                        if (environment === null) {
+                        if (!environment) {
                             return null;
                         }
 
@@ -96,7 +96,7 @@ class EnvironmentService {
         if (!this.environmentAccountSecrets[secretKey]) {
             // If the secret key is not in the cache, try to get it from the database
             const fromDb = await db.knex.select('*').from<Environment>(TABLE).where({ secret_key: secretKey }).first();
-            if (fromDb == null) {
+            if (!fromDb) {
                 return null;
             }
             this.addToEnvironmentSecretCache(fromDb);
@@ -154,9 +154,9 @@ class EnvironmentService {
 
                     if (envPublicKey === publicKey) {
                         const env = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
-                        const environment = await this.getByEnvironmentName(env);
+                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ public_key: publicKey, name: env }).first();
 
-                        if (environment === null) {
+                        if (!environment) {
                             return null;
                         }
 
@@ -165,13 +165,13 @@ class EnvironmentService {
                 }
             }
         }
-        const result = await db.knex.select('*').from<Environment>(TABLE).where({ public_key: publicKey });
+        const result = await db.knex.select('*').from<Environment>(TABLE).where({ public_key: publicKey }).first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
+        if (!result) {
             return null;
         }
 
-        return { accountId: result[0].account_id, environmentId: result[0].id };
+        return { accountId: result.account_id, environmentId: result.id };
     }
 
     async getByAccountIdAndEnvironment(id: number): Promise<Environment | null> {
@@ -267,8 +267,8 @@ class EnvironmentService {
         }
     }
 
-    async getByEnvironmentName(name: string): Promise<Environment | null> {
-        const result = await db.knex.select('*').from<Environment>(TABLE).where({ name });
+    async getByEnvironmentName(accountId: number, name: string): Promise<Environment | null> {
+        const result = await db.knex.select('*').from<Environment>(TABLE).where({ account_id: accountId, name });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -295,22 +295,10 @@ class EnvironmentService {
         return null;
     }
 
-    /**
-     * Create Account
-     * @desc create a new account and assign to the default environmenets
-     */
-    async createAccount(name: string): Promise<Account | null> {
-        const result: void | Pick<Account, 'id'> = await db.knex.from<Account>(`_nango_accounts`).insert({ name: name }, ['id']);
-
-        if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-            for (const defaultEnvironment of defaultEnvironments) {
-                await this.createEnvironment(result[0]['id'], defaultEnvironment);
-            }
-
-            return result[0];
+    async createDefaultEnvironments(accountId: number): Promise<void> {
+        for (const environment of defaultEnvironments) {
+            await this.createEnvironment(accountId, environment);
         }
-
-        return null;
     }
 
     async getEnvironmentName(id: number): Promise<string | null> {
@@ -522,6 +510,7 @@ class EnvironmentService {
             });
 
         if (this.environmentAccountSecrets[environment.secret_key]) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete this.environmentAccountSecrets[environment.secret_key];
         }
 

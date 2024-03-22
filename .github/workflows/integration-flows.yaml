@@ -7,7 +7,6 @@ on:
             - staging/**
     pull_request:
 
-
 concurrency:
     group: flows-compile--${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
@@ -27,23 +26,23 @@ jobs:
 
             - name: Install nango CLI
               run: |
-                # Build, install CLI and verify it can run
-                npm install
-                npm run build -w @nangohq/node -w @nangohq/shared -w nango
-                npm install -g ./packages/cli
-                NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
+                  # Build, install CLI and verify it can run
+                  npm install
+                  npm run build -w @nangohq/node -w @nangohq/shared -w nango
+                  npm install -g ./packages/cli
+                  NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
 
             - name: Compile with Nango
               run: |
-                set -e
-                cd integration-templates
-                for dir in */; do
-                  if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
-                      cd "$dir"
-                      mkdir -p nango-integrations
-                      find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
-                      cd nango-integrations
-                      NANGO_CLI_UPGRADE_MODE=ignore nango compile
-                      cd ../../
-                  fi
-                done
+                  set -e
+                  cd integration-templates
+                  for dir in */; do
+                    if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
+                        cd "$dir"
+                        mkdir -p nango-integrations
+                        find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
+                        cd nango-integrations
+                        NANGO_CLI_UPGRADE_MODE=ignore nango compile
+                        cd ../../
+                    fi
+                  done

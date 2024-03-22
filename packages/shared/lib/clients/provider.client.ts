@@ -1,16 +1,17 @@
 import braintree from 'braintree';
-import {
+import type {
     Config as ProviderConfig,
     Connection,
-    AuthModes as ProviderAuthModes,
     AuthorizationTokenResponse,
     RefreshTokenResponse,
     TemplateOAuth2 as ProviderTemplateOAuth2
 } from '../models/index.js';
+import { AuthModes as ProviderAuthModes } from '../models/index.js';
 import axios from 'axios';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
+
 const stripeAppExpiresIn = 3600;
 
 class ProviderClient {

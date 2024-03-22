@@ -1,20 +1,25 @@
 import type { Request, Response, NextFunction } from 'express';
+import { WorkOS } from '@workos-inc/node';
 import crypto from 'crypto';
 import util from 'util';
 import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
-import type { User } from '@nangohq/shared';
+import type { User, Result } from '@nangohq/shared';
 import {
     userService,
     accountService,
     errorManager,
+    isOk,
+    resultOk,
+    resultErr,
     ErrorSourceEnum,
     environmentService,
     analytics,
     AnalyticsTypes,
     isCloud,
     getBaseUrl,
+    getBasePublicUrl,
     NangoError,
     createOnboardingProvider
 } from '@nangohq/shared';
@@ -25,6 +30,57 @@ export interface WebUser {
     email: string;
     name: string;
 }
+
+interface InviteAccountBody {
+    accountId: number;
+}
+interface InviteAccountState extends InviteAccountBody {
+    token: string;
+}
+
+let workos: WorkOS | null = null;
+if (process.env['WORKOS_API_KEY'] && process.env['WORKOS_CLIENT_ID']) {
+    workos = new WorkOS(process.env['WORKOS_API_KEY']);
+} else {
+    if (isCloud()) {
+        throw new NangoError('workos_not_configured');
+    }
+}
+
+const allowedProviders = ['GoogleOAuth'];
+
+const parseState = (state: string): Result<InviteAccountState, Error> => {
+    try {
+        const parsed = JSON.parse(Buffer.from(state, 'base64').toString('ascii')) as InviteAccountState;
+        return resultOk(parsed);
+    } catch {
+        const error = new Error('Invalid state');
+        return resultErr(error);
+    }
+};
+
+const createAccountIfNotInvited = async (name: string, state?: string): Promise<number | null> => {
+    if (!state) {
+        const account = await accountService.createAccount(`${name}'s Organization`);
+        if (!account) {
+            throw new NangoError('account_creation_failure');
+        }
+        return account.id;
+    }
+
+    const parsedState: Result<InviteAccountState> = parseState(state);
+
+    if (isOk(parsedState)) {
+        const { accountId, token } = parsedState.res;
+        const validToken = await userService.getInvitedUserByToken(token);
+        if (validToken) {
+            await userService.markAcceptedInvite(token);
+        }
+        return accountId;
+    }
+
+    return null;
+};
 
 class AuthController {
     async signin(req: Request, res: Response, next: NextFunction) {
@@ -105,7 +161,7 @@ class AuthController {
                 account = await accountService.getAccountById(Number(req.body['account_id']));
                 joinedWithToken = true;
             } else {
-                account = await environmentService.createAccount(`${name}'s Organization`);
+                account = await accountService.createAccount(`${name}'s Organization`);
             }
 
             if (account == null) {
@@ -125,7 +181,7 @@ class AuthController {
 
             if (isCloud() && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.
-                const env = await environmentService.getByEnvironmentName('dev');
+                const env = await environmentService.getByEnvironmentName(account.id, 'dev');
                 if (env) {
                     await createOnboardingProvider({ envId: env.id });
                 }
@@ -258,6 +314,158 @@ class AuthController {
             res.status(200).send(invitee);
         } catch (error) {
             next(error);
+        }
+    }
+
+    getManagedLogin(req: Request, res: Response, next: NextFunction) {
+        try {
+            const provider = req.query['provider'] as string;
+
+            if (!provider || !allowedProviders.includes(provider)) {
+                errorManager.errRes(res, 'invalid_provider');
+                return;
+            }
+
+            if (!workos) {
+                errorManager.errRes(res, 'workos_not_configured');
+                return;
+            }
+
+            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+                clientId: process.env['WORKOS_CLIENT_ID'] || '',
+                provider,
+                redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`
+            });
+
+            res.send({ url: oAuthUrl });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    getManagedLoginWithInvite(req: Request, res: Response, next: NextFunction) {
+        try {
+            const provider = req.query['provider'] as string;
+
+            if (!provider || !allowedProviders.includes(provider)) {
+                errorManager.errRes(res, 'invalid_provider');
+                return;
+            }
+
+            const token = req.params['token'] as string;
+
+            const body: InviteAccountBody = req.body as InviteAccountBody;
+
+            if (!body || body.accountId !== undefined) {
+                errorManager.errRes(res, 'missing_params');
+                return;
+            }
+
+            if (!provider || !token) {
+                errorManager.errRes(res, 'missing_params');
+                return;
+            }
+
+            if (!workos) {
+                errorManager.errRes(res, 'workos_not_configured');
+                return;
+            }
+
+            const accountId = body.accountId;
+
+            const inviteParams: InviteAccountState = {
+                accountId,
+                token
+            };
+
+            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+                clientId: process.env['WORKOS_CLIENT_ID'] || '',
+                provider,
+                redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`,
+                state: JSON.stringify(inviteParams)
+            });
+
+            res.send({ url: oAuthUrl });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async loginCallback(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { code, state } = req.query;
+
+            if (!workos) {
+                errorManager.errRes(res, 'workos_not_configured');
+                return;
+            }
+
+            if (!code) {
+                errorManager.errRes(res, 'missing_managed_login_callback_code');
+                return;
+            }
+
+            const { user: authorizedUser, organizationId } = await workos.userManagement.authenticateWithCode({
+                clientId: process.env['WORKOS_CLIENT_ID'] || '',
+                code: code as string
+            });
+
+            const existingUser = await userService.getUserByEmail(authorizedUser.email);
+
+            if (existingUser) {
+                req.login(existingUser, function (err) {
+                    if (err) {
+                        return next(err);
+                    }
+                    res.redirect(`${getBasePublicUrl()}/`);
+                });
+
+                return;
+            }
+
+            const name =
+                authorizedUser.firstName || authorizedUser.lastName
+                    ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
+                    : authorizedUser.email.split('@')[0];
+
+            let accountId: number | null = null;
+
+            if (organizationId) {
+                // in this case we have a pre registered organization with workos
+                // let's make sure it exists in our system
+                const organization = await workos.organizations.getOrganization(organizationId);
+
+                const account = await accountService.getOrCreateAccount(organization.name);
+
+                if (!account) {
+                    throw new NangoError('account_creation_failure');
+                }
+                accountId = account.id;
+            } else {
+                if (!name) {
+                    throw new NangoError('missing_name_for_account_creation');
+                }
+
+                accountId = await createAccountIfNotInvited(name, state as string);
+
+                if (!accountId) {
+                    throw new NangoError('account_creation_failure');
+                }
+            }
+
+            const user = await userService.createUser(authorizedUser.email, name as string, '', '', accountId);
+            if (!user) {
+                throw new NangoError('user_creation_failure');
+            }
+
+            req.login(user, function (err) {
+                if (err) {
+                    return next(err);
+                }
+                res.redirect(`${getBasePublicUrl()}/`);
+            });
+        } catch (err) {
+            next(err);
         }
     }
 }
