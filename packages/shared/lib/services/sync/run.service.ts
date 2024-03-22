@@ -406,13 +406,12 @@ export default class SyncRun {
         for (const model of models) {
             let deletedKeys: string[] = [];
             if (!this.isWebhook && trackDeletes) {
-                const deletedRecords = await recordsService.markNonCurrentGenerationRecordsAsDeleted(
+                deletedKeys = await recordsService.markNonCurrentGenerationRecordsAsDeleted(
                     this.nangoConnection.id as number,
                     model,
                     this.syncId as string,
                     this.syncJobId as number
                 );
-                deletedKeys = deletedRecords.flatMap((r) => (r.id ? [r.id] : []));
             }
 
             await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);

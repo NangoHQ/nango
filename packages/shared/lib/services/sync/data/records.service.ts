@@ -535,13 +535,10 @@ export async function deleteRecordsBySyncId({ syncId, limit = 5000 }: { syncId: 
 }
 
 // Mark all non-deleted records that don't belong to currentGeneration as deleted
-export async function markNonCurrentGenerationRecordsAsDeleted(
-    connectionId: number,
-    model: string,
-    syncId: string,
-    generation: number
-): Promise<SyncDataRecord[]> {
-    return schema()
+// returns the ids of records being deleted
+export async function markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, syncId: string, generation: number): Promise<string[]> {
+    const now = db.knex.fn.now(6);
+    return (await schema()
         .from<SyncDataRecord>(RECORDS_TABLE)
         .where({
             nango_connection_id: connectionId,
@@ -554,9 +551,9 @@ export async function markNonCurrentGenerationRecordsAsDeleted(
         })
         .update({
             external_is_deleted: true,
-            external_deleted_at: db.knex.fn.now(6),
-            updated_at: db.knex.fn.now(6),
+            external_deleted_at: now,
+            updated_at: now,
             sync_job_id: generation
         })
-        .returning('*');
+        .returning('id')) as unknown as string[];
 }
