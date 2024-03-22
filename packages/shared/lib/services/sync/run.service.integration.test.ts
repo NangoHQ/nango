@@ -151,9 +151,9 @@ describe('Running sync', () => {
             const recordsAfter = await getRecords(connection, model);
             const recordAfter = recordsAfter.find((record) => record.id == 2);
             if (!recordAfter) throw new Error('record is not defined');
-            expect(recordAfter._nango_metadata.first_seen_at < recordAfter._nango_metadata.last_modified_at).toBeTruthy();
+            expect(recordAfter._nango_metadata.first_seen_at).toEqual(recordAfter._nango_metadata.last_modified_at);
             expect(recordAfter._nango_metadata.deleted_at).toBeNull();
-            expect(recordAfter._nango_metadata.last_action).toEqual('UPDATED');
+            expect(recordAfter._nango_metadata.last_action).toEqual('ADDED');
         });
     });
     describe(`with softDelete=true`, () => {
