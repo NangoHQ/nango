@@ -17,12 +17,12 @@ export const createSyncJob = async (
     nangoConnection: NangoConnection | null,
     run_id?: string
 ): Promise<Pick<SyncJob, 'id'> | null> => {
-    let job = {
+    let job: { sync_id: string; type: SyncType; status: SyncStatus; job_id: string; run_id?: string } = {
         sync_id,
         type,
         status,
         job_id
-    } as { sync_id: string; type: SyncType; status: SyncStatus; job_id: string; run_id?: string };
+    };
 
     if (run_id) {
         job = {

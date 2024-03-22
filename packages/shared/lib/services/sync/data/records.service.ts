@@ -52,7 +52,7 @@ export const formatDataRecords = (
             return { success: false, error, response: null };
         }
 
-        const formattedRecord = {
+        const formattedRecord: SyncDataRecord = {
             id: stableId(record),
             json: record,
             external_id: record['id'],
@@ -63,12 +63,14 @@ export const formatDataRecords = (
             sync_job_id,
             external_is_deleted: softDelete,
             pending_delete: false
-        } as SyncDataRecord;
+        };
 
         if (softDelete) {
             const deletedAt = record['deletedAt'];
             formattedRecord.updated_at = new Date();
             formattedRecord.external_deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : new Date();
+        } else {
+            formattedRecord.external_deleted_at = null;
         }
         formattedRecords.push(formattedRecord);
     }
