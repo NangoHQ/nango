@@ -121,7 +121,6 @@ const App = () => {
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
                         </>
                     )}
-                    <Route path="/404" element={<PageNotFound />} />
                     {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
                     <Route path="*" element={<NotFound />} />
                 </SentryRoutes>
