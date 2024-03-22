@@ -30,7 +30,6 @@ import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
-import PageNotFound from './pages/PageNotFound';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
