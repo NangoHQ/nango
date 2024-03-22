@@ -33,6 +33,13 @@ export const formatDataRecords = (
     trackDeletes = false,
     softDelete = false
 ): ServiceResponse<SyncDataRecord[]> => {
+    // hashing unique composite key (connection, model, external_id)
+    // to generate stable record ids across script executions
+    const stableId = (rawRecord: DataResponse): string => {
+        const namespace = uuid.v5(`${nango_connection_id}${model}`, uuid.NIL);
+        return uuid.v5(`${nango_connection_id}${model}${rawRecord.id}`, namespace);
+    };
+
     const formattedRecords: SyncDataRecord[] = [] as SyncDataRecord[];
 
     const deletedAtKey = 'deletedAt';
@@ -66,11 +73,10 @@ export const formatDataRecords = (
             }
         }
 
-        const external_id = record['id'];
         formattedRecords[i] = {
-            id: uuid.v4(),
+            id: stableId(record),
             json: record,
-            external_id,
+            external_id: record['id'],
             data_hash,
             model,
             nango_connection_id,
