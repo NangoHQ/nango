@@ -7,7 +7,7 @@ import { getAccount, getRedisUrl, logger } from '@nangohq/shared';
 const rateLimiter = await (async () => {
     const opts = {
         keyPrefix: 'middleware',
-        points: parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 1200,
+        points: parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 2400,
         duration: 60,
         blockDuration: 0
     };
