@@ -1,55 +1,41 @@
 import { schema } from '../../../db/database.js';
 import { getRecordsByExternalIds, verifyUniqueKeysAreUnique } from './records.service.js';
 import { createActivityLogMessage } from '../../activity/activity.service.js';
-import { markRecordsForDeletion, syncCreatedAtForAddedRecords, syncUpdateAtForChangedRecords } from './delete.service.js';
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
 import { logger } from '../../../index.js';
 
+const RECORD_UNIQUE_KEY = 'external_id';
+const RECORDS_TABLE = '_nango_sync_data_records';
+
 /**
  * Upsert
  */
 export async function upsert(
-    response: DataRecord[],
-    dbTable: string,
-    uniqueKey: string,
+    records: DataRecord[],
     nangoConnectionId: number,
     model: string,
     activityLogId: number,
     environment_id: number,
-    track_deletes = false,
     softDelete = false
 ): Promise<UpsertResponse> {
-    const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, environment_id, model);
+    const recordsWithoutDuplicates = await removeDuplicateKey(records, activityLogId, environment_id, model);
 
-    if (!responseWithoutDuplicates || responseWithoutDuplicates.length === 0) {
+    if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
         return {
             success: false,
-            error: `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${response.length} records received for the "${model}" model.`
+            error: `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
         };
     }
 
-    const comparisonTable = track_deletes ? '_nango_sync_data_records_deletes' : dbTable;
-    const addedKeys = await getAddedKeys(responseWithoutDuplicates, comparisonTable, uniqueKey, nangoConnectionId, model);
-    const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, comparisonTable, uniqueKey, nangoConnectionId, model);
+    const addedKeys = await getAddedKeys(recordsWithoutDuplicates, nangoConnectionId, model);
+    const updatedKeys = await getUpdatedKeys(recordsWithoutDuplicates, nangoConnectionId, model);
 
     try {
-        if (track_deletes) {
-            await markRecordsForDeletion(nangoConnectionId, model);
-        }
+        const encryptedRecords = encryptionManager.encryptDataRecords(recordsWithoutDuplicates);
 
-        const encryptedRecords = encryptionManager.encryptDataRecords(responseWithoutDuplicates);
-
-        const results = await schema()
-            .from(dbTable)
-            .insert(encryptedRecords, ['id', 'external_id'])
-            .onConflict(['nango_connection_id', 'external_id', 'model'])
-            .merge()
-            .returning(['id', 'external_id']);
-
-        const affectedInternalIds = results.map((tuple) => tuple.id) as string[];
-        const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
+        await schema().from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['nango_connection_id', 'external_id', 'model']).merge();
 
         if (softDelete) {
             return {
@@ -57,18 +43,9 @@ export async function upsert(
                 summary: {
                     deletedKeys: [...addedKeys, ...updatedKeys],
                     addedKeys: [],
-                    updatedKeys: [],
-                    affectedInternalIds,
-                    affectedExternalIds
+                    updatedKeys: []
                 }
             };
-        }
-
-        if (track_deletes) {
-            // we need to main the created at date of the existing records so we know what
-            // was added and what was updated
-            await syncUpdateAtForChangedRecords(nangoConnectionId, model, uniqueKey, updatedKeys);
-            await syncCreatedAtForAddedRecords(nangoConnectionId, model, uniqueKey, addedKeys);
         }
 
         return {
@@ -76,15 +53,13 @@ export async function upsert(
             summary: {
                 addedKeys,
                 updatedKeys,
-                deletedKeys: [],
-                affectedInternalIds,
-                affectedExternalIds
+                deletedKeys: []
             }
         };
     } catch (error: any) {
-        let errorMessage = `Failed to upsert records to table ${dbTable}.\n`;
-        errorMessage += `Model: ${model}, Unique Key: ${uniqueKey}, Nango Connection ID: ${nangoConnectionId}.\n`;
-        errorMessage += `Attempted to insert/update/delete: ${responseWithoutDuplicates.length} records\n`;
+        let errorMessage = `Failed to upsert records to table ${RECORDS_TABLE}.\n`;
+        errorMessage += `Model: ${model}, Unique Key: ${RECORD_UNIQUE_KEY}, Nango Connection ID: ${nangoConnectionId}.\n`;
+        errorMessage += `Attempted to insert/update/delete: ${recordsWithoutDuplicates.length} records\n`;
 
         if (error.code) errorMessage += `Error code: ${error.code}.\n`;
 
@@ -106,25 +81,23 @@ export async function upsert(
     }
 }
 
-export async function updateRecord(
+export async function update(
     records: DataRecord[],
-    dbTable: string,
-    uniqueKey: string,
     nangoConnectionId: number,
     model: string,
     activityLogId: number,
     environment_id: number
 ): Promise<UpsertResponse> {
-    const responseWithoutDuplicates = await removeDuplicateKey(records, uniqueKey, activityLogId, environment_id, model);
+    const recordsWithoutDuplicates = await removeDuplicateKey(records, activityLogId, environment_id, model);
 
-    if (!responseWithoutDuplicates || responseWithoutDuplicates.length === 0) {
+    if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
         return {
             success: false,
             error: `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
         };
     }
 
-    const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
+    const updatedKeys = await getUpdatedKeys(recordsWithoutDuplicates, nangoConnectionId, model);
 
     try {
         const recordsToUpdate = [];
@@ -155,30 +128,20 @@ export async function updateRecord(
 
         const encryptedRecords = encryptionManager.encryptDataRecords(recordsToUpdate);
 
-        const results = await schema()
-            .from(dbTable)
-            .insert(encryptedRecords, ['id', 'external_id'])
-            .onConflict(['nango_connection_id', 'external_id', 'model'])
-            .merge()
-            .returning(['id', 'external_id']);
-
-        const affectedInternalIds = results.map((tuple) => tuple.id) as string[];
-        const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
+        await schema().from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['nango_connection_id', 'external_id', 'model']).merge();
 
         return {
             success: true,
             summary: {
                 addedKeys: [],
                 updatedKeys,
-                deletedKeys: [],
-                affectedInternalIds,
-                affectedExternalIds
+                deletedKeys: []
             }
         };
     } catch (error: any) {
-        let errorMessage = `Failed to update records to table ${dbTable}.\n`;
-        errorMessage += `Model: ${model}, Unique Key: ${uniqueKey}, Nango Connection ID: ${nangoConnectionId}.\n`;
-        errorMessage += `Attempted to update: ${responseWithoutDuplicates.length} records\n`;
+        let errorMessage = `Failed to update records to table ${RECORDS_TABLE}.\n`;
+        errorMessage += `Model: ${model}, Unique Key: ${RECORD_UNIQUE_KEY}, Nango Connection ID: ${nangoConnectionId}.\n`;
+        errorMessage += `Attempted to update: ${recordsWithoutDuplicates.length} records\n`;
 
         if ('code' in error) errorMessage += `Error code: ${error.code}.\n`;
         if ('detail' in error) errorMessage += `Detail: ${error.detail}.\n`;
@@ -192,14 +155,8 @@ export async function updateRecord(
     }
 }
 
-export async function removeDuplicateKey(
-    response: DataRecord[],
-    uniqueKey: string,
-    activityLogId: number,
-    environment_id: number,
-    model: string
-): Promise<DataRecord[]> {
-    const { nonUniqueKeys } = verifyUniqueKeysAreUnique(response, uniqueKey);
+export async function removeDuplicateKey(response: DataRecord[], activityLogId: number, environment_id: number, model: string): Promise<DataRecord[]> {
+    const { nonUniqueKeys } = verifyUniqueKeysAreUnique(response, RECORD_UNIQUE_KEY);
 
     for (const nonUniqueKey of nonUniqueKeys) {
         await createActivityLogMessage({
@@ -213,7 +170,7 @@ export async function removeDuplicateKey(
 
     const seen = new Set();
     const uniqueResponse = response.filter((item) => {
-        const key = item[uniqueKey];
+        const key = item[RECORD_UNIQUE_KEY];
         return seen.has(key) ? false : seen.add(key);
     });
 
@@ -226,13 +183,16 @@ export async function removeDuplicateKey(
  * in the database and return the keys that are not in the database
  *
  */
-export async function getAddedKeys(response: DataRecord[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<string[]> {
-    const keys: string[] = response.map((data: DataRecord) => String(data[uniqueKey]));
+export async function getAddedKeys(response: DataRecord[], nangoConnectionId: number, model: string): Promise<string[]> {
+    const keys: string[] = response.map((data: DataRecord) => String(data[RECORD_UNIQUE_KEY]));
 
     const knownKeys: string[] = (await schema()
-        .from(dbTable)
-        .where('nango_connection_id', nangoConnectionId)
-        .where('model', model)
+        .from(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model,
+            external_deleted_at: null
+        })
         .whereIn('external_id', keys)
         .pluck('external_id')) as unknown as string[];
 
@@ -248,15 +208,17 @@ export async function getAddedKeys(response: DataRecord[], dbTable: string, uniq
  * Compare using the data_hash key
  *
  */
-export async function getUpdatedKeys(response: DataRecord[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<string[]> {
-    const keys: string[] = response.map((data: DataRecord) => String(data[uniqueKey]));
-    const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[uniqueKey]), data['data_hash']]);
+export async function getUpdatedKeys(response: DataRecord[], nangoConnectionId: number, model: string): Promise<string[]> {
+    const keys: string[] = response.map((data: DataRecord) => String(data[RECORD_UNIQUE_KEY]));
+    const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[RECORD_UNIQUE_KEY]), data['data_hash']]);
 
     const rowsToUpdate = await schema()
-        .from(dbTable)
+        .from(RECORDS_TABLE)
         .pluck('external_id')
-        .where('nango_connection_id', nangoConnectionId)
-        .where('model', model)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
+        })
         .whereIn('external_id', keys)
         .whereNotIn(['external_id', 'data_hash'], keysWithHash);
 
