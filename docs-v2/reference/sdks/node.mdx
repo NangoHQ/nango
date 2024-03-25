@@ -325,11 +325,11 @@ await nango.listConnections();
 Returns a specific connection with credentials.
 
 ```js
-await nango.getConnection();
+await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 ```
 
 <Info>
-The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth). 
+The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.). 
 
 If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/integrate/guides/proxy-requests-to-an-api)).
 </Info>
@@ -346,16 +346,13 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-
     <ResponseField name="connectionId" type="string" required>
         The connection ID.
     </ResponseField>
-
-    <ResponseField name="forceRefresh" type="string">
+    <ResponseField name="forceRefresh" type="boolean">
         Defaults to `false`. If `false`, the token will only be refreshed if it expires within 15 minutes. If `true`, a token refresh attempt will happen on each request. This is only useful for testing and should not be done at high traffic.
     </ResponseField>
-
-    <ResponseField name="refreshToken" type="string">
+    <ResponseField name="refreshToken" type="boolean">
         Defaults to `false`. If `false`, the refresh token is not included in the response, otherwise it is. In production, it is not advised to return the refresh token, for security reasons, since only the access token is needed to sign requests.
     </ResponseField>
 </Expandable>
@@ -1015,7 +1012,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 
 ### Proxy - GET requests
 
-Triggers an action for a connection.
+Makes an HTTP GET request using the [proxy](/understand/concepts/proxy).
 
 ```js
 const res = await nango.get({
@@ -1080,7 +1077,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 ### Proxy - POST requests
 
-Triggers an action for a connection.
+Makes an HTTP POST request using the [proxy](/understand/concepts/proxy).
 
 ```js
 const res = await nango.post({
@@ -1144,7 +1141,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 ### Proxy - PUT requests
 
-Triggers an action for a connection.
+Makes an HTTP PUT request using the [proxy](/understand/concepts/proxy).
 
 ```js
 const res = await nango.put({
@@ -1208,7 +1205,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 ### Proxy - PATCH requests
 
-Triggers an action for a connection.
+Makes an HTTP PATCH request using the [proxy](/understand/concepts/proxy).
 
 ```js
 const res = await nango.patch({
@@ -1272,7 +1269,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 ### Proxy - DELETE requests
 
-Triggers an action for a connection.
+Makes an HTTP DELETE request using the [proxy](/understand/concepts/proxy).
 
 ```js
 const res = await nango.delete({
