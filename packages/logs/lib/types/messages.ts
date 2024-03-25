@@ -2,34 +2,27 @@ export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
 
 export type MessageMeta = Record<string, unknown> | null;
 
-export type OperationType = 'sync' | 'log' | 'http' | 'proxy' | 'webhook_outgoing' | 'webhook_incoming';
-export type OperationCode = 'success';
+export type MessageType = 'sync' | 'log' | 'http' | 'proxy' | 'webhook_outgoing' | 'webhook_incoming';
+export type MessageCode = 'success';
+export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeout' | 'cancelled';
 
-export type OperationState = 'waiting' | 'running' | 'success' | 'failed' | 'timeout' | 'cancelled';
-
-export interface MessageBase {
+export interface MessageRow {
     id: string;
+
+    // State
     source: 'nango' | 'user';
-
-    type: OperationType;
     level: LogLevel;
+    type: MessageType;
     message: string;
-    meta: MessageMeta;
     title: string | null;
-    state: OperationState;
-    code: OperationCode | null;
+    state: MessageState;
+    code: MessageCode | null;
 
-    createdAt: string;
-}
+    // Ids
+    accountId: number | null;
+    accountName: string | null;
 
-/**
- * An operation is a high level log, like a trace
- */
-export type OperationRow = MessageBase & {
-    accountId: string;
-    accountName: string;
-
-    environmentId: string | null;
+    environmentId: number | null;
     environmentName: string | null;
 
     configId: string | null;
@@ -45,18 +38,9 @@ export type OperationRow = MessageBase & {
 
     userId: string | null;
 
-    updatedAt: string;
-    startedAt: string | null;
-    endedAt: string | null;
-};
-
-/**
- * A message is a log inside an operation, like a span
- */
-export type MessageRow = MessageBase & {
-    level: LogLevel;
     parentId: string | null;
 
+    // Associated meta
     error: Error | null;
     request: {
         url: string;
@@ -66,15 +50,20 @@ export type MessageRow = MessageBase & {
         code: number;
         headers: Record<string, string>;
     } | null;
-};
+    meta: MessageMeta;
 
-export type OperationOrMessage = OperationRow | MessageRow;
+    // Dates
+    createdAt: string;
+    updatedAt: string;
+    startedAt: string | null;
+    endedAt: string | null;
+}
 
 /**
  * What is required to insert a Message
  */
-export type OperationRowInsert = Pick<OperationRow, 'type' | 'message' | 'accountId' | 'accountName'> &
-    Partial<Omit<OperationRow, 'type' | 'message' | 'accountId' | 'accountName'>>;
+export type OperationRequired = 'type' | 'message' | 'accountId' | 'accountName';
+export type OperationRowInsert = Pick<MessageRow, OperationRequired> & Partial<Omit<MessageRow, OperationRequired>>;
 
 /**
  * What is required to insert a Message

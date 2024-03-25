@@ -1,6 +1,14 @@
 import { customAlphabet } from 'nanoid';
 import { z } from 'zod';
 
+function errorToString(issues: z.ZodIssue[]) {
+    return issues
+        .map((issue) => {
+            return `${issue.path.join('')} (${issue.code} ${issue.message})`;
+        })
+        .join(', ');
+}
+
 export function initGlobalEnv() {
     const schema = z.object({
         NANGO_DATABASE_URL: z.string().url().optional(),
@@ -16,7 +24,12 @@ export function initGlobalEnv() {
         VITEST: z.enum(['true', 'false']).default('false')
     });
 
-    return schema.parse(process.env);
+    const res = schema.safeParse(process.env);
+    if (!res.success) {
+        throw new Error(`Missing or invalid env vars: ${errorToString(res.error.issues)}`);
+    }
+
+    return res.data;
 }
 
 export function initLogsEnv() {
@@ -26,7 +39,12 @@ export function initLogsEnv() {
         NANGO_LOGS_ES_PWD: z.string()
     });
 
-    return schema.parse(process.env);
+    const res = schema.safeParse(process.env);
+    if (!res.success) {
+        throw new Error(`Missing or invalid env vars: ${errorToString(res.error.issues)}`);
+    }
+
+    return res.data;
 }
 
 export const alphabet = '346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz';

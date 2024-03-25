@@ -1,37 +1,18 @@
 import type { MessageRow, MessageRowInsert, MessageMeta, OperationRowInsert } from './types/messages.js';
-import { createOperation, setFinish, setRunning, setState, createMessage } from './models/messages.js';
-import { nanoid } from './utils.js';
+import { setFinish, setRunning, setState, createMessage, getFormattedMessage } from './models/messages.js';
 
 export class LogContext {
-    parentId: string;
+    id: string;
 
     constructor(opts: { parentId: string }) {
-        this.parentId = opts.parentId;
+        this.id = opts.parentId;
     }
 
     /**
      * ------ Logs
      */
     async log(data: MessageRowInsert): Promise<void> {
-        const row: MessageRow = {
-            ...data,
-            id: data.id || nanoid(),
-            parentId: this.parentId,
-
-            source: data.source || 'nango',
-            level: data.level || 'info',
-            title: data.title || null,
-            code: data.code || null,
-            state: data.state || 'waiting',
-
-            meta: data.meta || null,
-            error: data.error || null,
-            request: data.request || null,
-            response: data.response || null,
-
-            createdAt: data.createdAt || new Date().toISOString()
-        };
-        await createMessage(row);
+        await createMessage(getFormattedMessage(data));
     }
 
     async debug(message: string, meta: MessageMeta = null): Promise<void> {
@@ -63,59 +44,29 @@ export class LogContext {
      * ------ State
      */
     async start(): Promise<void> {
-        await setRunning();
+        await setRunning({ id: this.id });
     }
 
     async failed(): Promise<void> {
-        await setState('failed');
+        await setState({ id: this.id, state: 'failed' });
     }
 
     async cancel(): Promise<void> {
-        await setState('cancelled');
+        await setState({ id: this.id, state: 'cancelled' });
     }
 
     async timeout(): Promise<void> {
-        await setState('timeout');
+        await setState({ id: this.id, state: 'timeout' });
     }
 
     async finish(): Promise<void> {
-        await setFinish();
+        await setFinish({ id: this.id });
     }
 }
 
 export async function getOperationContext(data: OperationRowInsert): Promise<LogContext> {
-    const id = data.id || nanoid();
-    const res = await createOperation({
-        ...data,
-        id,
-        source: data.source || 'nango',
-        level: data.level || 'info',
-        meta: data.meta || null,
+    const msg = getFormattedMessage(data);
+    await createMessage(msg);
 
-        environmentId: data.environmentId || null,
-        environmentName: data.environmentName || null,
-
-        configId: data.configId || null,
-        configName: data.configName || null,
-
-        connectionId: data.connectionId || null,
-        connectionName: data.connectionName || null,
-
-        syncId: data.syncId || null,
-        syncName: data.syncName || null,
-
-        jobId: data.jobId || null,
-
-        userId: data.userId || null,
-        title: data.title || null,
-        code: data.code || null,
-        state: data.state || 'waiting',
-
-        createdAt: data.createdAt || new Date().toISOString(),
-        updatedAt: data.updatedAt || new Date().toISOString(),
-        startedAt: data.startedAt || null,
-        endedAt: data.endedAt || null
-    });
-
-    return new LogContext({ parentId: res.id });
+    return new LogContext({ parentId: msg.id });
 }

@@ -42,9 +42,9 @@ services:
         container_name: es
         image: elasticsearch:8.12.2
         ulimits:
-        memlock:
-            soft: -1
-            hard: -1
+            memlock:
+                soft: -1
+                hard: -1
         volumes:
             - esdata1:/usr/share/elasticsearch/data
         ports:
@@ -58,3 +58,7 @@ services:
 
 networks:
     nango:
+
+volumes:
+    esdata1:
+        driver: local

@@ -1,18 +1,21 @@
 import { describe, beforeAll, it, expect } from 'vitest';
-import { getOperationContext } from './client';
-import { migrate, createPartitions } from './db/helpers';
-import { getOperation, listOperations } from './models/operations';
-import { db } from './db/client';
-import { listMessages } from './models/messages';
-import type { OperationRequired } from './types/operations';
+import { getOperationContext } from './client.js';
+import { migrateMapping } from './es/helpers.js';
+import { getOperation, listMessages, listOperations } from './models/messages.js';
+import type { MessageRow, OperationRowInsert } from './types/messages.js';
 
-const operationPayload: OperationRequired = { account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev', type: 'sync' };
+const operationPayload: OperationRowInsert = {
+    accountId: 1234,
+    accountName: 'test',
+    environmentId: 5678,
+    environmentName: 'dev',
+    type: 'sync',
+    message: ''
+};
 
 describe('client', () => {
     beforeAll(async () => {
-        await migrate();
-        await createPartitions();
-        await db.table('operations').truncate();
+        await migrateMapping();
     });
 
     it('should insert an operation', async () => {
@@ -20,30 +23,37 @@ describe('client', () => {
         expect(ctx).toMatchObject({ operationId: expect.toBeUUID() });
 
         const list = await listOperations({ limit: 1 });
-        expect(list).toStrictEqual([
+        expect(list).toStrictEqual<MessageRow[]>([
             {
-                account_id: 1234,
-                account_name: 'test',
+                accountId: 1234,
+                accountName: 'test',
                 code: null,
-                config_id: null,
-                config_name: null,
-                connection_id: null,
-                connection_name: null,
-                created_at: expect.toBeIsoDate(),
-                ended_at: null,
-                environment_id: 5678,
-                environment_name: 'dev',
-                id: ctx.operationId,
-                job_id: null,
+                configId: null,
+                configName: null,
+                connectionId: null,
+                connectionName: null,
+                createdAt: expect.toBeIsoDate(),
+                endedAt: null,
+                environmentId: 5678,
+                environmentName: 'dev',
+                error: null,
+                id: ctx.id,
+                jobId: null,
                 level: 'info',
-                started_at: null,
+                message: '',
+                meta: null,
+                parentId: null,
+                request: null,
+                response: null,
+                source: 'nango',
+                startedAt: null,
                 state: 'waiting',
-                sync_id: null,
-                sync_name: null,
+                syncId: null,
+                syncName: null,
                 title: null,
                 type: 'sync',
-                updated_at: expect.toBeIsoDate(),
-                user_id: null
+                updatedAt: expect.toBeIsoDate(),
+                userId: null
             }
         ]);
     });
@@ -53,10 +63,10 @@ describe('client', () => {
             const ctx = await getOperationContext(operationPayload);
             await ctx.start();
 
-            const operation = await getOperation({ id: ctx.operationId });
+            const operation = await getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
-                id: ctx.operationId,
+                id: ctx.id,
                 level: 'info',
                 state: 'running',
                 started_at: expect.toBeIsoDate(),
@@ -68,10 +78,10 @@ describe('client', () => {
             const ctx = await getOperationContext(operationPayload);
             await ctx.cancel();
 
-            const operation = await getOperation({ id: ctx.operationId });
+            const operation = await getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
-                id: ctx.operationId,
+                id: ctx.id,
                 level: 'info',
                 state: 'cancelled',
                 started_at: expect.toBeIsoDate(),
@@ -83,10 +93,10 @@ describe('client', () => {
             const ctx = await getOperationContext(operationPayload);
             await ctx.timeout();
 
-            const operation = await getOperation({ id: ctx.operationId });
+            const operation = await getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
-                id: ctx.operationId,
+                id: ctx.id,
                 level: 'info',
                 state: 'timeout',
                 started_at: expect.toBeIsoDate(),
@@ -98,10 +108,10 @@ describe('client', () => {
             const ctx = await getOperationContext(operationPayload);
             await ctx.finish();
 
-            const operation = await getOperation({ id: ctx.operationId });
+            const operation = await getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
-                id: ctx.operationId,
+                id: ctx.id,
                 level: 'info',
                 state: 'success',
                 started_at: expect.toBeIsoDate(),
@@ -115,10 +125,10 @@ describe('client', () => {
             const ctx = await getOperationContext(operationPayload);
             await ctx.failed();
 
-            const operation = await getOperation({ id: ctx.operationId });
+            const operation = await getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
-                id: ctx.operationId,
+                id: ctx.id,
                 level: 'info',
                 state: 'failed',
                 started_at: expect.toBeIsoDate(),
@@ -127,14 +137,14 @@ describe('client', () => {
         });
 
         it('should set operation as failed and finished', async () => {
-            const ctx = await getOperationContext({ account_id: '1234', account_name: 'test', environment_id: '5678', environment_name: 'dev', type: 'sync' });
+            const ctx = await getOperationContext(operationPayload);
             await ctx.failed();
             await ctx.finish();
 
-            const operation = await getOperation({ id: ctx.operationId });
+            const operation = await getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
-                id: ctx.operationId,
+                id: ctx.id,
                 level: 'info',
                 state: 'failed',
                 started_at: expect.toBeIsoDate(),
@@ -152,13 +162,13 @@ describe('client', () => {
             await ctx.warn('warn msg');
             await ctx.error('error msg');
 
-            const list = await listMessages({ operationId: ctx.operationId, limit: 5 });
+            const list = await listMessages({ parentId: ctx.id, limit: 5 });
             expect(list).toMatchObject([
-                { operation_id: ctx.operationId, content: { level: 'trace', msg: 'trace msg' } },
-                { operation_id: ctx.operationId, content: { level: 'debug', msg: 'debug msg' } },
-                { operation_id: ctx.operationId, content: { level: 'info', msg: 'info msg' } },
-                { operation_id: ctx.operationId, content: { level: 'warn', msg: 'warn msg' } },
-                { operation_id: ctx.operationId, content: { level: 'error', msg: 'error msg' } }
+                { parentId: ctx.id, content: { level: 'trace', msg: 'trace msg' } },
+                { parentId: ctx.id, content: { level: 'debug', msg: 'debug msg' } },
+                { parentId: ctx.id, content: { level: 'info', msg: 'info msg' } },
+                { parentId: ctx.id, content: { level: 'warn', msg: 'warn msg' } },
+                { parentId: ctx.id, content: { level: 'error', msg: 'error msg' } }
             ]);
         });
     });
