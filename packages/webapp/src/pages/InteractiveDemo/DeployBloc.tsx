@@ -66,8 +66,10 @@ models:
             }
 
             setError(null);
+            analyticsTrack('web:demo:deploy_success');
             onProgress();
         } catch (err) {
+            analyticsTrack('web:demo:deploy_error');
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
             return;
         } finally {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Prism } from '@mantine/prism';
 import { Language, Steps, actionName, endpointAction } from './utils';
 import Button from '../../components/ui/button/Button';
@@ -9,6 +9,7 @@ import { useAnalyticsTrack } from '../../utils/analytics';
 import { CheckCircledIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { curlSnippet, nodeActionSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
+import { useMeta } from '../../hooks/useMeta';
 
 export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; connectionId: string; secretKey: string; onProgress: () => void }> = ({
     step,
@@ -18,6 +19,8 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
     onProgress
 }) => {
     const analyticsTrack = useAnalyticsTrack();
+    const { meta } = useMeta();
+
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [title, setTitle] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -33,6 +36,12 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
             return curlSnippet(baseUrl, endpointAction, secretKey, connectionId, providerConfigKey, `{ title: ${JSON.stringify(title)} }`, 'POST');
         }
     }, [title, providerConfigKey, connectionId, secretKey, language, baseUrl]);
+
+    useEffect(() => {
+        if (meta && title === '') {
+            setTitle(`${meta.email.split('@')[0]}'s example issue`);
+        }
+    }, [meta, title]);
 
     const onDeploy = async () => {
         analyticsTrack('web:demo:action');
@@ -50,14 +59,16 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
             if (res.status !== 200 || 'message' in json || !('action' in json)) {
                 setError('message' in json && json.message ? json.message : 'An unexpected error occurred');
 
-                analyticsTrack('web:demo:deploy_error');
+                analyticsTrack('web:demo:action_error');
                 return;
             }
 
             setError(null);
+            analyticsTrack('web:demo:action_success');
             setUrl(json.action.url);
             onProgress();
         } catch (err) {
+            analyticsTrack('web:demo:action_error');
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
             return;
         } finally {
@@ -79,6 +90,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
                     <div className="flex-grow">
                         <input
                             type="text"
+                            value={title}
                             placeholder="Enter a GitHub issue title"
                             onChange={(e) => setTitle(e.target.value)}
                             className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-10 w-1/2 appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
