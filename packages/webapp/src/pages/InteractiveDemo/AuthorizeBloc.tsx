@@ -43,6 +43,7 @@ export const AuthorizeBloc: React.FC<{
             idTmp = json.id;
             setId(idTmp);
         } catch (err) {
+            analyticsTrack('web:demo:authorize_error');
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
             return;
         }
@@ -53,8 +54,10 @@ export const AuthorizeBloc: React.FC<{
             await nango.auth(providerConfigKey, connectionId);
 
             setError(null);
+            analyticsTrack('web:demo:authorize_success');
             void onProgress(idTmp);
         } catch (err: unknown) {
+            analyticsTrack('web:demo:authorize_error');
             setError(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'An unexpected error occurred');
         }
     };

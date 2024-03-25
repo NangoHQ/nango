@@ -1,5 +1,5 @@
 import { usePostHog } from 'posthog-js/react';
-import { User } from './user';
+import type { User } from './user';
 
 export function useAnalyticsTrack() {
     const posthog = usePostHog();
