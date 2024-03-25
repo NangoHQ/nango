@@ -81,7 +81,8 @@ class EnvironmentService {
 
                     if (envSecretKey === secretKey) {
                         const env = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
-                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ secret_key: secretKey, name: env }).first();
+                        // This key is set dynamically and does not exists in database
+                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ name: env }).first();
 
                         if (!environment) {
                             return null;
@@ -154,7 +155,8 @@ class EnvironmentService {
 
                     if (envPublicKey === publicKey) {
                         const env = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
-                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ public_key: publicKey, name: env }).first();
+                        // This key is set dynamically and does not exists in database
+                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ name: env }).first();
 
                         if (!environment) {
                             return null;
@@ -165,6 +167,7 @@ class EnvironmentService {
                 }
             }
         }
+
         const result = await db.knex.select('*').from<Environment>(TABLE).where({ public_key: publicKey }).first();
 
         if (!result) {
