@@ -323,11 +323,6 @@ class EncryptionManager {
         while (await encryptAndSave('_nango_sync_data_records', offset)) {
             offset += chunkSize;
         }
-
-        offset = 0;
-        while (await encryptAndSave('_nango_sync_data_records_deletes', offset)) {
-            offset += chunkSize;
-        }
     }
 
     private async saveDbConfig(dbConfig: DBConfig) {

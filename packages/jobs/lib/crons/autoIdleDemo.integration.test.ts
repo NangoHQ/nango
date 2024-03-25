@@ -1,9 +1,9 @@
 import { describe, it, beforeAll, expect, vi } from 'vitest';
+import type { Environment } from '@nangohq/shared';
 import {
     seeders,
     multipleMigrations,
     configService,
-    environmentService,
     connectionService,
     createSync,
     db,
@@ -18,12 +18,12 @@ import {
 import { exec } from './autoIdleDemo.js';
 import { nanoid } from 'nanoid';
 
-const envName = 'dev';
-
-describe('Auto Idle Demo', () => {
+describe('Auto Idle Demo', async () => {
+    let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
-        await seeders.createConfigSeeds(envName);
+        env = await seeders.createEnvironmentSeed('dev');
+        await seeders.createConfigSeeds(env);
     });
 
     it('should delete syncs', async () => {
@@ -33,32 +33,31 @@ describe('Auto Idle Demo', () => {
         });
 
         const connName = nanoid();
-        const env = await environmentService.createEnvironment(0, envName);
         await configService.createProviderConfig({
             unique_key: DEMO_GITHUB_CONFIG_KEY,
             provider: 'github',
-            environment_id: env!.id,
+            environment_id: env.id,
             oauth_client_id: '',
             oauth_client_secret: ''
         });
-        const conn = await connectionService.upsertConnection(connName, DEMO_GITHUB_CONFIG_KEY, 'github', {} as any, {}, env!.id, 0);
+        const conn = await connectionService.upsertConnection(connName, DEMO_GITHUB_CONFIG_KEY, 'github', {} as any, {}, env.id, 0);
         const connId = conn[0]!.id;
         const sync = (await createSync(connId, DEMO_SYNC_NAME))!;
-        await createSchedule(sync.id!, '86400', 0, ScheduleStatus.RUNNING, nanoid());
-        const schedBefore = await getSchedule(sync.id!);
+        await createSchedule(sync.id, '86400', 0, ScheduleStatus.RUNNING, nanoid());
+        const schedBefore = await getSchedule(sync.id);
         expect(schedBefore?.status).toBe(ScheduleStatus.RUNNING);
 
         // First execution nothings happen
         await exec();
 
-        const schedMid = await getSchedule(sync.id!);
+        const schedMid = await getSchedule(sync.id);
         expect(schedMid?.status).toBe(ScheduleStatus.RUNNING);
 
         // Second execution it should pick the old sync
         await db.knex.from('_nango_syncs').update({ updated_at: new Date(Date.now() - 86400 * 2 * 1000) });
         await exec();
 
-        const schedAfter = await getSchedule(sync.id!);
+        const schedAfter = await getSchedule(sync.id);
         expect(schedAfter?.status).toBe(ScheduleStatus.PAUSED);
     });
 });

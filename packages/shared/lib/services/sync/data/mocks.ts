@@ -1,51 +1,85 @@
 import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
+import { createEnvironmentSeed } from '../../../db/seeders/environment.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
 import { formatDataRecords } from './records.service.js';
 import type { DataResponse } from '../../../models/Data.js';
 import connectionService from '../../connection.service.js';
 import * as DataService from './data.service.js';
 import type { Connection } from '../../../models/Connection.js';
+import type { Sync, Job as SyncJob } from '../../../models/Sync.js';
+import { createActivityLog } from '../../activity/activity.service.js';
+import type { Environment } from '../../../models/Environment.js';
 
-export async function upsertRecords(n: number): Promise<{ connection: Connection; model: string }> {
-    const activityLogId = 1;
-    const environmentId = 1;
-    const environmentName = 'mock-records';
-    const toInsert = generateInsertableJson(n);
+export async function upsertNRecords(n: number): Promise<{
+    env: Environment;
+    connection: Connection;
+    model: string;
+    sync: Sync;
+    syncJob: SyncJob;
+    activityLogId: number;
+}> {
+    const mockRecords = generateInsertableJson(n);
+    return upsertRecords(mockRecords);
+}
+
+export async function upsertRecords(toInsert: DataResponse[]): Promise<{
+    env: Environment;
+    connection: Connection;
+    model: string;
+    sync: Sync;
+    syncJob: SyncJob;
+    activityLogId: number;
+}> {
     const {
         response: { response: records },
-        meta: { modelName, nangoConnectionId }
-    } = await createRecords(toInsert, environmentName);
+        meta: { env, modelName, nangoConnectionId, sync, syncJob }
+    } = await createRecords(toInsert);
+    const connection = await connectionService.getConnectionById(nangoConnectionId);
+
     if (!records) {
         throw new Error('Failed to format records');
     }
-    const connection = await connectionService.getConnectionById(nangoConnectionId);
     if (!connection) {
         throw new Error(`Connection '${nangoConnectionId}' not found`);
     }
+    const activityLogId = await createActivityLog({
+        level: 'info',
+        success: false,
+        environment_id: env.id,
+        action: 'sync',
+        start: Date.now(),
+        end: Date.now(),
+        timestamp: Date.now(),
+        connection_id: connection.connection_id,
+        provider: connection?.provider_config_key,
+        provider_config_key: connection.provider_config_key
+    });
+    if (!activityLogId) {
+        throw new Error('Failed to create activity log');
+    }
     const chunkSize = 1000;
     for (let i = 0; i < records.length; i += chunkSize) {
-        const { error, success } = await DataService.upsert(
-            records.slice(i, i + chunkSize),
-            '_nango_sync_data_records',
-            'external_id',
-            nangoConnectionId,
-            modelName,
-            activityLogId,
-            environmentId
-        );
+        const { error, success } = await DataService.upsert(records.slice(i, i + chunkSize), nangoConnectionId, modelName, activityLogId, env.id);
         if (!success) {
             throw new Error(`Failed to upsert records: ${error}`);
         }
     }
     return {
+        env,
         connection: connection as Connection,
-        model: modelName
+        model: modelName,
+        sync,
+        syncJob,
+        activityLogId
     };
 }
 
-export async function createRecords(records: DataResponse[], environmentName = '') {
-    const connections = await createConnectionSeeds(environmentName);
+export async function createRecords(records: DataResponse[]) {
+    const envName = Math.random().toString(36).substring(7);
+    const env = await createEnvironmentSeed(envName);
+
+    const connections = await createConnectionSeeds(env);
 
     const [nangoConnectionId]: number[] = connections;
     if (!nangoConnectionId) {
@@ -55,7 +89,7 @@ export async function createRecords(records: DataResponse[], environmentName = '
     if (!sync.id) {
         throw new Error('Failed to create sync');
     }
-    const job = await createSyncJobSeeds(nangoConnectionId);
+    const job = await createSyncJobSeeds(sync.id);
     if (!job.id) {
         throw new Error('Failed to create job');
     }
@@ -64,10 +98,11 @@ export async function createRecords(records: DataResponse[], environmentName = '
 
     return {
         meta: {
+            env,
             nangoConnectionId,
             modelName,
-            syncId: sync.id,
-            syncJobId: job.id
+            sync,
+            syncJob: job
         },
         response
     };

@@ -54,13 +54,7 @@ const validateRecordsRequest = validateRequest({
         records: z.any().array().nonempty(),
         providerConfigKey: z.string(),
         connectionId: z.string(),
-        activityLogId: z.number(),
-        lastSyncDate: z
-            .string()
-            .datetime()
-            .transform((value) => new Date(value))
-            .pipe(z.date()) as unknown as z.ZodDate,
-        trackDeletes: z.boolean()
+        activityLogId: z.number()
     })
 });
 const recordPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
