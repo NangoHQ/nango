@@ -150,6 +150,7 @@ export interface ApiKeyCredentials {
 
 export interface User {
     id: number;
+    accountId: number;
     email: string;
     name: string;
     suspended: boolean;

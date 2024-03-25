@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { User } from '../types';
+import type { User } from '../types';
 import { swrFetcher } from '../utils/api';
 
 export function useUser() {
