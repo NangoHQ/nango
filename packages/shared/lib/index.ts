@@ -5,6 +5,7 @@ import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
 import SyncClient from './clients/sync.client.js';
+import WorkOSClient from './clients/workos.client.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 import telemetry, { LogTypes, SpanTypes, MetricTypes } from './utils/telemetry.js';
 import accountService from './services/account.service.js';
@@ -21,6 +22,7 @@ import slackNotificationService from './services/notification/slack.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import logger from './logger/console.js';
 import routeWebhook from './integrations/scripts/webhook/webhook.manager.js';
+import workOsWebhookHandler from './integrations/scripts/webhook/workos-webhook-routing.js';
 import featureFlags from './utils/featureflags.js';
 
 export * from './services/activity/activity.service.js';
@@ -62,6 +64,7 @@ export {
     encryptionManager,
     providerClientManager,
     SyncClient,
+    WorkOSClient,
     errorManager,
     telemetry,
     LogTypes,
@@ -82,6 +85,7 @@ export {
     analytics,
     AnalyticsTypes,
     routeWebhook,
+    workOsWebhookHandler,
     logger,
     featureFlags
 };

@@ -8,6 +8,7 @@ export interface Account {
     websockets_path?: string;
     uuid?: string;
     is_admin?: boolean;
+    external_id?: string;
 }
 
 export interface User extends Timestamps {
@@ -21,6 +22,7 @@ export interface User extends Timestamps {
     suspended: boolean;
     suspended_at: Date;
     currentUser?: boolean;
+    external_id?: string;
 }
 
 export interface InviteUser extends Timestamps {

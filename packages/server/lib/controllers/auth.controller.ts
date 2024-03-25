@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from 'express';
-import { WorkOS } from '@workos-inc/node';
 import crypto from 'crypto';
 import util from 'util';
 import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -21,7 +20,8 @@ import {
     getBaseUrl,
     getBasePublicUrl,
     NangoError,
-    createOnboardingProvider
+    createOnboardingProvider,
+    WorkOSClient
 } from '@nangohq/shared';
 
 export interface WebUser {
@@ -36,15 +36,6 @@ interface InviteAccountBody {
 }
 interface InviteAccountState extends InviteAccountBody {
     token: string;
-}
-
-let workos: WorkOS | null = null;
-if (process.env['WORKOS_API_KEY'] && process.env['WORKOS_CLIENT_ID']) {
-    workos = new WorkOS(process.env['WORKOS_API_KEY']);
-} else {
-    if (isCloud()) {
-        throw new NangoError('workos_not_configured');
-    }
 }
 
 const allowedProviders = ['GoogleOAuth'];
@@ -326,12 +317,12 @@ class AuthController {
                 return;
             }
 
-            if (!workos) {
+            if (!WorkOSClient) {
                 errorManager.errRes(res, 'workos_not_configured');
                 return;
             }
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = WorkOSClient?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`
@@ -366,7 +357,7 @@ class AuthController {
                 return;
             }
 
-            if (!workos) {
+            if (!WorkOSClient) {
                 errorManager.errRes(res, 'workos_not_configured');
                 return;
             }
@@ -378,7 +369,7 @@ class AuthController {
                 token
             };
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = WorkOSClient.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`,
@@ -395,7 +386,7 @@ class AuthController {
         try {
             const { code, state } = req.query;
 
-            if (!workos) {
+            if (!WorkOSClient) {
                 errorManager.errRes(res, 'workos_not_configured');
                 return;
             }
@@ -405,7 +396,7 @@ class AuthController {
                 return;
             }
 
-            const { user: authorizedUser, organizationId } = await workos.userManagement.authenticateWithCode({
+            const { user: authorizedUser, organizationId } = await WorkOSClient.userManagement.authenticateWithCode({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 code: code as string
             });
@@ -433,9 +424,9 @@ class AuthController {
             if (organizationId) {
                 // in this case we have a pre registered organization with workos
                 // let's make sure it exists in our system
-                const organization = await workos.organizations.getOrganization(organizationId);
+                const organization = await WorkOSClient.organizations.getOrganization(organizationId);
 
-                const account = await accountService.getOrCreateAccount(organization.name);
+                const account = await accountService.getOrCreateAccount(organization.name, organizationId);
 
                 if (!account) {
                     throw new NangoError('account_creation_failure');
@@ -453,7 +444,7 @@ class AuthController {
                 }
             }
 
-            const user = await userService.createUser(authorizedUser.email, name as string, '', '', accountId);
+            const user = await userService.createUser(authorizedUser.email, name as string, '', '', accountId, authorizedUser.id);
             if (!user) {
                 throw new NangoError('user_creation_failure');
             }

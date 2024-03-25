@@ -69,11 +69,18 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string): Promise<Account> {
-        const account: Account[] = await db.knex.select('id').from<Account>(`_nango_accounts`).where({ name });
+    async getOrCreateAccount(name: string, external_id = ''): Promise<Account> {
+        const params: Record<string, string> = external_id ? { external_id } : { name };
+
+        const account: Account[] = await db.knex.select('id').from<Account>(`_nango_accounts`).where(params);
 
         if (account == null || account.length == 0 || !account[0]) {
-            const newAccount: Account[] = await db.knex.insert({ name, created_at: new Date() }).into<Account>(`_nango_accounts`).returning('*');
+            const createParams: Record<string, string> = { name };
+
+            if (external_id) {
+                createParams['external_id'] = external_id;
+            }
+            const newAccount: Account[] = await db.knex.insert(createParams).into<Account>(`_nango_accounts`).returning('*');
 
             if (!newAccount || newAccount.length == 0 || !newAccount[0]) {
                 throw new Error('Failed to create account');
@@ -86,12 +93,22 @@ class AccountService {
         return account[0];
     }
 
+    async getAccountByExternalId(external_id: string): Promise<Account | null> {
+        const account = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ external_id });
+
+        if (account == null || account.length == 0 || account[0] == null) {
+            return null;
+        }
+
+        return account[0];
+    }
+
     /**
      * Create Account
      * @desc create a new account and assign to the default environmenets
      */
     async createAccount(name: string): Promise<Account | null> {
-        const result: void | Pick<Account, 'id'> = await db.knex.from<Account>(`_nango_accounts`).insert({ name: name }, ['id']);
+        const result: Account[] = await db.knex.insert({ name }).into<Account>(`_nango_accounts`).returning('*');
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
             await environmentService.createDefaultEnvironments(result[0]['id']);

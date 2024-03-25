@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Span } from 'dd-trace';
 import tracer from 'dd-trace';
-import { routeWebhook, featureFlags, environmentService, telemetry, MetricTypes } from '@nangohq/shared';
+import { workOsWebhookHandler, routeWebhook, featureFlags, environmentService, telemetry, MetricTypes } from '@nangohq/shared';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
@@ -58,6 +58,33 @@ class WebhookController {
                 res.status(200).send(responsePayload);
                 return;
             }
+        } catch (err) {
+            span.setTag('nango.error', err);
+
+            next(err);
+        } finally {
+            span.finish();
+        }
+    }
+
+    async receiveWorkOs(req: Request, res: Response, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('server.sync.receiveWorkOsWebhook', {
+            childOf: active as Span
+        });
+
+        const headers = req.headers;
+        try {
+            span.setTag('nango.providerConfigKey', 'workOs-external');
+
+            const startTime = Date.now();
+            await workOsWebhookHandler(headers, req.body);
+            const endTime = Date.now();
+            const totalRunTime = (endTime - startTime) / 1000;
+
+            telemetry.duration(MetricTypes.WEBHOOK_TRACK_RUNTIME, totalRunTime);
+
+            res.status(200).send();
         } catch (err) {
             span.setTag('nango.error', err);
 
