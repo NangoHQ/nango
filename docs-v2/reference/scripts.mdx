@@ -58,20 +58,20 @@ Integration scripts expose a helper object (`NangoSync` for sync scripts, `Nango
 
 # HTTP requests
 
-<Tip>
-Note that all HTTP requests benefit from automatic credential injection. Because scripts are executed in the context of a specific integration & connection, Nango can automatically retrieve  & refresh the relevant API credentials.
-</Tip>
-
-### GET requests
-
-Makes an HTTP GET request inside an integration script.
-
+Makes an HTTP request inside an integration script:
 ```js
-const res = await nango.get({
-    endpoint: '/endpoint',
-    baseUrlOverride: 'https://base-url.com'
-});
+const config = { endpoint: '/some-endpoint' };
+
+await nango.get(config); // GET request
+await nango.post(config); // POST request
+await nango.put(config); // PUT request
+await nango.patch(config); // PATCH request
+await nango.delete(config); // DELETE request
 ```
+
+<Tip>
+Note that all HTTP requests benefit from automatic credential injection. Because scripts are executed in the context of a specific integration & connection, Nango can automatically retrieve & refresh the relevant API credentials.
+</Tip>
 
 **Parameters**
 
@@ -88,271 +88,6 @@ const res = await nango.get({
                 The query parameters of the request.
             </ResponseField>
             <ResponseField name="data" type="unknown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-```json
-    {
-        data: {}, // the response provided by the server
-        status: 200, // the HTTP status code
-        headers: {}, // the HTTP headers
-        config: {}, // the config provided for the request
-        request: {} // the request that generated this response
-    }
-```
-
-<Tip>
-    The response object is an [Axios response](https://axios-http.com/docs/res_schema).
-</Tip>
-</Expandable>
-
-
-### POST requests
-
-Makes an HTTP POST request inside an integration script.
-
-```js
-const res = await nango.post({
-    endpoint: '/endpoint',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-```json
-    {
-        data: {}, // the response provided by the server
-        status: 200, // the HTTP status code
-        headers: {}, // the HTTP headers
-        config: {}, // the config provided for the request
-        request: {} // the request that generated this response
-    }
-```
-
-<Tip>
-    The response object is an [Axios response](https://axios-http.com/docs/res_schema).
-</Tip>
-</Expandable>
-
-### PUT requests
-
-Makes an HTTP PUT request inside an integration script.
-
-```js
-const res = await nango.put({
-    endpoint: '/endpoint',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-```json
-    {
-        data: {}, // the response provided by the server
-        status: 200, // the HTTP status code
-        headers: {}, // the HTTP headers
-        config: {}, // the config provided for the request
-        request: {} // the request that generated this response
-    }
-```
-
-<Tip>
-    The response object is an [Axios response](https://axios-http.com/docs/res_schema).
-</Tip>
-</Expandable>
-
-### PATCH requests
-
-Makes an HTTP PATCH request inside an integration script.
-
-Triggers an action for a connection.
-
-```js
-const res = await nango.patch({
-    endpoint: '/endpoint',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-```json
-    {
-        data: {}, // the response provided by the server
-        status: 200, // the HTTP status code
-        headers: {}, // the HTTP headers
-        config: {}, // the config provided for the request
-        request: {} // the request that generated this response
-    }
-```
-
-<Tip>
-    The response object is an [Axios response](https://axios-http.com/docs/res_schema).
-</Tip>
-</Expandable>
-
-### DELETE requests
-
-Makes an HTTP DELETE request inside an integration script.
-
-Triggers an action for a connection.
-
-```js
-const res = await nango.delete({
-    endpoint: '/endpoint',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
                 The body of the request.
             </ResponseField>
             <ResponseField name="retries" type="number">
@@ -522,7 +257,7 @@ Empty response.
 
 ### Edit connection metadata
 
-Edit custom metadata for the connection. Only overrides specified properties, not the entire metadata.
+Edit custom metadata for the connection. Only overrides & adds specified properties, not the entire metadata.
 
 ```js
 await nango.updateMetadata({ 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
