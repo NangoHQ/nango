@@ -703,9 +703,7 @@ export class NangoSync extends NangoAction {
                     records: batch,
                     providerConfigKey: this.providerConfigKey,
                     connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
+                    activityLogId: this.activityLogId
                 }
             });
             if (response.status > 299) {
@@ -751,9 +749,7 @@ export class NangoSync extends NangoAction {
                     records: batch,
                     providerConfigKey: this.providerConfigKey,
                     connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
+                    activityLogId: this.activityLogId
                 }
             });
             if (response.status > 299) {
@@ -799,9 +795,7 @@ export class NangoSync extends NangoAction {
                     records: batch,
                     providerConfigKey: this.providerConfigKey,
                     connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
+                    activityLogId: this.activityLogId
                 }
             });
             if (response.status > 299) {

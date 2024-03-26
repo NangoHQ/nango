@@ -1,9 +1,9 @@
 import useSWR from 'swr';
-import { User } from '../types';
 import { swrFetcher } from '../utils/api';
+import type { GetUser } from '@nangohq/server';
 
 export function useUser() {
-    const { data, error, mutate } = useSWR<{ user: User }>('/api/v1/user', swrFetcher);
+    const { data, error, mutate } = useSWR<GetUser>('/api/v1/user', swrFetcher);
 
     const loading = !data && !error;
 

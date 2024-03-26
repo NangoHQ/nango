@@ -71,8 +71,7 @@ export async function exec(): Promise<void> {
             // ----
             // hard delete records
             const res = await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
-            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalRecords);
-            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_DELETES, res.totalDeletes);
+            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalDeletedRecords);
         }
     });
 

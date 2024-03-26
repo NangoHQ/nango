@@ -65,17 +65,20 @@ export const FetchBloc: React.FC<{
             const json = (await res.json()) as { message?: string };
             setError(json.message ? json.message : 'An unexpected error occurred, please retry');
             analyticsTrack('web:demo:fetch_error');
+            setPollingInterval(undefined);
             return;
         }
 
         const fetchedRecords = (await res.json()) as { records: Record<string, unknown>[] };
         if (fetchedRecords.records.length <= 0) {
             setError('An unexpected error occurred, please retry');
+            setPollingInterval(undefined);
             return;
         }
 
         setError(null);
         onProgress(fetchedRecords.records);
+        setPollingInterval(undefined);
     };
 
     const startPolling = () => {
@@ -106,8 +109,8 @@ export const FetchBloc: React.FC<{
             const data = (await res.json()) as { jobStatus: string };
 
             if (data.jobStatus === 'SUCCESS') {
+                analyticsTrack('web:demo:fetch_success');
                 clearInterval(pollingInterval);
-                setPollingInterval(undefined);
                 void fetchRecords();
             }
         }

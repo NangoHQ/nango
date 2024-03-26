@@ -6,18 +6,20 @@ import connectionService from '../services/connection.service.js';
 import environmentService from '../services/environment.service.js';
 import { createConnectionSeeds } from '../db/seeders/connection.seeder.js';
 import { createConfigSeeds } from '../db/seeders/config.seeder.js';
+import { createEnvironmentSeed } from '../db/seeders/environment.seeder.js';
+import type { Environment } from '../models/Environment.js';
 
-const environmentName = 'sdk-test';
-
-describe('Connection service integration tests', () => {
+describe('Connection service integration tests', async () => {
+    let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
-        await createConfigSeeds();
+        env = await createEnvironmentSeed();
+        await createConfigSeeds(env);
     });
 
     describe('Nango object tests', () => {
         it('Should retrieve connections correctly if different connection credentials are passed in', async () => {
-            const connections = await createConnectionSeeds(environmentName);
+            const connections = await createConnectionSeeds(env);
 
             const [nangoConnectionId, secondNangoConnectionId]: number[] = connections;
             const establishedConnection = await connectionService.getConnectionById(nangoConnectionId as number);

@@ -29,7 +29,7 @@ export interface SyncResult {
 export type SyncResultByModel = Record<string, SyncResult>;
 
 export interface Sync extends TimestampsAndDeleted {
-    id?: string;
+    id: string;
     nango_connection_id: number;
     name: string;
     last_sync_date?: Date | null;
@@ -45,7 +45,7 @@ export interface Action extends TimestampsAndDeleted {
 }
 
 export interface Job extends TimestampsAndDeleted {
-    id?: number;
+    id: number;
     status: SyncStatus;
     type: SyncType;
     sync_id: string;

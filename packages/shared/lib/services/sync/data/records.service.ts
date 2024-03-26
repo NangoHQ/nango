@@ -23,14 +23,14 @@ import { LogActionEnum } from '../../../models/Activity.js';
 
 dayjs.extend(utc);
 
+const RECORDS_TABLE = '_nango_sync_data_records';
+
 export const formatDataRecords = (
     records: DataResponse[],
     nango_connection_id: number,
     model: string,
     syncId: string,
     sync_job_id: number,
-    lastSyncDate = new Date(),
-    trackDeletes = false,
     softDelete = false
 ): ServiceResponse<SyncDataRecord[]> => {
     // hashing unique composite key (connection, model, external_id)
@@ -39,19 +39,8 @@ export const formatDataRecords = (
         const namespace = uuid.v5(`${nango_connection_id}${model}`, uuid.NIL);
         return uuid.v5(`${nango_connection_id}${model}${rawRecord.id}`, namespace);
     };
-
-    const formattedRecords: SyncDataRecord[] = [] as SyncDataRecord[];
-
-    const deletedAtKey = 'deletedAt';
-
-    let oldTimestamp = new Date();
-
-    if (trackDeletes) {
-        oldTimestamp = lastSyncDate;
-    }
-
-    for (let i = 0; i < records.length; i++) {
-        const record = records[i];
+    const formattedRecords: SyncDataRecord[] = [];
+    for (const record of records) {
         const data_hash = md5(JSON.stringify(record));
 
         if (!record) {
@@ -63,17 +52,7 @@ export const formatDataRecords = (
             return { success: false, error, response: null };
         }
 
-        let external_deleted_at = null;
-
-        if (softDelete) {
-            if (record[deletedAtKey]) {
-                external_deleted_at = dayjs(record[deletedAtKey] as string).toDate();
-            } else {
-                external_deleted_at = new Date();
-            }
-        }
-
-        formattedRecords[i] = {
+        const formattedRecord: SyncDataRecord = {
             id: stableId(record),
             json: record,
             external_id: record['id'],
@@ -83,14 +62,17 @@ export const formatDataRecords = (
             sync_id: syncId,
             sync_job_id,
             external_is_deleted: softDelete,
-            external_deleted_at,
             pending_delete: false
         };
 
-        if (trackDeletes) {
-            formattedRecords[i]!.created_at = oldTimestamp;
-            formattedRecords[i]!.updated_at = oldTimestamp;
+        if (softDelete) {
+            const deletedAt = record['deletedAt'];
+            formattedRecord.updated_at = new Date();
+            formattedRecord.external_deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : new Date();
+        } else {
+            formattedRecord.external_deleted_at = null;
         }
+        formattedRecords.push(formattedRecord);
     }
     return { success: true, error: null, response: formattedRecords };
 };
@@ -185,7 +167,7 @@ export async function getDataRecords(
     }
 
     let query = schema()
-        .from<SyncDataRecord>(`_nango_sync_data_records`)
+        .from<SyncDataRecord>(RECORDS_TABLE)
         .timeout(60000) // timeout for 1 minute
         .where({
             nango_connection_id: Number(nangoConnection.id),
@@ -346,7 +328,7 @@ export async function getAllDataRecords(
         }
 
         let query = schema()
-            .from<SyncDataRecord>(`_nango_sync_data_records`)
+            .from<SyncDataRecord>(RECORDS_TABLE)
             .timeout(60000) // timeout for 1 minute
             .where({
                 nango_connection_id: Number(nangoConnection.id),
@@ -516,7 +498,7 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
 
 export async function getRecordsByExternalIds(external_ids: string[], nango_connection_id: number, model: string): Promise<SyncDataRecord[]> {
     const encryptedRecords = await schema()
-        .from<SyncDataRecord>('_nango_sync_data_records')
+        .from<SyncDataRecord>(RECORDS_TABLE)
         .where({
             nango_connection_id,
             model
@@ -536,36 +518,42 @@ export async function getRecordsByExternalIds(external_ids: string[], nango_conn
     return result as unknown as SyncDataRecord[];
 }
 
-export async function deleteRecordsBySyncId({
-    syncId,
-    limit = 5000
-}: {
-    syncId: string;
-    limit?: number;
-}): Promise<{ totalRecords: number; totalDeletes: number }> {
-    let totalRecords = 0;
-    let countRecords = 0;
+export async function deleteRecordsBySyncId({ syncId, limit = 5000 }: { syncId: string; limit?: number }): Promise<{ totalDeletedRecords: number }> {
+    let totalDeletedRecords = 0;
+    let deletedRecords = 0;
     do {
-        countRecords = await db
-            .knex('_nango_sync_data_records')
+        deletedRecords = await db
+            .knex(RECORDS_TABLE)
             .whereIn('id', function (sub) {
-                sub.select('id').from('_nango_sync_data_records').where({ sync_id: syncId }).limit(limit);
+                sub.select('id').from(RECORDS_TABLE).where({ sync_id: syncId }).limit(limit);
             })
             .del();
-        totalRecords += countRecords;
-    } while (countRecords >= limit);
+        totalDeletedRecords += deletedRecords;
+    } while (deletedRecords >= limit);
 
-    let totalDeletes = 0;
-    let countDeletes = 0;
-    do {
-        countDeletes = await db
-            .knex('_nango_sync_data_records_deletes')
-            .whereIn('id', function (sub) {
-                sub.select('id').from('_nango_sync_data_records_deletes').where({ sync_id: syncId }).limit(limit);
-            })
-            .del();
-        totalDeletes += countDeletes;
-    } while (countDeletes >= limit);
+    return { totalDeletedRecords };
+}
 
-    return { totalDeletes, totalRecords };
+// Mark all non-deleted records that don't belong to currentGeneration as deleted
+// returns the ids of records being deleted
+export async function markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, syncId: string, generation: number): Promise<string[]> {
+    const now = db.knex.fn.now(6);
+    return (await schema()
+        .from<SyncDataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: connectionId,
+            model,
+            sync_id: syncId,
+            external_is_deleted: false
+        })
+        .whereNot({
+            sync_job_id: generation
+        })
+        .update({
+            external_is_deleted: true,
+            external_deleted_at: now,
+            updated_at: now,
+            sync_job_id: generation
+        })
+        .returning('id')) as unknown as string[];
 }

@@ -60,7 +60,7 @@ export default function ProjectSettings() {
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
     const env = useStore((state) => state.cookieValue);
-    const { environment } = useEnvironment();
+    const { environment, mutate } = useEnvironment();
 
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id));
@@ -109,6 +109,7 @@ export default function ProjectSettings() {
             toast.success('Callback URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setCallbackEditMode(false);
             setCallbackUrl(target.callback_url.value || defaultCallback());
+            void mutate();
         }
     };
 
@@ -125,6 +126,7 @@ export default function ProjectSettings() {
             toast.success('Wehook URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setWebhookEditMode(false);
             setWebhookUrl(target.webhook_url.value);
+            void mutate();
         }
     };
 
@@ -139,6 +141,7 @@ export default function ProjectSettings() {
             setHmacEnabled(checked);
             editHmacEnabled(checked).then(() => {
                 toast.success(checked ? 'HMAC enabled.' : 'HMAC disabled.', { position: toast.POSITION.BOTTOM_CENTER });
+                void mutate();
             });
         }
     };
@@ -172,6 +175,7 @@ export default function ProjectSettings() {
             toast.success('HMAC key updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setHmacEditMode(false);
             setHmacKey(target.hmac_key.value);
+            void mutate();
         }
 
         setHmacEditMode(false);
@@ -212,6 +216,7 @@ export default function ProjectSettings() {
 
         if (res?.status === 200) {
             toast.success('Environment variables updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            void mutate();
         }
     };
 
@@ -227,6 +232,7 @@ export default function ProjectSettings() {
 
         if (res?.status === 200) {
             toast.success('Environment variables updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            void mutate();
         }
     };
 
@@ -260,6 +266,7 @@ export default function ProjectSettings() {
                 setHasPendingSecretKey(true);
                 toast.success('New secret key generated', { position: toast.POSITION.BOTTOM_CENTER });
             }
+            void mutate();
         }
     };
 
@@ -285,6 +292,7 @@ export default function ProjectSettings() {
                 setHasPendingSecretKey(false);
                 toast.success('Secret key reverted', { position: toast.POSITION.BOTTOM_CENTER });
             }
+            void mutate();
         }
     };
 
@@ -309,6 +317,7 @@ export default function ProjectSettings() {
                 setSecretVisible(false);
                 setHasPendingSecretKey(false);
             }
+            void mutate();
         }
     };
 
@@ -336,6 +345,7 @@ export default function ProjectSettings() {
         } else {
             toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
             setSlackIsConnected(false);
+            void mutate();
         }
     };
 
@@ -368,6 +378,7 @@ export default function ProjectSettings() {
                 await updateSlackNotifications(true);
                 setSlackIsConnected(true);
                 toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+                void mutate();
             })
             .catch((err: { message: string; type: string }) => {
                 console.log(err);
