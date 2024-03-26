@@ -134,18 +134,24 @@ export interface Connection {
     oauthToken: string | null;
     oauthTokenSecret: string | null;
     rawCredentials: object;
-    credentials: BasicApiCredentials | ApiKeyCredentials | null;
+    credentials: BasicApiCredentials | ApiKeyCredentials | OAuthOverride | null;
 }
 
 export interface BasicApiCredentials {
-    [key: string]: string;
     username: string;
     password: string;
 }
 
 export interface ApiKeyCredentials {
-    [key: string]: string;
     apiKey: string;
+}
+
+export interface OAuthOverride {
+    config_override: {
+        client_id: string;
+        client_secret: string;
+        scopes?: string;
+    };
 }
 
 export interface User {

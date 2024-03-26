@@ -3,10 +3,12 @@ import { Prism } from '@mantine/prism';
 import { Loading } from '@geist-ui/core';
 
 import PrismPlus from '../../components/ui/prism/PrismPlus';
-import { Connection, AuthModes } from '../../types';
+import { AuthModes } from '../../types';
+import type { Connection } from '../../types';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import SecretInput from '../../components/ui/input/SecretInput';
 import CopyButton from '../../components/ui/button/CopyButton';
+import TagsInput from '../../components/ui/input/TagsInput';
 
 interface AuthorizationProps {
     connection: Connection | null;
@@ -47,7 +49,7 @@ export default function Authorization(props: AuthorizationProps) {
                     <span className="text-gray-400 text-xs uppercase mb-2">Auth Type</span>
                     <span className="text-white">{connection?.oauthType}</span>
                 </div>
-                {connection?.oauthType === AuthModes.ApiKey && (
+                {connection?.credentials && connection?.oauthType === AuthModes.ApiKey && 'apiKey' in connection.credentials && (
                     <div className="flex flex-col w-1/2">
                         <span className="text-gray-400 text-xs uppercase mb-1">{connection?.oauthType}</span>
                         <SecretInput disabled defaultValue={connection?.credentials?.apiKey} copy={true} />
@@ -60,7 +62,7 @@ export default function Authorization(props: AuthorizationProps) {
                     </div>
                 )}
             </div>
-            {connection?.credentials && connection?.oauthType === AuthModes.Basic && (
+            {connection?.credentials && connection?.oauthType === AuthModes.Basic && 'password' in connection.credentials && (
                 <div className="flex">
                     {connection?.credentials.username && (
                         <div className="flex flex-col w-1/2">
@@ -75,6 +77,31 @@ export default function Authorization(props: AuthorizationProps) {
                         </div>
                     )}
                 </div>
+            )}
+            {connection?.credentials && 'config_override' in connection.credentials && (
+                <>
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs uppercase mb-1">Client ID</span>
+                        <SecretInput disabled value={connection.credentials.config_override.client_id} copy={true} />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs uppercase mb-1">Client Secret</span>
+                        <SecretInput disabled value={connection.credentials.config_override.client_secret} copy={true} />
+                    </div>
+                    {connection.credentials.config_override.scopes && (
+                        <div className="mt-8">
+                            <span className="text-gray-400 text-xs uppercase mb-1">Scopes</span>
+                            <TagsInput
+                                id="scopes"
+                                name="scopes"
+                                readOnly
+                                type="text"
+                                defaultValue={connection.credentials.config_override.scopes}
+                                minLength={1}
+                            />
+                        </div>
+                    )}
+                </>
             )}
             {connection?.accessToken && (
                 <div className="flex flex-col">

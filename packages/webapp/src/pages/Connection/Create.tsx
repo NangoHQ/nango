@@ -40,6 +40,7 @@ export default function IntegrationCreate() {
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
+    const [oauthSelectedScopes, oauthAddToScopesSet, oauthRemoveFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState('');
@@ -49,6 +50,8 @@ export default function IntegrationCreate() {
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
+    const [optionalOAuthClientId, setOptionalOAuthClientId] = useState('');
+    const [optionalOAuthClientSecret, setOptionalOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [issuerId, setIssuerId] = useState('');
@@ -124,6 +127,7 @@ export default function IntegrationCreate() {
         const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
         let credentials = {};
+        let params = connectionConfigParams || {};
 
         if (authMode === AuthModes.Basic) {
             credentials = {
@@ -146,9 +150,23 @@ export default function IntegrationCreate() {
             };
         }
 
+        if (authMode === AuthModes.OAuth2) {
+            credentials = {
+                oauth_client_id: optionalOAuthClientId,
+                oauth_client_secret: optionalOAuthClientSecret
+            };
+
+            if (oauthSelectedScopes.length > 0) {
+                params = {
+                    ...params,
+                    oauth_scopes: oauthSelectedScopes.join(',')
+                };
+            }
+        }
+
         nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
             user_scope: selectedScopes || [],
-            params: connectionConfigParams || {},
+            params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
             credentials
@@ -231,9 +249,27 @@ export default function IntegrationCreate() {
         // Iterate of connection config params and create a string.
         if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
             connectionConfigParamsStr = 'params: { ';
+            let hasAnyValue = false;
             for (const [key, value] of Object.entries(connectionConfigParams)) {
-                connectionConfigParamsStr += `${key}: '${value}', `;
+                if (value !== '') {
+                    connectionConfigParamsStr += `${key}: '${value}', `;
+                    hasAnyValue = true;
+                }
             }
+            connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
+            connectionConfigParamsStr += ' }';
+            if (!hasAnyValue) {
+                connectionConfigParamsStr = '';
+            }
+        }
+
+        if (authMode === AuthModes.OAuth2 && oauthSelectedScopes.length > 0) {
+            if (connectionConfigParamsStr) {
+                connectionConfigParamsStr += ', ';
+            } else {
+                connectionConfigParamsStr = 'params: { ';
+            }
+            connectionConfigParamsStr += `oauth_scopes: '${oauthSelectedScopes.join(',')}', `;
             connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
             connectionConfigParamsStr += ' }';
         }
@@ -294,11 +330,29 @@ export default function IntegrationCreate() {
 }`;
         }
 
+        let oauthCredentialsString = '';
+
+        if (integration?.authMode === AuthModes.OAuth2 && optionalOAuthClientId && optionalOAuthClientSecret) {
+            oauthCredentialsString = `
+    credentials: {
+        oauth_client_id: '${optionalOAuthClientId}',
+        oauth_client_secret: '${optionalOAuthClientSecret}'
+}`;
+        }
+
         const connectionConfigStr =
-            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr && !apiAuthString && !appStoreAuthString
+            !connectionConfigParamsStr &&
+            !authorizationParamsStr &&
+            !userScopesStr &&
+            !hmacKeyStr &&
+            !apiAuthString &&
+            !appStoreAuthString &&
+            !oauthCredentialsString
                 ? ''
                 : ', { ' +
-                  [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') +
+                  [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString, oauthCredentialsString]
+                      .filter(Boolean)
+                      .join(', ') +
                   ' }';
 
         return `import Nango from '@nangohq/frontend';
@@ -389,6 +443,54 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             selectedScopes={selectedScopes}
                                             addToScopesSet={addToScopesSet}
                                             removeFromSelectedSet={removeFromSelectedSet}
+                                            minLength={1}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {integration?.provider === 'netsuite' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            OAuth Credentials Override
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="oauth_client_id"
+                                            name="oauth_client_id"
+                                            placeholder="OAuth Client ID"
+                                            optionalvalue={optionalOAuthClientId}
+                                            setoptionalvalue={setOptionalOAuthClientId}
+                                        />
+                                    </div>
+                                    <div className="mt-8">
+                                        <SecretInput
+                                            copy={true}
+                                            id="oauth_client_secret"
+                                            name="oauth_client_secret"
+                                            placeholder="OAuth Client Secret"
+                                            optionalvalue={optionalOAuthClientSecret}
+                                            setoptionalvalue={setOptionalOAuthClientSecret}
+                                        />
+                                    </div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            Scope Overrides
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <TagsInput
+                                            id="scopes"
+                                            name="oauth_scopes"
+                                            type="text"
+                                            defaultValue={''}
+                                            onChange={() => null}
+                                            selectedScopes={oauthSelectedScopes}
+                                            addToScopesSet={oauthAddToScopesSet}
+                                            removeFromSelectedSet={oauthRemoveFromSelectedSet}
                                             minLength={1}
                                         />
                                     </div>
