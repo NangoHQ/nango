@@ -1,3 +1,5 @@
+import { serializeError } from 'serialize-error';
+
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
@@ -588,3 +590,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
 
     return { success: false, error, response: null };
 };
+
+export function stringifyError(err: unknown) {
+    return JSON.stringify(serializeError(err));
+}
