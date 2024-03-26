@@ -474,6 +474,7 @@
         {
             "group": "Use Integrations - Reference",
             "pages": [
+                "reference/sdks/frontend",
                 {
                     "group": "HTTP API",
                     "icon": "cloud",
@@ -550,9 +551,7 @@
                         "reference/sdks/php"
                     ],
                     "icon": "cubes"
-                },
-                "reference/sdks/frontend",
-                "reference/webhooks"
+                }
             ]
         },
         {

@@ -8,7 +8,7 @@ description: 'Step-by-step guide on how to receive webhooks from an API.'
 
 # Check if Nango supports webhooks for your API
 
-Nango has off-the-shelf support for webhooks coming from [this list of APIs](/reference/webhooks).
+Nango has off-the-shelf support for webhooks coming from [this list of APIs](/integrate/guides/receive-webhooks-from-an-api#apis-with-out-of-the-box-webhook-support).
 
 <Tip>
 The Nango team adds webhook support for new APIs in &lt;48h; simply ask in the [community](https://nango.dev/slack).
@@ -39,6 +39,19 @@ In addition to webhook forwarding, you can use [syncs](/understand/concepts/sync
 Support for specific external webhook subscriptions must be added to each sync individually. You can check if a sync supports external webhooks by selecting your integration, going to the _Scripts_ tab, selecting the sync script, and checking in the sync script settings if it supports webhooks and, if so, which webhook subscription(s). 
 
 Each modified record (following an external webhook) will trigger a separate _sync webhook_ from Nango to your app ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango) to receive webhooks from Nango):
+
+# APIs with out-of-the-box webhook support
+
+- Salesforce
+- Slack
+- Github
+- Hubspot
+- Jira
+- Linear
+
+<Info>
+The Nango platform makes it easy to support external webhooks from new APIs with minimal changes. Just request it in the [community](https://nango.dev/slack).
+</Info>
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
