@@ -281,12 +281,10 @@ class EnvironmentService {
             }
 
             const encryptedEnvironment = encryptionManager.encryptEnvironment(environment);
-            await db.knex
-                .from<Environment>(TABLE)
-                .where({ id: environmentId })
-                .update({ ...encryptedEnvironment, secret_key_hashed: await hashSecretKey(environment.secret_key) });
+            const newEnv = { ...encryptedEnvironment, secret_key_hashed: await hashSecretKey(environment.secret_key) };
+            await db.knex.from<Environment>(TABLE).where({ id: environmentId }).update(newEnv);
             this.addToEnvironmentSecretCache(environment);
-            return encryptedEnvironment;
+            return newEnv;
         }
 
         return null;
@@ -501,7 +499,7 @@ class EnvironmentService {
                 secret_key: environment.pending_secret_key as string,
                 secret_key_iv: environment.pending_secret_key_iv as string,
                 secret_key_tag: environment.pending_secret_key_tag as string,
-                secret_key_hashed: await hashSecretKey(environment.pending_public_key!),
+                secret_key_hashed: await hashSecretKey(environment.pending_secret_key!),
                 pending_secret_key: null,
                 pending_secret_key_iv: null,
                 pending_secret_key_tag: null
