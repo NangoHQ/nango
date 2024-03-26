@@ -568,6 +568,7 @@ export default class SyncRun {
         await BigQueryClient.insert({
             executionType: this.determineExecutionType(),
             connectionId: this.nangoConnection.connection_id,
+            internalConnectionId: this.nangoConnection.id,
             accountId: this.nangoConnection.account_id,
             scriptName: this.syncName,
             scriptType: this.syncType,
@@ -600,7 +601,7 @@ export default class SyncRun {
                 await BigQueryClient.insert({
                     executionType: this.determineExecutionType(),
                     connectionId: this.nangoConnection.connection_id,
-                    // TODO get the internal connection id
+                    internalConnectionId: this.nangoConnection.id,
                     accountId: this.nangoConnection.account_id,
                     scriptName: this.syncName,
                     scriptType: this.syncType,
