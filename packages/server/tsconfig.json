@@ -10,10 +10,10 @@
         },
         {
             "path": "../node-client"
+        },
+        {
+            "path": "../internals"
         }
     ],
-    "include": [
-        "lib/**/*",
-        "../shared/lib/express.d.ts",
-    ]
+    "include": ["lib/**/*", "../shared/lib/express.d.ts"]
 }

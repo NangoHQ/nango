@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
-import { accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage, isCloud } from '@nangohq/shared';
+import { isCloud } from '@nangohq/internals/lib/environment/detection.js';
+import { accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];

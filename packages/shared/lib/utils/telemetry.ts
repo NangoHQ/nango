@@ -1,5 +1,5 @@
 import { v2, client } from '@datadog/datadog-api-client';
-import { isCloud } from './utils.js';
+import { isCloud } from '@nangohq/internals/lib/environment/detection.js';
 import tracer from 'dd-trace';
 
 export enum LogTypes {

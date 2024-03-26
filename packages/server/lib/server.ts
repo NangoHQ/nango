@@ -34,19 +34,8 @@ import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import {
-    getGlobalOAuthCallbackUrl,
-    environmentService,
-    getPort,
-    AUTH_ENABLED,
-    MANAGED_AUTH_ENABLED,
-    isCloud,
-    isEnterprise,
-    isBasicAuthEnabled,
-    errorManager,
-    getWebsocketsPath,
-    packageJsonFile
-} from '@nangohq/shared';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/internals/lib/environment/detection.js';
+import { getGlobalOAuthCallbackUrl, environmentService, getPort, errorManager, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
 import tracer from 'dd-trace';

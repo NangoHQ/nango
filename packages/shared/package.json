@@ -20,6 +20,7 @@
         "@aws-sdk/client-s3": "3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
+        "@nangohq/internals": "file:../internals",
         "@nangohq/node": "^0.39.8",
         "@sentry/node": "^7.105.0",
         "@temporalio/client": "^1.9.1",
@@ -54,8 +55,7 @@
         "semver": "^7.5.4",
         "simple-oauth2": "^5.0.0",
         "uuid": "^9.0.0",
-        "winston": "^3.8.2",
-        "winston-daily-rotate-file": "^4.7.1"
+        "winston": "^3.8.2"
     },
     "engines": {
         "node": ">=16.7",

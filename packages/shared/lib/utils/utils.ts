@@ -34,9 +34,6 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
-export const AUTH_ENABLED = isCloud() || isEnterprise();
-export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
-
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
     aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],
@@ -76,10 +73,6 @@ export function isLocal() {
     return getBaseUrl() === localhostUrl;
 }
 
-export function isCloud() {
-    return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
-}
-
 export function isEnterprise() {
     return process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
 }
@@ -92,10 +85,6 @@ export function integrationFilesAreRemote() {
 
 export function isStaging() {
     return process.env['NODE_ENV'] === NodeEnv.Staging;
-}
-
-export function isHosted() {
-    return !isCloud() && !isLocal() && !isEnterprise();
 }
 
 export function getPort() {
@@ -136,10 +125,6 @@ export function isProd() {
 
 export function isTest(): boolean {
     return Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
-}
-
-export function isBasicAuthEnabled() {
-    return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 }
 
 function getServerHost() {

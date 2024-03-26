@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@nangohq/nango-runner": "^1.0.0",
+        "@nangohq/internals": "file:../internals",
         "@nangohq/shared": "^0.39.8",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",

@@ -10,9 +10,10 @@
         },
         {
             "path": "../runner"
+        },
+        {
+            "path": "../internals"
         }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }

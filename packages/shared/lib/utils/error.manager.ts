@@ -3,13 +3,16 @@ import type { EventHint } from '@sentry/node';
 import sentry from '@sentry/node';
 import type { Tracer } from 'dd-trace';
 import type { ErrorEvent } from '@sentry/types';
-import logger from '../logger/console.js';
+import Logger from '@nangohq/internals/lib/logger.js';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
-import { isCloud, getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, isApiAuthenticated, isUserAuthenticated, packageJsonFile } from './utils.js';
+import { isCloud } from '@nangohq/internals/lib/environment/detection.js';
+import { getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, isApiAuthenticated, isUserAuthenticated, packageJsonFile } from './utils.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
+
+const { logger } = new Logger();
 
 export enum ErrorSourceEnum {
     PLATFORM = 'platform',

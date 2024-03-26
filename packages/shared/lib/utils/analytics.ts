@@ -1,5 +1,7 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, UserType, isCloud, isStaging, packageJsonFile } from '../utils/utils.js';
+import { isCloud, isStaging, getBaseUrl } from '@nangohq/internals/lib/environment/detection.js';
+import { localhostUrl } from '@nangohq/internals/lib/environment/constants.js';
+import { UserType, packageJsonFile } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';

@@ -6,6 +6,7 @@ import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '..
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User, Result } from '@nangohq/shared';
+import { isCloud, getBaseUrl, getBasePublicUrl } from '@nangohq/internals/lib/environment/detection.js';
 import {
     userService,
     accountService,
@@ -17,9 +18,6 @@ import {
     environmentService,
     analytics,
     AnalyticsTypes,
-    isCloud,
-    getBaseUrl,
-    getBasePublicUrl,
     NangoError,
     createOnboardingProvider
 } from '@nangohq/shared';

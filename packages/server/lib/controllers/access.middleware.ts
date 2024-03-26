@@ -1,15 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import {
-    LogActionEnum,
-    ErrorSourceEnum,
-    environmentService,
-    isCloud,
-    setAccount,
-    setEnvironmentId,
-    isBasicAuthEnabled,
-    errorManager,
-    userService
-} from '@nangohq/shared';
+import { isCloud, isBasicAuthEnabled } from '@nangohq/internals/lib/environment/detection.js';
+import { LogActionEnum, ErrorSourceEnum, environmentService, setAccount, setEnvironmentId, errorManager, userService } from '@nangohq/shared';
 import tracer from 'dd-trace';
 
 export class AccessMiddleware {

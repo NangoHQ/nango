@@ -3,7 +3,7 @@ import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
-import { isCloud, isEnterprise, isLocal } from '../../utils/utils.js';
+import { isCloud, isEnterprise, isLocal } from '@nangohq/internals/lib/environment/detection.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -167,7 +167,7 @@ class RemoteFileService {
             } else {
                 return { success: false, error: null, response: null };
             }
-        } catch (e) {
+        } catch {
             const error = new NangoError('integration_file_not_found');
             return { success: false, error, response: null };
         }

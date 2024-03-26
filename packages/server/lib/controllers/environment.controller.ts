@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Environment } from '@nangohq/shared';
+import { isCloud } from '@nangohq/internals/lib/environment/detection.js';
 import {
     accountService,
     hmacService,
     environmentService,
     errorManager,
     getBaseUrl,
-    isCloud,
     getWebsocketsPath,
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
