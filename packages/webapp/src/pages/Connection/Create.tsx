@@ -308,7 +308,8 @@ export default function IntegrationCreate() {
             apiAuthString = `
     credentials: {
       apiKey: '${apiKey}'
-}`;
+    }
+  `;
         }
 
         if (integration?.authMode === AuthModes.Basic) {
@@ -316,7 +317,8 @@ export default function IntegrationCreate() {
     credentials: {
       username: '${apiAuthUsername}',
       password: '${apiAuthPassword}'
-}`;
+    }
+  `;
         }
 
         let appStoreAuthString = '';
@@ -327,7 +329,8 @@ export default function IntegrationCreate() {
         privateKeyId: '${privateKeyId}',
         issuerId: '${issuerId}',
         privateKey: '${privateKey}'
-}`;
+    }
+  `;
         }
 
         let oauthCredentialsString = '';
@@ -337,7 +340,8 @@ export default function IntegrationCreate() {
     credentials: {
         oauth_client_id: '${optionalOAuthClientId}',
         oauth_client_secret: '${optionalOAuthClientSecret}'
-}`;
+    }
+  `;
         }
 
         const connectionConfigStr =
@@ -353,17 +357,18 @@ export default function IntegrationCreate() {
                   [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString, oauthCredentialsString]
                       .filter(Boolean)
                       .join(', ') +
-                  ' }';
+                  '}';
 
         return `import Nango from '@nangohq/frontend';
 
 const nango = new Nango(${argsStr});
 
-nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
+  .then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
-}).catch((err: { message: string; type: string }) => {
+  }).catch((err: { message: string; type: string }) => {
     // handle error
-});`;
+  });`;
     };
 
     return (
