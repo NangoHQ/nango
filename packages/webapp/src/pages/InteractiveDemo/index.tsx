@@ -11,7 +11,7 @@ import { Steps, providerConfigKey } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
-import { OnboardingStatus } from '../../types';
+import type { OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
 import Spinner from '../../components/ui/Spinner';
 import { useEnvironment } from '../../hooks/useEnvironment';

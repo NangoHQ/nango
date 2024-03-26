@@ -72,9 +72,9 @@ export default function IntegrationCreate() {
             }
         };
         if (isHmacEnabled && integration?.uniqueKey && connectionId) {
-            getHmac();
+            void getHmac();
         }
-    }, [isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI]);
+    }, [isHmacEnabled, integration?.uniqueKey, connectionId]);
 
     useEffect(() => {
         const getIntegrations = async () => {
@@ -100,7 +100,6 @@ export default function IntegrationCreate() {
             setPublicKey(environment.public_key);
             setHostUrl(environment.host || baseUrl());
             setWebsocketsPath(environment.websockets_path);
-            setHmacDigest(environment.hmac_digest ?? '');
             setIsHmacEnabled(Boolean(environment.hmac_key));
         }
 

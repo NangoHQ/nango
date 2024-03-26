@@ -10,7 +10,6 @@ import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import BigQueryClient from '../../clients/big-query.client.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
-import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
@@ -23,6 +22,7 @@ import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 import type { Metadata } from '../../models/Connection';
+import * as recordsService from './data/records.service.js';
 
 interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
@@ -400,7 +400,7 @@ export default class SyncRun {
             } finally {
                 if (!this.isInvokedImmediately) {
                     const totalRunTime = (Date.now() - startTime) / 1000;
-                    await telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
+                    telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
                 }
             }
         }
@@ -411,25 +411,17 @@ export default class SyncRun {
     async finishSync(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
+            let deletedKeys: string[] = [];
             if (!this.isWebhook && trackDeletes) {
-                await clearOldRecords(this.nangoConnection?.id as number, model);
+                deletedKeys = await recordsService.markNonCurrentGenerationRecordsAsDeleted(
+                    this.nangoConnection.id as number,
+                    model,
+                    this.syncId as string,
+                    this.syncJobId as number
+                );
             }
-            const deletedKeys = trackDeletes ? await getDeletedKeys('_nango_sync_data_records', 'external_id', this.nangoConnection.id as number, model) : [];
 
-            if (!this.isWebhook && trackDeletes) {
-                await syncUpdateAtForDeletedRecords(this.nangoConnection.id as number, model, 'external_id', deletedKeys);
-            }
-
-            await this.reportResults(
-                model,
-                { addedKeys: [], updatedKeys: [], deletedKeys, affectedInternalIds: [], affectedExternalIds: [] },
-                i,
-                models.length,
-                syncStartDate,
-                version,
-                totalRunTime,
-                trackDeletes
-            );
+            await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);
             i++;
         }
     }
@@ -441,8 +433,7 @@ export default class SyncRun {
         numberOfModels: number,
         syncStartDate: Date,
         version: string,
-        totalRunTime: number,
-        trackDeletes?: boolean
+        totalRunTime: number
     ): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
             return;
@@ -468,10 +459,6 @@ export default class SyncRun {
             }
         }
 
-        if (!this.isWebhook && trackDeletes) {
-            await takeSnapshot(this.nangoConnection?.id as number, model);
-        }
-
         const updatedResults: Record<string, SyncResult> = {
             [model]: {
                 added: responseResults.addedKeys.length,
@@ -484,7 +471,6 @@ export default class SyncRun {
 
         if (!syncResult) {
             await this.reportFailureForResults(`The sync job ${this.syncJobId} could not be updated with the results for the model ${model}.`, totalRunTime);
-
             return;
         }
 
@@ -614,7 +600,7 @@ export default class SyncRun {
                 await BigQueryClient.insert({
                     executionType: this.determineExecutionType(),
                     connectionId: this.nangoConnection.connection_id,
-                    // internal connection id is what?
+                    // TODO get the internal connection id
                     accountId: this.nangoConnection.account_id,
                     scriptName: this.syncName,
                     scriptType: this.syncType,
