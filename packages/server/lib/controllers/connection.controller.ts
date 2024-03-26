@@ -558,6 +558,26 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
+                if (req.body['oauth_client_id']) {
+                    oAuthCredentials.config_override = {
+                        client_id: req.body['oauth_client_id']
+                    };
+                }
+
+                if (req.body['oauth_client_secret']) {
+                    oAuthCredentials.config_override = {
+                        ...oAuthCredentials.config_override,
+                        client_secret: req.body['oauth_client_secret']
+                    };
+                }
+
+                if (req.body['oauth_scopes']) {
+                    oAuthCredentials.config_override = {
+                        ...oAuthCredentials.config_override,
+                        scopes: Array.isArray(req.body['oauth_scopes']) ? req.body['oauth_scopes'].join(',') : req.body['oauth_scopes']
+                    };
+                }
+
                 const [imported] = await connectionService.importOAuthConnection(
                     connection_id,
                     provider_config_key,
