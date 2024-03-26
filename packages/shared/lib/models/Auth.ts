@@ -133,7 +133,7 @@ export interface OAuth2Credentials extends CredentialsCommon {
     config_override?: {
         client_id?: string;
         client_secret?: string;
-        scopes?: string | string[];
+        scopes?: string;
     };
 }
 

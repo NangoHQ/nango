@@ -99,7 +99,7 @@ export default class Nango {
     public auth(
         providerConfigKey: string,
         connectionId: string,
-        options?: (ConnectionConfig | OptionalOAuthCredentials | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) & AuthOptions
+        options?: (ConnectionConfig | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) & AuthOptions
     ): Promise<AuthResult> {
         if (
             options &&
@@ -343,10 +343,10 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: OptionalOAuthCredentials | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials;
+    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials;
 }
 
-interface OptionalOAuthCredentials {
+interface OAuthCredentialsOverride {
     oauth_client_id: string;
     oauth_client_secret: string;
 }
