@@ -469,7 +469,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             copy={true}
                                             id="oauth_client_id"
                                             name="oauth_client_id"
-                                            placeholder="OAuth Client ID Overide"
+                                            placeholder="OAuth Client ID Override"
                                             optionalvalue={optionalOAuthClientId}
                                             setoptionalvalue={setOptionalOAuthClientId}
                                         />
