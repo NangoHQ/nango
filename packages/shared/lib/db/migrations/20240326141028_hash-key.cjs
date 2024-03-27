@@ -23,7 +23,7 @@ exports.up = async function (knex) {
     const envs = await knex.select('*').from(`_nango_environments`).where({ secret_key_hashed: null });
 
     for (const env of envs) {
-        const decrypted = decrypt(env.secret_key, env.secret_key_iv, env.secret_key_tag);
+        const decrypted = env.secret_key_iv ? decrypt(env.secret_key, env.secret_key_iv, env.secret_key_tag) : env.secret_key;
         await knex
             .from(`_nango_environments`)
             .where({ id: env.id })

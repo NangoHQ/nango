@@ -113,7 +113,7 @@ class EnvironmentService {
             if (!CACHE_ENABLED) {
                 return { accountId: fromDb.account_id, environmentId: fromDb.id };
             }
-            this.addToEnvironmentSecretCache(fromDb);
+            this.addToEnvironmentSecretCache(encryptionManager.decryptEnvironment(fromDb)!);
         }
 
         const { accountId, environmentId } = this.environmentAccountSecrets[secretKey] as EnvironmentAccount;
@@ -280,11 +280,15 @@ class EnvironmentService {
                 return null;
             }
 
-            const encryptedEnvironment = encryptionManager.encryptEnvironment(environment);
-            const newEnv = { ...encryptedEnvironment, secret_key_hashed: await hashSecretKey(environment.secret_key) };
-            await db.knex.from<Environment>(TABLE).where({ id: environmentId }).update(newEnv);
-            this.addToEnvironmentSecretCache(environment);
-            return newEnv;
+            const encryptedEnvironment = encryptionManager.encryptEnvironment({
+                ...environment,
+                secret_key_hashed: await hashSecretKey(environment.secret_key)
+            });
+            await db.knex.from<Environment>(TABLE).where({ id: environmentId }).update(encryptedEnvironment);
+
+            const env = encryptionManager.decryptEnvironment(encryptedEnvironment)!;
+            this.addToEnvironmentSecretCache(env);
+            return env;
         }
 
         return null;
@@ -492,6 +496,7 @@ class EnvironmentService {
             return false;
         }
 
+        const decrypted = encryptionManager.decryptEnvironment(environment)!;
         await db.knex
             .from<Environment>(TABLE)
             .where({ id })
@@ -499,15 +504,15 @@ class EnvironmentService {
                 secret_key: environment.pending_secret_key as string,
                 secret_key_iv: environment.pending_secret_key_iv as string,
                 secret_key_tag: environment.pending_secret_key_tag as string,
-                secret_key_hashed: await hashSecretKey(environment.pending_secret_key!),
+                secret_key_hashed: await hashSecretKey(decrypted.pending_secret_key!),
                 pending_secret_key: null,
                 pending_secret_key_iv: null,
                 pending_secret_key_tag: null
             });
 
-        if (this.environmentAccountSecrets[environment.secret_key]) {
+        if (this.environmentAccountSecrets[decrypted.secret_key]) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete this.environmentAccountSecrets[environment.secret_key];
+            delete this.environmentAccountSecrets[decrypted.secret_key];
         }
 
         const updatedEnvironment = await this.getById(id);
