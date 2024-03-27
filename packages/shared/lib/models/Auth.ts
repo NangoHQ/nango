@@ -129,6 +129,12 @@ export interface OAuth2Credentials extends CredentialsCommon {
 
     refresh_token?: string;
     expires_at?: Date | undefined;
+
+    config_override?: {
+        client_id?: string;
+        client_secret?: string;
+        scopes?: string;
+    };
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
