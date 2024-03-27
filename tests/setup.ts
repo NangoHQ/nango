@@ -5,7 +5,11 @@ const containers: StartedTestContainer[] = [];
 
 export async function setupElasticsearch() {
     console.log('Starting ES...');
-    const es = await new ElasticsearchContainer('elasticsearch:8.12.2').withEnvironment({ 'xpack.security.enabled': 'false' }).start();
+    const es = await new ElasticsearchContainer('elasticsearch:8.12.2')
+        .withName('es-test')
+        .withEnvironment({ 'xpack.security.enabled': 'false', 'discovery.type': 'single-node' })
+        .withExposedPorts(9200)
+        .start();
     containers.push(es);
 
     process.env['NANGO_LOGS_ES_URL'] = es.getHttpUrl();
@@ -15,12 +19,13 @@ export async function setupElasticsearch() {
 }
 
 async function setupPostgres() {
-    const container = new PostgreSqlContainer();
+    const container = new PostgreSqlContainer('postgres:15.5-alpine');
     const pg = await container
         .withDatabase('postgres')
         .withUsername('postgres')
         .withPassword('nango_test')
         .withExposedPorts(5432)
+        .withName('pg-test')
         .withWaitStrategy(Wait.forLogMessage('database system is ready to accept connections'))
         .start();
 

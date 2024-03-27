@@ -23,6 +23,9 @@ describe('mapping', () => {
         const mappingAfter = await client.indices.getMapping({
             index: indexMessages.index
         });
-        expect(mappingAfter[indexMessages.index]?.mappings).toStrictEqual(indexMessages.mappings);
+        expect(mappingAfter[indexMessages.index]?.mappings).toStrictEqual({
+            ...indexMessages.mappings,
+            dynamic: 'false'
+        });
     });
 });

@@ -2,6 +2,14 @@ import { client } from './client.js';
 import { indices } from './schema.js';
 import { logger } from '@nangohq/shared';
 
+export async function start() {
+    logger.info('🔄 Elasticsearch service starting...');
+
+    await migrateMapping();
+
+    logger.info('✅ Elasticsearch');
+}
+
 export async function migrateMapping() {
     try {
         await Promise.all(
@@ -11,7 +19,7 @@ export async function migrateMapping() {
                     await client.indices.create({ index: index.index });
                 }
 
-                return await client.indices.putMapping({ index: index.index, properties: index.mappings!.properties, dynamic: false }, { ignore: [404] });
+                return await client.indices.putMapping({ index: index.index, ...index.mappings }, { ignore: [404] });
             })
         );
     } catch (err) {

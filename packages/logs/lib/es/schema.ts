@@ -61,6 +61,7 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 export const indexMessages: estypes.IndicesCreateRequest = {
     index: 'messages',
     mappings: {
+        dynamic: false,
         properties: props
     }
 };

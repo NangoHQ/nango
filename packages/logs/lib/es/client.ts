@@ -1,7 +1,5 @@
 import { Client } from '@elastic/elasticsearch';
 import { envs } from '../env.js';
-import { logger } from '@nangohq/shared';
-import { migrateMapping } from './helpers.js';
 
 export const client = new Client({
     nodes: envs.NANGO_LOGS_ES_URL,
@@ -10,9 +8,3 @@ export const client = new Client({
     auth: { username: envs.NANGO_LOGS_ES_USER, password: envs.NANGO_LOGS_ES_PWD },
     tls: { rejectUnauthorized: false }
 });
-
-export async function start() {
-    logger.info('Elasticsearch service starting');
-
-    await migrateMapping();
-}

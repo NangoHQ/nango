@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres
+        image: postgres:15.5-alpine
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
@@ -48,13 +48,17 @@ services:
         volumes:
             - esdata1:/usr/share/elasticsearch/data
         ports:
-            - 9200:9200
-            - 9300:9300
+            - 9500:9200
+            - 9600:9300
         environment:
             - discovery.type=single-node
             - xpack.security.enabled=false
         networks:
             - nango
+        deploy:
+            resources:
+                limits:
+                    memory: 2GB
 
 networks:
     nango:

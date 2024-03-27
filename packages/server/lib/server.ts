@@ -49,7 +49,7 @@ import {
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
-import { migrateMapping as migrateLogs } from '@nangohq/nango-logs';
+import { start as migrateLogs } from '@nangohq/nango-logs';
 import tracer from 'dd-trace';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
