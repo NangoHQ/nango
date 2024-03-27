@@ -99,9 +99,14 @@ export default class Nango {
     public auth(
         providerConfigKey: string,
         connectionId: string,
-        options?: (ConnectionConfig | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) & AuthOptions
+        options?: (ConnectionConfig | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) & AuthOptions
     ): Promise<AuthResult> {
-        if (options && 'credentials' in options && Object.keys(options.credentials).length > 0) {
+        if (
+            options &&
+            'credentials' in options &&
+            (!('oauth_client_id' in options.credentials) || !('oauth_client_secret' in options.credentials)) &&
+            Object.keys(options.credentials).length > 0
+        ) {
             const credentials = options.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
@@ -311,6 +316,14 @@ export default class Nango {
                 query.push(`user_scope=${connectionConfig.user_scope.join(',')}`);
             }
 
+            if (connectionConfig.credentials) {
+                const credentials = connectionConfig.credentials;
+                if ('oauth_client_id' in credentials && 'oauth_client_secret' in credentials) {
+                    query.push(`credentials[oauth_client_id]=${credentials.oauth_client_id}`);
+                    query.push(`credentials[oauth_client_secret]=${credentials.oauth_client_secret}`);
+                }
+            }
+
             for (const param in connectionConfig.authorization_params) {
                 const val = connectionConfig.authorization_params[param];
                 if (typeof val === 'string') {
@@ -330,7 +343,12 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials;
+    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials;
+}
+
+interface OAuthCredentialsOverride {
+    oauth_client_id: string;
+    oauth_client_secret: string;
 }
 
 interface BasicApiCredentials {

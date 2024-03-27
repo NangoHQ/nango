@@ -14,7 +14,8 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
-import type { SyncResponse, Connection } from '../../types';
+import { SyncResponse, Connection } from '../../types';
+import PageNotFound from '../PageNotFound';
 
 import { useStore } from '../../store';
 
@@ -31,6 +32,7 @@ export default function ShowIntegration() {
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
+    const [pageNotFound, setPageNotFound] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
     const deleteConnectionAPI = useDeleteConnectionAPI();
@@ -57,8 +59,9 @@ export default function ShowIntegration() {
 
         const getConnections = async () => {
             const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
-
-            if (res?.status === 200) {
+            if (res?.status === 400) {
+                setPageNotFound(true);
+            } else if (res?.status === 200) {
                 const data = await res.json();
                 setConnection(data['connection']);
             } else if (res != null) {
@@ -138,6 +141,10 @@ We could not retrieve and/or refresh your access token due to the following erro
             setFetchingRefreshToken(false);
         }, 400);
     };
+
+    if (pageNotFound) {
+        return <PageNotFound />;
+    }
 
     if (!loaded || !syncLoaded) {
         return (
