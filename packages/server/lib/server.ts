@@ -49,6 +49,7 @@ import {
 } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
+import { start as migrateLogs } from '@nangohq/nango-logs';
 import tracer from 'dd-trace';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
@@ -87,6 +88,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // operator should run migrate.ts once before starting the service.
 if (NANGO_MIGRATE_AT_START === 'true') {
     await migrate();
+    await migrateLogs();
 } else {
     Logger.info('Not migrating database');
 }

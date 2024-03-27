@@ -5,6 +5,7 @@
         "packages/cli",
         "packages/shared",
         "packages/frontend",
+        "packages/logs",
         "packages/node-client",
         "packages/server",
         "packages/runner",
