@@ -1,0 +1,123 @@
+integrations:
+  xero:
+    syncs:
+      xero-contacts-sync:
+        description: |
+          Fetches all Xero contacts.
+          Details: incremental sync, detects deletes, metadata is not required.
+        runs: every hour
+        output: Contact
+        sync_type: incremental
+        auto_start: false
+        endpoint: GET /xero/contacts
+      xero-accounts-sync:
+        description: |
+          Fetches all accounts in Xero (chart of accounts).
+          Details: incremental sync, detects deletes, metadata is not required.
+          Required scopes: accounting.settings
+        runs: every hour
+        output: Account
+        sync_type: incremental
+        auto_start: false
+        endpoint: GET /xero/accounts
+    actions:
+      xero-create-contact:
+        description: |
+          Creates one or multiple contacts in Xero.
+          Note: Does NOT check if these contacts already exist.
+          Required scopes: accounting.contacts
+        input: Contact[]
+        output: ContactActionResponse
+        endpoint: POST /xero/contacts
+      xero-update-contact:
+        description: >
+          Updates one or multiple contacts in Xero.
+
+          Only fields that are passed in are modified. If a field should not be
+          changed, omit it in the input.
+
+          The id field is mandatory.
+
+          Required scopes: accounting.contacts
+        input: Contact[]
+        output: ContactActionResponse
+        endpoint: PUT /xero/contacts
+      xero-create-invoice:
+        description: |
+          Creates one or more invoices in Xero.
+          Note: Does NOT check if the invoice already exists.
+          Required scopes: accounting.transactions
+        input: Invoice[]
+        output: InvoiceActionResponse
+        endpoint: POST /xero/invoices
+      xero-update-invoice:
+        description: |
+          Updates one or more invoices in Xero.
+          Required scopes: accounting.transactions
+        input: Invoice[]
+        output: InvoiceActionResponse
+        endpoint: PUT /xero/invoices
+
+models:
+  Contact:
+    id: string
+    name: string
+    external_id: string
+    email: string | null
+    tax_number: string | null
+    address_line_1: string | null
+    address_line_2: string | null
+    city: string | null
+    zip: string | null
+    country: string | null
+    state: string | null
+    phone: string | null
+    subsidiary: string | null
+  FailedContact:
+    __extends: Contact
+    validation_errors: any[]
+  ContactActionResponse:
+    succeededContacts: Contact[]
+    failedContacts: FailedContact[]
+
+  Account:
+    id: string
+    code: string
+    name: string
+    type: string
+    tax_type: string
+    description: string | null
+    class: string
+    bank_account_type: string
+    reporting_code: string
+    reporting_code_name: string
+
+  Invoice:
+    id: string
+    type: string
+    external_contact_id: string
+    issuing_date: date
+    payment_due_date: date | null
+    status: string
+    number: string
+    currency: string
+    purchase_order: string | null
+    fees: InvoiceFee[]
+  InvoiceFee:
+    item_id: string
+    item_code: string | null
+    description: string | null
+    units: number
+    precise_unit_amount: number | null
+    account_code: string
+    account_external_id: string | null
+    amount_cents: number | null
+    taxes_amount_cents: number | null
+    rate: number | null
+    price: number | null
+  FailedInvoice:
+    __extends: Invoice
+    validation_errors: any[]
+  InvoiceActionResponse:
+    succeededInvoices: Invoice[]
+    failedInvoices: FailedInvoice[]
