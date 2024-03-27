@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/nango-utils",
+    "name": "@nangohq/utils",
     "version": "1.0.0",
     "description": "Utils for use in Nango applications",
     "type": "module",
