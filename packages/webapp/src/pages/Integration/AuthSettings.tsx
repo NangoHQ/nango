@@ -3,20 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
 import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
-import { Tooltip } from '@geist-ui/core';
-import { useModal } from '@geist-ui/core';
-import { AuthModes, IntegrationConfig, Account } from '../../types';
+import { Tooltip, useModal } from '@geist-ui/core';
+import type { IntegrationConfig, Account } from '../../types';
+import { AuthModes } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
 import Info from '../../components/ui/Info';
 import ActionModal from '../../components/ui/ActionModal';
 import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
-import { formatDateToShortUSFormat } from '../../utils/utils';
+import { formatDateToShortUSFormat, defaultCallback } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
-import { defaultCallback } from '../../utils/utils';
 
 import { useStore } from '../../store';
+import { useSWRConfig } from 'swr';
 
 interface AuthSettingsProps {
     integration: IntegrationConfig | null;
@@ -24,6 +24,7 @@ interface AuthSettingsProps {
 }
 
 export default function AuthSettings(props: AuthSettingsProps) {
+    const { mutate } = useSWRConfig();
     const { integration, account } = props;
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -56,6 +57,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
         if (res?.status === 204) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
+            clearCache();
             navigate(`/${env}/integrations`, { replace: true });
         }
         setModalShowSpinner(false);
@@ -68,6 +70,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
         setModalContent('Are you sure you want to delete this integration?');
         setModalAction(() => () => onDelete());
         setVisible(true);
+    };
+
+    const clearCache = () => {
+        void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integration'), undefined);
     };
 
     const handleSave = async (e: React.SyntheticEvent) => {
@@ -114,6 +120,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
             if (res?.status === 200) {
                 toast.success('Integration updated!', { position: toast.POSITION.BOTTOM_CENTER });
+                clearCache();
             }
         } else {
             const target = e.target as typeof e.target & {
@@ -150,6 +157,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
+                clearCache();
                 navigate(`/${env}/integrations`, { replace: true });
             } else if (res != null) {
                 const payload = await res.json();
@@ -181,6 +189,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
             toast.success('Integration ID updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setIntegrationId(integrationIdEdit);
             navigate(`/${env}/integration/${integrationIdEdit}`, { replace: true });
+            clearCache();
         } else if (res != null) {
             const payload = await res.json();
             toast.error(payload.error, {

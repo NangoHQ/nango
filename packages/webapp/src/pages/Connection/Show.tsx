@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Loading, useModal, Modal } from '@geist-ui/core';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useSWRConfig } from 'swr';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
@@ -14,7 +15,8 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
-import type { SyncResponse, Connection } from '../../types';
+import { SyncResponse, Connection } from '../../types';
+import PageNotFound from '../PageNotFound';
 
 import { useStore } from '../../store';
 
@@ -24,6 +26,7 @@ export enum Tabs {
 }
 
 export default function ShowIntegration() {
+    const { mutate } = useSWRConfig();
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
     const [syncs, setSyncs] = useState<SyncResponse[] | null>(null);
@@ -31,6 +34,7 @@ export default function ShowIntegration() {
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
+    const [pageNotFound, setPageNotFound] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
     const deleteConnectionAPI = useDeleteConnectionAPI();
@@ -57,8 +61,9 @@ export default function ShowIntegration() {
 
         const getConnections = async () => {
             const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
-
-            if (res?.status === 200) {
+            if (res?.status === 400) {
+                setPageNotFound(true);
+            } else if (res?.status === 200) {
                 const data = await res.json();
                 setConnection(data['connection']);
             } else if (res != null) {
@@ -111,6 +116,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
         if (res?.status === 204) {
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
+            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
             navigate(`/${env}/connections`, { replace: true });
         }
     };
@@ -138,6 +144,10 @@ We could not retrieve and/or refresh your access token due to the following erro
             setFetchingRefreshToken(false);
         }, 400);
     };
+
+    if (pageNotFound) {
+        return <PageNotFound />;
+    }
 
     if (!loaded || !syncLoaded) {
         return (

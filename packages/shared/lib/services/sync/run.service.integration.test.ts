@@ -164,7 +164,7 @@ describe('Running sync', () => {
                 { id: '1', name: 'a' },
                 { id: '2', name: 'b' }
             ];
-            const expectedResult = { added: 0, updated: 0, deleted: 0 };
+            const expectedResult = { added: 0, updated: 0, deleted: 2 };
             const { records } = await verifySyncRun(rawRecords, rawRecords, false, expectedResult, softDelete);
             expect(records).lengthOf(2);
             records.forEach((record) => {

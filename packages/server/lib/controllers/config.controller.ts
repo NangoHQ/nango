@@ -29,7 +29,7 @@ import {
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
-interface Integration {
+export interface Integration {
     authMode: AuthModes;
     uniqueKey: string;
     provider: string;
@@ -39,12 +39,16 @@ interface Integration {
     connectionConfigParams?: string[];
 }
 
+export interface ListIntegration {
+    integrations: Integration[];
+}
+
 class ConfigController {
     /**
      * Webapp
      */
 
-    async listProviderConfigsWeb(req: Request, res: Response, next: NextFunction) {
+    async listProviderConfigsWeb(req: Request, res: Response<ListIntegration>, next: NextFunction) {
         try {
             const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!success || response === null) {

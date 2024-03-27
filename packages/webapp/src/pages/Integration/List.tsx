@@ -1,5 +1,4 @@
 import { useNavigate, Link } from 'react-router-dom';
-import useSWR from 'swr';
 import { Loading } from '@geist-ui/core';
 import { PlusIcon } from '@heroicons/react/24/outline';
 
@@ -9,20 +8,14 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { requestErrorToast } from '../../utils/api';
 
 import { useStore } from '../../store';
-
-interface Integration {
-    uniqueKey: string;
-    provider: string;
-    connection_count: number;
-    scripts: number;
-}
+import { useListIntegration } from '../../hooks/useIntegration';
 
 export default function IntegrationList() {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.cookieValue);
 
-    const { data, error } = useSWR<{ integrations: Integration[] }>(`/api/v1/integration?env=${env}`);
+    const { list: data, error } = useListIntegration(env);
 
     if (error) {
         requestErrorToast();

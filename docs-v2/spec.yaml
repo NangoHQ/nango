@@ -363,6 +363,12 @@ paths:
                                 no_expiration:
                                     type: boolean
                                     description: (OAuth2, optional) If the provider gives access tokens that don't expire, pass in `true` to avoid an import validation error.
+                                oauth_client_id_override:
+                                    type: string
+                                    description: (OAuth2, optional) Override the integration's OAuth client id
+                                oauth_client_secret_override:
+                                    type: string
+                                    description: (OAuth2, optional) Override the integration's OAuth client secret
                                 oauth_token:
                                     type: string
                                     description: (OAuth 1, required) The client token to be attached to the connection.
