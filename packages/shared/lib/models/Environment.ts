@@ -9,6 +9,7 @@ export interface Environment extends Timestamps {
     public_key: string;
     secret_key_iv?: string | null;
     secret_key_tag?: string | null;
+    secret_key_hashed?: string | null;
     callback_url: string | null;
     webhook_url: string | null;
     websockets_path?: string | null;

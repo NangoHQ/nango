@@ -52,6 +52,7 @@
         "redis": "^4.6.11",
         "rimraf": "^5.0.1",
         "semver": "^7.5.4",
+        "serialize-error": "11.0.3",
         "simple-oauth2": "^5.0.0",
         "uuid": "^9.0.0",
         "winston": "^3.8.2",
