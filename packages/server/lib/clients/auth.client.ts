@@ -4,7 +4,7 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/internals/dist/environment/detection.js';
+import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
 import { dirname, userService, database } from '@nangohq/shared';
 import crypto from 'crypto';
 import util from 'util';
@@ -67,7 +67,7 @@ export function setupAuth(app: express.Express) {
             new BasicStrategy(async function (username, password, done) {
                 const user = await userService.getUserById(0);
 
-                if (!isBasicAuthEnabled()) {
+                if (!isBasicAuthEnabled) {
                     return done(null, user);
                 }
 

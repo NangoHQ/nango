@@ -3,7 +3,7 @@ import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import superjson from 'superjson';
 import { z } from 'zod';
 import { suspendRunner } from './runner/runner.js';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 
 const { logger } = new Logger('Jobs');
 

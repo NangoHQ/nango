@@ -3,10 +3,10 @@ import type { EventHint } from '@sentry/node';
 import sentry from '@sentry/node';
 import type { Tracer } from 'dd-trace';
 import type { ErrorEvent } from '@sentry/types';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
-import { isCloud } from '@nangohq/internals/dist/environment/detection.js';
+import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
 import { getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, isApiAuthenticated, isUserAuthenticated, packageJsonFile } from './utils.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
@@ -33,7 +33,7 @@ interface ErrorOptionalConfig {
 class ErrorManager {
     constructor() {
         try {
-            if (isCloud() && process.env['SENTRY_DNS']) {
+            if (isCloud && process.env['SENTRY_DNS']) {
                 const packageVersion = packageJsonFile().version;
                 sentry.init({
                     dsn: process.env['SENTRY_DNS'],

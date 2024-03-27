@@ -8,7 +8,7 @@
             "path": "packages/frontend"
         },
         {
-            "path": "packages/internals"
+            "path": "packages/utils"
         },
         {
             "path": "packages/jobs"

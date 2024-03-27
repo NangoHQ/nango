@@ -1,12 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Environment } from '@nangohq/shared';
-import { isCloud } from '@nangohq/internals/dist/environment/detection.js';
+import { isCloud, baseUrl } from '@nangohq/utils/dist/environment/detection.js';
 import {
     accountService,
     hmacService,
     environmentService,
     errorManager,
-    getBaseUrl,
     getWebsocketsPath,
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
@@ -39,7 +38,6 @@ class EnvironmentController {
 
             const environments = await environmentService.getEnvironmentsByAccountId(account.id);
             const version = packageJsonFile().version;
-            const baseUrl = getBaseUrl();
             const onboarding = await getOnboardingProgress(user.id);
             res.status(200).send({
                 environments,
@@ -63,7 +61,7 @@ class EnvironmentController {
             }
             const { environment, account, user } = response;
 
-            if (!isCloud()) {
+            if (!isCloud) {
                 environment.websockets_path = getWebsocketsPath();
                 if (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`]) {
                     environment.secret_key = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
@@ -83,7 +81,7 @@ class EnvironmentController {
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
             res.status(200).send({
-                account: { ...environment, env_variables: environmentVariables, host: getBaseUrl(), uuid: account.uuid, email: user.email }
+                account: { ...environment, env_variables: environmentVariables, host: baseUrl, uuid: account.uuid, email: user.email }
             });
         } catch (err) {
             next(err);

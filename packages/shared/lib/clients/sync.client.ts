@@ -30,9 +30,9 @@ import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
-import { isTest, isProd } from '../utils/utils.js';
+import { isTest, isProd } from '@nangohq/utils/dist/environment/detection.js';
 import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 
 const { logger } = new Logger('Sync.Client');
 
@@ -64,14 +64,14 @@ class SyncClient {
     }
 
     private static async create(): Promise<SyncClient | null> {
-        if (isTest()) {
+        if (isTest) {
             return new SyncClient(true as any);
         }
 
         try {
             const connection = await Connection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
-                tls: isProd()
+                tls: isProd
                     ? {
                           clientCertPair: {
                               crt: await fs.readFile(`/etc/secrets/${namespace}.crt`),

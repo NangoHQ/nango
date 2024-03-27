@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
-import { isCloud } from '@nangohq/internals/dist/environment/detection.js';
+import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
 import { accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
-export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud();
+export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
 export const AUTH_ADMIN_SWITCH_MS = 600 * 1000;
 
 class AccountController {

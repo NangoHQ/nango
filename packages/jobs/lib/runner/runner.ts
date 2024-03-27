@@ -2,9 +2,10 @@ import type { KVStore } from '@nangohq/shared/lib/utils/kvstore/KVStore.js';
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
 import { RemoteRunner } from './remote.runner.js';
-import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore, isEnterprise } from '@nangohq/shared';
+import { isEnterprise, env } from '@nangohq/utils/dist/environment/detection.js';
+import { getRedisUrl, InMemoryKVStore, RedisKVStore } from '@nangohq/shared';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 
 const { logger } = new Logger('Runner');
 
@@ -24,7 +25,7 @@ export interface Runner {
 }
 
 export function getRunnerId(suffix: string): string {
-    return `${getEnv()}-runner-account-${suffix}`;
+    return `${env}-runner-account-${suffix}`;
 }
 
 export async function getOrStartRunner(runnerId: string): Promise<Runner> {
@@ -56,7 +57,7 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
     }
     const isRender = process.env['IS_RENDER'] === 'true';
     let runner: Runner;
-    if (isEnterprise()) {
+    if (isEnterprise) {
         runner = await RemoteRunner.getOrStart(runnerId);
     } else if (isRender) {
         runner = await RenderRunner.getOrStart(runnerId);

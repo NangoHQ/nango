@@ -12,7 +12,7 @@
             "path": "../node-client"
         },
         {
-            "path": "../internals"
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts"]

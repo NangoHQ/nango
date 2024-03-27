@@ -4,7 +4,7 @@ import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import { isCloud } from '@nangohq/internals/dist/environment/detection';
+import { isCloud } from '@nangohq/utils/dist/environment/detection';
 import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -181,7 +181,7 @@ class ConfigService {
 
         await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey);
 
-        if (isCloud()) {
+        if (isCloud) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);
             await deleteSyncFilesForConfig(config?.id as number, environment_id);
         }

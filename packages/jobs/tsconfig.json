@@ -12,7 +12,7 @@
             "path": "../runner"
         },
         {
-            "path": "../internals"
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*"]

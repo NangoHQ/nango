@@ -33,8 +33,8 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/internals/dist/environment/detection.js';
-import Logger from '@nangohq/internals/dist/logger.js';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 import { getGlobalOAuthCallbackUrl, environmentService, getPort, errorManager, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
@@ -52,9 +52,9 @@ setupAuth(app);
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const webAuth =
-    isCloud() || isEnterprise()
+    isCloud || isEnterprise
         ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
-        : isBasicAuthEnabled()
+        : isBasicAuthEnabled
           ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
           : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
@@ -217,7 +217,7 @@ app.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.c
 app.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 // Hosted signin
-if (!isCloud() && !isEnterprise()) {
+if (!isCloud && !isEnterprise) {
     app.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
         res.status(200).send();
     });

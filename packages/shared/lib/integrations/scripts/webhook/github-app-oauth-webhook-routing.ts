@@ -4,7 +4,7 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { Connection, ConnectionConfig } from '../../../models/Connection.js';
 import connectionService from '../../../services/connection.service.js';
 import configService from '../../../services/config.service.js';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 import crypto from 'crypto';
 
 const { logger } = new Logger('Webhook.GithubAppOauth');

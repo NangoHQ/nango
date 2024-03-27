@@ -3,7 +3,7 @@ import { RunnerType } from './runner.js';
 import type { ChildProcess } from 'child_process';
 import { execSync, spawn } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 
 const { logger } = new Logger('Jobs');
 

@@ -1,7 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, NangoIntegrationData, NangoProps, ServiceResponse } from '@nangohq/shared';
-import { isCloud, isProd } from '@nangohq/internals/dist/environment/detection.js';
-import { createActivityLogMessage, localFileService, remoteFileService, integrationFilesAreRemote, NangoError, formatScriptError, isOk } from '@nangohq/shared';
+import { integrationFilesAreRemote, isCloud, isProd } from '@nangohq/utils/dist/environment/detection.js';
+import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError, isOk } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
@@ -73,7 +73,7 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncName', syncName);
         try {
             const script: string | null =
-                (isCloud() || integrationFilesAreRemote()) && !optionalLoadLocation
+                (isCloud || integrationFilesAreRemote) && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
                     : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 

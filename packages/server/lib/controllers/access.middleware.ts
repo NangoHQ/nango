@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, isBasicAuthEnabled } from '@nangohq/internals/dist/environment/detection.js';
+import { isCloud, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
 import { LogActionEnum, ErrorSourceEnum, environmentService, setAccount, setEnvironmentId, errorManager, userService } from '@nangohq/shared';
 import tracer from 'dd-trace';
 
@@ -106,14 +106,14 @@ export class AccessMiddleware {
         }
 
         // Protected by basic auth: should be signed in.
-        if (isBasicAuthEnabled()) {
+        if (isBasicAuthEnabled) {
             res.status(401).send({ error: 'Not authenticated.' });
             return;
         }
     }
 
     admin(req: Request, res: Response, next: NextFunction) {
-        if (!isCloud()) {
+        if (!isCloud) {
             return errorManager.errRes(res, 'only_nango_cloud');
         }
 

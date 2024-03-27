@@ -12,7 +12,7 @@ import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxy
 import { NangoError } from '../utils/error.js';
 import type { ActivityLogMessage } from '../models/Activity.js';
 import type { Template as ProviderTemplate } from '../models/Provider.js';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 
 const { logger } = new Logger('Proxy');
 

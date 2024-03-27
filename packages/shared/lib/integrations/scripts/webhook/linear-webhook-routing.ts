@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 import type { WebhookHandler } from './types.js';
 
 const { logger } = new Logger('Webhook.Linear');

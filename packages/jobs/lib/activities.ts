@@ -22,7 +22,7 @@ import {
     getSyncByIdAndName,
     getLastSyncDate
 } from '@nangohq/shared';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
 

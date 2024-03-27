@@ -2,7 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { validateRequest } from 'zod-express';
 import { z } from 'zod';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 import persistController from './controllers/persist.controller.js';
 import { logLevelValues } from '@nangohq/shared';
 

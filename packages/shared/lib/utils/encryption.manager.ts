@@ -1,6 +1,6 @@
 import type { CipherGCMTypes } from 'crypto';
 import crypto from 'crypto';
-import Logger from '@nangohq/internals/dist/logger.js';
+import Logger from '@nangohq/utils/dist/logger.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';

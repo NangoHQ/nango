@@ -1,22 +1,19 @@
 {
-    "name": "@nangohq/nango-internals",
+    "name": "@nangohq/nango-utils",
     "version": "1.0.0",
-    "description": "Internal modules for use in Nango applications",
+    "description": "Utils for use in Nango applications",
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
-    "scripts": {
-        "build": "rimraf ./dist && tsc"
-    },
     "keywords": [],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/internals"
+        "directory": "packages/utils"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "winston": "^3.8.2"
+        "winston": "3.8.2"
     },
     "devDependencies": {}
 }
