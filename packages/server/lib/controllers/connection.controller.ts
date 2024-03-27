@@ -572,9 +572,11 @@ class ConnectionController {
                 }
 
                 if (req.body['oauth_scopes_override']) {
-                    oAuthCredentials.config_override = {
-                        ...oAuthCredentials.config_override,
-                        scopes: Array.isArray(req.body['oauth_scopes_override']) ? req.body['oauth_scopes_override'].join(',') : req.body['oauth_scopes']
+                    oAuthCredentials.connection_config = {
+                        ...oAuthCredentials.connection_config,
+                        oauth_scopes_override: !Array.isArray(req.body['oauth_scopes_override'])
+                            ? req.body['oauth_scopes_override'].split(',')
+                            : req.body['oauth_scopes_override']
                     };
                 }
 

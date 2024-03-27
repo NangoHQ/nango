@@ -1061,22 +1061,9 @@ class OAuthController {
             }
 
             if (connectionConfig['oauth_scopes_override']) {
-                parsedRawCredentials = {
-                    ...parsedRawCredentials,
-                    config_override: {
-                        ...parsedRawCredentials.config_override,
-                        scopes: Array.isArray(connectionConfig['oauth_scopes_override'])
-                            ? connectionConfig['oauth_scopes_override'].join(',')
-                            : connectionConfig['oauth_scopes_override']
-                    }
-                };
-
-                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_scopes_override') {
-                        acc[key] = connectionConfig[key] as string;
-                    }
-                    return acc;
-                }, {});
+                connectionConfig['oauth_scopes_override'] = !Array.isArray(connectionConfig['oauth_scopes_override'])
+                    ? connectionConfig['oauth_scopes_override'].split(',')
+                    : connectionConfig['oauth_scopes_override'];
             }
 
             const [updatedConnection] = await connectionService.upsertConnection(
