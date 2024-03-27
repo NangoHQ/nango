@@ -7,7 +7,7 @@ import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '@nangohq/shared';
 import { isProd, isEnterprise } from '@nangohq/internals/dist/environment/detection.js';
 import Logger from '@nangohq/internals/dist/logger.js';
 
-const { logger } = new Logger('Jobs');
+const { logger } = new Logger('Jobs.Temporal');
 
 const TEMPORAL_WORKER_MAX_CONCURRENCY = parseInt(process.env['TEMPORAL_WORKER_MAX_CONCURRENCY'] || '0') || 500;
 
