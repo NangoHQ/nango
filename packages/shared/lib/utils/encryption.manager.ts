@@ -1,7 +1,7 @@
 import type { CipherGCMTypes } from 'crypto';
 import utils from 'node:util';
 import crypto from 'crypto';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
@@ -10,7 +10,7 @@ import type { Connection, ApiConnection, StoredConnection } from '../models/Conn
 import type { RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord, UnencryptedRawRecord } from '../models/Sync.js';
 import db from '../db/database.js';
 
-const { logger } = new Logger('Encryption.Manager');
+const logger = getLogger('Encryption.Manager');
 
 interface DataRecordJson {
     encryptedValue: string;

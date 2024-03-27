@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { isCloud, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import {
     LogActionEnum,
     ErrorSourceEnum,
@@ -15,7 +15,7 @@ import {
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
 
-const { logger } = new Logger('AccessMiddleware');
+const logger = getLogger('AccessMiddleware');
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {

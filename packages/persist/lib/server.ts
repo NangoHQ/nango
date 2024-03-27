@@ -2,11 +2,11 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { validateRequest } from 'zod-express';
 import { z } from 'zod';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import persistController from './controllers/persist.controller.js';
 import { logLevelValues } from '@nangohq/shared';
 
-const { logger } = new Logger('Persist');
+const logger = getLogger('Persist');
 
 export const server = express();
 server.use(express.json({ limit: '100mb' }));

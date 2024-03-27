@@ -3,7 +3,7 @@ import type { EventHint } from '@sentry/node';
 import sentry from '@sentry/node';
 import type { Tracer } from 'dd-trace';
 import type { ErrorEvent } from '@sentry/types';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
 import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
@@ -12,7 +12,7 @@ import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
 
-const { logger } = new Logger('ErrorManager');
+const logger = getLogger('ErrorManager');
 
 export enum ErrorSourceEnum {
     PLATFORM = 'platform',

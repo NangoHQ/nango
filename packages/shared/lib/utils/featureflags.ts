@@ -1,8 +1,8 @@
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { RedisKVStore } from './kvstore/RedisStore.js';
 import { getRedisUrl } from './utils.js';
 
-const { logger } = new Logger('FeatureFlags');
+const logger = getLogger('FeatureFlags');
 
 class FeatureFlags {
     redis: RedisKVStore | undefined;

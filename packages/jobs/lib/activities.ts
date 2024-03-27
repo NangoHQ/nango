@@ -22,11 +22,11 @@ import {
     getSyncByIdAndName,
     getLastSyncDate
 } from '@nangohq/shared';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
 
-const { logger } = new Logger('Jobs');
+const logger = getLogger('Jobs');
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;

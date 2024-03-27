@@ -1,8 +1,8 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Server.EmailClient');
+const logger = getLogger('Server.EmailClient');
 
 class EmailClient {
     private static instance: EmailClient;

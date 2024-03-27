@@ -1,6 +1,6 @@
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Server');
+const logger = getLogger('Server');
 
 import { encryptionManager, KnexDatabase } from '@nangohq/shared';
 

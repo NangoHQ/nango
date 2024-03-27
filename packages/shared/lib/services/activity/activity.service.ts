@@ -3,9 +3,9 @@ import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models/Ac
 import { LogActionEnum } from '../../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Activity');
+const logger = getLogger('Activity');
 
 const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';

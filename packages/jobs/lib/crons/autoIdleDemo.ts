@@ -13,10 +13,10 @@ import {
     findPausableDemoSyncs,
     SpanTypes
 } from '@nangohq/shared';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import tracer from 'dd-trace';
 
-const { logger } = new Logger('Jobs');
+const logger = getLogger('Jobs');
 
 export function cronAutoIdleDemo(): void {
     schedule('1 * * * *', () => {

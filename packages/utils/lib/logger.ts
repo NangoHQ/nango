@@ -7,16 +7,10 @@ const nangoLogFormat = (service = '') => {
     });
 };
 
-class NangoLogger {
-    logger: Logger;
-
-    constructor(service?: string) {
-        this.logger = winston.createLogger({
-            levels: winston.config.syslog.levels,
-            format: winston.format.combine(winston.format.timestamp(), nangoLogFormat(service)),
-            transports: [new winston.transports.Console({ level: process.env['LOG_LEVEL'] || 'info' })]
-        });
-    }
+export function getLogger(service?: string): Logger {
+    return winston.createLogger({
+        levels: winston.config.syslog.levels,
+        format: winston.format.combine(winston.format.timestamp(), nangoLogFormat(service)),
+        transports: [new winston.transports.Console({ level: process.env['LOG_LEVEL'] || 'info' })]
+    });
 }
-
-export default NangoLogger;

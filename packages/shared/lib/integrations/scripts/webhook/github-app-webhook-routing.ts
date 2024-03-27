@@ -1,10 +1,10 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
 import crypto from 'crypto';
 
-const { logger } = new Logger('Webook.GithubApp');
+const logger = getLogger('Webook.GithubApp');
 
 function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
     const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;

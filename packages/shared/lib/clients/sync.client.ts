@@ -32,9 +32,9 @@ import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import { isTest, isProd } from '@nangohq/utils/dist/environment/detection.js';
 import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Sync.Client');
+const logger = getLogger('Sync.Client');
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>

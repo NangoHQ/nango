@@ -10,10 +10,10 @@ import {
     db,
     findRecentlyDeletedSync
 } from '@nangohq/shared';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import tracer from 'dd-trace';
 
-const { logger } = new Logger('Jobs');
+const logger = getLogger('Jobs');
 
 const limitJobs = 1000;
 const limitSchedules = 1000;

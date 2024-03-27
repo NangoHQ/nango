@@ -12,9 +12,9 @@ import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxy
 import { NangoError } from '../utils/error.js';
 import type { ActivityLogMessage } from '../models/Activity.js';
 import type { Template as ProviderTemplate } from '../models/Provider.js';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Proxy');
+const logger = getLogger('Proxy');
 
 interface Activities {
     activityLogs: ActivityLogMessage[];

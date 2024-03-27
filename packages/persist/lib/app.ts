@@ -1,8 +1,8 @@
 import './tracer.js';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { server } from './server.js';
 
-const { logger } = new Logger('Persist');
+const logger = getLogger('Persist');
 
 try {
     const port = parseInt(process.env['NANGO_PERSIST_PORT'] || '') || 3007;

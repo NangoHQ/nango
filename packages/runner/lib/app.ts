@@ -1,8 +1,8 @@
 import './tracer.js';
 import { server } from './server.js';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Runner');
+const logger = getLogger('Runner');
 
 try {
     const port = parseInt(process.argv[2] || '') || 3006;

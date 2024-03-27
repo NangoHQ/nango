@@ -5,9 +5,9 @@ import { RemoteRunner } from './remote.runner.js';
 import { isEnterprise, env } from '@nangohq/utils/dist/environment/detection.js';
 import { getRedisUrl, InMemoryKVStore, RedisKVStore } from '@nangohq/shared';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Runner');
+const logger = getLogger('Runner');
 
 export enum RunnerType {
     Local = 'local',

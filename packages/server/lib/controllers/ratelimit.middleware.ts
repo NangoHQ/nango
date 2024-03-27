@@ -3,9 +3,9 @@ import { createClient } from 'redis';
 import type { RateLimiterRes } from 'rate-limiter-flexible';
 import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { getAccount, getRedisUrl } from '@nangohq/shared';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('RateLimiter');
+const logger = getLogger('RateLimiter');
 
 const rateLimiter = await (async () => {
     const opts = {

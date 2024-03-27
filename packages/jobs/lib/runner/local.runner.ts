@@ -3,9 +3,9 @@ import { RunnerType } from './runner.js';
 import type { ChildProcess } from 'child_process';
 import { execSync, spawn } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
-const { logger } = new Logger('Jobs');
+const logger = getLogger('Jobs');
 
 export class LocalRunner implements Runner {
     public client: any;

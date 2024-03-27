@@ -30,10 +30,10 @@ import {
     AnalyticsTypes
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
-const { logger } = new Logger('Server.Onboarding');
+const logger = getLogger('Server.Onboarding');
 
 interface OnboardingStatus {
     id: number;

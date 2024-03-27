@@ -2,12 +2,12 @@ import type { WebSocket } from 'ws';
 import type { RedisClientType } from 'redis';
 import * as uuid from 'uuid';
 import { createClient } from 'redis';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import type { WSErr } from '../utils/web-socket-error.js';
 import { errorHtml, successHtml } from '../utils/utils.js';
 import { getRedisUrl } from '@nangohq/shared';
 
-const { logger } = new Logger('Server.Publisher');
+const logger = getLogger('Server.Publisher');
 
 const enum MessageType {
     ConnectionAck = 'connection_ack',

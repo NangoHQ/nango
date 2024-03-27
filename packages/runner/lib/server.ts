@@ -4,13 +4,13 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import Logger from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { exec } from './exec.js';
 import { cancel } from './cancel.js';
 import superjson from 'superjson';
 import { fetch } from 'undici';
 
-const { logger } = new Logger('Runner');
+const logger = getLogger('Runner');
 
 export const t = initTRPC.create({
     transformer: superjson
