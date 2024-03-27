@@ -19,6 +19,7 @@
     "dependencies": {
         "@aws-sdk/client-s3": "3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
+        "@google-cloud/bigquery": "^7.5.1",
         "@hapi/boom": "^10.0.1",
         "@nangohq/node": "^0.39.8",
         "@sentry/node": "^7.105.0",
