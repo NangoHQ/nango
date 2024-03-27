@@ -111,7 +111,7 @@ class IntegrationService implements IntegrationServiceInterface {
 
             const accountId = nangoProps.accountId;
             // a runner per account in prod only
-            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default');
+            const runnerId = isProd ? getRunnerId(`${accountId}`) : getRunnerId('default');
             // fallback to default runner if account runner isn't ready yet
             const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
 
