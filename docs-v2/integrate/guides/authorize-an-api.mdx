@@ -201,7 +201,15 @@ nango.auth('zendesk', '<CONNECTION-ID>', {
 });
 ```
 
-This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)), API ([reference](/reference/api/connection/get)), and the Nango UI. 
+In some cases you might want to override the scopes provided by an integration at the connection level. For this case you can pass in the scopes to `nango.auth`:
+
+```js
+nango.auth('zendesk', '<CONNECTION-ID>', {
+    params: { oauth_scopes_override: 'custom-connection-scope' }
+});
+```
+
+This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)), API ([reference](/reference/api/connection/get)), and the Nango UI.
 
 # Troubleshoot authorization errors
 

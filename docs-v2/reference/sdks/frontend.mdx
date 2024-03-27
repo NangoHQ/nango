@@ -139,6 +139,14 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
           <ResponseField name="password" type="string">
             For Basic authorization, pass in the user's password.
           </ResponseField>
+
+          <ResponseField name="oauth_client_id_override" type="string">
+            For OAuth2 override the integration's client id value
+          </ResponseField>
+
+          <ResponseField name="oauth_client_secret_override" type="string">
+            For OAuth2 override the integration's client secret value
+          </ResponseField>
         </Expandable>
       </ResponseField>
     </Expandable>
