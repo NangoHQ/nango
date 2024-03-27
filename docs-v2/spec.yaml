@@ -366,7 +366,7 @@ paths:
                                 oauth_client_id_override:
                                     type: string
                                     description: (OAuth2, optional) Override the integration's OAuth client id
-                                oauth_client_id_secret_override:
+                                oauth_client_secret_override:
                                     type: string
                                     description: (OAuth2, optional) Override the integration's OAuth client secret
                                 oauth_token:
