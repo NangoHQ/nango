@@ -1,6 +1,6 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import logger from '../logger/console.js';
-import { isCloud, getEnv } from '../utils/utils.js';
+import { isCloud, isLocal, getEnv } from '../utils/utils.js';
 
 type Row = Record<string, string | number | undefined>;
 
@@ -41,7 +41,7 @@ class BigQueryClient {
                         { name: 'status', type: 'STRING' },
                         { name: 'syncId', type: 'STRING' },
                         { name: 'content', type: 'STRING' },
-                        { name: 'runTime', type: 'INTEGER' },
+                        { name: 'runTime', type: 'INTEGER' }, // in seconds
                         { name: 'timestamp', type: 'INTEGER' }
                     ]
                 }
@@ -59,6 +59,9 @@ class BigQueryClient {
             if (isCloud()) {
                 await this.initializeTable();
                 await this.client.dataset(this.datasetName).table(`${getEnv()}_${this.tableName}`).insert(data);
+            }
+            if (isLocal()) {
+                logger.info(`Data would be inserted into BigQuery type ${JSON.stringify(data, null, 2)}`);
             }
         } catch (e) {
             logger.error('Error inserting into BigQuery', e);
