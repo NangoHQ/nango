@@ -558,24 +558,31 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                if (req.body['oauth_client_id']) {
+                if (req.body['oauth_client_id_override']) {
                     oAuthCredentials.config_override = {
-                        client_id: req.body['oauth_client_id']
+                        client_id: req.body['oauth_client_id_override']
                     };
                 }
 
-                if (req.body['oauth_client_secret']) {
+                if (req.body['oauth_client_secret_override']) {
                     oAuthCredentials.config_override = {
                         ...oAuthCredentials.config_override,
-                        client_secret: req.body['oauth_client_secret']
+                        client_secret: req.body['oauth_client_secret_override']
                     };
                 }
 
-                if (req.body['oauth_scopes']) {
-                    oAuthCredentials.config_override = {
-                        ...oAuthCredentials.config_override,
-                        scopes: Array.isArray(req.body['oauth_scopes']) ? req.body['oauth_scopes'].join(',') : req.body['oauth_scopes']
+                if (connection_config) {
+                    oAuthCredentials.connection_config = {
+                        ...oAuthCredentials.connection_config,
+                        ...req.body['connection_config']
                     };
+                    if (connection_config['oauth_scopes_override']) {
+                        const scopesOverride = connection_config['oauth_scopes_override'];
+                        oAuthCredentials.connection_config = {
+                            ...oAuthCredentials.connection_config,
+                            oauth_scopes_override: !Array.isArray(scopesOverride) ? scopesOverride.split(',') : scopesOverride
+                        };
+                    }
                 }
 
                 const [imported] = await connectionService.importOAuthConnection(

@@ -1,6 +1,7 @@
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
+import { useSWRConfig } from 'swr';
 import Nango from '@nangohq/frontend';
 import { Prism } from '@mantine/prism';
 import { HelpCircle } from '@geist-ui/icons';
@@ -29,6 +30,7 @@ interface Integration {
 }
 
 export default function IntegrationCreate() {
+    const { mutate } = useSWRConfig();
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
@@ -152,14 +154,14 @@ export default function IntegrationCreate() {
 
         if (authMode === AuthModes.OAuth2) {
             credentials = {
-                oauth_client_id: optionalOAuthClientId,
-                oauth_client_secret: optionalOAuthClientSecret
+                oauth_client_id_override: optionalOAuthClientId,
+                oauth_client_secret_override: optionalOAuthClientSecret
             };
 
             if (oauthSelectedScopes.length > 0) {
                 params = {
                     ...params,
-                    oauth_scopes: oauthSelectedScopes.join(',')
+                    oauth_scopes_override: oauthSelectedScopes.join(',')
                 };
             }
         }
@@ -174,6 +176,7 @@ export default function IntegrationCreate() {
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
+                void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })
             .catch((err: { message: string; type: string }) => {
@@ -269,7 +272,7 @@ export default function IntegrationCreate() {
             } else {
                 connectionConfigParamsStr = 'params: { ';
             }
-            connectionConfigParamsStr += `oauth_scopes: '${oauthSelectedScopes.join(',')}', `;
+            connectionConfigParamsStr += `oauth_scopes_override: '${oauthSelectedScopes.join(',')}', `;
             connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
             connectionConfigParamsStr += ' }';
         }
@@ -338,8 +341,8 @@ export default function IntegrationCreate() {
         if (integration?.authMode === AuthModes.OAuth2 && optionalOAuthClientId && optionalOAuthClientSecret) {
             oauthCredentialsString = `
     credentials: {
-        oauth_client_id: '${optionalOAuthClientId}',
-        oauth_client_secret: '${optionalOAuthClientSecret}'
+        oauth_client_id_override: '${optionalOAuthClientId}',
+        oauth_client_secret_override: '${optionalOAuthClientSecret}'
     }
   `;
         }
@@ -466,7 +469,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             copy={true}
                                             id="oauth_client_id"
                                             name="oauth_client_id"
-                                            placeholder="OAuth Client ID"
+                                            placeholder="OAuth Client ID Override"
                                             optionalvalue={optionalOAuthClientId}
                                             setoptionalvalue={setOptionalOAuthClientId}
                                         />
@@ -476,14 +479,14 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             copy={true}
                                             id="oauth_client_secret"
                                             name="oauth_client_secret"
-                                            placeholder="OAuth Client Secret"
+                                            placeholder="OAuth Client Secret Override"
                                             optionalvalue={optionalOAuthClientSecret}
                                             setoptionalvalue={setOptionalOAuthClientSecret}
                                         />
                                     </div>
                                     <div className="flex mt-6">
-                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
-                                            Scope Overrides
+                                        <label htmlFor="oauth_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            OAuth Scope Override
                                         </label>
                                     </div>
                                     <div className="mt-1">
