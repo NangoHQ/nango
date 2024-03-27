@@ -150,7 +150,6 @@ export interface OAuthOverride {
     config_override: {
         client_id: string;
         client_secret: string;
-        scopes?: string;
     };
 }
 

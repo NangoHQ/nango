@@ -82,30 +82,34 @@ export default function Authorization(props: AuthorizationProps) {
                 <>
                     {connection?.credentials.config_override.client_id && (
                         <div className="flex flex-col">
-                            <span className="text-gray-400 text-xs uppercase mb-1">Client ID</span>
+                            <span className="text-gray-400 text-xs uppercase mb-1">Client ID Override</span>
                             <SecretInput disabled value={connection.credentials.config_override.client_id} copy={true} />
                         </div>
                     )}
                     {connection?.credentials.config_override.client_secret && (
                         <div className="flex flex-col">
-                            <span className="text-gray-400 text-xs uppercase mb-1">Client Secret</span>
+                            <span className="text-gray-400 text-xs uppercase mb-1">Client Secret Override</span>
                             <SecretInput disabled value={connection.credentials.config_override.client_secret} copy={true} />
                         </div>
                     )}
-                    {connection.credentials.config_override.scopes && (
-                        <div className="mt-8">
-                            <span className="text-gray-400 text-xs uppercase mb-1">Scopes</span>
-                            <TagsInput
-                                id="scopes"
-                                name="scopes"
-                                readOnly
-                                type="text"
-                                defaultValue={connection.credentials.config_override.scopes}
-                                minLength={1}
-                            />
-                        </div>
-                    )}
                 </>
+            )}
+            {connection?.connectionConfig.oauth_scopes_override && (
+                <div className="mt-8">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Scopes Override</span>
+                    <TagsInput
+                        id="scopes"
+                        name="scopes"
+                        readOnly
+                        type="text"
+                        defaultValue={
+                            Array.isArray(connection.connectionConfig.oauth_scopes_override)
+                                ? connection.connectionConfig.oauth_scopes_override.join(',')
+                                : connection.connectionConfig.oauth_scopes_override
+                        }
+                        minLength={1}
+                    />
+                </div>
             )}
             {connection?.accessToken && (
                 <div className="flex flex-col">

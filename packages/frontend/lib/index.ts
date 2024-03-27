@@ -104,7 +104,7 @@ export default class Nango {
         if (
             options &&
             'credentials' in options &&
-            (!('oauth_client_id' in options.credentials) || !('oauth_client_secret' in options.credentials)) &&
+            (!('oauth_client_id_override' in options.credentials) || !('oauth_client_secret_override' in options.credentials)) &&
             Object.keys(options.credentials).length > 0
         ) {
             const credentials = options.credentials as BasicApiCredentials | ApiKeyCredentials;
@@ -318,9 +318,11 @@ export default class Nango {
 
             if (connectionConfig.credentials) {
                 const credentials = connectionConfig.credentials;
-                if ('oauth_client_id' in credentials && 'oauth_client_secret' in credentials) {
-                    query.push(`credentials[oauth_client_id]=${credentials.oauth_client_id}`);
-                    query.push(`credentials[oauth_client_secret]=${credentials.oauth_client_secret}`);
+                if ('oauth_client_id_override' in credentials) {
+                    query.push(`credentials[oauth_client_id_override]=${credentials.oauth_client_id_override}`);
+                }
+                if ('oauth_client_secret_override' in credentials) {
+                    query.push(`credentials[oauth_client_secret_override]=${credentials.oauth_client_secret_override}`);
                 }
             }
 
@@ -347,8 +349,8 @@ interface ConnectionConfig {
 }
 
 interface OAuthCredentialsOverride {
-    oauth_client_id: string;
-    oauth_client_secret: string;
+    oauth_client_id_override: string;
+    oauth_client_secret_override: string;
 }
 
 interface BasicApiCredentials {

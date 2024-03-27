@@ -217,20 +217,26 @@ class OAuthController {
 
             // certain providers need the credentials to be specified in the config
             if (overrideCredentials) {
-                if (overrideCredentials['oauth_client_id'] && overrideCredentials['oauth_client_secret']) {
-                    config.oauth_client_id = overrideCredentials['oauth_client_id'];
-                    config.oauth_client_secret = overrideCredentials['oauth_client_secret'];
+                if (overrideCredentials['oauth_client_id_override']) {
+                    config.oauth_client_id = overrideCredentials['oauth_client_id_override'];
 
                     session.connectionConfig = {
                         ...session.connectionConfig,
-                        oauth_client_id: config.oauth_client_id,
-                        oauth_client_secret: config.oauth_client_secret
+                        oauth_client_id_override: config.oauth_client_id
+                    };
+                }
+                if (overrideCredentials['oauth_client_secret_override']) {
+                    config.oauth_client_secret = overrideCredentials['oauth_client_secret_override'];
+
+                    session.connectionConfig = {
+                        ...session.connectionConfig,
+                        oauth_client_secret_override: config.oauth_client_secret
                     };
                 }
             }
 
-            if (connectionConfig['oauth_scopes']) {
-                config.oauth_scopes = connectionConfig['oauth_scopes'];
+            if (connectionConfig['oauth_scopes_override']) {
+                config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
@@ -872,9 +878,12 @@ class OAuthController {
         }
 
         // check for oauth overrides in the connnection config
-        if (session.connectionConfig['oauth_client_id'] && session.connectionConfig['oauth_client_secret']) {
-            config.oauth_client_id = session.connectionConfig['oauth_client_id'];
-            config.oauth_client_secret = session.connectionConfig['oauth_client_secret'];
+        if (session.connectionConfig['oauth_client_id_override']) {
+            config.oauth_client_id = session.connectionConfig['oauth_client_id_override'];
+        }
+
+        if (session.connectionConfig['oauth_client_secret_override']) {
+            config.oauth_client_secret = session.connectionConfig['oauth_client_secret_override'];
         }
 
         if (session.connectionConfig['oauth_scopes']) {
@@ -1018,38 +1027,43 @@ class OAuthController {
                 };
             }
 
-            if (connectionConfig['oauth_client_id'] && connectionConfig['oauth_client_secret']) {
+            if (connectionConfig['oauth_client_id_override']) {
                 parsedRawCredentials = {
                     ...parsedRawCredentials,
                     config_override: {
-                        client_id: connectionConfig['oauth_client_id'],
-                        client_secret: connectionConfig['oauth_client_secret']
+                        client_id: connectionConfig['oauth_client_id_override']
                     }
                 };
 
                 connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_client_id' && key !== 'oauth_client_secret') {
+                    if (key !== 'oauth_client_id_override') {
                         acc[key] = connectionConfig[key] as string;
                     }
                     return acc;
                 }, {});
             }
 
-            if (connectionConfig['oauth_scopes']) {
+            if (connectionConfig['oauth_client_secret_override']) {
                 parsedRawCredentials = {
                     ...parsedRawCredentials,
                     config_override: {
                         ...parsedRawCredentials.config_override,
-                        scopes: Array.isArray(connectionConfig['oauth_scopes']) ? connectionConfig['oauth_scopes'].join(',') : connectionConfig['oauth_scopes']
+                        client_secret: connectionConfig['oauth_client_secret_override']
                     }
                 };
 
                 connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_scopes') {
+                    if (key !== 'oauth_client_secret_override') {
                         acc[key] = connectionConfig[key] as string;
                     }
                     return acc;
                 }, {});
+            }
+
+            if (connectionConfig['oauth_scopes_override']) {
+                connectionConfig['oauth_scopes_override'] = !Array.isArray(connectionConfig['oauth_scopes_override'])
+                    ? connectionConfig['oauth_scopes_override'].split(',')
+                    : connectionConfig['oauth_scopes_override'];
             }
 
             const [updatedConnection] = await connectionService.upsertConnection(
