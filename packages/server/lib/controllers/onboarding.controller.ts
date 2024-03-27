@@ -57,7 +57,7 @@ class OnboardingController {
                 return;
             }
 
-            const { user, environment } = response;
+            const { user, environment, account } = response;
 
             if (environment.name !== 'dev') {
                 res.status(400).json({ error: 'onboarding_dev_only' });
@@ -70,6 +70,7 @@ class OnboardingController {
             // Create an onboarding state to remember where user left
             const onboardingId = await initOnboarding(user.id);
             if (!onboardingId) {
+                void analytics.track(AnalyticsTypes.DEMO_1_ERR, account.id, { user_id: user.id });
                 res.status(500).json({
                     error: 'Failed to create onboarding'
                 });
@@ -82,6 +83,7 @@ class OnboardingController {
                 await createOnboardingProvider({ envId: environment.id });
             }
 
+            void analytics.track(AnalyticsTypes.DEMO_1_SUCCESS, account.id, { user_id: user.id });
             res.status(201).json({
                 id: onboardingId
             });
@@ -187,10 +189,11 @@ class OnboardingController {
                 return;
             }
 
-            const { environment } = response;
+            const { environment, account, user } = response;
             const githubDemoSync = flowService.getFlow(DEMO_SYNC_NAME);
             const githubDemoAction = flowService.getFlow(DEMO_ACTION_NAME);
             if (!githubDemoSync || !githubDemoAction) {
+                void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 throw new Error('failed_to_find_demo_sync');
             }
 
@@ -226,12 +229,14 @@ class OnboardingController {
 
             const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');
             if (!deploy.success || deploy.response === null) {
+                void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, deploy.error);
                 return;
             }
 
             await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id);
 
+            void analytics.track(AnalyticsTypes.DEMO_2_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ success: true });
         } catch (err) {
             next(err);
@@ -256,7 +261,7 @@ class OnboardingController {
                 return;
             }
 
-            const { environment } = response;
+            const { environment, account, user } = response;
             const {
                 success,
                 error,
@@ -264,6 +269,7 @@ class OnboardingController {
             } = await syncOrchestrator.getSyncStatus(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], req.body.connectionId, true);
 
             if (!success || !status) {
+                void analytics.track(AnalyticsTypes.DEMO_4_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
@@ -288,6 +294,10 @@ class OnboardingController {
                 // If the sync has never run
                 logger.info(`[demo] no job were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], SyncCommand.RUN_FULL, req.body.connectionId);
+            }
+
+            if (job.jobStatus === SyncStatus.SUCCESS) {
+                void analytics.track(AnalyticsTypes.DEMO_4_SUCCESS, account.id, { user_id: user.id });
             }
 
             res.status(200).json(job);
@@ -360,9 +370,10 @@ class OnboardingController {
                 return;
             }
 
-            const { environment } = response;
+            const { environment, account, user } = response;
             const syncClient = await SyncClient.getInstance();
             if (!syncClient) {
+                void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 throw new NangoError('failed_to_get_sync_client');
             }
 
@@ -372,6 +383,7 @@ class OnboardingController {
                 response: connection
             } = await connectionService.getConnection(req.body.connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id);
             if (!success || !connection) {
+                void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
@@ -395,10 +407,12 @@ class OnboardingController {
             const actionResponse = await syncClient.triggerAction(connection, DEMO_ACTION_NAME, { title: req.body.title }, activityLogId, environment.id);
 
             if (isErr(actionResponse)) {
+                void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, actionResponse.err);
                 return;
             }
 
+            void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {
             next(err);

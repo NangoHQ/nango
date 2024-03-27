@@ -30,7 +30,7 @@ export class Temporal {
         let crt: Buffer | null = null;
         let key: Buffer | null = null;
 
-        if (isProd() || isEnterprise) {
+        if (isProd || isEnterprise) {
             crt = await fs.readFile(`/etc/secrets/${this.namespace}.crt`);
             key = await fs.readFile(`/etc/secrets/${this.namespace}.key`);
         }
@@ -39,7 +39,7 @@ export class Temporal {
             const connection = await NativeConnection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
                 tls:
-                    !isProd() && !isEnterprise
+                    !isProd && !isEnterprise
                         ? false
                         : {
                               clientCertPair: {

@@ -1,7 +1,21 @@
 import type { Request, Response, NextFunction } from 'express';
 import { isCloud, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
-import { LogActionEnum, ErrorSourceEnum, environmentService, setAccount, setEnvironmentId, errorManager, userService } from '@nangohq/shared';
+import Logger from '@nangohq/utils/dist/logger.js';
+import {
+    LogActionEnum,
+    ErrorSourceEnum,
+    environmentService,
+    setAccount,
+    setEnvironmentId,
+    errorManager,
+    userService,
+    stringifyError,
+    telemetry,
+    MetricTypes
+} from '@nangohq/shared';
 import tracer from 'dd-trace';
+
+const { logger } = new Logger('AccessMiddleware');
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -23,12 +37,16 @@ export class AccessMiddleware {
 
         let accountId: number | null;
         let environmentId: number | null;
+        const start = Date.now();
         try {
             const result = await environmentService.getAccountIdAndEnvironmentIdBySecretKey(secret);
             accountId = result?.accountId as number;
             environmentId = result?.environmentId as number;
-        } catch (_) {
+        } catch (err) {
+            logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             return errorManager.errRes(res, 'malformed_auth_header');
+        } finally {
+            telemetry.duration(MetricTypes.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start);
         }
 
         if (accountId == null) {

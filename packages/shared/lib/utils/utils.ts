@@ -174,7 +174,7 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
     if (environmentId != null) {
-        const environment: Environment | null = await environmentService.getByAccountIdAndEnvironment(environmentId);
+        const environment: Environment | null = await environmentService.getById(environmentId);
         return environment?.callback_url || globalCallbackUrl;
     }
 
