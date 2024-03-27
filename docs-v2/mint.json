@@ -137,13 +137,14 @@
                         "integrate/guides/sync-data-from-an-api",
                         "integrate/guides/perform-workflows-with-an-api",
                         "integrate/guides/proxy-requests-to-an-api",
-                        "integrate/guides/receive-webhooks-from-nango",
                         "integrate/guides/receive-webhooks-from-an-api",
                         {
                             "group": "Advanced",
                             "pages": [
                                 "integrate/guides/advanced/store-customer-specific-data",
-                                "integrate/guides/advanced/use-custom-field-mappings"
+                                "integrate/guides/advanced/use-custom-field-mappings",
+                                "integrate/guides/advanced/secure-frontend-sdk",
+                                "integrate/guides/advanced/verify-webhooks-from-nango"
                             ]
                         }
                     ]
@@ -193,13 +194,12 @@
                         "understand/concepts/integrations",
                         "understand/concepts/connections",
                         "understand/concepts/scripts",
+                        "understand/concepts/templates",
                         "understand/concepts/syncs",
                         "understand/concepts/actions",
-                        "understand/concepts/proxy",
                         "understand/concepts/webhooks",
-                        "understand/concepts/environments",
-                        "understand/concepts/templates",
-                        "understand/concepts/api-unification"
+                        "understand/concepts/proxy",
+                        "understand/concepts/environments"
                     ]
                 }
             ]
@@ -474,6 +474,7 @@
         {
             "group": "Use Integrations - Reference",
             "pages": [
+                "reference/sdks/frontend",
                 {
                     "group": "HTTP API",
                     "icon": "cloud",
@@ -550,9 +551,7 @@
                         "reference/sdks/php"
                     ],
                     "icon": "cubes"
-                },
-                "reference/sdks/frontend",
-                "reference/webhooks"
+                }
             ]
         },
         {

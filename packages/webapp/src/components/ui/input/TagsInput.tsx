@@ -32,6 +32,8 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
 
     const [scopes, setScopes] = useState(selectedScopes);
 
+    const readOnly = props.readOnly || false;
+
     useEffect(() => {
         const selectedScopesStr = JSON.stringify(selectedScopes);
         const optionalSelectedScopesStr = JSON.stringify(optionalSelectedScopes);
@@ -88,26 +90,30 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
 
     return (
         <>
-            <div className="flex gap-3">
-                <input onInvalid={showInvalid} value={scopes.join(',')} {...props} hidden />
-                <input
-                    ref={ref}
-                    value={enteredValue}
-                    onChange={(e) => setEnteredValue(e.currentTarget.value)}
-                    onKeyDown={handleEnter}
-                    placeholder={`${scopes.length ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
-                    className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
-                />
-            </div>
-            {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
-            {enteredValue !== '' && (
-                <div
-                    className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer"
-                    onClick={handleAdd}
-                >
-                    <PlusSmallIcon className="h-5 w-5" onClick={handleAdd} />
-                    <span className="">Add new scope: &quot;{enteredValue}&quot;</span>
-                </div>
+            {!readOnly && (
+                <>
+                    <div className="flex gap-3">
+                        <input onInvalid={showInvalid} value={scopes.join(',')} {...props} hidden />
+                        <input
+                            ref={ref}
+                            value={enteredValue}
+                            onChange={(e) => setEnteredValue(e.currentTarget.value)}
+                            onKeyDown={handleEnter}
+                            placeholder={`${scopes.length ? '' : 'Find the list of scopes in the documentation of the external API provider.'}`}
+                            className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                        />
+                    </div>
+                    {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
+                    {enteredValue !== '' && (
+                        <div
+                            className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer"
+                            onClick={handleAdd}
+                        >
+                            <PlusSmallIcon className="h-5 w-5" onClick={handleAdd} />
+                            <span className="">Add new scope: &quot;{enteredValue}&quot;</span>
+                        </div>
+                    )}
+                </>
             )}
             {Boolean(scopes.length) && (
                 <div className="pt-1 mb-3 flex flex-wrap space-x-2">
@@ -115,10 +121,10 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                         return (
                             <span
                                 key={selectedScope + i}
-                                className="flex flex-wrap gap-1 pl-4 pr-2 py-1 mt-0.5 justify-between items-center text-sm font-medium rounded-lg cursor-pointer bg-green-600 bg-opacity-20 text-green-600"
+                                className={`${!readOnly ? 'cursor-pointer ' : ''}flex flex-wrap gap-1 pl-4 pr-2 py-1 mt-0.5 justify-between items-center text-sm font-medium rounded-lg bg-green-600 bg-opacity-20 text-green-600`}
                             >
                                 {selectedScope}
-                                <X onClick={() => removeScope(selectedScope)} className="h-5 w-5" />
+                                {!readOnly && <X onClick={() => removeScope(selectedScope)} className="h-5 w-5" />}
                             </span>
                         );
                     })}
