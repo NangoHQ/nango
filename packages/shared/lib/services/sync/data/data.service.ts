@@ -37,13 +37,18 @@ export async function upsert(
     try {
         const encryptedRecords = encryptionManager.encryptDataRecords(recordsWithoutDuplicates);
 
-        await schema().from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['nango_connection_id', 'external_id', 'model']).merge();
+        const externalIds = await schema()
+            .from<DataRecord>(RECORDS_TABLE)
+            .insert(encryptedRecords)
+            .onConflict(['nango_connection_id', 'external_id', 'model'])
+            .merge()
+            .returning('external_id');
 
         if (softDelete) {
             return {
                 success: true,
                 summary: {
-                    deletedKeys: [...addedKeys, ...updatedKeys],
+                    deletedKeys: externalIds.map(({ external_id }) => external_id),
                     addedKeys: [],
                     updatedKeys: []
                 }
