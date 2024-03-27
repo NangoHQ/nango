@@ -2,8 +2,11 @@ import type { KVStore } from '@nangohq/shared/lib/utils/kvstore/KVStore.js';
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
 import { RemoteRunner } from './remote.runner.js';
-import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore, isEnterprise, logger } from '@nangohq/shared';
+import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore, isEnterprise } from '@nangohq/shared';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
+import Logger from '@nangohq/internals/dist/logger.js';
+
+const { logger } = new Logger('Runner');
 
 export enum RunnerType {
     Local = 'local',

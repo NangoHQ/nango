@@ -2,7 +2,6 @@ import * as cron from 'node-cron';
 import {
     errorManager,
     ErrorSourceEnum,
-    logger,
     MetricTypes,
     softDeleteSchedules,
     telemetry,
@@ -11,7 +10,10 @@ import {
     db,
     findRecentlyDeletedSync
 } from '@nangohq/shared';
+import Logger from '@nangohq/internals/dist/logger.js';
 import tracer from 'dd-trace';
+
+const { logger } = new Logger('Jobs');
 
 const limitJobs = 1000;
 const limitSchedules = 1000;

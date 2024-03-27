@@ -26,12 +26,14 @@ import {
     createActivityLog,
     LogActionEnum,
     isErr,
-    logger,
     analytics,
     AnalyticsTypes
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
+import Logger from '@nangohq/internals/dist/logger.js';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+
+const { logger } = new Logger('Server.Onboarding');
 
 interface OnboardingStatus {
     id: number;

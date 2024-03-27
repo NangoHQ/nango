@@ -4,7 +4,7 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/internals/lib/environment/detection.js';
+import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/internals/dist/environment/detection.js';
 import { dirname, userService, database } from '@nangohq/shared';
 import crypto from 'crypto';
 import util from 'util';

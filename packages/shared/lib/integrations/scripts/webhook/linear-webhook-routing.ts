@@ -1,8 +1,10 @@
 import crypto from 'node:crypto';
 
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import logger from '../../../logger/console.js';
+import Logger from '@nangohq/internals/dist/logger.js';
 import type { WebhookHandler } from './types.js';
+
+const { logger } = new Logger('Webhook.Linear');
 
 interface LinearBody {
     action: string;
@@ -23,15 +25,15 @@ function validate(integration: ProviderConfig, headerSignature: string, rawBody:
 const route: WebhookHandler = async (nango, integration, headers, body, rawBody) => {
     const signature = headers['linear-signature'];
 
-    logger.info('[webhook/linear] received', { configId: integration.id });
+    logger.info('received', { configId: integration.id });
 
     if (!validate(integration, signature, rawBody)) {
-        logger.error('[webhook/linear] invalid signature', { configId: integration.id });
+        logger.error('invalid signature', { configId: integration.id });
         return;
     }
 
     const parsedBody = body as LinearBody;
-    logger.info(`[webhook/linear] valid ${parsedBody.type}`, { configId: integration.id });
+    logger.info(`valid ${parsedBody.type}`, { configId: integration.id });
 
     const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'organizationId', 'organizationId');
 

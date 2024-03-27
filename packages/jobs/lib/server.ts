@@ -3,7 +3,9 @@ import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import superjson from 'superjson';
 import { z } from 'zod';
 import { suspendRunner } from './runner/runner.js';
-import { logger } from '@nangohq/shared';
+import Logger from '@nangohq/internals/dist/logger.js';
+
+const { logger } = new Logger('Jobs');
 
 export const t = initTRPC.create({
     transformer: superjson

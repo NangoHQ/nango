@@ -2,9 +2,11 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import type { Request } from 'express';
 import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
-import logger from './logger.js';
+import Logger from '@nangohq/internals/dist/logger.js';
 import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
+
+const { logger } = new Logger('Server.Utils');
 
 export async function getUserAccountAndEnvironmentFromSession(
     req: Request<any, any>

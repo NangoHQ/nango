@@ -20,11 +20,13 @@ import {
     LogTypes,
     isInitialSyncStillRunning,
     getSyncByIdAndName,
-    logger,
     getLastSyncDate
 } from '@nangohq/shared';
+import Logger from '@nangohq/internals/dist/logger.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
+
+const { logger } = new Logger('Jobs');
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;

@@ -4,7 +4,10 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { Connection, ConnectionConfig } from '../../../models/Connection.js';
 import connectionService from '../../../services/connection.service.js';
 import configService from '../../../services/config.service.js';
+import Logger from '@nangohq/internals/dist/logger.js';
 import crypto from 'crypto';
+
+const { logger } = new Logger('Webhook.GithubAppOauth');
 
 function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
     const custom = integration.custom as Record<string, string>;
@@ -27,7 +30,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         const valid = validate(integration, signature, body);
 
         if (!valid) {
-            console.log('Github App webhook signature invalid. Exiting');
+            logger.error('Github App webhook signature invalid. Exiting');
             return;
         }
     }
@@ -50,7 +53,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
     );
 
     if (connections?.length === 0) {
-        console.log('No connections found for app_id', get(body, 'installation.app_id'));
+        logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return;
     } else {
         const installationId = get(body, 'installation.id');
@@ -58,7 +61,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
 
         // if there is no matching connection or if the connection config already has an installation_id, exit
         if (!connection || connection.connection_config['installation_id']) {
-            console.log('no connection or existing installation_id');
+            logger.info('no connection or existing installation_id');
             return;
         }
 

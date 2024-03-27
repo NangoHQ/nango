@@ -1,7 +1,9 @@
-import { logger } from '@nangohq/shared';
+import Logger from '@nangohq/internals/dist/logger.js';
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import { getRunnerClient } from '@nangohq/nango-runner';
+
+const { logger } = new Logger('Jobs');
 
 export class RemoteRunner implements Runner {
     public client: any;

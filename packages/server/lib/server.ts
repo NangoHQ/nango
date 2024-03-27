@@ -33,14 +33,16 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import Logger from './utils/logger.js';
-import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/internals/lib/environment/detection.js';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/internals/dist/environment/detection.js';
+import Logger from '@nangohq/internals/dist/logger.js';
 import { getGlobalOAuthCallbackUrl, environmentService, getPort, errorManager, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
 import tracer from 'dd-trace';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
+
+const { logger } = new Logger('Server');
 
 const app = express();
 
@@ -77,7 +79,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 if (NANGO_MIGRATE_AT_START === 'true') {
     await migrate();
 } else {
-    Logger.info('Not migrating database');
+    logger.info('Not migrating database');
 }
 
 await environmentService.cacheSecrets();
@@ -243,8 +245,8 @@ wss.on('connection', async (ws: WebSocket) => {
 
 const port = getPort();
 server.listen(port, () => {
-    Logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
-    Logger.info(
+    logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
+    logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );
 });

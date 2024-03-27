@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
-import { isCloud } from '@nangohq/internals/lib/environment/detection.js';
+import { isCloud } from '@nangohq/internals/dist/environment/detection.js';
 import { accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 

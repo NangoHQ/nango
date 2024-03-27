@@ -1,7 +1,7 @@
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { isCloud, isEnterprise } from '@nangohq/internals/lib/environment/detection.js';
+import { isCloud, isEnterprise } from '@nangohq/internals/dist/environment/detection.js';
 import { errorManager, userService, getBaseUrl } from '@nangohq/shared';
 
 export interface GetUser {
