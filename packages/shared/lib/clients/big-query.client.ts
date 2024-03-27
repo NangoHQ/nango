@@ -11,8 +11,8 @@ class BigQueryClient {
 
     constructor() {
         this.client = new BigQuery();
-        this.datasetName = 'usage';
-        this.tableName = 'scriptRuns';
+        this.datasetName = 'dataset';
+        this.tableName = 'script_runs';
     }
 
     private async createDataSet() {
