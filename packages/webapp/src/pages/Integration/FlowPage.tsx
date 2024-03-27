@@ -54,6 +54,7 @@ export default function FlowPage(props: FlowPageProps) {
     const [modalTitleColor] = useState('text-white');
 
     const [showFrequencyEditMenu, setShowFrequencyEditMenu] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
     const [frequencyEdit, setFrequencyEdit] = useState('');
 
     const downloadFlow = async () => {
@@ -114,7 +115,10 @@ export default function FlowPage(props: FlowPageProps) {
             return;
         }
 
+        const frequencyWithoutEvery = flow.runs?.replace('every ', '');
+        setFrequencyEdit(frequencyWithoutEvery || '');
         setShowFrequencyEditMenu(true);
+        setIsTyping(false);
     };
 
     const onSaveFrequency = async () => {
@@ -154,6 +158,19 @@ export default function FlowPage(props: FlowPageProps) {
             return;
         }
 
+        if (
+            (unit === 'hours' || unit === 'days' || unit === 'minutes') &&
+            !frequencyWithoutEvery.match(/^\d+\s*/) &&
+            frequencyWithoutEvery !== 'hour' &&
+            frequencyWithoutEvery !== 'day' &&
+            frequencyWithoutEvery !== 'minute'
+        ) {
+            setModalTitle('Invalid frequency');
+            setModalContent(`Please specify the number of ${unit}.`);
+            setVisible(true);
+            return;
+        }
+
         if (unit === '') {
             setModalTitle('Invalid frequency unit');
             setModalContent(`The unit "${frequencyUnit}" is not a valid time unit. Valid units are minutes, hours, and days.`);
@@ -164,6 +181,7 @@ export default function FlowPage(props: FlowPageProps) {
         setModalTitle('Edit sync frequency?');
         setModalContent('This will affect potential many connections. Increased frequencies can increase your billing.');
         setVisible(true);
+        setIsTyping(false);
 
         setModalAction(() => async () => {
             setModalShowSpinner(true);
@@ -177,6 +195,11 @@ export default function FlowPage(props: FlowPageProps) {
                 runs: `every ${frequencyWithoutEvery}`
             } as Flow);
         });
+    };
+
+    const onCancelFrequency = () => {
+        setShowFrequencyEditMenu(false);
+        setIsTyping(false);
     };
 
     if (!flow) {
@@ -325,11 +348,16 @@ export default function FlowPage(props: FlowPageProps) {
                                     {showFrequencyEditMenu ? (
                                         <>
                                             <input
-                                                value={frequencyEdit}
-                                                onChange={(e) => setFrequencyEdit(e.target.value)}
+                                                value={
+                                                    frequencyEdit.trim() ? (frequencyEdit.startsWith('every') ? frequencyEdit : `every ${frequencyEdit}`) : ''
+                                                }
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value.replace(/^every\s+/i, '');
+                                                    setFrequencyEdit(newValue);
+                                                    setIsTyping(true);
+                                                }}
                                                 className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
-                                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                                                    console.log(e.key);
+                                                onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         onSaveFrequency();
                                                     }
@@ -337,7 +365,7 @@ export default function FlowPage(props: FlowPageProps) {
                                             />
                                             <XCircleIcon
                                                 className="flex h-5 w-5 text-red-400 cursor-pointer hover:text-red-700"
-                                                onClick={() => setShowFrequencyEditMenu(false)}
+                                                onClick={() => onCancelFrequency()}
                                             />
                                         </>
                                     ) : (
@@ -347,9 +375,9 @@ export default function FlowPage(props: FlowPageProps) {
                                         </>
                                     )}
                                 </div>
-                                {showFrequencyEditMenu && frequencyEdit && (
+                                {isTyping && frequencyEdit && (
                                     <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
-                                        <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editFrequency()} />
+                                        <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => onSaveFrequency()} />
                                         <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveFrequency()}>
                                             Change frequency to: {frequencyEdit}
                                         </span>
