@@ -28,16 +28,16 @@ Nango sends [webhook](/understand/concepts/webhooks) notifications to your backe
 
 To set this up, go to the _Environment Settings_ tab and configure a _Webhook URL_ to which Nango will send notifications. 
 
-The webhook from Nango is a POST request with the following body ([reference](/reference/webhooks)):
+The webhook from Nango is a POST request with the following body:
 ```json
 {
-    "connectionId": "<string>",
-    "providerConfigKey": "<string>",
-    "syncName": "<string>",
-    "model": "<string>",
-    "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
+    "connectionId": "<CONNECTION-ID>",
+    "providerConfigKey": "<INTEGRATION-ID>",
+    "syncName": "<SYNC-NAME>",
+    "model": "<MODEL-NAME>",
+    "responseResults": { "<MODEL-NAME>": { "added": 123, "updated": 123, "deleted": 123 } },
     "syncType": "INITIAL" | "INCREMENTAL",
-    "modifiedAfter": "<timestamp>"
+    "modifiedAfter": "<TIMESTAMP>"
 }
 ```
 
