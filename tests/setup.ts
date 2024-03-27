@@ -11,6 +11,7 @@ export async function setupElasticsearch() {
     process.env['NANGO_LOGS_ES_URL'] = es.getHttpUrl();
     process.env['NANGO_LOGS_ES_USER'] = '';
     process.env['NANGO_LOGS_ES_PWD'] = '';
+    console.log('ES running at', es.getHttpUrl());
 }
 
 async function setupPostgres() {

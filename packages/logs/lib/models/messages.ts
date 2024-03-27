@@ -1,8 +1,16 @@
-import type { estypes } from '@elastic/elasticsearch';
 import { client } from '../es/client.js';
 import type { MessageRow } from '../types/messages.js';
 import { nanoid } from '../utils.js';
 import { indexMessages } from '../es/schema.js';
+
+export interface ListOperations {
+    count: number;
+    items: MessageRow[];
+}
+export interface ListMessages {
+    count: number;
+    items: MessageRow[];
+}
 
 /**
  * Create one message
@@ -11,18 +19,19 @@ export async function createMessage(row: MessageRow): Promise<void> {
     await client.create<MessageRow>({
         index: indexMessages.index,
         id: row.id,
-        document: row
+        document: row,
+        refresh: true
     });
 }
 
 /**
  * List operations
  */
-export async function listOperations(opts: { limit: number }): Promise<{ count: number; items: estypes.SearchHit<MessageRow>[] }> {
+export async function listOperations(opts: { limit: number }): Promise<ListOperations> {
     const res = await client.search<MessageRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ name: 'desc' }, '_score'],
+        sort: [{ createdAt: 'desc' }, '_score'],
         track_total_hits: true,
         query: {
             // @ts-expect-error I don't get the error
@@ -34,7 +43,9 @@ export async function listOperations(opts: { limit: number }): Promise<{ count: 
 
     return {
         count: typeof res.hits.total === 'number' ? res.hits.total : res.hits.hits.length,
-        items: res.hits.hits
+        items: res.hits.hits.map((hit) => {
+            return hit._source!;
+        })
     };
 }
 
@@ -66,45 +77,45 @@ export async function setRunning(opts: Pick<MessageRow, 'id'>): Promise<void> {
 }
 
 /**
- * Set an operation as finished
+ * Set an operation as success
  */
-export async function setFinish(opts: Pick<MessageRow, 'id'>): Promise<void> {
-    await update({ id: opts.id, data: { state: 'running', endedAt: new Date().toISOString() } });
-
-    // TODO: fix this
-    // await db.table<OperationTable>('operations').update({
-    //     state: db.raw(`CASE WHEN state = 'waiting' OR state = 'running' THEN 'success' ELSE state END`),
-    //     updated_at: db.fn.now(),
-    //     started_at: db.raw('COALESCE(started_at, NOW())'),
-    //     ended_at: db.fn.now()
-    // });
+export async function setSuccess(opts: Pick<MessageRow, 'id'>): Promise<void> {
+    await update({ id: opts.id, data: { state: 'success', endedAt: new Date().toISOString() } });
 }
 
 /**
- * Set an operation intermediate state
+ * Set an operation as failed
  */
-export async function setState(opts: Pick<MessageRow, 'id' | 'state'>): Promise<void> {
-    await update({ id: opts.id, data: { state: opts.state, endedAt: new Date().toISOString() } });
-    // TODO: fix this
-    // await db.table<OperationTable>('operations').update({ state, updated_at: db.fn.now(), started_at: db.raw('COALESCE(started_at, NOW())') });
+export async function setFailed(opts: Pick<MessageRow, 'id'>): Promise<void> {
+    await update({ id: opts.id, data: { state: 'failed', endedAt: new Date().toISOString() } });
+}
+
+/**
+ * Set an operation as failed
+ */
+export async function setCancelled(opts: Pick<MessageRow, 'id'>): Promise<void> {
+    await update({ id: opts.id, data: { state: 'cancelled', endedAt: new Date().toISOString() } });
+}
+
+/**
+ * Set an operation as timeout
+ */
+export async function setTimeouted(opts: Pick<MessageRow, 'id'>): Promise<void> {
+    await update({ id: opts.id, data: { state: 'timeout', endedAt: new Date().toISOString() } });
 }
 
 /**
  * List messages
  */
-export async function listMessages(opts: {
-    parentId: MessageRow['parentId'];
-    limit: number;
-}): Promise<{ count: number; items: estypes.SearchHit<MessageRow>[] }> {
+export async function listMessages(opts: { parentId: MessageRow['parentId']; limit: number }): Promise<ListMessages> {
     const res = await client.search<MessageRow>({
         index: indexMessages.index,
         size: 5000,
-        sort: [{ name: 'desc' }, '_score'],
+        sort: [{ createdAt: 'desc' }, '_score'],
         track_total_hits: true,
         query: {
             // @ts-expect-error I don't get the error
             bool: {
-                must_not: [{ exists: { field: 'parentId' } }],
                 must: [{ term: { parentId: opts.parentId } }]
             }
         }
@@ -112,7 +123,9 @@ export async function listMessages(opts: {
 
     return {
         count: typeof res.hits.total === 'number' ? res.hits.total : res.hits.hits.length,
-        items: res.hits.hits
+        items: res.hits.hits.map((hit) => {
+            return hit._source!;
+        })
     };
 }
 
@@ -123,7 +136,7 @@ export function getFormattedMessage(data: Partial<MessageRow>): MessageRow {
         source: data.source || 'nango',
         level: data.level || 'info',
         type: data.type || 'log',
-        message: data.type || '',
+        message: data.message || '',
         title: data.title || null,
         code: data.code || null,
         state: data.state || 'waiting',

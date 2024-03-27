@@ -1,5 +1,5 @@
 import type { MessageRow, MessageRowInsert, MessageMeta, OperationRowInsert } from './types/messages.js';
-import { setFinish, setRunning, setState, createMessage, getFormattedMessage } from './models/messages.js';
+import { setRunning, createMessage, getFormattedMessage, setFailed, setCancelled, setTimeouted, setSuccess } from './models/messages.js';
 
 export class LogContext {
     id: string;
@@ -12,7 +12,7 @@ export class LogContext {
      * ------ Logs
      */
     async log(data: MessageRowInsert): Promise<void> {
-        await createMessage(getFormattedMessage(data));
+        await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
     }
 
     async debug(message: string, meta: MessageMeta = null): Promise<void> {
@@ -48,24 +48,28 @@ export class LogContext {
     }
 
     async failed(): Promise<void> {
-        await setState({ id: this.id, state: 'failed' });
+        await setFailed({ id: this.id });
+    }
+
+    async success(): Promise<void> {
+        await setSuccess({ id: this.id });
     }
 
     async cancel(): Promise<void> {
-        await setState({ id: this.id, state: 'cancelled' });
+        await setCancelled({ id: this.id });
     }
 
     async timeout(): Promise<void> {
-        await setState({ id: this.id, state: 'timeout' });
-    }
-
-    async finish(): Promise<void> {
-        await setFinish({ id: this.id });
+        await setTimeouted({ id: this.id });
     }
 }
 
-export async function getOperationContext(data: OperationRowInsert): Promise<LogContext> {
+export async function getOperationContext(data: OperationRowInsert, { start }: { start: boolean } = { start: true }): Promise<LogContext> {
     const msg = getFormattedMessage(data);
+    if (start) {
+        msg.startedAt = msg.startedAt ?? new Date().toISOString();
+        msg.state = msg.state === 'waiting' ? 'running' : msg.state;
+    }
     await createMessage(msg);
 
     return new LogContext({ parentId: msg.id });
