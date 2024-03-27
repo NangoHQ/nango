@@ -31,6 +31,7 @@ class BigQueryClient {
                 schema: {
                     fields: [
                         { name: 'executionType', type: 'STRING' },
+                        { name: 'internalConnectionId', type: 'INTEGER' },
                         { name: 'connectionId', type: 'STRING' },
                         { name: 'accountId', type: 'INTEGER' },
                         { name: 'scriptName', type: 'STRING' },
