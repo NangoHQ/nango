@@ -34,7 +34,10 @@ Nango webhook forwards are POST requests with the following JSON body:
 {
    "from": "hubspot",
    "type": "forward",
+   "connectionId": "<CONNECTION-ID>",
+   "providerConfigKey": "<INTEGRATION-ID>",
    "payload": ... // Raw payload from Hubspot wehook
+}
 ```
 
 # Handle external webhooks in syncs
