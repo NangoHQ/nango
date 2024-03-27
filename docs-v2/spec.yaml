@@ -369,9 +369,6 @@ paths:
                                 oauth_client_id_secret_override:
                                     type: string
                                     description: (OAuth2, optional) Override the integration's OAuth client secret
-                                oauth_scopes_override:
-                                    type: string
-                                    description: (OAuth2, optional) Override the integration's OAuth scopes
                                 oauth_token:
                                     type: string
                                     description: (OAuth 1, required) The client token to be attached to the connection.

@@ -571,13 +571,18 @@ class ConnectionController {
                     };
                 }
 
-                if (req.body['oauth_scopes_override']) {
+                if (connection_config) {
                     oAuthCredentials.connection_config = {
                         ...oAuthCredentials.connection_config,
-                        oauth_scopes_override: !Array.isArray(req.body['oauth_scopes_override'])
-                            ? req.body['oauth_scopes_override'].split(',')
-                            : req.body['oauth_scopes_override']
+                        ...req.body['connection_config']
                     };
+                    if (connection_config['oauth_scopes_override']) {
+                        const scopesOverride = connection_config['oauth_scopes_override'];
+                        oAuthCredentials.connection_config = {
+                            ...oAuthCredentials.connection_config,
+                            oauth_scopes_override: !Array.isArray(scopesOverride) ? scopesOverride.split(',') : scopesOverride
+                        };
+                    }
                 }
 
                 const [imported] = await connectionService.importOAuthConnection(
