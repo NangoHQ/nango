@@ -1,7 +1,10 @@
 import * as cron from 'node-cron';
-import { deleteLog, deleteLogsMessages, errorManager, ErrorSourceEnum, findOldActivities, logger, MetricTypes, telemetry } from '@nangohq/shared';
+import { deleteLog, deleteLogsMessages, errorManager, ErrorSourceEnum, findOldActivities, MetricTypes, telemetry } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import tracer from 'dd-trace';
 import { setTimeout } from 'node:timers/promises';
+
+const logger = getLogger('Jobs');
 
 // Retention in days
 const retention = parseInt(process.env['NANGO_CLEAR_ACTIVITIES_RETENTION'] || '', 10) || 15;

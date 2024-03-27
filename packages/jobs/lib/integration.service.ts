@@ -1,16 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, NangoIntegrationData, NangoProps, ServiceResponse } from '@nangohq/shared';
-import {
-    createActivityLogMessage,
-    localFileService,
-    remoteFileService,
-    isCloud,
-    isProd,
-    integrationFilesAreRemote,
-    NangoError,
-    formatScriptError,
-    isOk
-} from '@nangohq/shared';
+import { integrationFilesAreRemote, isCloud, isProd } from '@nangohq/utils/dist/environment/detection.js';
+import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError, isOk } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
@@ -82,7 +73,7 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncName', syncName);
         try {
             const script: string | null =
-                (isCloud() || integrationFilesAreRemote()) && !optionalLoadLocation
+                (isCloud || integrationFilesAreRemote) && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
                     : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 
@@ -120,7 +111,7 @@ class IntegrationService implements IntegrationServiceInterface {
 
             const accountId = nangoProps.accountId;
             // a runner per account in prod only
-            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default');
+            const runnerId = isProd ? getRunnerId(`${accountId}`) : getRunnerId('default');
             // fallback to default runner if account runner isn't ready yet
             const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
 

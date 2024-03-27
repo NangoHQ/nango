@@ -3,7 +3,11 @@ import fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
-import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE, isProd, isEnterprise, logger } from '@nangohq/shared';
+import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '@nangohq/shared';
+import { isProd, isEnterprise } from '@nangohq/utils/dist/environment/detection.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
+
+const logger = getLogger('Jobs.Temporal');
 
 const TEMPORAL_WORKER_MAX_CONCURRENCY = parseInt(process.env['TEMPORAL_WORKER_MAX_CONCURRENCY'] || '0') || 500;
 
@@ -26,7 +30,7 @@ export class Temporal {
         let crt: Buffer | null = null;
         let key: Buffer | null = null;
 
-        if (isProd() || isEnterprise()) {
+        if (isProd || isEnterprise) {
             crt = await fs.readFile(`/etc/secrets/${this.namespace}.crt`);
             key = await fs.readFile(`/etc/secrets/${this.namespace}.key`);
         }
@@ -35,7 +39,7 @@ export class Temporal {
             const connection = await NativeConnection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
                 tls:
-                    !isProd() && !isEnterprise()
+                    !isProd && !isEnterprise
                         ? false
                         : {
                               clientCertPair: {

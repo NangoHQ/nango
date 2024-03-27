@@ -27,7 +27,7 @@ import type {
 import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
-import { getEnv } from '../../../utils/utils.js';
+import { env } from '@nangohq/utils/dist/environment/detection.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 
@@ -75,7 +75,6 @@ export async function deploy(
     });
 
     const activityLogId = await createActivityLog(log);
-    const env = getEnv();
 
     if (nangoYamlBody) {
         await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
@@ -247,8 +246,6 @@ export async function deployPreBuilt(
     let nango_config_id: number;
     let provider_config_key: string;
 
-    const env = getEnv();
-
     if (nangoYamlBody) {
         await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
     } else {
@@ -311,7 +308,7 @@ export async function deployPreBuilt(
                 const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment_id, provider_config_key, sync_name);
                 for (const syncConfig of syncsConfig) {
                     const { success, error } = await updateSyncScheduleFrequency(
-                        syncConfig.id as string,
+                        syncConfig.id,
                         syncConfig?.frequency || runs,
                         sync_name,
                         environment_id,
@@ -624,7 +621,7 @@ async function compileDeployInfo(
 
             for (const syncConfig of syncsConfig) {
                 const { success, error } = await updateSyncScheduleFrequency(
-                    syncConfig.id as string,
+                    syncConfig.id,
                     syncConfig?.frequency || runs,
                     syncName,
                     environment_id,

@@ -10,9 +10,10 @@
         },
         {
             "path": "../runner"
+        },
+        {
+            "path": "../utils"
         }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }
