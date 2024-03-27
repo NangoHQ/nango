@@ -217,20 +217,26 @@ class OAuthController {
 
             // certain providers need the credentials to be specified in the config
             if (overrideCredentials) {
-                if (overrideCredentials['oauth_client_id'] && overrideCredentials['oauth_client_secret']) {
+                if (overrideCredentials['oauth_client_id']) {
                     config.oauth_client_id = overrideCredentials['oauth_client_id'];
+
+                    session.connectionConfig = {
+                        ...session.connectionConfig,
+                        oauth_client_id: config.oauth_client_id
+                    };
+                }
+                if (overrideCredentials['oauth_client_secret']) {
                     config.oauth_client_secret = overrideCredentials['oauth_client_secret'];
 
                     session.connectionConfig = {
                         ...session.connectionConfig,
-                        oauth_client_id: config.oauth_client_id,
                         oauth_client_secret: config.oauth_client_secret
                     };
                 }
             }
 
-            if (connectionConfig['oauth_scopes']) {
-                config.oauth_scopes = connectionConfig['oauth_scopes'];
+            if (connectionConfig['oauth_scopes_override']) {
+                config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {

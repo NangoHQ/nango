@@ -558,23 +558,23 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                if (req.body['oauth_client_id']) {
+                if (req.body['oauth_client_id_override']) {
                     oAuthCredentials.config_override = {
-                        client_id: req.body['oauth_client_id']
+                        client_id: req.body['oauth_client_id_override']
                     };
                 }
 
-                if (req.body['oauth_client_secret']) {
+                if (req.body['oauth_client_secret_override']) {
                     oAuthCredentials.config_override = {
                         ...oAuthCredentials.config_override,
-                        client_secret: req.body['oauth_client_secret']
+                        client_secret: req.body['oauth_client_secret_override']
                     };
                 }
 
-                if (req.body['oauth_scopes']) {
+                if (req.body['oauth_scopes_override']) {
                     oAuthCredentials.config_override = {
                         ...oAuthCredentials.config_override,
-                        scopes: Array.isArray(req.body['oauth_scopes']) ? req.body['oauth_scopes'].join(',') : req.body['oauth_scopes']
+                        scopes: Array.isArray(req.body['oauth_scopes_override']) ? req.body['oauth_scopes_override'].join(',') : req.body['oauth_scopes']
                     };
                 }
 
