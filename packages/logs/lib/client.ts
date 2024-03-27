@@ -1,5 +1,6 @@
 import type { MessageRow, MessageRowInsert, MessageMeta, OperationRowInsert } from './types/messages.js';
-import { setRunning, createMessage, getFormattedMessage, setFailed, setCancelled, setTimeouted, setSuccess } from './models/messages.js';
+import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess } from './models/messages.js';
+import { getFormattedMessage } from './models/helpers.js';
 
 export class LogContext {
     id: string;
