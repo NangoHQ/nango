@@ -87,7 +87,7 @@
         },
         {
             "source": "/guides/webhooks",
-            "destination": "/integrate/guides/receive-webhooks-from-nango"
+            "destination": "/understand/concepts/webhooks"
         },
         {
             "source": "/guides/advanced-auth",
