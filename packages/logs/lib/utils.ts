@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { z } from 'zod';
 
-function errorToString(issues: z.ZodIssue[]) {
+function zodErrorToString(issues: z.ZodIssue[]) {
     return issues
         .map((issue) => {
             return `${issue.path.join('')} (${issue.code} ${issue.message})`;
@@ -26,7 +26,7 @@ export function initGlobalEnv() {
 
     const res = schema.safeParse(process.env);
     if (!res.success) {
-        throw new Error(`Missing or invalid env vars: ${errorToString(res.error.issues)}`);
+        throw new Error(`Missing or invalid env vars: ${zodErrorToString(res.error.issues)}`);
     }
 
     return res.data;
@@ -41,12 +41,15 @@ export function initLogsEnv() {
 
     const res = schema.safeParse(process.env);
     if (!res.success) {
-        throw new Error(`Missing or invalid env vars: ${errorToString(res.error.issues)}`);
+        throw new Error(`Missing or invalid env vars: ${zodErrorToString(res.error.issues)}`);
     }
 
     return res.data;
 }
 
+/**
+ * Nanoid without special char to use in URLs
+ */
 export const alphabet = '346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz';
 export const minSize = 8;
 export const maxSize = 20;
