@@ -9,15 +9,19 @@ import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
 import { createActivityLogSeed } from '../../../db/seeders/activity.seeder.js';
 import type { DataRecord, CustomerFacingDataRecord } from '../../../models/Sync.js';
+import type { Environment } from '../../../models/Environment.js';
+import { createEnvironmentSeed } from '../../../db/seeders/environment.seeder.js';
 
-describe('Data service integration tests', () => {
+describe('Data service integration tests', async () => {
+    let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
-        await createConfigSeeds();
+        env = await createEnvironmentSeed();
+        await createConfigSeeds(env);
     });
 
     it('Should insert records properly and retrieve', async () => {
-        const connections = await createConnectionSeeds();
+        const connections = await createConnectionSeeds(env);
 
         const duplicateRecords = [
             {
@@ -48,19 +52,11 @@ describe('Data service integration tests', () => {
             { id: '5', name: 'Mike Doe' }
         ];
         const sync = await createSyncSeeds(connections[0]);
-        const job = await createSyncJobSeeds(connections[0]);
+        const job = await createSyncJobSeeds(sync.id);
         const activityLogId = await createActivityLogSeed(1);
         const modelName = Math.random().toString(36).substring(7);
-        const { response: formattedResults } = formatDataRecords(duplicateRecords, connections[0] as number, modelName, sync.id as string, job.id as number);
-        const { error, success } = await DataService.upsert(
-            formattedResults as unknown as DataRecord[],
-            '_nango_sync_data_records',
-            'external_id',
-            activityLogId,
-            modelName,
-            1,
-            1
-        );
+        const { response: formattedResults } = formatDataRecords(duplicateRecords, connections[0] as number, modelName, sync.id, job.id);
+        const { error, success } = await DataService.upsert(formattedResults as unknown as DataRecord[], activityLogId, modelName, activityLogId, env.id);
         expect(success).toBe(true);
         expect(error).toBe(undefined);
 
@@ -76,7 +72,7 @@ describe('Data service integration tests', () => {
         const { response } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
-            1,
+            env.id,
             modelName,
             undefined,
             100
@@ -96,14 +92,13 @@ describe('Data service integration tests', () => {
         });
 
         for (let i = 0; i < sortedRecords?.length; i++) {
-            // @ts-expect-error
-            expect(sortedRecords?.[i]?.id).toEqual(expectedRecords[i].id);
+            expect(sortedRecords?.[i]?.id).toEqual(expectedRecords[i]?.id);
         }
 
         const { response: metaRecords } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
-            1,
+            env.id,
             modelName,
             undefined, // delta
             undefined, // limit
@@ -120,7 +115,7 @@ describe('Data service integration tests', () => {
         const { response: regularRecords } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
-            1,
+            env.id,
             modelName,
             undefined, // delta
             undefined, // offset

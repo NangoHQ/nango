@@ -3,8 +3,17 @@ import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
 import { errorManager, userService, getBaseUrl, isCloud, isEnterprise } from '@nangohq/shared';
 
+export interface GetUser {
+    user: {
+        id: number;
+        accountId: number;
+        email: string;
+        name: string;
+    };
+}
+
 class UserController {
-    async getUser(req: Request, res: Response, next: NextFunction) {
+    async getUser(req: Request, res: Response<GetUser>, next: NextFunction) {
         try {
             const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!success || response === null) {

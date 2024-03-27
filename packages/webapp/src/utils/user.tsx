@@ -2,6 +2,7 @@ import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { useLogoutAPI } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
+import { useSWRConfig } from 'swr';
 
 export interface User {
     id: number;
@@ -26,12 +27,15 @@ export function useSignin() {
 export function useSignout() {
     const analyticsReset = useAnalyticsReset();
     const nav = useNavigate();
+    const { mutate } = useSWRConfig();
     const logoutAPI = useLogoutAPI();
 
     return () => {
         storage.clear();
         analyticsReset();
-        logoutAPI(); // Destroy server session.
+        void logoutAPI(); // Destroy server session.
+
+        void mutate(() => true, undefined, { revalidate: false }); // clean all cache
         nav('/signin', { replace: true });
     };
 }

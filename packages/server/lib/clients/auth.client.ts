@@ -4,7 +4,7 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { dirname, isCloud, isBasicAuthEnabled, userService, database } from '@nangohq/shared';
+import { dirname, AUTH_ENABLED, isBasicAuthEnabled, userService, database } from '@nangohq/shared';
 import crypto from 'crypto';
 import util from 'util';
 import cookieParser from 'cookie-parser';
@@ -38,7 +38,7 @@ export function setupAuth(app: express.Express) {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    if (isCloud()) {
+    if (AUTH_ENABLED) {
         passport.use(
             new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async function (
                 email: string,

@@ -209,7 +209,13 @@ export default function ConnectionList() {
             {connections && connections.length === 0 && (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
-                    <div className="my-2 text-gray-400">Connections can be created in code from your app, or manually on current tab.</div>
+                    <div className="my-2 text-gray-400">
+                        Connections can be created by using the{' '}
+                        <Link to="https://docs.nango.dev/reference/sdks/frontend" className="text-blue-400">
+                            nango frontend sdk
+                        </Link>
+                        , or manually here.
+                    </div>
                     <Link
                         to={`/${env}/connections/create`}
                         className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300"

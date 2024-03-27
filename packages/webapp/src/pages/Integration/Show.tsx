@@ -16,6 +16,7 @@ import AuthSettings from './AuthSettings';
 import type { IntegrationConfig, Flow, Account } from '../../types';
 import { useStore } from '../../store';
 import { requestErrorToast } from '../../utils/api';
+import PageNotFound from '../PageNotFound';
 
 export enum Tabs {
     API,
@@ -45,9 +46,10 @@ export default function ShowIntegration() {
     const { providerConfigKey } = useParams();
 
     const [loaded, setLoaded] = useState(true);
-    const { data, error } = useSWR<{ config: IntegrationConfig; flows: EndpointResponse }>(
+    const { data, error } = useSWR<{ config: IntegrationConfig; flows: EndpointResponse; error?: string; type?: string }>(
         `/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true&loaded=${loaded}`
     );
+
     const { data: accountData, error: accountError } = useSWR<{ account: Account }>(`/api/v1/environment`);
 
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
@@ -69,6 +71,10 @@ export default function ShowIntegration() {
             setActiveTab(Tabs.Auth);
         }
     }, [location]);
+
+    if (data?.error) {
+        return <PageNotFound />;
+    }
 
     if (error || accountError) {
         requestErrorToast();

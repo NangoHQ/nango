@@ -33,8 +33,6 @@ type RecordRequest = Request<
         providerConfigKey: string;
         connectionId: string;
         activityLogId: number;
-        trackDeletes: boolean;
-        lastSyncDate: Date;
     },
     any,
     Record<string, any>
@@ -70,20 +68,10 @@ class PersistController {
     public async saveRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
+            body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.upsert(
-                dataRecords,
-                '_nango_sync_data_records',
-                'external_id',
-                nangoConnectionId,
-                model,
-                activityLogId,
-                environmentId,
-                trackDeletes,
-                false
-            );
+            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, false);
         };
         const result = await PersistController.persistRecords({
             persistType: 'save',
@@ -95,8 +83,6 @@ class PersistController {
             syncJobId,
             model,
             records,
-            trackDeletes,
-            lastSyncDate,
             activityLogId,
             softDelete: false,
             persistFunction: persist
@@ -111,20 +97,10 @@ class PersistController {
     public async deleteRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
+            body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.upsert(
-                dataRecords,
-                '_nango_sync_data_records',
-                'external_id',
-                nangoConnectionId,
-                model,
-                activityLogId,
-                environmentId,
-                trackDeletes,
-                true
-            );
+            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, true);
         };
         const result = await PersistController.persistRecords({
             persistType: 'delete',
@@ -136,8 +112,6 @@ class PersistController {
             syncJobId,
             model,
             records,
-            trackDeletes,
-            lastSyncDate,
             activityLogId,
             softDelete: true,
             persistFunction: persist
@@ -152,18 +126,10 @@ class PersistController {
     public async updateRecords(req: RecordRequest, res: Response, next: NextFunction) {
         const {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
-            body: { model, records, providerConfigKey, connectionId, trackDeletes, lastSyncDate, activityLogId }
+            body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
         const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.updateRecord(
-                dataRecords,
-                '_nango_sync_data_records',
-                'external_id',
-                nangoConnectionId,
-                model,
-                activityLogId,
-                environmentId
-            );
+            return await dataService.update(dataRecords, nangoConnectionId, model, activityLogId, environmentId);
         };
         const result = await PersistController.persistRecords({
             persistType: 'update',
@@ -175,8 +141,6 @@ class PersistController {
             syncJobId,
             model,
             records,
-            trackDeletes,
-            lastSyncDate,
             activityLogId,
             softDelete: false,
             persistFunction: persist
@@ -198,8 +162,6 @@ class PersistController {
         syncJobId,
         model,
         records,
-        trackDeletes,
-        lastSyncDate,
         activityLogId,
         softDelete,
         persistFunction
@@ -213,8 +175,6 @@ class PersistController {
         syncJobId: number;
         model: string;
         records: Record<string, any>[];
-        trackDeletes: boolean;
-        lastSyncDate: Date;
         activityLogId: number;
         softDelete: boolean;
         persistFunction: (records: DataRecord[]) => Promise<UpsertResponse>;
@@ -242,16 +202,7 @@ class PersistController {
             success,
             error,
             response: formattedRecords
-        } = syncDataService.formatDataRecords(
-            records as unknown as DataResponse[],
-            nangoConnectionId,
-            model,
-            syncId,
-            syncJobId,
-            lastSyncDate,
-            trackDeletes,
-            softDelete
-        );
+        } = syncDataService.formatDataRecords(records as unknown as DataResponse[], nangoConnectionId, model, syncId, syncJobId, softDelete);
 
         if (!success || formattedRecords === null) {
             await createActivityLogMessage({

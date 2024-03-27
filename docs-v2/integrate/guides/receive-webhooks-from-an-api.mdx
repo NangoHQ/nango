@@ -4,41 +4,64 @@ sidebarTitle: 'Receive webhooks from an API'
 description: 'Step-by-step guide on how to receive webhooks from an API.'
 ---
 
-[External API webhooks](/understand/concepts/webhooks) let you support real-time updates and are sometimes the only integration option.
+Nango makes it easy to add support for webhooks coming from **any** API. If your API doesn't have off-the-shelf support, simply request it in the [community](https://nango.dev/slack); we can deliver them in &lt;48h.
 
-# Check if Nango supports webhooks for your API
-
-Nango has off-the-shelf support for webhooks coming from [this list of APIs](/reference/webhooks).
-
-<Tip>
-The Nango team adds webhook support for new APIs in &lt;48h; simply ask in the [community](https://nango.dev/slack).
-</Tip>
+Nango currently has off-the-shelf support for webhooks coming from the following APIs:
+- Github
+- Hubspot
+- Jira
+- Linear
+- Salesforce
+- Slack
 
 # Configure external webhooks
 
-To send webhooks from an external API to Nango, you need to configure webhooks on the external API portal. For this, you need the Nango URL receiving webhooks, which can be found in your integration settings. 
+To send webhooks from an external API to Nango, configure webhooks on the external API portal, specifying the Nango URL to receive webhooks, which is accessible in your integration settings in the Nango UI.
+
+# Configure webhooks from Nango
+
+When Nango receives a webhook from an external API, it notifies your app with another webhook. To set this up:
+1. go to the _Environment Settings_ tab in the Nango UI
+2. specify a Webhook URL to which Nango will send notifications
+3. listen for webhooks in your backend at the specified route
 
 # Forward external webhooks to your app
 
-Webhooks received by Nango from external APIs are immediately forwarded to your backend ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango) to receive webhooks from Nango).
+Nango automatically forwards all webhooks from external APIs to your app. 
 
-Webhook forwarding is automatically enabled once you send webhooks from external APIs to Nango.  
-
-Here is the body of a webhook from Nango forwarding a webhook from an API: 
+Nango webhook forwards are POST requests with the following JSON body:
 ```json
 {
    "from": "hubspot",
    "type": "forward",
+   "connectionId": "<CONNECTION-ID>",
+   "providerConfigKey": "<INTEGRATION-ID>",
    "payload": ... // Raw payload from Hubspot wehook
+}
 ```
 
 # Handle external webhooks in syncs
 
-In addition to webhook forwarding, you can use [syncs](/understand/concepts/syncs) to handle webhooks to create, update and delete data [records](/understand/concepts/syncs) in real-time.
+Additionally, [syncs](/understand/concepts/syncs) can be designed to process webhooks from external APIs. 
 
-Support for specific external webhook subscriptions must be added to each sync individually. You can check if a sync supports external webhooks by selecting your integration, going to the _Scripts_ tab, selecting the sync script, and checking in the sync script settings if it supports webhooks and, if so, which webhook subscription(s). 
+Webhook-enabled syncs process relevant webhooks, resulting in the creation, update and deleting of the corresponding [records](/understand/concepts/syncs) in real-time.
 
-Each modified record (following an external webhook) will trigger a separate _sync webhook_ from Nango to your app ([step-by-step guide](/integrate/guides/receive-webhooks-from-nango) to receive webhooks from Nango):
+Each modified record (following an external webhook) will trigger a separate webhook from Nango to your app. The POST request has the following body:
+```json
+{
+    "connectionId": "<CONNECTION-ID>",
+    "providerConfigKey": "<INTEGRATION-ID>",
+    "syncName": "<SYNC-NAME>",
+    "model": "<MODEL-NAME>",
+    "responseResults": { "<MODEL-NAME>": { "added": 1, "updated": 0, "deleted": 0 } },
+    "syncType": "WEBHOOK",
+    "modifiedAfter": "<TIMESTAMP>"
+}
+```
+
+Simply activate a webhook-enabled sync to benefit from these capabilities.
+
+You can check if a sync supports external webhooks by selecting your integration, going to the _Scripts_ tab, selecting the sync script, and checking in the sync script settings if it supports webhooks and, if so, which webhook subscription(s). 
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
