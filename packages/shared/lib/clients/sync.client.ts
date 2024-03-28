@@ -30,9 +30,9 @@ import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
-import { isTest, isProd } from '@nangohq/utils/dist/environment/detection.js';
+import { isTest, isProd } from '../utils/temp/environment/detection.js';
 import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '../utils/temp/logger.js';
 
 const logger = getLogger('Sync.Client');
 

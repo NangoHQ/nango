@@ -27,7 +27,7 @@ import type {
 import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
-import { env } from '@nangohq/utils/dist/environment/detection.js';
+import { env } from '../../../utils/temp/environment/detection.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 

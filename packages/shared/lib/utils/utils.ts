@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import path, { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd } from '@nangohq/utils/dist/environment/detection.js';
+import { isEnterprise, isStaging, isProd } from './temp/environment/detection.js';
 import { NangoError } from './error.js';
 import type { User, Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
