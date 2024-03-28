@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/nango-logs",
+    "name": "@nangohq/logs",
     "version": "1.0.0",
     "type": "module",
     "main": "dist/index.js",

@@ -15,7 +15,6 @@
         "directory": "packages/jobs"
     },
     "dependencies": {
-        "@nangohq/nango-logs": "file:../logs",
         "@nangohq/nango-runner": "^1.0.0",
         "@nangohq/shared": "^0.39.8",
         "@nangohq/utils": "file:../utils",
