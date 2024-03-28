@@ -23,7 +23,7 @@ import { useStore } from '../store';
 import Button from '../components/ui/button/Button';
 import { useEnvironment } from '../hooks/useEnvironment';
 
-export default function ProjectSettings() {
+export const EnvironmentSettings: React.FC = () => {
     const [secretKey, setSecretKey] = useState('');
     const [secretKeyRotatable, setSecretKeyRotatable] = useState(true);
     const [hasPendingSecretKey, setHasPendingSecretKey] = useState(false);
@@ -386,7 +386,7 @@ export default function ProjectSettings() {
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.ProjectSettings}>
+        <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings}>
             <Modal {...bindings} wrapClassName="!w-max overflow-visible">
                 <div className="flex justify-between">
                     <div className="flex h-full">
@@ -437,7 +437,7 @@ export default function ProjectSettings() {
             </Modal>
             {secretKey && (
                 <div className="h-full mb-20">
-                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Project Settings</h2>
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Environment Settings</h2>
                     <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
                         <div>
                             <div className="mx-8 mt-8">
@@ -947,4 +947,4 @@ export default function ProjectSettings() {
             )}
         </DashboardLayout>
     );
-}
+};

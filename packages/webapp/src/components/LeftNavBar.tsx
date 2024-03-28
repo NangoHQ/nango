@@ -21,7 +21,7 @@ import { useEnvironment } from '../hooks/useEnvironment';
 export enum LeftNavBarItems {
     Integrations = 0,
     Connections,
-    ProjectSettings,
+    EnvironmentSettings,
     Activity,
     Syncs,
     AccountSettings,
@@ -170,13 +170,13 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <p>Activity</p>
                         </Link>
                         <Link
-                            to={`/${env}/project-settings`}
+                            to={`/${env}/environment-settings`}
                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                props.selectedItem === LeftNavBarItems.ProjectSettings ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                                props.selectedItem === LeftNavBarItems.EnvironmentSettings ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
                             <AdjustmentsHorizontalIcon
-                                className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.ProjectSettings ? 'text-white' : 'text-gray-400'}`}
+                                className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.EnvironmentSettings ? 'text-white' : 'text-gray-400'}`}
                             />
                             <p>Environment Settings</p>
                         </Link>

@@ -231,7 +231,7 @@ export const init = async (debug = false) => {
         }
         fs.writeFileSync(
             envFileLocation,
-            `# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
 #NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 #NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 

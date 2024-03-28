@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { SWRConfig } from 'swr';
-import { Routes, Route, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes, Navigate } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
@@ -20,7 +20,7 @@ import ShowIntegration from './pages/Integration/Show';
 import ConnectionList from './pages/Connection/List';
 import Connection from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
-import ProjectSettings from './pages/ProjectSettings';
+import { EnvironmentSettings } from './pages/EnvironmentSettings';
 import { PrivateRoute } from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -103,7 +103,8 @@ const App = () => {
                         <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
                         <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
                         <Route path="/:env/activity" element={<Activity />} />
-                        <Route path="/:env/project-settings" element={<ProjectSettings />} />
+                        <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
+                        <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
                         {AUTH_ENABLED && (
                             <>
                                 <Route path="/:env/account-settings" element={<AccountSettings />} />
