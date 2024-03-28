@@ -18,5 +18,8 @@
     "dependencies": {
         "winston": "3.8.2"
     },
-    "devDependencies": {}
+    "devDependencies": {},
+    "files": [
+        "dist/**/*"
+    ]
 }
