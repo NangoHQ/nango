@@ -7,9 +7,9 @@ const logger = getLogger('BigQueryClient');
 
 interface RunScriptRow {
     executionType: string;
-    internalConnectionId: number;
+    internalConnectionId: number | undefined;
     connectionId: string;
-    accountId: number;
+    accountId: number | undefined;
     scriptName: string;
     scriptType: string;
     environmentId: number;
