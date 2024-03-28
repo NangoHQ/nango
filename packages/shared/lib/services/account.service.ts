@@ -8,13 +8,8 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 class AccountService {
     async getAccountById(id: number): Promise<Account | null> {
         try {
-            const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: id });
-
-            if (result == null || result.length == 0 || result[0] == null) {
-                return null;
-            }
-
-            return result[0];
+            const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: id }).first();
+            return result || null;
         } catch (e) {
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
