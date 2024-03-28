@@ -1,7 +1,7 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import type { BigQuery as BigQueryType } from '@google-cloud/bigquery';
 import { getLogger } from '@nangohq/utils/dist/logger.js';
-import { isCloud, isLocal } from '@nangohq/utils/dist/environment/detection.js';
+import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
 
 const logger = getLogger('BigQueryClient');
 
@@ -91,9 +91,6 @@ class BigQueryClient {
         try {
             if (isCloud) {
                 await this.client.dataset(this.datasetName).table(table).insert(data);
-            }
-            if (isLocal) {
-                logger.info(`Data would be inserted into BigQuery type ${JSON.stringify(data, null, 2)}`);
             }
         } catch (e) {
             logger.error('Error inserting into BigQuery', e);

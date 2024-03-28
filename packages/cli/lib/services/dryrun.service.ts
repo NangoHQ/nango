@@ -149,7 +149,6 @@ class DryRunService {
         };
 
         const syncRun = new syncRunService({
-            bigQueryClient: { insert: async () => {} },
             integrationService,
             writeToDb: false,
             nangoConnection,

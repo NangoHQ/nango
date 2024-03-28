@@ -45,7 +45,7 @@ interface RunScriptRow {
 }
 
 interface SyncRunConfig {
-    bigQueryClient: BigQueryClientInterface;
+    bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
@@ -71,7 +71,7 @@ interface SyncRunConfig {
 }
 
 export default class SyncRun {
-    bigQueryClient: BigQueryClientInterface;
+    bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
@@ -99,7 +99,9 @@ export default class SyncRun {
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
-        this.bigQueryClient = config.bigQueryClient;
+        if (config.bigQueryClient) {
+            this.bigQueryClient = config.bigQueryClient;
+        }
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
         this.isWebhook = config.isWebhook || false;
@@ -591,21 +593,23 @@ export default class SyncRun {
             `syncId:${this.syncId}`
         );
 
-        void this.bigQueryClient.insert({
-            executionType: this.determineExecutionType(),
-            connectionId: this.nangoConnection.connection_id,
-            internalConnectionId: this.nangoConnection.id,
-            accountId: this.nangoConnection.account_id,
-            scriptName: this.syncName,
-            scriptType: this.syncType,
-            environmentId: this.nangoConnection.environment_id,
-            providerConfigKey: this.nangoConnection.provider_config_key,
-            status: 'success',
-            syncId: this.syncId as string,
-            content,
-            runTimeInSeconds: totalRunTime,
-            createdAt: Date.now()
-        });
+        if (this.bigQueryClient) {
+            void this.bigQueryClient.insert({
+                executionType: this.determineExecutionType(),
+                connectionId: this.nangoConnection.connection_id,
+                internalConnectionId: this.nangoConnection.id,
+                accountId: this.nangoConnection.account_id,
+                scriptName: this.syncName,
+                scriptType: this.syncType,
+                environmentId: this.nangoConnection.environment_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
+                status: 'success',
+                syncId: this.syncId as string,
+                content,
+                runTimeInSeconds: totalRunTime,
+                createdAt: Date.now()
+            });
+        }
     }
 
     async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
@@ -624,21 +628,23 @@ export default class SyncRun {
                     this.provider as string
                 );
 
-                void this.bigQueryClient.insert({
-                    executionType: this.determineExecutionType(),
-                    connectionId: this.nangoConnection.connection_id,
-                    internalConnectionId: this.nangoConnection.id,
-                    accountId: this.nangoConnection.account_id,
-                    scriptName: this.syncName,
-                    scriptType: this.syncType,
-                    environmentId: this.nangoConnection.environment_id,
-                    providerConfigKey: this.nangoConnection.provider_config_key,
-                    status: 'failed',
-                    syncId: this.syncId as string,
-                    content,
-                    runTimeInSeconds: runTime,
-                    createdAt: Date.now()
-                });
+                if (this.bigQueryClient) {
+                    void this.bigQueryClient.insert({
+                        executionType: this.determineExecutionType(),
+                        connectionId: this.nangoConnection.connection_id,
+                        internalConnectionId: this.nangoConnection.id,
+                        accountId: this.nangoConnection.account_id,
+                        scriptName: this.syncName,
+                        scriptType: this.syncType,
+                        environmentId: this.nangoConnection.environment_id,
+                        providerConfigKey: this.nangoConnection.provider_config_key,
+                        status: 'failed',
+                        syncId: this.syncId as string,
+                        content,
+                        runTimeInSeconds: runTime,
+                        createdAt: Date.now()
+                    });
+                }
             } catch {
                 await errorManager.report('slack notification service reported a failure', {
                     environmentId: this.nangoConnection.environment_id,
