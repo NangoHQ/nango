@@ -27,6 +27,9 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 npm install
+pushd "$GIT_ROOT_DIR/packages/utils"
+npm run build
+popd
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"

@@ -5,6 +5,9 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
     "keywords": [],
     "repository": {
         "type": "git",
@@ -15,5 +18,8 @@
     "dependencies": {
         "winston": "3.8.2"
     },
-    "devDependencies": {}
+    "devDependencies": {},
+    "files": [
+        "dist/**/*"
+    ]
 }
