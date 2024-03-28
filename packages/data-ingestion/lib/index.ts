@@ -78,7 +78,7 @@ class BigQueryClient {
                         { name: 'status', type: 'STRING' },
                         { name: 'syncId', type: 'STRING' },
                         { name: 'content', type: 'STRING' },
-                        { name: 'runTimeInSeconds', type: 'INTEGER' }, // in seconds
+                        { name: 'runTimeInSeconds', type: 'FLOAT' },
                         { name: 'createdAt', type: 'INTEGER' }
                     ]
                 }

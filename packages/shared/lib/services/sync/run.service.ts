@@ -294,7 +294,7 @@ export default class SyncRun {
                 }
             }
 
-            if (!this.nangoConnection.account_id && environment?.account_id) {
+            if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
                 this.nangoConnection.account_id = environment.account_id;
             }
 
