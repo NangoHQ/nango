@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.39.8",
+    "version": "0.39.13",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/index.js",
@@ -20,8 +20,7 @@
         "@aws-sdk/client-s3": "3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "^0.39.8",
-        "@nangohq/utils": "file:../utils",
+        "@nangohq/node": "^0.39.13",
         "@sentry/node": "^7.105.0",
         "@temporalio/client": "^1.9.1",
         "amqplib": "^0.10.3",
@@ -55,7 +54,8 @@
         "semver": "^7.5.4",
         "serialize-error": "11.0.3",
         "simple-oauth2": "^5.0.0",
-        "uuid": "^9.0.0"
+        "uuid": "^9.0.0",
+        "winston": "3.8.2"
     },
     "engines": {
         "node": ">=16.7",

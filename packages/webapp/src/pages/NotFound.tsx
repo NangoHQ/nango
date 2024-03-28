@@ -10,6 +10,7 @@ const VALID_PATHS = [
     'connections',
     'activity',
     'project-settings',
+    'environment-settings',
     'user-settings',
     'account-settings'
 ];

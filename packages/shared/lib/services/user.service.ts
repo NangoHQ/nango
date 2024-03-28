@@ -1,6 +1,6 @@
 import db from '../db/database.js';
 import * as uuid from 'uuid';
-import { isEnterprise } from '@nangohq/utils/dist/environment/detection.js';
+import { isEnterprise } from '../utils/temp/environment/detection.js';
 import type { User, InviteUser } from '../models/Admin.js';
 
 class UserService {
