@@ -5,6 +5,7 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "bundleDependencies": true,
     "scripts": {
         "build": "rimraf ./dist && tsc"
     },
