@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres
+        image: postgres:15.5-alpine
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
@@ -45,10 +45,10 @@ services:
             - nango
 
     nango-redis:
-        image: "redis:latest"
+        image: 'redis:latest'
         container_name: nango-redis
         ports:
-            - "6379:6379"
+            - '6379:6379'
         networks:
             - nango
 
