@@ -1,6 +1,6 @@
 import semver from 'semver';
 import db, { schema, dbNamespace } from '../../../db/database.js';
-import logger from '../../../logger/console.js';
+import { getLogger } from '../../../utils/temp/logger.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
@@ -11,6 +11,8 @@ import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfig, NangoConfigV1, NangoV2Integration, StandardNangoConfig, NangoIntegrationDataV2 } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
+
+const logger = getLogger('Sync.Config');
 
 const TABLE = dbNamespace + 'sync_configs';
 

@@ -33,26 +33,17 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import Logger from './utils/logger.js';
-import {
-    getGlobalOAuthCallbackUrl,
-    environmentService,
-    getPort,
-    AUTH_ENABLED,
-    MANAGED_AUTH_ENABLED,
-    isCloud,
-    isEnterprise,
-    isBasicAuthEnabled,
-    errorManager,
-    getWebsocketsPath,
-    packageJsonFile
-} from '@nangohq/shared';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getGlobalOAuthCallbackUrl, environmentService, getPort, errorManager, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
 import { start as migrateLogs } from '@nangohq/nango-logs';
 import tracer from 'dd-trace';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
+
+const logger = getLogger('Server');
 
 const app = express();
 
@@ -62,9 +53,9 @@ setupAuth(app);
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const webAuth =
-    isCloud() || isEnterprise()
+    isCloud || isEnterprise
         ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
-        : isBasicAuthEnabled()
+        : isBasicAuthEnabled
           ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
           : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
@@ -90,7 +81,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrate();
     await migrateLogs();
 } else {
-    Logger.info('Not migrating database');
+    logger.info('Not migrating database');
 }
 
 await environmentService.cacheSecrets();
@@ -228,7 +219,7 @@ app.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.c
 app.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 // Hosted signin
-if (!isCloud() && !isEnterprise()) {
+if (!isCloud && !isEnterprise) {
     app.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
         res.status(200).send();
     });
@@ -256,8 +247,8 @@ wss.on('connection', async (ws: WebSocket) => {
 
 const port = getPort();
 server.listen(port, () => {
-    Logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
-    Logger.info(
+    logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
+    logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );
 });

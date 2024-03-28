@@ -4,7 +4,9 @@ import { createActivityLogMessage } from '../../activity/activity.service.js';
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
-import { logger } from '../../../index.js';
+import { getLogger } from '../../../utils/temp/logger.js';
+
+const logger = getLogger('Sync.Data');
 
 const RECORD_UNIQUE_KEY = 'external_id';
 const RECORDS_TABLE = '_nango_sync_data_records';

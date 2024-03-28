@@ -3,11 +3,14 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import { logger, type NangoProps, type RunnerOutput } from '@nangohq/shared';
+import type { NangoProps, RunnerOutput } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { exec } from './exec.js';
 import { cancel } from './cancel.js';
 import superjson from 'superjson';
 import { fetch } from 'undici';
+
+const logger = getLogger('Runner');
 
 export const t = initTRPC.create({
     transformer: superjson

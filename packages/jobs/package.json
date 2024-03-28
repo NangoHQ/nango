@@ -18,6 +18,7 @@
         "@nangohq/nango-logs": "file:../logs",
         "@nangohq/nango-runner": "^1.0.0",
         "@nangohq/shared": "^0.39.8",
+        "@nangohq/utils": "file:../utils",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",
         "@temporalio/worker": "^1.9.1",

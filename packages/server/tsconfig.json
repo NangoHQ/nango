@@ -13,6 +13,9 @@
         },
         {
             "path": "../node-client"
+        },
+        {
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts"]

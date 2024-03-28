@@ -1,6 +1,15 @@
 {
-    "watch": ["lib", "../shared/lib", "../../.env", "../shared/providers.yaml", "../logs/dist"],
+    "watch": [
+        "lib",
+        "../shared/dist",
+        "../utils/dist",
+        "../../.env",
+        "../shared/providers.yaml",
+        "../logs/dist"
+    ],
     "ext": "ts,json,js",
-    "ignore": ["src/**/*.spec.ts"],
+    "ignore": [
+        "src/**/*.spec.ts"
+    ],
     "exec": "tsx -r dotenv/config lib/server.ts Dotenv_config_path=./../../.env"
 }

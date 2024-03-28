@@ -8,6 +8,9 @@
             "path": "packages/frontend"
         },
         {
+            "path": "packages/utils"
+        },
+        {
             "path": "packages/jobs"
         },
         {

@@ -13,6 +13,9 @@
         },
         {
             "path": "../runner"
+        },
+        {
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*"]

@@ -11,7 +11,8 @@
         "packages/runner",
         "packages/persist",
         "packages/jobs",
-        "packages/webapp"
+        "packages/webapp",
+        "packages/utils"
     ],
     "scripts": {
         "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",

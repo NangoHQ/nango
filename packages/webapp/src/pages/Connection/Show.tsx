@@ -15,7 +15,7 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
-import { SyncResponse, Connection } from '../../types';
+import type { SyncResponse, Connection } from '../../types';
 import PageNotFound from '../PageNotFound';
 
 import { useStore } from '../../store';
