@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User, Result } from '@nangohq/shared';
 import { isCloud, baseUrl, basePublicUrl } from '@nangohq/utils/dist/environment/detection.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import {
     userService,
     accountService,
@@ -28,6 +29,8 @@ export interface WebUser {
     email: string;
     name: string;
 }
+
+const logger = getLogger('Server.AuthController');
 
 interface InviteAccountBody {
     accountId: number;
@@ -394,12 +397,16 @@ class AuthController {
             const { code, state } = req.query;
 
             if (!workos) {
-                errorManager.errRes(res, 'workos_not_configured');
+                const error = new NangoError('workos_not_configured');
+                logger.error(error);
+                res.redirect(`${basePublicUrl}`);
                 return;
             }
 
             if (!code) {
-                errorManager.errRes(res, 'missing_managed_login_callback_code');
+                const error = new NangoError('missing_managed_login_callback_code');
+                logger.error(error);
+                res.redirect(`${basePublicUrl}`);
                 return;
             }
 
