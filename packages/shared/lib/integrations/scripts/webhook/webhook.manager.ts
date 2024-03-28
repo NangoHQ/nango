@@ -4,7 +4,7 @@ import webhookService from '../../../services/notification/webhook.service.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { internalNango } from './internal-nango.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '../../../utils/temp/logger.js';
 
 const logger = getLogger('Webhook.Manager');
 

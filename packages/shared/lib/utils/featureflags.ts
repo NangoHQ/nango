@@ -1,4 +1,4 @@
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from './temp/logger.js';
 import { RedisKVStore } from './kvstore/RedisStore.js';
 import { getRedisUrl } from './utils.js';
 
