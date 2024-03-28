@@ -1,7 +1,7 @@
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { isCloud, isEnterprise, baseUrl } from '@nangohq/utils/dist/environment/detection.js';
+import { isCloud, isEnterprise, basePublicUrl } from '@nangohq/utils/dist/environment/detection.js';
 import { errorManager, userService } from '@nangohq/shared';
 
 export interface GetUser {
@@ -119,7 +119,7 @@ class UserController {
 
 <p>You are invited to join the ${account.name} account on Nango.</p>
 
-<p>Join this account by clicking <a href="${baseUrl}/signup/${invited?.token}">here</a> and completing your signup.</p>
+<p>Join this account by clicking <a href="${basePublicUrl}/signup/${invited?.token}">here</a> and completing your signup.</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
