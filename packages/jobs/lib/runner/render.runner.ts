@@ -2,7 +2,8 @@ import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import { NodeEnv, getEnv, getPersistAPIUrl } from '@nangohq/shared';
+import { env } from '@nangohq/utils/dist/environment/detection.js';
+import { NodeEnv, getPersistAPIUrl } from '@nangohq/shared';
 import { RenderAPI } from './render.api.js';
 import tracer from 'dd-trace';
 
@@ -56,7 +57,7 @@ export class RenderRunner implements Runner {
             if (res.data.length > 0) {
                 svc = res.data[0].service;
             } else {
-                const imageTag = getEnv();
+                const imageTag = env;
                 const ownerId = process.env['RUNNER_OWNER_ID'];
                 if (!ownerId) {
                     throw new Error('RUNNER_OWNER_ID is not set');

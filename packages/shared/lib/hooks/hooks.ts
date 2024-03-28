@@ -10,7 +10,7 @@ import type { Template as ProviderTemplate } from '../models/Provider.js';
 import integrationPostConnectionScript from '../integrations/scripts/connection/connection.manager.js';
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
-import { isCloud, isLocal, isEnterprise } from '../utils/utils.js';
+import { isCloud, isLocal, isEnterprise } from '@nangohq/utils/dist/environment/detection.js';
 import type { Result } from '../utils/result.js';
 import { resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';
@@ -21,7 +21,7 @@ export const connectionCreated = async (
     activityLogId: number | null,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
-    const hosted = !isCloud() && !isLocal() && !isEnterprise();
+    const hosted = !isCloud && !isLocal && !isEnterprise;
 
     if (options.initiateSync === true && !hosted) {
         const syncClient = await SyncClient.getInstance();

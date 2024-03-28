@@ -1,20 +1,21 @@
 import type { Request, Response, NextFunction } from 'express';
+import { isCloud, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import {
     LogActionEnum,
     ErrorSourceEnum,
     environmentService,
-    isCloud,
     setAccount,
     setEnvironmentId,
-    isBasicAuthEnabled,
     errorManager,
     userService,
-    logger,
     stringifyError,
     telemetry,
     MetricTypes
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
+
+const logger = getLogger('AccessMiddleware');
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -123,14 +124,14 @@ export class AccessMiddleware {
         }
 
         // Protected by basic auth: should be signed in.
-        if (isBasicAuthEnabled()) {
+        if (isBasicAuthEnabled) {
             res.status(401).send({ error: 'Not authenticated.' });
             return;
         }
     }
 
     admin(req: Request, res: Response, next: NextFunction) {
-        if (!isCloud()) {
+        if (!isCloud) {
             return errorManager.errRes(res, 'only_nango_cloud');
         }
 

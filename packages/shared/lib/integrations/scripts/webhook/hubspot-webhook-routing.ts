@@ -1,7 +1,9 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import logger from '../../../logger/console.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import crypto from 'crypto';
+
+const logger = getLogger('Webhook.Hubspot');
 
 export function validate(integration: ProviderConfig, headers: Record<string, any>, body: any): boolean {
     const signature = headers['x-hubspot-signature'];
@@ -20,7 +22,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     const valid = validate(integration, headers, body);
 
     if (!valid) {
-        logger.error('Hubspot webhook signature invalid');
+        logger.error('webhook signature invalid');
         return;
     }
 

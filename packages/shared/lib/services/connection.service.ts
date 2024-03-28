@@ -27,6 +27,7 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
@@ -46,6 +47,8 @@ import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
+
+const logger = getLogger('Connection');
 
 type KeyValuePairs = Record<string, string | boolean>;
 
@@ -820,7 +823,7 @@ class ConnectionService {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
         if (!success || !credentials) {
-            console.log(error);
+            logger.error(error);
             return;
         }
 

@@ -7,7 +7,7 @@ import type { Account } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 import accountService from './account.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { isCloud } from '../utils/utils.js';
+import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
 
 const TABLE = '_nango_environments';
 
@@ -82,7 +82,7 @@ class EnvironmentService {
     }
 
     async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
-        if (!isCloud()) {
+        if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_')) || [];
             if (environmentVariables.length > 0) {
                 for (const environmentVariable of environmentVariables) {
@@ -160,7 +160,7 @@ class EnvironmentService {
     }
 
     async getAccountIdAndEnvironmentIdByPublicKey(publicKey: string): Promise<{ accountId: number; environmentId: number } | null> {
-        if (!isCloud()) {
+        if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_')) || [];
             if (environmentVariables.length > 0) {
                 for (const environmentVariable of environmentVariables) {

@@ -12,7 +12,8 @@ import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { isCloud, integrationFilesAreRemote, getApiUrl, isJsOrTsType } from '../../utils/utils.js';
+import { integrationFilesAreRemote, isCloud } from '@nangohq/utils/dist/environment/detection.js';
+import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
@@ -228,7 +229,7 @@ export default class SyncRun {
                 }
             }
 
-            if (!isCloud() && !integrationFilesAreRemote() && !isPublic) {
+            if (!isCloud && !integrationFilesAreRemote && !isPublic) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation

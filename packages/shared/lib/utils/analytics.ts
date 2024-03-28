@@ -1,5 +1,7 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, UserType, isCloud, isStaging, packageJsonFile } from '../utils/utils.js';
+import { isCloud, isStaging, baseUrl } from '@nangohq/utils/dist/environment/detection.js';
+import { localhostUrl } from '@nangohq/utils/dist/environment/constants.js';
+import { UserType, packageJsonFile } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
@@ -55,7 +57,7 @@ class Analytics {
 
     constructor() {
         try {
-            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
+            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
                 this.packageVersion = packageJsonFile().version;
@@ -77,7 +79,6 @@ class Analytics {
             eventProperties = eventProperties || {};
             userProperties = userProperties || {};
 
-            const baseUrl = getBaseUrl();
             const userType = this.getUserType(accountId, baseUrl);
             const userId = this.getUserIdWithType(userType, accountId, baseUrl);
 
@@ -86,7 +87,7 @@ class Analytics {
             eventProperties['user-account'] = userId;
             eventProperties['nango-server-version'] = this.packageVersion || 'unknown';
 
-            if (isCloud() && accountId != null) {
+            if (isCloud && accountId != null) {
                 const account: Account | null = await accountService.getAccountById(accountId);
                 if (account !== null && account.id !== undefined) {
                     const users: User[] | null = await userService.getUsersByAccountId(account.id);
