@@ -6,10 +6,7 @@
     },
     "references": [
         {
-            "path": "../shared"
-        },
-        {
-            "path": "../runner"
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*"]

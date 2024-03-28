@@ -1,6 +1,6 @@
+import { logger } from '../utils.js';
 import { client } from './client.js';
 import { indices } from './schema.js';
-import { logger } from '@nangohq/shared';
 
 export async function start() {
     logger.info('🔄 Elasticsearch service starting...');

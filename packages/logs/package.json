@@ -2,9 +2,9 @@
     "name": "@nangohq/logs",
     "version": "1.0.0",
     "type": "module",
-    "main": "dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.js",
     "scripts": {},
-    "keywords": [],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "8.12.2",
-        "@nangohq/shared": "file:../shared",
+        "@nangohq/utils": "file:../utils",
         "nanoid": "5.0.6",
         "zod": "3.22.4"
     },

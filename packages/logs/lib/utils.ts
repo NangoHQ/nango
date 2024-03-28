@@ -1,36 +1,9 @@
 import { customAlphabet } from 'nanoid';
 import { z } from 'zod';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { envErrorToString } from '@nangohq/utils/dist/environment/helpers.js';
 
-function zodErrorToString(issues: z.ZodIssue[]) {
-    return issues
-        .map((issue) => {
-            return `${issue.path.join('')} (${issue.code} ${issue.message})`;
-        })
-        .join(', ');
-}
-
-export function initGlobalEnv() {
-    const schema = z.object({
-        NANGO_DATABASE_URL: z.string().url().optional(),
-        SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
-        NANGO_DB_HOST: z.string().optional().default('localhost'),
-        NANGO_DB_PORT: z.coerce.number().optional().default(5432),
-        NANGO_DB_USER: z.string().optional().default('nango'),
-        NANGO_DB_NAME: z.string().optional().default('nango'),
-        NANGO_DB_PASSWORD: z.string().optional().default('nango'),
-        NANGO_DB_SSL: z.enum(['true', 'false']).optional().default('false'),
-        NODE_ENV: z.enum(['production', 'development', 'test']).default('development'),
-        CI: z.enum(['true', 'false']).default('false'),
-        VITEST: z.enum(['true', 'false']).default('false')
-    });
-
-    const res = schema.safeParse(process.env);
-    if (!res.success) {
-        throw new Error(`Missing or invalid env vars: ${zodErrorToString(res.error.issues)}`);
-    }
-
-    return res.data;
-}
+export const logger = getLogger('elasticsearch');
 
 export function initLogsEnv() {
     const schema = z.object({
@@ -41,7 +14,7 @@ export function initLogsEnv() {
 
     const res = schema.safeParse(process.env);
     if (!res.success) {
-        throw new Error(`Missing or invalid env vars: ${zodErrorToString(res.error.issues)}`);
+        throw new Error(`Missing or invalid env vars: ${envErrorToString(res.error.issues)}`);
     }
 
     return res.data;
