@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const ENVS = z.object({
+export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'development', 'test']).default('development'),
     CI: z.coerce.boolean().default(false),
@@ -12,7 +12,7 @@ const ENVS = z.object({
     WORKOS_CLIENT_ID: z.string().optional(),
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
-    LOCAL_NANGO_USER_ID: z.coerce.number(),
+    LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -100,22 +100,19 @@ const ENVS = z.object({
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
-export function parseEnv<T extends z.SafeParseReturnType<any, any>>(res: T): T extends { success: true } ? T['data'] : never {
+export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.SafeParseSuccess<z.infer<T>>['data'] {
+    const res = schema.safeParse(envs);
     if (!res.success) {
-        throw new Error(`Missing or invalid env vars: ${envErrorToString(res.error.issues)}`);
+        throw new Error(`Missing or invalid env vars: ${zodErrorToString(res.error.issues)}`);
     }
 
     return res.data;
 }
 
-export function envErrorToString(issues: z.ZodIssue[]) {
+function zodErrorToString(issues: z.ZodIssue[]) {
     return issues
         .map((issue) => {
             return `${issue.path.join('')} (${issue.code} ${issue.message})`;
         })
         .join(', ');
 }
-
-const envs = parseEnv(ENVS.required({ NANGO_ENCRYPTION_KEY: true }).safeParse(process.env));
-envs.NANGO_ENCRYPTION_KEY;
-envs.NANGO_DATABASE_URL;

@@ -19,5 +19,7 @@
         "winston": "3.8.2",
         "zod": "3.22.4"
     },
-    "devDependencies": {}
+    "devDependencies": {
+        "vitest": "1.4.0"
+    }
 }
