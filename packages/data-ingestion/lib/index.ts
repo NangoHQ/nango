@@ -1,7 +1,7 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import type { BigQuery as BigQueryType } from '@google-cloud/bigquery';
 import { getLogger } from '@nangohq/utils/dist/logger.js';
-import { env, isCloud, isLocal } from '@nangohq/utils/dist/environment/detection.js';
+import { isCloud, isLocal } from '@nangohq/utils/dist/environment/detection.js';
 
 const logger = getLogger('BigQueryClient');
 
@@ -87,7 +87,7 @@ class BigQueryClient {
     }
 
     public async insert(data: RunScriptRow, tableName?: string) {
-        const table = tableName || `${env}_${this.tableName}`;
+        const table = tableName || this.tableName;
         try {
             if (isCloud) {
                 await this.client.dataset(this.datasetName).table(table).insert(data);
