@@ -28,6 +28,15 @@ fi
 
 npm install
 
+# Utils
+pushd "$GIT_ROOT_DIR/packages/utils"
+mkdir -p "$GIT_ROOT_DIR/packages/shared/vendor"
+npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
+popd
+pushd "$GIT_ROOT_DIR/packages/shared"
+npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz"
+popd
+
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/shared"
