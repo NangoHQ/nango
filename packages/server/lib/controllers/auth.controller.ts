@@ -6,6 +6,7 @@ import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '..
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User, Result } from '@nangohq/shared';
+import { isCloud, baseUrl, basePublicUrl } from '@nangohq/utils/dist/environment/detection.js';
 import {
     userService,
     accountService,
@@ -17,9 +18,6 @@ import {
     environmentService,
     analytics,
     AnalyticsTypes,
-    isCloud,
-    getBaseUrl,
-    getBasePublicUrl,
     NangoError,
     createOnboardingProvider
 } from '@nangohq/shared';
@@ -42,7 +40,7 @@ let workos: WorkOS | null = null;
 if (process.env['WORKOS_API_KEY'] && process.env['WORKOS_CLIENT_ID']) {
     workos = new WorkOS(process.env['WORKOS_API_KEY']);
 } else {
-    if (isCloud()) {
+    if (isCloud) {
         throw new NangoError('workos_not_configured');
     }
 }
@@ -177,9 +175,9 @@ class AuthController {
             }
 
             const event = joinedWithToken ? AnalyticsTypes.ACCOUNT_JOINED : AnalyticsTypes.ACCOUNT_CREATED;
-            analytics.track(event, account.id, {}, isCloud() ? { email: email } : {});
+            analytics.track(event, account.id, {}, isCloud ? { email: email } : {});
 
-            if (isCloud() && !joinedWithToken) {
+            if (isCloud && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.
                 const env = await environmentService.getByEnvironmentName(account.id, 'dev');
                 if (env) {
@@ -284,7 +282,7 @@ class AuthController {
                     'Nango password reset',
                     `<p><b>Reset your password</b></p>
                 <p>Someone requested a password reset.</p>
-                <p><a href="${getBaseUrl()}/reset-password/${token}">Reset password</a></p>
+                <p><a href="${baseUrl}/reset-password/${token}">Reset password</a></p>
                 <p>If you didn't initiate this request, please contact us immediately at support@nango.dev</p>`
                 )
                 .catch((e: Error) => {
@@ -334,7 +332,7 @@ class AuthController {
             const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
-                redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`
+                redirectUri: `${basePublicUrl}/api/v1/login/callback`
             });
 
             res.send({ url: oAuthUrl });
@@ -381,7 +379,7 @@ class AuthController {
             const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
-                redirectUri: `${getBasePublicUrl()}/api/v1/login/callback`,
+                redirectUri: `${basePublicUrl}/api/v1/login/callback`,
                 state: JSON.stringify(inviteParams)
             });
 
@@ -417,7 +415,7 @@ class AuthController {
                     if (err) {
                         return next(err);
                     }
-                    res.redirect(`${getBasePublicUrl()}/`);
+                    res.redirect(`${basePublicUrl}/`);
                 });
 
                 return;
@@ -462,7 +460,7 @@ class AuthController {
                 if (err) {
                     return next(err);
                 }
-                res.redirect(`${getBasePublicUrl()}/`);
+                res.redirect(`${basePublicUrl}/`);
             });
         } catch (err) {
             next(err);

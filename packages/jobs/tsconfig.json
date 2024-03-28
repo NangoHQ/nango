@@ -10,9 +10,13 @@
         },
         {
             "path": "../runner"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../data-ingestion"
         }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }

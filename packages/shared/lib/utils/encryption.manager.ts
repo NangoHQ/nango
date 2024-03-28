@@ -1,6 +1,7 @@
 import type { CipherGCMTypes } from 'crypto';
+import utils from 'node:util';
 import crypto from 'crypto';
-import logger from '../logger/console.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
@@ -8,12 +9,16 @@ import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
 import type { RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord, UnencryptedRawRecord } from '../models/Sync.js';
 import db from '../db/database.js';
-import util from 'util';
+
+const logger = getLogger('Encryption.Manager');
 
 interface DataRecordJson {
     encryptedValue: string;
     [key: string]: any;
 }
+
+export const pbkdf2 = utils.promisify(crypto.pbkdf2);
+export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'];
 
 class EncryptionManager {
     private key: string | undefined;
@@ -25,7 +30,7 @@ class EncryptionManager {
     constructor(key: string | undefined) {
         this.key = key;
 
-        if (key && Buffer.from(key, this.encoding).byteLength != this.encryptionKeyByteLength) {
+        if (key && Buffer.from(key, this.encoding).byteLength !== this.encryptionKeyByteLength) {
             throw new Error('Encryption key must be base64-encoded and 256-bit long.');
         }
     }
@@ -331,7 +336,7 @@ class EncryptionManager {
     }
 
     private async hashEncryptionKey(key: string, salt: string): Promise<string> {
-        const keyBuffer = await util.promisify(crypto.pbkdf2)(key, salt, 310000, 32, 'sha256');
+        const keyBuffer = await pbkdf2(key, salt, 310000, 32, 'sha256');
         return keyBuffer.toString(this.encoding);
     }
 
@@ -422,4 +427,4 @@ class EncryptionManager {
     }
 }
 
-export default new EncryptionManager(process.env['NANGO_ENCRYPTION_KEY']);
+export default new EncryptionManager(ENCRYPTION_KEY);

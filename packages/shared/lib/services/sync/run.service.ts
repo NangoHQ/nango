@@ -8,12 +8,12 @@ import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
-import BigQueryClient from '../../clients/big-query.client.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { isCloud, integrationFilesAreRemote, getApiUrl, isJsOrTsType } from '../../utils/utils.js';
+import { integrationFilesAreRemote, isCloud } from '@nangohq/utils/dist/environment/detection.js';
+import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
@@ -24,7 +24,28 @@ import type { Environment } from '../../models/Environment';
 import type { Metadata } from '../../models/Connection';
 import * as recordsService from './data/records.service.js';
 
+interface BigQueryClientInterface {
+    insert(row: RunScriptRow): void;
+}
+
+interface RunScriptRow {
+    executionType: string;
+    internalConnectionId: number | undefined;
+    connectionId: string;
+    accountId: number | undefined;
+    scriptName: string;
+    scriptType: string;
+    environmentId: number;
+    providerConfigKey: string;
+    status: string;
+    syncId: string;
+    content: string;
+    runTimeInSeconds: number;
+    createdAt: number;
+}
+
 interface SyncRunConfig {
+    bigQueryClient: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
@@ -50,6 +71,7 @@ interface SyncRunConfig {
 }
 
 export default class SyncRun {
+    bigQueryClient: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
@@ -77,6 +99,7 @@ export default class SyncRun {
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
+        this.bigQueryClient = config.bigQueryClient;
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
         this.isWebhook = config.isWebhook || false;
@@ -159,7 +182,7 @@ export default class SyncRun {
         if (!nangoConfig) {
             const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
             if (this.activityLogId) {
-                await this.reportFailureForResults(message, 0);
+                await this.reportFailureForResults({ content: message, runTime: 0 });
             } else {
                 console.error(message);
             }
@@ -188,7 +211,7 @@ export default class SyncRun {
 
             if (!environment && !bypassEnvironment) {
                 const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
-                await this.reportFailureForResults(message, 0);
+                await this.reportFailureForResults({ content: message, runTime: 0 });
                 const errorType = this.determineErrorType();
                 return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
@@ -229,14 +252,14 @@ export default class SyncRun {
                 }
             }
 
-            if (!isCloud() && !integrationFilesAreRemote() && !isPublic) {
+            if (!isCloud && !integrationFilesAreRemote && !isPublic) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
                     this.loadLocation
                 );
                 if (!integrationFileResult) {
                     const message = `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`;
-                    await this.reportFailureForResults(message, 0);
+                    await this.reportFailureForResults({ content: message, runTime: 0 });
 
                     const errorType = this.determineErrorType();
 
@@ -260,7 +283,7 @@ export default class SyncRun {
                 if (isJsOrTsType(configInput as unknown as string)) {
                     if (typeof this.input !== (configInput as unknown as string)) {
                         const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${configInput}`;
-                        await this.reportFailureForResults(message, 0);
+                        await this.reportFailureForResults({ content: message, runTime: 0 });
 
                         return { success: false, error: new NangoError('action_script_failure', message, 500), response: false };
                     }
@@ -343,9 +366,9 @@ export default class SyncRun {
 
                     const runTime = (Date.now() - startTime) / 1000;
                     if (error.type === 'script_cancelled') {
-                        await this.reportFailureForResults(error.message, runTime);
+                        await this.reportFailureForResults({ content: error.message, runTime });
                     } else {
-                        await this.reportFailureForResults(message, runTime);
+                        await this.reportFailureForResults({ content: message, runTime });
                     }
 
                     return { success: false, error, response: false };
@@ -387,12 +410,12 @@ export default class SyncRun {
             } catch (e) {
                 result = false;
                 const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
-                await this.reportFailureForResults(
-                    `The ${this.syncType} "${this.syncName}"${
+                await this.reportFailureForResults({
+                    content: `The ${this.syncType} "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData?.version}` : ''
                     } sync did not complete successfully and has the following error: ${errorMessage}`,
-                    (Date.now() - startTime) / 1000
-                );
+                    runTime: (Date.now() - startTime) / 1000
+                });
 
                 const errorType = this.determineErrorType();
 
@@ -470,7 +493,10 @@ export default class SyncRun {
         const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, updatedResults, model);
 
         if (!syncResult) {
-            await this.reportFailureForResults(`The sync job ${this.syncJobId} could not be updated with the results for the model ${model}.`, totalRunTime);
+            await this.reportFailureForResults({
+                content: `The sync job ${this.syncJobId} could not be updated with the results for the model ${model}.`,
+                runTime: totalRunTime
+            });
             return;
         }
 
@@ -565,7 +591,7 @@ export default class SyncRun {
             `syncId:${this.syncId}`
         );
 
-        await BigQueryClient.insert({
+        void this.bigQueryClient.insert({
             executionType: this.determineExecutionType(),
             connectionId: this.nangoConnection.connection_id,
             internalConnectionId: this.nangoConnection.id,
@@ -577,12 +603,12 @@ export default class SyncRun {
             status: 'success',
             syncId: this.syncId as string,
             content,
-            runTime: totalRunTime,
-            timestamp: Date.now()
+            runTimeInSeconds: totalRunTime,
+            createdAt: Date.now()
         });
     }
 
-    async reportFailureForResults(content: string, runTime: number) {
+    async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
         if (!this.writeToDb) {
             return;
         }
@@ -598,7 +624,7 @@ export default class SyncRun {
                     this.provider as string
                 );
 
-                await BigQueryClient.insert({
+                void this.bigQueryClient.insert({
                     executionType: this.determineExecutionType(),
                     connectionId: this.nangoConnection.connection_id,
                     internalConnectionId: this.nangoConnection.id,
@@ -610,8 +636,8 @@ export default class SyncRun {
                     status: 'failed',
                     syncId: this.syncId as string,
                     content,
-                    runTime,
-                    timestamp: Date.now()
+                    runTimeInSeconds: runTime,
+                    createdAt: Date.now()
                 });
             } catch {
                 await errorManager.report('slack notification service reported a failure', {

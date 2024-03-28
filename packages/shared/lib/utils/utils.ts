@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import path, { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
+import { isEnterprise, isStaging, isProd } from '@nangohq/utils/dist/environment/detection.js';
 import { NangoError } from './error.js';
 import type { User, Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
@@ -34,9 +35,6 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
-export const AUTH_ENABLED = isCloud() || isEnterprise();
-export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
-
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
     aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],
@@ -60,42 +58,6 @@ export function isJsOrTsType(type?: string): boolean {
     const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
 
     return genericTypeRegex.test(baseType);
-}
-
-export function getEnv() {
-    if (isStaging()) {
-        return NodeEnv.Staging;
-    } else if (isProd()) {
-        return NodeEnv.Prod;
-    } else {
-        return NodeEnv.Dev;
-    }
-}
-
-export function isLocal() {
-    return getBaseUrl() === localhostUrl;
-}
-
-export function isCloud() {
-    return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
-}
-
-export function isEnterprise() {
-    return process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
-}
-
-export function integrationFilesAreRemote() {
-    const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
-
-    return isEnterprise() && useS3;
-}
-
-export function isStaging() {
-    return process.env['NODE_ENV'] === NodeEnv.Staging;
-}
-
-export function isHosted() {
-    return !isCloud() && !isLocal() && !isEnterprise();
 }
 
 export function getPort() {
@@ -124,22 +86,6 @@ export function getServerPort() {
 
 export function getPersistAPIUrl() {
     return process.env['PERSIST_SERVICE_URL'] || 'http://localhost:3007';
-}
-
-export function isDev() {
-    return process.env['NODE_ENV'] === NodeEnv.Dev;
-}
-
-export function isProd() {
-    return process.env['NODE_ENV'] === NodeEnv.Prod;
-}
-
-export function isTest(): boolean {
-    return Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
-}
-
-export function isBasicAuthEnabled() {
-    return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 }
 
 function getServerHost() {
@@ -187,18 +133,6 @@ export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boole
     return dateDiffMs < bufferInSeconds * 1000;
 }
 
-export function getBaseUrl() {
-    return process.env['NANGO_SERVER_URL'] || localhostUrl;
-}
-
-export function getBasePublicUrl() {
-    if (process.env['NANGO_SERVER_URL']) {
-        return process.env['NANGO_SERVER_URL'].replace('api.', 'app.');
-    } else {
-        return getBaseUrl();
-    }
-}
-
 /**
  * Get Oauth callback url base url.
  * @desc for ease of use with APIs that require a secure redirect
@@ -211,11 +145,11 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 }
 
 export function getApiUrl() {
-    if (isStaging()) {
+    if (isStaging) {
         return stagingHost;
-    } else if (isEnterprise()) {
+    } else if (isEnterprise) {
         return process.env['NANGO_SERVER_URL'] as string;
-    } else if (isProd()) {
+    } else if (isProd) {
         return cloudHost;
     }
     return getServerBaseUrl();
@@ -240,7 +174,7 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
     if (environmentId != null) {
-        const environment: Environment | null = await environmentService.getByAccountIdAndEnvironment(environmentId);
+        const environment: Environment | null = await environmentService.getById(environmentId);
         return environment?.callback_url || globalCallbackUrl;
     }
 

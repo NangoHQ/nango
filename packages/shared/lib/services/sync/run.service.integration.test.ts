@@ -26,7 +26,14 @@ class integrationServiceMock implements IntegrationServiceInterface {
     }
 }
 
+class bigQueryClientMock {
+    async insert() {
+        return;
+    }
+}
+
 const integrationService = new integrationServiceMock();
+const bigQueryClient = new bigQueryClientMock();
 
 describe('Running sync', () => {
     beforeAll(async () => {
@@ -178,6 +185,7 @@ describe('Running sync', () => {
 
 describe('SyncRun', () => {
     const dryRunConfig = {
+        bigQueryClient,
         integrationService: integrationService as unknown as IntegrationServiceInterface,
         writeToDb: false,
         nangoConnection: {
@@ -196,6 +204,7 @@ describe('SyncRun', () => {
     it('should initialize correctly', () => {
         const config = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
+            bigQueryClient,
             writeToDb: true,
             nangoConnection: {
                 id: 1,
@@ -317,6 +326,7 @@ const runJob = async (
     }
     const config = {
         integrationService: integrationService,
+        bigQueryClient,
         writeToDb: true,
         nangoConnection: connection,
         syncName: sync.name,

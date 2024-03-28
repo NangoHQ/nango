@@ -20,11 +20,20 @@ import {
     LogTypes,
     isInitialSyncStillRunning,
     getSyncByIdAndName,
-    logger,
     getLastSyncDate
 } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
+import { env } from '@nangohq/utils/dist/environment/detection.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
+
+const logger = getLogger('Jobs');
+
+const bigQueryClient = await BigQueryClient.createInstance({
+    datasetName: 'raw',
+    tableName: `${env}_script_runs`
+});
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
@@ -51,6 +60,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const context: Context = Context.current();
 
     const syncRun = new syncRunService({
+        bigQueryClient,
         integrationService,
         writeToDb: true,
         nangoConnection,
@@ -223,6 +233,7 @@ export async function syncProvider(
         }
 
         const syncRun = new syncRunService({
+            bigQueryClient,
             integrationService,
             writeToDb: true,
             syncId,
@@ -310,6 +321,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     );
 
     const syncRun = new syncRunService({
+        bigQueryClient,
         integrationService,
         writeToDb: true,
         nangoConnection,
@@ -402,6 +414,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
         const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.INITIAL;
 
         const syncRun = new syncRunService({
+            bigQueryClient,
             integrationService,
             writeToDb: true,
             syncId,

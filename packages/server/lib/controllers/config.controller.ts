@@ -8,9 +8,9 @@ import type {
     Integration as ProviderIntegration,
     Config
 } from '@nangohq/shared';
+import { isHosted } from '@nangohq/utils/dist/environment/detection.js';
 import {
     flowService,
-    isHosted,
     getConfigWithEndpointsByProviderConfigKey,
     AuthModes,
     errorManager,
@@ -351,7 +351,7 @@ class ConfigController {
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
-            if (includeFlows && !isHosted()) {
+            if (includeFlows && !isHosted) {
                 const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
                 const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === config.provider);
 

@@ -6,8 +6,10 @@ import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import logger from '../logger/console.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import telemetry, { MetricTypes } from '../utils/telemetry.js';
+
+const logger = getLogger('SDK');
 
 /*
  *

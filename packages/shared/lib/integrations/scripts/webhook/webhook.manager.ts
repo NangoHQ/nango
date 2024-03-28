@@ -4,14 +4,16 @@ import webhookService from '../../../services/notification/webhook.service.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { internalNango } from './internal-nango.js';
-import logger from '../../../logger/console.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
+
+const logger = getLogger('Webhook.Manager');
 
 import * as webhookHandlers from './index.js';
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 
 const handlers: WebhookHandlersMap = webhookHandlers as unknown as WebhookHandlersMap;
 
-async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string): Promise<void | any> {
+async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string): Promise<any> {
     if (!body) {
         return;
     }
@@ -34,7 +36,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
             res = await handler(internalNango, integration, headers, body, rawBody);
         }
     } catch (e) {
-        logger.error(`[webhook/manager] error processing incoming webhook for ${providerConfigKey} - `, e);
+        logger.error(`error processing incoming webhook for ${providerConfigKey} - `, e);
 
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
             accountId: String(accountId),
