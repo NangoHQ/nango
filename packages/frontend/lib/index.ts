@@ -298,7 +298,6 @@ export default class Nango {
             return res.json();
         }
 
-        console.log(credentials);
         if ('client_id' in credentials && 'client_secret' in credentials) {
             const oauthCredentials = credentials as unknown as OAuth2ClientCredentials;
 
