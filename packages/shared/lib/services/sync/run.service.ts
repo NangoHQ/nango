@@ -10,6 +10,7 @@ import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
+import accountService from '../account.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
 import { integrationFilesAreRemote, isCloud } from '../../utils/temp/environment/detection.js';
@@ -33,9 +34,11 @@ interface RunScriptRow {
     internalConnectionId: number | undefined;
     connectionId: string;
     accountId: number | undefined;
+    accountName: string;
     scriptName: string;
     scriptType: string;
     environmentId: number;
+    environmentName: string;
     providerConfigKey: string;
     status: string;
     syncId: string;
@@ -455,14 +458,19 @@ export default class SyncRun {
 
         // we only want to report to bigquery once if it is a multi model sync
         if (this.bigQueryClient) {
+            const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
+            const environmentName = await environmentService.getEnvironmentName(this.nangoConnection.environment_id);
+
             void this.bigQueryClient.insert({
                 executionType: this.determineExecutionType(),
                 connectionId: this.nangoConnection.connection_id,
                 internalConnectionId: this.nangoConnection.id,
                 accountId: this.nangoConnection.account_id,
+                accountName: account?.name as string,
                 scriptName: this.syncName,
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
+                environmentName: environmentName as string,
                 providerConfigKey: this.nangoConnection.provider_config_key,
                 status: 'success',
                 syncId: this.syncId as string,
