@@ -123,3 +123,7 @@ services:
 
 networks:
     nango:
+
+volumes:
+    esdata1:
+        driver: local
