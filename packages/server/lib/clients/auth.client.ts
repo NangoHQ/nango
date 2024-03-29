@@ -46,6 +46,14 @@ export function setupAuth(app: express.Express) {
                 password: string,
                 cb: (error: any, user?: Express.User | false, options?: any) => void
             ) {
+                if (!email) {
+                    return cb(null, false, { message: 'Email is required.' });
+                }
+                // in the case of SSO, the password field is empty. Explicitly
+                // check for this case to avoid a database query.
+                if (!password) {
+                    return cb(null, false, { message: 'Password is required.' });
+                }
                 const user = await userService.getUserByEmail(email);
 
                 if (user == null) {
