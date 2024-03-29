@@ -1,7 +1,7 @@
 {
-    "name": "@nangohq/utils",
+    "name": "@nangohq/data-ingestion",
     "version": "1.0.0",
-    "description": "Utils for use in Nango applications",
+    "description": "Package to ingest Nango data for analytics",
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
@@ -16,10 +16,8 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "winston": "3.8.2",
-        "zod": "3.22.4"
+        "@google-cloud/bigquery": "7.5.1",
+        "@nangohq/utils": "file:../utils"
     },
-    "devDependencies": {
-        "vitest": "1.4.0"
-    }
+    "devDependencies": {}
 }

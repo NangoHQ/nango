@@ -15,8 +15,9 @@
         "directory": "packages/jobs"
     },
     "dependencies": {
+        "@nangohq/data-ingestion": "file:../data-ingestion",
         "@nangohq/nango-runner": "^1.0.0",
-        "@nangohq/shared": "^0.39.8",
+        "@nangohq/shared": "^0.39.13",
         "@nangohq/utils": "file:../utils",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",

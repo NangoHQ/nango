@@ -57,7 +57,7 @@ Available environment variables available:
 
 # Recommendation: in a ".env" file in ./nango-integrations.
 
-# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
 NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 
