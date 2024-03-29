@@ -55,6 +55,12 @@ export default function Authorization(props: AuthorizationProps) {
                         <SecretInput disabled defaultValue={connection?.credentials?.apiKey} copy={true} />
                     </div>
                 )}
+                {connection?.credentials && 'expires_at' in connection.credentials && (
+                    <div className="flex flex-col w-1/2">
+                        <span className="text-gray-400 text-xs uppercase mb-1">Token Expiration</span>
+                        <span className="text-white">{new Date(connection.credentials.expires_at).toLocaleString()}</span>
+                    </div>
+                )}
                 {connection?.expiresAt && (
                     <div className="flex flex-col w-1/2">
                         <span className="text-gray-400 text-xs uppercase mb-1">Access Token Expiration</span>
@@ -94,6 +100,22 @@ export default function Authorization(props: AuthorizationProps) {
                     )}
                 </>
             )}
+            {connection?.credentials && 'client_id' in connection.credentials && 'client_secret' in connection.credentials && (
+                <>
+                    {connection?.credentials.client_id && (
+                        <div className="flex flex-col">
+                            <span className="text-gray-400 text-xs uppercase mb-1">Client ID</span>
+                            <SecretInput disabled value={connection.credentials.client_id} copy={true} />
+                        </div>
+                    )}
+                    {connection?.credentials.client_secret && (
+                        <div className="flex flex-col">
+                            <span className="text-gray-400 text-xs uppercase mb-1">Client Secret</span>
+                            <SecretInput disabled value={connection.credentials.client_secret} copy={true} />
+                        </div>
+                    )}
+                </>
+            )}
             {connection?.connectionConfig.oauth_scopes_override && (
                 <div className="mt-8">
                     <span className="text-gray-400 text-xs uppercase mb-1">Scopes Override</span>
@@ -109,6 +131,12 @@ export default function Authorization(props: AuthorizationProps) {
                         }
                         minLength={1}
                     />
+                </div>
+            )}
+            {connection?.credentials && 'token' in connection.credentials && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Token</span>
+                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.token} copy={true} refresh={handleForceRefresh} />
                 </div>
             )}
             {connection?.accessToken && (

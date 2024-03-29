@@ -5,6 +5,7 @@ import type { BaseConnection } from './Connection.js';
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
+    OAuth2CC = 'OAUTH2_CC',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
@@ -106,7 +107,7 @@ export interface ApiKeyCredentials {
     apiKey: string;
 }
 
-export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
+export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
 
 export interface AppCredentials {
     type?: AuthModes.App;
@@ -134,6 +135,16 @@ export interface OAuth2Credentials extends CredentialsCommon {
         client_id?: string;
         client_secret?: string;
     };
+}
+
+export interface OAuth2ClientCredentials extends CredentialsCommon {
+    type: AuthModes.OAuth2CC;
+    token: string;
+
+    expires_at?: Date | undefined;
+
+    client_id: string;
+    client_secret: string;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {

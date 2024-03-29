@@ -99,7 +99,8 @@ export default class Nango {
     public auth(
         providerConfigKey: string,
         connectionId: string,
-        options?: (ConnectionConfig | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) & AuthOptions
+        options?: (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) &
+            AuthOptions
     ): Promise<AuthResult> {
         if (
             options &&
@@ -211,6 +212,15 @@ export default class Nango {
             return appStoreCredentials as unknown as ConnectionConfig;
         }
 
+        if ('client_id' in credentials && 'client_secret' in credentials) {
+            const oauth2CCCredentials: OAuth2ClientCredentials = {
+                client_id: credentials.client_id as string,
+                client_secret: credentials.client_secret as string
+            };
+
+            return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -278,6 +288,28 @@ export default class Nango {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(appCredentials)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw new AuthError(errorResponse.error, errorResponse.type);
+            }
+
+            return res.json();
+        }
+
+        console.log(credentials);
+        if ('client_id' in credentials && 'client_secret' in credentials) {
+            const oauthCredentials = credentials as unknown as OAuth2ClientCredentials;
+
+            const url = this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(oauthCredentials)
             });
 
             if (!res.ok) {
@@ -367,6 +399,11 @@ interface AppStoreCredentials {
     issuerId: string;
     privateKey: string;
     scope?: string[];
+}
+
+interface OAuth2ClientCredentials {
+    client_id: string;
+    client_secret: string;
 }
 
 enum AuthorizationStatus {
