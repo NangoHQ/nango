@@ -380,6 +380,8 @@ export default class SyncRun {
                     return userDefinedResults;
                 }
 
+                const totalRunTime = (Date.now() - startTime) / 1000;
+
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
 
@@ -402,11 +404,12 @@ export default class SyncRun {
                         this.provider as string
                     );
 
+                    await this.finishFlow(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
-                const totalRunTime = (Date.now() - startTime) / 1000;
-                await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+                await this.finishFlow(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                 return { success: true, error: null, response: true };
             } catch (e) {
@@ -433,7 +436,7 @@ export default class SyncRun {
         return { success: true, error: null, response: result };
     }
 
-    async finishSync(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
+    async finishFlow(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
             let deletedKeys: string[] = [];
@@ -460,7 +463,29 @@ export default class SyncRun {
         version: string,
         totalRunTime: number
     ): Promise<void> {
-        if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
+        if (!this.writeToDb) {
+            return;
+        }
+
+        if (this.bigQueryClient) {
+            void this.bigQueryClient.insert({
+                executionType: this.determineExecutionType(),
+                connectionId: this.nangoConnection.connection_id,
+                internalConnectionId: this.nangoConnection.id,
+                accountId: this.nangoConnection.account_id,
+                scriptName: this.syncName,
+                scriptType: this.syncType,
+                environmentId: this.nangoConnection.environment_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
+                status: 'success',
+                syncId: this.syncId as string,
+                content: `The ${this.syncType} "${this.syncName}" ${this.determineExecutionType()} has been completed successfully.`,
+                runTimeInSeconds: totalRunTime,
+                createdAt: Date.now()
+            });
+        }
+
+        if (!this.activityLogId || !this.syncJobId) {
             return;
         }
 
@@ -592,6 +617,12 @@ export default class SyncRun {
             },
             `syncId:${this.syncId}`
         );
+    }
+
+    async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
+        if (!this.writeToDb) {
+            return;
+        }
 
         if (this.bigQueryClient) {
             void this.bigQueryClient.insert({
@@ -603,18 +634,12 @@ export default class SyncRun {
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
                 providerConfigKey: this.nangoConnection.provider_config_key,
-                status: 'success',
+                status: 'failed',
                 syncId: this.syncId as string,
                 content,
-                runTimeInSeconds: totalRunTime,
+                runTimeInSeconds: runTime,
                 createdAt: Date.now()
             });
-        }
-    }
-
-    async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
-        if (!this.writeToDb) {
-            return;
         }
 
         if (!this.isWebhook) {
@@ -627,24 +652,6 @@ export default class SyncRun {
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
-
-                if (this.bigQueryClient) {
-                    void this.bigQueryClient.insert({
-                        executionType: this.determineExecutionType(),
-                        connectionId: this.nangoConnection.connection_id,
-                        internalConnectionId: this.nangoConnection.id,
-                        accountId: this.nangoConnection.account_id,
-                        scriptName: this.syncName,
-                        scriptType: this.syncType,
-                        environmentId: this.nangoConnection.environment_id,
-                        providerConfigKey: this.nangoConnection.provider_config_key,
-                        status: 'failed',
-                        syncId: this.syncId as string,
-                        content,
-                        runTimeInSeconds: runTime,
-                        createdAt: Date.now()
-                    });
-                }
             } catch {
                 await errorManager.report('slack notification service reported a failure', {
                     environmentId: this.nangoConnection.environment_id,
