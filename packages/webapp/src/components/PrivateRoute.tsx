@@ -57,6 +57,8 @@ export const PrivateRoute: React.FC = () => {
             }
 
             setNotFoundEnv(true);
+        } else {
+            setCookieValue(currentEnv);
         }
 
         // it's ready when cookie and path is finally reconciliated
