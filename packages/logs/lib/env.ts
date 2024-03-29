@@ -1,4 +1,3 @@
-import { initGlobalEnv } from '@nangohq/utils/dist/environment/helpers.js';
-import { initLogsEnv } from './utils.js';
+import { parseEnvs, ENVS } from '@nangohq/utils/dist/environment/parse.js';
 
-export const envs = { ...initGlobalEnv(), ...initLogsEnv() };
+export const envs = parseEnvs(ENVS.required({ NANGO_LOGS_ES_URL: true, NANGO_LOGS_ES_USER: true, NANGO_LOGS_ES_PWD: true }));

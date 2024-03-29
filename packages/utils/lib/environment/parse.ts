@@ -54,6 +54,11 @@ export const ENVS = z.object({
     DD_SITE: z.string().optional(),
     DD_TRACE_AGENT_URL: z.string().optional(),
 
+    // Elasticsearch
+    NANGO_LOGS_ES_URL: z.string().url().optional(),
+    NANGO_LOGS_ES_USER: z.string().optional(),
+    NANGO_LOGS_ES_PWD: z.string().optional(),
+
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
 

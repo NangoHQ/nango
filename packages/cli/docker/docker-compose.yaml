@@ -36,6 +36,7 @@ services:
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://localhost:9500}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
@@ -100,6 +101,23 @@ services:
             - LOG_LEVEL=error
         ports:
             - 7233:7233
+        networks:
+            - nango
+
+    nanog-es:
+        image: elasticsearch:8.12.2
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - esdata1:/usr/share/elasticsearch/data
+        ports:
+            - 9500:9500
+            - 9600:9300
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
         networks:
             - nango
 
