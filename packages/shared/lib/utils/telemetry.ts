@@ -1,6 +1,6 @@
 import { v2, client } from '@datadog/datadog-api-client';
 import { isCloud } from '../utils/temp/environment/detection.js';
-import tracer from 'dd-trace';
+import { tracer } from 'dd-trace';
 
 export enum LogTypes {
     AUTH_TOKEN_REFRESH_START = 'auth_token_refresh_start',

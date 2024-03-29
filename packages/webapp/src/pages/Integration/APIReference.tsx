@@ -1,8 +1,8 @@
 import { Fragment } from 'react';
-import { Tabs, SubTabs, EndpointResponse } from './Show';
+import type { Tabs, SubTabs, EndpointResponse } from './Show';
 import EndpointRow from './components/EndpointRow';
 import HelpFooter from './components/HelpFooter';
-import { IntegrationConfig, Account, Flow } from '../../types';
+import type { IntegrationConfig, Account, Flow } from '../../types';
 
 interface APIReferenceProps {
     integration: IntegrationConfig | null;

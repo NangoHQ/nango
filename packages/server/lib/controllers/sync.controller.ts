@@ -752,7 +752,7 @@ class SyncController {
             const setFrequency = `every ${frequency}`;
             for (const sync of syncs) {
                 const { success: updateScheduleSuccess, error: updateScheduleError } = await updateSyncScheduleFrequency(
-                    sync.id as string,
+                    sync.id,
                     setFrequency,
                     sync.name,
                     environment.id
@@ -868,7 +868,7 @@ class SyncController {
                 res.status(400).send({ message: 'Invalid sync_name' });
                 return;
             }
-            const syncId = syncs[0]!.id!;
+            const syncId = syncs[0]!.id;
 
             // When "frequency === null" we revert the value stored in the sync config
             if (!newFrequency) {

@@ -646,7 +646,7 @@ export const getAndReconcileDifferences = async (
                         for (const connection of connections) {
                             const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                             if (syncId) {
-                                await syncOrchestrator.softDeleteSync(syncId.id!, environmentId);
+                                await syncOrchestrator.softDeleteSync(syncId.id, environmentId);
                             }
                         }
                     }

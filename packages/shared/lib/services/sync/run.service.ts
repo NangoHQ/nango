@@ -1,6 +1,6 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
-import type { NangoConnection } from '../../models/Connection.js';
+import type { NangoConnection, Metadata } from '../../models/Connection.js';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -20,8 +20,7 @@ import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import type { Environment } from '../../models/Environment';
-import type { Metadata } from '../../models/Connection';
+import type { Environment } from '../../models/Environment.js';
 import * as recordsService from './data/records.service.js';
 
 interface BigQueryClientInterface {
