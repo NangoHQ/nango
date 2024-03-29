@@ -452,21 +452,8 @@ export default class SyncRun {
             await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);
             i++;
         }
-    }
 
-    async reportResults(
-        model: string,
-        responseResults: UpsertSummary,
-        index: number,
-        numberOfModels: number,
-        syncStartDate: Date,
-        version: string,
-        totalRunTime: number
-    ): Promise<void> {
-        if (!this.writeToDb) {
-            return;
-        }
-
+        // we only want to report to bigquery once if it is a multi model sync
         if (this.bigQueryClient) {
             void this.bigQueryClient.insert({
                 executionType: this.determineExecutionType(),
@@ -484,8 +471,18 @@ export default class SyncRun {
                 createdAt: Date.now()
             });
         }
+    }
 
-        if (!this.activityLogId || !this.syncJobId) {
+    async reportResults(
+        model: string,
+        responseResults: UpsertSummary,
+        index: number,
+        numberOfModels: number,
+        syncStartDate: Date,
+        version: string,
+        totalRunTime: number
+    ): Promise<void> {
+        if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
             return;
         }
 
