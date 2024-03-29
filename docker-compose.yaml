@@ -47,7 +47,7 @@ services:
             - nango
 
     nango-redis:
-        image: 'redis:latest'
+        image: redis:7.2.4
         container_name: nango-redis
         ports:
             - '6379:6379'
