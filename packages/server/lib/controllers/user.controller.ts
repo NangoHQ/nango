@@ -1,10 +1,20 @@
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { errorManager, userService, getBaseUrl, isCloud, isEnterprise } from '@nangohq/shared';
+import { isCloud, isEnterprise, basePublicUrl } from '@nangohq/utils/dist/environment/detection.js';
+import { errorManager, userService } from '@nangohq/shared';
+
+export interface GetUser {
+    user: {
+        id: number;
+        accountId: number;
+        email: string;
+        name: string;
+    };
+}
 
 class UserController {
-    async getUser(req: Request, res: Response, next: NextFunction) {
+    async getUser(req: Request, res: Response<GetUser>, next: NextFunction) {
         try {
             const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!success || response === null) {
@@ -99,7 +109,7 @@ class UserController {
             if (!invited) {
                 throw new Error('Failed to invite user.');
             }
-            if (isCloud() || isEnterprise()) {
+            if (isCloud || isEnterprise) {
                 const emailClient = EmailClient.getInstance();
                 emailClient.send(
                     invited.email,
@@ -109,7 +119,7 @@ class UserController {
 
 <p>You are invited to join the ${account.name} account on Nango.</p>
 
-<p>Join this account by clicking <a href="${getBaseUrl()}/signup/${invited?.token}">here</a> and completing your signup.</p>
+<p>Join this account by clicking <a href="${basePublicUrl}/signup/${invited?.token}">here</a> and completing your signup.</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 

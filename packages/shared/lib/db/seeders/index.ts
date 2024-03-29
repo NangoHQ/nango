@@ -1,3 +1,4 @@
+export * from './environment.seeder.js';
 export * from './config.seeder.js';
 export * from './connection.seeder.js';
 export * from './sync.seeder.js';

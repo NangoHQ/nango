@@ -12,6 +12,7 @@ COPY packages/server/ packages/server/
 COPY package*.json ./
 COPY packages/webapp/build/ packages/webapp/build/
 COPY packages/shared/ packages/shared/
+COPY packages/utils/ packages/utils/
 COPY packages/node-client/ packages/node-client/
 
 RUN npm pkg delete scripts.prepare

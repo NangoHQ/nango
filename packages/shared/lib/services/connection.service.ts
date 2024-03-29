@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
-import db from '../db/database.js';
+import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
 import type {
@@ -27,27 +27,28 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import { getLogger } from '../utils/temp/logger.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
-import {
+import type {
     AppCredentials,
-    AuthModes as ProviderAuthModes,
     AppStoreCredentials,
     OAuth2Credentials,
     ImportedCredentials,
     ApiKeyCredentials,
     BasicApiCredentials,
-    AuthOperation,
     ConnectionUpsertResponse
 } from '../models/Auth.js';
-import { schema } from '../db/database.js';
+import { AuthModes as ProviderAuthModes, AuthOperation } from '../models/Auth.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
+
+const logger = getLogger('Connection');
 
 type KeyValuePairs = Record<string, string | boolean>;
 
@@ -822,7 +823,7 @@ class ConnectionService {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
         if (!success || !credentials) {
-            console.log(error);
+            logger.error(error);
             return;
         }
 

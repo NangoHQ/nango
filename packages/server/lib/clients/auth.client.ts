@@ -4,12 +4,12 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { dirname, isCloud, isBasicAuthEnabled, userService } from '@nangohq/shared';
+import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
+import { dirname, userService, database } from '@nangohq/shared';
 import crypto from 'crypto';
 import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
-import { database } from '@nangohq/shared';
 
 const KnexSessionStore = connectSessionKnex(session);
 
@@ -39,13 +39,21 @@ export function setupAuth(app: express.Express) {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    if (isCloud()) {
+    if (AUTH_ENABLED) {
         passport.use(
             new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async function (
                 email: string,
                 password: string,
                 cb: (error: any, user?: Express.User | false, options?: any) => void
             ) {
+                if (!email) {
+                    return cb(null, false, { message: 'Email is required.' });
+                }
+                // in the case of SSO, the password field is empty. Explicitly
+                // check for this case to avoid a database query.
+                if (!password) {
+                    return cb(null, false, { message: 'Password is required.' });
+                }
                 const user = await userService.getUserByEmail(email);
 
                 if (user == null) {
@@ -67,7 +75,7 @@ export function setupAuth(app: express.Express) {
             new BasicStrategy(async function (username, password, done) {
                 const user = await userService.getUserById(0);
 
-                if (!isBasicAuthEnabled()) {
+                if (!isBasicAuthEnabled) {
                     return done(null, user);
                 }
 

@@ -6,7 +6,7 @@ icon: 'terminal'
 
 ### Install the Nango CLI
 
-Install the Nango CLI globally: 
+Install the Nango CLI globally:
 ```bash
 npm install nango -g
 ```
@@ -24,7 +24,7 @@ NANGO_SECRET_KEY_PROD='<prod-secret-key>'
 NANGO_SECRET_KEY_DEV='<dev-secret-key>'
 ```
 
-Get your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
+Get your `prod` and `dev` secret keys from the [Environment Settings tab](https://app.nango.dev/environment-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
 
 <Info>
 For self-hosting, set the `NANGO_HOSTPORT` env variable to `http://localhost:3003` (for local development) or your instance's URL.
@@ -32,12 +32,12 @@ For self-hosting, set the `NANGO_HOSTPORT` env variable to `http://localhost:300
 
 ## All CLI commands & command details
 
-Check out all CLI commands by running: 
+Check out all CLI commands by running:
 ```bash
 nango
 ```
 
-Get details about a specific command by running: 
+Get details about a specific command by running:
 ```bash
 nango [command] --help
 ```
@@ -57,14 +57,14 @@ Global command flags:
 
 ```bash
 # Command flag to auto-confirm all prompts (useful for CI).
---auto-confirm 
+--auto-confirm
 ```
 
 Environment variables:
 ```bash
 # Recommendation: in a ".env" file in ./nango-integrations.
 
-# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
 NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 

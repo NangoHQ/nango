@@ -1,15 +1,18 @@
 import semver from 'semver';
 import db, { schema, dbNamespace } from '../../../db/database.js';
-import logger from '../../../logger/console.js';
+import { getLogger } from '../../../utils/temp/logger.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
-import { Action, SyncConfigWithProvider, SyncType, SyncConfig, SlimSync, SyncConfigType, NangoConfigMetadata } from '../../../models/Sync.js';
+import type { Action, SyncConfigWithProvider, SyncType, SyncConfig, SlimSync, NangoConfigMetadata } from '../../../models/Sync.js';
+import { SyncConfigType } from '../../../models/Sync.js';
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfig, NangoConfigV1, NangoV2Integration, StandardNangoConfig, NangoIntegrationDataV2 } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
+
+const logger = getLogger('Sync.Config');
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -735,6 +738,7 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
             `${TABLE}.sync_type`,
             `${TABLE}.track_deletes`,
             `${TABLE}.auto_start`,
+            `${TABLE}.webhook_subscriptions`,
             '_nango_configs.unique_key',
             '_nango_configs.provider',
             db.knex.raw(

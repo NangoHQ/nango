@@ -4,9 +4,10 @@ import type { NangoConnection } from '../../models/Connection';
 import type { ServiceResponse } from '../../models/Generic';
 import { SyncType, SyncConfigType } from '../../models/Sync.js';
 import environmentService from '../environment.service.js';
-import { LogActionEnum, LogLevel } from '../../models/Activity.js';
+import type { LogLevel } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Activity.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
-import { getBasePublicUrl } from '../../utils/utils.js';
+import { basePublicUrl } from '../../utils/temp/environment/detection.js';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import SyncClient from '../../clients/sync.client.js';
@@ -261,7 +262,7 @@ class SlackService {
         const date = new Date();
         const dateString = date.toISOString().split('T')[0];
         const payload: NotificationPayload = {
-            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${getBasePublicUrl()}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
+            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
@@ -343,11 +344,11 @@ class SlackService {
         let payloadContent = '';
 
         if (connectionCount === 0) {
-            payloadContent = `[Resolved] *${syncName}* (${syncType.toLowerCase()}) failed. Read <${getBasePublicUrl()}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
+            payloadContent = `[Resolved] *${syncName}* (${syncType.toLowerCase()}) failed. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
         } else {
             const count = connectionCount;
             const connection = count === 1 ? 'connection' : 'connections';
-            payloadContent = `*${syncName}* (${syncType.toLowerCase()}) is failing for ${count} ${connection}. Read <${getBasePublicUrl()}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
+            payloadContent = `*${syncName}* (${syncType.toLowerCase()}) is failing for ${count} ${connection}. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
         }
 
         const payload: NotificationPayload = {

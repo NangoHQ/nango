@@ -1,5 +1,5 @@
 import { v2, client } from '@datadog/datadog-api-client';
-import { isCloud } from './utils.js';
+import { isCloud } from '../utils/temp/environment/detection.js';
 import tracer from 'dd-trace';
 
 export enum LogTypes {
@@ -48,7 +48,8 @@ export enum MetricTypes {
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
-    PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes'
+    PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
+    AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey'
 }
 
 export enum SpanTypes {
@@ -61,7 +62,7 @@ class Telemetry {
     private logInstance: v2.LogsApi | undefined;
     constructor() {
         try {
-            if (isCloud() && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
+            if (isCloud && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
                 const configuration = client.createConfiguration();
                 configuration.setServerVariables({
                     site: 'us3.datadoghq.com'

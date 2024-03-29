@@ -10,7 +10,9 @@
         "packages/runner",
         "packages/persist",
         "packages/jobs",
-        "packages/webapp"
+        "packages/webapp",
+        "packages/utils",
+        "packages/data-ingestion"
     ],
     "scripts": {
         "knex": "tsx ./node_modules/knex/bin/cli.js --knexfile packages/shared/lib/db/knexfile.ts",

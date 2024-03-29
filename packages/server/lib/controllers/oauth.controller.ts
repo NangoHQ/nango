@@ -16,7 +16,7 @@ import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
     OAuthSession,
     OAuth1RequestTokenResult,
-    AuthCredentials,
+    OAuth2Credentials,
     ConnectionConfig
 } from '@nangohq/shared';
 import {
@@ -95,6 +95,7 @@ class OAuthController {
             const callbackUrl = await getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
             const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
+            const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
 
             if (connectionId == null) {
                 await createActivityLogMessageAndEnd({
@@ -213,6 +214,30 @@ class OAuthController {
             }
 
             await updateSessionIdActivityLog(activityLogId as number, session.id);
+
+            // certain providers need the credentials to be specified in the config
+            if (overrideCredentials) {
+                if (overrideCredentials['oauth_client_id_override']) {
+                    config.oauth_client_id = overrideCredentials['oauth_client_id_override'];
+
+                    session.connectionConfig = {
+                        ...session.connectionConfig,
+                        oauth_client_id_override: config.oauth_client_id
+                    };
+                }
+                if (overrideCredentials['oauth_client_secret_override']) {
+                    config.oauth_client_secret = overrideCredentials['oauth_client_secret_override'];
+
+                    session.connectionConfig = {
+                        ...session.connectionConfig,
+                        oauth_client_secret_override: config.oauth_client_secret
+                    };
+                }
+            }
+
+            if (connectionConfig['oauth_scopes_override']) {
+                config.oauth_scopes = connectionConfig['oauth_scopes_override'];
+            }
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 await createActivityLogMessageAndEnd({
@@ -852,6 +877,19 @@ class OAuthController {
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         }
 
+        // check for oauth overrides in the connnection config
+        if (session.connectionConfig['oauth_client_id_override']) {
+            config.oauth_client_id = session.connectionConfig['oauth_client_id_override'];
+        }
+
+        if (session.connectionConfig['oauth_client_secret_override']) {
+            config.oauth_client_secret = session.connectionConfig['oauth_client_secret_override'];
+        }
+
+        if (session.connectionConfig['oauth_scopes']) {
+            config.oauth_scopes = session.connectionConfig['oauth_scopes'];
+        }
+
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
 
         let additionalTokenParams: Record<string, string> = {};
@@ -919,10 +957,10 @@ class OAuthController {
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
-            let parsedRawCredentials: AuthCredentials;
+            let parsedRawCredentials: OAuth2Credentials;
 
             try {
-                parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
+                parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2) as OAuth2Credentials;
             } catch {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
@@ -987,6 +1025,45 @@ class OAuthController {
                     ...connectionConfig,
                     installation_id: installationId
                 };
+            }
+
+            if (connectionConfig['oauth_client_id_override']) {
+                parsedRawCredentials = {
+                    ...parsedRawCredentials,
+                    config_override: {
+                        client_id: connectionConfig['oauth_client_id_override']
+                    }
+                };
+
+                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
+                    if (key !== 'oauth_client_id_override') {
+                        acc[key] = connectionConfig[key] as string;
+                    }
+                    return acc;
+                }, {});
+            }
+
+            if (connectionConfig['oauth_client_secret_override']) {
+                parsedRawCredentials = {
+                    ...parsedRawCredentials,
+                    config_override: {
+                        ...parsedRawCredentials.config_override,
+                        client_secret: connectionConfig['oauth_client_secret_override']
+                    }
+                };
+
+                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
+                    if (key !== 'oauth_client_secret_override') {
+                        acc[key] = connectionConfig[key] as string;
+                    }
+                    return acc;
+                }, {});
+            }
+
+            if (connectionConfig['oauth_scopes_override']) {
+                connectionConfig['oauth_scopes_override'] = !Array.isArray(connectionConfig['oauth_scopes_override'])
+                    ? connectionConfig['oauth_scopes_override'].split(',')
+                    : connectionConfig['oauth_scopes_override'];
             }
 
             const [updatedConnection] = await connectionService.upsertConnection(

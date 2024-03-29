@@ -10,6 +10,7 @@ export const prodUrl: string = 'https://api.nango.dev';
 export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
 
 export const AUTH_ENABLED = isCloud() || isEnterprise() || isLocal();
+export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
 
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
@@ -274,26 +275,7 @@ export function createExampleForType(type: string): any {
         return {};
     }
 
-    const rawType = type.replace('|', '').replace('null', '').replace('undefined', '').trim();
-
-    switch (rawType) {
-        case 'string':
-            return '<string>';
-        case 'integer':
-            return '<number>';
-        case 'boolean':
-            return '<boolean>';
-        case 'number':
-            return '<number>';
-        case 'object':
-            return '<object>';
-        case 'array':
-            return '<array>';
-        case 'date':
-            return '<date>';
-        default:
-            return '';
-    }
+    return `<${type}>`;
 }
 
 export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean | string | number> {

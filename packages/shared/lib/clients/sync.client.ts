@@ -1,12 +1,16 @@
-import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
+import type { ScheduleDescription } from '@temporalio/client';
+import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import ms, { StringValue } from 'ms';
+import type { StringValue } from 'ms';
+import ms from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
-import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
+import type { Sync, SyncWithSchedule } from '../models/Sync.js';
+import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
 import type { ServiceResponse } from '../models/Generic.js';
-import { LogActionEnum, LogLevel } from '../models/Activity.js';
+import type { LogLevel } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Activity.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import {
     createActivityLog,
@@ -26,8 +30,11 @@ import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
-import { isTest, isProd } from '../utils/utils.js';
+import { isTest, isProd } from '../utils/temp/environment/detection.js';
 import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
+import { getLogger } from '../utils/temp/logger.js';
+
+const logger = getLogger('Sync.Client');
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
@@ -57,14 +64,14 @@ class SyncClient {
     }
 
     private static async create(): Promise<SyncClient | null> {
-        if (isTest()) {
+        if (isTest) {
             return new SyncClient(true as any);
         }
 
         try {
             const connection = await Connection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
-                tls: isProd()
+                tls: isProd
                     ? {
                           clientCertPair: {
                               crt: await fs.readFile(`/etc/secrets/${namespace}.crt`),
@@ -95,7 +102,7 @@ class SyncClient {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
         if (!nangoConfig) {
-            console.log(
+            logger.error(
                 'Failed to load the Nango config - will not start any syncs! If you expect to see a sync make sure you used the nango cli deploy command'
             );
             return;
@@ -104,12 +111,12 @@ class SyncClient {
         const providerConfigKey = nangoConnection?.provider_config_key;
 
         if (!integrations[providerConfigKey]) {
-            console.log(`No syncs registered for provider ${providerConfigKey} - will not start any syncs!`);
+            logger.info(`No syncs registered for provider ${providerConfigKey} - will not start any syncs!`);
             return;
         }
 
         if (!this.client) {
-            console.log('Failed to get a Temporal client - will not start any syncs!');
+            logger.info('Failed to get a Temporal client - will not start any syncs!');
             return;
         }
 
@@ -156,7 +163,7 @@ class SyncClient {
                 connection_id: nangoConnection.connection_id,
                 provider_config_key: nangoConnection.provider_config_key,
                 provider: syncConfig.provider,
-                session_id: sync?.id?.toString() as string,
+                session_id: sync?.id?.toString(),
                 environment_id: nangoConnection.environment_id,
                 operation_name: syncName
             });
@@ -207,12 +214,12 @@ class SyncClient {
                     });
                 }
 
-                const res = await this.triggerInitialSync({ activityLogId, jobId, nangoConnection, syncId: sync.id!, syncName, debug });
+                const res = await this.triggerInitialSync({ activityLogId, jobId, nangoConnection, syncId: sync.id, syncName, debug });
                 if (!res) {
                     throw new NangoError('failed_to_start_initial_sync');
                 }
             } else {
-                await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
+                await createSyncJob(sync.id, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
 
             const { interval, offset } = response;
@@ -253,13 +260,7 @@ class SyncClient {
                 await scheduleHandle.pause();
             }
 
-            await createSyncSchedule(
-                sync.id as string,
-                interval,
-                offset,
-                syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING,
-                scheduleId
-            );
+            await createSyncSchedule(sync.id, interval, offset, syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING, scheduleId);
 
             if (scheduleHandle) {
                 await createActivityLogMessageAndEnd({
@@ -812,13 +813,13 @@ class SyncClient {
         const handle = await this.client?.workflow.start('initialSync', {
             taskQueue: SYNC_TASK_QUEUE,
             workflowId: jobId,
-            args: [{ syncId: syncId, syncJobId: syncJobId.id!, nangoConnection, syncName, debug }]
+            args: [{ syncId: syncId, syncJobId: syncJobId.id, nangoConnection, syncName, debug }]
         });
         if (!handle) {
             return false;
         }
 
-        await updateRunId(syncJobId.id as number, handle.firstExecutionRunId);
+        await updateRunId(syncJobId.id, handle.firstExecutionRunId);
 
         return true;
     }

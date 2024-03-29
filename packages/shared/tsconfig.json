@@ -7,7 +7,12 @@
     "references": [
         {
             "path": "../node-client"
+        },
+        {
+            "path": "../utils"
         }
     ],
-    "include": ["lib/**/*"]
+    "include": [
+        "lib/**/*"
+    ]
 }

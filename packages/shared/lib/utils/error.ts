@@ -1,3 +1,5 @@
+import { serializeError } from 'serialize-error';
+
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
@@ -532,6 +534,26 @@ export class NangoError extends Error {
                 this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
                 break;
 
+            case 'invalid_provider':
+                this.status = 400;
+                this.message = `The provider is not allowed. Please try again with a valid provider`;
+                break;
+
+            case 'workos_not_configured':
+                this.status = 400;
+                this.message = `WorkOS is not configured. Please reach out to support to obtain valid WorkOS credentials.`;
+                break;
+
+            case 'missing_managed_login_callback_code':
+                this.status = 400;
+                this.message = `Missing param 'code' for the managed login callback.`;
+                break;
+
+            case 'missing_name_for_account_creation':
+                this.status = 400;
+                this.message = `Missing an account name for account login/signup.`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
@@ -568,3 +590,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
 
     return { success: false, error, response: null };
 };
+
+export function stringifyError(err: unknown) {
+    return JSON.stringify(serializeError(err));
+}

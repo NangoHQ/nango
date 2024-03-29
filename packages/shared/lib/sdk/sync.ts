@@ -6,8 +6,10 @@ import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import logger from '../logger/console.js';
+import { getLogger } from '../utils/temp/logger.js';
 import telemetry, { MetricTypes } from '../utils/telemetry.js';
+
+const logger = getLogger('SDK');
 
 /*
  *
@@ -233,7 +235,7 @@ export interface NangoProps {
     dryRun?: boolean;
     track_deletes?: boolean;
     attributes?: object | undefined;
-    logMessages?: unknown[] | undefined;
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
 }
@@ -627,7 +629,10 @@ export class NangoAction {
 export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
-    logMessages?: unknown[] | undefined = [];
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined = {
+        counts: { updated: 0, added: 0, deleted: 0 },
+        messages: []
+    };
     stubbedMetadata?: Metadata | undefined = undefined;
 
     private batchSize = 1000;
@@ -682,8 +687,11 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:`);
-            this.logMessages?.push(...results);
+            this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
+            this.logMessages?.messages.push(...results);
+            if (this.logMessages && this.logMessages.counts) {
+                this.logMessages.counts.added = Number(this.logMessages?.counts.added) + results.length;
+            }
             return null;
         }
 
@@ -697,9 +705,7 @@ export class NangoSync extends NangoAction {
                     records: batch,
                     providerConfigKey: this.providerConfigKey,
                     connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
+                    activityLogId: this.activityLogId
                 }
             });
             if (response.status > 299) {
@@ -727,8 +733,11 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch delete call would delete the following data:`);
-            this.logMessages?.push(...results);
+            this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
+            this.logMessages?.messages.push(...results);
+            if (this.logMessages && this.logMessages.counts) {
+                this.logMessages.counts.deleted = Number(this.logMessages?.counts.deleted) + results.length;
+            }
             return null;
         }
 
@@ -742,9 +751,7 @@ export class NangoSync extends NangoAction {
                     records: batch,
                     providerConfigKey: this.providerConfigKey,
                     connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
+                    activityLogId: this.activityLogId
                 }
             });
             if (response.status > 299) {
@@ -772,8 +779,11 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch update call would update the following data to the ${model} model:`);
-            this.logMessages?.push(...results);
+            this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
+            this.logMessages?.messages.push(...results);
+            if (this.logMessages && this.logMessages.counts) {
+                this.logMessages.counts.updated = Number(this.logMessages?.counts.updated) + results.length;
+            }
             return null;
         }
 
@@ -787,9 +797,7 @@ export class NangoSync extends NangoAction {
                     records: batch,
                     providerConfigKey: this.providerConfigKey,
                     connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
+                    activityLogId: this.activityLogId
                 }
             });
             if (response.status > 299) {

@@ -10,6 +10,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import type { AuthModes } from '../../types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { useStore } from '../../store';
+import { useSWRConfig } from 'swr';
 
 interface Provider {
     name: string;
@@ -20,6 +21,7 @@ interface Provider {
 }
 
 export default function Create() {
+    const { mutate } = useSWRConfig();
     const [loaded, setLoaded] = useState(false);
     const [initialProviders, setInitialProviders] = useState<Provider[] | null>(null);
     const [providers, setProviders] = useState<Provider[] | null>(null);
@@ -52,6 +54,7 @@ export default function Create() {
         if (res?.status === 200) {
             toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
             const data = await res.json();
+            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integration'), undefined);
             navigate(`/${env}/integration/${data.config.unique_key}#auth`);
         }
     };

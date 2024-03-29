@@ -1,5 +1,7 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, UserType, isCloud, isStaging, packageJsonFile } from '../utils/utils.js';
+import { UserType, packageJsonFile } from '../utils/utils.js';
+import { isCloud, isStaging, baseUrl } from './temp/environment/detection.js';
+import { localhostUrl } from './temp/environment/constants.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
@@ -19,10 +21,18 @@ export enum AnalyticsTypes {
     CONNECTION_UPDATED = 'server:connection_updated',
     DEMO_0 = 'demo:step_0',
     DEMO_1 = 'demo:step_1',
+    DEMO_1_ERR = 'demo:step_1:error',
+    DEMO_1_SUCCESS = 'demo:step_1:success',
     DEMO_2 = 'demo:step_2',
+    DEMO_2_ERR = 'demo:step_2:error',
+    DEMO_2_SUCCESS = 'demo:step_2:success',
     DEMO_3 = 'demo:step_3',
     DEMO_4 = 'demo:step_4',
+    DEMO_4_ERR = 'demo:step_4:error',
+    DEMO_4_SUCCESS = 'demo:step_4:success',
     DEMO_5 = 'demo:step_5',
+    DEMO_5_ERR = 'demo:step_5:error',
+    DEMO_5_SUCCESS = 'demo:step_5:success',
     DEMO_6 = 'demo:step_6',
     PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
     PRE_APP_AUTH = 'server:pre_appauth',
@@ -47,7 +57,7 @@ class Analytics {
 
     constructor() {
         try {
-            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
+            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
                 this.packageVersion = packageJsonFile().version;
@@ -69,7 +79,6 @@ class Analytics {
             eventProperties = eventProperties || {};
             userProperties = userProperties || {};
 
-            const baseUrl = getBaseUrl();
             const userType = this.getUserType(accountId, baseUrl);
             const userId = this.getUserIdWithType(userType, accountId, baseUrl);
 
@@ -78,7 +87,7 @@ class Analytics {
             eventProperties['user-account'] = userId;
             eventProperties['nango-server-version'] = this.packageVersion || 'unknown';
 
-            if (isCloud() && accountId != null) {
+            if (isCloud && accountId != null) {
                 const account: Account | null = await accountService.getAccountById(accountId);
                 if (account !== null && account.id !== undefined) {
                     const users: User[] | null = await userService.getUsersByAccountId(account.id);

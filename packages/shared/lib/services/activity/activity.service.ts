@@ -1,8 +1,11 @@
 import db from '../../db/database.js';
-import { ActivityLog, ActivityLogMessage, LogAction, LogActionEnum } from '../../models/Activity.js';
+import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 
-import logger from '../../logger/console.js';
+import { getLogger } from '../../utils/temp/logger.js';
+
+const logger = getLogger('Activity');
 
 const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';

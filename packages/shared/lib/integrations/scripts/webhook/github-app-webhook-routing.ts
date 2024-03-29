@@ -1,6 +1,10 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import { getLogger } from '../../../utils/temp/logger.js';
+
 import crypto from 'crypto';
+
+const logger = getLogger('Webook.GithubApp');
 
 function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
     const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
@@ -18,11 +22,11 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
-        console.log('Signature found, verifying...');
+        logger.info('Signature found, verifying...');
         const valid = validate(integration, signature, body);
 
         if (!valid) {
-            console.log('Github App webhook signature invalid');
+            logger.error('Github App webhook signature invalid');
             return;
         }
     }

@@ -5,7 +5,6 @@ import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import * as tsNode from 'ts-node';
-import { glob } from 'glob';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -18,6 +17,8 @@ import configService from './services/config.service.js';
 import modelService from './services/model.service.js';
 import parserService from './services/parser.service.js';
 import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import type { ListedFile } from './services/compile.service.js';
+import { getFileToCompile, listFilesToCompile } from './services/compile.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -230,7 +231,7 @@ export const init = async (debug = false) => {
         }
         fs.writeFileSync(
             envFileLocation,
-            `# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
 #NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 #NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 
@@ -298,7 +299,7 @@ export const tscWatch = async (debug = false) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        compileFile(filePath);
+        compileFile(getFileToCompile(filePath));
     });
 
     watcher.on('unlink', (filePath: string) => {
@@ -313,43 +314,40 @@ export const tscWatch = async (debug = false) => {
     watcher.on('change', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             // config file changed, re-compile each ts file
-            const integrationFiles = glob.sync(`./*.ts`);
+            const integrationFiles = listFilesToCompile();
             for (const file of integrationFiles) {
-                // strip the file to just the last part
-                const strippedFile = file.replace(/^.*[\\/]/, '');
-                compileFile(strippedFile);
+                compileFile(file);
             }
             return;
         }
-        compileFile(filePath);
+        compileFile(getFileToCompile(filePath));
     });
 
-    const compiler = tsNode.create({
-        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-        compilerOptions: JSON.parse(tsconfig).compilerOptions
-    });
-    function compileFile(filePath: string) {
+    function compileFile(file: ListedFile) {
+        // This needs to be re-declared each time
+        const compiler = tsNode.create({
+            skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+            compilerOptions: JSON.parse(tsconfig).compilerOptions
+        });
+
         try {
-            const providerConfiguration = config?.find((config) =>
-                [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
-            );
+            const providerConfiguration = config?.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
             if (!providerConfiguration) {
                 return;
             }
-            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
+            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
 
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
-            if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
+            if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
                 return;
             }
-            const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-            const jsFilePath = `./dist/${path.basename(filePath.replace('.ts', '.js'))}`;
+            const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
 
-            fs.writeFileSync(jsFilePath, result);
-            console.log(chalk.green(`Compiled ${filePath} successfully`));
+            fs.writeFileSync(file.outputPath, result);
+            console.log(chalk.green(`Compiled ${file.inputPath} successfully`));
         } catch (error) {
-            console.error(`Error compiling ${filePath}:`);
+            console.error(`Error compiling ${file.inputPath}:`);
             console.error(error);
             return;
         }

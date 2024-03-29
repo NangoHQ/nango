@@ -1,6 +1,6 @@
 import db from '../db/database.js';
 import * as uuid from 'uuid';
-import { isEnterprise } from '../utils/utils.js';
+import { isEnterprise } from '../utils/temp/environment/detection.js';
 import type { User, InviteUser } from '../models/Admin.js';
 
 class UserService {
@@ -137,7 +137,7 @@ class UserService {
     async getInvitedUserByToken(token: string): Promise<InviteUser | null> {
         const date = new Date();
 
-        if (isEnterprise() && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
+        if (isEnterprise && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
             return {
                 id: 1,
                 email: '',

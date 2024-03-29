@@ -4,16 +4,20 @@ import connectionService from './connection.service.js';
 import type { Connection, Metadata } from '../models/Connection.js';
 import { createConfigSeeds } from '../db/seeders/config.seeder.js';
 import { createConnectionSeeds } from '../db/seeders/connection.seeder.js';
+import { createEnvironmentSeed } from '../db/seeders/environment.seeder.js';
+import type { Environment } from '../models/Environment.js';
 
-describe('Connection service integration tests', () => {
+describe('Connection service integration tests', async () => {
+    let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
-        await createConfigSeeds();
+        env = await createEnvironmentSeed();
+        await createConfigSeeds(env);
     });
 
-    describe('Metadata simple operations', () => {
+    describe('Metadata simple operations', async () => {
         it('Should replace existing metadata, overwriting anything existing', async () => {
-            const connections = await createConnectionSeeds();
+            const connections = await createConnectionSeeds(env);
 
             const initialMetadata = {
                 name: 'test',
@@ -35,7 +39,7 @@ describe('Connection service integration tests', () => {
         });
 
         it('Should update metadata and not overwrite', async () => {
-            const connections = await createConnectionSeeds();
+            const connections = await createConnectionSeeds(env);
 
             const initialMetadata = {
                 name: 'test',
