@@ -8,7 +8,6 @@ import PageNotFound from '../pages/PageNotFound';
 
 export const PrivateRoute: React.FC = () => {
     const { meta, error, loading } = useMeta();
-    const [synced, setSynced] = useState(false);
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [ready, setReady] = useState(false);
     const { user } = useUser(Boolean(meta && ready && !notFoundEnv));
@@ -20,20 +19,6 @@ export const PrivateRoute: React.FC = () => {
     const setEmail = useStore((state) => state.setEmail);
     const setDebugMode = useStore((state) => state.setDebugMode);
     const setCookieValue = useStore((state) => state.setCookieValue);
-
-    useEffect(() => {
-        if (synced) {
-            return;
-        }
-
-        // sync path with cookie
-        const pathSplit = location.pathname.split('/');
-        if (pathSplit.length > 0 && env !== pathSplit[1]) {
-            setCookieValue(pathSplit[1]);
-        }
-        setSynced(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         if (!meta || error) {
@@ -52,9 +37,17 @@ export const PrivateRoute: React.FC = () => {
             return;
         }
 
+        let currentEnv = env;
+
+        // sync path with cookie
+        const pathSplit = location.pathname.split('/');
+        if (pathSplit.length > 0 && env !== pathSplit[1]) {
+            currentEnv = pathSplit[1];
+        }
+
         // The cookie set does not match available envs
-        if (!meta.environments.find(({ name }) => name === env)) {
-            if (env !== 'dev' && meta.environments.find(({ name }) => name === 'dev')) {
+        if (!meta.environments.find(({ name }) => name === currentEnv)) {
+            if (currentEnv !== 'dev' && meta.environments.find(({ name }) => name === 'dev')) {
                 // If the specified env is not dev and it's available we set the cookie so the back home button works
                 // because of self hosting we can't assume dev is always there
                 setCookieValue('dev');
@@ -64,7 +57,6 @@ export const PrivateRoute: React.FC = () => {
             }
 
             setNotFoundEnv(true);
-            return;
         }
 
         // it's ready when cookie and path is finally reconciliated
