@@ -16,7 +16,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "winston": "3.8.2"
+        "winston": "3.8.2",
+        "zod": "3.22.4"
     },
-    "devDependencies": {}
+    "devDependencies": {
+        "vitest": "1.4.0"
+    }
 }
