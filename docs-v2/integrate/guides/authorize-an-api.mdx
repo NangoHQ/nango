@@ -148,7 +148,7 @@ Before using Nango in production, we advise [securing the frontend SDK](/integra
 
 ### Listen for webhooks
 
-Your backend is notified by Nango when an authorization attempt is completed, successful or not.
+Your backend is notified by Nango when an authorization attempt is completed, successful or not. 
 
 To set this up:
 1. go to the _Environment Settings_ tab
@@ -156,10 +156,10 @@ To set this up:
 3. listen for webhooks in your backend at the specified route
 4. enable the "Send New Connection Creation Webhooks" checkbox
 
-Nango webhooks are post requests with the following JSON body:
+Nango webhooks are post requests with the following JSON body: 
 ```json
 {
-    "type": "auth",
+    "type": "auth", 
     "connectionId": "<CONNECTION-ID>",
     "authMode": "OAUTH1|OAUTH2|BASIC|API_KEY|APP_STORE|CUSTOM|APP|NONE",
     "providerConfigKey": "<INTEGRATION-ID>",
