@@ -33,7 +33,7 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 
     source: { type: 'keyword' },
 
-    message: { type: 'text' },
+    message: { type: 'text', analyzer: 'standard', search_analyzer: 'standard' },
     meta: { type: 'object', enabled: false },
     error: { type: 'object', enabled: false },
 
@@ -60,6 +60,18 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 
 export const indexMessages: estypes.IndicesCreateRequest = {
     index: 'messages',
+    settings: {
+        analysis: {
+            analyzer: {
+                default: {
+                    type: 'standard'
+                },
+                default_search: {
+                    type: 'standard'
+                }
+            }
+        }
+    },
     mappings: {
         dynamic: false,
         properties: props
