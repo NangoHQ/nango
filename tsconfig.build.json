@@ -30,6 +30,9 @@
         },
         {
             "path": "packages/webapp"
+        },
+        {
+            "path": "packages/data-ingestion"
         }
     ]
 }

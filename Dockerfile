@@ -16,6 +16,7 @@ COPY packages/runner/package.json ./packages/runner/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/webapp/package.json ./packages/webapp/package.json
+COPY packages/data-ingestion/package.json ./packages/data-ingestion/package.json
 COPY package*.json  ./
 
 # Install every dependencies

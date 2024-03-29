@@ -738,6 +738,7 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
             `${TABLE}.sync_type`,
             `${TABLE}.track_deletes`,
             `${TABLE}.auto_start`,
+            `${TABLE}.webhook_subscriptions`,
             '_nango_configs.unique_key',
             '_nango_configs.provider',
             db.knex.raw(
