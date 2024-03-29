@@ -23,7 +23,7 @@ export const PrivateRoute: React.FC = () => {
     useEffect(() => {
         // sync path with cookie
         const pathSplit = location.pathname.split('/');
-        if (env !== pathSplit[1]) {
+        if (pathSplit.length > 0 && env !== pathSplit[1]) {
             setCookieValue(pathSplit[1]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
