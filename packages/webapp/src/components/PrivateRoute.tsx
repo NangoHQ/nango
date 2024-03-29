@@ -8,6 +8,7 @@ import PageNotFound from '../pages/PageNotFound';
 
 export const PrivateRoute: React.FC = () => {
     const { meta, error, loading } = useMeta();
+    const [synced, setSynced] = useState(false);
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [ready, setReady] = useState(false);
     const { user } = useUser(Boolean(meta && ready && !notFoundEnv));
@@ -21,11 +22,16 @@ export const PrivateRoute: React.FC = () => {
     const setCookieValue = useStore((state) => state.setCookieValue);
 
     useEffect(() => {
+        if (synced) {
+            return;
+        }
+
         // sync path with cookie
         const pathSplit = location.pathname.split('/');
         if (pathSplit.length > 0 && env !== pathSplit[1]) {
             setCookieValue(pathSplit[1]);
         }
+        setSynced(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
