@@ -13,6 +13,9 @@
         },
         {
             "path": "../utils"
+        },
+        {
+            "path": "../data-ingestion"
         }
     ],
     "include": ["lib/**/*"]

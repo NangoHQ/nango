@@ -354,7 +354,7 @@ class AuthController {
 
             const body: InviteAccountBody = req.body as InviteAccountBody;
 
-            if (!body || body.accountId !== undefined) {
+            if (!body || body.accountId === undefined) {
                 errorManager.errRes(res, 'missing_params');
                 return;
             }
