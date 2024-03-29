@@ -1,10 +1,10 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
 import { retry } from '../utils/retry.js';
-import { dirname } from '../utils/utils.js';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-export const pathMigrations = process.env['NANGO_DB_MIGRATION_FOLDER'] || path.join(dirname(import.meta.url), './migrations');
+export const pathMigrations = process.env['NANGO_DB_MIGRATION_FOLDER'] || path.join(path.dirname(fileURLToPath(import.meta.url)), './migrations');
 
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
     return {
