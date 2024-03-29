@@ -22,7 +22,7 @@ export default function GoogleButton({ text, setServerErrorMessage, invitedAccou
             }
         };
 
-        if (invitedAccountID && token) {
+        if (invitedAccountID !== null && invitedAccountID !== undefined && token) {
             postBody.body = JSON.stringify({
                 accountId: invitedAccountID
             });

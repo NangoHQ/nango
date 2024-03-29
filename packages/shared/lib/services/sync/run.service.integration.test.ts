@@ -345,7 +345,7 @@ const runJob = async (
     };
     await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
     // finish the sync
-    await syncRun.finishSync([model], new Date(), `v1`, 10, trackDeletes);
+    await syncRun.finishFlow([model], new Date(), `v1`, 10, trackDeletes);
 
     const syncJobResult = await jobService.getLatestSyncJob(sync.id);
     return {

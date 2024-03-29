@@ -24,7 +24,28 @@ import type { Environment } from '../../models/Environment';
 import type { Metadata } from '../../models/Connection';
 import * as recordsService from './data/records.service.js';
 
+interface BigQueryClientInterface {
+    insert(row: RunScriptRow): void;
+}
+
+interface RunScriptRow {
+    executionType: string;
+    internalConnectionId: number | undefined;
+    connectionId: string;
+    accountId: number | undefined;
+    scriptName: string;
+    scriptType: string;
+    environmentId: number;
+    providerConfigKey: string;
+    status: string;
+    syncId: string;
+    content: string;
+    runTimeInSeconds: number;
+    createdAt: number;
+}
+
 interface SyncRunConfig {
+    bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
@@ -50,6 +71,7 @@ interface SyncRunConfig {
 }
 
 export default class SyncRun {
+    bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
@@ -77,6 +99,9 @@ export default class SyncRun {
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
+        if (config.bigQueryClient) {
+            this.bigQueryClient = config.bigQueryClient;
+        }
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
         this.isWebhook = config.isWebhook || false;
@@ -159,7 +184,7 @@ export default class SyncRun {
         if (!nangoConfig) {
             const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
             if (this.activityLogId) {
-                await this.reportFailureForResults(message);
+                await this.reportFailureForResults({ content: message, runTime: 0 });
             } else {
                 console.error(message);
             }
@@ -188,7 +213,7 @@ export default class SyncRun {
 
             if (!environment && !bypassEnvironment) {
                 const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
-                await this.reportFailureForResults(message);
+                await this.reportFailureForResults({ content: message, runTime: 0 });
                 const errorType = this.determineErrorType();
                 return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
@@ -236,7 +261,7 @@ export default class SyncRun {
                 );
                 if (!integrationFileResult) {
                     const message = `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`;
-                    await this.reportFailureForResults(message);
+                    await this.reportFailureForResults({ content: message, runTime: 0 });
 
                     const errorType = this.determineErrorType();
 
@@ -260,7 +285,7 @@ export default class SyncRun {
                 if (isJsOrTsType(configInput as unknown as string)) {
                     if (typeof this.input !== (configInput as unknown as string)) {
                         const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${configInput}`;
-                        await this.reportFailureForResults(message);
+                        await this.reportFailureForResults({ content: message, runTime: 0 });
 
                         return { success: false, error: new NangoError('action_script_failure', message, 500), response: false };
                     }
@@ -269,6 +294,10 @@ export default class SyncRun {
                         // TODO use joi or zod to validate the input dynamically
                     }
                 }
+            }
+
+            if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
+                this.nangoConnection.account_id = environment.account_id;
             }
 
             const nangoProps = {
@@ -337,10 +366,11 @@ export default class SyncRun {
                         syncData?.version ? ` version: ${syncData.version}` : ''
                     }`;
 
+                    const runTime = (Date.now() - startTime) / 1000;
                     if (error.type === 'script_cancelled') {
-                        await this.reportFailureForResults(error.message);
+                        await this.reportFailureForResults({ content: error.message, runTime });
                     } else {
-                        await this.reportFailureForResults(message);
+                        await this.reportFailureForResults({ content: message, runTime });
                     }
 
                     return { success: false, error, response: false };
@@ -349,6 +379,8 @@ export default class SyncRun {
                 if (!this.writeToDb) {
                     return userDefinedResults;
                 }
+
+                const totalRunTime = (Date.now() - startTime) / 1000;
 
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
@@ -372,21 +404,23 @@ export default class SyncRun {
                         this.provider as string
                     );
 
+                    await this.finishFlow(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
-                const totalRunTime = (Date.now() - startTime) / 1000;
-                await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+                await this.finishFlow(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                 return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
                 const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
-                await this.reportFailureForResults(
-                    `The ${this.syncType} "${this.syncName}"${
+                await this.reportFailureForResults({
+                    content: `The ${this.syncType} "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData?.version}` : ''
-                    } sync did not complete successfully and has the following error: ${errorMessage}`
-                );
+                    } sync did not complete successfully and has the following error: ${errorMessage}`,
+                    runTime: (Date.now() - startTime) / 1000
+                });
 
                 const errorType = this.determineErrorType();
 
@@ -402,7 +436,7 @@ export default class SyncRun {
         return { success: true, error: null, response: result };
     }
 
-    async finishSync(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
+    async finishFlow(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
             let deletedKeys: string[] = [];
@@ -417,6 +451,25 @@ export default class SyncRun {
 
             await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);
             i++;
+        }
+
+        // we only want to report to bigquery once if it is a multi model sync
+        if (this.bigQueryClient) {
+            void this.bigQueryClient.insert({
+                executionType: this.determineExecutionType(),
+                connectionId: this.nangoConnection.connection_id,
+                internalConnectionId: this.nangoConnection.id,
+                accountId: this.nangoConnection.account_id,
+                scriptName: this.syncName,
+                scriptType: this.syncType,
+                environmentId: this.nangoConnection.environment_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
+                status: 'success',
+                syncId: this.syncId as string,
+                content: `The ${this.syncType} "${this.syncName}" ${this.determineExecutionType()} has been completed successfully.`,
+                runTimeInSeconds: totalRunTime,
+                createdAt: Date.now()
+            });
         }
     }
 
@@ -464,7 +517,10 @@ export default class SyncRun {
         const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, updatedResults, model);
 
         if (!syncResult) {
-            await this.reportFailureForResults(`The sync job ${this.syncJobId} could not be updated with the results for the model ${model}.`);
+            await this.reportFailureForResults({
+                content: `The sync job ${this.syncJobId} could not be updated with the results for the model ${model}.`,
+                runTime: totalRunTime
+            });
             return;
         }
 
@@ -560,9 +616,27 @@ export default class SyncRun {
         );
     }
 
-    async reportFailureForResults(content: string) {
+    async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
         if (!this.writeToDb) {
             return;
+        }
+
+        if (this.bigQueryClient) {
+            void this.bigQueryClient.insert({
+                executionType: this.determineExecutionType(),
+                connectionId: this.nangoConnection.connection_id,
+                internalConnectionId: this.nangoConnection.id,
+                accountId: this.nangoConnection.account_id,
+                scriptName: this.syncName,
+                scriptType: this.syncType,
+                environmentId: this.nangoConnection.environment_id,
+                providerConfigKey: this.nangoConnection.provider_config_key,
+                status: 'failed',
+                syncId: this.syncId as string,
+                content,
+                runTimeInSeconds: runTime,
+                createdAt: Date.now()
+            });
         }
 
         if (!this.isWebhook) {
@@ -641,13 +715,17 @@ export default class SyncRun {
         );
     }
 
-    private determineErrorType(): string {
+    private determineExecutionType(): string {
         if (this.isAction) {
-            return 'action_script_failure';
+            return 'action';
         } else if (this.isWebhook) {
-            return 'webhook_script_failure';
+            return 'webhook';
         } else {
-            return 'sync_script_failure';
+            return 'sync';
         }
+    }
+
+    private determineErrorType(): string {
+        return this.determineExecutionType() + '_script_failure';
     }
 }
