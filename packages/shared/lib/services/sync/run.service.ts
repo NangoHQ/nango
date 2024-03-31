@@ -220,6 +220,10 @@ export default class SyncRun {
                 environment = await environmentService.getById(this.nangoConnection.environment_id);
             }
 
+            if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
+                this.nangoConnection.account_id = environment.account_id;
+            }
+
             const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
             this.accountName = account?.name || '';
             this.environmentName = (await environmentService.getEnvironmentName(this.nangoConnection.environment_id)) || '';
@@ -307,10 +311,6 @@ export default class SyncRun {
                         // TODO use joi or zod to validate the input dynamically
                     }
                 }
-            }
-
-            if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
-                this.nangoConnection.account_id = environment.account_id;
             }
 
             const nangoProps = {
