@@ -77,7 +77,7 @@ class BigQueryClient {
                         { name: 'scriptName', type: 'STRING' },
                         { name: 'scriptType', type: 'STRING' },
                         { name: 'environmentId', type: 'INTEGER' },
-                        { name: 'environmentName', type: 'NAME' },
+                        { name: 'environmentName', type: 'STRING' },
                         { name: 'providerConfigKey', type: 'STRING' },
                         { name: 'status', type: 'STRING' },
                         { name: 'syncId', type: 'STRING' },
