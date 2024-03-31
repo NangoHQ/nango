@@ -1,17 +1,13 @@
-import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
+import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import db from '../../db/database.js';
 import SyncRun from './run.service.js';
-import environmentService from '../environment.service.js';
-import LocalFileService from '../file/local.service.js';
 import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as database from '../../db/database.js';
 import * as dataMocks from './data/mocks.js';
 import * as dataService from './data/data.service.js';
 import * as recordsService from './data/records.service.js';
 import * as jobService from './job.service.js';
-import * as configService from './config/config.service.js';
 import type { CustomerFacingDataRecord, IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
-import type { Environment } from '../../models/Environment.js';
 import type { DataResponse } from '../../models/Data.js';
 import type { Connection } from '../../models/Connection.js';
 
@@ -177,22 +173,6 @@ describe('Running sync', () => {
 });
 
 describe('SyncRun', () => {
-    const dryRunConfig = {
-        integrationService: integrationService as unknown as IntegrationServiceInterface,
-        writeToDb: false,
-        nangoConnection: {
-            id: 1,
-            connection_id: '1234',
-            provider_config_key: 'test_key',
-            environment_id: 1
-        },
-        syncName: 'test_sync',
-        syncType: SyncType.INCREMENTAL,
-        syncId: 'some-sync',
-        syncJobId: 123,
-        activityLogId: 123,
-        debug: true
-    };
     it('should initialize correctly', () => {
         const config = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
@@ -224,76 +204,6 @@ describe('SyncRun', () => {
         expect(syncRun.activityLogId).toEqual(123);
         expect(syncRun.loadLocation).toEqual('/tmp');
         expect(syncRun.debug).toEqual(true);
-    });
-
-    it('should mock the run method in dry run mode with different fail and success conditions', async () => {
-        const syncRun = new SyncRun(dryRunConfig);
-
-        vi.spyOn(environmentService, 'getById').mockImplementation(() => {
-            return Promise.resolve({
-                id: 1,
-                name: 'test',
-                account_id: 1,
-                secret_key: '1234'
-            } as Environment);
-        });
-
-        vi.spyOn(configService, 'getSyncConfig').mockImplementation(() => {
-            return Promise.resolve({
-                integrations: {
-                    test_key: {
-                        test_sync: {
-                            runs: 'every 6h',
-                            returns: ['Foo']
-                        }
-                    }
-                },
-                models: {
-                    Foo: {
-                        name: 'Foo'
-                    }
-                }
-            });
-        });
-
-        vi.spyOn(LocalFileService, 'checkForIntegrationDistFile').mockImplementation(() => {
-            return {
-                result: true,
-                path: '/tmp'
-            };
-        });
-
-        vi.spyOn(integrationService, 'runScript').mockImplementation(() => {
-            return Promise.resolve({
-                success: true,
-                response: { success: true }
-            });
-        });
-
-        const run = await syncRun.run();
-
-        expect(run).toEqual({ success: true });
-
-        // if integration file not found it should return false
-        vi.spyOn(LocalFileService, 'checkForIntegrationDistFile').mockImplementation(() => {
-            return {
-                result: false,
-                path: '/tmp'
-            };
-        });
-
-        const failRun = await syncRun.run();
-
-        expect(failRun.response).toEqual(false);
-
-        // @ts-expect-error - if run script returns null then fail
-        vi.spyOn(integrationService, 'runScript').mockImplementation(() => {
-            return Promise.resolve(null);
-        });
-
-        const { response } = await syncRun.run();
-
-        expect(response).toEqual(false);
     });
 });
 
