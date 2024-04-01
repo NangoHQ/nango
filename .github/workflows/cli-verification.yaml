@@ -17,7 +17,6 @@ jobs:
         permissions:
             contents: read
             packages: write
-
         steps:
             - uses: actions/checkout@v4
 
@@ -25,7 +24,7 @@ jobs:
               with:
                   node-version: '18.x'
                   registry-url: 'https://npm.pkg.github.com'
-
+                  scope: '@nangohq'
             - name: Publish npm packages to the github registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,7 +33,9 @@ jobs:
                   GIT_HASH=$(git rev-parse --short HEAD)
                   bash ./scripts/publish.sh 0.0.1-$GIT_HASH true
             - name: Install the cli from the github package registry
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   GIT_HASH=$(git rev-parse --short HEAD)
-                  npm install -g nango@$0.0.1-$GIT_HASH
-                  nango version --debug
+                  npm install nango@0.0.1-$GIT_HASH
+                  npx nango version --debug
