@@ -25,6 +25,7 @@ jobs:
                   node-version: '18.x'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
+            - run: npm run build:hosted
             - name: Publish the shared package
               working-directory: packages/shared
               env:
