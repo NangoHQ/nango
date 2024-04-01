@@ -19,11 +19,15 @@ function bump_and_npm_publish {
 
 GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
 VERSION=$1
+BY_PASS_VERSION_CHECK=$2
 
 # ensure version is of format x.y.z
-if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "VERSION '$VERSION' is not of format x.y.z"
-    exit 1
+if [[ "$BY_PASS_VERSION_CHECK" != "true" ]]; then
+    # ensure version is of format x.y.z
+    if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "VERSION '$VERSION' is not of format x.y.z"
+        exit 1
+    fi
 fi
 
 npm install
