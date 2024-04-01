@@ -224,9 +224,11 @@ export default class SyncRun {
                 this.nangoConnection.account_id = environment.account_id;
             }
 
-            const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
-            this.accountName = account?.name || '';
-            this.environmentName = (await environmentService.getEnvironmentName(this.nangoConnection.environment_id)) || '';
+            if (!bypassEnvironment) {
+                const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
+                this.accountName = account?.name || '';
+                this.environmentName = (await environmentService.getEnvironmentName(this.nangoConnection.environment_id)) || '';
+            }
 
             if (!environment && !bypassEnvironment) {
                 const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
