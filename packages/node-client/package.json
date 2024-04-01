@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/node",
-    "version": "0.39.13",
+    "version": "0.39.14",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
