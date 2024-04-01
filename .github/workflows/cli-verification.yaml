@@ -25,6 +25,7 @@ jobs:
                   node-version: '18.x'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
+                  always-auth: true
             - run: npm run build:hosted
             - name: Publish the shared package
               working-directory: packages/shared
@@ -41,9 +42,7 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  echo "attempting install"
                   npm install @nangohq/shared@0.0.1-$GIT_HASH
-                  echo "building"
                   npm run build
                   npm version 0.0.1-$GIT_HASH --workspaces-update=false
                   npm publish --ignore-scripts
