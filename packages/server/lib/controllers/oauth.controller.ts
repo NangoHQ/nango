@@ -82,7 +82,7 @@ class OAuthController {
 
         try {
             if (!wsClientId) {
-                analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, accountId);
+                analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_START, 'OAuth request process start', LogActionEnum.AUTH, {
