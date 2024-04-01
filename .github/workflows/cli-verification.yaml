@@ -31,8 +31,8 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               shell: bash
               run: |
+                  GIT_HASH=$(git rev-parse --short HEAD)
                   bash ./scripts/publish.sh 0.0.1-$GIT_HASH true
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
             - name: Install the cli from the github package registry
               run: |
                   GIT_HASH=$(git rev-parse --short HEAD)
