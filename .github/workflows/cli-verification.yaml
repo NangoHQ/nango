@@ -28,14 +28,17 @@ jobs:
             - name: Publish npm packages to the github registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # we don't want to try and install from the github registry
+                  npm_config_ignore_scripts: true
               shell: bash
               run: |
-                  GIT_HASH=$(git rev-parse --short HEAD)
+                  GIT_HASH=$(git rev-parse HEAD)
+                  npm run build:hosted
                   bash ./scripts/publish.sh 0.0.1-$GIT_HASH true
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  GIT_HASH=$(git rev-parse --short HEAD)
+                  GIT_HASH=$(git rev-parse HEAD)
                   npm install nango@0.0.1-$GIT_HASH
                   npx nango version --debug
