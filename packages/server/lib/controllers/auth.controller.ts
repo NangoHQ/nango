@@ -380,7 +380,7 @@ class AuthController {
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${basePublicUrl}/api/v1/login/callback`,
-                state: JSON.stringify(inviteParams)
+                state: Buffer.from(JSON.stringify(inviteParams)).toString('base64')
             });
 
             res.send({ url: oAuthUrl });
