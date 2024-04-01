@@ -3,7 +3,7 @@ import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
-import { isCloud, isEnterprise, isLocal } from '../../utils/temp/environment/detection.js';
+import { isCloud, isEnterprise, isLocal } from '@nangohq/utils/dist/environment/detection.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';

@@ -12,7 +12,7 @@ import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { integrationFilesAreRemote, isCloud } from '../../utils/temp/environment/detection.js';
+import { integrationFilesAreRemote, isCloud } from '@nangohq/utils/dist/environment/detection.js';
 import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';

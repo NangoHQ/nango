@@ -1,7 +1,7 @@
 import type { CipherGCMTypes } from 'crypto';
 import utils from 'node:util';
 import crypto from 'crypto';
-import { getLogger } from '../utils/temp/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';

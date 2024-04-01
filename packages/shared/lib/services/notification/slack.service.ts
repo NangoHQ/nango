@@ -7,7 +7,7 @@ import environmentService from '../environment.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
-import { basePublicUrl } from '../../utils/temp/environment/detection.js';
+import { basePublicUrl } from '@nangohq/utils/dist/environment/detection.js';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import SyncClient from '../../clients/sync.client.js';
