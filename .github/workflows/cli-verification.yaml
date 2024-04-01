@@ -1,0 +1,35 @@
+name: CLI Publish & Verify
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+
+concurrency:
+    group: verify-cli-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    publish-and-test:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '18.x'
+                  registry-url: 'https://npm.pkg.github.com'
+
+            - name: Publish npm packages to the github registry
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              shell: bash
+              run: |
+                  GIT_HASH=$(git rev-parse --short HEAD)
+                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
