@@ -25,16 +25,22 @@ jobs:
                   node-version: '18.x'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
-            - name: Publish npm packages to the github registry
+            - name: Publish the shared package
+              working-directory: packages/shared
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  # we don't want to try and install from the github registry
-                  npm_config_ignore_scripts: true
-              shell: bash
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  npm run build:hosted
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH true
+                  npm version 0.0.1-$GIT_HASH
+                  npm publish
+            - name: Publish the cli
+              working-directory: packages/cli
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  GIT_HASH=$(git rev-parse HEAD)
+                  npm version 0.0.1-$GIT_HASH
+                  npm publish
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
