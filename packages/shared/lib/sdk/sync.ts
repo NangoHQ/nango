@@ -121,6 +121,7 @@ export interface ProxyConfiguration {
 enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
+    OAuth2CC = 'OAUTH2_CC',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',

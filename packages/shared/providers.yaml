@@ -230,6 +230,8 @@ bamboohr:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
     docs: https://docs.nango.dev/integrations/all/bamboohr
 bamboohr-basic:
+    categories:
+        - hr
     auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
@@ -929,6 +931,8 @@ health-gorilla:
         base_url: https://healthgorilla.com
     docs: https://docs.nango.dev/integrations/all/healthgorilla
 hibob-service-user:
+    categories:
+        - hr
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
@@ -1407,6 +1411,8 @@ paypal-sandbox:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/paypal
 pendo:
+    categories:
+        - analytics
     auth_mode: API_KEY
     proxy:
         base_url: https://app.pendo.io
@@ -1432,6 +1438,37 @@ pennylane:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/pennylane
+personio:
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://api.personio.de/v1
+        headers:
+            x-company-id: ${connectionConfig.companyId}
+            x-personio-partner-id: ${connectionConfig.partnerId}
+            x-personio-app-id: ${connectionConfig.appId}
+    authorization_url: https://api.personio.de/v1/auth
+    docs: https://docs.nango.dev/integrations/all/personio
+personio-recruiting:
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.personio.de/v1
+        headers:
+            Authorization: Bearer ${apiKey}
+            x-company-id: ${connectionConfig.companyId}
+            x-personio-partner-id: ${connectionConfig.partnerId}
+            x-personio-app-id: ${connectionConfig.appId}
+        verification:
+            method: GET
+            endpoint: /xml?language=en
+            base_url_override: https://${connectionConfig.company}.jobs.personio.de
+            headers:
+                accept: application/xml
+                content-type: xml
+    docs: https://docs.nango.dev/integrations/all/personio
 pinterest:
     categories:
         - design

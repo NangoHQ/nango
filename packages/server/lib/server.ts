@@ -92,6 +92,7 @@ app.get('/health', (_, res) => {
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 app.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
+app.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
 app.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
 app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
