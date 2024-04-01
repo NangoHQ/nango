@@ -31,16 +31,18 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  npm version 0.0.1-$GIT_HASH
-                  npm publish
+                  npm run build
+                  npm version 0.0.1-$GIT_HASH --ignore-scripts
+                  npm publish --ignore-scripts
             - name: Publish the cli
               working-directory: packages/cli
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  npm version 0.0.1-$GIT_HASH
-                  npm publish
+                  npm run build
+                  npm version 0.0.1-$GIT_HASH --ignore-scripts
+                  npm publish --ignore-scripts
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
