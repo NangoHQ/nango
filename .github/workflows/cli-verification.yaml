@@ -43,6 +43,7 @@ jobs:
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
                   jq '.dependencies["@nangohq/shared"] = "0.0.1-'$GIT_HASH'"' package.json > temp.json && mv temp.json package.json
+                  npm install
                   npm run build
                   npm version 0.0.1-$GIT_HASH --workspaces-update=false
                   npm publish --ignore-scripts
