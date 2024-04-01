@@ -33,7 +33,7 @@ jobs:
               run: |
                   GIT_HASH=$(git rev-parse --short HEAD)
                   # publish all before bumping to an alternate version
-                  npm publish -w packages/node
+                  npm publish -w packages/node-client
                   npm publish -w packages/shared
                   npm publish -w packages/cli
                   npm publish -w packages/frontend
