@@ -25,12 +25,6 @@ jobs:
                   node-version: '18.x'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
-            - name: Configure npmrc
-              run: |
-                  cat << EOF > .npmrc
-                  @nangohq:registry=https://npm.pkg.github.com/
-                  //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
-                  EOF
             - name: Publish npm packages to the github registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,6 +14,7 @@ function bump_and_npm_publish {
         echo "Publishing '$1@$2'"
         npm version "$2" -w "$1"
         npm publish --access public -w "$1"
+        echo "Published '$1@$2'"
     fi
 }
 
@@ -35,6 +36,7 @@ npm install
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/shared"
+echo $VERSION
 npm install @nangohq/node@^$VERSION
 popd
 
