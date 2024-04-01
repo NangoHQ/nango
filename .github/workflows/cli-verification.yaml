@@ -26,6 +26,12 @@ jobs:
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
             - run: npm run build:hosted
+            - name: Configure npmrc
+              working-directory: packages/shared
+              run: |
+                  cat << EOF > .npmrc
+                  @nangohq:registry=https://npm.pkg.github.com/
+                  //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
             - name: Publish the shared package
               working-directory: packages/shared
               env:
@@ -35,6 +41,12 @@ jobs:
                   npm run build
                   npm version 0.0.1-$GIT_HASH --ignore-scripts
                   npm publish --ignore-scripts
+            - name: Configure npmrc
+              working-directory: packages/cli
+              run: |
+                  cat << EOF > .npmrc
+                  @nangohq:registry=https://npm.pkg.github.com/
+                  //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
             - name: Publish the cli
               working-directory: packages/cli
               env:
