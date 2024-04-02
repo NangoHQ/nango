@@ -14,6 +14,8 @@ concurrency:
 jobs:
     publish-and-test:
         runs-on: ubuntu-latest
+        env:
+            NANGO_CLI_UPGRADE_MODE: ignore
         permissions:
             contents: read
             packages: write
