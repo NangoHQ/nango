@@ -61,9 +61,9 @@ class EnvironmentService {
         };
     }
 
-    async getEnvironmentsByAccountId(account_id: number): Promise<Environment[]> {
+    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<Environment, 'name'>[]> {
         try {
-            const result = await db.knex.select('name').from<Environment>(TABLE).where({ account_id });
+            const result = await db.knex.select<Pick<Environment, 'name'>[]>('name').from<Environment>(TABLE).where({ account_id });
 
             if (result == null || result.length == 0) {
                 return [];
@@ -190,20 +190,20 @@ class EnvironmentService {
         return { accountId: result.account_id, environmentId: result.id };
     }
 
-    async getAccountAndEnvironmentById(account_id: number, environment: string): Promise<{ account: Account | null; environment: Environment | null }> {
-        const account = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: account_id });
+    async getAccountAndEnvironmentById(account_id: number, environment: string): Promise<{ account: Account; environment: Environment } | null> {
+        const account = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: account_id }).first();
 
-        if (account == null || account.length == 0 || account[0] == null) {
-            return { account: null, environment: null };
+        if (!account) {
+            return null;
         }
 
-        const environmentResult = await db.knex.select('*').from<Environment>(TABLE).where({ account_id, name: environment });
+        const environmentResult = await db.knex.select('*').from<Environment>(TABLE).where({ account_id, name: environment }).first();
 
-        if (environmentResult == null || environmentResult.length == 0 || environmentResult[0] == null) {
-            return { account: null, environment: null };
+        if (!environmentResult) {
+            return null;
         }
 
-        return { account: account[0], environment: encryptionManager.decryptEnvironment(environmentResult[0]) };
+        return { account, environment: encryptionManager.decryptEnvironment(environmentResult)! };
     }
 
     async getIdByUuid(uuid: string): Promise<number | null> {

@@ -21,7 +21,7 @@ import ConnectionList from './pages/Connection/List';
 import Connection from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
 import { EnvironmentSettings } from './pages/EnvironmentSettings';
-import PrivateRoute from './components/PrivateRoute';
+import { PrivateRoute } from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activity from './pages/Activity';
