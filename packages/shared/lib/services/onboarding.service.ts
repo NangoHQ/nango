@@ -1,7 +1,6 @@
-import type { Onboarding } from '../models/Onboarding';
+import type { Onboarding, Config } from '../models/index.js';
 import db, { dbNamespace } from '../db/database.js';
 import configService from './config.service.js';
-import type { Config } from '../models';
 
 export const DEFAULT_GITHUB_CLIENT_ID = process.env['DEFAULT_GITHUB_CLIENT_ID'] || '';
 export const DEFAULT_GITHUB_CLIENT_SECRET = process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '';

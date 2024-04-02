@@ -245,7 +245,7 @@ class ProxyController {
     ) {
         const error = e as AxiosError;
 
-        if (!error?.response?.data) {
+        if (!error?.response?.data && error?.toJSON) {
             const {
                 message,
                 stack,

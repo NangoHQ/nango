@@ -24,7 +24,7 @@ import configService from '../services/config.service.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
-import { NangoError } from '../utils/error.js';
+import { NangoError, stringifyError } from '../utils/error.js';
 
 import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import { getLogger } from '../utils/temp/logger.js';
@@ -35,6 +35,7 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     OAuth2Credentials,
+    OAuth2ClientCredentials,
     ImportedCredentials,
     ApiKeyCredentials,
     BasicApiCredentials,
@@ -359,7 +360,7 @@ class ConnectionService {
 
         // Parse the token expiration date.
         if (connection != null) {
-            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials;
+            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials | OAuth2ClientCredentials;
             if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -367,6 +368,12 @@ class ConnectionService {
             }
 
             if (credentials.type && credentials.type === ProviderAuthModes.App) {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === ProviderAuthModes.OAuth2CC) {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -594,7 +601,11 @@ class ConnectionService {
 
         const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider);
 
-        if (connection?.credentials?.type === ProviderAuthModes.OAuth2 || connection?.credentials?.type === ProviderAuthModes.App) {
+        if (
+            connection?.credentials?.type === ProviderAuthModes.OAuth2 ||
+            connection?.credentials?.type === ProviderAuthModes.App ||
+            connection?.credentials?.type === ProviderAuthModes.OAuth2CC
+        ) {
             const {
                 success,
                 error,
@@ -668,6 +679,31 @@ class ConnectionService {
                 return oauth1Creds;
             }
 
+            case ProviderAuthModes.OAuth2CC: {
+                if (!rawCreds['token']) {
+                    throw new NangoError(`incomplete_raw_credentials`);
+                }
+
+                let expiresAt: Date | undefined;
+
+                if (rawCreds['expires_at']) {
+                    expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
+                } else if (rawCreds['expires_in']) {
+                    expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                }
+
+                const oauth2Creds: OAuth2ClientCredentials = {
+                    type: ProviderAuthModes.OAuth2CC,
+                    token: rawCreds['token'],
+                    client_id: '',
+                    client_secret: '',
+                    expires_at: expiresAt,
+                    raw: rawCreds
+                };
+
+                return oauth2Creds;
+            }
+
             default:
                 throw new NangoError(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawCreds, undefined, 2)}`);
         }
@@ -681,7 +717,7 @@ class ConnectionService {
         environment_id: number,
         instantRefresh = false,
         logAction: LogAction = 'token'
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
@@ -909,6 +945,43 @@ class ConnectionService {
         return { success: true, error: null, response: credentials };
     }
 
+    public async getOauthClientCredentials(
+        template: ProviderTemplate,
+        client_id: string,
+        client_secret: string
+    ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
+        const url = template.authorization_url;
+        try {
+            const params = new URLSearchParams();
+            params.append('client_id', client_id);
+            params.append('client_secret', client_secret);
+
+            const fullUrl = `${url}?${params}`;
+            const response = await axios.post(fullUrl);
+
+            const { data } = response;
+
+            if (!data || !data.success) {
+                return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
+            }
+
+            const parsedCreds = this.parseRawCredentials(data.data, ProviderAuthModes.OAuth2CC) as OAuth2ClientCredentials;
+
+            parsedCreds.client_id = client_id;
+            parsedCreds.client_secret = client_secret;
+
+            return { success: true, error: null, response: parsedCreds };
+        } catch (e: any) {
+            const errorPayload = {
+                message: e.message || 'Unknown error',
+                name: e.name || 'Error'
+            };
+            logger.error(`Error fetching client credentials ${stringifyError(e)}`);
+            const error = new NangoError('client_credentials_fetch_error', errorPayload);
+            return { success: false, error, response: null };
+        }
+    }
+
     private async getJWTCredentials(
         privateKey: string,
         url: string,
@@ -978,12 +1051,21 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplate
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials>> {
         if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
+        } else if (template.auth_mode === ProviderAuthModes.OAuth2CC) {
+            const { client_id, client_secret } = connection.credentials as OAuth2ClientCredentials;
+            const { success, error, response: credentials } = await this.getOauthClientCredentials(template, client_id, client_secret);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
         } else if (template.auth_mode === ProviderAuthModes.AppStore) {
             const { private_key } = connection.credentials as AppStoreCredentials;
             const { success, error, response: credentials } = await this.getAppStoreCredentials(template, connection.connection_config, private_key);

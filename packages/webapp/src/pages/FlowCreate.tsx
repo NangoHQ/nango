@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
 import { useGetFlows, useCreateFlow } from '../utils/api';
-import { Sync } from '../types';
+import type { Sync } from '../types';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';

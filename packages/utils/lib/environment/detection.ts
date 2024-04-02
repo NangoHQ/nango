@@ -1,7 +1,7 @@
 import { NodeEnv, localhostUrl } from './constants.js';
 
 export const baseUrl = process.env['NANGO_SERVER_URL'] || localhostUrl;
-export const basePublicUrl = process.env['NANGO_SERVER_URL'] ? process.env['NANGO_SERVER_URL'].replace('api.', 'app.') : baseUrl;
+export const basePublicUrl = process.env['NANGO_PUBLIC_SERVER_URL'] || baseUrl;
 
 export const isStaging = process.env['NODE_ENV'] === NodeEnv.Staging;
 export const isProd = process.env['NODE_ENV'] === NodeEnv.Prod;

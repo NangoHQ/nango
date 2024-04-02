@@ -64,7 +64,7 @@ export const connectionTest = async (
         }
     });
 
-    const { method, endpoint } = providerVerification;
+    const { method, endpoint, base_url_override: baseUrlOverride, headers } = providerVerification;
 
     const connection: Connection = {
         id: -1,
@@ -88,6 +88,14 @@ export const connectionTest = async (
         },
         connection
     };
+
+    if (headers) {
+        configBody.headers = headers;
+    }
+
+    if (baseUrlOverride) {
+        configBody.baseUrlOverride = baseUrlOverride;
+    }
 
     const internalConfig: InternalProxyConfiguration = {
         provider,

@@ -1,17 +1,16 @@
 import { toast } from 'react-toastify';
 import useSWR from 'swr';
-import { Loading } from '@geist-ui/core';
+import { Loading, useModal } from '@geist-ui/core';
 import { useState } from 'react';
 import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
-import { useModal } from '@geist-ui/core';
 
-import { useUpdateSyncFrequency } from '../../utils/api';
+import { useUpdateSyncFrequency, requestErrorToast } from '../../utils/api';
 import Button from '../../components/ui/button/Button';
-import { requestErrorToast } from '../../utils/api';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
-import { FlowConfiguration, EndpointResponse, Tabs, SubTabs } from './Show';
+import type { FlowConfiguration, EndpointResponse } from './Show';
+import { Tabs, SubTabs } from './Show';
 import type { IntegrationConfig, Account, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';

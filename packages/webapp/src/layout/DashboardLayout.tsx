@@ -1,5 +1,6 @@
 import { DebugMode } from '../components/DebugMode';
-import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
+import type { LeftNavBarItems } from '../components/LeftNavBar';
+import LeftNavBar from '../components/LeftNavBar';
 import TopNavBar from '../components/TopNavBar';
 
 interface DashboardLayoutI {

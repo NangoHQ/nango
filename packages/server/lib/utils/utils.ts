@@ -124,7 +124,7 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers) {
+    if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers || template?.proxy?.verification) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
         const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
         const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
@@ -133,10 +133,20 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
             ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
             : [];
         const proxyMatches = [...proxyBaseUrlMatches, ...proxyHeaderMatches].filter(
-            // we ignore config params in proxy attributes that are also in the token response metadata or redirect url metadata
-            (param) => [...(template.token_response_metadata || []), ...(template.redirect_uri_metadata || [])].indexOf(cleanParamName(param)) == -1
+            // we ignore config params in proxy attributes that are also in the
+            // - token response metadata
+            // - redirect url metadata
+            // - connection_configuration - this is what is parsed from the post connection script
+            (param) =>
+                [...(template.token_response_metadata || []), ...(template.redirect_uri_metadata || []), ...(template.connection_configuration || [])].indexOf(
+                    cleanParamName(param)
+                ) == -1
         );
-        return [...tokenUrlMatches, ...authorizationUrlMatches, ...proxyMatches]
+        const proxyVerificationMatches =
+            template.proxy?.verification?.endpoint?.match(/\${connectionConfig\.([^{}]*)}/g) ||
+            template.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
+            [];
+        return [...tokenUrlMatches, ...authorizationUrlMatches, ...proxyMatches, ...proxyVerificationMatches]
             .map(cleanParamName)
             .filter((value, index, array) => array.indexOf(value) === index); // remove duplicates
     }

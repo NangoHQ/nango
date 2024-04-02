@@ -1,7 +1,8 @@
 import { Tooltip } from '@geist-ui/core';
 import { BoltIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
-import { SubTabs, EndpointResponse, FlowConfiguration } from './Show';
-import { IntegrationConfig, Flow } from '../../types';
+import type { EndpointResponse, FlowConfiguration } from './Show';
+import { SubTabs } from './Show';
+import type { IntegrationConfig, Flow } from '../../types';
 import EnableDisableSync from './components/EnableDisableSync';
 import HelpFooter from './components/HelpFooter';
 

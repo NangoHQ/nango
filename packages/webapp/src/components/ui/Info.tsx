@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Info as InfoIcon } from '@geist-ui/icons';
 
 interface InfoProps {

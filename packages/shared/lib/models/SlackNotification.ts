@@ -1,5 +1,5 @@
-import type { Timestamps } from './Generic';
-import type { SyncConfigType } from './Sync';
+import type { Timestamps } from './Generic.js';
+import type { SyncConfigType } from './Sync.js';
 
 export interface SlackNotification extends Timestamps {
     id?: number;

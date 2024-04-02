@@ -10,9 +10,11 @@ interface RunScriptRow {
     internalConnectionId: number | undefined;
     connectionId: string;
     accountId: number | undefined;
+    accountName: string;
     scriptName: string;
     scriptType: string;
     environmentId: number;
+    environmentName: string;
     providerConfigKey: string;
     status: string;
     syncId: string;
@@ -71,9 +73,11 @@ class BigQueryClient {
                         { name: 'internalConnectionId', type: 'INTEGER' },
                         { name: 'connectionId', type: 'STRING' },
                         { name: 'accountId', type: 'INTEGER' },
+                        { name: 'accountName', type: 'STRING' },
                         { name: 'scriptName', type: 'STRING' },
                         { name: 'scriptType', type: 'STRING' },
                         { name: 'environmentId', type: 'INTEGER' },
+                        { name: 'environmentName', type: 'STRING' },
                         { name: 'providerConfigKey', type: 'STRING' },
                         { name: 'status', type: 'STRING' },
                         { name: 'syncId', type: 'STRING' },
