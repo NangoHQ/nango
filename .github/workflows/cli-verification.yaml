@@ -40,8 +40,6 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
-                  GIT_HASH=$(git rev-parse HEAD)
-                  npm version 0.0.1-$GIT_HASH
                   npm publish --access public
             - name: Install the cli from the github package registry
               env:
