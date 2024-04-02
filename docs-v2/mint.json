@@ -402,6 +402,7 @@
                         "integrations/all/paypal",
                         "integrations/all/pendo",
                         "integrations/all/pennylane",
+                        "integrations/all/personio",
                         "integrations/all/pinterest",
                         "integrations/all/pipedrive",
                         "integrations/all/qualtrics",
