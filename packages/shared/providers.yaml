@@ -1445,7 +1445,6 @@ personio:
     proxy:
         base_url: https://api.personio.de/v1
         headers:
-            x-company-id: ${connectionConfig.companyId}
             x-personio-partner-id: ${connectionConfig.partnerId}
             x-personio-app-id: ${connectionConfig.appId}
     authorization_url: https://api.personio.de/v1/auth
