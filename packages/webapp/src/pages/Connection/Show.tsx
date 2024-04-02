@@ -61,7 +61,7 @@ export default function ShowIntegration() {
 
         const getConnections = async () => {
             const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
-            if (res?.status === 400) {
+            if (res?.status === 404) {
                 setPageNotFound(true);
             } else if (res?.status === 200) {
                 const data = await res.json();
