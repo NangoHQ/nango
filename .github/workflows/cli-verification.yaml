@@ -30,13 +30,23 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               shell: bash
+              continue-on-error: true
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
                   bash ./scripts/publish.sh 0.0.1-$GIT_HASH
+            - name: Publish the cli privately under the correct scope
+              working-directory: packages/cli
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
+                  GIT_HASH=$(git rev-parse HEAD)
+                  npm version 0.0.1-$GIT_HASH
+                  npm publish --access public
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  npm install nango@0.0.1-$GIT_HASH
+                  npm install nangohq@cli@0.0.1-$GIT_HASH
                   npx nango version --debug
