@@ -1,6 +1,6 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
-import type { NangoConnection } from '../../models/Connection.js';
+import type { NangoConnection, Metadata } from '../../models/Connection.js';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -10,6 +10,7 @@ import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
+import accountService from '../account.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
 import { integrationFilesAreRemote, isCloud } from '../../utils/temp/environment/detection.js';
@@ -20,8 +21,7 @@ import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import type { Environment } from '../../models/Environment';
-import type { Metadata } from '../../models/Connection';
+import type { Environment } from '../../models/Environment.js';
 import * as recordsService from './data/records.service.js';
 
 interface BigQueryClientInterface {
@@ -33,9 +33,11 @@ interface RunScriptRow {
     internalConnectionId: number | undefined;
     connectionId: string;
     accountId: number | undefined;
+    accountName: string;
     scriptName: string;
     scriptType: string;
     environmentId: number;
+    environmentName: string;
     providerConfigKey: string;
     status: string;
     syncId: string;
@@ -67,6 +69,9 @@ interface SyncRunConfig {
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
 
+    accountName?: string;
+    environmentName?: string;
+
     temporalContext?: Context;
 }
 
@@ -93,6 +98,9 @@ export default class SyncRun {
         messages: []
     };
     stubbedMetadata?: Metadata | undefined = undefined;
+
+    accountName?: string;
+    environmentName?: string;
 
     temporalContext?: Context;
     isWebhook: boolean;
@@ -211,6 +219,16 @@ export default class SyncRun {
                 environment = await environmentService.getById(this.nangoConnection.environment_id);
             }
 
+            if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
+                this.nangoConnection.account_id = environment.account_id;
+            }
+
+            if (!bypassEnvironment) {
+                const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
+                this.accountName = account?.name || '';
+                this.environmentName = (await environmentService.getEnvironmentName(this.nangoConnection.environment_id)) || '';
+            }
+
             if (!environment && !bypassEnvironment) {
                 const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
                 await this.reportFailureForResults({ content: message, runTime: 0 });
@@ -294,10 +312,6 @@ export default class SyncRun {
                         // TODO use joi or zod to validate the input dynamically
                     }
                 }
-            }
-
-            if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
-                this.nangoConnection.account_id = environment.account_id;
             }
 
             const nangoProps = {
@@ -460,9 +474,11 @@ export default class SyncRun {
                 connectionId: this.nangoConnection.connection_id,
                 internalConnectionId: this.nangoConnection.id,
                 accountId: this.nangoConnection.account_id,
+                accountName: this.accountName as string,
                 scriptName: this.syncName,
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
+                environmentName: this.environmentName as string,
                 providerConfigKey: this.nangoConnection.provider_config_key,
                 status: 'success',
                 syncId: this.syncId as string,
@@ -627,9 +643,11 @@ export default class SyncRun {
                 connectionId: this.nangoConnection.connection_id,
                 internalConnectionId: this.nangoConnection.id,
                 accountId: this.nangoConnection.account_id,
+                accountName: this.accountName as string,
                 scriptName: this.syncName,
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
+                environmentName: this.environmentName as string,
                 providerConfigKey: this.nangoConnection.provider_config_key,
                 status: 'failed',
                 syncId: this.syncId as string,

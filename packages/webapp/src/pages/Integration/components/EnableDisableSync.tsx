@@ -6,7 +6,7 @@ import ToggleButton from '../../../components/ui/button/ToggleButton';
 import Spinner from '../../../components/ui/Spinner';
 import type { Flow, Connection } from '../../../types';
 import { useCreateFlow } from '../../../utils/api';
-import { EndpointResponse } from '../Show';
+import type { EndpointResponse } from '../Show';
 
 export interface FlowProps {
     flow: Flow;

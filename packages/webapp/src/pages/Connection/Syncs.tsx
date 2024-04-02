@@ -1,4 +1,5 @@
-import { useState, useEffect, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Loading, Tooltip } from '@geist-ui/core';
 import { Link } from 'react-router-dom';
@@ -10,9 +11,9 @@ import {
     ArrowPathRoundedSquareIcon,
     StopCircleIcon
 } from '@heroicons/react/24/outline';
-import { UserFacingSyncCommand, SyncResponse, RunSyncCommand } from '../../types';
+import type { SyncResponse, RunSyncCommand, Connection } from '../../types';
+import { UserFacingSyncCommand } from '../../types';
 import { calculateTotalRuntime, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun, getSimpleDate } from '../../utils/utils';
-import { Connection } from '../../types';
 import { useRunSyncAPI } from '../../utils/api';
 
 interface SyncsProps {

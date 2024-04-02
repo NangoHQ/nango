@@ -4,7 +4,7 @@ import environmentService from '../environment.service.js';
 import { SyncType } from '../../models/Sync.js';
 import type { RecentlyCreatedConnection, NangoConnection } from '../../models/Connection.js';
 import WebhookService from './webhook.service.js';
-import type { Environment } from '../../models/Environment';
+import type { Environment } from '../../models/Environment.js';
 import { mockCreateActivityLog } from '../activity/mocks.js';
 
 vi.mock('axios', () => ({

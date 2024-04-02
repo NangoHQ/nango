@@ -3,6 +3,7 @@ import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
     OAuth2Credentials,
+    OAuth2ClientCredentials,
     ImportedCredentials,
     AuthCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -103,7 +104,11 @@ class ConnectionController {
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
-            if (connection?.credentials?.type === ProviderAuthModes.OAuth2 || connection?.credentials?.type === ProviderAuthModes.App) {
+            if (
+                connection?.credentials?.type === ProviderAuthModes.OAuth2 ||
+                connection?.credentials?.type === ProviderAuthModes.App ||
+                connection?.credentials?.type === ProviderAuthModes.OAuth2CC
+            ) {
                 const {
                     success,
                     error,
@@ -123,7 +128,7 @@ class ConnectionController {
                     return;
                 }
 
-                connection.credentials = credentials as OAuth2Credentials;
+                connection.credentials = credentials as OAuth2Credentials | OAuth2ClientCredentials;
             }
 
             if (instantRefresh) {
@@ -143,6 +148,11 @@ class ConnectionController {
             let credentials = null;
 
             if (connection.credentials.type === ProviderAuthModes.OAuth1 || connection.credentials.type === ProviderAuthModes.OAuth2) {
+                credentials = connection.credentials;
+                rawCredentials = credentials.raw;
+            }
+
+            if (connection.credentials.type === ProviderAuthModes.OAuth2CC) {
                 credentials = connection.credentials;
                 rawCredentials = credentials.raw;
             }

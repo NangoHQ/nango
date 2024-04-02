@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { StartedTestContainer } from 'testcontainers';
 import { Wait, PostgreSqlContainer, ElasticsearchContainer } from 'testcontainers';
 
@@ -28,7 +29,7 @@ async function setupPostgres() {
         .withUsername(user)
         .withPassword(password)
         .withExposedPorts(5432)
-        .withName('pg-test')
+        .withName(`pg-test-${randomUUID()}`)
         .withWaitStrategy(Wait.forLogMessage('database system is ready to accept connections'))
         .start();
 

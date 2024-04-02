@@ -1,7 +1,6 @@
-import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
-import { BoltIcon } from '@heroicons/react/24/outline';
+import { ArrowPathRoundedSquareIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { formatDateToShortUSFormat } from '../../../utils/utils';
-import { Flow } from '../../../types';
+import type { Flow } from '../../../types';
 
 export interface FlowProps {
     flow: Flow;

@@ -1,8 +1,9 @@
-import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
+import type { ReactElement } from 'react';
+import { useState, useEffect, useRef, createRef } from 'react';
 import useSWR from 'swr';
 import { Helmet } from 'react-helmet';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Loading } from '@geist-ui/core';
+import { Loading, Tooltip } from '@geist-ui/core';
 import { requestErrorToast, swrFetcher } from '../utils/api';
 import {
     ChevronsLeft,
@@ -20,7 +21,6 @@ import {
     XSquare
 } from '@geist-ui/icons';
 import { XCircleIcon } from '@heroicons/react/24/outline';
-import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
 import { ReactComponent as SyncIcon } from '../icons/sync-code-icon.svg';

@@ -12,3 +12,7 @@ declare module 'vitest' {
     export interface AsymmetricMatchersContaining extends CustomMatchers {}
     export interface ExpectStatic<T = any> extends CustomMatchers<T> {}
 }
+
+declare module 'ms' {
+    export interface StringValue {}
+}

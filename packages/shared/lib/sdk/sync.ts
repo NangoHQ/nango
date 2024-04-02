@@ -4,7 +4,7 @@ import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
-import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
+import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import { getLogger } from '../utils/temp/logger.js';
 import telemetry, { MetricTypes } from '../utils/telemetry.js';
@@ -121,6 +121,7 @@ export interface ProxyConfiguration {
 enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
+    OAuth2CC = 'OAUTH2_CC',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
@@ -621,8 +622,8 @@ export class NangoAction {
         }
     }
 
-    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<object> {
-        return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
+    public async triggerAction<T = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<T> {
+        return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input) as T;
     }
 }
 

@@ -1,4 +1,5 @@
-import { forwardRef, useCallback, useState, ChangeEvent, TextareaHTMLAttributes } from 'react';
+import type { ChangeEvent, TextareaHTMLAttributes } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import CopyButton from '../button/CopyButton';

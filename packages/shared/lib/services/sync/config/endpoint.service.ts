@@ -5,7 +5,7 @@ import { SyncConfigType } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { HTTP_VERB } from '../../../models/Generic.js';
 import { OpenApiBuilder } from 'openapi3-ts/oas31';
-import type { ParameterObject } from 'openapi3-ts/dist/oas30.js';
+import type { ParameterObject } from 'openapi3-ts/oas31';
 
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
