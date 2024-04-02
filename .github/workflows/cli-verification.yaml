@@ -46,8 +46,7 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  mkdir nango-cli-test
-                  cd nango-cli-test
+                  mkdir nango-cli-test && cd nango-cli-test
                   npm init -y
-                  npm install nangohq/cli@0.0.1-$GIT_HASH
+                  npm install @nangohq/cli@0.0.1-$GIT_HASH
                   npx nango version --debug
