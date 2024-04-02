@@ -113,15 +113,15 @@ class ConnectionController {
                     success,
                     error,
                     response: credentials
-                } = await connectionService.refreshCredentialsIfNeeded(
+                } = await connectionService.refreshCredentialsIfNeeded({
                     connection,
-                    config,
-                    template as ProviderTemplateOAuth2,
-                    null,
-                    environment.id,
+                    providerConfig: config,
+                    template: template as ProviderTemplateOAuth2,
+                    activityLogId: null,
+                    environment_id: environment.id,
                     instantRefresh,
-                    LogActionEnum.TOKEN
-                );
+                    logAction: LogActionEnum.TOKEN
+                });
 
                 if (!success) {
                     errorManager.errResFromNangoErr(res, error);

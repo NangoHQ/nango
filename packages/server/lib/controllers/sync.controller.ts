@@ -68,14 +68,14 @@ class SyncController {
             }
 
             if (reconcile) {
-                const success = await getAndReconcileDifferences(
+                const success = await getAndReconcileDifferences({
                     environmentId,
                     syncs,
-                    reconcile,
-                    syncConfigDeployResult?.activityLogId as number,
+                    performAction: reconcile,
+                    activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
                     singleDeployMode
-                );
+                });
                 if (!success) {
                     reconcileSuccess = false;
                 }
@@ -109,7 +109,7 @@ class SyncController {
                 req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug, singleDeployMode);
+            const result = await getAndReconcileDifferences({ environmentId, syncs, performAction: false, activityLogId: null, debug, singleDeployMode });
 
             res.send(result);
         } catch (e) {
@@ -421,7 +421,7 @@ class SyncController {
                 throw new NangoError('failed_to_get_sync_client');
             }
 
-            const actionResponse = await syncClient.triggerAction(connection, action_name, input, activityLogId, environmentId);
+            const actionResponse = await syncClient.triggerAction({ connection, actionName: action_name, input, activityLogId, environment_id: environmentId });
 
             if (isOk(actionResponse)) {
                 res.send(actionResponse.res);

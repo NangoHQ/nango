@@ -200,16 +200,25 @@ class ProxyController {
         return this.request(res, next, method, url, configBody, activityLogId, environment_id, decompress, isSync, isDryRun, configBody.data);
     }
 
-    private async handleResponse(
-        res: Response,
-        responseStream: AxiosResponse,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        url: string,
-        isSync?: boolean,
-        isDryRun?: boolean
-    ) {
+    private async handleResponse({
+        res,
+        responseStream,
+        config,
+        activityLogId,
+        environment_id,
+        url,
+        isSync = false,
+        isDryRun = false
+    }: {
+        res: Response;
+        responseStream: AxiosResponse;
+        config: ApplicationConstructedProxyConfiguration;
+        activityLogId: number;
+        environment_id: number;
+        url: string;
+        isSync?: boolean | undefined;
+        isDryRun?: boolean | undefined;
+    }) {
         if (!isSync) {
             await updateSuccessActivityLog(activityLogId, true);
         }
@@ -344,7 +353,7 @@ class ProxyController {
                 createActivityLogMessage(activityLogMessage);
             });
 
-            this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
+            this.handleResponse({ res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun });
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
         }

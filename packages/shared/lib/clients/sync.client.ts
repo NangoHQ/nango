@@ -498,14 +498,21 @@ class SyncClient {
         }
     }
 
-    async triggerAction<T = any>(
-        connection: NangoConnection,
-        actionName: string,
-        input: object,
-        activityLogId: number,
-        environment_id: number,
+    async triggerAction<T = any>({
+        connection,
+        actionName,
+        input,
+        activityLogId,
+        environment_id,
         writeLogs = true
-    ): Promise<Result<T, NangoError>> {
+    }: {
+        connection: NangoConnection;
+        actionName: string;
+        input: object;
+        activityLogId: number;
+        environment_id: number;
+        writeLogs?: boolean;
+    }): Promise<Result<T, NangoError>> {
         const startTime = Date.now();
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id);
 
