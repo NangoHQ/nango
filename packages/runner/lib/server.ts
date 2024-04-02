@@ -3,14 +3,11 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getJobsUrl, getPersistAPIUrl, type NangoProps, type RunnerOutput } from '@nangohq/shared';
+import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
 import { cancel } from './cancel.js';
 import superjson from 'superjson';
-import { fetch } from 'undici';
-
-const logger = getLogger('Runner');
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -36,31 +33,27 @@ const appRouter = router({
 export type AppRouter = typeof appRouter;
 
 function healthProcedure() {
-    return publicProcedure
-        .use(async (opts) => {
-            pendingRequests.add(opts);
-            const next = opts.next();
-            pendingRequests.delete(opts);
-            lastRequestTime = Date.now();
-            return next;
-        })
-        .query(() => {
-            return { status: 'ok' };
-        });
+    return publicProcedure.query(() => {
+        return { status: 'ok' };
+    });
 }
 
-const idleMaxDurationMs = parseInt(process.env['IDLE_MAX_DURATION_MS'] || '') || 0;
 const runnerId = process.env['RUNNER_ID'] || '';
-let lastRequestTime = Date.now();
-const pendingRequests = new Set();
-const notifyIdleEndpoint = process.env['NOTIFY_IDLE_ENDPOINT'] || '';
+const jobsServiceUrl = process.env['NOTIFY_IDLE_ENDPOINT']?.replace(/\/idle$/, '') || getJobsUrl(); // TODO: remove legacy NOTIFY_IDLE_ENDPOINT once all runners are updated with JOBS_SERVICE_URL env var
+const persistServiceUrl = getPersistAPIUrl();
+const usage = new RunnerMonitor({ runnerId, jobsServiceUrl, persistServiceUrl });
 
 function runProcedure() {
     return publicProcedure
         .input((input) => input as RunParams)
         .mutation(async ({ input }): Promise<RunnerOutput> => {
             const { nangoProps, code, codeParams } = input;
-            return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
+            try {
+                usage.track(nangoProps);
+                return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
+            } finally {
+                usage.untrack(nangoProps);
+            }
         });
 }
 
@@ -85,39 +78,4 @@ server.use(haltOnTimedout);
 
 function haltOnTimedout(req: Request, _res: Response, next: NextFunction) {
     if (!req.timedout) next();
-}
-
-if (idleMaxDurationMs > 0) {
-    setInterval(async () => {
-        if (pendingRequests.size == 0) {
-            const idleTimeMs = Date.now() - lastRequestTime;
-            if (idleTimeMs > idleMaxDurationMs) {
-                logger.info(`Runner '${runnerId}' idle for more than ${idleMaxDurationMs}ms`);
-                // calling jobs service to suspend runner
-                // using fetch instead of jobs trcp client to avoid circular dependency
-                // TODO: use trpc client once jobs doesn't depend on runner
-                if (notifyIdleEndpoint.length > 0) {
-                    try {
-                        const res = await fetch(notifyIdleEndpoint, {
-                            method: 'post',
-                            headers: {
-                                Accept: 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            body: superjson.stringify({
-                                runnerId,
-                                idleTimeMs
-                            })
-                        });
-                        if (res.status !== 200) {
-                            logger.error(`Error calling ${notifyIdleEndpoint}: ${JSON.stringify(await res.json())}`);
-                        }
-                    } catch (err) {
-                        logger.error(`Error calling ${notifyIdleEndpoint}: ${JSON.stringify(err)}`);
-                    }
-                }
-                lastRequestTime = Date.now(); // reset last request time
-            }
-        }
-    }, 10000);
 }
