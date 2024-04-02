@@ -17,7 +17,7 @@ import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 
 export interface GetMeta {
-    environments: Environment[];
+    environments: Pick<Environment, 'name'>[];
     email: string;
     version: string;
     baseUrl: string;
@@ -28,21 +28,25 @@ export interface GetMeta {
 class EnvironmentController {
     async meta(req: Request, res: Response<GetMeta>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
+            const sessionUser = req.user;
+            if (!sessionUser) {
+                errorManager.errRes(res, 'user_not_found');
                 return;
             }
 
-            const { account, user } = response;
+            const account = await accountService.getAccountById(sessionUser.id);
+            if (!account) {
+                errorManager.errRes(res, 'user_not_found');
+                return;
+            }
 
             const environments = await environmentService.getEnvironmentsByAccountId(account.id);
             const version = packageJsonFile().version;
-            const onboarding = await getOnboardingProgress(user.id);
+            const onboarding = await getOnboardingProgress(sessionUser.id);
             res.status(200).send({
                 environments,
                 version,
-                email: user.email,
+                email: sessionUser.email,
                 baseUrl,
                 debugMode: req.session.debugMode === true,
                 onboardingComplete: onboarding?.complete || false
@@ -133,9 +137,13 @@ class EnvironmentController {
             const env = 'prod';
             const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
             const digest = await hmacService.digest(info?.environmentId as number, integration_key, connectionId as string);
-            const { environment } = await environmentService.getAccountAndEnvironmentById(info?.accountId as number, env);
+            const accountEnv = await environmentService.getAccountAndEnvironmentById(info?.accountId as number, env);
+            if (!accountEnv) {
+                errorManager.errRes(res, 'account_not_found');
+                return;
+            }
 
-            res.status(200).send({ hmac_digest: digest, public_key: environment?.public_key, integration_key });
+            res.status(200).send({ hmac_digest: digest, public_key: accountEnv.environment.public_key, integration_key });
         } catch (err) {
             next(err);
         }

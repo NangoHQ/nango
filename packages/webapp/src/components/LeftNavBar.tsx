@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     SquaresPlusIcon,
@@ -66,7 +65,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
-        Cookies.set('env', newEnv);
         setCookieValue(newEnv);
         void mutate();
 
