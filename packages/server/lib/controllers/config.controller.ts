@@ -284,9 +284,9 @@ class ConfigController {
             }
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
-            const environmentUuid = await environmentService.getAccountUUIDFromEnvironment(environmentId);
+            const environment = await environmentService.getById(environmentId);
 
-            if (config == null) {
+            if (!config || !environment) {
                 errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
@@ -325,7 +325,7 @@ class ConfigController {
             const connection_count = connections.length;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
-                webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environmentUuid}/${config.provider}`;
+                webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${config.provider}`;
             }
 
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds

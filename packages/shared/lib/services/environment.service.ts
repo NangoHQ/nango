@@ -131,18 +131,15 @@ class EnvironmentService {
         return result[0].account_id;
     }
 
-    async getAccountUUIDFromEnvironment(environment_id: number): Promise<string | null> {
-        const result = await db.knex.select('account_id').from<Environment>(TABLE).where({ id: environment_id });
+    async getAccountFromEnvironment(environment_id: number): Promise<Account | null> {
+        const result = await db.knex
+            .select<Account>('_nango_accounts.*')
+            .from(TABLE)
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .where({ id: environment_id })
+            .first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        const accountId = result[0].account_id;
-
-        const uuid = await accountService.getUUIDFromAccountId(accountId);
-
-        return uuid;
+        return result || null;
     }
 
     async getAccountUUIDFromEnvironmentUUID(environment_uuid: string): Promise<string | null> {
