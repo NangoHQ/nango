@@ -359,21 +359,22 @@ export default class SyncRun {
                     success,
                     error,
                     response: userDefinedResults
-                } = await this.integrationService.runScript(
-                    this.syncName,
-                    (this.syncId as string) ||
+                } = await this.integrationService.runScript({
+                    syncName: this.syncName,
+                    syncId:
+                        (this.syncId as string) ||
                         `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
-                    this.activityLogId as number,
+                    activityLogId: this.activityLogId as number,
                     nangoProps,
-                    syncData,
-                    this.nangoConnection.environment_id,
-                    this.writeToDb,
-                    this.isInvokedImmediately,
-                    this.isWebhook,
-                    this.loadLocation,
-                    this.input,
-                    this.temporalContext
-                );
+                    integrationData: syncData,
+                    environmentId: this.nangoConnection.environment_id,
+                    writeToDb: this.writeToDb,
+                    isInvokedImmediately: this.isInvokedImmediately,
+                    isWebhook: this.isWebhook,
+                    optionalLoadLocation: this.loadLocation,
+                    input: this.input,
+                    temporalContext: this.temporalContext
+                });
 
                 if (!success || (error && userDefinedResults === null)) {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${

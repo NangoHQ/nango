@@ -307,20 +307,21 @@ export interface SyncConfigWithProvider {
     type: SyncConfigType;
 }
 
+export interface RunScriptOptions {
+    syncName: string;
+    syncId: string;
+    activityLogId: number | undefined;
+    nangoProps: NangoProps;
+    integrationData: NangoIntegrationData;
+    environmentId: number;
+    writeToDb: boolean;
+    isInvokedImmediately: boolean;
+    isWebhook: boolean;
+    optionalLoadLocation?: string | undefined;
+    input?: object | undefined;
+    temporalContext?: Context | undefined;
+}
 export interface IntegrationServiceInterface {
-    runScript(
-        syncName: string,
-        syncId: string,
-        activityLogId: number | undefined,
-        nangoProps: NangoProps,
-        integrationData: NangoIntegrationData,
-        environmentId: number,
-        writeToDb: boolean,
-        isInvokedImmediately: boolean,
-        isWebhook: boolean,
-        optionalLoadLocation?: string,
-        input?: object,
-        temporalContext?: Context
-    ): Promise<any>;
+    runScript(options: RunScriptOptions): Promise<any>;
     cancelScript(syncId: string, environmentId: number): Promise<void>;
 }
