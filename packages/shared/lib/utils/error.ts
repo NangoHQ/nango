@@ -309,7 +309,7 @@ export class NangoError extends Error {
                 break;
 
             case 'unknown_connection':
-                this.status = 400;
+                this.status = 404;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
                     this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
