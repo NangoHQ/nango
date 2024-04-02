@@ -692,7 +692,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                 <div className="flex text-black text-sm">
                                                     {`Be notified when new data is available from Nango (cf. `}
                                                     <a
-                                                        href="https://docs.nango.dev/integrate/guides/receive-webhooks-from-nango"
+                                                        href="https://docs.nango.dev/integrate/guides/sync-data-from-an-api#listen-for-webhooks-from-nango"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1"
