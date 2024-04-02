@@ -53,4 +53,5 @@ jobs:
                   npm install @nangohq/cli@0.0.1-$GIT_HASH
                   npx nango version --debug
                   npx nango init --debug
+                  cd nango-integrations
                   npx nango generate --debug
