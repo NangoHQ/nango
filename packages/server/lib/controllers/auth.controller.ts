@@ -416,6 +416,7 @@ class AuthController {
             });
 
             const existingUser = await userService.getUserByEmail(authorizedUser.email);
+            console.log(existingUser);
 
             if (existingUser) {
                 req.login(existingUser, function (err) {

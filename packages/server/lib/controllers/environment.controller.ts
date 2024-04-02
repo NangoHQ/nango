@@ -29,12 +29,16 @@ class EnvironmentController {
     async meta(req: Request, res: Response<GetMeta>, next: NextFunction) {
         try {
             const sessionUser = req.user;
+            console.log('session user');
+            console.log(sessionUser);
             if (!sessionUser) {
                 errorManager.errRes(res, 'user_not_found');
                 return;
             }
 
             const account = await accountService.getAccountById(sessionUser.id);
+            console.log('account info');
+            console.log(account);
             if (!account) {
                 errorManager.errRes(res, 'user_not_found');
                 return;
