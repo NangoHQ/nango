@@ -1,8 +1,23 @@
 import { randomUUID } from 'crypto';
 import type { StartedTestContainer } from 'testcontainers';
-import { Wait, PostgreSqlContainer } from 'testcontainers';
+import { Wait, PostgreSqlContainer, ElasticsearchContainer } from 'testcontainers';
 
 const containers: StartedTestContainer[] = [];
+
+export async function setupElasticsearch() {
+    console.log('Starting ES...');
+    const es = await new ElasticsearchContainer('elasticsearch:8.12.2')
+        .withName('es-test')
+        .withEnvironment({ 'xpack.security.enabled': 'false', 'discovery.type': 'single-node' })
+        .withExposedPorts(9200)
+        .start();
+    containers.push(es);
+
+    process.env['NANGO_LOGS_ES_URL'] = es.getHttpUrl();
+    process.env['NANGO_LOGS_ES_USER'] = '';
+    process.env['NANGO_LOGS_ES_PWD'] = '';
+    console.log('ES running at', es.getHttpUrl());
+}
 
 async function setupPostgres() {
     const dbName = 'postgres';
@@ -31,7 +46,7 @@ async function setupPostgres() {
 }
 
 export async function setup() {
-    await Promise.all([setupPostgres()]);
+    await Promise.all([setupPostgres(), setupElasticsearch()]);
 }
 
 export const teardown = async () => {

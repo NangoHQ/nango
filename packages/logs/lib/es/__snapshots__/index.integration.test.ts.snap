@@ -1,0 +1,118 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mapping > should apply mapping 1`] = `
+{
+  "dynamic": "false",
+  "properties": {
+    "accountId": {
+      "type": "keyword",
+    },
+    "accountName": {
+      "type": "keyword",
+    },
+    "code": {
+      "type": "keyword",
+    },
+    "configId": {
+      "type": "keyword",
+    },
+    "configName": {
+      "type": "keyword",
+    },
+    "connectionId": {
+      "type": "keyword",
+    },
+    "connectionName": {
+      "type": "keyword",
+    },
+    "createdAt": {
+      "type": "date",
+    },
+    "endedAt": {
+      "type": "date",
+    },
+    "environmentId": {
+      "type": "keyword",
+    },
+    "environmentName": {
+      "type": "keyword",
+    },
+    "error": {
+      "enabled": false,
+      "type": "object",
+    },
+    "id": {
+      "type": "keyword",
+    },
+    "jobId": {
+      "type": "keyword",
+    },
+    "level": {
+      "type": "keyword",
+    },
+    "message": {
+      "analyzer": "standard",
+      "type": "text",
+    },
+    "meta": {
+      "enabled": false,
+      "type": "object",
+    },
+    "parentId": {
+      "type": "keyword",
+    },
+    "request": {
+      "properties": {
+        "headers": {
+          "enabled": false,
+          "type": "object",
+        },
+        "method": {
+          "type": "keyword",
+        },
+        "url": {
+          "type": "match_only_text",
+        },
+      },
+    },
+    "response": {
+      "properties": {
+        "code": {
+          "type": "integer",
+        },
+        "headers": {
+          "enabled": false,
+          "type": "object",
+        },
+      },
+    },
+    "source": {
+      "type": "keyword",
+    },
+    "startedAt": {
+      "type": "date",
+    },
+    "state": {
+      "type": "keyword",
+    },
+    "syncId": {
+      "type": "keyword",
+    },
+    "syncName": {
+      "type": "keyword",
+    },
+    "title": {
+      "type": "keyword",
+    },
+    "type": {
+      "type": "keyword",
+    },
+    "updatedAt": {
+      "type": "date",
+    },
+    "userId": {
+      "type": "keyword",
+    },
+  },
+}
+`;
