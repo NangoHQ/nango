@@ -42,9 +42,11 @@ jobs:
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
                   npm publish --access public
             - name: Install the cli from the github package registry
+              working-directory: tmp
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
+                  npm init -y
                   npm install nangohq/cli@0.0.1-$GIT_HASH
                   npx nango version --debug
