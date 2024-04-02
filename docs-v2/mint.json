@@ -3,7 +3,8 @@
     "name": "Nango Docs",
     "logo": {
         "light": "/logo/light.svg",
-        "dark": "/logo/dark.svg"
+        "dark": "/logo/dark.svg",
+        "href": "https://nango.dev"
     },
     "favicon": "/favicon.png",
     "colors": {
