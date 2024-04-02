@@ -5,7 +5,7 @@ export function getFormattedMessage(data: Partial<MessageRow>): MessageRow {
     return {
         id: data.id || nanoid(),
 
-        source: data.source || 'nango',
+        source: data.source || 'internal',
         level: data.level || 'info',
         type: data.type || 'log',
         message: data.message || '',

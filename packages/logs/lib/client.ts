@@ -17,28 +17,28 @@ export class LogContext {
     }
 
     async debug(message: string, meta: MessageMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'debug', message, meta, source: 'nango' });
+        await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
     }
 
     async info(message: string, meta: MessageMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'info', message, meta, source: 'nango' });
+        await this.log({ type: 'log', level: 'info', message, meta, source: 'internal' });
     }
 
     async warn(message: string, meta: MessageMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'warn', message, meta, source: 'nango' });
+        await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
     }
 
     async error(message: string, meta: MessageMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'error', message, meta, source: 'nango' });
+        await this.log({ type: 'log', level: 'error', message, meta, source: 'internal' });
     }
 
     async trace(message: string, meta: MessageMeta = null): Promise<void> {
-        await this.log({ type: 'log', level: 'trace', message, meta, source: 'nango' });
+        await this.log({ type: 'log', level: 'trace', message, meta, source: 'internal' });
     }
 
     async http(message: string, data: Pick<MessageRow, 'request' | 'response' | 'meta'>): Promise<void> {
         const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
-        await this.log({ type: 'http', level, message, ...data, source: 'nango' });
+        await this.log({ type: 'http', level, message, ...data, source: 'internal' });
     }
 
     /**

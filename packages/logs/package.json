@@ -8,7 +8,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/jobs"
+        "directory": "packages/logs"
     },
     "dependencies": {
         "@elastic/elasticsearch": "8.12.2",

@@ -10,7 +10,7 @@ export interface MessageRow {
     id: string;
 
     // State
-    source: 'nango' | 'user';
+    source: 'internal' | 'user';
     level: LogLevel;
     type: MessageType;
     message: string;

@@ -49,7 +49,7 @@ describe('client', () => {
                     parentId: null,
                     request: null,
                     response: null,
-                    source: 'nango',
+                    source: 'internal',
                     startedAt: null,
                     state: 'waiting',
                     syncId: null,
