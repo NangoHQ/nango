@@ -11,7 +11,8 @@ import {
     getGlobalWebhookReceiveUrl,
     packageJsonFile,
     getEnvironmentId,
-    getOnboardingProgress
+    getOnboardingProgress,
+    userService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
@@ -34,13 +35,13 @@ class EnvironmentController {
                 return;
             }
 
-            const account = await accountService.getAccountById(sessionUser.id);
-            if (!account) {
+            const user = await userService.getUserById(sessionUser.id);
+            if (!user) {
                 errorManager.errRes(res, 'user_not_found');
                 return;
             }
 
-            const environments = await environmentService.getEnvironmentsByAccountId(account.id);
+            const environments = await environmentService.getEnvironmentsByAccountId(user.account_id);
             const version = packageJsonFile().version;
             const onboarding = await getOnboardingProgress(sessionUser.id);
             res.status(200).send({
