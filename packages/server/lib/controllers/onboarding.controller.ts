@@ -343,7 +343,7 @@ class OnboardingController {
 
             await updateOnboardingProgress(status.id, progress);
             if (progress === 3 || progress === 6) {
-                void analytics.track(AnalyticsTypes[`DEMO_${progress as 0}`], account.id, { user_id: user.id });
+                void analytics.track(AnalyticsTypes[`DEMO_${progress}`], account.id, { user_id: user.id });
             }
 
             res.status(200).json({
