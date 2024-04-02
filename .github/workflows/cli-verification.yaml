@@ -32,16 +32,7 @@ jobs:
               shell: bash
               run: |
                   GIT_HASH=$(git rev-parse --short HEAD)
-                  npm run build:hosted
-                  # publish all before bumping to an alternate version
-                  npm publish -w packages/node-client
-                  npm i
-                  npm publish -w packages/shared
-                  npm i
-                  npm publish -w packages/cli
-                  npm i
-                  npm publish -w packages/frontend
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH true
+                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
