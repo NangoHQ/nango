@@ -359,17 +359,27 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(
-        scheduleId: string,
-        syncId: string,
-        command: SyncCommand,
-        activityLogId: number,
-        environmentId: number,
-        providerConfigKey: string,
-        connectionId: string,
-        syncName: string,
-        nangoConnectionId?: number
-    ): Promise<Result<boolean>> {
+    async runSyncCommand({
+        scheduleId,
+        syncId,
+        command,
+        activityLogId,
+        environmentId,
+        providerConfigKey,
+        connectionId,
+        syncName,
+        nangoConnectionId
+    }: {
+        scheduleId: string;
+        syncId: string;
+        command: SyncCommand;
+        activityLogId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        connectionId: string;
+        syncName: string;
+        nangoConnectionId?: number | undefined;
+    }): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {

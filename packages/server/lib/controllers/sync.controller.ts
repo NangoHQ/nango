@@ -637,17 +637,17 @@ class SyncController {
                 return;
             }
 
-            const result = await syncClient.runSyncCommand(
-                schedule_id,
-                sync_id,
+            const result = await syncClient.runSyncCommand({
+                scheduleId: schedule_id,
+                syncId: sync_id,
                 command,
-                activityLogId as number,
-                environment.id,
-                connection?.provider_config_key as string,
-                connection?.connection_id as string,
-                sync_name,
-                connection?.id
-            );
+                activityLogId: activityLogId as number,
+                environmentId: environment.id,
+                providerConfigKey: connection?.provider_config_key as string,
+                connectionId: connection?.connection_id as string,
+                syncName: sync_name,
+                nangoConnectionId: connection?.id
+            });
 
             if (isErr(result)) {
                 errorManager.handleGenericError(result.err, req, res, tracer);

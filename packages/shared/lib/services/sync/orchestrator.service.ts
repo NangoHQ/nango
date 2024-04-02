@@ -215,17 +215,17 @@ export class Orchestrator {
                     continue;
                 }
 
-                await syncClient.runSyncCommand(
-                    schedule.schedule_id,
-                    sync?.id,
+                await syncClient.runSyncCommand({
+                    scheduleId: schedule.schedule_id,
+                    syncId: sync?.id,
                     command,
                     activityLogId,
                     environmentId,
                     providerConfigKey,
                     connectionId,
                     syncName,
-                    connection.id
-                );
+                    nangoConnectionId: connection.id
+                });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
@@ -254,17 +254,17 @@ export class Orchestrator {
                     continue;
                 }
 
-                await syncClient.runSyncCommand(
-                    schedule.schedule_id,
-                    sync.id,
+                await syncClient.runSyncCommand({
+                    scheduleId: schedule.schedule_id,
+                    syncId: sync.id,
                     command,
                     activityLogId,
                     environmentId,
                     providerConfigKey,
-                    connection.connection_id,
-                    sync.name,
-                    connection.id
-                );
+                    connectionId: connection.connection_id,
+                    syncName: sync.name,
+                    nangoConnectionId: connection.id
+                });
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
                 }
