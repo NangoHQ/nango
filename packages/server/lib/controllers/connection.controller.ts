@@ -74,7 +74,7 @@ class ConnectionController {
                 return;
             }
 
-            if (connection == null) {
+            if (!connection) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     environment_id: environment.id,
@@ -90,7 +90,7 @@ class ConnectionController {
 
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
-            if (config == null) {
+            if (!config) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     environment_id: environment.id,
