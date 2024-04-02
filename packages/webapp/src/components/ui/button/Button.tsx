@@ -1,7 +1,9 @@
 import { Loader } from '@geist-ui/icons';
-import { cva, VariantProps } from 'class-variance-authority';
+import type { VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import classNames from 'classnames';
-import React, { forwardRef } from 'react';
+import type React from 'react';
+import { forwardRef } from 'react';
 
 const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded-md text-sm', {
     variants: {

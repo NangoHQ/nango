@@ -1,7 +1,7 @@
 import { schema, dbNamespace } from '../../db/database.js';
-import type { SlackNotification } from '../../models/SlackNotification';
-import type { NangoConnection } from '../../models/Connection';
-import type { ServiceResponse } from '../../models/Generic';
+import type { SlackNotification } from '../../models/SlackNotification.js';
+import type { NangoConnection } from '../../models/Connection.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncType, SyncConfigType } from '../../models/Sync.js';
 import environmentService from '../environment.service.js';
 import type { LogLevel } from '../../models/Activity.js';

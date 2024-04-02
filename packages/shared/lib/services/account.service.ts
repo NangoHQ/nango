@@ -1,6 +1,6 @@
 import db from '../db/database.js';
-import type { Account } from '../models/Admin';
-import type { Environment } from '../models/Environment';
+import type { Account } from '../models/Admin.js';
+import type { Environment } from '../models/Environment.js';
 import { LogActionEnum } from '../models/Activity.js';
 import environmentService from './environment.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
