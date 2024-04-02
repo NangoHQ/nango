@@ -1,9 +1,14 @@
 import type { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types';
+import { isProd } from './utils';
+
+const maskedKey = '<secret-key-from-environment-settings>';
 
 export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secretKey: string, connectionId: string, providerConfigKey: string) => {
     const model = Array.isArray(models) ? models[0].name : models;
+    const secretKeyDisplay = isProd() ? maskedKey : secretKey;
+
     return `import { Nango } from '@nangohq/node';
-const nango = new Nango({ secretKey: '${secretKey}' });
+const nango = new Nango({ secretKey: '${secretKeyDisplay}' });
 
 const records = await nango.listRecords({
     providerConfigKey: '${providerConfigKey}',
@@ -39,8 +44,10 @@ ${JSON.stringify(input, null, 2)
 ${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}`;
     }
 
+    const secretKeyDisplay = isProd() ? maskedKey : secretKey;
+
     return `import Nango from '@nangohq/node';
-const nango = new Nango({ secretKey: '${secretKey}' });
+const nango = new Nango({ secretKey: '${secretKeyDisplay}' });
 
 const response = await nango.triggerAction(
     '${providerConfigKey}',
@@ -61,6 +68,7 @@ export const curlSnippet = (
     method = 'GET'
 ) => {
     let curlMethod: HTTP_VERB = method as HTTP_VERB;
+    const secretKeyDisplay = isProd() ? maskedKey : secretKey;
     if (typeof endpoint !== 'string') {
         curlMethod = Object.keys(endpoint)[0] as HTTP_VERB;
         endpoint = (Array.isArray(endpoint) ? endpoint[0][curlMethod] : endpoint[curlMethod]) as string;
@@ -82,7 +90,7 @@ ${JSON.stringify(input, null, 2)
     return `
     curl --request ${curlMethod} \\
     --url ${baseUrl}/v1${endpoint} \\
-    --header 'Authorization: Bearer ${secretKey}' \\
+    --header 'Authorization: Bearer ${secretKeyDisplay}' \\
     --header 'Content-Type: application/json' \\
     --header 'Connection-Id: ${connectionId}' \\
     --header 'Provider-Config-Key: ${providerConfigKey}' ${formattedInput ? '\\' : ''}
@@ -91,9 +99,10 @@ ${JSON.stringify(input, null, 2)
 };
 
 export const autoStartSnippet = (secretKey: string, provider: string, sync: string) => {
+    const secretKeyDisplay = isProd() ? maskedKey : secretKey;
     return `import Nango from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '${secretKey}' });
+const nango = new Nango({ secretKey: '${secretKeyDisplay}' });
 
 await nango.startSync('${provider}', ['${sync}'], '<CONNECTION-ID>');
 `;
