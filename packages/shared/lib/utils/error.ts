@@ -554,6 +554,11 @@ export class NangoError extends Error {
                 this.message = `Missing an account name for account login/signup.`;
                 break;
 
+            case 'account_not_found':
+                this.status = 404;
+                this.message = `Missing an account name for account login/signup.`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
