@@ -67,6 +67,8 @@ class OnboardingController {
                 throw new Error('missing_env_var');
             }
 
+            void analytics.track(AnalyticsTypes.DEMO_1, account.id, { user_id: user.id });
+
             // Create an onboarding state to remember where user left
             const onboardingId = await initOnboarding(user.id);
             if (!onboardingId) {
@@ -190,6 +192,8 @@ class OnboardingController {
             }
 
             const { environment, account, user } = response;
+            void analytics.track(AnalyticsTypes.DEMO_2, account.id, { user_id: user.id });
+
             const githubDemoSync = flowService.getFlow(DEMO_SYNC_NAME);
             const githubDemoAction = flowService.getFlow(DEMO_ACTION_NAME);
             if (!githubDemoSync || !githubDemoAction) {
@@ -262,6 +266,7 @@ class OnboardingController {
             }
 
             const { environment, account, user } = response;
+            void analytics.track(AnalyticsTypes.DEMO_4, account.id, { user_id: user.id });
             const {
                 success,
                 error,
@@ -309,7 +314,7 @@ class OnboardingController {
     /**
      * Log the progress, this is merely informative and for BI.
      */
-    async updateStatus(req: Request<unknown, unknown, { progress?: string }>, res: Response, next: NextFunction) {
+    async updateStatus(req: Request<unknown, unknown, { progress?: number }>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -327,6 +332,8 @@ class OnboardingController {
                 return;
             }
 
+            const progress = req.body.progress;
+
             const { user, account } = response;
             const status = await getOnboardingProgress(user.id);
             if (!status) {
@@ -334,8 +341,10 @@ class OnboardingController {
                 return;
             }
 
-            await updateOnboardingProgress(status.id, req.body.progress);
-            void analytics.track(AnalyticsTypes[`DEMO_${req.body.progress as 0}`], account.id, { user_id: user.id });
+            await updateOnboardingProgress(status.id, progress);
+            if (progress === 3 || progress === 6) {
+                void analytics.track(AnalyticsTypes[`DEMO_${progress}`], account.id, { user_id: user.id });
+            }
 
             res.status(200).json({
                 success: true
@@ -371,6 +380,8 @@ class OnboardingController {
             }
 
             const { environment, account, user } = response;
+            void analytics.track(AnalyticsTypes.DEMO_5, account.id, { user_id: user.id });
+
             const syncClient = await SyncClient.getInstance();
             if (!syncClient) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
