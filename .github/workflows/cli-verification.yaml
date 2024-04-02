@@ -31,12 +31,12 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               shell: bash
               run: |
-                  GIT_HASH=$(git rev-parse --short HEAD)
+                  GIT_HASH=$(git rev-parse HEAD)
                   bash ./scripts/publish.sh 0.0.1-$GIT_HASH
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  GIT_HASH=$(git rev-parse --short HEAD)
+                  GIT_HASH=$(git rev-parse HEAD)
                   npm install nango@0.0.1-$GIT_HASH
                   npx nango version --debug
