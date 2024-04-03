@@ -51,6 +51,9 @@ jobs:
                   mkdir nango-cli-test && cd nango-cli-test
                   npm init -y
                   npm install @nangohq/cli@0.0.1-$GIT_HASH
+                  VERSION_OUTPUT=$(npx nango version)
+                  EXPECTED_VERSION="Nango CLI version: 0.0.1-$GIT_HASH"
+                  [ "$VERSION_OUTPUT" = "$EXPECTED_VERSION" ] || { echo "Version mismatch. Expected: $EXPECTED_VERSION, got: $VERSION_OUTPUT"; exit 1; }
                   npx nango version --debug
                   npx nango init --debug
                   cd nango-integrations
