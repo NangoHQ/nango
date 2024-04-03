@@ -70,7 +70,7 @@ class AccountController {
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
-            const { is_capped, accountUUID } = req.body;
+            const { is_capped, account_uuid: accountUUID } = req.body;
 
             if (!accountUUID) {
                 res.status(400).send({ error: 'account_uuid property is required' });
