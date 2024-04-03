@@ -33,6 +33,20 @@ class AccountService {
         }
     }
 
+    async getAccountByUUID(uuid: string): Promise<Account | null> {
+        try {
+            const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ uuid }).first();
+            return result || null;
+        } catch (e) {
+            errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE
+            });
+
+            return null;
+        }
+    }
+
     async getAccountAndEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<{ accountId: number; environmentId: number } | null> {
         const account = await db.knex.select('id').from<Account>(`_nango_accounts`).where({ uuid: targetAccountUUID });
 
@@ -97,9 +111,9 @@ class AccountService {
         return null;
     }
 
-    async editCustomer(is_paying: boolean, subscription_type: string, accountId: number): Promise<void> {
+    async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
         try {
-            await db.knex.update({ is_paying, subscription_type }).from<Account>(`_nango_accounts`).where({ id: accountId });
+            await db.knex.update({ is_capped }).from<Account>(`_nango_accounts`).where({ id: accountId });
         } catch (e) {
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,

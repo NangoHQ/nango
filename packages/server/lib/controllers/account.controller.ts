@@ -1,15 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
-import {
-    SubscriptionTypes,
-    getEnvironmentAndAccountId,
-    accountService,
-    userService,
-    errorManager,
-    LogActionEnum,
-    createActivityLogAndLogMessage
-} from '@nangohq/shared';
+import { getEnvironmentAndAccountId, accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
@@ -73,27 +65,32 @@ class AccountController {
 
     async editCustomer(req: Request, res: Response, next: NextFunction) {
         try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            const { success, error } = await getEnvironmentAndAccountId(res, req);
             if (!success || response === null) {
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
-            const { accountId } = response;
+            const { is_capped, accountUUID } = req.body;
 
-            const { is_paying, subscription_type } = req.body;
-
-            if (is_paying === undefined || subscription_type === undefined) {
-                res.status(400).send({ error: 'is_paying and subscription_type are required.' });
+            if (!accountUUID) {
+                res.status(400).send({ error: 'account_uuid property is required' });
                 return;
             }
 
-            if (subscription_type !== null && !Object.values(SubscriptionTypes).includes(subscription_type as SubscriptionTypes)) {
-                res.status(400).send({ error: `Invalid subscription type. Valid types are ${Object.values(SubscriptionTypes).join(', ')}` });
+            if (is_capped === undefined || is_capped === null) {
+                res.status(400).send({ error: 'is_capped property is required' });
                 return;
             }
 
-            await accountService.editCustomer(is_paying, subscription_type, accountId);
-            res.status(200).send({ is_paying, subscription_type });
+            const account = await accountService.getAccountByUUID(accountUUID);
+
+            if (!account) {
+                res.status(400).send({ error: 'Account not found' });
+                return;
+            }
+
+            await accountService.editCustomer(is_capped, account.id);
+            res.status(200).send({ is_capped, accountUUID });
         } catch (err) {
             next(err);
         }
