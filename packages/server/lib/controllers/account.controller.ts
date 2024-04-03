@@ -87,7 +87,7 @@ class AccountController {
                 return;
             }
 
-            if (!Object.values(SubscriptionTypes).includes(subscription_type as SubscriptionTypes)) {
+            if (subscription_type !== null && !Object.values(SubscriptionTypes).includes(subscription_type as SubscriptionTypes)) {
                 res.status(400).send({ error: `Invalid subscription type. Valid types are ${Object.values(SubscriptionTypes).join(', ')}` });
                 return;
             }
