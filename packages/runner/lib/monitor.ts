@@ -93,7 +93,7 @@ export class RunnerMonitor {
     private checkIdle(): NodeJS.Timeout {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return setInterval(async () => {
-            if (this.tracked.size == 0) {
+            if (this.idleMaxDurationMs > 0 && this.tracked.size == 0) {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
                     logger.info(`Runner '${this.runnerId}' idle for more than ${this.idleMaxDurationMs}ms`);
