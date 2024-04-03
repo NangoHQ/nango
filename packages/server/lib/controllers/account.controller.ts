@@ -1,7 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
-import { accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
+import {
+    SubscriptionTypes,
+    getEnvironmentAndAccountId,
+    accountService,
+    userService,
+    errorManager,
+    LogActionEnum,
+    createActivityLogAndLogMessage
+} from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
@@ -58,6 +66,34 @@ class AccountController {
 
             await accountService.editAccount(name, account.id);
             res.status(200).send({ name });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async editCustomer(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { accountId } = response;
+
+            const { is_paying, subscription_type } = req.body;
+
+            if (is_paying === undefined || subscription_type === undefined) {
+                res.status(400).send({ error: 'is_paying and subscription_type are required.' });
+                return;
+            }
+
+            if (!Object.values(SubscriptionTypes).includes(subscription_type as SubscriptionTypes)) {
+                res.status(400).send({ error: `Invalid subscription type. Valid types are ${Object.values(SubscriptionTypes).join(', ')}` });
+                return;
+            }
+
+            await accountService.editCustomer(is_paying, subscription_type, accountId);
+            res.status(200).send({ is_paying, subscription_type });
         } catch (err) {
             next(err);
         }

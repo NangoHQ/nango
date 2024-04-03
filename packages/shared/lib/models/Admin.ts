@@ -1,5 +1,10 @@
 import type { Timestamps } from './Generic.js';
 
+export enum SubscriptionTypes {
+    STARTER = 'starter',
+    SCALE = 'scale'
+}
+
 export interface Account {
     id: number;
     name: string;
@@ -8,6 +13,8 @@ export interface Account {
     websockets_path?: string;
     uuid?: string;
     is_admin?: boolean;
+    is_paying?: boolean;
+    subscription_type?: string;
 }
 
 export interface User extends Timestamps {

@@ -96,6 +96,18 @@ class AccountService {
 
         return null;
     }
+
+    async editCustomer(is_paying: boolean, subscription_type: string, accountId: number): Promise<void> {
+        try {
+            await db.knex.update({ is_paying, subscription_type }).from<Account>(`_nango_accounts`).where({ id: accountId });
+        } catch (e) {
+            errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE,
+                accountId
+            });
+        }
+    }
 }
 
 export default new AccountService();
