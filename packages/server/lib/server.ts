@@ -50,6 +50,7 @@ const app = express();
 setupAuth(app);
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const webAuth =
     isCloud || isEnterprise
@@ -99,6 +100,10 @@ app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthContr
 app.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
 app.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
+// API Admin routes
+app.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
+app.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
+
 // API routes (API key auth).
 app.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
 app.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
@@ -131,8 +136,6 @@ app.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flow
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
 app.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
-
-app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 
 app.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
