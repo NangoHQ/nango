@@ -46,7 +46,7 @@ import {
     isOk,
     isErr
 } from '@nangohq/shared';
-import { getOperationContext } from '@nangohq/logs';
+import { getOperationContext, syncCommandToOperation } from '@nangohq/logs';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
@@ -416,9 +416,10 @@ class SyncController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
+            // TODO: move that outside try/catch
             const logCtx = await getOperationContext(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account, environment: { id: environmentId } }
+                { account: { id: -1, name: '' }, environment: { id: environmentId } }
             );
 
             const syncClient = await SyncClient.getInstance();
@@ -640,12 +641,18 @@ class SyncController {
             }
 
             const activityLogId = await createActivityLog(log);
+            // TODO: move that outside try/catch
+            const logCtx = await getOperationContext(
+                { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: 'Start action' },
+                { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
+            );
 
             const syncClient = await SyncClient.getInstance();
 
             if (!syncClient) {
                 const error = new NangoError('failed_to_get_sync_client');
                 errorManager.errResFromNangoErr(res, error);
+                await logCtx.failed();
 
                 return;
             }
@@ -659,7 +666,8 @@ class SyncController {
                 providerConfigKey: connection?.provider_config_key as string,
                 connectionId: connection?.connection_id as string,
                 syncName: sync_name,
-                nangoConnectionId: connection?.id
+                nangoConnectionId: connection?.id,
+                logCtx
             });
 
             if (isErr(result)) {
@@ -679,6 +687,8 @@ class SyncController {
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
             });
             await updateSuccessActivityLog(activityLogId as number, true);
+            await logCtx.info('Sync was updated', { action, syncId: sync_id });
+            await logCtx.success();
 
             let event = AnalyticsTypes.SYNC_RUN;
 
@@ -707,8 +717,10 @@ class SyncController {
             });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            // await logCtx.error('Failed to sync command', err);
+            // await logCtx.failed();
+            next(err);
         }
     }
 

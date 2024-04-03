@@ -20,8 +20,7 @@ import {
     LogTypes,
     isInitialSyncStillRunning,
     getSyncByIdAndName,
-    getLastSyncDate,
-    errorToObject
+    getLastSyncDate
 } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
@@ -226,7 +225,7 @@ export async function syncProvider(
         // TODO: move that outside try/catch
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account, environment: { id: nangoConnection.environment_id } }
+            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
         );
 
         if (debug) {
@@ -291,9 +290,9 @@ export async function syncProvider(
         });
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account, environment: { id: nangoConnection.environment_id } }
+            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
         );
-        await logCtx.error('Failed to create the job', { error: errorToObject(err) });
+        await logCtx.error('Failed to create the job', err);
         await logCtx.failed();
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {

@@ -35,6 +35,7 @@ import {
     connectionService,
     configService
 } from '@nangohq/shared';
+import { getExistingOperationContext, getOperationContext } from '@nangohq/logs';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -81,6 +82,13 @@ class ProxyController {
             if (!isDryRun) {
                 activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
             }
+            // TODO: move that outside try/catch
+            const logCtx = existingActivityLogId
+                ? getExistingOperationContext({ id: String(existingActivityLogId) })
+                : await getOperationContext(
+                      { operation: { type: 'action' }, message: 'Start action' },
+                      { account: { id: accountId, name: '' }, environment: { id: environment_id } }
+                  );
 
             const { method } = req;
 
@@ -123,6 +131,9 @@ class ProxyController {
                     timestamp: Date.now(),
                     content: 'Provider configuration not found'
                 });
+                await logCtx.error('Provider configuration not found');
+                await logCtx.failed();
+
                 throw new NangoError('unknown_provider_config');
             }
             await updateProviderActivityLog(activityLogId as number, providerConfig.provider);
@@ -140,15 +151,18 @@ class ProxyController {
                     switch (log.level) {
                         case 'error':
                             await createActivityLogMessageAndEnd(log);
+                            await logCtx.error(log.content);
                             break;
                         default:
                             await createActivityLogMessage(log);
+                            await logCtx.info(log.content);
                             break;
                     }
                 }
             }
             if (!success || !proxyConfig || error) {
                 errorManager.errResFromNangoErr(res, error);
+                await logCtx.failed();
                 return;
             }
 

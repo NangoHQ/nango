@@ -418,6 +418,7 @@ class OnboardingController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
+            // TODO: move that outside try/catch
             const logCtx = await getOperationContext(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
                 { account, environment, user }

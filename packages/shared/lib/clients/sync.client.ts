@@ -28,7 +28,7 @@ import { deleteRecordsBySyncId } from '../services/sync/data/records.service.js'
 import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
 import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { NangoError, errorToObject, stringifyError } from '../utils/error.js';
+import { NangoError, stringifyError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import { isTest, isProd } from '../utils/temp/environment/detection.js';
 import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
@@ -190,9 +190,8 @@ class SyncClient {
                     timestamp: Date.now(),
                     content
                 });
-                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
-                    runs: syncData.runs,
-                    error: errorToObject(error)
+                await logCtx.error('The sync was not created or started due to an error with the sync interval', error, {
+                    runs: syncData.runs
                 });
                 await logCtx.failed();
 
@@ -302,7 +301,7 @@ class SyncClient {
                     syncData: JSON.stringify(syncData)
                 }
             });
-            // await logCtx.error('Failed to init sync', {error: errorToObject(e)});
+            // await logCtx.error('Failed to init sync', err);
             // await logCtx.failed();
         }
     }
@@ -475,7 +474,7 @@ class SyncClient {
                 timestamp: Date.now(),
                 content: `The sync command: ${command} failed with error: ${errorMessage}`
             });
-            await logCtx.error('Sync command failed', { command, error: errorToObject(err) });
+            await logCtx.error('Sync command failed', err, { command });
 
             return resultErr(err as Error);
         }
@@ -707,7 +706,7 @@ class SyncClient {
         const activityLogId = await createActivityLog(log);
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
-            { account, environment: { id: environment_id } }
+            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: environment_id } }
         );
 
         const workflowId = generateWebhookWorkflowId(parentSyncName, webhookName, nangoConnection.connection_id);
@@ -780,9 +779,9 @@ class SyncClient {
                 environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} failed with error: ${e}`
+                content: `The webhook workflow ${workflowId} failed with error: ${errorMessage}`
             });
-            await logCtx.error('The webhook workflow failed', { error: errorMessage });
+            await logCtx.error('The webhook workflow failed', e);
             await logCtx.failed();
 
             errorManager.report(e, {

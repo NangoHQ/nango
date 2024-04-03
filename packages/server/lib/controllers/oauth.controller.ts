@@ -325,7 +325,7 @@ class OAuthController {
                 content: error.message + '\n' + prettyError,
                 timestamp: Date.now()
             });
-            await logCtx.error(error.message, { error: errorToObject(e) });
+            await logCtx.error(error.message, e);
             await logCtx.failed();
 
             errorManager.report(e, {
@@ -539,7 +539,7 @@ class OAuthController {
                 content: `Error during OAuth2 client credentials create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during OAuth2 client credentials creation', { error: errorToObject(err) });
+            await logCtx.error('Error during OAuth2 client credentials creation', err);
             await logCtx.failed();
 
             errorManager.report(err, {

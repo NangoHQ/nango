@@ -14,7 +14,6 @@ import { WebhookType } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { getOperationContext } from '@nangohq/logs';
-import { stringifyError } from '../../utils/error.js';
 
 dayjs.extend(utc);
 
@@ -337,7 +336,7 @@ class WebhookService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
-            { account, environment: { id: environment_id } }
+            { account: { id: -1, name: '' }, environment: { id: environment_id } }
         );
 
         const body: NangoForwardWebhookBody = {
@@ -394,7 +393,7 @@ class WebhookService {
                 await logCtx.failed();
             }
         } catch (e) {
-            const errorMessage = stringifyError(e);
+            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
@@ -403,10 +402,7 @@ class WebhookService {
                 content: `Webhook forward failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Webhook forward failed', {
-                errorMessage,
-                webhookUrl
-            });
+            await logCtx.error('Webhook forward failed', e, { webhookUrl });
             await logCtx.failed();
         }
     }

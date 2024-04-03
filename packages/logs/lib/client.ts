@@ -3,6 +3,7 @@ import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSu
 import type { FormatMessageData } from './models/helpers.js';
 import { getFormattedMessage } from './models/helpers.js';
 import type { SetRequired } from 'type-fest';
+import { errorToObject } from '@nangohq/utils';
 
 export class LogContext {
     id: string;
@@ -30,8 +31,9 @@ export class LogContext {
         await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
     }
 
-    async error(message: string, meta: MessageMeta | null = null): Promise<void> {
-        await this.log({ type: 'log', level: 'error', message, meta, source: 'internal' });
+    async error(message: string, error?: unknown, meta: MessageMeta | null = null): Promise<void> {
+        const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
+        await this.log({ type: 'log', level: 'error', message, error: err ? { name: err.name, message: err?.message } : null, meta, source: 'internal' });
     }
 
     async trace(message: string, meta: MessageMeta | null = null): Promise<void> {
@@ -83,4 +85,8 @@ export async function getOperationContext(
     await createMessage(msg);
 
     return new LogContext({ parentId: msg.id });
+}
+
+export function getExistingOperationContext({ id }: { id: MessageRow['id'] }): LogContext {
+    return new LogContext({ parentId: id });
 }

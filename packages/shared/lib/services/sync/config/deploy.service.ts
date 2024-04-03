@@ -25,7 +25,7 @@ import type {
     SyncEndpoint
 } from '../../../models/Sync.js';
 import { SyncConfigType } from '../../../models/Sync.js';
-import { NangoError, errorToObject } from '../../../utils/error.js';
+import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env } from '../../../utils/temp/environment/detection.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
@@ -78,7 +78,7 @@ export async function deploy(
     const activityLogId = await createActivityLog(log);
     const logCtx = await getOperationContext(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'custom' }, message: 'Deploying custom syncs' },
-        { account: { id: accountId }, environment: { id: environment_id } }
+        { account: { id: accountId, name: '' }, environment: { id: environment_id } }
     );
 
     if (nangoYamlBody) {
@@ -109,7 +109,7 @@ export async function deploy(
                 timestamp: Date.now(),
                 content: `Failed to deploy`
             });
-            await logCtx.error('Failed to deploy', { error: errorToObject(error) });
+            await logCtx.error('Failed to deploy', error);
             await logCtx.failed();
             await updateSuccessActivityLog(activityLogId!, false);
             return { success, error, response: null };
@@ -211,7 +211,7 @@ export async function deploy(
             environment_id
         );
 
-        await logCtx.error('Failed to deploy syncs', { error: errorToObject(e) });
+        await logCtx.error('Failed to deploy syncs', e);
         await logCtx.failed();
 
         const shortContent = `Failure to deploy the syncs (${flowsWithVersions.map((flow) => flow.syncName).join(', ')}).`;
@@ -260,7 +260,7 @@ export async function deployPreBuilt(
     const activityLogId = await createActivityLog(log);
     const logCtx = await getOperationContext(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'prebuilt' }, message: 'Deploying pre-built flow' },
-        { account: { id: accountId }, environment: { id: environment_id } }
+        { account: { id: accountId, name: '' }, environment: { id: environment_id } }
     );
 
     const idsToMarkAsInvactive = [];

@@ -19,8 +19,7 @@ import {
     AuthModes,
     hmacService,
     ErrorSourceEnum,
-    LogActionEnum,
-    errorToObject
+    LogActionEnum
 } from '@nangohq/shared';
 import { getOperationContext } from '@nangohq/logs';
 
@@ -184,7 +183,7 @@ class UnAuthController {
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during Unauthenticated connection creation', { error: errorToObject(err) });
+            await logCtx.error('Error during Unauthenticated connection creation', err);
             await logCtx.failed();
 
             errorManager.report(err, {

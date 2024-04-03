@@ -699,6 +699,7 @@ export interface PausableSyncs {
     name: string;
     environment_id: number;
     provider: string;
+    account_id: number;
     connection_id: string;
     unique_key: string;
     schedule_id: string;
@@ -710,6 +711,7 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         .select(
             '_nango_syncs.id',
             '_nango_syncs.name',
+            '_nango_environments.account_id',
             '_nango_connections.environment_id',
             '_nango_configs.provider',
             '_nango_configs.unique_key',

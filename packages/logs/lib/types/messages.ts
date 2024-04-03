@@ -67,7 +67,7 @@ export type MessageRow = {
     parentId: string | null;
 
     // Associated meta
-    error: Error | null;
+    error: { name: string; message: string } | null;
     request: {
         url: string;
         headers: Record<string, string>;
