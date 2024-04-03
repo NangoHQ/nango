@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres:15.5-alpine
+        image: postgres:16.0-alpine
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
