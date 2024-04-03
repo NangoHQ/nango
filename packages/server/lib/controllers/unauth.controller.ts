@@ -19,8 +19,10 @@ import {
     AuthModes,
     hmacService,
     ErrorSourceEnum,
-    LogActionEnum
+    LogActionEnum,
+    errorToObject
 } from '@nangohq/shared';
+import { getOperationContext } from '@nangohq/logs';
 
 class UnAuthController {
     async create(req: Request, res: Response, next: NextFunction) {
@@ -42,6 +44,10 @@ class UnAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Unauthenticated' },
+            { account: { id: accountId, name: '' }, environment: { id: environmentId } }
+        );
 
         try {
             analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
@@ -69,6 +75,8 @@ class UnAuthController {
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
                     });
+                    await logCtx.error('Missing HMAC in query params');
+                    await logCtx.failed();
 
                     errorManager.errRes(res, 'missing_hmac');
 
@@ -83,6 +91,8 @@ class UnAuthController {
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
                     });
+                    await logCtx.error('Invalid HMAC');
+                    await logCtx.failed();
 
                     errorManager.errRes(res, 'invalid_hmac');
 
@@ -100,6 +110,8 @@ class UnAuthController {
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Unknown provider config');
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'unknown_provider_config');
 
@@ -116,6 +128,8 @@ class UnAuthController {
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support unauth creation`
                 });
+                await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
@@ -131,6 +145,8 @@ class UnAuthController {
                 content: `Unauthenticated connection creation was successful`,
                 timestamp: Date.now()
             });
+            await logCtx.info('Unauthenticated connection creation was successful');
+            await logCtx.success();
 
             await updateSuccessActivityLog(activityLogId as number, true);
 
@@ -168,8 +184,10 @@ class UnAuthController {
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()
             });
+            await logCtx.error('Error during Unauthenticated connection creation', { error: errorToObject(err) });
+            await logCtx.failed();
 
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,

@@ -51,11 +51,13 @@ import {
     LogTypes,
     AnalyticsTypes,
     hmacService,
-    ErrorSourceEnum
+    ErrorSourceEnum,
+    errorToObject
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
+import { getOperationContext } from '@nangohq/logs';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _next: NextFunction) {
@@ -79,6 +81,10 @@ class OAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth' },
+            { account: { id: accountId, name: '' }, environment: { id: environmentId } }
+        );
 
         try {
             if (!wsClientId) {
@@ -98,6 +104,7 @@ class OAuthController {
             const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
 
             if (connectionId == null) {
+                const error = WSErrBuilder.MissingConnectionId();
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
@@ -105,18 +112,23 @@ class OAuthController {
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingConnectionId().message
                 });
+                await logCtx.error(error.message);
+                await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingConnectionId());
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             } else if (providerConfigKey == null) {
+                const error = WSErrBuilder.MissingProviderConfigKey();
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: WSErrBuilder.MissingProviderConfigKey().message
+                    content: error.message
                 });
+                await logCtx.error(error.message);
+                await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingProviderConfigKey());
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             connectionId = connectionId.toString();
@@ -125,28 +137,34 @@ class OAuthController {
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
+                    const error = WSErrBuilder.MissingHmac();
                     await createActivityLogMessageAndEnd({
                         level: 'error',
                         environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
-                        content: WSErrBuilder.MissingHmac().message
+                        content: error.message
                     });
+                    await logCtx.error(error.message);
+                    await logCtx.failed();
 
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingHmac());
+                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
                 }
                 const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
 
                 if (!verified) {
+                    const error = WSErrBuilder.InvalidHmac();
                     await createActivityLogMessageAndEnd({
                         level: 'error',
                         environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
-                        content: WSErrBuilder.InvalidHmac().message
+                        content: error.message
                     });
+                    await logCtx.error(error.message);
+                    await logCtx.failed();
 
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidHmac());
+                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
                 }
             }
 
@@ -162,38 +180,45 @@ class OAuthController {
                     hmacEnabled
                 }
             });
+            await logCtx.info('Authorization URL request from the client');
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
             if (config == null) {
+                const error = WSErrBuilder.UnknownProviderConfigKey(providerConfigKey);
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.UnknownProviderConfigKey(providerConfigKey).message,
+                    content: error.message,
                     timestamp: Date.now(),
                     url: callbackUrl
                 });
+                await logCtx.error(error.message);
+                await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderConfigKey(providerConfigKey));
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             let template: ProviderTemplate;
             try {
                 template = configService.getTemplate(config.provider);
             } catch {
+                const error = WSErrBuilder.UnknownProviderTemplate(config.provider);
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.UnknownProviderTemplate(config.provider).message,
+                    content: error.message,
                     timestamp: Date.now(),
                     url: callbackUrl
                 });
+                await logCtx.error(error.message);
+                await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderTemplate(config.provider));
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             const session: OAuthSession = {
@@ -214,6 +239,7 @@ class OAuthController {
             }
 
             await updateSessionIdActivityLog(activityLogId as number, session.id);
+            // TODO: handle that
 
             // certain providers need the credentials to be specified in the config
             if (overrideCredentials) {
@@ -240,17 +266,20 @@ class OAuthController {
             }
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
+                const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.InvalidProviderConfig(providerConfigKey).message,
+                    content: error.message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: callbackUrl
                 });
+                await logCtx.error(error.message);
+                await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
@@ -273,27 +302,33 @@ class OAuthController {
                 return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId as number, environmentId);
             }
 
+            const error = WSErrBuilder.UnknownAuthMode(template.auth_mode);
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnknownAuthMode(template.auth_mode).message,
+                content: error.message,
                 timestamp: Date.now(),
                 url: callbackUrl
             });
+            await logCtx.error(error.message);
+            await logCtx.failed();
 
-            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownAuthMode(template.auth_mode));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
+            const error = WSErrBuilder.UnknownError();
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnknownError().message + '\n' + prettyError,
+                content: error.message + '\n' + prettyError,
                 timestamp: Date.now()
             });
+            await logCtx.error(error.message, { error: errorToObject(e) });
+            await logCtx.failed();
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
@@ -342,6 +377,10 @@ class OAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth2 CC' },
+            { account: { id: accountId, name: '' }, environment: { id: environmentId } }
+        );
 
         try {
             analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, accountId);
@@ -369,6 +408,8 @@ class OAuthController {
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
                     });
+                    await logCtx.error('Missing HMAC in query params');
+                    await logCtx.failed();
 
                     errorManager.errRes(res, 'missing_hmac');
 
@@ -383,6 +424,8 @@ class OAuthController {
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
                     });
+                    await logCtx.error('Invalid HMAC');
+                    await logCtx.failed();
 
                     errorManager.errRes(res, 'invalid_hmac');
 
@@ -400,6 +443,8 @@ class OAuthController {
                     content: `Error during OAuth2 client credentials: config not found`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Unknown provider config');
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'unknown_provider_config');
 
@@ -416,6 +461,8 @@ class OAuthController {
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support oauth2 client credentials creation`
                 });
+                await logCtx.error('Provider does not support OAuth2 client credentials creation', { provider: config.provider });
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
@@ -434,6 +481,8 @@ class OAuthController {
                     content: `Error during OAuth2 client credentials creation: ${error}`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Error during OAuth2 client credentials creation', { provider: config.provider, error: errorToObject(error) });
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'oauth2_cc_error');
 
@@ -449,6 +498,8 @@ class OAuthController {
                 content: `OAuth2 client credentials connection creation was successful`,
                 timestamp: Date.now()
             });
+            await logCtx.info('OAuth2 client credentials creation was successful');
+            await logCtx.success();
 
             await updateSuccessActivityLog(activityLogId as number, true);
 
@@ -488,8 +539,10 @@ class OAuthController {
                 content: `Error during OAuth2 client credentials create: ${prettyError}`,
                 timestamp: Date.now()
             });
+            await logCtx.error('Error during OAuth2 client credentials creation', { error: errorToObject(err) });
+            await logCtx.failed();
 
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,

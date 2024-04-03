@@ -52,7 +52,7 @@ class ApiAuthController {
 
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization API Key' },
-            { account: { id: accountId, name: '' } }
+            { account: { id: accountId, name: '' }, environment: { id: environmentId } }
         );
 
         try {
@@ -285,8 +285,8 @@ class ApiAuthController {
 
         const activityLogId = await createActivityLog(log);
         const logCtx = await getOperationContext(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization basic' },
-            { account: { id: accountId, name: '' } }
+            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Basic' },
+            { account: { id: accountId, name: '' }, environment: { id: environmentId } }
         );
 
         try {
