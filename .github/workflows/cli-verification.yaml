@@ -36,8 +36,8 @@ jobs:
               continue-on-error: true
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
                   echo "hash=${GIT_HASH}" >> "$GITHUB_OUTPUT"
+                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
             - name: Publish the cli privately under the correct scope
               working-directory: packages/cli
               env:
