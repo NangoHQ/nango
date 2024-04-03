@@ -15,7 +15,7 @@ import {
     telemetry,
     MetricTypes
 } from '@nangohq/shared';
-import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
 
 const logger = getLogger('AccessMiddleware');

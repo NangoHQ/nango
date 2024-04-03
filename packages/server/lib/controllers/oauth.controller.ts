@@ -21,7 +21,6 @@ import type {
 } from '@nangohq/shared';
 import {
     getConnectionConfig,
-    connectionCreationStart as connectionCreationStartHook,
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     interpolateStringFromObject,
@@ -91,13 +90,6 @@ class OAuthController {
                 accountId: String(accountId),
                 providerConfigKey: String(providerConfigKey),
                 connectionId: String(connectionId)
-            });
-
-            await connectionCreationStartHook({
-                providerConfigKey,
-                connectionId,
-                environmentId,
-                activityLogId
             });
 
             const callbackUrl = await getOauthCallbackUrl(environmentId);

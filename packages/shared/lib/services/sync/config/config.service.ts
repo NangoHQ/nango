@@ -569,6 +569,55 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
     return result;
 }
 
+export async function getSyncConfigsWithConnectionsByEnvironmentIdAndProviderConfigKey(
+    providerConfigKey: string,
+    environment_id: number
+): Promise<SyncConfig[]> {
+    const result = await schema()
+        .select(
+            `${TABLE}.id`,
+            `${TABLE}.sync_name`,
+            `${TABLE}.type`,
+            `${TABLE}.runs`,
+            `${TABLE}.models`,
+            `${TABLE}.version`,
+            `${TABLE}.updated_at`,
+            `${TABLE}.auto_start`,
+            `${TABLE}.pre_built`,
+            `${TABLE}.is_public`,
+            `${TABLE}.metadata`,
+            '_nango_configs.provider',
+            '_nango_configs.unique_key',
+            db.knex.raw(
+                `(
+                    SELECT json_agg(
+                        json_build_object(
+                            'connection_id', _nango_connections.connection_id,
+                            'metadata', _nango_connections.metadata
+                        )
+                    )
+                    FROM _nango_connections
+                    WHERE _nango_configs.environment_id = _nango_connections.environment_id
+                    AND _nango_configs.unique_key = _nango_connections.provider_config_key
+                    AND _nango_configs.deleted = false
+                    AND _nango_connections.deleted = false
+                ) as connections
+                `
+            )
+        )
+        .from<SyncConfig>(TABLE)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            '_nango_configs.environment_id': environment_id,
+            '_nango_configs.unique_key': providerConfigKey,
+            active: true,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false
+        });
+
+    return result;
+}
+
 /**
  * Get Sync Configs By Provider Key
  * @desc grab all the sync configs by a provider key
