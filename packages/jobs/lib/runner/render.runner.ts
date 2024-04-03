@@ -73,7 +73,7 @@ export class RenderRunner implements Runner {
                         { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] || 'true' },
                         { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
                         { key: 'RUNNER_ID', value: runnerId },
-                        { key: 'NOTIFY_IDLE_ENDPOINT', value: `${jobsServiceUrl}/idle` },
+                        { key: 'JOBS_SERVICE_URL', value: `${jobsServiceUrl}` },
                         { key: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
                         { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
                         { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
