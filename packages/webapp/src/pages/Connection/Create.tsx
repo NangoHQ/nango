@@ -52,8 +52,8 @@ export default function IntegrationCreate() {
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
-    const [optionalOAuthClientId, setOptionalOAuthClientId] = useState('');
-    const [optionalOAuthClientSecret, setOptionalOAuthClientSecret] = useState('');
+    const [oAuthClientId, setOAuthClientId] = useState('');
+    const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [issuerId, setIssuerId] = useState('');
@@ -131,6 +131,9 @@ export default function IntegrationCreate() {
         let credentials = {};
         let params = connectionConfigParams || {};
 
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        Object.keys(params).forEach((key) => params[key] === '' && delete params[key]);
+
         if (authMode === AuthModes.Basic) {
             credentials = {
                 username: apiAuthUsername,
@@ -154,8 +157,8 @@ export default function IntegrationCreate() {
 
         if (authMode === AuthModes.OAuth2) {
             credentials = {
-                oauth_client_id_override: optionalOAuthClientId,
-                oauth_client_secret_override: optionalOAuthClientSecret
+                oauth_client_id_override: oAuthClientId,
+                oauth_client_secret_override: oAuthClientSecret
             };
 
             if (oauthSelectedScopes.length > 0) {
@@ -164,6 +167,13 @@ export default function IntegrationCreate() {
                     oauth_scopes_override: oauthSelectedScopes.join(',')
                 };
             }
+        }
+
+        if (authMode === AuthModes.OAuth2CC) {
+            credentials = {
+                client_id: oAuthClientId,
+                client_secret: oAuthClientSecret
+            };
         }
 
         nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
@@ -338,13 +348,42 @@ export default function IntegrationCreate() {
 
         let oauthCredentialsString = '';
 
-        if (integration?.authMode === AuthModes.OAuth2 && optionalOAuthClientId && optionalOAuthClientSecret) {
+        if (integration?.authMode === AuthModes.OAuth2 && oAuthClientId && oAuthClientSecret) {
             oauthCredentialsString = `
     credentials: {
-        oauth_client_id_override: '${optionalOAuthClientId}',
-        oauth_client_secret_override: '${optionalOAuthClientSecret}'
+        oauth_client_id_override: '${oAuthClientId}',
+        oauth_client_secret_override: '${oAuthClientSecret}'
     }
   `;
+        }
+
+        let oauth2ClientCredentialsString = '';
+
+        if (integration?.authMode === AuthModes.OAuth2CC) {
+            if (oAuthClientId && oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_id: '${oAuthClientId}',
+        client_secret: '${oAuthClientSecret}'
+    }
+  `;
+            }
+
+            if (oAuthClientId && !oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_id: '${oAuthClientId}'
+    }
+  `;
+            }
+
+            if (!oAuthClientId && oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_secret: '${oAuthClientSecret}'
+    }
+  `;
+            }
         }
 
         const connectionConfigStr =
@@ -354,10 +393,20 @@ export default function IntegrationCreate() {
             !hmacKeyStr &&
             !apiAuthString &&
             !appStoreAuthString &&
-            !oauthCredentialsString
+            !oauthCredentialsString &&
+            !oauth2ClientCredentialsString
                 ? ''
                 : ', { ' +
-                  [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString, oauthCredentialsString]
+                  [
+                      connectionConfigParamsStr,
+                      authorizationParamsStr,
+                      hmacKeyStr,
+                      userScopesStr,
+                      apiAuthString,
+                      appStoreAuthString,
+                      oauthCredentialsString,
+                      oauth2ClientCredentialsString
+                  ]
                       .filter(Boolean)
                       .join(', ') +
                   '}';
@@ -457,6 +506,45 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
+                            {authMode === AuthModes.OAuth2CC && (
+                                <>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client ID</span>
+                                        </div>
+                                        <div className="flex text-white mt-1 items-center">
+                                            <div className="w-full relative">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id="oauth_client_id"
+                                                    name="oauth_client_id"
+                                                    placeholder="Find the Client ID on the developer portal of the external API provider."
+                                                    optionalvalue={oAuthClientId}
+                                                    setoptionalvalue={setOAuthClientId}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client Secret</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_secret"
+                                                name="client_secret"
+                                                autoComplete="one-time-code"
+                                                placeholder="Find the Client Secret on the developer portal of the external API provider."
+                                                required
+                                                optionalvalue={oAuthClientSecret}
+                                                setoptionalvalue={setOAuthClientSecret}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                             {integration?.provider === 'netsuite' && (
                                 <div>
                                     <div className="flex mt-6">
@@ -470,8 +558,8 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             id="oauth_client_id"
                                             name="oauth_client_id"
                                             placeholder="OAuth Client ID Override"
-                                            optionalvalue={optionalOAuthClientId}
-                                            setoptionalvalue={setOptionalOAuthClientId}
+                                            optionalvalue={oAuthClientId}
+                                            setoptionalvalue={setOAuthClientId}
                                         />
                                     </div>
                                     <div className="mt-8">
@@ -480,8 +568,8 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             id="oauth_client_secret"
                                             name="oauth_client_secret"
                                             placeholder="OAuth Client Secret Override"
-                                            optionalvalue={optionalOAuthClientSecret}
-                                            setoptionalvalue={setOptionalOAuthClientSecret}
+                                            optionalvalue={oAuthClientSecret}
+                                            setoptionalvalue={setOAuthClientSecret}
                                         />
                                     </div>
                                     <div className="flex mt-6">

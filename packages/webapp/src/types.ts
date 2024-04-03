@@ -111,6 +111,7 @@ export const UserFacingSyncCommand = {
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
+    OAuth2CC = 'OAUTH2_CC',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
@@ -134,7 +135,7 @@ export interface Connection {
     oauthToken: string | null;
     oauthTokenSecret: string | null;
     rawCredentials: object;
-    credentials: BasicApiCredentials | ApiKeyCredentials | OAuthOverride | null;
+    credentials: BasicApiCredentials | ApiKeyCredentials | OAuthOverride | OAuth2ClientCredentials | null;
 }
 
 export interface BasicApiCredentials {
@@ -151,6 +152,14 @@ export interface OAuthOverride {
         client_id: string;
         client_secret: string;
     };
+}
+
+export interface OAuth2ClientCredentials {
+    token: string;
+    access_token: string;
+    expires_at: string;
+    client_id: string;
+    client_secret: string;
 }
 
 export interface User {

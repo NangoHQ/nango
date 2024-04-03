@@ -40,6 +40,7 @@ export enum AnalyticsTypes {
     PRE_BASIC_API_KEY_AUTH = 'server:pre_basic_api_key_auth',
     PRE_UNAUTH = 'server:pre_unauth',
     PRE_WS_OAUTH = 'server:pre_ws_oauth',
+    PRE_OAUTH2_CC_AUTH = 'server:pre_oauth2_cc_auth',
     SYNC_DEPLOY_SUCCESS = 'sync:deploy_succeeded',
     SYNC_PAUSE = 'sync:command_pause',
     SYNC_RUN = 'sync:command_run',

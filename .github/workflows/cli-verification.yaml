@@ -32,4 +32,9 @@ jobs:
               shell: bash
               run: |
                   GIT_HASH=$(git rev-parse --short HEAD)
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
+                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH true
+            - name: Install the cli from the github package registry
+              run: |
+                  GIT_HASH=$(git rev-parse --short HEAD)
+                  npm install -g nango@$0.0.1-$GIT_HASH
+                  nango version --debug

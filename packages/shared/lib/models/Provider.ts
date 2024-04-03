@@ -36,6 +36,8 @@ export interface Template {
         verification?: {
             method: HTTP_VERB;
             endpoint: string;
+            base_url_override?: string;
+            headers?: Record<string, string>;
         };
     };
     authorization_url: string;
@@ -53,6 +55,7 @@ export interface Template {
     webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
     categories?: string[];
+    connection_configuration?: string[];
 }
 
 export interface TemplateAlias {
