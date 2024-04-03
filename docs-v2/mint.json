@@ -3,7 +3,8 @@
     "name": "Nango Docs",
     "logo": {
         "light": "/logo/light.svg",
-        "dark": "/logo/dark.svg"
+        "dark": "/logo/dark.svg",
+        "href": "https://www.nango.dev"
     },
     "favicon": "/favicon.png",
     "colors": {
@@ -87,7 +88,7 @@
         },
         {
             "source": "/guides/webhooks",
-            "destination": "/integrate/guides/receive-webhooks-from-nango"
+            "destination": "/understand/concepts/webhooks"
         },
         {
             "source": "/guides/advanced-auth",
@@ -402,6 +403,7 @@
                         "integrations/all/paypal",
                         "integrations/all/pendo",
                         "integrations/all/pennylane",
+                        "integrations/all/personio",
                         "integrations/all/pinterest",
                         "integrations/all/pipedrive",
                         "integrations/all/qualtrics",

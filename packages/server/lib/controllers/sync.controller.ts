@@ -68,14 +68,14 @@ class SyncController {
             }
 
             if (reconcile) {
-                const success = await getAndReconcileDifferences(
+                const success = await getAndReconcileDifferences({
                     environmentId,
                     syncs,
-                    reconcile,
-                    syncConfigDeployResult?.activityLogId as number,
+                    performAction: reconcile,
+                    activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
                     singleDeployMode
-                );
+                });
                 if (!success) {
                     reconcileSuccess = false;
                 }
@@ -109,7 +109,7 @@ class SyncController {
                 req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug, singleDeployMode);
+            const result = await getAndReconcileDifferences({ environmentId, syncs, performAction: false, activityLogId: null, debug, singleDeployMode });
 
             res.send(result);
         } catch (e) {
@@ -421,7 +421,7 @@ class SyncController {
                 throw new NangoError('failed_to_get_sync_client');
             }
 
-            const actionResponse = await syncClient.triggerAction(connection, action_name, input, activityLogId, environmentId);
+            const actionResponse = await syncClient.triggerAction({ connection, actionName: action_name, input, activityLogId, environment_id: environmentId });
 
             if (isOk(actionResponse)) {
                 res.send(actionResponse.res);
@@ -637,17 +637,17 @@ class SyncController {
                 return;
             }
 
-            const result = await syncClient.runSyncCommand(
-                schedule_id,
-                sync_id,
+            const result = await syncClient.runSyncCommand({
+                scheduleId: schedule_id,
+                syncId: sync_id,
                 command,
-                activityLogId as number,
-                environment.id,
-                connection?.provider_config_key as string,
-                connection?.connection_id as string,
-                sync_name,
-                connection?.id
-            );
+                activityLogId: activityLogId as number,
+                environmentId: environment.id,
+                providerConfigKey: connection?.provider_config_key as string,
+                connectionId: connection?.connection_id as string,
+                syncName: sync_name,
+                nangoConnectionId: connection?.id
+            });
 
             if (isErr(result)) {
                 errorManager.handleGenericError(result.err, req, res, tracer);
@@ -752,7 +752,7 @@ class SyncController {
             const setFrequency = `every ${frequency}`;
             for (const sync of syncs) {
                 const { success: updateScheduleSuccess, error: updateScheduleError } = await updateSyncScheduleFrequency(
-                    sync.id as string,
+                    sync.id,
                     setFrequency,
                     sync.name,
                     environment.id
@@ -868,7 +868,7 @@ class SyncController {
                 res.status(400).send({ message: 'Invalid sync_name' });
                 return;
             }
-            const syncId = syncs[0]!.id!;
+            const syncId = syncs[0]!.id;
 
             // When "frequency === null" we revert the value stored in the sync config
             if (!newFrequency) {

@@ -1,5 +1,5 @@
 import type { Context } from '@temporalio/activity';
-import type { IntegrationServiceInterface, NangoIntegrationData, NangoProps, ServiceResponse } from '@nangohq/shared';
+import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
 import { integrationFilesAreRemote, isCloud, isProd } from '@nangohq/utils/dist/environment/detection.js';
 import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError, isOk } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
@@ -49,20 +49,20 @@ class IntegrationService implements IntegrationServiceInterface {
         }
     }
 
-    async runScript(
-        syncName: string,
-        syncId: string,
-        activityLogId: number | undefined,
-        nangoProps: NangoProps,
-        integrationData: NangoIntegrationData,
-        environmentId: number,
-        writeToDb: boolean,
-        isInvokedImmediately: boolean,
-        isWebhook: boolean,
-        optionalLoadLocation?: string,
-        input?: object,
-        temporalContext?: Context
-    ): Promise<ServiceResponse<any>> {
+    async runScript({
+        syncName,
+        syncId,
+        activityLogId,
+        nangoProps,
+        integrationData,
+        environmentId,
+        writeToDb,
+        isInvokedImmediately,
+        isWebhook,
+        optionalLoadLocation,
+        input,
+        temporalContext
+    }: RunScriptOptions): Promise<ServiceResponse<any>> {
         const span = tracer
             .startSpan('runScript')
             .setTag('accountId', nangoProps.accountId)

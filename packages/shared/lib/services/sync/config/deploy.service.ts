@@ -83,7 +83,7 @@ export async function deploy(
     const flowReturnData: SyncDeploymentResult[] = [];
 
     for (const flow of flows) {
-        const { success, error, response } = await compileDeployInfo(
+        const { success, error, response } = await compileDeployInfo({
             flow,
             flowsWithVersions,
             idsToMarkAsInvactive,
@@ -92,9 +92,9 @@ export async function deploy(
             env,
             environment_id,
             accountId,
-            activityLogId as number,
+            activityLogId: activityLogId as number,
             debug
-        );
+        });
 
         if (!success || !response) {
             await createActivityLogMessageAndEnd({
@@ -534,18 +534,29 @@ export async function deployPreBuilt(
     }
 }
 
-async function compileDeployInfo(
-    flow: IncomingFlowConfig,
-    flowsWithVersions: FlowWithVersion[],
-    idsToMarkAsInvactive: number[],
-    insertData: SyncConfig[],
-    flowReturnData: SyncConfigResult['result'],
-    env: string,
-    environment_id: number,
-    accountId: number,
-    activityLogId: number,
-    debug: boolean
-): Promise<ServiceResponse<FlowWithVersion[]>> {
+async function compileDeployInfo({
+    flow,
+    flowsWithVersions,
+    idsToMarkAsInvactive,
+    insertData,
+    flowReturnData,
+    env,
+    environment_id,
+    accountId,
+    activityLogId,
+    debug
+}: {
+    flow: IncomingFlowConfig;
+    flowsWithVersions: FlowWithVersion[];
+    idsToMarkAsInvactive: number[];
+    insertData: SyncConfig[];
+    flowReturnData: SyncConfigResult['result'];
+    env: string;
+    environment_id: number;
+    accountId: number;
+    activityLogId: number;
+    debug: boolean;
+}): Promise<ServiceResponse<FlowWithVersion[]>> {
     const {
         syncName,
         providerConfigKey,

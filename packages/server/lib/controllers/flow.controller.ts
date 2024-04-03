@@ -16,7 +16,6 @@ import {
     getConfigWithEndpointsByProviderConfigKeyAndName,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName
 } from '@nangohq/shared';
-import { NANGO_ADMIN_UUID } from './account.controller.js';
 
 class FlowController {
     public async getFlows(req: Request, res: Response, next: NextFunction) {
@@ -42,14 +41,6 @@ class FlowController {
 
             if (!success || response === null) {
                 errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { accountId } = response;
-            const fullAccount = await accountService.getAccountById(accountId);
-
-            if (fullAccount?.uuid !== NANGO_ADMIN_UUID) {
-                res.status(401).send('Unauthorized');
                 return;
             }
 
@@ -232,7 +223,7 @@ class FlowController {
                 const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
 
                 for (const sync of syncs) {
-                    await syncOrchestrator.softDeleteSync(sync.id!, environmentId);
+                    await syncOrchestrator.softDeleteSync(sync.id, environmentId);
                 }
             }
 

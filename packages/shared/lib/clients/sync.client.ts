@@ -359,17 +359,27 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(
-        scheduleId: string,
-        syncId: string,
-        command: SyncCommand,
-        activityLogId: number,
-        environmentId: number,
-        providerConfigKey: string,
-        connectionId: string,
-        syncName: string,
-        nangoConnectionId?: number
-    ): Promise<Result<boolean>> {
+    async runSyncCommand({
+        scheduleId,
+        syncId,
+        command,
+        activityLogId,
+        environmentId,
+        providerConfigKey,
+        connectionId,
+        syncName,
+        nangoConnectionId
+    }: {
+        scheduleId: string;
+        syncId: string;
+        command: SyncCommand;
+        activityLogId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        connectionId: string;
+        syncName: string;
+        nangoConnectionId?: number | undefined;
+    }): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
@@ -498,14 +508,21 @@ class SyncClient {
         }
     }
 
-    async triggerAction<T = any>(
-        connection: NangoConnection,
-        actionName: string,
-        input: object,
-        activityLogId: number,
-        environment_id: number,
+    async triggerAction<T = any>({
+        connection,
+        actionName,
+        input,
+        activityLogId,
+        environment_id,
         writeLogs = true
-    ): Promise<Result<T, NangoError>> {
+    }: {
+        connection: NangoConnection;
+        actionName: string;
+        input: object;
+        activityLogId: number;
+        environment_id: number;
+        writeLogs?: boolean;
+    }): Promise<Result<T, NangoError>> {
         const startTime = Date.now();
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id);
 

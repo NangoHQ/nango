@@ -481,14 +481,21 @@ export const getSyncsByConnectionIdsAndEnvironmentIdAndSyncName = async (connect
     return [];
 };
 
-export const getAndReconcileDifferences = async (
-    environmentId: number,
-    syncs: IncomingFlowConfig[],
-    performAction: boolean,
-    activityLogId: number | null,
+export const getAndReconcileDifferences = async ({
+    environmentId,
+    syncs,
+    performAction,
+    activityLogId,
     debug = false,
     singleDeployMode = false
-): Promise<SyncAndActionDifferences | null> => {
+}: {
+    environmentId: number;
+    syncs: IncomingFlowConfig[];
+    performAction: boolean;
+    activityLogId: number | null;
+    debug?: boolean | undefined;
+    singleDeployMode?: boolean | undefined;
+}): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
     const syncsToCreate = [];
@@ -646,7 +653,7 @@ export const getAndReconcileDifferences = async (
                         for (const connection of connections) {
                             const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                             if (syncId) {
-                                await syncOrchestrator.softDeleteSync(syncId.id!, environmentId);
+                                await syncOrchestrator.softDeleteSync(syncId.id, environmentId);
                             }
                         }
                     }

@@ -1,6 +1,6 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
-import type { NangoConnection } from '../../models/Connection.js';
+import type { NangoConnection, Metadata } from '../../models/Connection.js';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -21,8 +21,7 @@ import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import type { Environment } from '../../models/Environment';
-import type { Metadata } from '../../models/Connection';
+import type { Environment } from '../../models/Environment.js';
 import * as recordsService from './data/records.service.js';
 
 interface BigQueryClientInterface {
@@ -360,21 +359,22 @@ export default class SyncRun {
                     success,
                     error,
                     response: userDefinedResults
-                } = await this.integrationService.runScript(
-                    this.syncName,
-                    (this.syncId as string) ||
+                } = await this.integrationService.runScript({
+                    syncName: this.syncName,
+                    syncId:
+                        (this.syncId as string) ||
                         `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
-                    this.activityLogId as number,
+                    activityLogId: this.activityLogId as number,
                     nangoProps,
-                    syncData,
-                    this.nangoConnection.environment_id,
-                    this.writeToDb,
-                    this.isInvokedImmediately,
-                    this.isWebhook,
-                    this.loadLocation,
-                    this.input,
-                    this.temporalContext
-                );
+                    integrationData: syncData,
+                    environmentId: this.nangoConnection.environment_id,
+                    writeToDb: this.writeToDb,
+                    isInvokedImmediately: this.isInvokedImmediately,
+                    isWebhook: this.isWebhook,
+                    optionalLoadLocation: this.loadLocation,
+                    input: this.input,
+                    temporalContext: this.temporalContext
+                });
 
                 if (!success || (error && userDefinedResults === null)) {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${

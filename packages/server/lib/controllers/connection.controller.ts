@@ -74,7 +74,7 @@ class ConnectionController {
                 return;
             }
 
-            if (connection == null) {
+            if (!connection) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     environment_id: environment.id,
@@ -90,7 +90,7 @@ class ConnectionController {
 
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
-            if (config == null) {
+            if (!config) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     environment_id: environment.id,
@@ -113,15 +113,15 @@ class ConnectionController {
                     success,
                     error,
                     response: credentials
-                } = await connectionService.refreshCredentialsIfNeeded(
+                } = await connectionService.refreshCredentialsIfNeeded({
                     connection,
-                    config,
-                    template as ProviderTemplateOAuth2,
-                    null,
-                    environment.id,
+                    providerConfig: config,
+                    template: template as ProviderTemplateOAuth2,
+                    activityLogId: null,
+                    environment_id: environment.id,
                     instantRefresh,
-                    LogActionEnum.TOKEN
-                );
+                    logAction: LogActionEnum.TOKEN
+                });
 
                 if (!success) {
                     errorManager.errResFromNangoErr(res, error);

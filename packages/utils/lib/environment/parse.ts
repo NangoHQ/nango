@@ -37,7 +37,6 @@ export const ENVS = z.object({
     RUNNER_OWNER_ID: z.coerce.number().optional(),
     RUNNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
-    NOTIFY_IDLE_ENDPOINT: z.string().optional(),
 
     // Demo
     DEFAULT_GITHUB_CLIENT_ID: z.string().optional(),
@@ -54,6 +53,11 @@ export const ENVS = z.object({
     DD_SITE: z.string().optional(),
     DD_TRACE_AGENT_URL: z.string().optional(),
 
+    // Elasticsearch
+    NANGO_LOGS_ES_URL: z.string().url().optional(),
+    NANGO_LOGS_ES_USER: z.string().optional(),
+    NANGO_LOGS_ES_PWD: z.string().optional(),
+
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
 
@@ -68,6 +72,9 @@ export const ENVS = z.object({
     NANGO_DB_CLIENT: z.string().optional(),
     NANGO_ENCRYPTION_KEY: z.string().optional(),
     NANGO_DB_MIGRATION_FOLDER: z.string().optional(),
+
+    // Records
+    RECORDS_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'),
 
     // Redis
     NANGO_REDIS_URL: z.string().url().optional(),

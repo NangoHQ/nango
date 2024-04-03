@@ -32,7 +32,7 @@ import type {
 } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { ServiceResponse } from '../../models/Generic';
+import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 
 interface CreateSyncArgs {
@@ -144,7 +144,7 @@ export class Orchestrator {
         }
 
         for (const sync of syncs) {
-            await this.softDeleteSync(sync.id!, connection.environment_id);
+            await this.softDeleteSync(sync.id, connection.environment_id);
         }
     }
 
@@ -156,7 +156,7 @@ export class Orchestrator {
         }
 
         for (const sync of syncs) {
-            await this.softDeleteSync(sync.id as string, environmentId);
+            await this.softDeleteSync(sync.id, environmentId);
         }
     }
 
@@ -210,22 +210,22 @@ export class Orchestrator {
                 if (!sync) {
                     throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
-                const schedule = await getSchedule(sync.id as string);
+                const schedule = await getSchedule(sync.id);
                 if (!schedule) {
                     continue;
                 }
 
-                await syncClient.runSyncCommand(
-                    schedule.schedule_id,
-                    sync?.id as string,
+                await syncClient.runSyncCommand({
+                    scheduleId: schedule.schedule_id,
+                    syncId: sync?.id,
                     command,
                     activityLogId,
                     environmentId,
                     providerConfigKey,
                     connectionId,
                     syncName,
-                    connection.id
-                );
+                    nangoConnectionId: connection.id
+                });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
@@ -244,7 +244,7 @@ export class Orchestrator {
             }
 
             for (const sync of syncs) {
-                const schedule = await getSchedule(sync.id as string);
+                const schedule = await getSchedule(sync.id);
                 if (!schedule) {
                     continue;
                 }
@@ -254,17 +254,17 @@ export class Orchestrator {
                     continue;
                 }
 
-                await syncClient.runSyncCommand(
-                    schedule.schedule_id,
-                    sync.id as string,
+                await syncClient.runSyncCommand({
+                    scheduleId: schedule.schedule_id,
+                    syncId: sync.id,
                     command,
                     activityLogId,
                     environmentId,
                     providerConfigKey,
-                    connection.connection_id,
-                    sync.name,
-                    connection.id
-                );
+                    connectionId: connection.connection_id,
+                    syncName: sync.name,
+                    nangoConnectionId: connection.id
+                });
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
                 }
@@ -310,7 +310,7 @@ export class Orchestrator {
                     continue;
                 }
 
-                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id as string, environmentId);
+                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
                 const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);
@@ -326,7 +326,7 @@ export class Orchestrator {
             }
 
             for (const sync of syncs) {
-                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id as string, environmentId);
+                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
                 const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);

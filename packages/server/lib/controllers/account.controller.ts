@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
-import { accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
+import { getEnvironmentAndAccountId, accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
@@ -58,6 +58,39 @@ class AccountController {
 
             await accountService.editAccount(name, account.id);
             res.status(200).send({ name });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async editCustomer(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error } = await getEnvironmentAndAccountId(res, req);
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { is_capped, account_uuid: accountUUID } = req.body;
+
+            if (!accountUUID) {
+                res.status(400).send({ error: 'account_uuid property is required' });
+                return;
+            }
+
+            if (is_capped === undefined || is_capped === null) {
+                res.status(400).send({ error: 'is_capped property is required' });
+                return;
+            }
+
+            const account = await accountService.getAccountByUUID(accountUUID);
+
+            if (!account) {
+                res.status(400).send({ error: 'Account not found' });
+                return;
+            }
+
+            await accountService.editCustomer(is_capped, account.id);
+            res.status(200).send({ is_capped, accountUUID });
         } catch (err) {
             next(err);
         }

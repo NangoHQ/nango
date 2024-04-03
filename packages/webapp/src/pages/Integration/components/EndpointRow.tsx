@@ -1,5 +1,5 @@
 import EndpointLabel from './EndpointLabel';
-import { Flow, FlowEndpoint, IntegrationConfig } from '../../../types';
+import type { Flow, FlowEndpoint, IntegrationConfig } from '../../../types';
 import FlowCard from './FlowCard';
 import { SubTabs } from '../Show';
 

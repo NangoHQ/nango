@@ -254,18 +254,18 @@ class OAuthController {
             }
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Request(
-                    template as ProviderTemplateOAuth2,
-                    config,
+                return this.oauth2Request({
+                    template: template as ProviderTemplateOAuth2,
+                    providerConfig: config,
                     session,
                     res,
                     connectionConfig,
                     authorizationParams,
                     callbackUrl,
-                    activityLogId as number,
-                    environmentId,
+                    activityLogId: activityLogId as number,
+                    environment_id: environmentId,
                     userScope
-                );
+                });
             } else if (template.auth_mode === ProviderAuthModes.App || template.auth_mode === ProviderAuthModes.Custom) {
                 const appCallBackUrl = getGlobalAppCallbackUrl();
                 return this.appRequest(template, config, session, res, authorizationParams, appCallBackUrl, activityLogId as number, environmentId);
@@ -517,18 +517,29 @@ class OAuthController {
         }
     }
 
-    private async oauth2Request(
-        template: ProviderTemplateOAuth2,
-        providerConfig: ProviderConfig,
-        session: OAuthSession,
-        res: Response,
-        connectionConfig: Record<string, string>,
-        authorizationParams: Record<string, string | undefined>,
-        callbackUrl: string,
-        activityLogId: number,
-        environment_id: number,
-        userScope?: string
-    ) {
+    private async oauth2Request({
+        template,
+        providerConfig,
+        session,
+        res,
+        connectionConfig,
+        authorizationParams,
+        callbackUrl,
+        activityLogId,
+        environment_id,
+        userScope
+    }: {
+        template: ProviderTemplateOAuth2;
+        providerConfig: ProviderConfig;
+        session: OAuthSession;
+        res: Response;
+        connectionConfig: Record<string, string>;
+        authorizationParams: Record<string, string | undefined>;
+        callbackUrl: string;
+        activityLogId: number;
+        environment_id: number;
+        userScope?: string | undefined;
+    }) {
         const oauth2Template = template;
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;

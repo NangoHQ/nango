@@ -1,6 +1,6 @@
 import db from '../db/database.js';
-import type { Account } from '../models/Admin';
-import type { Environment } from '../models/Environment';
+import type { Account } from '../models/Admin.js';
+import type { Environment } from '../models/Environment.js';
 import { LogActionEnum } from '../models/Activity.js';
 import environmentService from './environment.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -8,13 +8,8 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 class AccountService {
     async getAccountById(id: number): Promise<Account | null> {
         try {
-            const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: id });
-
-            if (result == null || result.length == 0 || result[0] == null) {
-                return null;
-            }
-
-            return result[0];
+            const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: id }).first();
+            return result || null;
         } catch (e) {
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -36,6 +31,12 @@ class AccountService {
                 accountId: id
             });
         }
+    }
+
+    async getAccountByUUID(uuid: string): Promise<Account | null> {
+        const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ uuid }).first();
+
+        return result || null;
     }
 
     async getAccountAndEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<{ accountId: number; environmentId: number } | null> {
@@ -100,6 +101,10 @@ class AccountService {
         }
 
         return null;
+    }
+
+    async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
+        await db.knex.update({ is_capped }).from<Account>(`_nango_accounts`).where({ id: accountId });
     }
 }
 

@@ -38,5 +38,31 @@ services:
         networks:
             - nango
 
+    es:
+        container_name: es
+        image: elasticsearch:8.12.2
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - esdata1:/usr/share/elasticsearch/data
+        ports:
+            - 9500:9200
+            - 9600:9300
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
+        networks:
+            - nango
+        deploy:
+            resources:
+                limits:
+                    memory: 2GB
+
 networks:
     nango:
+
+volumes:
+    esdata1:
+        driver: local

@@ -88,6 +88,10 @@ export function getPersistAPIUrl() {
     return process.env['PERSIST_SERVICE_URL'] || 'http://localhost:3007';
 }
 
+export function getJobsUrl() {
+    return process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
+}
+
 function getServerHost() {
     return process.env['SERVER_HOST'] || process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'http://nango-server' : 'http://localhost';
 }
@@ -315,7 +319,7 @@ export async function getEnvironmentAndAccountId(
 
 export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<ServiceResponse<{ accountId: number; environmentId: number }>> {
     const sessionUser = req.user as User;
-    const currentEnvironment = req.cookies['env'] || 'dev';
+    const currentEnvironment: string = req.cookies['env'] || 'dev';
 
     if (sessionUser == null) {
         const error = new NangoError('user_not_found');
@@ -331,7 +335,7 @@ export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Pro
 
     const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
 
-    if (environmentAndAccount == null) {
+    if (!environmentAndAccount) {
         const error = new NangoError('account_not_found');
         return { response: null, error, success: false };
     }

@@ -1,4 +1,4 @@
-import { FlowEndpoint } from '../../../types';
+import type { FlowEndpoint } from '../../../types';
 
 interface HttpLabelProp {
     path: string;

@@ -1,0 +1,59 @@
+import md5 from 'md5';
+import * as uuid from 'uuid';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import type { FormattedRecord, UnencryptedRecordData } from '../types.js';
+import { NangoError, resultErr, resultOk } from '@nangohq/shared';
+import type { Result } from '@nangohq/shared';
+
+dayjs.extend(utc);
+
+export const formatRecords = (
+    data: UnencryptedRecordData[],
+    connection_id: number,
+    model: string,
+    syncId: string,
+    sync_job_id: number,
+    softDelete = false
+): Result<FormattedRecord[]> => {
+    // hashing unique composite key (connection, model, external_id)
+    // to generate stable record ids across script executions
+    const stableId = (unencryptedData: UnencryptedRecordData): string => {
+        const namespace = uuid.v5(`${connection_id}${model}`, uuid.NIL);
+        return uuid.v5(`${connection_id}${model}${unencryptedData.id}`, namespace);
+    };
+    const formattedRecords: FormattedRecord[] = [];
+    for (const datum of data) {
+        const data_hash = md5(JSON.stringify(datum));
+
+        if (!datum) {
+            break;
+        }
+
+        if (!datum['id']) {
+            const error = new NangoError('missing_id_field', model);
+            return resultErr(error);
+        }
+
+        const formattedRecord: FormattedRecord = {
+            id: stableId(datum),
+            json: datum,
+            external_id: datum['id'],
+            data_hash,
+            model,
+            connection_id,
+            sync_id: syncId,
+            sync_job_id
+        };
+
+        if (softDelete) {
+            const deletedAt = datum['deletedAt'];
+            formattedRecord.updated_at = new Date();
+            formattedRecord.deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : new Date();
+        } else {
+            formattedRecord.deleted_at = null;
+        }
+        formattedRecords.push(formattedRecord);
+    }
+    return resultOk(formattedRecords);
+};

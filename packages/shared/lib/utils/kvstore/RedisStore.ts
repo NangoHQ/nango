@@ -1,4 +1,4 @@
-import type { KVStore } from './KVStore';
+import type { KVStore } from './KVStore.js';
 import { createClient } from 'redis';
 import type { RedisClientType } from 'redis';
 

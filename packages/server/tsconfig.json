@@ -13,6 +13,9 @@
         },
         {
             "path": "../utils"
+        },
+        {
+            "path": "../records"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts"]

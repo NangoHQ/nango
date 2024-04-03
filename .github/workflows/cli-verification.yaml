@@ -14,10 +14,11 @@ concurrency:
 jobs:
     publish-and-test:
         runs-on: ubuntu-latest
+        env:
+            NANGO_CLI_UPGRADE_MODE: ignore
         permissions:
             contents: read
             packages: write
-
         steps:
             - uses: actions/checkout@v4
 
@@ -25,16 +26,35 @@ jobs:
               with:
                   node-version: '18.x'
                   registry-url: 'https://npm.pkg.github.com'
-
+                  scope: '@nangohq'
+                  always-auth: true
             - name: Publish npm packages to the github registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               shell: bash
+              continue-on-error: true
               run: |
-                  GIT_HASH=$(git rev-parse --short HEAD)
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH true
+                  GIT_HASH=$(git rev-parse HEAD)
+                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
+            - name: Publish the cli privately under the correct scope
+              working-directory: packages/cli
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
+                  npm publish --access public
             - name: Install the cli from the github package registry
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  GIT_HASH=$(git rev-parse --short HEAD)
-                  npm install -g nango@$0.0.1-$GIT_HASH
-                  nango version --debug
+                  GIT_HASH=$(git rev-parse HEAD)
+                  mkdir nango-cli-test && cd nango-cli-test
+                  npm init -y
+                  npm install @nangohq/cli@0.0.1-$GIT_HASH
+                  VERSION_OUTPUT=$(npx nango version)
+                  EXPECTED_VERSION="Nango CLI version: 0.0.1-$GIT_HASH"
+                  [ "$VERSION_OUTPUT" = "$EXPECTED_VERSION" ] || { echo "Version mismatch. Expected: $EXPECTED_VERSION, got: $VERSION_OUTPUT"; exit 1; }
+                  npx nango version --debug
+                  npx nango init --debug
+                  cd nango-integrations
+                  npx nango generate --debug
