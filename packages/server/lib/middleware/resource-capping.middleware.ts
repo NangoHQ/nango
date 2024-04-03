@@ -1,8 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
-import { getSyncConfigsWithConnectionsByEnvironmentIdAndProviderConfigKey, accountService, getEnvironmentAndAccountId, errorManager } from '@nangohq/shared';
-
-const logger = getLogger('Resource Capping Middleware');
+import {
+    accountService,
+    getEnvironmentAndAccountId,
+    errorManager,
+    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook
+} from '@nangohq/shared';
 
 export const authCheck = async (req: Request, res: Response, next: NextFunction) => {
     const { success, error, response } = await getEnvironmentAndAccountId(res, req);
@@ -24,11 +26,11 @@ export const authCheck = async (req: Request, res: Response, next: NextFunction)
     const { providerConfigKey } = req.params;
 
     if (account.is_capped && providerConfigKey) {
-        logger.info('is capped');
-        // account cannot have more than 3 connections for integrations with active scripts
-        console.log(providerConfigKey);
-        const syncConfigs = await getSyncConfigsWithConnectionsByEnvironmentIdAndProviderConfigKey(providerConfigKey, environmentId);
-        console.log(syncConfigs);
+        const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey, environmentId });
+        if (isCapped) {
+            errorManager.errRes(res, 'resource_capped');
+            return;
+        }
     }
 
     next();

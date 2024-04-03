@@ -28,6 +28,7 @@ import {
     environmentService,
     accountService,
     connectionCreated as connectionCreatedHook,
+    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     slackNotificationService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -525,6 +526,21 @@ class ConnectionController {
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
+            }
+
+            const account = await accountService.getAccountById(accountId);
+
+            if (!account) {
+                errorManager.errRes(res, 'unknown_account');
+                return;
+            }
+
+            if (account.is_capped && provider_config_key) {
+                const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey: provider_config_key, environmentId });
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
+                    return;
+                }
             }
 
             const template = await configService.getTemplate(provider);

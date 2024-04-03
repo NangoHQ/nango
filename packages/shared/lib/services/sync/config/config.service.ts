@@ -572,7 +572,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
 export async function getSyncConfigsWithConnectionsByEnvironmentIdAndProviderConfigKey(
     providerConfigKey: string,
     environment_id: number
-): Promise<SyncConfig[]> {
+): Promise<({ connections: { connection_id: string }[] } & SyncConfig & ProviderConfig)[]> {
     const result = await schema()
         .select(
             `${TABLE}.id`,
@@ -592,8 +592,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentIdAndProviderCon
                 `(
                     SELECT json_agg(
                         json_build_object(
-                            'connection_id', _nango_connections.connection_id,
-                            'metadata', _nango_connections.metadata
+                            'connection_id', _nango_connections.connection_id
                         )
                     )
                     FROM _nango_connections
