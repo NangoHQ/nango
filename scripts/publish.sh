@@ -20,9 +20,9 @@ function bump_and_npm_publish {
 GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
 VERSION=$1
 
-# ensure version is of format x.y.z
-if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "VERSION '$VERSION' is not of format x.y.z"
+# ensure version is of format x.y.z or 0.0.1-<commit hash>
+if [[ ! "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+|0\.0\.1-[0-9a-fA-F]{40})$ ]]; then
+    echo "VERSION '$VERSION' is not of format x.y.z or 0.0.1-<commit hash>"
     exit 1
 fi
 

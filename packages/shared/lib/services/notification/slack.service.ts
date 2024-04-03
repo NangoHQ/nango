@@ -131,8 +131,12 @@ class SlackService {
             return;
         }
 
-        const accountUUID = await environmentService.getAccountUUIDFromEnvironment(environment_id);
-        payload.content = `${payload.content} [Account ${accountUUID} Environment ${environment_id}]`;
+        const account = await environmentService.getAccountFromEnvironment(environment_id);
+        if (!account) {
+            throw new Error('failed_to_get_account');
+        }
+
+        payload.content = `${payload.content} [Account ${account.uuid} Environment ${environment_id}]`;
 
         if (ts) {
             payload.ts = ts;
@@ -211,8 +215,12 @@ class SlackService {
 
         const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, syncName, syncType);
 
-        const accountUUID = await environmentService.getAccountUUIDFromEnvironment(environment_id);
-        const slackConnectionId = `account-${accountUUID}`;
+        const account = await environmentService.getAccountFromEnvironment(environment_id);
+        if (!account) {
+            throw new Error('failed_to_get_account');
+        }
+
+        const slackConnectionId = `account-${account.uuid}`;
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
 
         // we get the connection on the nango admin account to be able to send the notification
@@ -299,8 +307,8 @@ class SlackService {
         );
 
         const content = isOk(actionResponse)
-            ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`
-            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.err.message} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
+            ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
+            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.err.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
 
         await createActivityLogMessage({
             level: isOk(actionResponse) ? 'info' : 'error',
@@ -365,9 +373,13 @@ class SlackService {
             return;
         }
 
-        const accountUUID = await environmentService.getAccountUUIDFromEnvironment(environment_id);
+        const account = await environmentService.getAccountFromEnvironment(environment_id);
+        if (!account) {
+            throw new Error('failed_to_get_account');
+        }
+
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
-        const slackConnectionId = `account-${accountUUID}`;
+        const slackConnectionId = `account-${account.uuid}`;
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
@@ -405,8 +417,8 @@ class SlackService {
         await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, undefined, admin_slack_timestamp);
 
         const content = isOk(actionResponse)
-            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`
-            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionResponse.err.message} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
+            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
+            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionResponse.err.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
 
         await createActivityLogMessage({
             level: isOk(actionResponse) ? 'info' : 'error',

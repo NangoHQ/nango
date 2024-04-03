@@ -5,13 +5,13 @@ import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { JOBS_PORT } from './constants.js';
 
 const logger = getLogger('Jobs');
 
 try {
-    const port = parseInt(process.env['NANGO_JOBS_PORT'] || '') || 3005;
-    server.listen(port);
-    logger.info(`🚀 service ready at http://localhost:${port}`);
+    server.listen(JOBS_PORT);
+    logger.info(`🚀 service ready at http://localhost:${JOBS_PORT}`);
     const temporalNs = process.env['TEMPORAL_NAMESPACE'] || 'default';
     const temporal = new Temporal(temporalNs);
 

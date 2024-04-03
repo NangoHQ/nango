@@ -104,15 +104,7 @@ class AccountService {
     }
 
     async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
-        try {
-            await db.knex.update({ is_capped }).from<Account>(`_nango_accounts`).where({ id: accountId });
-        } catch (e) {
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.DATABASE,
-                accountId
-            });
-        }
+        await db.knex.update({ is_capped }).from<Account>(`_nango_accounts`).where({ id: accountId });
     }
 }
 

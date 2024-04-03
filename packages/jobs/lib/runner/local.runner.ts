@@ -47,7 +47,12 @@ export class LocalRunner implements Runner {
             logger.info(`[Runner] Starting runner with command: ${cmd} ${cmdOptions.join(' ')} `);
 
             const childProcess = spawn(cmd, cmdOptions, {
-                stdio: [null, null, null]
+                stdio: [null, null, null],
+                env: {
+                    ...process.env,
+                    RUNNER_ID: runnerId,
+                    IDLE_MAX_DURATION_MS: '60000'
+                }
             });
 
             if (!childProcess) {
