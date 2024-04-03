@@ -3,7 +3,7 @@ import fs from 'fs';
 import { stringifyError, type NangoProps } from '@nangohq/shared';
 import * as superjson from 'superjson';
 import { fetch } from 'undici';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 const logger = getLogger('Runner');

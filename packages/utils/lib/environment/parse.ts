@@ -37,6 +37,7 @@ export const ENVS = z.object({
     RUNNER_OWNER_ID: z.coerce.number().optional(),
     RUNNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
+    NOTIFY_IDLE_ENDPOINT: z.string().optional(),
 
     // Demo
     DEFAULT_GITHUB_CLIENT_ID: z.string().optional(),

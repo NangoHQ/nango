@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import type { Request } from 'express';
 import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
 

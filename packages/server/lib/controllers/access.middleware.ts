@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { isCloud, isBasicAuthEnabled, getLogger } from '@nangohq/utils';
 import {
     LogActionEnum,
     ErrorSourceEnum,

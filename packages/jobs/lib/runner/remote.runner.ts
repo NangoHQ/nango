@@ -1,4 +1,4 @@
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import { getRunnerClient } from '@nangohq/nango-runner';
