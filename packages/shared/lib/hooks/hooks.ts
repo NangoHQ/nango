@@ -15,6 +15,25 @@ import type { Result } from '../utils/result.js';
 import { resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';
 
+export const connectionCreationStart = async ({
+    providerConfigKey,
+    connectionId,
+    environmentId,
+    activityLogId
+}: {
+    providerConfigKey: string | undefined;
+    connectionId: string | undefined;
+    environmentId: number;
+    activityLogId: number | null;
+}): Promise<void> => {
+    if (!providerConfigKey || !connectionId || !activityLogId) {
+        return;
+    }
+
+    console.log('connectionCreationStart', providerConfigKey, connectionId, environmentId, activityLogId);
+    return Promise.resolve();
+};
+
 export const connectionCreated = async (
     connection: RecentlyCreatedConnection,
     provider: string,
