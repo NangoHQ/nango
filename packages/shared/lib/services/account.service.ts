@@ -34,17 +34,9 @@ class AccountService {
     }
 
     async getAccountByUUID(uuid: string): Promise<Account | null> {
-        try {
-            const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ uuid }).first();
-            return result || null;
-        } catch (e) {
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.DATABASE
-            });
+        const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ uuid }).first();
 
-            return null;
-        }
+        return result || null;
     }
 
     async getAccountAndEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<{ accountId: number; environmentId: number } | null> {
