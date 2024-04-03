@@ -73,6 +73,9 @@ export const ENVS = z.object({
     NANGO_ENCRYPTION_KEY: z.string().optional(),
     NANGO_DB_MIGRATION_FOLDER: z.string().optional(),
 
+    // Records
+    RECORDS_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'),
+
     // Redis
     NANGO_REDIS_URL: z.string().url().optional(),
 

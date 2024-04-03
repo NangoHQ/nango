@@ -43,6 +43,8 @@ async function setupPostgres() {
     process.env['NANGO_DB_NAME'] = dbName;
     process.env['NANGO_DB_MIGRATION_FOLDER'] = './packages/shared/lib/db/migrations';
     process.env['TELEMETRY'] = 'false';
+
+    process.env['RECORDS_DATABASE_URL'] = `postgres://${user}:${password}@localhost:${port}/${dbName}`;
 }
 
 export async function setup() {
