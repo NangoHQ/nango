@@ -66,7 +66,7 @@ class AccountController {
     async editCustomer(req: Request, res: Response, next: NextFunction) {
         try {
             const { success, error } = await getEnvironmentAndAccountId(res, req);
-            if (!success || response === null) {
+            if (!success) {
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
