@@ -18,7 +18,7 @@ jobs:
             contents: read
             packages: write
         outputs:
-            GIT_HASH: ${{ steps.publish_step.hash }}
+            GIT_HASH: ${{ steps.publish_step.outputs.hash }}
         steps:
             - uses: actions/checkout@v4
 
