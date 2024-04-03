@@ -412,10 +412,17 @@ class OnboardingController {
                 environment_id: environment.id,
                 operation_name: DEMO_ACTION_NAME
             });
+
             if (!activityLogId) {
                 throw new NangoError('failed_to_create_activity_log');
             }
-            const actionResponse = await syncClient.triggerAction(connection, DEMO_ACTION_NAME, { title: req.body.title }, activityLogId, environment.id);
+            const actionResponse = await syncClient.triggerAction({
+                connection,
+                actionName: DEMO_ACTION_NAME,
+                input: { title: req.body.title },
+                activityLogId,
+                environment_id: environment.id
+            });
 
             if (isErr(actionResponse)) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });

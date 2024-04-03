@@ -138,13 +138,13 @@ class SlackService {
             payload.ts = ts;
         }
 
-        const actionResponse = await syncClient.triggerAction<SlackActionResponse>(
-            nangoAdminConnection,
-            this.actionName,
-            payload,
+        const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
+            connection: nangoAdminConnection,
+            actionName: this.actionName,
+            input: payload,
             activityLogId,
-            nangoAdminConnection?.environment_id
-        );
+            environment_id: nangoAdminConnection?.environment_id
+        });
 
         if (id && isOk(actionResponse) && actionResponse.res.ts) {
             await this.updateNotificationWithAdminTimestamp(id, actionResponse.res.ts);
@@ -278,13 +278,13 @@ class SlackService {
             return;
         }
 
-        const actionResponse = await syncClient.triggerAction<SlackActionResponse>(
-            slackConnection as NangoConnection,
-            this.actionName,
-            payload,
-            activityLogId as number,
+        const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
+            connection: slackConnection as NangoConnection,
+            actionName: this.actionName,
+            input: payload,
+            activityLogId: activityLogId as number,
             environment_id
-        );
+        });
 
         if (isOk(actionResponse) && actionResponse.res.ts) {
             await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse.res.ts);
@@ -394,13 +394,13 @@ class SlackService {
 
         const activityLogId = await createActivityLog(log);
 
-        const actionResponse = await syncClient.triggerAction<SlackActionResponse>(
-            slackConnection as NangoConnection,
-            this.actionName,
-            payload,
-            activityLogId as number,
+        const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
+            connection: slackConnection as NangoConnection,
+            actionName: this.actionName,
+            input: payload,
+            activityLogId: activityLogId as number,
             environment_id
-        );
+        });
 
         await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, undefined, admin_slack_timestamp);
 

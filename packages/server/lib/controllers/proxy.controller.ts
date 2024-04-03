@@ -152,7 +152,15 @@ class ProxyController {
                 return;
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, proxyConfig, activityLogId as number, environment_id, isSync, isDryRun);
+            await this.sendToHttpMethod({
+                res,
+                method: method as HTTP_VERB,
+                configBody: proxyConfig,
+                activityLogId: activityLogId as number,
+                environment_id,
+                isSync,
+                isDryRun
+            });
         } catch (error) {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
@@ -180,16 +188,23 @@ class ProxyController {
      * @param {HTTP_VERB} method
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
-    private sendToHttpMethod(
-        res: Response,
-        next: NextFunction,
-        method: HTTP_VERB,
-        configBody: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        isSync?: boolean,
-        isDryRun?: boolean
-    ) {
+    private sendToHttpMethod({
+        res,
+        method,
+        configBody,
+        activityLogId,
+        environment_id,
+        isSync,
+        isDryRun
+    }: {
+        res: Response;
+        method: HTTP_VERB;
+        configBody: ApplicationConstructedProxyConfiguration;
+        activityLogId: number;
+        environment_id: number;
+        isSync?: boolean | undefined;
+        isDryRun?: boolean | undefined;
+    }) {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
 
@@ -197,19 +212,39 @@ class ProxyController {
             decompress = true;
         }
 
-        return this.request(res, next, method, url, configBody, activityLogId, environment_id, decompress, isSync, isDryRun, configBody.data);
+        return this.request({
+            res,
+            method,
+            url,
+            config: configBody,
+            activityLogId,
+            environment_id,
+            decompress,
+            isSync,
+            isDryRun,
+            data: configBody.data
+        });
     }
 
-    private async handleResponse(
-        res: Response,
-        responseStream: AxiosResponse,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        url: string,
-        isSync?: boolean,
-        isDryRun?: boolean
-    ) {
+    private async handleResponse({
+        res,
+        responseStream,
+        config,
+        activityLogId,
+        environment_id,
+        url,
+        isSync = false,
+        isDryRun = false
+    }: {
+        res: Response;
+        responseStream: AxiosResponse;
+        config: ApplicationConstructedProxyConfiguration;
+        activityLogId: number;
+        environment_id: number;
+        url: string;
+        isSync?: boolean | undefined;
+        isDryRun?: boolean | undefined;
+    }) {
         if (!isSync) {
             await updateSuccessActivityLog(activityLogId, true);
         }
@@ -308,19 +343,29 @@ class ProxyController {
      * @param {ApplicationConstructedProxyConfiguration} config
      */
 
-    private async request(
-        res: Response,
-        _next: NextFunction,
-        method: HTTP_VERB,
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        decompress: boolean,
-        isSync?: boolean,
-        isDryRun?: boolean,
-        data?: unknown
-    ) {
+    private async request({
+        res,
+        method,
+        url,
+        config,
+        activityLogId,
+        environment_id,
+        decompress,
+        isSync,
+        isDryRun,
+        data
+    }: {
+        res: Response;
+        method: HTTP_VERB;
+        url: string;
+        config: ApplicationConstructedProxyConfiguration;
+        activityLogId: number;
+        environment_id: number;
+        decompress: boolean;
+        isSync?: boolean | undefined;
+        isDryRun?: boolean | undefined;
+        data?: unknown;
+    }) {
         try {
             const activityLogs: ActivityLogMessage[] = [];
             const headers = proxyService.constructHeaders(config);
@@ -344,7 +389,7 @@ class ProxyController {
                 createActivityLogMessage(activityLogMessage);
             });
 
-            this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
+            this.handleResponse({ res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun });
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
         }

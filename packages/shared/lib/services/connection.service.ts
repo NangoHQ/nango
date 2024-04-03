@@ -540,7 +540,7 @@ class ConnectionService {
         environmentId: number,
         connectionId: string,
         providerConfigKey: string,
-        activityLogId?: number | null,
+        activityLogId?: number | null | undefined,
         action?: LogAction,
         instantRefresh = false
     ): Promise<ServiceResponse<Connection>> {
@@ -610,15 +610,15 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.refreshCredentialsIfNeeded(
+            } = await this.refreshCredentialsIfNeeded({
                 connection,
-                config,
-                template as ProviderTemplateOAuth2,
+                providerConfig: config,
+                template: template as ProviderTemplateOAuth2,
                 activityLogId,
-                environmentId,
+                environment_id: environmentId,
                 instantRefresh,
-                action
-            );
+                logAction: action
+            });
 
             if (!success) {
                 return { success, error, response: null };
@@ -709,15 +709,23 @@ class ConnectionService {
         }
     }
 
-    public async refreshCredentialsIfNeeded(
-        connection: Connection,
-        providerConfig: ProviderConfig,
-        template: ProviderTemplateOAuth2,
-        activityLogId: number | null = null,
-        environment_id: number,
+    public async refreshCredentialsIfNeeded({
+        connection,
+        providerConfig,
+        template,
+        activityLogId = null,
+        environment_id,
         instantRefresh = false,
-        logAction: LogAction = 'token'
-    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials>> {
+        logAction = 'token'
+    }: {
+        connection: Connection;
+        providerConfig: ProviderConfig;
+        template: ProviderTemplateOAuth2;
+        activityLogId: number | null | undefined;
+        environment_id: number;
+        instantRefresh?: boolean;
+        logAction?: LogAction | undefined;
+    }): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
