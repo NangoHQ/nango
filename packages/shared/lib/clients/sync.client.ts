@@ -173,6 +173,12 @@ class SyncClient {
                 return;
             }
 
+            // TODO: do that outside try/catch
+            const logCtx = await getOperationContext(
+                { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
+                { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
+            );
+
             const { success, error, response } = getInterval(syncData.runs, new Date());
 
             if (!success || response === null) {
@@ -184,6 +190,11 @@ class SyncClient {
                     timestamp: Date.now(),
                     content
                 });
+                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
+                    runs: syncData.runs,
+                    error: errorToObject(error)
+                });
+                await logCtx.failed();
 
                 errorManager.report(content, {
                     source: ErrorSourceEnum.CUSTOMER,
@@ -214,6 +225,7 @@ class SyncClient {
                         timestamp: Date.now(),
                         content: `Creating sync job ${jobId} for sync ${sync.id}`
                     });
+                    await logCtx.debug('Creating sync job', { jobId, syncId: sync.id });
                 }
 
                 const res = await this.triggerInitialSync({ activityLogId, jobId, nangoConnection, syncId: sync.id, syncName, debug });
@@ -272,9 +284,11 @@ class SyncClient {
                     content: `Scheduled to run "${syncData.runs}"`,
                     timestamp: Date.now()
                 });
+                await logCtx.info('Scheduled successfully', { runs: syncData.runs });
             }
 
             await updateSuccessActivityLog(activityLogId, true);
+            await logCtx.success();
         } catch (e) {
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -288,6 +302,8 @@ class SyncClient {
                     syncData: JSON.stringify(syncData)
                 }
             });
+            // await logCtx.error('Failed to init sync', {error: errorToObject(e)});
+            // await logCtx.failed();
         }
     }
 
@@ -304,7 +320,7 @@ class SyncClient {
             });
             return true;
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC,
                 environmentId,
@@ -501,7 +517,7 @@ class SyncClient {
                 const scheduleHandle = this.client?.schedule.getHandle(sync.schedule_id);
                 await scheduleHandle?.trigger(OVERLAP_POLICY);
             } catch (e) {
-                await errorManager.report(e, {
+                errorManager.report(e, {
                     source: ErrorSourceEnum.PLATFORM,
                     operation: LogActionEnum.SYNC_CLIENT,
                     environmentId,
@@ -662,7 +678,7 @@ class SyncClient {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            await telemetry.duration(MetricTypes.ACTION_TRACK_RUNTIME, totalRunTime);
+            telemetry.duration(MetricTypes.ACTION_TRACK_RUNTIME, totalRunTime);
         }
     }
 
@@ -769,7 +785,7 @@ class SyncClient {
             await logCtx.error('The webhook workflow failed', { error: errorMessage });
             await logCtx.failed();
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: nangoConnection.environment_id,
@@ -813,7 +829,7 @@ class SyncClient {
                 });
             }
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId,

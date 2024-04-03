@@ -25,7 +25,7 @@ import type {
     SyncEndpoint
 } from '../../../models/Sync.js';
 import { SyncConfigType } from '../../../models/Sync.js';
-import { NangoError } from '../../../utils/error.js';
+import { NangoError, errorToObject } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env } from '../../../utils/temp/environment/detection.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
@@ -76,6 +76,10 @@ export async function deploy(
     });
 
     const activityLogId = await createActivityLog(log);
+    const logCtx = await getOperationContext(
+        { id: String(activityLogId), operation: { type: 'deploy', action: 'custom' }, message: 'Deploying custom syncs' },
+        { account: { id: accountId }, environment: { id: environment_id } }
+    );
 
     if (nangoYamlBody) {
         await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
@@ -105,6 +109,8 @@ export async function deploy(
                 timestamp: Date.now(),
                 content: `Failed to deploy`
             });
+            await logCtx.error('Failed to deploy', { error: errorToObject(error) });
+            await logCtx.failed();
             await updateSuccessActivityLog(activityLogId!, false);
             return { success, error, response: null };
         }
@@ -121,8 +127,10 @@ export async function deploy(
                 timestamp: Date.now(),
                 content: `All syncs were deleted.`
             });
+            await logCtx.debug('All syncs were deleted');
         }
         await updateSuccessActivityLog(activityLogId as number, true);
+        await logCtx.success();
 
         return { success: true, error: null, response: { result: [], activityLogId } };
     }
@@ -168,6 +176,12 @@ export async function deploy(
             timestamp: Date.now(),
             content: `Successfully deployed the ${nameOfType}${flowsWithVersions.length > 1 ? 's' : ''} ${JSON.stringify(flowsWithVersions, null, 2)}`
         });
+        await logCtx.info('Successfully deployed', {
+            nameOfType,
+            count: flowsWithVersions.length,
+            syncNames: flowsWithVersions.map((flow) => flow['syncName']),
+            flows: flowsWithVersions
+        });
 
         const shortContent = `Successfully deployed the ${nameOfType}${flowsWithVersions.length > 1 ? 's' : ''} (${flowsWithVersions
             .map((flow) => flow['syncName'])
@@ -196,6 +210,9 @@ export async function deploy(
             activityLogId as number,
             environment_id
         );
+
+        await logCtx.error('Failed to deploy syncs', { error: errorToObject(e) });
+        await logCtx.failed();
 
         const shortContent = `Failure to deploy the syncs (${flowsWithVersions.map((flow) => flow.syncName).join(', ')}).`;
 
@@ -243,7 +260,7 @@ export async function deployPreBuilt(
     const activityLogId = await createActivityLog(log);
     const logCtx = await getOperationContext(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'prebuilt' }, message: 'Deploying pre-built flow' },
-        { account, environment: { id: environment_id } }
+        { account: { id: accountId }, environment: { id: environment_id } }
     );
 
     const idsToMarkAsInvactive = [];

@@ -49,7 +49,6 @@ class ApiAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization API Key' },
             { account: { id: accountId, name: '' }, environment: { id: environmentId } }

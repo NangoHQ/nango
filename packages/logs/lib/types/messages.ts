@@ -11,7 +11,7 @@ export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeo
  */
 export interface MessageOpSync {
     type: 'sync';
-    action: 'pause' | 'unpause' | 'run' | 'run_full' | 'cancel';
+    action: 'pause' | 'unpause' | 'run' | 'run_full' | 'cancel' | 'init';
 }
 export interface MessageOpProxy {
     type: 'proxy';
@@ -28,7 +28,7 @@ export interface MessageOpWebhook {
 }
 export interface MessageOpDeploy {
     type: 'deploy';
-    action: 'prebuilt';
+    action: 'prebuilt' | 'custom';
 }
 export type MessageOperation = MessageOpSync | MessageOpProxy | MessageOpAction | MessageOpWebhook | MessageOpDeploy | MessageOpAuth;
 
