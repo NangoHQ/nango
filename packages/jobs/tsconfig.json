@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../logs"
+        },
+        {
             "path": "../shared"
         },
         {
@@ -18,5 +21,7 @@
             "path": "../data-ingestion"
         }
     ],
-    "include": ["lib/**/*"]
+    "include": [
+        "lib/**/*"
+    ]
 }

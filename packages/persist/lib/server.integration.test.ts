@@ -13,6 +13,7 @@ import {
     SyncStatus,
     db
 } from '@nangohq/shared';
+import { getOperationContext } from '@nangohq/logs';
 
 describe('Persist API', () => {
     const port = 3096;
@@ -191,7 +192,15 @@ const initDb = async () => {
         connection_id: null,
         provider_config_key: null
     });
-    if (!activityLogId) throw new Error('Activity log not created');
+    if (!activityLogId) {
+        throw new Error('Activity log not created');
+    }
+
+    await getOperationContext(
+        { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+        { account: { id: env.account_id, name: '' } }
+    );
+
     const connectionRes = await connectionService.upsertConnection(`conn-test`, `provider-test`, 'google', {} as AuthCredentials, {}, env.id, 0);
     const connectionId = connectionRes[0]?.id;
     if (!connectionId) throw new Error('Connection not created');

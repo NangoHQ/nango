@@ -1,6 +1,8 @@
 import type { MessageRow, MessageRowInsert, MessageMeta, OperationRowInsert } from './types/messages.js';
 import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess } from './models/messages.js';
+import type { FormatMessageData } from './models/helpers.js';
 import { getFormattedMessage } from './models/helpers.js';
+import type { SetRequired } from 'type-fest';
 
 export class LogContext {
     id: string;
@@ -16,23 +18,23 @@ export class LogContext {
         await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
     }
 
-    async debug(message: string, meta: MessageMeta = null): Promise<void> {
+    async debug(message: string, meta: MessageMeta | null = null): Promise<void> {
         await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
     }
 
-    async info(message: string, meta: MessageMeta = null): Promise<void> {
+    async info(message: string, meta: MessageMeta | null = null): Promise<void> {
         await this.log({ type: 'log', level: 'info', message, meta, source: 'internal' });
     }
 
-    async warn(message: string, meta: MessageMeta = null): Promise<void> {
+    async warn(message: string, meta: MessageMeta | null = null): Promise<void> {
         await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
     }
 
-    async error(message: string, meta: MessageMeta = null): Promise<void> {
+    async error(message: string, meta: MessageMeta | null = null): Promise<void> {
         await this.log({ type: 'log', level: 'error', message, meta, source: 'internal' });
     }
 
-    async trace(message: string, meta: MessageMeta = null): Promise<void> {
+    async trace(message: string, meta: MessageMeta | null = null): Promise<void> {
         await this.log({ type: 'log', level: 'trace', message, meta, source: 'internal' });
     }
 
@@ -65,9 +67,16 @@ export class LogContext {
     }
 }
 
-export async function getOperationContext(data: OperationRowInsert, { start }: { start: boolean } = { start: true }): Promise<LogContext> {
-    const msg = getFormattedMessage(data);
-    if (start) {
+export interface OperationContextData extends FormatMessageData {
+    start?: boolean;
+}
+
+export async function getOperationContext(
+    data: OperationRowInsert,
+    { start, account, user, environment }: SetRequired<OperationContextData, 'account'>
+): Promise<LogContext> {
+    const msg = getFormattedMessage(data, { account, user, environment });
+    if (typeof start === 'undefined' || start) {
         msg.startedAt = msg.startedAt ?? new Date().toISOString();
         msg.state = msg.state === 'waiting' ? 'running' : msg.state;
     }

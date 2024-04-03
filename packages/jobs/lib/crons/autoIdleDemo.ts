@@ -15,6 +15,7 @@ import {
 } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils/dist/logger.js';
 import tracer from 'dd-trace';
+import { getOperationContext } from '@nangohq/logs';
 
 const logger = getLogger('Jobs');
 
@@ -59,6 +60,11 @@ export async function exec(): Promise<void> {
             continue;
         }
 
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
+            { account, environment: { id: sync.environment_id } }
+        );
+
         const syncClient = await SyncClient.getInstance();
         if (!syncClient) {
             continue;
@@ -74,14 +80,17 @@ export async function exec(): Promise<void> {
             environmentId: sync.environment_id,
             providerConfigKey: sync.unique_key,
             connectionId: sync.connection_id,
-            syncName: sync.name
+            syncName: sync.name,
+            logCtx
         });
         if (isErr(resTemporal)) {
+            await logCtx.failed();
             continue;
         }
 
         const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, activityLogId, sync.environment_id);
         if (isErr(resDb)) {
+            await logCtx.failed();
             continue;
         }
 
@@ -93,6 +102,9 @@ export async function exec(): Promise<void> {
             content: `Demo sync was automatically paused after being idle for a day`
         });
         await updateSuccessActivityLog(activityLogId, true);
+
+        await logCtx.info('Demo sync was automatically paused after being idle for a day');
+        await logCtx.success();
     }
 
     logger.info(`[autoidle] done`);

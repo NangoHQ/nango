@@ -30,6 +30,7 @@ import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env } from '../../../utils/temp/environment/detection.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
+import { getOperationContext } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'sync_configs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
@@ -240,6 +241,10 @@ export async function deployPreBuilt(
     const providerConfigKeys = [];
 
     const activityLogId = await createActivityLog(log);
+    const logCtx = await getOperationContext(
+        { id: String(activityLogId), operation: { type: 'deploy', action: 'prebuilt' }, message: 'Deploying pre-built flow' },
+        { account, environment: { id: environment_id } }
+    );
 
     const idsToMarkAsInvactive = [];
     const insertData: SyncConfig[] = [];
@@ -349,6 +354,8 @@ export async function deployPreBuilt(
                 timestamp: Date.now(),
                 content: `There was an error uploading the ${is_public ? 'public template' : ''} file ${sync_name}-v${version}.js`
             });
+            await logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: sync_name, version });
+            await logCtx.failed();
 
             throw new NangoError('file_upload_error');
         }
@@ -492,6 +499,8 @@ export async function deployPreBuilt(
             timestamp: Date.now(),
             content
         });
+        await logCtx.info('Successfully deployed', { nameOfType, configs: names });
+        await logCtx.success();
 
         await telemetry.log(
             LogTypes.SYNC_DEPLOY_SUCCESS,
@@ -514,6 +523,9 @@ export async function deployPreBuilt(
 
         const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
         await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number, environment_id);
+
+        await logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name) });
+        await logCtx.failed();
 
         await telemetry.log(
             LogTypes.SYNC_DEPLOY_FAILURE,

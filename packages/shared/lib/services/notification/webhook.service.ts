@@ -13,6 +13,8 @@ import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBod
 import { WebhookType } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
+import { getOperationContext } from '@nangohq/logs';
+import { stringifyError } from '../../utils/error.js';
 
 dayjs.extend(utc);
 
@@ -333,6 +335,10 @@ class WebhookService {
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
+            { account, environment: { id: environment_id } }
+        );
 
         const body: NangoForwardWebhookBody = {
             from: provider,
@@ -368,6 +374,8 @@ class WebhookService {
                     } response code to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
                     timestamp: Date.now()
                 });
+                await logCtx.info('Webhook forward was sent successfully', { status: response.status, body: body, webhookUrl });
+                await logCtx.success();
             } else {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
@@ -378,9 +386,15 @@ class WebhookService {
                     } response code. Please send a 200 on successful receipt.`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Webhook forward was sent successfully but received a wrong status code', {
+                    status: response.status,
+                    body: body,
+                    webhookUrl
+                });
+                await logCtx.failed();
             }
         } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(e);
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
@@ -389,6 +403,11 @@ class WebhookService {
                 content: `Webhook forward failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                 timestamp: Date.now()
             });
+            await logCtx.error('Webhook forward failed', {
+                errorMessage,
+                webhookUrl
+            });
+            await logCtx.failed();
         }
     }
 }

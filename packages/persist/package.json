@@ -18,6 +18,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "@nangohq/logs": "file:../logs",
         "@nangohq/shared": "^0.39.15",
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.2.0",

@@ -1,23 +1,30 @@
 import type { MessageRow } from '../types/messages';
 import { nanoid } from '../utils.js';
 
-export function getFormattedMessage(data: Partial<MessageRow>): MessageRow {
+export interface FormatMessageData {
+    account?: { id: number; name: string };
+    user?: { id: number } | undefined;
+    environment?: { id: number; name?: string } | undefined;
+}
+
+export function getFormattedMessage(data: Partial<MessageRow>, { account, user, environment }: FormatMessageData = {}): MessageRow {
     return {
         id: data.id || nanoid(),
 
         source: data.source || 'internal',
         level: data.level || 'info',
+        operation: data.operation || null,
         type: data.type || 'log',
         message: data.message || '',
         title: data.title || null,
         code: data.code || null,
         state: data.state || 'waiting',
 
-        accountId: data.accountId || null,
-        accountName: data.accountName || null,
+        accountId: account?.id || data.accountId || null,
+        accountName: account?.name || data.accountName || null,
 
-        environmentId: data.environmentId || null,
-        environmentName: data.environmentName || null,
+        environmentId: environment?.id || data.environmentId || null,
+        environmentName: environment?.name || data.environmentName || null,
 
         configId: data.configId || null,
         configName: data.configName || null,
@@ -30,7 +37,7 @@ export function getFormattedMessage(data: Partial<MessageRow>): MessageRow {
 
         jobId: data.jobId || null,
 
-        userId: data.userId || null,
+        userId: user?.id || data.userId || null,
         parentId: data.parentId || null,
 
         error: data.error || null,
@@ -44,3 +51,11 @@ export function getFormattedMessage(data: Partial<MessageRow>): MessageRow {
         endedAt: data.endedAt || null
     };
 }
+
+export const syncCommandToOperation = {
+    PAUSE: 'pause',
+    UNPAUSE: 'unpause',
+    RUN: 'run',
+    RUN_FULL: 'run_full',
+    CANCEL: 'cancel'
+} as const;

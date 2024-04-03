@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@nangohq/data-ingestion": "file:../data-ingestion",
+        "@nangohq/logs": "file:../logs",
         "@nangohq/nango-runner": "^1.0.0",
         "@nangohq/shared": "^0.39.15",
         "@nangohq/utils": "file:../utils",

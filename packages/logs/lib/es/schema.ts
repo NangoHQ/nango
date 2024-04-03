@@ -25,6 +25,13 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 
     userId: { type: 'keyword' },
 
+    operation: {
+        properties: {
+            type: { type: 'keyword' },
+            action: { type: 'keyword' }
+        }
+    },
+
     type: { type: 'keyword' },
     title: { type: 'keyword' },
     level: { type: 'keyword' },

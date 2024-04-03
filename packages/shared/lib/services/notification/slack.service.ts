@@ -12,6 +12,8 @@ import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { isOk } from '../../utils/result.js';
+import type { LogContext } from '@nangohq/logs';
+import { getOperationContext } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'slack_notifications';
 
@@ -116,6 +118,7 @@ class SlackService {
         payload: NotificationPayload,
         activityLogId: number,
         environment_id: number,
+        logCtx: LogContext, // TODO: we should not reuse this ctx
         id?: number,
         ts?: string
     ) {
@@ -147,7 +150,8 @@ class SlackService {
             actionName: this.actionName,
             input: payload,
             activityLogId,
-            environment_id: nangoAdminConnection?.environment_id
+            environment_id: nangoAdminConnection?.environment_id,
+            logCtx
         });
 
         if (id && isOk(actionResponse) && actionResponse.res.ts) {
@@ -249,6 +253,10 @@ class SlackService {
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+            { account, environment: { id: environment_id } }
+        );
 
         if (!success || !slackNotificationStatus) {
             await createActivityLogMessage({
@@ -291,7 +299,8 @@ class SlackService {
             actionName: this.actionName,
             input: payload,
             activityLogId: activityLogId as number,
-            environment_id
+            environment_id,
+            logCtx
         });
 
         if (isOk(actionResponse) && actionResponse.res.ts) {
@@ -302,6 +311,7 @@ class SlackService {
             payload,
             originalActivityLogId,
             environment_id,
+            logCtx,
             slackNotificationStatus.id,
             slackNotificationStatus.admin_slack_timestamp
         );
@@ -405,16 +415,21 @@ class SlackService {
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+            { account, environment: { id: environment_id } }
+        );
 
         const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
             connection: slackConnection as NangoConnection,
             actionName: this.actionName,
             input: payload,
             activityLogId: activityLogId as number,
-            environment_id
+            environment_id,
+            logCtx
         });
 
-        await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, undefined, admin_slack_timestamp);
+        await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, logCtx, undefined, admin_slack_timestamp);
 
         const content = isOk(actionResponse)
             ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
@@ -430,6 +445,13 @@ class SlackService {
         });
 
         await updateSuccessActivityLog(activityLogId as number, isOk(actionResponse));
+        if (isOk(actionResponse)) {
+            await logCtx.info(content, payload);
+            await logCtx.success();
+        } else {
+            await logCtx.error(content, payload);
+            await logCtx.failed();
+        }
     }
 
     /**

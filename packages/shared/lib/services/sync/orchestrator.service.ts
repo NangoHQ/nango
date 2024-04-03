@@ -34,6 +34,7 @@ import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import { getOperationContext, syncCommandToOperation } from '@nangohq/logs';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -187,6 +188,11 @@ export class Orchestrator {
             return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
         }
 
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
+            { account, environment: { id: environmentId } }
+        );
+
         const syncClient = await SyncClient.getInstance();
         if (!syncClient) {
             return { success: false, error: new NangoError('failed_to_get_sync_client'), response: false };
@@ -224,7 +230,8 @@ export class Orchestrator {
                     providerConfigKey,
                     connectionId,
                     syncName,
-                    nangoConnectionId: connection.id
+                    nangoConnectionId: connection.id,
+                    logCtx
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
@@ -263,7 +270,8 @@ export class Orchestrator {
                     providerConfigKey,
                     connectionId: connection.connection_id,
                     syncName: sync.name,
-                    nangoConnectionId: connection.id
+                    nangoConnectionId: connection.id,
+                    logCtx
                 });
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
@@ -280,6 +288,9 @@ export class Orchestrator {
         });
 
         await updateSuccessActivityLog(activityLogId, true);
+
+        await logCtx.info('Sync was successfully updated', { action, syncNames });
+        await logCtx.success();
 
         return { success: true, error: null, response: true };
     }

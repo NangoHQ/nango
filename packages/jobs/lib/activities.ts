@@ -20,13 +20,15 @@ import {
     LogTypes,
     isInitialSyncStillRunning,
     getSyncByIdAndName,
-    getLastSyncDate
+    getLastSyncDate,
+    errorToObject
 } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import { env } from '@nangohq/utils/dist/environment/detection.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
+import { getOperationContext } from '@nangohq/logs';
 
 const logger = getLogger('Jobs');
 
@@ -221,6 +223,11 @@ export async function syncProvider(
             operation_name: syncName
         };
         const activityLogId = (await createActivityLog(log)) as number;
+        // TODO: move that outside try/catch
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { account, environment: { id: nangoConnection.environment_id } }
+        );
 
         if (debug) {
             await createActivityLogMessage({
@@ -229,6 +236,14 @@ export async function syncProvider(
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
+            });
+            await logCtx.info('Starting sync', {
+                syncType,
+                syncName,
+                syncId,
+                syncJobId,
+                attempt: temporalContext.info.attempt,
+                workflowId: temporalContext.info.workflowExecution.workflowId
             });
         }
 
@@ -268,12 +283,18 @@ export async function syncProvider(
         };
         const content = `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`;
 
-        await createActivityLogAndLogMessage(log, {
+        const activityLogId = await createActivityLogAndLogMessage(log, {
             level: 'error',
             environment_id: nangoConnection?.environment_id,
             timestamp: Date.now(),
             content
         });
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { account, environment: { id: nangoConnection.environment_id } }
+        );
+        await logCtx.error('Failed to create the job', { error: errorToObject(err) });
+        await logCtx.failed();
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {
             environmentId: String(nangoConnection?.environment_id),

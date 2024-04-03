@@ -596,6 +596,10 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
     return { success: false, error, response: null };
 };
 
+export function errorToObject(err: unknown) {
+    return serializeError(err);
+}
+
 export function stringifyError(err: unknown) {
     return JSON.stringify(serializeError(err));
 }

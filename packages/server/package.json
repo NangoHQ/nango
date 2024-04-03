@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@hapi/boom": "^10.0.1",
+        "@nangohq/logs": "file:../logs",
         "@nangohq/shared": "^0.39.15",
         "@nangohq/utils": "file:../utils",
         "@workos-inc/node": "^6.2.0",

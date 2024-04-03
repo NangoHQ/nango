@@ -32,6 +32,7 @@ import {
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils/dist/logger.js';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { getOperationContext } from '@nangohq/logs';
 
 const logger = getLogger('Server.Onboarding');
 
@@ -416,20 +417,28 @@ class OnboardingController {
             if (!activityLogId) {
                 throw new NangoError('failed_to_create_activity_log');
             }
+
+            const logCtx = await getOperationContext(
+                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                { account, environment, user }
+            );
             const actionResponse = await syncClient.triggerAction({
                 connection,
                 actionName: DEMO_ACTION_NAME,
                 input: { title: req.body.title },
                 activityLogId,
-                environment_id: environment.id
+                environment_id: environment.id,
+                logCtx
             });
 
             if (isErr(actionResponse)) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.failed();
                 return;
             }
 
+            await logCtx.success();
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {

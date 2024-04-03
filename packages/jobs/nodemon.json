@@ -1,7 +1,16 @@
 {
-    "watch": ["lib", "../shared/dist", "../utils/dist", "../data-ingestion/dist", "../../.env"],
+    "watch": [
+        "lib",
+        "../shared/dist",
+        "../utils/dist",
+        "../data-ingestion/dist",
+        "../logs/dist",
+        "../../.env"
+    ],
     "ext": "js,ts,json",
-    "ignore": ["lib/**/*.spec.ts"],
+    "ignore": [
+        "lib/**/*.spec.ts"
+    ],
     "exec": "tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env",
     "signal": "SIGTERM"
 }

@@ -46,6 +46,7 @@ import {
     isOk,
     isErr
 } from '@nangohq/shared';
+import { getOperationContext } from '@nangohq/logs';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
@@ -415,13 +416,25 @@ class SyncController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
+            const logCtx = await getOperationContext(
+                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                { account, environment: { id: environmentId } }
+            );
+
             const syncClient = await SyncClient.getInstance();
 
             if (!syncClient) {
                 throw new NangoError('failed_to_get_sync_client');
             }
 
-            const actionResponse = await syncClient.triggerAction({ connection, actionName: action_name, input, activityLogId, environment_id: environmentId });
+            const actionResponse = await syncClient.triggerAction({
+                connection,
+                actionName: action_name,
+                input,
+                activityLogId,
+                environment_id: environmentId,
+                logCtx
+            });
 
             if (isOk(actionResponse)) {
                 res.send(actionResponse.res);

@@ -5,12 +5,13 @@ import type { ListOperations } from './models/messages.js';
 import { getOperation, listMessages, listOperations } from './models/messages.js';
 import type { OperationRowInsert } from './types/messages.js';
 
+const account = { id: 1234, name: 'test' };
+const environment = { id: 5678, name: 'dev' };
 const operationPayload: OperationRowInsert = {
-    accountId: 1234,
-    accountName: 'test',
-    environmentId: 5678,
-    environmentName: 'dev',
-    type: 'sync',
+    operation: {
+        type: 'sync',
+        action: 'run'
+    },
     message: ''
 };
 
@@ -21,7 +22,7 @@ describe('client', () => {
     });
 
     it('should insert an operation', async () => {
-        const ctx = await getOperationContext(operationPayload, { start: false });
+        const ctx = await getOperationContext(operationPayload, { start: false, account, environment });
         expect(ctx).toMatchObject({ id: expect.any(String) });
 
         const list = await listOperations({ limit: 1 });
@@ -55,9 +56,10 @@ describe('client', () => {
                     syncId: null,
                     syncName: null,
                     title: null,
-                    type: 'sync',
+                    type: 'log',
                     updatedAt: expect.toBeIsoDate(),
-                    userId: null
+                    userId: null,
+                    operation: { action: 'run', type: 'sync' }
                 }
             ]
         });
@@ -65,7 +67,7 @@ describe('client', () => {
 
     describe('states', () => {
         it('should set operation as started', async () => {
-            const ctx = await getOperationContext(operationPayload);
+            const ctx = await getOperationContext(operationPayload, { account, environment });
             await ctx.start();
 
             const operation = await getOperation({ id: ctx.id });
@@ -80,7 +82,7 @@ describe('client', () => {
         });
 
         it('should set operation as cancelled', async () => {
-            const ctx = await getOperationContext(operationPayload);
+            const ctx = await getOperationContext(operationPayload, { account, environment });
             await ctx.cancel();
 
             const operation = await getOperation({ id: ctx.id });
@@ -95,7 +97,7 @@ describe('client', () => {
         });
 
         it('should set operation as timeout', async () => {
-            const ctx = await getOperationContext(operationPayload);
+            const ctx = await getOperationContext(operationPayload, { account, environment });
             await ctx.timeout();
 
             const operation = await getOperation({ id: ctx.id });
@@ -110,7 +112,7 @@ describe('client', () => {
         });
 
         it('should set operation as success', async () => {
-            const ctx = await getOperationContext(operationPayload);
+            const ctx = await getOperationContext(operationPayload, { account, environment });
             await ctx.success();
 
             const operation = await getOperation({ id: ctx.id });
@@ -125,7 +127,7 @@ describe('client', () => {
         });
 
         it('should set operation as failed', async () => {
-            const ctx = await getOperationContext(operationPayload);
+            const ctx = await getOperationContext(operationPayload, { account, environment });
             await ctx.failed();
 
             const operation = await getOperation({ id: ctx.id });
@@ -142,7 +144,7 @@ describe('client', () => {
 
     describe('log type', () => {
         it('should log all types', async () => {
-            const ctx = await getOperationContext(operationPayload);
+            const ctx = await getOperationContext(operationPayload, { account, environment });
             await ctx.trace('trace msg');
             await ctx.debug('debug msg');
             await ctx.info('info msg');
