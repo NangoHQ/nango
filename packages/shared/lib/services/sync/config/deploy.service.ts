@@ -182,6 +182,7 @@ export async function deploy(
             syncNames: flowsWithVersions.map((flow) => flow['syncName']),
             flows: flowsWithVersions
         });
+        await logCtx.success();
 
         const shortContent = `Successfully deployed the ${nameOfType}${flowsWithVersions.length > 1 ? 's' : ''} (${flowsWithVersions
             .map((flow) => flow['syncName'])

@@ -59,3 +59,13 @@ export const syncCommandToOperation = {
     RUN_FULL: 'run_full',
     CANCEL: 'cancel'
 } as const;
+
+export const oldLevelToNewLevel = {
+    debug: 'debug',
+    info: 'info',
+    warn: 'warn',
+    error: 'error',
+    verbose: 'debug',
+    silly: 'debug',
+    http: 'info'
+} as const;

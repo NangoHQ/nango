@@ -80,6 +80,8 @@ class AppAuthController {
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Error during API Key auth: config not found');
+                await logCtx.failed();
 
                 await updateSuccessActivityLog(activityLogId as number, false);
 
@@ -99,6 +101,8 @@ class AppAuthController {
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support app creation`
                 });
+                await logCtx.error('Provider does not support app creation', null, { provider: config.provider });
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
@@ -117,6 +121,11 @@ class AppAuthController {
                     auth_mode: AuthModes.App,
                     url: req.originalUrl
                 });
+                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', null, {
+                    provider: config.provider,
+                    url: req.originalUrl
+                });
+                await logCtx.failed();
 
                 await updateSuccessActivityLog(activityLogId as number, false);
 
@@ -131,11 +140,12 @@ class AppAuthController {
             };
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig)).message,
+                    content: error.message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: req.originalUrl,
@@ -143,17 +153,14 @@ class AppAuthController {
                         ...connectionConfig
                     }
                 });
+                await logCtx.error(error.message, null, { connectionConfig, url: req.originalUrl });
+                await logCtx.failed();
 
-                return publisher.notifyErr(
-                    res,
-                    wsClientId,
-                    providerConfigKey,
-                    connectionId,
-                    WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig))
-                );
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             if (!installation_id) {
+                logCtx.failed();
                 res.sendStatus(400);
                 return;
             }
@@ -168,6 +175,8 @@ class AppAuthController {
                     content: `Error during app token retrieval call: ${error?.message}`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Error during app token retrieval call', error);
+                await logCtx.failed();
 
                 await telemetry.log(
                     LogTypes.AUTH_TOKEN_REQUEST_FAILURE,
@@ -232,6 +241,8 @@ class AppAuthController {
                 content: 'App connection was successful and credentials were saved',
                 timestamp: Date.now()
             });
+            await logCtx.error('App connection was successful and credentials were saved');
+            await logCtx.success();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
                 environmentId: String(environmentId),
@@ -245,7 +256,8 @@ class AppAuthController {
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
-            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
+            const error = WSErrBuilder.UnknownError();
+            const content = error.message + '\n' + prettyError;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -256,6 +268,8 @@ class AppAuthController {
                 auth_mode: AuthModes.App,
                 url: req.originalUrl
             });
+            await logCtx.error(error.message, err, { url: req.originalUrl });
+            await logCtx.failed();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
                 environmentId: String(environmentId),

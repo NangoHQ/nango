@@ -630,6 +630,7 @@ class SyncController {
             };
             const activityLogId = await createActivityLog(log);
             // TODO: move that outside try/catch
+            // TODO: message
             const logCtx = await getOperationContext(
                 { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
                 { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
@@ -675,6 +676,7 @@ class SyncController {
 
             if (isErr(result)) {
                 errorManager.handleGenericError(result.err, req, res, tracer);
+                await logCtx.failed();
                 return;
             }
 
@@ -690,7 +692,7 @@ class SyncController {
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
             });
             await updateSuccessActivityLog(activityLogId as number, true);
-            await logCtx.info('Sync was updated', { action, syncId: sync_id });
+            await logCtx.info('Sync command run successfully', { action, syncId: sync_id });
             await logCtx.success();
 
             let event = AnalyticsTypes.SYNC_RUN;
@@ -721,6 +723,7 @@ class SyncController {
 
             res.sendStatus(200);
         } catch (err) {
+            // TODO: up this
             // await logCtx.error('Failed to sync command', err);
             // await logCtx.failed();
             next(err);
