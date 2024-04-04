@@ -11,7 +11,9 @@ export default async function runAction(nango: NangoSync, input: GithubWriteFile
         });
 
         fileSha = file && file.data && file.data.sha ? file.data.sha : undefined;
-    } catch (_) {}
+    } catch {
+        // File does not exist
+    }
 
     await nango.log(fileSha ? 'File exists, updating.' : 'File does not exist, creating new file.');
 

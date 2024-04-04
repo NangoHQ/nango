@@ -96,6 +96,15 @@
     "overrides": [
         {
             "files": [
+                "integration-templates/**/*.ts"
+            ],
+            "rules": {
+                "no-constant-condition": "off",
+                "@typescript-eslint/no-dynamic-delete": "off"
+            }
+        },
+        {
+            "files": [
                 "packages/frontend/**/*.ts"
             ],
             "env": {
