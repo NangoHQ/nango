@@ -15,6 +15,9 @@ import { getSyncConfigsWithConnections } from '../services/sync/config/config.se
 import type { Result } from '../utils/result.js';
 import { resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';
+import { getLogger } from '../utils/temp/logger.js';
+
+const logger = getLogger('hooks');
 
 const CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT = 3;
 
@@ -31,14 +34,15 @@ export const connectionCreationStartCapCheck = async ({
 
     const scriptConfigs = await getSyncConfigsWithConnections(providerConfigKey, environmentId);
 
-    let reachedCap = false;
+    const reachedCap = false;
 
     if (scriptConfigs.length > 0) {
         for (const script of scriptConfigs) {
             const { connections } = script;
 
             if (connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
-                reachedCap = true;
+                //reachedCap = true;
+                logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
                 break;
             }
         }
