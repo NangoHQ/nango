@@ -105,7 +105,7 @@ class OAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: WSErrBuilder.MissingConnectionId().message
+                    content: error.message
                 });
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
@@ -698,10 +698,11 @@ class OAuthController {
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
-        } catch (error: any) {
-            const prettyError = JSON.stringify(error, ['message', 'name'], 2);
+        } catch (err: any) {
+            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
-            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
+            const error = WSErrBuilder.UnknownError();
+            const content = error.message + '\n' + prettyError;
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
                 callbackUrl,
@@ -979,18 +980,19 @@ class OAuthController {
                 return this.oauth1Callback(template, config, session, req, res, activityLogId!, session.environmentId);
             }
 
+            const error = WSErrBuilder.UnknownAuthMode(session.authMode);
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: session.environmentId,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnknownAuthMode(session.authMode).message,
+                content: error.message,
                 state: state as string,
                 timestamp: Date.now(),
                 auth_mode: session.authMode,
                 url: req.originalUrl
             });
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownAuthMode(session.authMode));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
@@ -1399,7 +1401,7 @@ class OAuthController {
                 activityLogId
             );
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         }
     }
 
@@ -1442,7 +1444,7 @@ class OAuthController {
                 activityLogId
             );
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         }
 
         const oauth_token_secret = session.requestTokenSecret!;
