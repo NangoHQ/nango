@@ -157,12 +157,18 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             operation_name: syncName
         };
         const content = `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`;
-        await createActivityLogAndLogMessage(log, {
+        const activityLogId = await createActivityLogAndLogMessage(log, {
             level: 'error',
             environment_id: environmentId,
             timestamp: Date.now(),
             content
         });
+        const logCtx = await getOperationContext(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
+        );
+        await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', err, { syncName });
+        await logCtx.failed();
 
         await telemetry.log(LogTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
             environmentId: String(environmentId),

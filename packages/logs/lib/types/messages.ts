@@ -22,6 +22,13 @@ export interface MessageOpAction {
 export interface MessageOpAuth {
     type: 'auth';
 }
+export interface MessageOpToken {
+    type: 'token';
+}
+export interface MessageOpAdmin {
+    type: 'admin';
+    action: 'impersonation';
+}
 export interface MessageOpWebhook {
     type: 'webhook';
     action: 'incoming' | 'outgoing';
@@ -30,8 +37,19 @@ export interface MessageOpDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
-export type MessageOperation = MessageOpSync | MessageOpProxy | MessageOpAction | MessageOpWebhook | MessageOpDeploy | MessageOpAuth;
+export type MessageOperation =
+    | MessageOpSync
+    | MessageOpProxy
+    | MessageOpAction
+    | MessageOpWebhook
+    | MessageOpDeploy
+    | MessageOpAuth
+    | MessageOpAdmin
+    | MessageOpToken;
 
+/**
+ * Full schema
+ */
 export type MessageRow = {
     id: string;
 

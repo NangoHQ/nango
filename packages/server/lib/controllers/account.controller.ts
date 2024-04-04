@@ -3,6 +3,7 @@ import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils';
 import { getEnvironmentAndAccountId, accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { getOperationContext } from '@nangohq/logs';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
 export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
@@ -161,12 +162,18 @@ class AccountController {
                 environment_id: response.environment.id
             };
 
-            await createActivityLogAndLogMessage(log, {
+            const activityLogId = await createActivityLogAndLogMessage(log, {
                 level: 'info',
                 environment_id: response.environment.id,
                 timestamp: Date.now(),
                 content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
             });
+            const logCtx = await getOperationContext(
+                { id: String(activityLogId), operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
+                { account: response.account, environment: response.environment }
+            );
+            await logCtx.info('A Nango admin logged into another account for the following reason', { loginReason: login_reason });
+            await logCtx.success();
 
             req.login(user, (err) => {
                 if (err) {
