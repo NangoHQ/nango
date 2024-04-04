@@ -16,7 +16,6 @@ import {
     SyncClient,
     updateScheduleStatus,
     updateSuccess as updateSuccessActivityLog,
-    createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
     createActivityLog,
     getAndReconcileDifferences,
@@ -44,7 +43,8 @@ import {
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
     isOk,
-    isErr
+    isErr,
+    createActivityLogMessage
 } from '@nangohq/shared';
 
 class SyncController {
@@ -614,19 +614,20 @@ class SyncController {
                 environment_id: environment.id,
                 operation_name: sync_name
             };
+            const activityLogId = await createActivityLog(log);
 
-            if (!verifyOwnership(nango_connection_id, environment.id, sync_id)) {
-                await createActivityLogAndLogMessage(log, {
+            if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
+                await createActivityLogMessage({
                     level: 'error',
+                    activity_log_id: activityLogId!,
                     environment_id: environment.id,
                     timestamp: Date.now(),
                     content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
 
                 res.sendStatus(401);
+                return;
             }
-
-            const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
 
