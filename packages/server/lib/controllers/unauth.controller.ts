@@ -44,7 +44,7 @@ class UnAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -169,7 +169,7 @@ class UnAuthController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,

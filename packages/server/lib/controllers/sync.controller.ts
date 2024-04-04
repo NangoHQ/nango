@@ -87,13 +87,13 @@ class SyncController {
                 return;
             }
 
-            analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
+            void analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
 
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
             const environmentId = getEnvironmentId(res);
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.SYNC_DEPLOY
@@ -684,7 +684,7 @@ class SyncController {
                     break;
             }
 
-            analytics.trackByEnvironmentId(event, environment.id, {
+            void analytics.trackByEnvironmentId(event, environment.id, {
                 sync_id,
                 sync_name,
                 provider,

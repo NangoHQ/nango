@@ -44,7 +44,7 @@ class WebhookController {
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 
-                await telemetry.duration(MetricTypes.WEBHOOK_TRACK_RUNTIME, totalRunTime);
+                telemetry.duration(MetricTypes.WEBHOOK_TRACK_RUNTIME, totalRunTime);
             } else {
                 res.status(404).send();
 
