@@ -1,5 +1,5 @@
 import { customAlphabet } from 'nanoid';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 
 export const logger = getLogger('elasticsearch');
 

@@ -8,7 +8,7 @@ import type {
     Integration as ProviderIntegration,
     Config
 } from '@nangohq/shared';
-import { isHosted } from '@nangohq/utils/dist/environment/detection.js';
+import { isHosted } from '@nangohq/utils';
 import {
     flowService,
     getConfigWithEndpointsByProviderConfigKey,
