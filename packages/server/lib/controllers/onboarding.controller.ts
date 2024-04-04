@@ -30,7 +30,7 @@ import {
     AnalyticsTypes
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { getOperationContext } from '@nangohq/logs';
 

@@ -1,10 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, isBasicAuthEnabled } from '@nangohq/utils/dist/environment/detection.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { isCloud, isBasicAuthEnabled, getLogger } from '@nangohq/utils';
 import {
     LogActionEnum,
     ErrorSourceEnum,
     environmentService,
+    accountService,
+    getEnvironmentAndAccountId,
     setAccount,
     setEnvironmentId,
     errorManager,
@@ -13,6 +14,7 @@ import {
     telemetry,
     MetricTypes
 } from '@nangohq/shared';
+import { NANGO_ADMIN_UUID } from './account.controller.js';
 import tracer from 'dd-trace';
 
 const logger = getLogger('AccessMiddleware');
@@ -56,6 +58,24 @@ export class AccessMiddleware {
         setAccount(accountId, res);
         setEnvironmentId(environmentId, res);
         tracer.setUser({ id: accountId.toString(), environmentId: environmentId.toString() });
+        next();
+    }
+
+    async adminKeyAuth(req: Request, res: Response, next: NextFunction) {
+        const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+        if (!success || response === null) {
+            errorManager.errResFromNangoErr(res, error);
+            return;
+        }
+
+        const { accountId } = response;
+        const fullAccount = await accountService.getAccountById(accountId);
+
+        if (fullAccount?.uuid !== NANGO_ADMIN_UUID) {
+            res.status(401).send('Unauthorized');
+            return;
+        }
         next();
     }
 

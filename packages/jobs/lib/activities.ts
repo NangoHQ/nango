@@ -22,9 +22,8 @@ import {
     getSyncByIdAndName,
     getLastSyncDate
 } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger, env } from '@nangohq/utils';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
-import { env } from '@nangohq/utils/dist/environment/detection.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
 import { getOperationContext } from '@nangohq/logs';

@@ -1,4 +1,4 @@
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('Server');
 

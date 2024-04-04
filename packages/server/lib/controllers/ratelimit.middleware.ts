@@ -3,7 +3,7 @@ import { createClient } from 'redis';
 import type { RateLimiterRes } from 'rate-limiter-flexible';
 import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { getAccount, getRedisUrl } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('RateLimiter');
 

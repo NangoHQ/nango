@@ -35,11 +35,11 @@ class EncryptionManager {
         }
     }
 
-    private shouldEncrypt(): boolean {
+    public shouldEncrypt(): boolean {
         return Boolean((this?.key as string) && (this.key as string).length > 0);
     }
 
-    private encrypt(str: string): [string, string | null, string | null] {
+    public encrypt(str: string): [string, string, string] {
         const iv = crypto.randomBytes(12);
         const cipher = crypto.createCipheriv(this.algo, Buffer.from(this.key!, this.encoding), iv);
         let enc = cipher.update(str, 'utf8', this.encoding);
@@ -47,7 +47,7 @@ class EncryptionManager {
         return [enc, iv.toString(this.encoding), cipher.getAuthTag().toString(this.encoding)];
     }
 
-    private decrypt(enc: string, iv: string, authTag: string): string {
+    public decrypt(enc: string, iv: string, authTag: string): string {
         const decipher = crypto.createDecipheriv(this.algo, Buffer.from(this.key!, this.encoding), Buffer.from(iv, this.encoding));
         decipher.setAuthTag(Buffer.from(authTag, this.encoding));
         let str = decipher.update(enc, this.encoding, 'utf8');
@@ -200,7 +200,7 @@ class EncryptionManager {
 
         if (config.custom) {
             const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(config.custom));
-            encryptedConfig.custom = { encryptedValue, iv: iv as string, authTag: authTag as string };
+            encryptedConfig.custom = { encryptedValue, iv: iv, authTag: authTag };
         }
 
         return encryptedConfig;

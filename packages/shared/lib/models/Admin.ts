@@ -8,6 +8,7 @@ export interface Account {
     websockets_path?: string;
     uuid?: string;
     is_admin?: boolean;
+    is_capped?: boolean;
 }
 
 export interface User extends Timestamps {

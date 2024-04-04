@@ -7,6 +7,7 @@
         "packages/frontend",
         "packages/logs",
         "packages/node-client",
+        "packages/records",
         "packages/server",
         "packages/runner",
         "packages/persist",

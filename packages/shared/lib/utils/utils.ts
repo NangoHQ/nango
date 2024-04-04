@@ -88,6 +88,10 @@ export function getPersistAPIUrl() {
     return process.env['PERSIST_SERVICE_URL'] || 'http://localhost:3007';
 }
 
+export function getJobsUrl() {
+    return process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
+}
+
 function getServerHost() {
     return process.env['SERVER_HOST'] || process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'http://nango-server' : 'http://localhost';
 }

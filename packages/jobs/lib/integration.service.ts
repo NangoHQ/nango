@@ -1,6 +1,6 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
-import { integrationFilesAreRemote, isCloud, isProd } from '@nangohq/utils/dist/environment/detection.js';
+import { integrationFilesAreRemote, isCloud, isProd } from '@nangohq/utils';
 import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError, isOk } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';

@@ -6,8 +6,7 @@ import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '..
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User, Result } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl } from '@nangohq/utils/dist/environment/detection.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { isCloud, baseUrl, basePublicUrl, getLogger } from '@nangohq/utils';
 import {
     userService,
     accountService,
