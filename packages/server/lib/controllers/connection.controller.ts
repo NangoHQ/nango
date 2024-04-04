@@ -752,6 +752,13 @@ class ConnectionController {
                     updatedConnection = imported;
                     runHook = true;
                 }
+            } else if (template.auth_mode === ProviderAuthModes.None) {
+                const [imported] = await connectionService.upsertUnauthConnection(connection_id, provider_config_key, provider, environmentId, accountId);
+
+                if (imported) {
+                    updatedConnection = imported;
+                    runHook = true;
+                }
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;

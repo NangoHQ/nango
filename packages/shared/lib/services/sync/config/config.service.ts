@@ -569,23 +569,13 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
     return result;
 }
 
-export async function getSyncConfigsWithConnectionsByEnvironmentIdAndProviderConfigKey(
+export async function getSyncConfigsWithConnections(
     providerConfigKey: string,
     environment_id: number
-): Promise<({ connections: { connection_id: string }[] } & SyncConfig & ProviderConfig)[]> {
-    const result = await schema()
+): Promise<{ connections: { connection_id: string }[]; provider: string; unique_key: string }[]> {
+    const result = await db.knex
         .select(
             `${TABLE}.id`,
-            `${TABLE}.sync_name`,
-            `${TABLE}.type`,
-            `${TABLE}.runs`,
-            `${TABLE}.models`,
-            `${TABLE}.version`,
-            `${TABLE}.updated_at`,
-            `${TABLE}.auto_start`,
-            `${TABLE}.pre_built`,
-            `${TABLE}.is_public`,
-            `${TABLE}.metadata`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             db.knex.raw(

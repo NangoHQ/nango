@@ -11,10 +11,12 @@ import integrationPostConnectionScript from '../integrations/scripts/connection/
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
 import { isCloud, isLocal, isEnterprise } from '../utils/temp/environment/detection.js';
-import { getSyncConfigsWithConnectionsByEnvironmentIdAndProviderConfigKey } from '../services/sync/config/config.service.js';
+import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
 import type { Result } from '../utils/result.js';
 import { resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';
+
+const CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT = 3;
 
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
@@ -27,7 +29,7 @@ export const connectionCreationStartCapCheck = async ({
         return false;
     }
 
-    const scriptConfigs = await getSyncConfigsWithConnectionsByEnvironmentIdAndProviderConfigKey(providerConfigKey, environmentId);
+    const scriptConfigs = await getSyncConfigsWithConnections(providerConfigKey, environmentId);
 
     let reachedCap = false;
 
@@ -35,7 +37,7 @@ export const connectionCreationStartCapCheck = async ({
         for (const script of scriptConfigs) {
             const { connections } = script;
 
-            if (connections.length >= 3) {
+            if (connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
                 reachedCap = true;
                 break;
             }
