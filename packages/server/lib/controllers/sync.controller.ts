@@ -16,7 +16,6 @@ import {
     SyncClient,
     updateScheduleStatus,
     updateSuccess as updateSuccessActivityLog,
-    createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
     createActivityLog,
     getAndReconcileDifferences,
@@ -44,7 +43,8 @@ import {
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
     isOk,
-    isErr
+    isErr,
+    createActivityLogMessage
 } from '@nangohq/shared';
 import { getOperationContext, syncCommandToOperation } from '@nangohq/logs';
 
@@ -628,24 +628,27 @@ class SyncController {
                 environment_id: environment.id,
                 operation_name: sync_name
             };
+            const activityLogId = await createActivityLog(log);
+            // TODO: move that outside try/catch
+            const logCtx = await getOperationContext(
+                { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
+                { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
+            );
 
-            if (!verifyOwnership(nango_connection_id, environment.id, sync_id)) {
-                await createActivityLogAndLogMessage(log, {
+            if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
+                await createActivityLogMessage({
                     level: 'error',
+                    activity_log_id: activityLogId!,
                     environment_id: environment.id,
                     timestamp: Date.now(),
                     content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
+                await logCtx.error('Unauthorized access to run the command');
+                await logCtx.failed();
 
                 res.sendStatus(401);
+                return;
             }
-
-            const activityLogId = await createActivityLog(log);
-            // TODO: move that outside try/catch
-            const logCtx = await getOperationContext(
-                { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: 'Start action' },
-                { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
-            );
 
             const syncClient = await SyncClient.getInstance();
 
