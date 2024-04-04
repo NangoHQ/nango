@@ -71,7 +71,7 @@ class LocalFileService {
         let realPath;
         try {
             realPath = fs.realpathSync(filePath);
-        } catch (err) {
+        } catch {
             realPath = filePath;
         }
 
@@ -94,7 +94,7 @@ class LocalFileService {
         let realPath;
         try {
             realPath = fs.realpathSync(filePath);
-        } catch (err) {
+        } catch {
             realPath = filePath;
         }
 
@@ -169,7 +169,7 @@ class LocalFileService {
         const archive = archiver('zip');
 
         archive.on('error', async (err) => {
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,

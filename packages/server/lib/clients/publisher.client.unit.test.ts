@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { WebSocketClientId } from './publisher.client';
 import { Publisher } from './publisher.client';

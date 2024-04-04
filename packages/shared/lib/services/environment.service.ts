@@ -223,7 +223,7 @@ class EnvironmentService {
 
             return encryptionManager.decryptEnvironment(result[0]);
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
@@ -245,7 +245,7 @@ class EnvironmentService {
 
             return result[0];
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,

@@ -429,7 +429,7 @@ class ConfigController {
             const result = await configService.createEmptyProviderConfig(provider, environmentId);
 
             if (result) {
-                analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider });
+                void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider });
                 res.status(200).send({
                     config: {
                         unique_key: result.unique_key,
@@ -563,7 +563,7 @@ class ConfigController {
             const result = await configService.createProviderConfig(config);
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-                analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: config.provider });
+                void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: config.provider });
                 res.status(200).send({
                     config: {
                         unique_key: config.unique_key,

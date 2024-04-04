@@ -82,7 +82,7 @@ class OAuthController {
 
         try {
             if (!wsClientId) {
-                analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
+                void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_START, 'OAuth request process start', LogActionEnum.AUTH, {
@@ -293,7 +293,7 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
@@ -344,7 +344,7 @@ class OAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -489,7 +489,7 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
@@ -860,7 +860,7 @@ class OAuthController {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
             const error = e as { statusCode: number; data?: any };
-            await errorManager.report(new Error('token_retrieval_error'), {
+            errorManager.report(new Error('token_retrieval_error'), {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
@@ -996,7 +996,7 @@ class OAuthController {
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
@@ -1360,7 +1360,7 @@ class OAuthController {
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
