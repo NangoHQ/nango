@@ -58,7 +58,7 @@ import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import type { LogContext } from '@nangohq/logs';
-import { getOperationContext } from '@nangohq/logs';
+import { getExistingOperationContext, getOperationContext } from '@nangohq/logs';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _next: NextFunction) {
@@ -1027,6 +1027,8 @@ class OAuthController {
         }
 
         const activityLogId = await findActivityLogBySession(session.id);
+        // TODO: fix this
+        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
@@ -1044,6 +1046,7 @@ class OAuthController {
                 timestamp: Date.now(),
                 url: req.originalUrl
             });
+            await logCtx.debug('Received callback', { providerConfigKey, connectionId });
 
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
@@ -1054,29 +1057,33 @@ class OAuthController {
                 return this.oauth1Callback(template, config, session, req, res, activityLogId!, session.environmentId, logCtx);
             }
 
+            const error = WSErrBuilder.UnknownAuthMode(session.authMode);
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: session.environmentId,
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnknownAuthMode(session.authMode).message,
+                content: error.message,
                 state: state as string,
                 timestamp: Date.now(),
                 auth_mode: session.authMode,
                 url: req.originalUrl
             });
+            await logCtx.error(error.message, null, { url: req.originalUrl });
+            await logCtx.failed();
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownAuthMode(session.authMode));
-        } catch (e) {
-            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+        } catch (err) {
+            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
-            errorManager.report(e, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
                 metadata: errorManager.getExpressRequestContext(req)
             });
 
-            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
+            const error = WSErrBuilder.UnknownError();
+            const content = error.message + '\n' + prettyError;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -1088,6 +1095,8 @@ class OAuthController {
                     ...errorManager.getExpressRequestContext(req)
                 }
             });
+            await logCtx.error(error.message, err, { url: req.originalUrl });
+            await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }

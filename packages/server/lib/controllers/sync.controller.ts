@@ -46,7 +46,7 @@ import {
     isErr,
     createActivityLogMessage
 } from '@nangohq/shared';
-import { getOperationContext, syncCommandToOperation } from '@nangohq/logs';
+import { getExistingOperationContext, getOperationContext, syncCommandToOperation } from '@nangohq/logs';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
@@ -69,13 +69,15 @@ class SyncController {
             }
 
             if (reconcile) {
+                const logCtx = getExistingOperationContext({ id: String(syncConfigDeployResult?.activityLogId) });
                 const success = await getAndReconcileDifferences({
                     environmentId,
                     syncs,
                     performAction: reconcile,
                     activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
-                    singleDeployMode
+                    singleDeployMode,
+                    logCtx
                 });
                 if (!success) {
                     reconcileSuccess = false;

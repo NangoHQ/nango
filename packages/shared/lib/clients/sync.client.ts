@@ -28,13 +28,13 @@ import { deleteRecordsBySyncId } from '../services/sync/data/records.service.js'
 import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
 import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { NangoError, stringifyError } from '../utils/error.js';
+import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import { isTest, isProd } from '../utils/temp/environment/detection.js';
 import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
 import { getLogger } from '../utils/temp/logger.js';
-import { getOperationContext, type LogContext } from '@nangohq/logs';
-// import type { LogContext } from '@nangohq/logs';
+import { getOperationContext } from '@nangohq/logs';
+import type { LogContext } from '@nangohq/logs';
 
 const logger = getLogger('Sync.Client');
 
@@ -771,7 +771,7 @@ class SyncClient {
 
             return { success, error, response };
         } catch (e) {
-            const errorMessage = stringifyError(e);
+            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
             const error = new NangoError('webhook_script_failure', { errorMessage });
 
             await createActivityLogMessageAndEnd({

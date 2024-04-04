@@ -30,6 +30,7 @@ import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env } from '../../../utils/temp/environment/detection.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
+import type { LogContext } from '@nangohq/logs';
 import { getOperationContext } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -98,7 +99,8 @@ export async function deploy(
             environment_id,
             accountId,
             activityLogId: activityLogId as number,
-            debug
+            debug,
+            logCtx
         });
 
         if (!success || !response) {
@@ -574,7 +576,8 @@ async function compileDeployInfo({
     environment_id,
     accountId,
     activityLogId,
-    debug
+    debug,
+    logCtx
 }: {
     flow: IncomingFlowConfig;
     flowsWithVersions: FlowWithVersion[];
@@ -586,6 +589,7 @@ async function compileDeployInfo({
     accountId: number;
     activityLogId: number;
     debug: boolean;
+    logCtx: LogContext;
 }): Promise<ServiceResponse<FlowWithVersion[]>> {
     const {
         syncName,
@@ -610,6 +614,7 @@ async function compileDeployInfo({
             timestamp: Date.now(),
             content: `${error}`
         });
+        await logCtx.error(error.message);
         return { success: false, error, response: null };
     }
 
@@ -622,6 +627,7 @@ async function compileDeployInfo({
             timestamp: Date.now(),
             content: `${error}`
         });
+        await logCtx.error(error.message);
 
         return { success: false, error, response: null };
     }
@@ -637,6 +643,7 @@ async function compileDeployInfo({
             timestamp: Date.now(),
             content: `${error}`
         });
+        await logCtx.error(error.message);
 
         return { success: false, error, response: null };
     }
@@ -655,6 +662,7 @@ async function compileDeployInfo({
                 timestamp: Date.now(),
                 content: `A previous sync config was found for ${syncName} with version ${previousSyncAndActionConfig.version}`
             });
+            await logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
         }
 
         if (runs) {
@@ -713,6 +721,7 @@ async function compileDeployInfo({
             timestamp: Date.now(),
             content: `There was an error uploading the sync file ${syncName}-v${version}.js`
         });
+        await logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
 
         // this is a platform error so throw this
         throw new NangoError('file_upload_error');
@@ -732,6 +741,7 @@ async function compileDeployInfo({
                 timestamp: Date.now(),
                 content: `Marking ${ids.length} old sync configs as inactive for ${syncName} with version ${version} as the active sync config`
             });
+            await logCtx.debug('Marking old sync configs as inactive', { count: ids.length, syncName, activeVersion: version });
         }
     }
 

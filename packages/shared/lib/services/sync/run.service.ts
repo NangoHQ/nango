@@ -23,6 +23,8 @@ import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
 import * as recordsService from './data/records.service.js';
+import type { LogContext } from '@nangohq/logs';
+import { getExistingOperationContext } from '@nangohq/logs';
 
 interface BigQueryClientInterface {
     insert(row: RunScriptRow): void;
@@ -105,6 +107,8 @@ export default class SyncRun {
     temporalContext?: Context;
     isWebhook: boolean;
 
+    logCtx?: LogContext;
+
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
         if (config.bigQueryClient) {
@@ -128,6 +132,7 @@ export default class SyncRun {
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
+            this.logCtx = getExistingOperationContext({ id: String(config.activityLogId) });
         }
 
         if (config.loadLocation) {
@@ -700,6 +705,8 @@ export default class SyncRun {
             timestamp: Date.now(),
             content
         });
+        await this.logCtx?.error(content);
+        await this.logCtx?.failed();
 
         errorManager.report(content, {
             environmentId: this.nangoConnection.environment_id,

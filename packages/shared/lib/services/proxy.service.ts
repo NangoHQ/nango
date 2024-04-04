@@ -216,7 +216,7 @@ class ProxyService {
     }
 
     public retryHandler = async (
-        activityLogId: number,
+        activityLogId: number | null,
         environment_id: number,
         error: AxiosError,
         type: 'at' | 'after',
@@ -285,7 +285,7 @@ class ProxyService {
      * @param {attemptNumber} number
      */
     public retry = async (
-        activityLogId: number,
+        activityLogId: number | null,
         environment_id: number,
         config: ApplicationConstructedProxyConfiguration,
         activityLogs: ActivityLogMessage[],

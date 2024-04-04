@@ -23,6 +23,7 @@ import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import publisher from '../clients/publisher.client.js';
+import { getExistingOperationContext } from '@nangohq/logs';
 
 class AppAuthController {
     async connect(req: Request, res: Response, _next: NextFunction) {
@@ -56,6 +57,8 @@ class AppAuthController {
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);
+        // TODO: fix this
+        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
 
         try {
             if (!providerConfigKey) {

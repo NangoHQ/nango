@@ -35,6 +35,7 @@ import {
     connectionService,
     configService
 } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
 import { getExistingOperationContext, getOperationContext } from '@nangohq/logs';
 
 type ForwardedHeaders = Record<string, string>;
@@ -77,7 +78,7 @@ class ProxyController {
                 environment_id
             };
 
-            let activityLogId = null;
+            let activityLogId: number | null = null;
 
             if (!isDryRun) {
                 activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
@@ -123,11 +124,11 @@ class ProxyController {
             }
             const providerConfig = await configService.getProviderConfig(providerConfigKey, environment_id);
 
-            if (!providerConfig) {
+            if (!providerConfig && activityLogId) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: 'Provider configuration not found'
                 });
@@ -136,12 +137,14 @@ class ProxyController {
 
                 throw new NangoError('unknown_provider_config');
             }
-            await updateProviderActivityLog(activityLogId as number, providerConfig.provider);
+            if (activityLogId && providerConfig) {
+                await updateProviderActivityLog(activityLogId, providerConfig.provider);
+            }
 
             const internalConfig: InternalProxyConfiguration = {
-                existingActivityLogId: activityLogId as number,
+                existingActivityLogId: activityLogId,
                 connection,
-                provider: providerConfig.provider
+                provider: providerConfig!.provider
             };
 
             const { success, error, response: proxyConfig, activityLogs } = proxyService.configure(externalConfig, internalConfig);
@@ -170,7 +173,7 @@ class ProxyController {
                 res,
                 method: method as HTTP_VERB,
                 configBody: proxyConfig,
-                activityLogId: activityLogId as number,
+                activityLogId,
                 environment_id,
                 isSync,
                 isDryRun
@@ -214,7 +217,7 @@ class ProxyController {
         res: Response;
         method: HTTP_VERB;
         configBody: ApplicationConstructedProxyConfiguration;
-        activityLogId: number;
+        activityLogId: number | null;
         environment_id: number;
         isSync?: boolean | undefined;
         isDryRun?: boolean | undefined;
@@ -253,22 +256,21 @@ class ProxyController {
         res: Response;
         responseStream: AxiosResponse;
         config: ApplicationConstructedProxyConfiguration;
-        activityLogId: number;
+        activityLogId: number | null;
         environment_id: number;
         url: string;
         isSync?: boolean | undefined;
         isDryRun?: boolean | undefined;
     }) {
-        if (!isSync) {
-            await updateSuccessActivityLog(activityLogId, true);
-        }
-
         if (!isDryRun) {
+            if (!isSync) {
+                await updateSuccessActivityLog(activityLogId!, true);
+            }
             const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id,
-                activity_log_id: activityLogId,
+                activity_log_id: activityLogId!,
                 timestamp: Date.now(),
                 content: `${config.method.toUpperCase()} request to ${url} was successful`,
                 params: {
@@ -289,7 +291,7 @@ class ProxyController {
         e: unknown,
         url: string,
         config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
+        activityLogId: number | null,
         environment_id: number
     ) {
         const error = e as AxiosError;
@@ -343,7 +345,7 @@ class ProxyController {
         if (errorData) {
             errorData.pipe(stringify).pipe(res);
             stringify.on('data', (data) => {
-                this.reportError(error, url, config, activityLogId, environment_id, data);
+                void this.reportError(error, url, config, activityLogId, environment_id, data);
             });
         }
     }
@@ -373,7 +375,7 @@ class ProxyController {
         method: HTTP_VERB;
         url: string;
         config: ApplicationConstructedProxyConfiguration;
-        activityLogId: number;
+        activityLogId: number | null;
         environment_id: number;
         decompress: boolean;
         isSync?: boolean | undefined;
@@ -399,13 +401,15 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config, activityLogs) }
             );
-            activityLogs.forEach((activityLogMessage) => {
-                createActivityLogMessage(activityLogMessage);
-            });
+            await Promise.all(
+                activityLogs.map((activityLogMessage) => {
+                    return createActivityLogMessage(activityLogMessage);
+                })
+            );
 
-            this.handleResponse({ res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun });
+            await this.handleResponse({ res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun });
         } catch (error) {
-            this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
+            await this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
         }
     }
 
@@ -413,9 +417,10 @@ class ProxyController {
         error: AxiosError,
         url: string,
         config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
+        activityLogId: number | null,
         environment_id: number,
-        errorMessage: string
+        errorMessage: string,
+        logCtx: LogContext | undefined
     ) {
         if (activityLogId) {
             const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
@@ -432,6 +437,13 @@ class ProxyController {
                     requestHeaders: JSON.stringify(safeHeaders, null, 2),
                     responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
                 }
+            });
+            await logCtx?.error('he provider responded back with an error code', null, {
+                code: error?.response?.status,
+                url,
+                error: errorMessage,
+                requestHeaders: JSON.stringify(safeHeaders, null, 2),
+                responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
             });
         } else {
             const content = `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${

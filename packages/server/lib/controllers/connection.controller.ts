@@ -160,7 +160,7 @@ class ConnectionController {
                     { account: response.account, environment: response.environment }
                 );
                 await logCtx.info('Token manual refresh fetch was successful');
-                await logCtx.failed();
+                await logCtx.success();
             }
 
             let rawCredentials = null;
