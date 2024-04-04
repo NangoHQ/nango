@@ -4,7 +4,7 @@ import { server } from './server.js';
 import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import { JOBS_PORT } from './constants.js';
 
 const logger = getLogger('Jobs');

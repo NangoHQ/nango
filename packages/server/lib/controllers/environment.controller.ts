@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Environment } from '@nangohq/shared';
-import { isCloud, baseUrl } from '@nangohq/utils/dist/environment/detection.js';
+import { isCloud, baseUrl } from '@nangohq/utils';
 import {
     accountService,
     hmacService,

@@ -10,7 +10,7 @@ import {
     db,
     findRecentlyDeletedSync
 } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import tracer from 'dd-trace';
 
 const logger = getLogger('Jobs');
