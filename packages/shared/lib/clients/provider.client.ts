@@ -14,7 +14,7 @@ import { NangoError } from '../utils/error.js';
 import { getLogger } from '../utils/temp/logger.js';
 
 const stripeAppExpiresIn = 3600;
-const logger = getLogger('provider');
+const logger = getLogger('Provider.Client');
 
 class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
