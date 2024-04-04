@@ -38,6 +38,7 @@ export interface Sync extends TimestampsAndDeleted {
         nanos?: number;
     };
     frequency: string | null;
+    last_fetched_at?: Date | null;
 }
 
 export interface Action extends TimestampsAndDeleted {
