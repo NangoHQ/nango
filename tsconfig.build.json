@@ -23,6 +23,9 @@
             "path": "packages/persist"
         },
         {
+            "path": "packages/records"
+        },
+        {
             "path": "packages/runner"
         },
         {

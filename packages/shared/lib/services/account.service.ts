@@ -33,6 +33,12 @@ class AccountService {
         }
     }
 
+    async getAccountByUUID(uuid: string): Promise<Account | null> {
+        const result = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ uuid }).first();
+
+        return result || null;
+    }
+
     async getAccountAndEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<{ accountId: number; environmentId: number } | null> {
         const account = await db.knex.select('id').from<Account>(`_nango_accounts`).where({ uuid: targetAccountUUID });
 
@@ -95,6 +101,10 @@ class AccountService {
         }
 
         return null;
+    }
+
+    async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
+        await db.knex.update({ is_capped }).from<Account>(`_nango_accounts`).where({ id: accountId });
     }
 }
 
