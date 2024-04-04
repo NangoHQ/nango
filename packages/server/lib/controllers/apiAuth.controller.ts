@@ -54,7 +54,7 @@ class ApiAuthController {
         );
 
         try {
-            analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -288,7 +288,7 @@ class ApiAuthController {
         );
 
         try {
-            analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');

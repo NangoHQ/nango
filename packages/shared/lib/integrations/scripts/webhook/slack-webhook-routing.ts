@@ -14,7 +14,7 @@ export default async function route(
     if (headers['content-type'] === 'application/x-www-form-urlencoded') {
         try {
             payload = JSON.parse(body['payload'] || body);
-        } catch (e) {
+        } catch {
             payload = body;
         }
     } else {

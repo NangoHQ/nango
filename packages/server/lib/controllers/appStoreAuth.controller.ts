@@ -49,7 +49,7 @@ class AppStoreAuthController {
         );
 
         try {
-            analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');

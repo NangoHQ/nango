@@ -52,7 +52,7 @@ class AppAuthController {
         }
         const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
 
-        analytics.track(AnalyticsTypes.PRE_APP_AUTH, accountId);
+        void analytics.track(AnalyticsTypes.PRE_APP_AUTH, accountId);
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);

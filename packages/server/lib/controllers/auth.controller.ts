@@ -177,7 +177,7 @@ class AuthController {
             }
 
             const event = joinedWithToken ? AnalyticsTypes.ACCOUNT_JOINED : AnalyticsTypes.ACCOUNT_CREATED;
-            analytics.track(event, account.id, {}, isCloud ? { email: email } : {});
+            void analytics.track(event, account.id, {}, isCloud ? { email: email } : {});
 
             if (isCloud && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.

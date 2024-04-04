@@ -299,7 +299,7 @@ class ConnectionController {
             const connections = await connectionService.listConnections(environmentId, connectionId as string);
 
             if (!isWeb) {
-                analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
+                void analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
             }
 
             const configs = await configService.listProviderConfigs(environmentId);

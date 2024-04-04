@@ -49,7 +49,7 @@ class UnAuthController {
         );
 
         try {
-            analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
