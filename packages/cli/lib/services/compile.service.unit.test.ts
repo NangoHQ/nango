@@ -17,7 +17,7 @@ describe('listFiles', () => {
     });
 
     it('should list files with syncName', () => {
-        const files = listFilesToCompile({ syncName: 'compile.service', cwd: thisFolder });
+        const files = listFilesToCompile({ scriptName: 'compile.service', cwd: thisFolder });
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',

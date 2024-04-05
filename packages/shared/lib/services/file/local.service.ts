@@ -104,19 +104,15 @@ class LocalFileService {
         };
     }
 
-    public async getIntegrationClass(syncName: string, setIntegrationPath?: string) {
-        try {
-            const filePath = setIntegrationPath || this.resolveIntegrationFile(syncName);
-            const realPath = fs.realpathSync(filePath) + `?v=${Math.random().toString(36).substring(3)}`;
-            const { default: integrationCode } = await import(realPath);
-            const integrationClass = new integrationCode();
+    public resolveTsFileLocation({ scriptName, providerConfigKey, type }: { scriptName: string; providerConfigKey: string; type: string }) {
+        const filePath = `./${scriptName}.ts`;
 
-            return integrationClass;
-        } catch (error) {
-            console.error(error);
+        const nestedPath = path.resolve(`./${providerConfigKey}/${type}s/${scriptName}.ts`);
+        if (fs.existsSync(nestedPath)) {
+            return fs.realpathSync(path.resolve(nestedPath, '../'));
         }
 
-        return null;
+        return fs.realpathSync(filePath);
     }
 
     public getIntegrationTsFile(syncName: string, setIntegrationPath?: string | null) {

@@ -35,7 +35,7 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        await compileService.run(debug);
+        await compileService.run({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -108,7 +108,7 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        await compileService.run(debug);
+        await compileService.run({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
