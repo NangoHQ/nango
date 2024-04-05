@@ -526,7 +526,9 @@ class OAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
-                    activityLogId
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
@@ -565,7 +567,8 @@ class OAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             next(err);
@@ -1168,7 +1171,8 @@ class OAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1330,7 +1334,8 @@ class OAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
@@ -1457,7 +1462,8 @@ class OAuthController {
                     },
                     session.provider,
                     activityLogId,
-                    { initiateSync, runPostConnectionScript }
+                    { initiateSync, runPostConnectionScript },
+                    logCtx
                 );
             }
 
@@ -1468,7 +1474,8 @@ class OAuthController {
                     config,
                     template,
                     connectionConfig as ConnectionConfig,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
             } else {
                 await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
@@ -1526,7 +1533,8 @@ class OAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1572,7 +1580,8 @@ class OAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1634,7 +1643,8 @@ class OAuthController {
                         },
                         session.provider,
                         activityLogId,
-                        { initiateSync, runPostConnectionScript }
+                        { initiateSync, runPostConnectionScript },
+                        logCtx
                     );
                 }
                 await logCtx.success();
@@ -1684,7 +1694,8 @@ class OAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));

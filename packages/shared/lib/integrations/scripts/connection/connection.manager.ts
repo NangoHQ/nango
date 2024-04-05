@@ -78,12 +78,14 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             try {
                 await handler(internalNango);
             } catch (e) {
-                const errorMessage = e.message || 'Unknown error';
-                const errorDetails = {
-                    message: errorMessage,
-                    name: e.name || 'Error',
-                    stack: e.stack || 'No stack trace'
-                };
+                const errorDetails =
+                    e instanceof Error
+                        ? {
+                              message: e.message || 'Unknown error',
+                              name: e.name || 'Error',
+                              stack: e.stack || 'No stack trace'
+                          }
+                        : 'Unknown error';
 
                 const errorString = JSON.stringify(errorDetails);
                 const log = {

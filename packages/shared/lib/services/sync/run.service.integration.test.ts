@@ -10,6 +10,7 @@ import * as jobService from './job.service.js';
 import type { CustomerFacingDataRecord, IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { DataResponse } from '../../models/Data.js';
 import type { Connection } from '../../models/Connection.js';
+import { LogContext } from '@nangohq/logs';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -242,7 +243,17 @@ const runJob = async (
     if (!records) {
         throw new Error(`failed to format records`);
     }
-    const { error: upsertError, summary } = await dataService.upsert(records, connection.id!, model, activityLogId, connection.environment_id, softDelete);
+
+    const logCtx = new LogContext({ parentId: String(activityLogId) }, { dryRun: true, logToConsole: false });
+    const { error: upsertError, summary } = await dataService.upsert(
+        records,
+        connection.id!,
+        model,
+        activityLogId,
+        connection.environment_id,
+        softDelete,
+        logCtx
+    );
     if (upsertError) {
         throw new Error(`failed to upsert records: ${upsertError}`);
     }

@@ -175,7 +175,8 @@ class AppStoreAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     config?.provider,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
 
                 errorManager.errResFromNangoErr(res, error);
@@ -215,7 +216,9 @@ class AppStoreAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
-                    activityLogId
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
@@ -254,7 +257,8 @@ class AppStoreAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             next(err);

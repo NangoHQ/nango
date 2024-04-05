@@ -6,6 +6,7 @@ import connectionService from '../../../services/connection.service.js';
 import configService from '../../../services/config.service.js';
 import { getLogger } from '../../../utils/temp/logger.js';
 import crypto from 'crypto';
+import { getExistingOperationContext } from '@nangohq/logs';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -78,12 +79,15 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
             installation_id: installationId
         };
 
+        const logCtx = getExistingOperationContext({ id: activityLogId });
+
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
             template,
             connectionConfig as ConnectionConfig,
-            activityLogId
+            activityLogId,
+            logCtx
         );
     }
 }

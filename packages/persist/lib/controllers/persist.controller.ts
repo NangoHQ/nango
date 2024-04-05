@@ -74,8 +74,9 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
+        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
         const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, false);
+            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'save',
@@ -103,8 +104,9 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
+        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
         const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, true);
+            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'delete',
@@ -132,8 +134,9 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
+        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
         const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.update(dataRecords, nangoConnectionId, model, activityLogId, environmentId);
+            return await dataService.update(dataRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'update',

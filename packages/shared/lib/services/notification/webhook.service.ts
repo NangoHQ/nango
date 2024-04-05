@@ -41,10 +41,10 @@ const NON_FORWARDABLE_HEADERS = [
 class WebhookService {
     private retry = async (
         activityLogId: number | null,
-        logCtx: LogContext | null,
         environment_id: number,
-        error: AxiosError,
-        attemptNumber: number
+        logCtx?: LogContext | null | undefined,
+        error?: AxiosError,
+        attemptNumber?: number
     ): Promise<boolean> => {
         if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
             const content = `Webhook response received an ${
@@ -186,7 +186,7 @@ class WebhookService {
                 () => {
                     return axios.post(webhookUrl, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, logCtx, environment_id) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id, logCtx) }
             );
 
             if (response.status >= 200 && response.status < 300) {
@@ -229,7 +229,7 @@ class WebhookService {
         provider: string,
         success: boolean,
         activityLogId: number | null,
-        logCtx: LogContext | null
+        logCtx?: LogContext | null
     ): Promise<void> {
         const { send, environmentInfo } = await this.shouldSendWebhook(connection.environment_id, { auth: true });
 
@@ -265,7 +265,7 @@ class WebhookService {
                 () => {
                     return axios.post(webhookUrl as string, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, logCtx, environment_id) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id, logCtx) }
             );
 
             if (activityLogId) {
@@ -386,7 +386,7 @@ class WebhookService {
                 () => {
                     return axios.post(environmentInfo.webhook_url as string, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId as number, logCtx, environment_id) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId as number, environment_id, logCtx) }
             );
 
             if (response.status >= 200 && response.status < 300) {

@@ -216,7 +216,9 @@ class ApiAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
-                    activityLogId
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
@@ -255,7 +257,8 @@ class ApiAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             next(err);
@@ -443,7 +446,9 @@ class ApiAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
-                    activityLogId
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
@@ -482,7 +487,8 @@ class ApiAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             next(err);

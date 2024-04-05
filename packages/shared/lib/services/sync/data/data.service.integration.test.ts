@@ -11,8 +11,9 @@ import { createActivityLogSeed } from '../../../db/seeders/activity.seeder.js';
 import type { DataRecord, CustomerFacingDataRecord } from '../../../models/Sync.js';
 import type { Environment } from '../../../models/Environment.js';
 import { createEnvironmentSeed } from '../../../db/seeders/environment.seeder.js';
+import { LogContext } from '@nangohq/logs';
 
-describe('Data service integration tests', async () => {
+describe('Data service integration tests', () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
@@ -56,7 +57,16 @@ describe('Data service integration tests', async () => {
         const activityLogId = await createActivityLogSeed(1);
         const modelName = Math.random().toString(36).substring(7);
         const { response: formattedResults } = formatDataRecords(duplicateRecords, connections[0] as number, modelName, sync.id, job.id);
-        const { error, success } = await DataService.upsert(formattedResults as unknown as DataRecord[], activityLogId, modelName, activityLogId, env.id);
+        const logCtx = new LogContext({ parentId: String(activityLogId) }, { dryRun: true, logToConsole: false });
+        const { error, success } = await DataService.upsert(
+            formattedResults as unknown as DataRecord[],
+            activityLogId,
+            modelName,
+            activityLogId,
+            env.id,
+            undefined,
+            logCtx
+        );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
 

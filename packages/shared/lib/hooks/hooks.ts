@@ -16,6 +16,7 @@ import type { Result } from '../utils/result.js';
 import { resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';
 import { getLogger } from '../utils/temp/logger.js';
+import type { LogContext } from '@nangohq/logs';
 
 const logger = getLogger('hooks');
 
@@ -55,7 +56,8 @@ export const connectionCreated = async (
     connection: RecentlyCreatedConnection,
     provider: string,
     activityLogId: number | null,
-    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
+    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
+    logCtx?: LogContext
 ): Promise<void> => {
     const hosted = !isCloud && !isLocal && !isEnterprise;
 
@@ -68,11 +70,16 @@ export const connectionCreated = async (
         integrationPostConnectionScript(connection, provider);
     }
 
-    await webhookService.sendAuthUpdate(connection, provider, true, activityLogId);
+    await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);
 };
 
-export const connectionCreationFailed = async (connection: RecentlyCreatedConnection, provider: string, activityLogId: number | null): Promise<void> => {
-    await webhookService.sendAuthUpdate(connection, provider, false, activityLogId);
+export const connectionCreationFailed = async (
+    connection: RecentlyCreatedConnection,
+    provider: string,
+    activityLogId: number | null,
+    logCtx: LogContext
+): Promise<void> => {
+    await webhookService.sendAuthUpdate(connection, provider, false, activityLogId, logCtx);
 };
 
 export const connectionTest = async (

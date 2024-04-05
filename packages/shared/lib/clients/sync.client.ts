@@ -225,7 +225,7 @@ class SyncClient {
                     await logCtx.debug('Creating sync job', { jobId, syncId: sync.id });
                 }
 
-                const res = await this.triggerInitialSync({ activityLogId, jobId, nangoConnection, syncId: sync.id, syncName, debug });
+                const res = await this.triggerInitialSync({ jobId, nangoConnection, syncId: sync.id, syncName, debug });
                 if (!res) {
                     throw new NangoError('failed_to_start_initial_sync');
                 }
@@ -456,7 +456,7 @@ class SyncClient {
                             environment_id: environmentId
                         };
 
-                        await this.triggerInitialSync({ syncId, activityLogId, nangoConnection, syncName });
+                        await this.triggerInitialSync({ syncId, nangoConnection, syncName });
                     }
                     break;
             }
@@ -859,7 +859,6 @@ class SyncClient {
         syncId: string;
         jobId?: string;
         syncName: string;
-        activityLogId: number;
         nangoConnection: NangoConnection;
         debug?: boolean;
     }): Promise<boolean> {

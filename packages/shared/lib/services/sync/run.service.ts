@@ -186,6 +186,7 @@ export default class SyncRun {
                     timestamp: Date.now(),
                     content
                 });
+                await this.logCtx?.debug(content);
             } else {
                 console.log(content);
             }
@@ -267,6 +268,7 @@ export default class SyncRun {
                             timestamp: Date.now(),
                             content
                         });
+                        await this.logCtx?.debug(content);
                     } else {
                         console.log(content);
                     }
@@ -349,6 +351,7 @@ export default class SyncRun {
                         timestamp: Date.now(),
                         content
                     });
+                    await this.logCtx?.debug(content);
                 } else {
                     console.log(content);
                 }
@@ -414,6 +417,8 @@ export default class SyncRun {
                         timestamp: Date.now(),
                         content
                     });
+                    await this.logCtx?.info(content);
+                    await this.logCtx?.success();
 
                     await slackNotificationService.removeFailingConnection(
                         this.nangoConnection,
@@ -593,6 +598,7 @@ export default class SyncRun {
             this.syncType,
             syncStartDate,
             this.activityLogId,
+            this.logCtx!,
             this.nangoConnection.environment_id
         );
 
@@ -604,6 +610,8 @@ export default class SyncRun {
                 timestamp: Date.now(),
                 content
             });
+            await this.logCtx?.info(content);
+            await this.logCtx?.success();
         } else {
             await createActivityLogMessage({
                 level: 'info',
@@ -612,6 +620,7 @@ export default class SyncRun {
                 timestamp: Date.now(),
                 content
             });
+            await this.logCtx?.info(content);
         }
 
         await telemetry.log(

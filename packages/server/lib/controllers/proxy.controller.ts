@@ -36,7 +36,7 @@ import {
     configService
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { getExistingOperationContext, getOperationContext } from '@nangohq/logs';
+import { getExistingOperationContext, getOperationContext, oldLevelToNewLevel } from '@nangohq/logs';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -176,7 +176,8 @@ class ProxyController {
                 activityLogId,
                 environment_id,
                 isSync,
-                isDryRun
+                isDryRun,
+                logCtx
             });
         } catch (error) {
             const environmentId = getEnvironmentId(res);
@@ -212,7 +213,8 @@ class ProxyController {
         activityLogId,
         environment_id,
         isSync,
-        isDryRun
+        isDryRun,
+        logCtx
     }: {
         res: Response;
         method: HTTP_VERB;
@@ -221,6 +223,7 @@ class ProxyController {
         environment_id: number;
         isSync?: boolean | undefined;
         isDryRun?: boolean | undefined;
+        logCtx: LogContext;
     }) {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
@@ -239,7 +242,8 @@ class ProxyController {
             decompress,
             isSync,
             isDryRun,
-            data: configBody.data
+            data: configBody.data,
+            logCtx
         });
     }
 
@@ -251,7 +255,8 @@ class ProxyController {
         environment_id,
         url,
         isSync = false,
-        isDryRun = false
+        isDryRun = false,
+        logCtx
     }: {
         res: Response;
         responseStream: AxiosResponse;
@@ -261,6 +266,7 @@ class ProxyController {
         url: string;
         isSync?: boolean | undefined;
         isDryRun?: boolean | undefined;
+        logCtx: LogContext;
     }) {
         if (!isDryRun && activityLogId) {
             if (!isSync) {
@@ -277,6 +283,7 @@ class ProxyController {
                     headers: JSON.stringify(safeHeaders)
                 }
             });
+            await logCtx.info(`${config.method.toUpperCase()} request to ${url} was successful`, { headers: JSON.stringify(safeHeaders) });
         }
 
         const passThroughStream = new PassThrough();
@@ -292,7 +299,8 @@ class ProxyController {
         url: string,
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number | null,
-        environment_id: number
+        environment_id: number,
+        logCtx: LogContext
     ) {
         const error = e as AxiosError;
 
@@ -316,6 +324,7 @@ class ProxyController {
                     content: `${method.toUpperCase()} request to ${url} failed`,
                     params: errorObject
                 });
+                await logCtx?.error(`${method.toUpperCase()} request to ${url} failed`, errorObject);
             } else {
                 console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorObject)}`);
             }
@@ -346,7 +355,7 @@ class ProxyController {
         if (errorData) {
             errorData.pipe(stringify).pipe(res);
             stringify.on('data', (data) => {
-                void this.reportError(error, url, config, activityLogId, environment_id, data);
+                void this.reportError(error, url, config, activityLogId, environment_id, data, logCtx);
             });
         }
     }
@@ -370,7 +379,8 @@ class ProxyController {
         decompress,
         isSync,
         isDryRun,
-        data
+        data,
+        logCtx
     }: {
         res: Response;
         method: HTTP_VERB;
@@ -382,6 +392,7 @@ class ProxyController {
         isSync?: boolean | undefined;
         isDryRun?: boolean | undefined;
         data?: unknown;
+        logCtx: LogContext;
     }) {
         try {
             const activityLogs: ActivityLogMessage[] = [];
@@ -403,15 +414,20 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config, activityLogs) }
             );
             await Promise.all(
-                activityLogs.map(async (activityLogMessage) => {
-                    await createActivityLogMessage(activityLogMessage);
-                    // TODO: add logCtx
+                activityLogs.map(async (msg) => {
+                    await createActivityLogMessage(msg);
+                    await logCtx.log({
+                        type: 'log',
+                        level: oldLevelToNewLevel[msg.level],
+                        message: msg.content,
+                        createdAt: new Date(msg.timestamp).toISOString()
+                    });
                 })
             );
 
-            await this.handleResponse({ res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun });
+            await this.handleResponse({ res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun, logCtx });
         } catch (error) {
-            await this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
+            await this.handleErrorResponse(res, error, url, config, activityLogId, environment_id, logCtx);
         }
     }
 

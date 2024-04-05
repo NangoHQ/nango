@@ -3,6 +3,7 @@ import { multipleMigrations } from '../db/database.js';
 import { generateInsertableJson, createRecords } from '../services/sync/data/mocks.js';
 import type { DataRecord } from '../models/Sync.js';
 import * as DataService from '../services/sync/data/data.service.js';
+import { LogContext } from '@nangohq/logs';
 
 describe('Encryption manager tests', () => {
     beforeAll(async () => {
@@ -16,7 +17,16 @@ describe('Encryption manager tests', () => {
         const { modelName, nangoConnectionId, env } = meta;
         const start = Date.now();
 
-        const { error, success } = await DataService.upsert(formattedResults as unknown as DataRecord[], nangoConnectionId, modelName, 1, env.id);
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const { error, success } = await DataService.upsert(
+            formattedResults as unknown as DataRecord[],
+            nangoConnectionId,
+            modelName,
+            1,
+            env.id,
+            undefined,
+            logCtx
+        );
 
         expect(success).toBe(true);
         expect(error).toBe(undefined);

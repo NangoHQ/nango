@@ -168,7 +168,9 @@ class UnAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
-                    activityLogId
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
@@ -207,7 +209,8 @@ class UnAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             next(err);

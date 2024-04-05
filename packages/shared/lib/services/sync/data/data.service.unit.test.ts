@@ -2,6 +2,7 @@ import { expect, describe, it } from 'vitest';
 import * as DataService from './data.service.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import { mockCreateActivityLogMessage } from '../../activity/mocks.js';
+import { LogContext } from '@nangohq/logs';
 
 describe('Data service tests', () => {
     it('Should remove multiple duplicates using the removeDuplicateKey function', async () => {
@@ -53,7 +54,8 @@ describe('Data service tests', () => {
             { external_id: '5', name: 'Mike Doe' }
         ];
 
-        const actual = await DataService.removeDuplicateKey(duplicateRecords as unknown as DataRecord[], activityLogId, 1, model);
+        const logCtx = new LogContext({ parentId: String(activityLogId) }, { dryRun: true, logToConsole: false });
+        const actual = await DataService.removeDuplicateKey(duplicateRecords as unknown as DataRecord[], activityLogId, 1, model, logCtx);
 
         expect(actual).toEqual(expected);
     });

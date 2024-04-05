@@ -204,7 +204,8 @@ class AppAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
@@ -233,7 +234,9 @@ class AppAuthController {
                         operation: updatedConnection.operation
                     },
                     session.provider,
-                    activityLogId
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
@@ -291,7 +294,8 @@ class AppAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));

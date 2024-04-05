@@ -4,12 +4,17 @@ import type { FormatMessageData } from './models/helpers.js';
 import { getFormattedMessage } from './models/helpers.js';
 import type { SetRequired } from 'type-fest';
 import { errorToObject } from '@nangohq/utils';
+import { logger } from './utils.js';
 
 export class LogContext {
     id: string;
+    dryRun: boolean;
+    logToConsole: boolean;
 
-    constructor(opts: { parentId: string }) {
-        this.id = opts.parentId;
+    constructor(data: { parentId: string }, options: { dryRun: boolean; logToConsole: boolean } = { dryRun: false, logToConsole: true }) {
+        this.id = data.parentId;
+        this.dryRun = options.dryRun;
+        this.logToConsole = options.logToConsole;
     }
 
     /**
@@ -89,5 +94,8 @@ export async function getOperationContext(
 }
 
 export function getExistingOperationContext({ id }: { id: MessageRow['id'] }): LogContext {
+    if (!id) {
+        logger.error('getExistingOperationContext: id is empty');
+    }
     return new LogContext({ parentId: id });
 }

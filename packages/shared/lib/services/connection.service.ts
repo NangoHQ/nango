@@ -48,6 +48,7 @@ import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
+import type { LogContext } from '@nangohq/logs';
 import { getExistingOperationContext } from '@nangohq/logs';
 
 const logger = getLogger('Connection');
@@ -863,7 +864,8 @@ class ConnectionService {
         integration: ProviderConfig,
         template: ProviderTemplate,
         connectionConfig: ConnectionConfig,
-        activityLogId: number
+        activityLogId: number,
+        logCtx: LogContext
     ): Promise<void> {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
@@ -898,7 +900,8 @@ class ConnectionService {
                 activityLogId,
                 // the connection is complete so we want to initiate syncs
                 // the post connection script has run already because we needed to get the github handle
-                { initiateSync: true, runPostConnectionScript: false }
+                { initiateSync: true, runPostConnectionScript: false },
+                logCtx
             );
         }
 
@@ -909,6 +912,7 @@ class ConnectionService {
             content: 'App connection was approved and credentials were saved',
             timestamp: Date.now()
         });
+        await logCtx.info('App connection was approved and credentials were saved');
 
         await updateSuccessActivityLog(Number(activityLogId), true);
     }
