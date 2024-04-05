@@ -991,11 +991,7 @@ class ConnectionService {
         }
     }
 
-    public async shouldCapUsage({ providerConfigKey, environmentId }: { providerConfigKey: string | undefined; environmentId: number }): Promise<boolean> {
-        if (!providerConfigKey) {
-            return false;
-        }
-
+    public async shouldCapUsage({ providerConfigKey, environmentId }: { providerConfigKey: string; environmentId: number }): Promise<boolean> {
         const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
 
         if (!connections) {
