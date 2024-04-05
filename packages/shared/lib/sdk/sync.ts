@@ -224,10 +224,10 @@ export interface NangoProps {
     host?: string;
     secretKey: string;
     accountId?: number;
-    connectionId?: string;
+    connectionId: string;
     environmentId?: number;
     activityLogId?: number;
-    providerConfigKey?: string;
+    providerConfigKey: string;
     provider?: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
@@ -259,8 +259,8 @@ export class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
 
-    public connectionId?: string;
-    public providerConfigKey?: string;
+    public connectionId: string;
+    public providerConfigKey: string;
     public provider?: string;
 
     public ActionError = ActionError;
@@ -271,6 +271,9 @@ export class NangoAction {
     >();
 
     constructor(config: NangoProps) {
+        this.connectionId = config.connectionId;
+        this.providerConfigKey = config.providerConfigKey;
+
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
@@ -294,14 +297,6 @@ export class NangoAction {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
-        }
-
-        if (config.connectionId) {
-            this.connectionId = config.connectionId;
-        }
-
-        if (config.providerConfigKey) {
-            this.providerConfigKey = config.providerConfigKey;
         }
 
         if (config.environmentId) {
@@ -841,7 +836,9 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
     'getEnvironmentVariables',
     'getMetadata',
     'proxy',
-    'log'
+    'log',
+    'triggerAction',
+    'triggerSync'
 ];
 
 /* eslint-disable no-inner-declarations */

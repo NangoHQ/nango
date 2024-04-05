@@ -80,7 +80,11 @@ export async function exec(
                     throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
                 }
                 if (isAction) {
-                    return await scriptExports.default(nango, codeParams);
+                    let inputParams = codeParams;
+                    if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
+                        inputParams = undefined;
+                    }
+                    return await scriptExports.default(nango, inputParams);
                 } else {
                     return await scriptExports.default(nango);
                 }
