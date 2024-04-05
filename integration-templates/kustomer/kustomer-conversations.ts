@@ -1,8 +1,6 @@
 import type { NangoSync, KustomerConversation } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
-    let totalRecords = 0;
-
     try {
         const endpoint = '/v1/conversations';
         const config = {
@@ -16,10 +14,6 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         };
         for await (const conversation of nango.paginate({ ...config, endpoint })) {
             const mappedConversation: KustomerConversation[] = conversation.map(mapConversation) || [];
-
-            const batchSize: number = mappedConversation.length;
-            totalRecords += batchSize;
-            await nango.log(`Saving batch of ${batchSize} conversation(s) (total conversation(s): ${totalRecords})`);
             await nango.batchSave(mappedConversation, 'KustomerConversation');
         }
     } catch (error: any) {
