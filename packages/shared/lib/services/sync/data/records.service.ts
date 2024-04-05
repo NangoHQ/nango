@@ -20,6 +20,7 @@ import { NangoError } from '../../../utils/error.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
+import { trackFetch } from '../sync.service.js';
 
 dayjs.extend(utc);
 
@@ -326,6 +327,8 @@ export async function getAllDataRecords(
         if (!nangoConnection) {
             throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
         }
+
+        await trackFetch(Number(nangoConnection.id));
 
         let query = schema()
             .from<SyncDataRecord>(RECORDS_TABLE)
