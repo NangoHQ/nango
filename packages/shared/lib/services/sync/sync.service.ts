@@ -57,7 +57,9 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
         name,
-        frequency: null
+        frequency: null,
+        last_sync_date: null,
+        last_fetched_at: null
     };
 
     const result = await schema().from<Sync>(TABLE).insert(sync).returning('*');
