@@ -231,7 +231,7 @@ class ApiAuthController {
                 content: `Error during API key auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during API key auth', err);
+            await logCtx.error('Error during API key auth', { error: err });
             await logCtx.failed();
 
             errorManager.report(err, {
@@ -458,7 +458,7 @@ class ApiAuthController {
                 content: `Error during basic API auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during API key auth', err);
+            await logCtx.error('Error during API key auth', { error: err });
             await logCtx.failed();
 
             errorManager.report(err, {

@@ -230,7 +230,7 @@ class AppStoreAuthController {
                 content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during API key auth', err);
+            await logCtx.error('Error during API key auth', { error: err });
             await logCtx.failed();
 
             errorManager.report(err, {

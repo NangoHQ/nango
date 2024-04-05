@@ -266,6 +266,8 @@ class SlackService {
                 content: `Failed looking up the slack notification using the slack notification service. The error was: ${error}`,
                 timestamp: Date.now()
             });
+            await logCtx.error('Failed looking up the slack notification using the slack notification service', { error });
+            await logCtx.failed();
 
             return;
         }
@@ -330,6 +332,20 @@ class SlackService {
         });
 
         await updateSuccessActivityLog(activityLogId as number, isOk(actionResponse));
+
+        if (isOk(actionResponse)) {
+            await logCtx.info(
+                `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
+                { payload }
+            );
+            await logCtx.success();
+        } else {
+            await logCtx.error(
+                `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.err.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
+                { error: actionResponse.err, payload }
+            );
+            await logCtx.failed();
+        }
     }
 
     /**
@@ -449,7 +465,7 @@ class SlackService {
             await logCtx.info(content, payload);
             await logCtx.success();
         } else {
-            await logCtx.error(content, payload);
+            await logCtx.error(content, { error: actionResponse.err });
             await logCtx.failed();
         }
     }

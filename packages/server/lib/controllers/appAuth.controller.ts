@@ -104,7 +104,7 @@ class AppAuthController {
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support app creation`
                 });
-                await logCtx.error('Provider does not support app creation', null, { provider: config.provider });
+                await logCtx.error('Provider does not support app creation', { provider: config.provider });
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
@@ -124,7 +124,7 @@ class AppAuthController {
                     auth_mode: AuthModes.App,
                     url: req.originalUrl
                 });
-                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', null, {
+                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
                     provider: config.provider,
                     url: req.originalUrl
                 });
@@ -156,14 +156,14 @@ class AppAuthController {
                         ...connectionConfig
                     }
                 });
-                await logCtx.error(error.message, null, { connectionConfig, url: req.originalUrl });
+                await logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             if (!installation_id) {
-                logCtx.failed();
+                await logCtx.failed();
                 res.sendStatus(400);
                 return;
             }
@@ -178,7 +178,7 @@ class AppAuthController {
                     content: `Error during app token retrieval call: ${error?.message}`,
                     timestamp: Date.now()
                 });
-                await logCtx.error('Error during app token retrieval call', error);
+                await logCtx.error('Error during app token retrieval call', { error });
                 await logCtx.failed();
 
                 await telemetry.log(
@@ -271,7 +271,7 @@ class AppAuthController {
                 auth_mode: AuthModes.App,
                 url: req.originalUrl
             });
-            await logCtx.error(error.message, err, { url: req.originalUrl });
+            await logCtx.error(error.message, { error: err, url: req.originalUrl });
             await logCtx.failed();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {

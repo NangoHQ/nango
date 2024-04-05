@@ -167,7 +167,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
         );
-        await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', err, { syncName });
+        await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', { error: err, syncName });
         await logCtx.failed();
 
         await telemetry.log(LogTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
@@ -297,7 +297,7 @@ export async function syncProvider(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
         );
-        await logCtx.error('Failed to create the job', err);
+        await logCtx.error('Failed to create the job', { error: err });
         await logCtx.failed();
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {

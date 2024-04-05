@@ -607,11 +607,12 @@ export const getAndReconcileDifferences = async ({
             await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        const result = await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId as number);
+        const result = await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId!, logCtx);
 
         if (!result) {
             if (activityLogId) {
                 await updateSuccessActivityLog(activityLogId, false);
+                await logCtx?.failed();
             }
             return null;
         }

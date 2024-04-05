@@ -683,7 +683,7 @@ class SyncController {
             }
 
             if (command !== SyncCommand.RUN) {
-                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
+                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id, logCtx);
             }
 
             await createActivityLogMessageAndEnd({
@@ -726,7 +726,7 @@ class SyncController {
             res.sendStatus(200);
         } catch (err) {
             // TODO: up this
-            // await logCtx.error('Failed to sync command', err);
+            // await logCtx.error('Failed to sync command', {error: err});
             // await logCtx.failed();
             next(err);
         }

@@ -61,6 +61,7 @@ class PersistController {
         );
         const logCtx = getExistingOperationContext({ id: String(activityLogId) });
         await logCtx.log({ type: 'log', message: msg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
+
         if (result) {
             res.status(201).send();
         } else {
@@ -216,8 +217,9 @@ class PersistController {
                 content: `There was an issue with the batch ${persistType}. ${error?.message}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('There was an issue with the batch', error, { persistType });
+            await logCtx.error('There was an issue with the batch', { error, persistType });
             const res = resultErr(`Failed to ${persistType} records ${activityLogId}`);
+
             span.setTag('error', res.err).finish();
             return res;
         }
@@ -225,8 +227,9 @@ class PersistController {
 
         if (syncConfig && !syncConfig?.models.includes(model)) {
             const res = resultErr(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            await logCtx.error('The model is not included in the declared sync models', { model });
+
             span.setTag('error', res.err).finish();
-            await logCtx.error('The model is not included in the declared sync models', null, { model });
             return res;
         }
 
@@ -268,7 +271,7 @@ class PersistController {
                 content,
                 timestamp: Date.now()
             });
-            await logCtx.error('There was an issue with the batch', persistResult.error, { persistType });
+            await logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
 
             errorManager.report(content, {
                 environmentId: environmentId,

@@ -51,8 +51,7 @@ import {
     LogTypes,
     AnalyticsTypes,
     hmacService,
-    ErrorSourceEnum,
-    errorToObject
+    ErrorSourceEnum
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -327,7 +326,7 @@ class OAuthController {
                 content: error.message + '\n' + prettyError,
                 timestamp: Date.now()
             });
-            await logCtx.error(error.message, e);
+            await logCtx.error(error.message, { error: e });
             await logCtx.failed();
 
             errorManager.report(e, {
@@ -483,7 +482,7 @@ class OAuthController {
                     content: `Error during OAuth2 client credentials creation: ${error}`,
                     timestamp: Date.now()
                 });
-                await logCtx.error('Error during OAuth2 client credentials creation', { provider: config.provider, error: errorToObject(error) });
+                await logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'oauth2_cc_error');
@@ -541,7 +540,7 @@ class OAuthController {
                 content: `Error during OAuth2 client credentials create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during OAuth2 client credentials creation', err);
+            await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
             await logCtx.failed();
 
             errorManager.report(err, {
@@ -618,7 +617,8 @@ class OAuthController {
                         ...connectionConfig
                     }
                 });
-                await logCtx.error(error.message, null, { connectionConfig });
+                await logCtx.error(error.message, { connectionConfig });
+                await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
@@ -637,7 +637,8 @@ class OAuthController {
                         ...connectionConfig
                     }
                 });
-                await logCtx.error(error.message, null, { connectionConfig });
+                await logCtx.error(error.message, { connectionConfig });
+                await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
@@ -752,15 +753,16 @@ class OAuthController {
                         ...connectionConfig
                     }
                 });
-                await logCtx.error('Redirecting', null, {
+                await logCtx.error('Redirecting', {
                     grantType,
                     basicAuthEnabled: template.token_request_auth_method === 'basic',
                     connectionConfig
                 });
+                await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
-        } catch (error: any) {
+        } catch (error) {
             const prettyError = JSON.stringify(error, ['message', 'name'], 2);
 
             const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
@@ -784,7 +786,8 @@ class OAuthController {
                     ...connectionConfig
                 }
             });
-            await logCtx.error(WSErrBuilder.UnknownError().message, error, { connectionConfig });
+            await logCtx.error(WSErrBuilder.UnknownError().message, { error, connectionConfig });
+            await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
@@ -827,7 +830,8 @@ class OAuthController {
                         ...connectionConfig
                     }
                 });
-                await logCtx.error(error.message, null, { ...connectionConfig });
+                await logCtx.error(error.message, { ...connectionConfig });
+                await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
@@ -862,7 +866,7 @@ class OAuthController {
             await addEndTimeActivityLog(activityLogId);
 
             res.redirect(authorizationUri);
-        } catch (error: any) {
+        } catch (error) {
             const prettyError = JSON.stringify(error, ['message', 'name'], 2);
 
             const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
@@ -879,7 +883,8 @@ class OAuthController {
                     ...connectionConfig
                 }
             });
-            await logCtx.error('Redirecting', null, { connectionConfig });
+            await logCtx.error('Redirecting', { connectionConfig });
+            await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
@@ -946,7 +951,8 @@ class OAuthController {
                     ...error
                 }
             });
-            await logCtx.error(userError.message, err, { url: oAuth1CallbackURL });
+            await logCtx.error(userError.message, { error: err, url: oAuth1CallbackURL });
+            await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, userError);
         }
@@ -1068,7 +1074,7 @@ class OAuthController {
                 auth_mode: session.authMode,
                 url: req.originalUrl
             });
-            await logCtx.error(error.message, null, { url: req.originalUrl });
+            await logCtx.error(error.message, { url: req.originalUrl });
             await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1095,7 +1101,7 @@ class OAuthController {
                     ...errorManager.getExpressRequestContext(req)
                 }
             });
-            await logCtx.error(error.message, err, { url: req.originalUrl });
+            await logCtx.error(error.message, { error: err, url: req.originalUrl });
             await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
@@ -1139,6 +1145,7 @@ class OAuthController {
                 basicAuthEnabled: template.token_request_auth_method === 'basic',
                 tokenParams: template?.token_params as string
             });
+            await logCtx.failed();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed with a missing code', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
@@ -1293,7 +1300,7 @@ class OAuthController {
                     )}`,
                     timestamp: Date.now()
                 });
-                await logCtx.error('The OAuth token response from the server could not be parsed - OAuth flow failed.', err, { rawCredentials });
+                await logCtx.error('The OAuth token response from the server could not be parsed - OAuth flow failed.', { error: err, rawCredentials });
                 await logCtx.failed();
 
                 await telemetry.log(
@@ -1502,7 +1509,7 @@ class OAuthController {
                 content: error.message + '\n' + prettyError,
                 timestamp: Date.now()
             });
-            await logCtx.error(error.message, err);
+            await logCtx.error(error.message, { error: err });
             await logCtx.failed();
 
             await connectionCreationFailedHook(

@@ -88,7 +88,7 @@ export async function exec(): Promise<void> {
             continue;
         }
 
-        const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, activityLogId, sync.environment_id);
+        const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, activityLogId, sync.environment_id, logCtx);
         if (isErr(resDb)) {
             await logCtx.failed();
             continue;

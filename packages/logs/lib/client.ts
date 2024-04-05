@@ -31,9 +31,10 @@ export class LogContext {
         await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
     }
 
-    async error(message: string, error?: unknown, meta: MessageMeta | null = null): Promise<void> {
+    async error(message: string, meta: (MessageMeta & { error?: unknown }) | null = null): Promise<void> {
+        const { error, ...rest } = meta || {};
         const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
-        await this.log({ type: 'log', level: 'error', message, error: err ? { name: err.name, message: err?.message } : null, meta, source: 'internal' });
+        await this.log({ type: 'log', level: 'error', message, error: err ? { name: err.name, message: err?.message } : null, meta: rest, source: 'internal' });
     }
 
     async trace(message: string, meta: MessageMeta | null = null): Promise<void> {

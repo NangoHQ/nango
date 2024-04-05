@@ -48,6 +48,7 @@ import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
+import { getExistingOperationContext } from '@nangohq/logs';
 
 const logger = getLogger('Connection');
 
@@ -1110,6 +1111,8 @@ class ConnectionService {
             content: message,
             timestamp: Date.now()
         });
+        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+        await logCtx.error(message);
     }
 }
 

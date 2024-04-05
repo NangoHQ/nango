@@ -34,6 +34,7 @@ import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import type { LogContext } from '@nangohq/logs';
 import { getOperationContext, syncCommandToOperation } from '@nangohq/logs';
 
 interface CreateSyncArgs {
@@ -52,7 +53,8 @@ export class Orchestrator {
         environmentId: number,
         sync: IncomingFlowConfig,
         debug = false,
-        activityLogId?: number
+        activityLogId?: number,
+        logCtx?: LogContext
     ): Promise<boolean> {
         try {
             const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
@@ -64,6 +66,7 @@ export class Orchestrator {
                     timestamp: Date.now(),
                     content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
+                await logCtx?.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
             for (const connection of connections) {
                 const syncExists = await getSyncByIdAndName(connection.id as number, syncName);
@@ -91,6 +94,7 @@ export class Orchestrator {
                     timestamp: Date.now(),
                     content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
+                await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
 
             return true;
@@ -103,16 +107,17 @@ export class Orchestrator {
                 timestamp: Date.now(),
                 content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
             });
+            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: e });
 
             return false;
         }
     }
 
-    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number): Promise<boolean> {
+    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number, logCtx?: LogContext): Promise<boolean> {
         let success = true;
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId);
+            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId, logCtx);
             if (!result) {
                 success = false;
             }
@@ -235,7 +240,7 @@ export class Orchestrator {
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
                 }
             }
         } else {
@@ -274,7 +279,7 @@ export class Orchestrator {
                     logCtx
                 });
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
                 }
             }
         }
@@ -432,7 +437,7 @@ export class Orchestrator {
         return { schedule, latestJob, status, nextScheduledSyncAt };
     }
 
-    private async reportedStatus(
+    private reportedStatus(
         sync: Sync,
         latestJob: SyncJob | null,
         schedule: SyncSchedule | null,

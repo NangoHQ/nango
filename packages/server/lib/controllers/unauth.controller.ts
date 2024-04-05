@@ -183,7 +183,7 @@ class UnAuthController {
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during Unauthenticated connection creation', err);
+            await logCtx.error('Error during Unauthenticated connection creation', { error: err });
             await logCtx.failed();
 
             errorManager.report(err, {

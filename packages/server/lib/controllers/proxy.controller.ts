@@ -402,8 +402,9 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config, activityLogs) }
             );
             await Promise.all(
-                activityLogs.map((activityLogMessage) => {
-                    return createActivityLogMessage(activityLogMessage);
+                activityLogs.map(async (activityLogMessage) => {
+                    await createActivityLogMessage(activityLogMessage);
+                    // TODO: add logCtx
                 })
             );
 
@@ -438,7 +439,7 @@ class ProxyController {
                     responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
                 }
             });
-            await logCtx?.error('he provider responded back with an error code', null, {
+            await logCtx?.error('he provider responded back with an error code', {
                 code: error?.response?.status,
                 url,
                 error: errorMessage,

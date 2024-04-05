@@ -190,9 +190,7 @@ class SyncClient {
                     timestamp: Date.now(),
                     content
                 });
-                await logCtx.error('The sync was not created or started due to an error with the sync interval', error, {
-                    runs: syncData.runs
-                });
+                await logCtx.error('The sync was not created or started due to an error with the sync interval', { error, runs: syncData.runs });
                 await logCtx.failed();
 
                 errorManager.report(content, {
@@ -301,7 +299,7 @@ class SyncClient {
                     syncData: JSON.stringify(syncData)
                 }
             });
-            // await logCtx.error('Failed to init sync', err);
+            // await logCtx.error('Failed to init sync', {error: err});
             // await logCtx.failed();
         }
     }
@@ -474,7 +472,7 @@ class SyncClient {
                 timestamp: Date.now(),
                 content: `The sync command: ${command} failed with error: ${errorMessage}`
             });
-            await logCtx.error('Sync command failed', err, { command });
+            await logCtx.error('Sync command failed', { error: err, command });
 
             return resultErr(err as Error);
         }
@@ -781,7 +779,7 @@ class SyncClient {
                 timestamp: Date.now(),
                 content: `The webhook workflow ${workflowId} failed with error: ${errorMessage}`
             });
-            await logCtx.error('The webhook workflow failed', e);
+            await logCtx.error('The webhook workflow failed', { error: e });
             await logCtx.failed();
 
             errorManager.report(e, {
@@ -800,7 +798,15 @@ class SyncClient {
         }
     }
 
-    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, environmentId: number, syncName?: string, activityLogId?: number) {
+    async updateSyncSchedule(
+        schedule_id: string,
+        interval: string,
+        offset: number,
+        environmentId: number,
+        syncName?: string,
+        activityLogId?: number,
+        logCtx?: LogContext
+    ) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {
                 intervals: [
@@ -826,6 +832,7 @@ class SyncClient {
                     content: `Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}.`,
                     timestamp: Date.now()
                 });
+                await logCtx?.info(`Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}`);
             }
         } catch (e) {
             errorManager.report(e, {

@@ -111,7 +111,7 @@ export async function deploy(
                 timestamp: Date.now(),
                 content: `Failed to deploy`
             });
-            await logCtx.error('Failed to deploy', error);
+            await logCtx.error('Failed to deploy', { error });
             await logCtx.failed();
             await updateSuccessActivityLog(activityLogId!, false);
             return { success, error, response: null };
@@ -214,7 +214,7 @@ export async function deploy(
             environment_id
         );
 
-        await logCtx.error('Failed to deploy syncs', e);
+        await logCtx.error('Failed to deploy syncs', { error: e });
         await logCtx.failed();
 
         const shortContent = `Failure to deploy the syncs (${flowsWithVersions.map((flow) => flow.syncName).join(', ')}).`;
@@ -337,7 +337,8 @@ export async function deployPreBuilt(
                         syncConfig?.frequency || runs,
                         sync_name,
                         environment_id,
-                        activityLogId as number
+                        activityLogId as number,
+                        logCtx
                     );
 
                     if (!success) {
@@ -544,7 +545,7 @@ export async function deployPreBuilt(
         const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
         await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number, environment_id);
 
-        await logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name) });
+        await logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name), error: e });
         await logCtx.failed();
 
         await telemetry.log(
@@ -674,7 +675,8 @@ async function compileDeployInfo({
                     syncConfig?.frequency || runs,
                     syncName,
                     environment_id,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
 
                 if (!success) {
