@@ -9,7 +9,7 @@ import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import unAuthController from './controllers/unauth.controller.js';
 import appStoreAuthController from './controllers/appStoreAuth.controller.js';
-import authMiddleware from './controllers/access.middleware.js';
+import authMiddleware from './middleware/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
@@ -19,7 +19,8 @@ import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
-import { rateLimiterMiddleware } from './controllers/ratelimit.middleware.js';
+import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { authCheck } from './middleware/resource-capping.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
 import type { WebSocket } from 'ws';
@@ -50,7 +51,7 @@ setupAuth(app);
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
 const webAuth =
     isCloud || isEnterprise
         ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
@@ -89,11 +90,12 @@ await oAuthSessionService.clearStaleSessions();
 app.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
+
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
+app.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 app.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
 app.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
-app.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
 app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
 app.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
