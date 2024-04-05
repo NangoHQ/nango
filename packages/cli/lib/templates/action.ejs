@@ -36,7 +36,7 @@
 
     if (formattedInputs) {
         const formattedInputsArray = formattedInputs.split(',').map(input => input.trim());
-        if (isArrayInterfaceNames) {
+        if (isArrayInterfaceNames && formattedInterfaceNames) {
             formattedInterfaceNames = formattedInterfaceNames.filter(interfaceName => !formattedInputsArray.includes(interfaceName));
         } else {
             formattedInterfaceNames = formattedInterfaceNames === formattedInputs ? '' : formattedInterfaceNames;

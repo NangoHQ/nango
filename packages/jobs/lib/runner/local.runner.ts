@@ -51,7 +51,7 @@ export class LocalRunner implements Runner {
                 env: {
                     ...process.env,
                     RUNNER_ID: runnerId,
-                    IDLE_MAX_DURATION_MS: '60000'
+                    IDLE_MAX_DURATION_MS: '0'
                 }
             });
 
