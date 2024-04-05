@@ -239,7 +239,7 @@ class ProxyService {
                     activityLogs.push({
                         level: 'error',
                         environment_id,
-                        activity_log_id: activityLogId as number, // We don't care if it's empty or not
+                        activity_log_id: activityLogId as number, // In DryRun this value can be empty
                         timestamp: Date.now(),
                         content
                     });
@@ -261,7 +261,7 @@ class ProxyService {
                 activityLogs.push({
                     level: 'error',
                     environment_id,
-                    activity_log_id: activityLogId as number, // We don't care if it's empty or not
+                    activity_log_id: activityLogId as number, // In DryRun this value can be empty
                     timestamp: Date.now(),
                     content
                 });
@@ -339,7 +339,7 @@ class ProxyService {
             activityLogs.push({
                 level: 'error',
                 environment_id,
-                activity_log_id: activityLogId as number, // We don't care if it's empty or not
+                activity_log_id: activityLogId as number, // In DryRun this value can be empty
                 timestamp: Date.now(),
                 content
             });
