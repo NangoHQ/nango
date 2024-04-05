@@ -262,15 +262,15 @@ class ProxyController {
         isSync?: boolean | undefined;
         isDryRun?: boolean | undefined;
     }) {
-        if (!isDryRun) {
+        if (!isDryRun && activityLogId) {
             if (!isSync) {
-                await updateSuccessActivityLog(activityLogId!, true);
+                await updateSuccessActivityLog(activityLogId, true);
             }
             const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id,
-                activity_log_id: activityLogId!,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `${config.method.toUpperCase()} request to ${url} was successful`,
                 params: {
@@ -333,6 +333,7 @@ class ProxyController {
 
             return;
         }
+
         const errorData = error?.response?.data as stream.Readable;
         const stringify = new Transform({
             transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {

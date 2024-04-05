@@ -222,6 +222,8 @@ class ProxyService {
         type: 'at' | 'after',
         retryHeader: string
     ): Promise<RetryHandlerResponse & Activities> => {
+        const activityLogs: ActivityLogMessage[] = [];
+
         if (type === 'at') {
             const resetTimeEpoch = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
 
@@ -234,19 +236,17 @@ class ProxyService {
 
                     const content = `Rate limit reset time was parsed successfully, retrying after ${waitDuration} seconds`;
 
-                    const activityLogs: ActivityLogMessage[] = [
-                        {
-                            level: 'error',
-                            environment_id,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content
-                        }
-                    ];
+                    activityLogs.push({
+                        level: 'error',
+                        environment_id,
+                        activity_log_id: activityLogId as number, // In DryRun this value can be empty
+                        timestamp: Date.now(),
+                        content
+                    });
 
                     await new Promise((resolve) => setTimeout(resolve, waitDuration * 1000));
 
-                    return { shouldRetry: true, activityLogs: activityLogs };
+                    return { shouldRetry: true, activityLogs };
                 }
             }
         }
@@ -258,23 +258,21 @@ class ProxyService {
                 const retryAfter = Number(retryHeaderVal);
                 const content = `Retry header was parsed successfully, retrying after ${retryAfter} seconds`;
 
-                const activityLogs: ActivityLogMessage[] = [
-                    {
-                        level: 'error',
-                        environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content
-                    }
-                ];
+                activityLogs.push({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId as number, // In DryRun this value can be empty
+                    timestamp: Date.now(),
+                    content
+                });
 
                 await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
 
-                return { shouldRetry: true, activityLogs: activityLogs };
+                return { shouldRetry: true, activityLogs };
             }
         }
 
-        return { shouldRetry: true, activityLogs: [] };
+        return { shouldRetry: true, activityLogs };
     };
 
     /**
@@ -341,7 +339,7 @@ class ProxyService {
             activityLogs.push({
                 level: 'error',
                 environment_id,
-                activity_log_id: activityLogId,
+                activity_log_id: activityLogId as number, // In DryRun this value can be empty
                 timestamp: Date.now(),
                 content
             });

@@ -58,6 +58,7 @@ import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { getExistingOperationContext, getOperationContext } from '@nangohq/logs';
+import { errorToObject } from '@nangohq/utils';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _next: NextFunction) {
@@ -110,7 +111,7 @@ class OAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: WSErrBuilder.MissingConnectionId().message
+                    content: error.message
                 });
                 await logCtx.error(error.message);
                 await logCtx.failed();
@@ -762,10 +763,11 @@ class OAuthController {
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
-        } catch (error) {
-            const prettyError = JSON.stringify(error, ['message', 'name'], 2);
+        } catch (err: any) {
+            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
-            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
+            const error = WSErrBuilder.UnknownError();
+            const content = error.message + '\n' + prettyError;
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
                 callbackUrl,
@@ -1188,9 +1190,10 @@ class OAuthController {
                 content: `Update request has been made for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
                 timestamp: Date.now()
             });
+            await updateSuccessActivityLog(activityLogId, true);
+
             await logCtx.info('Update request has been made', { provider: session.provider, providerConfigKey, connectionId });
             await logCtx.success();
-            await updateSuccessActivityLog(activityLogId, true);
 
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         }
@@ -1526,7 +1529,7 @@ class OAuthController {
                 activityLogId
             );
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         }
     }
 
@@ -1572,7 +1575,7 @@ class OAuthController {
                 activityLogId
             );
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         }
 
         const oauth_token_secret = session.requestTokenSecret!;

@@ -32,12 +32,13 @@ export interface Sync extends TimestampsAndDeleted {
     id: string;
     nango_connection_id: number;
     name: string;
-    last_sync_date?: Date | null;
+    last_sync_date: Date | null;
     futureActionTimes?: {
         seconds?: number;
         nanos?: number;
     };
     frequency: string | null;
+    last_fetched_at: Date | null;
 }
 
 export interface Action extends TimestampsAndDeleted {
