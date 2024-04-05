@@ -16,8 +16,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             const mappedConversation: KustomerConversation[] = conversation.map(mapConversation) || [];
             await nango.batchSave(mappedConversation, 'KustomerConversation');
         }
-    } catch (error: any) {
-        throw new Error(`Error in fetchData: ${error.message}`);
+    } catch (error) {
+        throw new Error(`Error in fetchData: ${error}`);
     }
 }
 
