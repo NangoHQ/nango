@@ -72,6 +72,8 @@ export default function EnableDisableSync({
         setVisible(true);
     };
 
+    // TODO if it has an id that means it was previously enabled and we are updating it
+    // so don't have to recreate the flow
     const onEnableSync = async (flow: Flow) => {
         const flowPayload = {
             provider,
@@ -171,13 +173,13 @@ export default function EnableDisableSync({
     const onDisableSync = async (flow: Flow) => {
         setModalShowSpinner(true);
         const res = await fetch(`/api/v1/flow/${flow?.id}?sync_name=${flow.name}&connectionIds=${connectionIds.join(',')}`, {
-            method: 'DELETE',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
-        if (res.status === 204) {
+        if (res.status === 200) {
             // since the flow is set from the parent page we need to change the enabled
             // flow to be unenabled and without a version and deployed date
             if (endpoints && setFlow) {

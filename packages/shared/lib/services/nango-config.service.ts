@@ -257,6 +257,18 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
     return { success: true, error: null, response: inputModel };
 };
 
+const getEnabledStatus = (script: NangoIntegrationDataV2, isPublic: boolean, preBuilt: boolean): boolean => {
+    if (script.enabled !== undefined) {
+        return script.enabled;
+    }
+
+    if ((isPublic || preBuilt) && !script.version) {
+        return false;
+    }
+
+    return true;
+};
+
 export function convertV2ConfigObject(config: NangoConfigV2, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[]> {
     const output: StandardNangoConfig[] = [];
     const allModelNames = config.models ? Object.keys(config.models) : [];
@@ -366,7 +378,10 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                     webhookSubscriptions = [sync['webhook-subscriptions'] as string];
                 }
             }
+            const is_public = (isPublic !== undefined ? isPublic : sync.is_public === true) as boolean;
+            const pre_built = (isPublic !== undefined ? isPublic : sync.pre_built === true) as boolean;
 
+            const enabled = getEnabledStatus(sync, is_public, pre_built);
             const syncObject: NangoSyncConfig = {
                 name: syncName,
                 type: SyncConfigType.SYNC,
@@ -375,10 +390,10 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 runs,
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
-                last_deployed: sync.updated_at || null,
-                is_public: (isPublic !== undefined ? isPublic : sync.is_public === true) as boolean,
-                pre_built: (isPublic !== undefined ? isPublic : sync.pre_built === true) as boolean,
-                version: sync.version || null,
+                last_deployed: enabled && sync.updated_at ? sync.updated_at : null,
+                is_public,
+                pre_built,
+                version: enabled ? sync.version || null : null,
                 attributes: sync.attributes || {},
                 input: inputModel,
                 // a sync always returns an array
@@ -387,7 +402,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints,
                 nango_yaml_version: sync.nango_yaml_version || 'v2',
-                webhookSubscriptions
+                webhookSubscriptions,
+                enabled
             };
 
             if (sync.id) {
@@ -465,23 +481,28 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             }
 
             const scopes = action?.scopes || action?.metadata?.scopes || [];
+            const is_public = (isPublic !== undefined ? isPublic : action.is_public === true) as boolean;
+            const pre_built = (isPublic !== undefined ? isPublic : action.pre_built === true) as boolean;
+
+            const enabled = getEnabledStatus(action, is_public, pre_built);
 
             const actionObject: NangoSyncConfig = {
                 name: actionName,
                 type: SyncConfigType.ACTION,
                 models: models || [],
                 runs: '',
-                is_public: (isPublic !== undefined ? isPublic : action.is_public === true) as boolean,
-                pre_built: (isPublic !== undefined ? isPublic : action.pre_built === true) as boolean,
-                version: action.version || null,
-                last_deployed: action.updated_at || null,
+                is_public,
+                pre_built,
+                version: enabled ? action.version || null : null,
+                last_deployed: enabled && action.updated_at ? action.updated_at : null,
                 attributes: action.attributes || {},
                 returns: action.output as string[],
                 description: action?.description || action?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
                 endpoints,
-                nango_yaml_version: action.nango_yaml_version || 'v2'
+                nango_yaml_version: action.nango_yaml_version || 'v2',
+                enabled
             };
 
             if (action.id) {

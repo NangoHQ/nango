@@ -75,7 +75,8 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
                     : syncConfig.endpoints_object.map((endpoint) => `${endpoint.method} ${endpoint.path}`),
             input: syncConfig.input,
             'webhook-subscriptions': syncConfig.webhook_subscriptions,
-            nango_yaml_version: isV1 ? 'v1' : 'v2'
+            nango_yaml_version: isV1 ? 'v1' : 'v2',
+            enabled: syncConfig.enabled
         } as NangoIntegrationDataV2;
 
         if (syncConfig.type === SyncConfigType.SYNC) {
@@ -473,7 +474,15 @@ export async function getSyncConfigByParams(
 }
 
 export async function deleteSyncConfig(id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id, deleted: false }).update({ active: false, deleted: true, deleted_at: new Date() });
+    await schema().from<SyncConfig>(TABLE).where({ id, deleted: false }).update({
+        active: false,
+        deleted: true,
+        deleted_at: new Date()
+    });
+}
+
+export async function disableScriptConfig(id: number, environment_id: number): Promise<void> {
+    await schema().from<SyncConfig>(TABLE).where({ id, environment_id, deleted: false }).update({ enabled: false });
 }
 
 export async function deleteByConfigId(nango_config_id: number): Promise<void> {
@@ -777,6 +786,7 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
             `${TABLE}.track_deletes`,
             `${TABLE}.auto_start`,
             `${TABLE}.webhook_subscriptions`,
+            `${TABLE}.enabled`,
             '_nango_configs.unique_key',
             '_nango_configs.provider',
             db.knex.raw(

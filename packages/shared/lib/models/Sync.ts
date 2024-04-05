@@ -108,6 +108,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     input?: string | SyncModelSchema;
     sync_type?: SyncType | undefined;
     webhook_subscriptions?: string[];
+    enabled: boolean;
 }
 
 export interface SyncEndpoint extends Timestamps {
