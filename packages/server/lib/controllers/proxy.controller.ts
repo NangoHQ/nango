@@ -32,6 +32,8 @@ import {
     getEnvironmentId,
     ErrorSourceEnum,
     proxyService,
+    MetricTypes,
+    telemetry,
     connectionService,
     configService
 } from '@nangohq/shared';
@@ -62,6 +64,10 @@ class ProxyController {
             const accountId = getAccount(res);
 
             const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
+
+            if (!isSync) {
+                telemetry.increment(MetricTypes.PROXY, 1, { accountId });
+            }
 
             const log = {
                 level: 'debug' as LogLevel,

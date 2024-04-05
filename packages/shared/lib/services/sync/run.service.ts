@@ -355,6 +355,8 @@ export default class SyncRun {
 
                 const syncStartDate = new Date();
 
+                telemetry.increment(getMetricType(this.determineExecutionType()), 1, { accountId: nangoProps.accountId });
+
                 const {
                     success,
                     error,
@@ -746,5 +748,18 @@ export default class SyncRun {
 
     private determineErrorType(): string {
         return this.determineExecutionType() + '_script_failure';
+    }
+}
+
+function getMetricType(type: string): MetricTypes {
+    switch (type) {
+        case 'sync':
+            return MetricTypes.SYNC_EXECUTION;
+        case 'action':
+            return MetricTypes.ACTION_EXECUTION;
+        case 'webhook':
+            return MetricTypes.WEBHOOK_EXECUTION;
+        default:
+            return MetricTypes.SYNC_EXECUTION;
     }
 }

@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { Span } from 'dd-trace';
 import type { LogLevel, NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig, LastAction } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -349,10 +348,7 @@ class SyncController {
     }
 
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
-        const active = tracer.scope().active();
-        const span = tracer.startSpan('server.sync.triggerAction', {
-            childOf: active as Span
-        });
+        const span = tracer.startSpan('server.sync.triggerAction');
 
         const { input, action_name } = req.body;
         const environmentId = getEnvironmentId(res);

@@ -22,6 +22,8 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
+    MetricTypes,
+    telemetry,
     AuthOperation,
     NangoError,
     createActivityLogAndLogMessage,
@@ -253,8 +255,13 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
             const instantRefresh = req.query['force_refresh'] === 'true';
+            const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
 
             const action = LogActionEnum.TOKEN;
+
+            if (!isSync) {
+                telemetry.increment(MetricTypes.GET_CONNECTION, 1, { accountId });
+            }
 
             const {
                 success,

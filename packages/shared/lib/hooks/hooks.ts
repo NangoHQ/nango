@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Span, Tracer } from 'dd-trace';
+import type { Tracer } from 'dd-trace';
 import SyncClient from '../clients/sync.client.js';
 import type { ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '../models/Connection.js';
@@ -90,9 +90,7 @@ export const connectionTest = async (
     if (!providerVerification) {
         return resultOk(true);
     }
-    const active = tracer.scope().active();
     const span = tracer.startSpan(SpanTypes.CONNECTION_TEST, {
-        childOf: active as Span,
         tags: {
             'nango.provider': provider,
             'nango.providerConfigKey': providerConfigKey,

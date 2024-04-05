@@ -49,7 +49,12 @@ export enum MetricTypes {
     JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
-    AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey'
+    AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
+    GET_CONNECTION = 'nango.server.getConnection',
+    PROXY = 'nango.server.proxy',
+    SYNC_EXECUTION = 'nango.jobs.syncExecution',
+    ACTION_EXECUTION = 'nango.jobs.actionExecution',
+    WEBHOOK_EXECUTION = 'nango.jobs.webhookExecution'
 }
 
 export enum SpanTypes {
@@ -90,12 +95,12 @@ class Telemetry {
         await this.logInstance?.submitLog(params);
     }
 
-    public increment(metricName: MetricTypes, value?: number): void {
-        tracer.dogstatsd.increment(metricName, value ?? 1);
+    public increment(metricName: MetricTypes, value = 1, dimensions?: Record<string, string | number>): void {
+        tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
     }
 
-    public decrement(metricName: MetricTypes, value?: number): void {
-        tracer.dogstatsd.decrement(metricName, value ?? 1);
+    public decrement(metricName: MetricTypes, value? = 1, dimensions?: Record<string, string | number>): void {
+        tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
     }
 
     public duration(metricName: MetricTypes, value: number): void {
