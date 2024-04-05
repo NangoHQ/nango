@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import type { Template } from '../models/index.js';
+import type { Config, Template } from '../models/index.js';
 import { AuthModes } from '../models/index.js';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
@@ -109,9 +110,8 @@ describe('Pagination', () => {
         stubProviderTemplate(cursorPagination);
         mockErrorManagerReport();
 
-        // @ts-expect-error
-        vi.spyOn(configService, 'getProviderConfig').mockImplementation((config: any) => {
-            return Promise.resolve('{}');
+        vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
+            return Promise.resolve({} as Config);
         });
 
         // TODO: mock to return at least one more page to check that cursor is passed in body too

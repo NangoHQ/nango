@@ -11,8 +11,10 @@ import axios from 'axios';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
+import { getLogger } from '../utils/temp/logger.js';
 
 const stripeAppExpiresIn = 3600;
+const logger = getLogger('Provider.Client');
 
 class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
@@ -429,7 +431,8 @@ class ProviderClient {
             const expireDate = parseTokenExpirationDate(res.data['exp']);
 
             return isTokenExpired(expireDate, 15 * 60);
-        } catch (e) {
+        } catch (err) {
+            logger.error(err);
             // TODO add observability
             return false;
         }

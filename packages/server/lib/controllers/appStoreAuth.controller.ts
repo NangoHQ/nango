@@ -44,7 +44,7 @@ class AppStoreAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -218,7 +218,7 @@ class AppStoreAuthController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,

@@ -56,7 +56,7 @@ class RemoteFileService {
 
             return fileName;
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,
@@ -104,7 +104,7 @@ class RemoteFileService {
                 return '_LOCAL_FILE_';
             }
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,
@@ -140,7 +140,7 @@ class RemoteFileService {
                     }
                 })
                 .catch(async (err) => {
-                    await errorManager.report(err, {
+                    errorManager.report(err, {
                         source: ErrorSourceEnum.PLATFORM,
                         environmentId,
                         operation: LogActionEnum.FILE,
@@ -252,7 +252,7 @@ class RemoteFileService {
             if (nangoConfigId) {
                 metadata['nangoConfigId'] = nangoConfigId;
             }
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,

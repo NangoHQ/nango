@@ -89,7 +89,7 @@ class ConnectionService {
 
             await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update(encryptedConnection);
 
-            analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
+            void analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
@@ -107,7 +107,7 @@ class ConnectionService {
             ['id']
         );
 
-        analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
+        void analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
         return [{ id: id.id, operation: AuthOperation.CREATION }];
     }
@@ -136,7 +136,7 @@ class ConnectionService {
             encryptedConnection.updated_at = new Date();
             await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update(encryptedConnection);
 
-            analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, accountId, { provider });
+            void analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
@@ -152,7 +152,7 @@ class ConnectionService {
             ['id']
         );
 
-        analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, accountId, { provider });
+        void analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, accountId, { provider });
 
         return [{ id: id.id, operation: AuthOperation.CREATION }];
     }
@@ -178,7 +178,7 @@ class ConnectionService {
                     updated_at: new Date()
                 });
 
-            analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
+            void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
         }
@@ -193,7 +193,7 @@ class ConnectionService {
             ['id']
         );
 
-        analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, accountId, { provider });
+        void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, accountId, { provider });
 
         return [{ id: id.id, operation: AuthOperation.CREATION }];
     }

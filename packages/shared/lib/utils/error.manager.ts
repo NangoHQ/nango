@@ -50,7 +50,7 @@ class ErrorManager {
     }
 
     public report(e: unknown, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }, tracer?: Tracer): void {
-        sentry.withScope(async function (scope) {
+        void sentry.withScope(async function (scope) {
             if (config.environmentId || config.accountId) {
                 let accountId: number | undefined;
                 if (config.environmentId) {
