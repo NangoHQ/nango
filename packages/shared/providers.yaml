@@ -121,6 +121,15 @@ amplitude:
     proxy:
         base_url: https://amplitude.com
     docs: https://docs.nango.dev/integrations/all/amplitude
+peopledatalabs:
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.peopledatalabs.com
+        query:
+            api_key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/peopledatalabs
 apollo:
     categories:
         - marketing
@@ -1752,6 +1761,22 @@ smugmug:
     proxy:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
+snowflake:
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.snowflake_account_url}/oauth/authorize
+    token_url: https://${connectionConfig.snowflake_account_url}/oauth/token-request
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://{connectionConfig.snowflake_account_url}
+    docs: https://docs.nango.dev/integrations/all/snowflake
 splitwise:
     categories:
         - payment
