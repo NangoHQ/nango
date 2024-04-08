@@ -116,7 +116,7 @@ export default function Authorization(props: AuthorizationProps) {
                     )}
                 </>
             )}
-            {connection?.connectionConfig.oauth_scopes_override && (
+            {connection?.connectionConfig?.oauth_scopes_override && (
                 <div className="mt-8">
                     <span className="text-gray-400 text-xs uppercase mb-1">Scopes Override</span>
                     <TagsInput
