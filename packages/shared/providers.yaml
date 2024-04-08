@@ -2133,7 +2133,7 @@ wave-accounting:
         - accounting
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
-    token_url: https://api.waveapps.com/oauth2/token
+    token_url: https://api.waveapps.com/oauth2/token/
     proxy:
         base_url: https://gql.waveapps.com
     docs: https://docs.nango.dev/integrations/all/wave-accounting
