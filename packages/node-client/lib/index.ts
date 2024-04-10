@@ -416,7 +416,7 @@ export class Nango {
         const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&modifiedAfter=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&modified_after=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
             filter ? `&filter=${filter}` : ''
         }${cursor ? `&cursor=${cursor}` : ''}`;
 
