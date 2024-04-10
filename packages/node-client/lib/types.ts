@@ -75,6 +75,9 @@ export interface ListRecordsRequestConfig {
     providerConfigKey: string;
     connectionId: string;
     model: string;
+    /**
+     * @deprecated
+     */
     delta?: string;
     modifiedAfter?: string;
     limit?: number;

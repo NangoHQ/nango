@@ -410,7 +410,7 @@ export class Nango {
         return response.data;
     }
 
-    public async listRecords<T = any>(
+    public async listRecords<T extends Record<string, any> = Record<string, any>>(
         config: ListRecordsRequestConfig
     ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
         const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
