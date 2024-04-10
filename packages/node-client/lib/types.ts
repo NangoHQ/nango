@@ -1,5 +1,32 @@
 import type { ParamsSerializerOptions } from 'axios';
 
+export interface NangoProps {
+    host?: string;
+    secretKey: string;
+    connectionId?: string;
+    providerConfigKey?: string;
+    isSync?: boolean;
+    dryRun?: boolean;
+    activityLogId?: number;
+}
+
+export interface CreateConnectionOAuth1 extends OAuth1Credentials {
+    connection_id: string;
+    provider_config_key: string;
+    type: AuthModes.OAuth1;
+}
+
+export interface OAuth1Token {
+    oAuthToken: string;
+    oAuthTokenSecret: string;
+}
+
+export interface CreateConnectionOAuth2 extends OAuth2Credentials {
+    connection_id: string;
+    provider_config_key: string;
+    type: AuthModes.OAuth2;
+}
+
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
@@ -240,3 +267,57 @@ export interface NangoSyncConfig {
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];
 }
+
+export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
+
+export interface RecordMetadata {
+    first_seen_at: string;
+    last_seen_at: string;
+    last_action: LastAction;
+    deleted_at: string | null;
+    cursor: string;
+}
+
+export interface SyncResult {
+    added: number;
+    updated: number;
+    deleted: number;
+}
+
+export interface NangoSyncWebhookBody {
+    connectionId: string;
+    providerConfigKey: string;
+    syncName: string;
+    model: string;
+    responseResults: SyncResult;
+    syncType: SyncType;
+    queryTimeStamp: string | null;
+    modifiedAfter: string | null;
+}
+
+export enum WebhookType {
+    SYNC = 'sync',
+    AUTH = 'auth',
+    FORWARD = 'forward'
+}
+
+export enum AuthOperation {
+    CREATION = 'creation',
+    OVERRIDE = 'override',
+    UNKNOWN = 'unknown'
+}
+
+export interface WebhookAuthBody {
+    from: 'nango';
+    type: WebhookType.AUTH;
+    connectionId: string;
+    authMode: AuthModes;
+    providerConfigKey: string;
+    provider: string;
+    environment: string;
+    success: boolean;
+    operation: AuthOperation;
+    error?: string;
+}
+
+export type WebhooksBody = NangoSyncWebhookBody | WebhookAuthBody;
