@@ -2,23 +2,23 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
 
 import type {
+    ApiKeyCredentials,
+    AppCredentials,
+    BasicApiCredentials,
+    Connection,
+    ConnectionList,
     CredentialsCommon,
+    GetRecordsRequestConfig,
+    Integration,
+    IntegrationWithCreds,
+    ListRecordsRequestConfig,
+    Metadata,
     OAuth1Credentials,
     OAuth2Credentials,
     ProxyConfiguration,
-    GetRecordsRequestConfig,
-    ListRecordsRequestConfig,
-    BasicApiCredentials,
-    ApiKeyCredentials,
-    AppCredentials,
-    Metadata,
-    Connection,
-    ConnectionList,
-    Integration,
-    IntegrationWithCreds,
+    StandardNangoConfig,
     SyncStatusResponse,
-    UpdateSyncFrequencyResponse,
-    StandardNangoConfig
+    UpdateSyncFrequencyResponse
 } from './types.js';
 import { AuthModes } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
@@ -416,7 +416,7 @@ export class Nango {
         const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&modified_after=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+        const url = `${this.serverUrl}/records/?model=${model}${delta || modifiedAfter ? `&modified_after=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
             filter ? `&filter=${filter}` : ''
         }${cursor ? `&cursor=${cursor}` : ''}`;
 
