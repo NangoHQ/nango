@@ -826,13 +826,14 @@ export class Nango {
         });
     }
 
-    // -- Webhooks
     /**
-     *
-     * Verify incoming webhooks signature
-     *
-     * @param signatureInHeader The value in the header X-Nango-Signature
-     * @param jsonPayload The HTTP body as JSON
+     * Retrieves details of a specific connection by sending a GET request
+     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
+     * @param {string} connectionId - The ID of the connection for which to retrieve connection details
+     * @param {boolean} [forceRefresh=false] - An optional flag indicating whether to force a refresh of the access tokens. Defaults to false
+     * @param {boolean} [refreshToken=false] - An optional flag indicating whether to send the refresh token as part of the response. Defaults to false
+     * @param {Record<string, any>} [additionalHeader={}] - Additional headers to include in the request
+     * @returns {Promise<AxiosResponse<Connection>>} A promise that resolves with the response containing connection details
      */
     public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
         return (
