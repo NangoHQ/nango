@@ -64,12 +64,10 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   npm i
-                  pushd ./packages/shared
-                  npm run build
-                  popd
+                  npm run build:hosted
                   cd ./packages/cli
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
-                  npm publish --access public --ignore-scripts
+                  npm publish --access public
     verify:
         runs-on: ubuntu-latest
         needs: publish
