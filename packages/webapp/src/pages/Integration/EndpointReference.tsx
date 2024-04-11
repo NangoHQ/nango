@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { Loading, Tooltip, useModal, Modal } from '@geist-ui/core';
+import { PlayCircleIcon, AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
@@ -35,8 +36,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [syncSnippet, setSyncSnippet] = useState('');
     const [jsonResponseSnippet, setJsonResponseSnippet] = useState('');
+    const [flowResponse, setFlowResponse] = useState<object>();
+    const [flowReturnLoading, setFlowReturnLoading] = useState(false);
+    const { setVisible, bindings } = useModal();
 
     const connectionId = '<CONNECTION-ID>';
+    const connectionIds = integration.connections.map((connection) => connection.connection_id);
 
     const baseUrl = useStore((state) => state.baseUrl);
 
@@ -68,8 +73,92 @@ export default function EndpointReference(props: EndpointReferenceProps) {
         setSubTab(SubTabs.Flow);
     };
 
+    const handleRun = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const selectedConnectionId = (e.target as HTMLFormElement).connection.value;
+
+        setFlowReturnLoading(true);
+        if (activeFlow?.type === 'sync') {
+            const response = await fetch(`${baseUrl}/records?model=${activeFlow?.models[0].name}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Connection-Id': selectedConnectionId,
+                    'Provider-Config-Key': integration.unique_key,
+                    Authorization: `Bearer ${account.secret_key}`
+                }
+            });
+            const data = await response.json();
+            setFlowResponse(data);
+        } else {
+            const response = await fetch(`${baseUrl}/action/trigger`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Connection-Id': selectedConnectionId,
+                    'Provider-Config-Key': integration.unique_key,
+                    Authorization: `Bearer ${account.secret_key}`
+                },
+                body: JSON.stringify({ action_name: activeFlow?.name })
+            });
+            const data = await response.json();
+            setFlowResponse(data);
+        }
+        setFlowReturnLoading(false);
+    };
+
     return (
         <div className="text-white">
+            <Modal {...bindings} wrapClassName="!h-[600px] !w-[550px] !max-w-[550px] !bg-[#0E1014] no-border-modal">
+                <div className="flex justify-between text-sm">
+                    <div>
+                        <Modal.Content className="overflow-scroll h-full max-w-[550px] !text-sm text-white font-mono">
+                            <>
+                                <div className="flex items-center">
+                                    <form className="flex space-x-2" onSubmit={handleRun}>
+                                        <select
+                                            id="connection"
+                                            name="connection"
+                                            className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                        >
+                                            <option key="" value="" disabled>
+                                                Connection
+                                            </option>
+                                            {connectionIds.map((id: string) => (
+                                                <option key={id} value={id}>
+                                                    {id}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button type="submit" className="bg-accent-blue bg-white text-black text-sm font-bold py-2 px-4 rounded-md mt-2">
+                                            Run
+                                        </button>
+                                    </form>
+                                </div>
+                                {flowReturnLoading ? (
+                                    <div className="!h-[400px] w-full">
+                                        <Loading spaceRatio={2.5} className="top-10" />
+                                    </div>
+                                ) : (
+                                    <Prism noCopy language="json" className="max-h-[400px]  transparent-code" colorScheme="dark">
+                                        {flowResponse ? JSON.stringify(flowResponse, null, 2) : ''}
+                                    </Prism>
+                                )}
+                            </>
+                        </Modal.Content>
+                    </div>
+                </div>
+                <Modal.Action
+                    placeholder={null}
+                    passive
+                    className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]"
+                    onClick={() => setVisible(false)}
+                >
+                    <Button className="!text-text-light-gray" variant="zombieGray">
+                        Close
+                    </Button>
+                </Modal.Action>
+            </Modal>
             <div className="flex flex-col z-10 mt-4 text-gray-400">
                 <span className="flex items-center">
                     <EndpointLabel endpoint={activeFlow?.endpoints[0] as string | FlowEndpoint} type={activeFlow?.type as string} />
@@ -138,7 +227,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                 cURL
                             </Button>
                         </div>
-                        <CopyButton dark text={syncSnippet} />
+                        <div className="flex items-center space-x-2">
+                            <CopyButton dark text={syncSnippet} />
+                            <Tooltip text="Trigger" type="dark">
+                                <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" onClick={() => setVisible(true)} />
+                            </Tooltip>
+                        </div>
                     </div>
                     <Prism noCopy language="typescript" className="p-3 transparent-code" colorScheme="dark">
                         {syncSnippet}
