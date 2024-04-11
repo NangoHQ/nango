@@ -33,9 +33,22 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   npm run build:hosted
-                  npm publish -w packages/node-client --ignore-scripts
-                  npm publish -w packages/shared --ignore-scripts
-                  npm publish -w packages/frontend --ignore-scripts
+
+                  function check_and_publish {
+                    PACKAGE_PATH=$1
+                    PACKAGE_NAME=$(node -p "require('./${PACKAGE_PATH}/package.json').name")
+                    PACKAGE_VERSION=$(node -p "require('./${PACKAGE_PATH}/package.json').version")
+                    if npm view ${PACKAGE_NAME}@${PACKAGE_VERSION} ; then
+                      echo "Version ${PACKAGE_VERSION} of ${PACKAGE_NAME} already exists. Skipping publish."
+                    else
+                      echo "Publishing ${PACKAGE_NAME}@${PACKAGE_VERSION}..."
+                      npm publish -w ${PACKAGE_PATH} --ignore-scripts
+                    fi
+                  }
+
+                  check_and_publish packages/node-client
+                  check_and_publish packages/shared
+                  check_and_publish packages/frontend
             - id: publish_step
               name: Publish npm packages to the github registry
               env:
