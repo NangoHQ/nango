@@ -65,7 +65,6 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
-                  npm run build:hosted
                   npm publish --access public
     verify:
         runs-on: ubuntu-latest
