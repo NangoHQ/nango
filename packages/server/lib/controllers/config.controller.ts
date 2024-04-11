@@ -298,7 +298,7 @@ class ConfigController {
             let webhook_secret = null;
             const custom = config.custom;
 
-            if (authMode === AuthModes.App) {
+            if (authMode === AuthModes.App && client_secret) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
                 const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
