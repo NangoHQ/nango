@@ -78,6 +78,14 @@ export default class Nango {
         }
     }
 
+    /**
+     * Creates a new unauthenticated connection using the specified provider configuration key and connection ID
+     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
+     * @param {string} connectionId -  The ID of the connection
+     * @param {ConnectionConfig} [connectionConfig] - Optional. Additional configuration for the connection
+     * @throws {AuthError} If there is an authentication error
+     * @returns {Promise<AuthResult>} A promise that resolves with the authentication result
+     */
     public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult> {
         const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
@@ -96,6 +104,13 @@ export default class Nango {
         return res.json();
     }
 
+    /**
+     * Initiates the authorization process for a connection
+     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
+     * @param {string} connectionId - The ID of the connection for which to authorize
+     * @param {ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials & AuthOptions} [options] - Optional. Additional options for authorization
+     * @returns {Promise<AuthResult>} A promise that resolves with the authorization result
+     */
     public auth(
         providerConfigKey: string,
         connectionId: string,
@@ -184,6 +199,11 @@ export default class Nango {
         });
     }
 
+    /**
+     * Converts the provided credentials to a Connection configuration object
+     * @param {BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials} credentials - The credentials to convert
+     * @returns {ConnectionConfig} The connection configuration object
+     */
     private convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials): ConnectionConfig {
         const params: Record<string, string> = {};
 
@@ -224,6 +244,15 @@ export default class Nango {
         return { params };
     }
 
+    /**
+     * Performs authorization based on the provided credentials i.e api, basic, appstore and oauth2
+     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
+     * @param {string} connectionId - The ID of the connection for which to create the custom Authorization
+     * @param {ConnectionConfig} connectionConfigWithCredentials - The connection configuration containing the credentials
+     * @param {ConnectionConfig} [connectionConfig] - Optional. Additional connection configuration
+     * @throws {AuthError} Thrown if there is an issue with the authorization process
+     * @returns {Promise<AuthResult>} A promise that resolves with the authorization result
+     */
     private async customAuth(
         providerConfigKey: string,
         connectionId: string,
@@ -322,6 +351,12 @@ export default class Nango {
         return Promise.reject('Something went wrong with the authorization');
     }
 
+    /**
+     * Converts the connection ID and configuration parameters into a query string
+     * @param {string} connectionId - The ID of the connection for which to generate a query string
+     * @param {ConnectionConfig} [connectionConfig] - Optional. Additional configuration for the connection
+     * @returns {string} The generated query string
+     */
     private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
         const query: string[] = [];
 
@@ -467,7 +502,10 @@ class AuthorizationModal {
     }
 
     /**
-     * Handles the messages received from the Nango server via WebSocket.
+     * Handles the messages received from the Nango server via WebSocket
+     * @param {MessageEvent<any>} message - The message event containing data from the server
+     * @param {(providerConfigKey: string, connectionId: string) => any} successHandler - The success handler function to be called when a success message is received
+     * @param {(errorType: string, errorDesc: string) => any} errorHandler - The error handler function to be called when an error message is received
      */
     handleMessage(
         message: MessageEvent<any>,
@@ -511,7 +549,10 @@ class AuthorizationModal {
     }
 
     /**
-     * The modal is expected to be in the center of the screen.
+     * Calculates the layout dimensions for a modal window based on the expected width and height
+     * @param {number} expectedWidth - The expected width of the modal window
+     * @param {number} expectedHeight - The expected height of the modal window
+     * @returns {{ left: number, top: number, computedWidth: number, computedHeight: number }} - The layout details including left and top positions, as well as computed width and height
      */
     layout(expectedWidth: number, expectedHeight: number) {
         const screenWidth = window.screen.width;
@@ -526,7 +567,9 @@ class AuthorizationModal {
     }
 
     /**
-     * Open the modal
+     * Opens a modal window with the specified WebSocket client ID
+     * @param {string} wsClientId - The WebSocket client ID to include in the URL
+     * @returns {any} The modal object
      */
     open(wsClientId: string) {
         this.modal.location = this.url + '&ws_client_id=' + wsClientId;
@@ -534,9 +577,8 @@ class AuthorizationModal {
     }
 
     /**
-     * Helper to convert the features object of this class
-     * to the comma-separated list of window features required
-     * by the window.open() function.
+     * Converts the features object of this class to a string
+     * @returns {string} The string representation of features
      */
     featuresToString(): string {
         const features = this.features;
