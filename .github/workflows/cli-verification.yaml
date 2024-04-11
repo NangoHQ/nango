@@ -68,7 +68,7 @@ jobs:
                   pushd ./packages/cli
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
                   popd
-                  npm publish -w packages/cli
+                  npm publish -w packages/cli --ignore-scripts
     verify:
         runs-on: ubuntu-latest
         needs: publish
