@@ -69,7 +69,7 @@ jobs:
                   popd
                   cd ./packages/cli
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
-                  npm publish --access public
+                  npm publish --access public --ignore-scripts
     verify:
         runs-on: ubuntu-latest
         needs: publish
