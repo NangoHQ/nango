@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
 
@@ -7,15 +8,18 @@ import type {
     BasicApiCredentials,
     Connection,
     ConnectionList,
+    CreateConnectionOAuth1,
+    CreateConnectionOAuth2,
     CredentialsCommon,
     GetRecordsRequestConfig,
     Integration,
     IntegrationWithCreds,
     ListRecordsRequestConfig,
     Metadata,
-    OAuth1Credentials,
-    OAuth2Credentials,
+    NangoProps,
+    OAuth1Token,
     ProxyConfiguration,
+    RecordMetadata,
     StandardNangoConfig,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
@@ -28,65 +32,11 @@ export const prodHost = 'https://api.nango.dev';
 
 export * from './types.js';
 
-interface NangoProps {
-    host?: string;
-    secretKey: string;
-    connectionId?: string;
-    providerConfigKey?: string;
-    isSync?: boolean;
-    dryRun?: boolean;
-    activityLogId?: number;
-}
-
-interface CreateConnectionOAuth1 extends OAuth1Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes.OAuth1;
-}
-
-interface OAuth1Token {
-    oAuthToken: string;
-    oAuthTokenSecret: string;
-}
-
-interface CreateConnectionOAuth2 extends OAuth2Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes.OAuth2;
-}
-
 type CustomHeaders = Record<string, string | number | boolean>;
 
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL'
-}
-
-export interface SyncResult {
-    added: number;
-    updated: number;
-    deleted: number;
-}
-
-export interface NangoSyncWebhookBody {
-    connectionId: string;
-    providerConfigKey: string;
-    syncName: string;
-    model: string;
-    responseResults: SyncResult;
-    syncType: SyncType;
-    queryTimeStamp: string | null;
-    modifiedAfter: string | null;
-}
-
-export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
-
-export interface RecordMetadata {
-    first_seen_at: string;
-    last_seen_at: string;
-    last_action: LastAction;
-    deleted_at: string | null;
-    cursor: string;
 }
 
 export class Nango {
