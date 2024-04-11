@@ -64,7 +64,7 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   npm i
-                  npm run build:hosted
+                  npm run ts-build
                   pushd ./packages/cli
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
                   popd
