@@ -673,7 +673,7 @@ export class Nango {
      * @param signatureInHeader The value in the header X-Nango-Signature
      * @param jsonPayload The HTTP body as JSON
      */
-    public verifyWebhookSignature(signatureInHeader: string, jsonPayload: Record<string, unknown>): boolean {
+    public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
         return (
             crypto
                 .createHash('sha256')
