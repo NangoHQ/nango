@@ -106,7 +106,7 @@ export interface ListRecordsRequestConfig {
      * @deprecated
      */
     delta?: string;
-    modifiedAfter?: string;
+    modifiedAfter?: string | null;
     limit?: number;
     filter?: FilterAction | CombinedFilterAction;
     cursor?: string | null;
@@ -284,7 +284,15 @@ export interface SyncResult {
     deleted: number;
 }
 
+export enum WebhookType {
+    SYNC = 'sync',
+    AUTH = 'auth',
+    FORWARD = 'forward'
+}
+
 export interface NangoSyncWebhookBody {
+    from: 'nango';
+    type: WebhookType.SYNC;
     connectionId: string;
     providerConfigKey: string;
     syncName: string;
@@ -293,12 +301,6 @@ export interface NangoSyncWebhookBody {
     syncType: SyncType;
     queryTimeStamp: string | null;
     modifiedAfter: string | null;
-}
-
-export enum WebhookType {
-    SYNC = 'sync',
-    AUTH = 'auth',
-    FORWARD = 'forward'
 }
 
 export enum AuthOperation {
