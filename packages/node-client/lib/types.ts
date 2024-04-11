@@ -106,7 +106,7 @@ export interface ListRecordsRequestConfig {
      * @deprecated
      */
     delta?: string;
-    modifiedAfter?: string | null;
+    modifiedAfter?: string;
     limit?: number;
     filter?: FilterAction | CombinedFilterAction;
     cursor?: string | null;
@@ -300,7 +300,7 @@ export interface NangoSyncWebhookBody {
     responseResults: SyncResult;
     syncType: SyncType;
     queryTimeStamp: string | null;
-    modifiedAfter: string | null;
+    modifiedAfter: string;
 }
 
 export enum AuthOperation {
