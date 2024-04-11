@@ -38,6 +38,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
     const [jsonResponseSnippet, setJsonResponseSnippet] = useState('');
     const [flowResponse, setFlowResponse] = useState<object>();
     const [flowReturnLoading, setFlowReturnLoading] = useState(false);
+    const [jsonString, setJsonString] = useState('');
     const { setVisible, bindings } = useModal();
 
     const connectionId = '<CONNECTION-ID>';
@@ -73,6 +74,10 @@ export default function EndpointReference(props: EndpointReferenceProps) {
         setSubTab(SubTabs.Flow);
     };
 
+    const handleJsonChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setJsonString(event.target.value);
+    };
+
     const handleRun = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const selectedConnectionId = (e.target as HTMLFormElement).connection.value;
@@ -91,6 +96,16 @@ export default function EndpointReference(props: EndpointReferenceProps) {
             const data = await response.json();
             setFlowResponse(data);
         } else {
+            if (jsonString) {
+                try {
+                    JSON.parse(jsonString);
+                } catch {
+                    setFlowResponse({ error: 'Invalid JSON' });
+                    setFlowReturnLoading(false);
+                    return;
+                }
+            }
+            const input = jsonString ? JSON.parse(jsonString) : {};
             const response = await fetch(`${baseUrl}/action/trigger`, {
                 method: 'POST',
                 headers: {
@@ -99,7 +114,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                     'Provider-Config-Key': integration.unique_key,
                     Authorization: `Bearer ${account.secret_key}`
                 },
-                body: JSON.stringify({ action_name: activeFlow?.name })
+                body: JSON.stringify({ action_name: activeFlow?.name, input })
             });
             const data = await response.json();
             setFlowResponse(data);
@@ -130,6 +145,16 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                                 </option>
                                             ))}
                                         </select>
+                                        {activeFlow?.input && Object.keys(activeFlow?.input).length > 0 && (
+                                            <textarea
+                                                id="jsonInput"
+                                                name="jsonInput"
+                                                value={jsonString}
+                                                onChange={handleJsonChange}
+                                                className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
+                                                placeholder="Enter your JSON here..."
+                                            />
+                                        )}
                                         <button type="submit" className="bg-accent-blue bg-white text-black text-sm font-bold py-2 px-4 rounded-md mt-2">
                                             Run
                                         </button>
@@ -229,9 +254,11 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                         </div>
                         <div className="flex items-center space-x-2">
                             <CopyButton dark text={syncSnippet} />
-                            <Tooltip text="Trigger" type="dark">
-                                <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" onClick={() => setVisible(true)} />
-                            </Tooltip>
+                            {connectionIds.length > 0 && (
+                                <Tooltip text="Trigger" type="dark">
+                                    <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" onClick={() => setVisible(true)} />
+                                </Tooltip>
+                            )}
                         </div>
                     </div>
                     <Prism noCopy language="typescript" className="p-3 transparent-code" colorScheme="dark">
