@@ -95,8 +95,8 @@ export class Nango {
      */
 
     /**
-     * Returns a list of integrations by sending a GET request
-     * @returns {Promise<{ configs: Pick<Integration, 'unique_key' | 'provider'>[] }>} A promise that resolves with an object containing an array of integration configurations
+     * Returns a list of integrations
+     * @returns A promise that resolves with an object containing an array of integration configurations
      */
     public async listIntegrations(): Promise<{ configs: Pick<Integration, 'unique_key' | 'provider'>[] }> {
         const url = `${this.serverUrl}/config`;
@@ -106,10 +106,10 @@ export class Nango {
     }
 
     /**
-     * Returns a specific integration by sending a GET request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {boolean} [includeIntegrationCredentials=false] - Whether to include integration credentials in the response. Default is false
-     * @returns {Promise<{ config: Integration | IntegrationWithCreds }>} A promise that resolves with an object containing an integration configuration
+     * Returns a specific integration
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param includeIntegrationCredentials - An optional flag indicating whether to include integration credentials in the response. Default is false
+     * @returns A promise that resolves with an object containing an integration configuration
      */
     public async getIntegration(
         providerConfigKey: string,
@@ -121,12 +121,12 @@ export class Nango {
     }
 
     /**
-     * Creates a new integration with the specified provider and configuration key by sending a POST request
+     * Creates a new integration with the specified provider and configuration key
      * Optionally, you can provide credentials for the integration
-     * @param {string} provider - The provider of the integration
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {Record<string, string>} [credentials] - Optional credentials for the integration
-     * @returns {Promise<{ config: Integration }>} A promise that resolves with the created integration configuration
+     * @param provider - The provider of the integration
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param credentials - Optional credentials for the integration
+     * @returns A promise that resolves with the created integration configuration
      */
     public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
@@ -135,12 +135,12 @@ export class Nango {
     }
 
     /**
-     * Updates an integration with the specified provider and configuration key by sending a PUT request
+     * Updates an integration with the specified provider and configuration key
      * Only integrations using OAuth 1 & 2 can be updated, not integrations using API keys & Basic auth (because there is nothing to update for them)
-     * @param {string} provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/shared/providers.yaml))
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {Record<string, string>} [credentials] - Optional credentials to include, depending on the specific integration that you want to update
-     * @returns {Promise<{ config: Integration }>} A promise that resolves with the updated integration configuration object
+     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/shared/providers.yaml))
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param credentials - Optional credentials to include, depending on the specific integration that you want to update
+     * @returns A promise that resolves with the updated integration configuration object
      */
     public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
@@ -149,9 +149,9 @@ export class Nango {
     }
 
     /**
-     * Deletes an integration with the specified configuration key by sending a DELETE request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @returns {Promise<AxiosResponse<void>>} A promise that resolves with the response from the server
+     * Deletes an integration with the specified configuration key
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @returns A promise that resolves with the response from the server
      */
     public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
@@ -173,9 +173,9 @@ export class Nango {
      */
 
     /**
-     * Returns a list of connections by sending a GET request, optionally filtered by connection ID
-     * @param {string} [connectionId] - Optional. The ID of the connection to retrieve details of
-     * @returns {Promise<{ connections: ConnectionList[] }>} A promise that resolves with an array of connection objects
+     * Returns a list of connections, optionally filtered by connection ID
+     * @param connectionId - Optional. The ID of the connection to retrieve details of
+     * @returns A promise that resolves with an array of connection objects
      */
     public async listConnections(connectionId?: string): Promise<{ connections: ConnectionList[] }> {
         const response = await this.listConnectionDetails(connectionId);
@@ -183,12 +183,11 @@ export class Nango {
     }
     /**
      * Returns a connection object, which also contains access credentials and full credentials payload
-     * returned by the external API by sending a GET request
-     * @param {string}providerConfigKey - The integration ID used to create the connection (aka Unique Key)
-     * @param {string}connectionId - This is the unique connection identifier used to identify this connection
-     * @param {boolean}[forceRefresh] - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
-     * @param {boolean}[refreshToken] - Optional. When set to true, this returns the refresh token as part of the response
-     * @returns {Promise<Connection>} A promise that resolves with a connection object
+     * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
+     * @param connectionId - This is the unique connection identifier used to identify this connection
+     * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
+     * @param refreshToken - Optional. When set to true, this returns the refresh token as part of the response
+     * @returns A promise that resolves with a connection object
      */
     public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean, refreshToken?: boolean): Promise<Connection> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
@@ -214,9 +213,9 @@ export class Nango {
      * For OAuth 2: If you want to obtain a new refresh token from the provider before the current token has expired,
      * you can set the forceRefresh argument to true
      * For OAuth 1: returns an object with 'oAuthToken' and 'oAuthTokenSecret' fields
-     * @param {string}providerConfigKey - The integration ID used to create the connection (aka Unique Key)
-     * @param {string}connectionId - This is the unique connection identifier used to identify this connection
-     * @param {boolean}[forceRefresh] - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
+     * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
+     * @param connectionId - This is the unique connection identifier used to identify this connection
+     * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
      */
     public async getToken(
         providerConfigKey: string,
@@ -237,12 +236,11 @@ export class Nango {
 
     /**
      * Get the full (fresh) credentials payload returned by the external API,
-     * which also contains access credentials by sending a GET request
-     * @param {string}providerConfigKey - The integration ID used to create the connection (aka Unique Key)
-     * @param {string}connectionId - This is the unique connection identifier used to identify this connection
-     * @param {boolean}[forceRefresh] - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
-     * @returns {Promise<T>} A promise that resolves with the raw token response
-     * @template T - The type of the raw token response
+     * which also contains access credentials
+     * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
+     * @param connectionId - This is the unique connection identifier used to identify this connection
+     * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
+     * @returns A promise that resolves with the raw token response
      */
     public async getRawTokenResponse<T = Record<string, any>>(providerConfigKey: string, connectionId: string, forceRefresh?: boolean): Promise<T> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
@@ -251,12 +249,11 @@ export class Nango {
     }
 
     /**
-     * Retrieves metadata for a given provider configuration key and connection ID by sending a GET request
-     * @template T - The type of metadata to retrieve
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} connectionId - The ID of the connection for which to retrieve metadata
-     * @throws {Error} - If providerConfigKey or connectionId is missing
-     * @returns {Promise<T>} - A promise that resolves with the retrieved metadata
+     * Retrieves metadata for a given provider configuration key and connection ID
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to retrieve metadata
+     * @throws If providerConfigKey or connectionId is missing
+     * @returns A promise that resolves with the retrieved metadata
      */
     public async getMetadata<T = Metadata>(providerConfigKey: string, connectionId: string): Promise<T> {
         if (!providerConfigKey) {
@@ -276,12 +273,12 @@ export class Nango {
     }
 
     /**
-     * Sets custom metadata for a connection by sending a POST request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} connectionId - The ID of the connection for which to set metadata
-     * @param {Record<string, any>} metadata - The custom metadata to set
-     * @throws {Error} - If providerConfigKey, connectionId, or metadata is missing
-     * @returns {Promise<AxiosResponse<void>>} - A promise that resolves with the Axios response from the server
+     * Sets custom metadata for a connection
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to set metadata
+     * @param metadata - The custom metadata to set
+     * @throws If providerConfigKey, connectionId, or metadata is missing
+     * @returns A promise that resolves with the Axios response from the server
      */
     public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         if (!providerConfigKey) {
@@ -306,12 +303,12 @@ export class Nango {
     }
 
     /**
-     * Edits custom metadata for a connection, only overriding specified properties, not the entire metadata by sending a PATCH request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} connectionId - The ID of the connection for which to update metadata
-     * @param {Record<string, any>} metadata - The custom metadata to update
-     * @returns {Promise<AxiosResponse<void>>} - A promise that resolves with the Axios response from the server
-     * @throws {Error} - If providerConfigKey, connectionId, or metadata is missing
+     * Edits custom metadata for a connection, only overriding specified properties, not the entire metadata
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to update metadata
+     * @param metadata - The custom metadata to update
+     * @throws If providerConfigKey, connectionId, or metadata is missing
+     * @returns A promise that resolves with the Axios response from the server
      */
     public async updateMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         if (!providerConfigKey) {
@@ -336,10 +333,10 @@ export class Nango {
     }
 
     /**
-     * Deletes a specific connection by sending a DELETE request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} connectionId - The ID of the connection to be deleted
-     * @returns {Promise<AxiosResponse<void>>} - A promise that resolves with the Axios response from the server
+     * Deletes a specific connection
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection to be deleted
+     * @returns A promise that resolves with the Axios response from the server
      */
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
@@ -359,8 +356,8 @@ export class Nango {
      */
 
     /**
-     * Retrieves the configuration for all integration scripts by sending a GET request
-     * @returns {Promise<StandardNangoConfig[]>} - A promise that resolves with an array of configuration objects for all integration scripts
+     * Retrieves the configuration for all integration scripts
+     * @returns A promise that resolves with an array of configuration objects for all integration scripts
      */
     public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
         const url = `${this.serverUrl}/scripts/config`;
@@ -431,11 +428,10 @@ export class Nango {
     }
 
     /**
-     * Returns the synced data by sending a GET request to list records, ordered by modification date ascending
+     * Returns the synced data, ordered by modification date ascending
      * If some records are updated while you paginate through this endpoint, you might see these records multiple times
-     * @param {ListRecordsRequestConfig} config - Configuration object for listing records
-     * @returns {Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }>} - A promise that resolves with an object containing an array of records and a cursor for pagination
-     * @template T - The type of records to be listed
+     * @param config - Configuration object for listing records
+     * @returns A promise that resolves with an object containing an array of records and a cursor for pagination
      */
     public async listRecords<T extends Record<string, any> = Record<string, any>>(
         config: ListRecordsRequestConfig
@@ -462,13 +458,13 @@ export class Nango {
     }
 
     /**
-     * Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified by sending a POST request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string[]} [syncs=[]] - An optional array of sync names to trigger. If empty, all applicable syncs will be triggered
-     * @param {string} [connectionId] - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
-     * @param {boolean} [fullResync] - An optional flag indicating whether to perform a full resynchronization. Default is false
-     * @throws {Error} - If syncs is provided but not an empty array or array of strings, or if a string is provided instead of an array
-     * @returns {Promise<void>} - A promise that resolves when the sync trigger request is sent
+     * Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param syncs - An optional array of sync names to trigger. If empty, all applicable syncs will be triggered
+     * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
+     * @param fullResync - An optional flag indicating whether to perform a full resynchronization. Default is false
+     * @throws If syncs is provided but not an empty array or array of strings, or if a string is provided instead of an array
+     * @returns A promise that resolves when the sync trigger request is sent
      */
     public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string, fullResync?: boolean): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
@@ -488,12 +484,12 @@ export class Nango {
     }
 
     /**
-     * Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified by sending a POST request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string[]} [syncs=[]] - An optional array of sync names to start. If empty, all applicable syncs will be started
-     * @param {string} [connectionId] - An optional ID of the connection for which to start the syncs. If not provided, syncs will be started for all applicable connections
-     * @throws {Error} - If providerConfigKey or syncs are not provided or syncs is provided but not an empty array or array of strings
-     * @returns {Promise<void>} - A promise that resolves when the sync start request is sent
+     * Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param syncs - An optional array of sync names to start. If empty, all applicable syncs will be started
+     * @param connectionId - An optional ID of the connection for which to start the syncs. If not provided, syncs will be started for all applicable connections
+     * @throws If providerConfigKey or syncs are not provided or syncs is provided but not an empty array or array of strings
+     * @returns A promise that resolves when the sync start request is sent
      */
     public async startSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
@@ -520,12 +516,12 @@ export class Nango {
     }
 
     /**
-     * Pauses the schedule of specified sync(s) for a given connection or all applicable connections by sending a POST request
-     * @param {string} providerConfigKey -The key identifying the provider configuration on Nango
-     * @param {string[]} syncs - An optional array of sync names to pause. If empty, all applicable syncs will be paused
-     * @param {string} [connectionId] - An optional ID of the connection for which to pause the syncs. If not provided, syncs will be paused for all applicable connections
-     * @throws {Error} - If providerConfigKey or syncs are not provided or syncs is provided but not an empty array or array of strings
-     * @returns {Promise<void>} - A promise that resolves when the sync pause request is sent
+     * Pauses the schedule of specified sync(s) for a given connection or all applicable connections
+     * @param providerConfigKey -The key identifying the provider configuration on Nango
+     * @param syncs - An optional array of sync names to pause. If empty, all applicable syncs will be paused
+     * @param connectionId - An optional ID of the connection for which to pause the syncs. If not provided, syncs will be paused for all applicable connections
+     * @throws If providerConfigKey or syncs are not provided or syncs is provided but not an empty array or array of strings
+     * @returns A promise that resolves when the sync pause request is sent
      */
     public async pauseSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
@@ -552,12 +548,12 @@ export class Nango {
     }
 
     /**
-     * Get the status of specified sync(s) for a given connection or all applicable connections by sending a GET request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {'*' | string[]} syncs - An array of sync names to get status for, or '*' to get status for all syncs
-     * @param {string} [connectionId] - An optional ID of the connection for which to get sync status. If not provided, status for all applicable connections will be retrieved
-     * @throws {Error} - If providerConfigKey or sync are not provided or if syncs provided are not a string array or '*'
-     * @returns {Promise<SyncStatusResponse>} - A promise that resolves with the status of the specified sync(s)
+     * Get the status of specified sync(s) for a given connection or all applicable connections
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param syncs - An array of sync names to get status for, or '*' to get status for all syncs
+     * @param connectionId - An optional ID of the connection for which to get sync status. If not provided, status for all applicable connections will be retrieved
+     * @throws If providerConfigKey or sync are not provided or if syncs provided are not a string array or '*'
+     * @returns A promise that resolves with the status of the specified sync(s)
      */
     public async syncStatus(providerConfigKey: string, syncs: '*' | string[], connectionId?: string): Promise<SyncStatusResponse> {
         if (!providerConfigKey) {
@@ -586,13 +582,13 @@ export class Nango {
     }
 
     /**
-     * Override a sync’s default frequency for a specific connection, or revert to the default frequency by sending a PUT request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} sync - The name of the sync to update
-     * @param {string} connectionId - The ID of the connection for which to update the sync frequency
-     * @param {string | null} frequency - The new frequency to set for the sync, or null to revert to the default frequency
-     * @throws {Error} - If providerConfigKey, sync, or connectionId are not provided, or if frequency is not a string or null
-     * @returns {Promise<UpdateSyncFrequencyResponse>} - A promise that resolves with the response data after updating the sync frequency
+     * Override a sync’s default frequency for a specific connection, or revert to the default frequency
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param sync - The name of the sync to update
+     * @param connectionId - The ID of the connection for which to update the sync frequency
+     * @param frequency - The new frequency to set for the sync, or null to revert to the default frequency
+     * @throws If providerConfigKey, sync, or connectionId are not provided, or if frequency is not a string or null
+     * @returns A promise that resolves with the response data after updating the sync frequency
      */
     public async updateSyncConnectionFrequency(
         providerConfigKey: string,
@@ -631,8 +627,8 @@ export class Nango {
     }
 
     /**
-     * Retrieve the environment variables as added in the Nango dashboard by sending a GET request
-     * @returns {Promise<{ name: string; value: string }[]>} - A promise that resolves with an array of environment variables
+     * Retrieve the environment variables as added in the Nango dashboard
+     * @returns A promise that resolves with an array of environment variables
      */
     public async getEnvironmentVariables(): Promise<{ name: string; value: string }[]> {
         const url = `${this.serverUrl}/environment-variables`;
@@ -658,12 +654,12 @@ export class Nango {
      */
 
     /**
-     * Triggers an action for a connection by sending a POST request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} connectionId - The ID of the connection for which the action should be triggered
-     * @param {string} actionName - The name of the action to trigger
-     * @param {unknown} [input] - An optional input data for the action
-     * @returns {Promise<object>} - A promise that resolves with an object containing the response data from the triggered action
+     * Triggers an action for a connection
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which the action should be triggered
+     * @param actionName - The name of the action to trigger
+     * @param input - An optional input data for the action
+     * @returns A promise that resolves with an object containing the response data from the triggered action
      */
     public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<object> {
         const url = `${this.serverUrl}/action/trigger`;
@@ -696,9 +692,8 @@ export class Nango {
 
     /**
      * Sends a proxied HTTP request based on the provided configuration
-     * @param {ProxyConfiguration} config - The configuration object for the proxy request
-     * @returns {Promise<AxiosResponse<T>>} A promise that resolves with the response from the proxied request
-     * @template T - The type of the response data
+     * @param config - The configuration object for the proxy request
+     * @returns A promise that resolves with the response from the proxied request
      */
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         if (!config.connectionId && this.connectionId) {
@@ -776,9 +771,8 @@ export class Nango {
 
     /**
      * Sends a GET request using the proxy based on the provided configuration
-     * @param {ProxyConfiguration} config - The configuration object for the GET request
-     * @returns {Promise<AxiosResponse<T>>} A promise that resolves with the response from the GET request
-     * @template T - The type of the response data
+     * @param config - The configuration object for the GET request
+     * @returns A promise that resolves with the response from the GET request
      */
     public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
@@ -789,9 +783,8 @@ export class Nango {
 
     /**
      * Sends a POST request using the proxy based on the provided configuration
-     * @param {ProxyConfiguration} config - The configuration object for the POST request
-     * @returns {Promise<AxiosResponse<T>>} A promise that resolves with the response from the POST request
-     * @template T - The type of the response data
+     * @param config - The configuration object for the POST request
+     * @returns A promise that resolves with the response from the POST request
      */
     public async post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
@@ -802,9 +795,8 @@ export class Nango {
 
     /**
      * Sends a PATCH request using the proxy based on the provided configuration
-     * @param {ProxyConfiguration} config - The configuration object for the PATCH request
-     * @returns {Promise<AxiosResponse<T>>} A promise that resolves with the response from the PATCH request
-     * @template T - The type of the response data
+     * @param config - The configuration object for the PATCH request
+     * @returns A promise that resolves with the response from the PATCH request
      */
     public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
@@ -815,9 +807,8 @@ export class Nango {
 
     /**
      * Sends a DELETE request using the proxy based on the provided configuration
-     * @param {ProxyConfiguration} config - The configuration object for the DELETE request
-     * @returns {Promise<AxiosResponse<T>>} A promise that resolves with the response from the DELETE request
-     * @template T - The type of the response data
+     * @param config - The configuration object for the DELETE request
+     * @returns A promise that resolves with the response from the DELETE request
      */
     public async delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
@@ -826,14 +817,14 @@ export class Nango {
         });
     }
 
+    // -- Webhooks
     /**
-     * Retrieves details of a specific connection by sending a GET request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} connectionId - The ID of the connection for which to retrieve connection details
-     * @param {boolean} [forceRefresh=false] - An optional flag indicating whether to force a refresh of the access tokens. Defaults to false
-     * @param {boolean} [refreshToken=false] - An optional flag indicating whether to send the refresh token as part of the response. Defaults to false
-     * @param {Record<string, any>} [additionalHeader={}] - Additional headers to include in the request
-     * @returns {Promise<AxiosResponse<Connection>>} A promise that resolves with the response containing connection details
+     *
+     * Verify incoming webhooks signature
+     *
+     * @param signatureInHeader The value in the header X-Nango-Signature
+     * @param jsonPayload The HTTP body as JSON
+     * @returns Whether the signature is valid
      */
     public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
         return (
@@ -845,13 +836,13 @@ export class Nango {
     }
 
     /**
-     * Retrieves details of a specific connection by sending a GET request
-     * @param {string} providerConfigKey - The key identifying the provider configuration on Nango
-     * @param {string} connectionId - The ID of the connection for which to retrieve connection details
-     * @param {boolean} [forceRefresh=false] - An optional flag indicating whether to force a refresh of the access tokens. Defaults to false
-     * @param {boolean} [refreshToken=false] - An optional flag indicating whether to send the refresh token as part of the response. Defaults to false
-     * @param {Record<string, any>} [additionalHeader={}] - Additional headers to include in the request
-     * @returns {Promise<AxiosResponse<Connection>>} A promise that resolves with the response containing connection details
+     * Retrieves details of a specific connection
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to retrieve connection details
+     * @param forceRefresh - An optional flag indicating whether to force a refresh of the access tokens. Defaults to false
+     * @param refreshToken - An optional flag indicating whether to send the refresh token as part of the response. Defaults to false
+     * @param additionalHeader - Optional. Additional headers to include in the request
+     * @returns A promise that resolves with the response containing connection details
      */
     private async getConnectionDetails(
         providerConfigKey: string,
@@ -883,8 +874,8 @@ export class Nango {
 
     /**
      * Retrieves details of all connections from the server or details of a specific connection if a connection ID is provided
-     * @param {string} [connectionId] - Optional. This is the unique connection identifier used to identify this connection
-     * @returns {Promise<AxiosResponse<{ connections: ConnectionList[] }>>} A promise that resolves with the response containing connection details
+     * @param connectionId - Optional. This is the unique connection identifier used to identify this connection
+     * @returns A promise that resolves with the response containing connection details
      */
     private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {
         let url = `${this.serverUrl}/connection?`;
@@ -901,8 +892,8 @@ export class Nango {
 
     /**
      * Enriches the headers with the Authorization token
-     * @param {Record<string, string | number | boolean>} [headers={}] - Optional. The headers to enrich
-     * @returns {Record<string, string | number | boolean>} The enriched headers
+     * @param - Optional. The headers to enrich
+     * @returns The enriched headers
      */
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
         headers['Authorization'] = 'Bearer ' + this.secretKey;
