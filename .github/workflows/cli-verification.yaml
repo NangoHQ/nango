@@ -65,7 +65,6 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
-                  ls
                   npm publish
     verify:
         runs-on: ubuntu-latest
@@ -88,7 +87,7 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   npm init -y
-                  npm install @nangohq/cli@0.0.1-$GIT_HASH
+                  npm install nango@npm:@nangohq/cli@0.0.1-$GIT_HASH
                   VERSION_OUTPUT=$(npx nango version)
                   EXPECTED_VERSION="Nango CLI version: 0.0.1-$GIT_HASH"
                   [ "$VERSION_OUTPUT" = "$EXPECTED_VERSION" ] || { echo "Version mismatch. Expected: $EXPECTED_VERSION, got: $VERSION_OUTPUT"; exit 1; }
