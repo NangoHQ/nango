@@ -32,8 +32,6 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  npm run build:hosted
-
                   function check_and_publish {
                     PACKAGE_PATH=$1
                     PACKAGE_NAME=$(node -p "require('./${PACKAGE_PATH}/package.json').name")
@@ -42,7 +40,9 @@ jobs:
                       echo "Version ${PACKAGE_VERSION} of ${PACKAGE_NAME} already exists. Skipping publish."
                     else
                       echo "Publishing ${PACKAGE_NAME}@${PACKAGE_VERSION}..."
-                      npm publish -w ${PACKAGE_PATH} --ignore-scripts
+                      pushd ./${PACKAGE_PATH}
+                      npm publish --ignore-scripts
+                      popd
                     fi
                   }
 
@@ -60,12 +60,10 @@ jobs:
                   echo "hash=${GIT_HASH}" >> "$GITHUB_OUTPUT"
                   bash ./scripts/publish.sh 0.0.1-$GIT_HASH
             - name: Publish the cli privately under the correct scope
+              working-directory: packages/cli
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  npm i
-                  npm run ts-build
-                  cd ./packages/cli
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
                   ls
                   npm publish
