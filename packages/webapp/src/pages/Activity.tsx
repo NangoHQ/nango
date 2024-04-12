@@ -171,9 +171,9 @@ export default function Activity() {
 
     useEffect(() => {
         if (activityFilters) {
-            setScripts(activityFilters.scripts);
-            setIntegrations(activityFilters.integrations);
-            setConnections(activityFilters.connections);
+            setScripts(activityFilters.scripts.sort());
+            setIntegrations(activityFilters.integrations.sort());
+            setConnections(activityFilters.connections.sort());
         }
     }, [activityFilters]);
 
