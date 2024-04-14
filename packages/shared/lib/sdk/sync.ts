@@ -6,7 +6,7 @@ import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import { getLogger } from '../utils/temp/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import telemetry, { MetricTypes } from '../utils/telemetry.js';
 
 const logger = getLogger('SDK');
@@ -434,7 +434,7 @@ export class NangoAction {
 
     public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials> {
         this.exitSyncIfAborted();
-        return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
+        return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
@@ -447,7 +447,7 @@ export class NangoAction {
         const cachedConnection = this.memoizedConnections.get(credentialsPair);
 
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
+            const connection = await this.nango.getConnection(providerConfigKey, connectionId);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
@@ -457,27 +457,27 @@ export class NangoAction {
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         this.exitSyncIfAborted();
-        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+        return this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
     }
 
     public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         this.exitSyncIfAborted();
-        return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+        return this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
     }
 
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
         logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
-        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
+        return this.nango.setMetadata(this.providerConfigKey, this.connectionId, fieldMapping);
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
         this.exitSyncIfAborted();
-        return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        return this.nango.getMetadata(this.providerConfigKey, this.connectionId);
     }
 
     public async getWebhookURL(): Promise<string | undefined> {
         this.exitSyncIfAborted();
-        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey!, true);
+        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey, true);
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
@@ -486,7 +486,7 @@ export class NangoAction {
 
     public async getFieldMapping(): Promise<Metadata> {
         logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
-        const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        const metadata = await this.nango.getMetadata(this.providerConfigKey, this.connectionId);
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 

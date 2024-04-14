@@ -3,7 +3,7 @@ import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models/Ac
 import { LogActionEnum } from '../../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 
-import { getLogger } from '../../utils/temp/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 
 const logger = getLogger('Activity');
 

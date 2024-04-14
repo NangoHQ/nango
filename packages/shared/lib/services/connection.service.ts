@@ -27,7 +27,7 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError, stringifyError } from '../utils/error.js';
 
 import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
-import { getLogger } from '../utils/temp/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';

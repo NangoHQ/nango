@@ -1,6 +1,6 @@
 import semver from 'semver';
 import db, { schema, dbNamespace } from '../../../db/database.js';
-import { getLogger } from '../../../utils/temp/logger.js';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
