@@ -32,6 +32,7 @@ npm install
 mkdir -p "$GIT_ROOT_DIR/packages/shared/vendor"
 pushd "$GIT_ROOT_DIR/packages/utils"
 npm install --workspaces=false
+npm run build
 npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
 popd
 pushd "$GIT_ROOT_DIR/packages/shared"
