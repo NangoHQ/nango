@@ -37,7 +37,7 @@ export const connectionCreationStartCapCheck = async ({
         for (const script of scriptConfigs) {
             const { connections } = script;
 
-            if (connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+            if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
                 logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
                 return true;
             }

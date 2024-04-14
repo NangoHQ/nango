@@ -21,7 +21,7 @@ export const WebhookBloc: React.FC<{ step: Steps; connectionId: string; records:
     "connectionId": "${connectionId}",
     "model": "${model}",
     "providerConfigKey": "github-demo",
-    "responseResults": { "issue": { "added": ${records.length || 3} } },
+    "responseResults": { "added": ${records.length || 3} },
     "modifiedAfter": "${date}"
 }`;
     }, [connectionId, records, date]);
