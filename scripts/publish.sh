@@ -29,12 +29,9 @@ fi
 npm install
 
 # Utils
-mkdir -p ../utils-temp
-pushd ../utils-temp
-cp -r "$GIT_ROOT_DIR/packages/utils/"* .
 mkdir -p "$GIT_ROOT_DIR/packages/shared/vendor"
-npm i
-npm run build
+pushd "$GIT_ROOT_DIR/packages/utils"
+npm install --workspaces=false
 npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
 popd
 pushd "$GIT_ROOT_DIR/packages/shared"
