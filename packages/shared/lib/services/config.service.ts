@@ -4,7 +4,7 @@ import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import { isCloud } from '@nangohq/utils/dist/environment/detection.js';
+import { isCloud } from '@nangohq/utils';
 import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
