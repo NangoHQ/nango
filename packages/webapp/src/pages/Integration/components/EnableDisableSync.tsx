@@ -39,11 +39,28 @@ export default function EnableDisableSync({
 
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
+    const [modalOkButtonTitle, setModalOkButtonTitle] = useState('Confirm');
+    const [modalCancelButtonTitle, setModalCancelButtonTitle] = useState('Cancel');
+    const [modalOkButtonLink, setModalOkButtonLink] = useState<string | null>(null);
+    const [modalCancelButtonLink, setModalCancelButtonLink] = useState<string | null>(null);
     const [modalAction, setModalAction] = useState<(() => void) | null>(null);
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [modalTitleColor, setModalTitleColor] = useState('text-white');
 
+    const resetModal = () => {
+        setModalTitle('');
+        setModalContent('');
+        setModalOkButtonTitle('Confirm');
+        setModalCancelButtonTitle('Cancel');
+        setModalOkButtonLink(null);
+        setModalCancelButtonLink(null);
+        setModalAction(null);
+        setModalShowSpinner(false);
+        setModalTitleColor('text-white');
+    };
+
     const enableSync = (flow: Flow) => {
+        resetModal();
         setModalTitle(`Enable ${flow.type}?`);
         setModalTitleColor('text-white');
         const content =
@@ -96,9 +113,26 @@ export default function EnableDisableSync({
             reload();
         } else {
             const payload = await res?.json();
-            toast.error(payload.error, {
-                position: toast.POSITION.BOTTOM_CENTER
-            });
+            if (payload.type === 'resource_capped') {
+                setModalShowSpinner(false);
+                setModalTitleColor('text-white');
+                setModalTitle('You’ve reached your connections limit!');
+                setModalContent(
+                    `Scripts are a paid feature. You can only use them with 3 connections or less.
+                    Upgrade or delete some connections to activate this script.`
+                );
+                setModalOkButtonTitle('Upgrade');
+                setModalCancelButtonTitle('Learn more');
+                setModalOkButtonLink('https://nango.dev/chat');
+                setModalCancelButtonLink('https://docs.nango.dev/REPLACE-ME');
+                setVisible(true);
+
+                return;
+            } else {
+                toast.error(payload.error, {
+                    position: toast.POSITION.BOTTOM_CENTER
+                });
+            }
         }
         setModalShowSpinner(false);
         if (setIsEnabling) {
@@ -108,6 +142,7 @@ export default function EnableDisableSync({
     };
 
     const disableSync = (flow: Flow) => {
+        resetModal();
         if (!flow.is_public) {
             const title = 'Custom syncs cannot be disabled from the UI';
             const message = flow.pre_built
@@ -182,6 +217,10 @@ export default function EnableDisableSync({
                 modalShowSpinner={modalShowSpinner}
                 modalTitleColor={modalTitleColor}
                 setVisible={setVisible}
+                modalOkTitle={modalOkButtonTitle}
+                modalCancelTitle={modalCancelButtonTitle}
+                modalOkLink={modalOkButtonLink}
+                modalCancelLink={modalCancelButtonLink}
             />
             {showSpinner && (!('version' in flow) || flow.version === null) && modalShowSpinner && (
                 <span className="mr-2">

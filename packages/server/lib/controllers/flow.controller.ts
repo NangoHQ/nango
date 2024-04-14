@@ -4,6 +4,7 @@ import type { IncomingPreBuiltFlowConfig, FlowDownloadBody, StandardNangoConfig 
 import {
     flowService,
     accountService,
+    connectionService,
     getEnvironmentAndAccountId,
     errorManager,
     configService,
@@ -95,7 +96,7 @@ class FlowController {
                 return;
             }
 
-            const { environmentId } = response;
+            const { environmentId, accountId } = response;
 
             // config is an array for compatibility purposes, it will only ever have one item
             const [firstConfig] = config;
@@ -109,6 +110,22 @@ class FlowController {
             if (!providerLookup) {
                 errorManager.errRes(res, 'provider_not_on_account');
                 return;
+            }
+
+            const account = await accountService.getAccountById(accountId);
+
+            if (!account) {
+                errorManager.errRes(res, 'unknown_account');
+                return;
+            }
+
+            if (account.is_capped && firstConfig?.providerConfigKey) {
+                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: firstConfig?.providerConfigKey, environmentId });
+
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
+                    return;
+                }
             }
 
             const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await deployPreBuiltSyncConfig(environmentId, config, '');

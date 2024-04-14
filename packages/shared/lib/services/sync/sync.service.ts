@@ -57,7 +57,9 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
         name,
-        frequency: null
+        frequency: null,
+        last_sync_date: null,
+        last_fetched_at: null
     };
 
     const result = await schema().from<Sync>(TABLE).insert(sync).returning('*');
@@ -742,4 +744,8 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
 export async function findRecentlyDeletedSync(): Promise<{ id: string }[]> {
     const q = db.knex.from('_nango_syncs').select<{ id: string }[]>('_nango_syncs.id').where(db.knex.raw("_nango_syncs.deleted_at >  NOW() - INTERVAL '6h'"));
     return await q;
+}
+
+export async function trackFetch(nango_connection_id: number): Promise<void> {
+    await db.knex.from<Sync>(`_nango_syncs`).where({ nango_connection_id, deleted: false }).update({ last_fetched_at: new Date() });
 }

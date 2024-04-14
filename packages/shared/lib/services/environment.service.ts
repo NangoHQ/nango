@@ -136,7 +136,7 @@ class EnvironmentService {
             .select<Account>('_nango_accounts.*')
             .from(TABLE)
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
-            .where({ id: environment_id })
+            .where('_nango_environments.id', environment_id)
             .first();
 
         return result || null;

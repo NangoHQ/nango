@@ -131,11 +131,12 @@ class AppAuthController {
             };
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig)).message,
+                    content: error.message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
                     url: req.originalUrl,
@@ -144,13 +145,7 @@ class AppAuthController {
                     }
                 });
 
-                return publisher.notifyErr(
-                    res,
-                    wsClientId,
-                    providerConfigKey,
-                    connectionId,
-                    WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig))
-                );
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             if (!installation_id) {
@@ -245,7 +240,8 @@ class AppAuthController {
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
-            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
+            const error = WSErrBuilder.UnknownError();
+            const content = error.message + '\n' + prettyError;
 
             await createActivityLogMessage({
                 level: 'error',

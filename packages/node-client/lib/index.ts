@@ -1,24 +1,28 @@
+import crypto from 'node:crypto';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
 
 import type {
-    CredentialsCommon,
-    OAuth1Credentials,
-    OAuth2Credentials,
-    ProxyConfiguration,
-    GetRecordsRequestConfig,
-    ListRecordsRequestConfig,
-    BasicApiCredentials,
     ApiKeyCredentials,
     AppCredentials,
-    Metadata,
+    BasicApiCredentials,
     Connection,
     ConnectionList,
+    CreateConnectionOAuth1,
+    CreateConnectionOAuth2,
+    CredentialsCommon,
+    GetRecordsRequestConfig,
     Integration,
     IntegrationWithCreds,
+    ListRecordsRequestConfig,
+    Metadata,
+    NangoProps,
+    OAuth1Token,
+    ProxyConfiguration,
+    RecordMetadata,
+    StandardNangoConfig,
     SyncStatusResponse,
-    UpdateSyncFrequencyResponse,
-    StandardNangoConfig
+    UpdateSyncFrequencyResponse
 } from './types.js';
 import { AuthModes } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
@@ -28,65 +32,11 @@ export const prodHost = 'https://api.nango.dev';
 
 export * from './types.js';
 
-interface NangoProps {
-    host?: string;
-    secretKey: string;
-    connectionId?: string;
-    providerConfigKey?: string;
-    isSync?: boolean;
-    dryRun?: boolean;
-    activityLogId?: number;
-}
-
-interface CreateConnectionOAuth1 extends OAuth1Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes.OAuth1;
-}
-
-interface OAuth1Token {
-    oAuthToken: string;
-    oAuthTokenSecret: string;
-}
-
-interface CreateConnectionOAuth2 extends OAuth2Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes.OAuth2;
-}
-
 type CustomHeaders = Record<string, string | number | boolean>;
 
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL'
-}
-
-export interface SyncResult {
-    added: number;
-    updated: number;
-    deleted: number;
-}
-
-export interface NangoSyncWebhookBody {
-    connectionId: string;
-    providerConfigKey: string;
-    syncName: string;
-    model: string;
-    responseResults: SyncResult;
-    syncType: SyncType;
-    queryTimeStamp: string | null;
-    modifiedAfter: string | null;
-}
-
-export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
-
-export interface RecordMetadata {
-    first_seen_at: string;
-    last_seen_at: string;
-    last_action: LastAction;
-    deleted_at: string | null;
-    cursor: string;
 }
 
 export class Nango {
@@ -410,13 +360,13 @@ export class Nango {
         return response.data;
     }
 
-    public async listRecords<T = any>(
+    public async listRecords<T extends Record<string, any> = Record<string, any>>(
         config: ListRecordsRequestConfig
     ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
         const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&modifiedAfter=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+        const url = `${this.serverUrl}/records/?model=${model}${delta || modifiedAfter ? `&modified_after=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
             filter ? `&filter=${filter}` : ''
         }${cursor ? `&cursor=${cursor}` : ''}`;
 
@@ -674,18 +624,6 @@ export class Nango {
             options.responseType = config.responseType;
         }
 
-        if (this.dryRun) {
-            const stringifyParams = (params: Record<string, string>) => {
-                return Object.keys(params)
-                    .map((key: string) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key] as string)}`)
-                    .join('&');
-            };
-
-            console.log(
-                `Nango Proxy Request: ${method?.toUpperCase()} ${url}${config.params ? `?${stringifyParams(config.params as Record<string, string>)}` : ''}`
-            );
-        }
-
         if (method?.toUpperCase() === 'POST') {
             return axios.post(url, config.data, options);
         } else if (method?.toUpperCase() === 'PATCH') {
@@ -725,6 +663,23 @@ export class Nango {
             ...config,
             method: 'DELETE'
         });
+    }
+
+    // -- Webhooks
+    /**
+     *
+     * Verify incoming webhooks signature
+     *
+     * @param signatureInHeader The value in the header X-Nango-Signature
+     * @param jsonPayload The HTTP body as JSON
+     */
+    public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
+        return (
+            crypto
+                .createHash('sha256')
+                .update(`${this.secretKey}${JSON.stringify(jsonPayload)}`)
+                .digest('hex') === signatureInHeader
+        );
     }
 
     private async getConnectionDetails(

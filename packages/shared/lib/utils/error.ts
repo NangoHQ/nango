@@ -559,6 +559,13 @@ export class NangoError extends Error {
                 this.message = `Missing an account name for account login/signup.`;
                 break;
 
+            case 'resource_capped':
+                this.status = 400;
+                // TODO docs link
+                this.message =
+                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/REPLACE-ME).';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
