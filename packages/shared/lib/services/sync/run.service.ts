@@ -669,7 +669,7 @@ export default class SyncRun {
                     this.provider as string
                 );
             } catch {
-                await errorManager.report('slack notification service reported a failure', {
+                errorManager.report('slack notification service reported a failure', {
                     environmentId: this.nangoConnection.environment_id,
                     source: ErrorSourceEnum.PLATFORM,
                     operation: LogActionEnum.SYNC,
@@ -701,7 +701,7 @@ export default class SyncRun {
             content
         });
 
-        await errorManager.report(content, {
+        errorManager.report(content, {
             environmentId: this.nangoConnection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.SYNC,

@@ -302,7 +302,7 @@ class SyncClient {
             });
             return true;
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC,
                 environmentId,
@@ -496,7 +496,7 @@ class SyncClient {
                 const scheduleHandle = this.client?.schedule.getHandle(sync.schedule_id);
                 await scheduleHandle?.trigger(OVERLAP_POLICY);
             } catch (e) {
-                await errorManager.report(e, {
+                errorManager.report(e, {
                     source: ErrorSourceEnum.PLATFORM,
                     operation: LogActionEnum.SYNC_CLIENT,
                     environmentId,
@@ -652,7 +652,7 @@ class SyncClient {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            await telemetry.duration(MetricTypes.ACTION_TRACK_RUNTIME, totalRunTime);
+            telemetry.duration(MetricTypes.ACTION_TRACK_RUNTIME, totalRunTime);
         }
     }
 
@@ -748,7 +748,7 @@ class SyncClient {
                 content: `The webhook workflow ${workflowId} failed with error: ${e}`
             });
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: nangoConnection.environment_id,
@@ -792,7 +792,7 @@ class SyncClient {
                 });
             }
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId,

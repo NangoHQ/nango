@@ -302,7 +302,7 @@ export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_i
             return result;
         }
     } catch (error) {
-        await errorManager.report(error, {
+        errorManager.report(error, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -410,7 +410,7 @@ export async function getSyncAndActionConfigByParams(environment_id: number, syn
             return result;
         }
     } catch (error) {
-        await errorManager.report(error, {
+        errorManager.report(error, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -456,7 +456,7 @@ export async function getSyncConfigByParams(
             return result;
         }
     } catch (error) {
-        await errorManager.report(error, {
+        errorManager.report(error, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -488,7 +488,7 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
             await remoteFileService.deleteFiles(files);
         }
     } catch (error) {
-        await errorManager.report(error, {
+        errorManager.report(error, {
             environmentId,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -561,6 +561,44 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.environment_id': environment_id,
+            active: true,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false
+        });
+
+    return result;
+}
+
+export async function getSyncConfigsWithConnections(
+    providerConfigKey: string,
+    environment_id: number
+): Promise<{ connections: { connection_id: string }[]; provider: string; unique_key: string }[]> {
+    const result = await db.knex
+        .select(
+            `${TABLE}.id`,
+            '_nango_configs.provider',
+            '_nango_configs.unique_key',
+            db.knex.raw(
+                `(
+                    SELECT json_agg(
+                        json_build_object(
+                            'connection_id', _nango_connections.connection_id
+                        )
+                    )
+                    FROM _nango_connections
+                    WHERE _nango_configs.environment_id = _nango_connections.environment_id
+                    AND _nango_configs.unique_key = _nango_connections.provider_config_key
+                    AND _nango_configs.deleted = false
+                    AND _nango_connections.deleted = false
+                ) as connections
+                `
+            )
+        )
+        .from<SyncConfig>(TABLE)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            '_nango_configs.environment_id': environment_id,
+            '_nango_configs.unique_key': providerConfigKey,
             active: true,
             '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false

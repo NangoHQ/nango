@@ -30,7 +30,7 @@ import {
     AnalyticsTypes
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 const logger = getLogger('Server.Onboarding');
@@ -85,7 +85,6 @@ class OnboardingController {
                 await createOnboardingProvider({ envId: environment.id });
             }
 
-            void analytics.track(AnalyticsTypes.DEMO_1_SUCCESS, account.id, { user_id: user.id });
             res.status(201).json({
                 id: onboardingId
             });
@@ -344,6 +343,11 @@ class OnboardingController {
             await updateOnboardingProgress(status.id, progress);
             if (progress === 3 || progress === 6) {
                 void analytics.track(AnalyticsTypes[`DEMO_${progress}`], account.id, { user_id: user.id });
+            }
+            if (progress === 1) {
+                // Step 1 is actually deploy+frontend auth
+                // Frontend is in a different API so we can't instrument it on the backend so we assume if we progress then step 1 was a success
+                void analytics.track(AnalyticsTypes.DEMO_1_SUCCESS, account.id, { user_id: user.id });
             }
 
             res.status(200).json({

@@ -136,7 +136,7 @@ class EnvironmentService {
             .select<Account>('_nango_accounts.*')
             .from(TABLE)
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
-            .where({ id: environment_id })
+            .where('_nango_environments.id', environment_id)
             .first();
 
         return result || null;
@@ -223,7 +223,7 @@ class EnvironmentService {
 
             return encryptionManager.decryptEnvironment(result[0]);
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
@@ -245,7 +245,7 @@ class EnvironmentService {
 
             return result[0];
         } catch (e) {
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,

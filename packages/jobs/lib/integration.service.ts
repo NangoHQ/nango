@@ -1,10 +1,13 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
-import { integrationFilesAreRemote, isCloud, isProd } from '@nangohq/utils/dist/environment/detection.js';
+import { integrationFilesAreRemote, isCloud, isProd } from '@nangohq/utils';
 import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError, isOk } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
+import { getLogger } from '@nangohq/utils/dist/logger.js';
+
+const logger = getLogger('integration.service');
 
 interface ScriptObject {
     context: Context | null;
@@ -210,16 +213,17 @@ class IntegrationService implements IntegrationServiceInterface {
 
     private sendHeartbeat() {
         setInterval(() => {
-            Object.keys(this.runningScripts).forEach((syncId) => {
-                const scriptObject = this.runningScripts.get(syncId);
-
-                if (!scriptObject) {
-                    return;
+            this.runningScripts.forEach((script, syncId) => {
+                const { context } = script;
+                if (context) {
+                    try {
+                        context.heartbeat();
+                    } catch (error) {
+                        logger.error(`Error sending heartbeat for syncId: ${syncId}`, error);
+                    }
+                } else {
+                    logger.error(`Error sending heartbeat for syncId ${syncId}: context not found`);
                 }
-
-                const { context } = scriptObject;
-
-                context?.heartbeat();
             });
         }, 300000);
     }

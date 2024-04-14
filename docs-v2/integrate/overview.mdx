@@ -21,7 +21,7 @@ const integrationId = 'zendesk';
 const connectionId = 'user123';
 
 // Shows authorization popup to the user.
-const result = await nango.auth(integrationId, connectionId); 
+const result = await nango.auth(integrationId, connectionId);
 
 if (result.ok) {
     // The auth flow succeeded. The integration is set up!
@@ -40,9 +40,9 @@ Nango uses webhooks to notify your backend when external user data has been adde
 ```json Backend: Webhook payload with new data
 {
     "connectionId": "user123",
-    "model": "ticket",
     "providerConfigKey": "zendesk",
-    "responseResults": { "ticket": { "added": 2, "updated": 6, "deleted": 0 } },
+    "model": "ticket",
+    "responseResults": { "added": 2, "updated": 6, "deleted": 0 },
     "modifiedAfter": "2023-05-31T11:46:13.390Z"
 }
 ```

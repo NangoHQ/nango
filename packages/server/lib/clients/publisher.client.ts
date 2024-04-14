@@ -2,7 +2,7 @@ import type { WebSocket } from 'ws';
 import type { RedisClientType } from 'redis';
 import * as uuid from 'uuid';
 import { createClient } from 'redis';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import type { WSErr } from '../utils/web-socket-error.js';
 import { errorHtml, successHtml } from '../utils/utils.js';
 import { getRedisUrl } from '@nangohq/shared';

@@ -1,6 +1,6 @@
 import './tracer.js';
 import { server } from './server.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('Runner');
 

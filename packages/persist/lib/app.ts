@@ -1,5 +1,5 @@
 import './tracer.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import { server } from './server.js';
 
 const logger = getLogger('Persist');

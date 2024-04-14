@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import { deleteLog, deleteLogsMessages, errorManager, ErrorSourceEnum, findOldActivities, MetricTypes, telemetry } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { getLogger } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { setTimeout } from 'node:timers/promises';
 

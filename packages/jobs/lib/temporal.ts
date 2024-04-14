@@ -4,8 +4,7 @@ import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '@nangohq/shared';
-import { isProd, isEnterprise } from '@nangohq/utils/dist/environment/detection.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { isProd, isEnterprise, getLogger } from '@nangohq/utils';
 
 const logger = getLogger('Jobs.Temporal');
 

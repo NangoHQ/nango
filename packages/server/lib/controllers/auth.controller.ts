@@ -6,8 +6,7 @@ import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '..
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User, Result } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl } from '@nangohq/utils/dist/environment/detection.js';
-import { getLogger } from '@nangohq/utils/dist/logger.js';
+import { isCloud, baseUrl, basePublicUrl, getLogger } from '@nangohq/utils';
 import {
     userService,
     accountService,
@@ -178,7 +177,7 @@ class AuthController {
             }
 
             const event = joinedWithToken ? AnalyticsTypes.ACCOUNT_JOINED : AnalyticsTypes.ACCOUNT_CREATED;
-            analytics.track(event, account.id, {}, isCloud ? { email: email } : {});
+            void analytics.track(event, account.id, {}, isCloud ? { email: email } : {});
 
             if (isCloud && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.

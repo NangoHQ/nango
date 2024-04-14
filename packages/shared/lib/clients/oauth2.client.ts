@@ -92,7 +92,7 @@ export async function getFreshOAuth2Credentials(
             nangoErr = new NangoError(`refresh_token_external_error`, { message: errorPayload });
         }
 
-        await errorManager.report(nangoErr.message, {
+        errorManager.report(nangoErr.message, {
             environmentId: connection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
@@ -115,9 +115,9 @@ export async function getFreshOAuth2Credentials(
         }
 
         return { success: true, error: null, response: newCredentials };
-    } catch (e) {
-        const error = new NangoError(`refresh_token_parsing_error`);
-        await errorManager.report(error.message, {
+    } catch (err) {
+        const error = new NangoError(`refresh_token_parsing_error`, { cause: err });
+        errorManager.report(error.message, {
             environmentId: connection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,

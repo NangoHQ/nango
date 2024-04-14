@@ -49,7 +49,7 @@ class ApiAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -214,7 +214,7 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
@@ -264,7 +264,7 @@ class ApiAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -423,7 +423,7 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
 
-            await errorManager.report(err, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,

@@ -28,6 +28,7 @@ import {
     environmentService,
     accountService,
     connectionCreated as connectionCreatedHook,
+    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     slackNotificationService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -299,7 +300,7 @@ class ConnectionController {
             const connections = await connectionService.listConnections(environmentId, connectionId as string);
 
             if (!isWeb) {
-                analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
+                void analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
             }
 
             const configs = await configService.listProviderConfigs(environmentId);
@@ -527,6 +528,21 @@ class ConnectionController {
                 return;
             }
 
+            const account = await accountService.getAccountById(accountId);
+
+            if (!account) {
+                errorManager.errRes(res, 'unknown_account');
+                return;
+            }
+
+            if (account.is_capped && provider_config_key) {
+                const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey: provider_config_key, environmentId });
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
+                    return;
+                }
+            }
+
             const template = await configService.getTemplate(provider);
 
             let oAuthCredentials: ImportedCredentials;
@@ -731,6 +747,13 @@ class ConnectionController {
                     environmentId,
                     accountId
                 );
+
+                if (imported) {
+                    updatedConnection = imported;
+                    runHook = true;
+                }
+            } else if (template.auth_mode === ProviderAuthModes.None) {
+                const [imported] = await connectionService.upsertUnauthConnection(connection_id, provider_config_key, provider, environmentId, accountId);
 
                 if (imported) {
                     updatedConnection = imported;

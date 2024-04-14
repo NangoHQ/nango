@@ -16,7 +16,6 @@ import {
     SyncClient,
     updateScheduleStatus,
     updateSuccess as updateSuccessActivityLog,
-    createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
     createActivityLog,
     getAndReconcileDifferences,
@@ -44,7 +43,8 @@ import {
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
     isOk,
-    isErr
+    isErr,
+    createActivityLogMessage
 } from '@nangohq/shared';
 
 class SyncController {
@@ -87,13 +87,13 @@ class SyncController {
                 return;
             }
 
-            analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
+            void analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
 
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
             const environmentId = getEnvironmentId(res);
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.SYNC_DEPLOY
@@ -614,19 +614,20 @@ class SyncController {
                 environment_id: environment.id,
                 operation_name: sync_name
             };
+            const activityLogId = await createActivityLog(log);
 
-            if (!verifyOwnership(nango_connection_id, environment.id, sync_id)) {
-                await createActivityLogAndLogMessage(log, {
+            if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
+                await createActivityLogMessage({
                     level: 'error',
+                    activity_log_id: activityLogId!,
                     environment_id: environment.id,
                     timestamp: Date.now(),
                     content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
 
                 res.sendStatus(401);
+                return;
             }
-
-            const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
 
@@ -684,7 +685,7 @@ class SyncController {
                     break;
             }
 
-            analytics.trackByEnvironmentId(event, environment.id, {
+            void analytics.trackByEnvironmentId(event, environment.id, {
                 sync_id,
                 sync_name,
                 provider,

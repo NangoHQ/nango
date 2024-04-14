@@ -89,7 +89,7 @@ export default function ConnectionList() {
         );
     }
 
-    const providers: string[] = uniq(data['connections'].map((connection: Connection) => connection.provider_config_key));
+    const providers: string[] = uniq(data['connections'].map((connection: Connection) => connection.provider_config_key)).sort();
 
     function formatDate(creationDate: string): string {
         const inputDate = new Date(creationDate);
