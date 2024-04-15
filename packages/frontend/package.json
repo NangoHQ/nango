@@ -15,7 +15,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {
         "build": "tsc",
-        "prepublishOnly": "npm ci && npm run build"
+        "prepublishOnly": "npm install && npm run build"
     },
     "dependencies": {},
     "files": [

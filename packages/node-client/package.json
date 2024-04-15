@@ -7,7 +7,7 @@
     "module": "./dist/index.js",
     "scripts": {
         "build": "tsup lib/index.ts --format cjs && tsc",
-        "prepublishOnly": "npm ci && npm run build"
+        "prepublishOnly": "npm install && npm run build"
     },
     "exports": {
         ".": {
