@@ -46,9 +46,6 @@ const logger = getLogger('Server');
 
 const app = express();
 
-// Auth
-setupAuth(app);
-
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
@@ -157,90 +154,93 @@ if (MANAGED_AUTH_ENABLED) {
 }
 
 // Webapp routes (session auth).
-app.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
-app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
-app.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
-app.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
+const web = express.Router();
+setupAuth(web);
+web.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
+web.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
+web.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
+web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
-app.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
-app.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
-app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
-app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
-app.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
-app.route('/api/v1/environment/webhook-auth-send').post(webAuth, environmentController.updateSendAuthWebhook.bind(environmentController));
-app.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
-app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
-app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
-app.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
-app.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-app.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
-app.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
+web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
+web.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
+web.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
+web.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
+web.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
+web.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
+web.route('/api/v1/environment/webhook-auth-send').post(webAuth, environmentController.updateSendAuthWebhook.bind(environmentController));
+web.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
+web.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
+web.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
+web.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
+web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
+web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
+web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
-app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
-app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
-app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
-app.route('/api/v1/integration/name').put(webAuth, configController.editProviderConfigName.bind(connectionController));
-app.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
-app.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
-app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
-app.route('/api/v1/integration/:providerConfigKey/endpoints').get(webAuth, flowController.getEndpoints.bind(connectionController));
-app.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
+web.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
+web.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
+web.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
+web.route('/api/v1/integration/name').put(webAuth, configController.editProviderConfigName.bind(connectionController));
+web.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
+web.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
+web.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
+web.route('/api/v1/integration/:providerConfigKey/endpoints').get(webAuth, flowController.getEndpoints.bind(connectionController));
+web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 
-app.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
+web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
-app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
-app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
-app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
-app.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
+web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
+web.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
+web.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
+web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 
-app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
-app.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
-app.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
-app.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
-app.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
+web.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
+web.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
+web.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
+web.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
+web.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
 
-app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
-app.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
-app.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibleFilters.bind(activityController));
+web.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
+web.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
+web.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibleFilters.bind(activityController));
 
-app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
-app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
-app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
-app.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
-app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
-app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
-app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
-app.route('/api/v1/flow/:id').delete(webAuth, flowController.deleteFlow.bind(flowController));
-app.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
+web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
+web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
+web.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
+web.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
+web.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
+web.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
+web.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
+web.route('/api/v1/flow/:id').delete(webAuth, flowController.deleteFlow.bind(flowController));
+web.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
-app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
-app.route('/api/v1/onboarding').post(webAuth, onboardingController.create.bind(onboardingController));
-app.route('/api/v1/onboarding').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
-app.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy.bind(onboardingController));
-app.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
-app.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
+web.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
+web.route('/api/v1/onboarding').post(webAuth, onboardingController.create.bind(onboardingController));
+web.route('/api/v1/onboarding').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
+web.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy.bind(onboardingController));
+web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
+web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {
-    app.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
+    web.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
         res.status(200).send();
     });
 }
+
+// Webapp assets, static files and build.
+const webappBuildPath = '../../../webapp/build';
+web.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
+web.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+web.get('*', (_, res) => {
+    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+});
+
+app.use(web);
 
 // Error handling.
 app.use(async (e: any, req: Request, res: Response, __: any) => {
     await errorManager.handleGenericError(e, req, res, tracer);
 });
-
-// Webapp assets, static files and build.
-const webappBuildPath = '../../../webapp/build';
-app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
-app.get('*', (_, res) => {
-    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
-});
-
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 
