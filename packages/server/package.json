@@ -18,7 +18,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "engines": {
-        "node": ">=16.7",
+        "node": ">=18.0",
         "npm": ">=6.14.11"
     },
     "dependencies": {

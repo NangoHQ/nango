@@ -58,7 +58,7 @@
         "winston": "3.8.2"
     },
     "engines": {
-        "node": ">=16.7",
+        "node": ">=18.0",
         "npm": ">=6.14.11"
     },
     "devDependencies": {
