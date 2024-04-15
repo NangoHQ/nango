@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import path, { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd } from './temp/environment/detection.js';
+import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
 import { NangoError } from './error.js';
 import type { User, Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
@@ -15,10 +15,7 @@ interface PackageJson {
     version: string;
 }
 
-const PORT = process.env['SERVER_PORT'] || 3003;
-export const localhostUrl = `http://localhost:${PORT}`;
-export const cloudHost = 'https://api.nango.dev';
-export const stagingHost = 'https://api-staging.nango.dev';
+export { cloudHost, stagingHost };
 
 const accountIdLocalsKey = 'nangoAccountId';
 const environmentIdLocalsKey = 'nangoEnvironmentId';

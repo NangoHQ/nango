@@ -796,6 +796,13 @@ google-calendar:
             cursor_name_in_request: pageToken
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google-calendar
+google-docs:
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://docs.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-docs
 google-mail:
     categories:
         - productivity

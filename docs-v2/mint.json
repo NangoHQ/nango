@@ -360,6 +360,7 @@
                         "integrations/all/google",
                         "integrations/all/google-ads",
                         "integrations/all/google-calendar",
+                        "integrations/all/google-docs",
                         "integrations/all/google-drive",
                         "integrations/all/google-mail",
                         "integrations/all/google-sheet",
