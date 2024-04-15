@@ -378,7 +378,6 @@ export const EnvironmentSettings: React.FC = () => {
             .then(async () => {
                 await updateSlackNotifications(true);
                 setSlackIsConnected(true);
-                // TODO
                 toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 void mutate();
             })
