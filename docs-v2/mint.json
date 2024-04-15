@@ -343,6 +343,8 @@
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
                         "integrations/all/exact-online",
+                        "integrations/all/exa",
+                        "integrations/all/jotform",
                         "integrations/all/exist",
                         "integrations/all/facebook",
                         "integrations/all/factorial",
