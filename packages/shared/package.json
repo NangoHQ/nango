@@ -7,7 +7,7 @@
     "typings": "dist/index.d.ts",
     "scripts": {
         "build": "rimraf dist && tsc",
-        "prepublishOnly": "npm ci && npm run build"
+        "prepublishOnly": "npm install && npm run build"
     },
     "keywords": [],
     "repository": {
