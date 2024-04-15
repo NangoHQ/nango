@@ -11,7 +11,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import { getLogger } from '../utils/temp/logger.js';
+import { getLogger } from '@nangohq/utils';
 
 const stripeAppExpiresIn = 3600;
 const logger = getLogger('Provider.Client');
