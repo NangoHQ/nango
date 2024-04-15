@@ -15,6 +15,7 @@ COPY packages/persist/package.json ./packages/persist/package.json
 COPY packages/runner/package.json ./packages/runner/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
+COPY packages/utils/package.json ./packages/utils/package.json
 COPY packages/webapp/package.json ./packages/webapp/package.json
 COPY packages/data-ingestion/package.json ./packages/data-ingestion/package.json
 COPY packages/logs/package.json ./packages/logs/package.json
@@ -23,7 +24,7 @@ COPY package*.json  ./
 
 # Install every dependencies
 RUN true \
-  && npm i
+  && npm ci
 
 # At this stage we copy back all sources
 COPY . /app/tmp
