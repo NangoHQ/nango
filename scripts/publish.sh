@@ -26,7 +26,7 @@ if [[ ! "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+|0\.0\.1-[0-9a-fA-F]{40})$ ]]; the
     exit 1
 fi
 
-npm install
+npm ci
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
