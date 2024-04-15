@@ -42,7 +42,7 @@
     "devDependencies": {
         "@tsconfig/node16": "^1.0.0",
         "@types/md5": "^2.3.2",
-        "@types/node": "^18.7.6",
+        "@types/node": "^20.12.2",
         "nodemon": "^3.0.1",
         "typescript": "^5.3.3",
         "vitest": "1.4.0"

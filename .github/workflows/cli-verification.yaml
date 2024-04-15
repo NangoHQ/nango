@@ -24,7 +24,8 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: '18.x'
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
                   always-auth: true
@@ -78,7 +79,8 @@ jobs:
         steps:
             - uses: actions/setup-node@v4
               with:
-                  node-version: '18.x'
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
                   always-auth: true
