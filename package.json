@@ -34,7 +34,7 @@
         "webapp-build:watch": "tsc -b -w packages/webapp/tsconfig.json",
         "docker-build:unified": "./scripts/build_docker.sh",
         "shared:build": "cd ./packages/shared && npm run build && cd ../..",
-        "build:hosted": "npm ci && npm run ts-build && npm run webapp-build:hosted ",
+        "build:hosted": "npm ci && npm run ts-build && npm run webapp-build:hosted",
         "build:staging": "npm ci && npm run ts-build && npm run webapp-build:staging",
         "build:prod": "npm ci && npm run ts-build && npm run webapp-build:prod",
         "build:enterprise": "npm ci && npm run ts-build && npm run webapp-build:enterprise",
