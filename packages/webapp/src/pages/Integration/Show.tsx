@@ -38,8 +38,8 @@ export interface FlowConfiguration {
 }
 
 export interface EndpointResponse {
-    enabledFlows: FlowConfiguration | null;
-    unEnabledFlows?: FlowConfiguration;
+    allFlows: FlowConfiguration | null;
+    disabledFlows?: FlowConfiguration;
 }
 
 export default function ShowIntegration() {

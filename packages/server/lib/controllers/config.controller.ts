@@ -368,7 +368,7 @@ class ConfigController {
 
                 const enabledAndDisabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
                 const publicFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
-                const unEnabledFlows = publicFlows;
+                const disabledFlows = publicFlows;
 
                 if (availableFlows && enabledAndDisabledFlows && publicFlows) {
                     const { syncs, actions } = enabledAndDisabledFlows;
@@ -393,11 +393,11 @@ class ConfigController {
                         (action) => ![...enabledActions, ...disabledActions].some((enabledAction) => enabledAction.name === action.name)
                     );
 
-                    unEnabledFlows.syncs = [...filteredSyncs, ...disabledSyncs];
-                    unEnabledFlows.actions = [...filteredActions, ...disabledActions];
+                    disabledFlows.syncs = [...filteredSyncs, ...disabledSyncs];
+                    disabledFlows.actions = [...filteredActions, ...disabledActions];
                 }
 
-                const flows = { unEnabledFlows, enabledFlows: enabledAndDisabledFlows };
+                const flows = { disabledFlows, allFlows: enabledAndDisabledFlows };
                 res.status(200).send({ config: configRes, flows });
 
                 return;
