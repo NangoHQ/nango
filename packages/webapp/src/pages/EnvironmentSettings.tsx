@@ -15,6 +15,7 @@ import {
     useEditAlwaysSendWebhookAPI,
     useEditSendAuthWebhookAPI
 } from '../utils/api';
+import IntegrationLogo from '../components/ui/IntegrationLogo';
 import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
@@ -596,7 +597,7 @@ export const EnvironmentSettings: React.FC = () => {
                                 </div>
                                 <div className="">
                                     <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
-                                        <img src={`images/template-logos/slack.svg`} alt="" className="flex h-7 pb-0.5" />
+                                        <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
                                         {slackIsConnected ? 'Disconnect' : 'Connect'}
                                     </Button>
                                 </div>

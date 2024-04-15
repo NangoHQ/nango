@@ -50,6 +50,7 @@ import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
 import type { LogContext } from '@nangohq/logs';
 import { getExistingOperationContext } from '@nangohq/logs';
+import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 
 const logger = getLogger('Connection');
 
@@ -993,6 +994,21 @@ class ConnectionService {
             const error = new NangoError('client_credentials_fetch_error', errorPayload);
             return { success: false, error, response: null };
         }
+    }
+
+    public async shouldCapUsage({ providerConfigKey, environmentId }: { providerConfigKey: string; environmentId: number }): Promise<boolean> {
+        const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+
+        if (!connections) {
+            return false;
+        }
+
+        if (connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+            logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+            return true;
+        }
+
+        return false;
     }
 
     private async getJWTCredentials(
