@@ -211,6 +211,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             `${TABLE}.sync_type`,
             `${TABLE}.metadata`,
             `${TABLE}.input`,
+            `${TABLE}.enabled`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             db.knex.raw(
