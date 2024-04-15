@@ -139,6 +139,15 @@ exa:
         headers:
             x-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/exa
+jotform:
+    categories:
+        - surveys
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.jotform.com
+        headers:
+            APIKEY: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/jotform
 apollo:
     categories:
         - marketing
