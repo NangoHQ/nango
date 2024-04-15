@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ENVS, parseEnvs } from '@nangohq/utils/dist/environment/parse.js';
+import { ENVS, parseEnvs } from '@nangohq/utils';
 
 export const envs = parseEnvs(ENVS.required({ RECORDS_DATABASE_URL: true }));
 

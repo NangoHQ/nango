@@ -5,6 +5,7 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "bundleDependencies": true,
     "scripts": {
         "build": "rimraf ./dist && tsc"
     },
@@ -21,6 +22,10 @@
         "zod": "3.22.4"
     },
     "devDependencies": {
+        "rimraf": "3.0.2",
         "vitest": "1.4.0"
-    }
+    },
+    "files": [
+        "dist/**/*"
+    ]
 }

@@ -10,12 +10,11 @@ import type { Template as ProviderTemplate } from '../models/Provider.js';
 import integrationPostConnectionScript from '../integrations/scripts/connection/connection.manager.js';
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
-import { isCloud, isLocal, isEnterprise } from '../utils/temp/environment/detection.js';
 import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
+import { isCloud, isLocal, isEnterprise, getLogger } from '@nangohq/utils';
 import type { Result } from '../utils/result.js';
 import { resultOk, resultErr } from '../utils/result.js';
 import { NangoError } from '../utils/error.js';
-import { getLogger } from '../utils/temp/logger.js';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 
 const logger = getLogger('hooks');

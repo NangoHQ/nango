@@ -9,6 +9,9 @@
         "build": "rimraf dist && tsc",
         "prepublishOnly": "npm install && npm run build"
     },
+    "bundleDependencies": [
+        "@nangohq/utils"
+    ],
     "keywords": [],
     "repository": {
         "type": "git",
@@ -21,6 +24,7 @@
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
         "@nangohq/node": "^0.39.18",
+        "@nangohq/utils": "file:../utils",
         "@sentry/node": "^7.106.0",
         "@temporalio/client": "^1.9.1",
         "amqplib": "^0.10.3",
@@ -54,8 +58,7 @@
         "semver": "^7.5.4",
         "serialize-error": "11.0.3",
         "simple-oauth2": "^5.0.0",
-        "uuid": "^9.0.0",
-        "winston": "3.8.2"
+        "uuid": "^9.0.0"
     },
     "engines": {
         "node": ">=18.0",
