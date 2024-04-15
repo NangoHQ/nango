@@ -24,7 +24,6 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  cache: 'npm'
                   node-version-file: '.nvmrc'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
