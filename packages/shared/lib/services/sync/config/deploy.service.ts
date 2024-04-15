@@ -690,10 +690,15 @@ async function compileDeployInfo({
     }
 
     const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
+    let lastSyncWasEnabled = true;
 
     if (oldConfigs.length > 0) {
         const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
         idsToMarkAsInvactive.push(...ids);
+        const lastConfig = oldConfigs[oldConfigs.length - 1];
+        if (lastConfig) {
+            lastSyncWasEnabled = lastConfig.enabled;
+        }
 
         if (debug) {
             await createActivityLogMessage({
@@ -724,7 +729,7 @@ async function compileDeployInfo({
         input: flow.input || '',
         sync_type: flow.sync_type,
         webhook_subscriptions: flow.webhookSubscriptions || [],
-        enabled: true
+        enabled: lastSyncWasEnabled
     });
 
     flowReturnData.push({

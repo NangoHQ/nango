@@ -45,9 +45,8 @@ export interface EndpointResponse {
 export default function ShowIntegration() {
     const { providerConfigKey } = useParams();
 
-    const [loaded, setLoaded] = useState(true);
-    const { data, error } = useSWR<{ config: IntegrationConfig; flows: EndpointResponse; error?: string; type?: string }>(
-        `/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true&loaded=${loaded}`
+    const { data, error, mutate } = useSWR<{ config: IntegrationConfig; flows: EndpointResponse; error?: string; type?: string }>(
+        `/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true`
     );
 
     const { data: accountData, error: accountError } = useSWR<{ account: Account }>(`/api/v1/environment`);
@@ -192,7 +191,7 @@ export default function ShowIntegration() {
                                     account={account}
                                     flow={currentFlow}
                                     flowConfig={flowConfig}
-                                    reload={() => setLoaded(!loaded)}
+                                    reload={() => mutate()}
                                     endpoints={endpoints}
                                     setFlow={setCurrentFlow}
                                     setActiveTab={setActiveTab}
@@ -202,7 +201,7 @@ export default function ShowIntegration() {
                                 <Scripts
                                     integration={integration}
                                     endpoints={endpoints}
-                                    reload={() => setLoaded(!loaded)}
+                                    reload={() => mutate()}
                                     setFlow={setCurrentFlow}
                                     setFlowConfig={setFlowConfig}
                                     setSubTab={setSubTab}

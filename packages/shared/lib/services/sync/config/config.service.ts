@@ -485,6 +485,10 @@ export async function disableScriptConfig(id: number, environment_id: number): P
     await schema().from<SyncConfig>(TABLE).where({ id, environment_id, deleted: false }).update({ enabled: false });
 }
 
+export async function enableScriptConfig(id: number, environment_id: number): Promise<void> {
+    await schema().from<SyncConfig>(TABLE).where({ id, environment_id, deleted: false }).update({ enabled: true });
+}
+
 export async function deleteByConfigId(nango_config_id: number): Promise<void> {
     await schema().from<SyncConfig>(TABLE).where({ nango_config_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 }
@@ -622,7 +626,7 @@ export async function getSyncConfigsWithConnections(
  */
 export async function getSyncConfigsByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<SlimSync[]> {
     const result = await schema()
-        .select(`${TABLE}.sync_name as name`, `${TABLE}.id`)
+        .select(`${TABLE}.sync_name as name`, `${TABLE}.id`, `${TABLE}.enabled`)
         .from<SyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({

@@ -126,6 +126,7 @@ export interface SlimSync {
     sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
+    enabled?: boolean;
 }
 
 export interface SlimAction {

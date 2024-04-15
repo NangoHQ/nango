@@ -209,8 +209,10 @@ app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncControl
 app.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
+app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
 app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
-app.route('/api/v1/flow/:id').patch(webAuth, flowController.disableFlow.bind(flowController));
+app.route('/api/v1/flow/:id/disable').patch(webAuth, flowController.disableFlow.bind(flowController));
+app.route('/api/v1/flow/:id/enable').patch(webAuth, flowController.enableFlow.bind(flowController));
 app.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));

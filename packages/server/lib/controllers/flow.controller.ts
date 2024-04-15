@@ -15,6 +15,7 @@ import {
     getNangoConfigIdAndLocationFromId,
     getConfigWithEndpointsByProviderConfigKeyAndName,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
+    enableScriptConfig as enableConfig,
     disableScriptConfig as disableConfig
 } from '@nangohq/shared';
 
@@ -209,6 +210,35 @@ class FlowController {
         }
     }
 
+    public async enableFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { environmentId } = response;
+
+            const id = req.params['id'];
+            const flow = req.body;
+
+            if (!id) {
+                res.status(400).send('Missing id');
+                return;
+            }
+
+            await enableConfig(Number(id), environmentId);
+
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environmentId);
+
+            res.status(200).send([{ ...flow, enabled: true }]);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     public async disableFlow(req: Request, res: Response, next: NextFunction) {
         try {
             const { success, error, response } = await getEnvironmentAndAccountId(res, req);
@@ -223,6 +253,7 @@ class FlowController {
             const id = req.params['id'];
             const connectionIds = req.query['connectionIds'] as string;
             const syncName = req.query['sync_name'] as string;
+            const flow = req.body;
 
             if (!id) {
                 res.status(400).send('Missing id');
@@ -246,7 +277,7 @@ class FlowController {
 
             await disableConfig(Number(id), environmentId);
 
-            res.sendStatus(200);
+            res.send({ ...flow, enabled: false });
         } catch (e) {
             next(e);
         }
