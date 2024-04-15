@@ -23,7 +23,7 @@ COPY package*.json  ./
 
 # Install every dependencies
 RUN true \
-  && npm i
+  && npm ci
 
 # At this stage we copy back all sources
 COPY . /app/tmp

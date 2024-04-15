@@ -17,6 +17,6 @@ COPY packages/runner/ packages/runner/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
 CMD [ "node", "/nango/packages/jobs/dist/app.js" ]
