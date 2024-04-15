@@ -7,6 +7,7 @@ import Spinner from '../../../components/ui/Spinner';
 import type { Flow, Connection } from '../../../types';
 import { useCreateFlow } from '../../../utils/api';
 import type { EndpointResponse } from '../Show';
+import { useStore } from '../../../store';
 
 export interface FlowProps {
     flow: Flow;
@@ -33,8 +34,10 @@ export default function EnableDisableSync({
     setIsEnabling,
     showSpinner
 }: FlowProps) {
+    const env = useStore((state) => state.env);
+
     const { setVisible, bindings } = useModal();
-    const createFlow = useCreateFlow();
+    const createFlow = useCreateFlow(env);
     const connectionIds = connections.map((connection) => connection.id);
 
     const [modalTitle, setModalTitle] = useState('');
@@ -170,7 +173,7 @@ export default function EnableDisableSync({
 
     const onDisableSync = async (flow: Flow) => {
         setModalShowSpinner(true);
-        const res = await fetch(`/api/v1/flow/${flow?.id}?sync_name=${flow.name}&connectionIds=${connectionIds.join(',')}`, {
+        const res = await fetch(`/api/v1/flow/${flow?.id}?env=${env}&sync_name=${flow.name}&connectionIds=${connectionIds.join(',')}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'

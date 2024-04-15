@@ -41,13 +41,13 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const [integrationId, setIntegrationId] = useState(integration?.unique_key || '');
 
     const navigate = useNavigate();
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
 
     const { setVisible, bindings } = useModal();
-    const editIntegrationAPI = useEditIntegrationAPI();
-    const editIntegrationNameAPI = useEditIntegrationNameAPI();
-    const createIntegrationAPI = useCreateIntegrationAPI();
-    const deleteIntegrationAPI = useDeleteIntegrationAPI();
+    const editIntegrationAPI = useEditIntegrationAPI(env);
+    const editIntegrationNameAPI = useEditIntegrationNameAPI(env);
+    const createIntegrationAPI = useCreateIntegrationAPI(env);
+    const deleteIntegrationAPI = useDeleteIntegrationAPI(env);
 
     const onDelete = async () => {
         if (!integration) return;

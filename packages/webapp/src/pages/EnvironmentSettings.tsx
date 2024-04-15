@@ -25,6 +25,8 @@ import Button from '../components/ui/button/Button';
 import { useEnvironment } from '../hooks/useEnvironment';
 
 export const EnvironmentSettings: React.FC = () => {
+    const env = useStore((state) => state.env);
+
     const [secretKey, setSecretKey] = useState('');
     const [secretKeyRotatable, setSecretKeyRotatable] = useState(true);
     const [hasPendingSecretKey, setHasPendingSecretKey] = useState(false);
@@ -49,19 +51,18 @@ export const EnvironmentSettings: React.FC = () => {
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
-    const editCallbackUrlAPI = useEditCallbackUrlAPI();
-    const editWebhookUrlAPI = useEditWebhookUrlAPI();
-    const editHmacEnabled = useEditHmacEnabledAPI();
-    const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI();
-    const editSendAuthWebhook = useEditSendAuthWebhookAPI();
-    const editHmacKey = useEditHmacKeyAPI();
-    const editEnvVariables = useEditEnvVariablesAPI();
+    const editCallbackUrlAPI = useEditCallbackUrlAPI(env);
+    const editWebhookUrlAPI = useEditWebhookUrlAPI(env);
+    const editHmacEnabled = useEditHmacEnabledAPI(env);
+    const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI(env);
+    const editSendAuthWebhook = useEditSendAuthWebhookAPI(env);
+    const editHmacKey = useEditHmacKeyAPI(env);
+    const editEnvVariables = useEditEnvVariablesAPI(env);
 
     const { setVisible, bindings } = useModal();
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
-    const env = useStore((state) => state.cookieValue);
-    const { environment, mutate } = useEnvironment();
+    const { environment, mutate } = useEnvironment(env);
 
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id));
@@ -246,7 +247,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRotateKey = async (publicKey = true) => {
-        const res = await fetch('/api/v1/environment/rotate-key', {
+        const res = await fetch(`/api/v1/environment/rotate-key?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -272,7 +273,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRevertKey = async (publicKey = true) => {
-        const res = await fetch('/api/v1/environment/revert-key', {
+        const res = await fetch(`/api/v1/environment/?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -298,7 +299,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onActivateKey = async (publicKey = true) => {
-        const res = await fetch('/api/v1/environment/activate-key', {
+        const res = await fetch(`/api/v1/environment/activate-key?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -323,7 +324,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const updateSlackNotifications = async (enabled: boolean) => {
-        await fetch('/api/v1/environment/slack-notifications-enabled', {
+        await fetch(`/api/v1/environment/slack-notifications-enabled?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -337,7 +338,7 @@ export const EnvironmentSettings: React.FC = () => {
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
 
-        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}`, {
+        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}?env=${env}`, {
             method: 'DELETE'
         });
 
@@ -353,7 +354,7 @@ export const EnvironmentSettings: React.FC = () => {
     const connectSlack = async () => {
         const connectionId = `account-${accountUUID}`;
 
-        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}`, {
+        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'

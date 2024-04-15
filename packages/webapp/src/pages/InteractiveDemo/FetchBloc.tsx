@@ -89,7 +89,7 @@ export const FetchBloc: React.FC<{
         analyticsTrack('web:demo:fetch');
 
         async function poll() {
-            const res = await fetch(`/api/v1/onboarding/sync-status`, {
+            const res = await fetch(`/api/v1/onboarding/sync-status?env=dev`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ connectionId })

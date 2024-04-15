@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import Button from '../../components/ui/button/Button';
+import { useStore } from '../../store';
 
 export const Admin: React.FC = () => {
+    const env = useStore((state) => state.env);
     const [error, setError] = useState<string | null>(null);
 
     const redirectToAccount = async (e: React.SyntheticEvent) => {
@@ -16,7 +18,7 @@ export const Admin: React.FC = () => {
             login_reason: target.login_reason.value
         };
 
-        const res = await fetch('/api/v1/account/admin/switch', {
+        const res = await fetch(`/api/v1/account/admin/switch?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

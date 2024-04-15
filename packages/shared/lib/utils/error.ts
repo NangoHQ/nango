@@ -127,6 +127,11 @@ export class NangoError extends Error {
                 this.message = 'The requested OAuth scopes are invalid. OAuth scopes should be comma separated and not an array';
                 break;
 
+            case 'invalid_env':
+                this.status = 400;
+                this.message = "Invalid param 'env'";
+                break;
+
             case 'missing_environment_id':
                 this.status = 400;
                 this.message = `Missing param 'environment_id'.`;

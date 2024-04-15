@@ -1,8 +1,8 @@
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { getUserAccountAndEnvironmentFromSession, getUserFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
 import { isCloud, isEnterprise, basePublicUrl } from '@nangohq/utils';
-import { errorManager, userService } from '@nangohq/shared';
+import { errorManager, isErr, userService } from '@nangohq/shared';
 
 export interface GetUser {
     user: {
@@ -16,13 +16,13 @@ export interface GetUser {
 class UserController {
     async getUser(req: Request, res: Response<GetUser>, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
+            const getUser = await getUserFromSession(req);
+            if (isErr(getUser)) {
+                errorManager.errResFromNangoErr(res, getUser.err);
                 return;
             }
-            const { user } = response;
 
+            const user = getUser.res;
             res.status(200).send({
                 user: {
                     id: user.id,
@@ -38,12 +38,13 @@ class UserController {
 
     async editName(req: Request, res: Response, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
+            const getUser = await getUserFromSession(req);
+            if (isErr(getUser)) {
+                errorManager.errResFromNangoErr(res, getUser.err);
                 return;
             }
-            const { user } = response;
+
+            const user = getUser.res;
             const name = req.body['name'];
 
             if (!name) {
@@ -60,12 +61,13 @@ class UserController {
 
     async editPassword(req: Request, res: Response, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
+            const getUser = await getUserFromSession(req);
+            if (isErr(getUser)) {
+                errorManager.errResFromNangoErr(res, getUser.err);
                 return;
             }
-            const { user } = response;
+
+            const user = getUser.res;
             const oldPassword = req.body['old_password'];
             const newPassword = req.body['new_password'];
 

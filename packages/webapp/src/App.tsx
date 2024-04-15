@@ -43,7 +43,7 @@ Sentry.init({
 
 const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
     const signout = useSignout();
     const setShowInteractiveDemo = useStore((state) => state.setShowInteractiveDemo);
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
