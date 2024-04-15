@@ -77,13 +77,6 @@ jobs:
             contents: read
             packages: write
         steps:
-            - uses: actions/setup-node@v4
-              with:
-                  cache: 'npm'
-                  node-version: '20.12.2'
-                  registry-url: 'https://npm.pkg.github.com'
-                  scope: '@nangohq'
-                  always-auth: true
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
