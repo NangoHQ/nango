@@ -252,7 +252,7 @@ export class Nango {
      * Retrieves metadata for a given provider configuration key and connection ID
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param connectionId - The ID of the connection for which to retrieve metadata
-     * @throws If providerConfigKey or connectionId is missing
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves with the retrieved metadata
      */
     public async getMetadata<T = Metadata>(providerConfigKey: string, connectionId: string): Promise<T> {
@@ -277,7 +277,7 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param connectionId - The ID of the connection for which to set metadata
      * @param metadata - The custom metadata to set
-     * @throws If providerConfigKey, connectionId, or metadata is missing
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves with the Axios response from the server
      */
     public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
@@ -307,7 +307,7 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param connectionId - The ID of the connection for which to update metadata
      * @param metadata - The custom metadata to update
-     * @throws If providerConfigKey, connectionId, or metadata is missing
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves with the Axios response from the server
      */
     public async updateMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
@@ -463,7 +463,7 @@ export class Nango {
      * @param syncs - An optional array of sync names to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
      * @param fullResync - An optional flag indicating whether to perform a full resynchronization. Default is false
-     * @throws If syncs is provided but not an empty array or array of strings, or if a string is provided instead of an array
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves when the sync trigger request is sent
      */
     public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string, fullResync?: boolean): Promise<void> {
@@ -488,7 +488,7 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names to start. If empty, all applicable syncs will be started
      * @param connectionId - An optional ID of the connection for which to start the syncs. If not provided, syncs will be started for all applicable connections
-     * @throws If providerConfigKey or syncs are not provided or syncs is provided but not an empty array or array of strings
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves when the sync start request is sent
      */
     public async startSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
@@ -520,7 +520,7 @@ export class Nango {
      * @param providerConfigKey -The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names to pause. If empty, all applicable syncs will be paused
      * @param connectionId - An optional ID of the connection for which to pause the syncs. If not provided, syncs will be paused for all applicable connections
-     * @throws If providerConfigKey or syncs are not provided or syncs is provided but not an empty array or array of strings
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves when the sync pause request is sent
      */
     public async pauseSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
@@ -552,7 +552,7 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An array of sync names to get status for, or '*' to get status for all syncs
      * @param connectionId - An optional ID of the connection for which to get sync status. If not provided, status for all applicable connections will be retrieved
-     * @throws If providerConfigKey or sync are not provided or if syncs provided are not a string array or '*'
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves with the status of the specified sync(s)
      */
     public async syncStatus(providerConfigKey: string, syncs: '*' | string[], connectionId?: string): Promise<SyncStatusResponse> {
@@ -587,7 +587,7 @@ export class Nango {
      * @param sync - The name of the sync to update
      * @param connectionId - The ID of the connection for which to update the sync frequency
      * @param frequency - The new frequency to set for the sync, or null to revert to the default frequency
-     * @throws If providerConfigKey, sync, or connectionId are not provided, or if frequency is not a string or null
+     * @throws A rejected promise in case of an error
      * @returns A promise that resolves with the response data after updating the sync frequency
      */
     public async updateSyncConnectionFrequency(
