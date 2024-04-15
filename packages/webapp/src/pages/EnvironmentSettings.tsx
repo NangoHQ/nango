@@ -41,7 +41,6 @@ export const EnvironmentSettings: React.FC = () => {
     const [webhookEditMode, setWebhookEditMode] = useState(false);
 
     const [slackIsConnected, setSlackIsConnected] = useState(false);
-    const [githubAppIsConnected, setGithubAppIsConnected] = useState(false);
 
     const [hmacKey, setHmacKey] = useState('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
@@ -380,64 +379,12 @@ export const EnvironmentSettings: React.FC = () => {
                 await updateSlackNotifications(true);
                 setSlackIsConnected(true);
                 // TODO
-                setGithubAppIsConnected(false);
                 toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 void mutate();
             })
             .catch((err: { message: string; type: string }) => {
                 console.log(err);
             });
-    };
-
-    const connectGithubApp = async () => {
-        const connectionId = `account-${accountUUID}`;
-
-        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (res?.status !== 200) {
-            toast.error('Something went wrong during the lookup for the Github App connect', { position: toast.POSITION.BOTTOM_CENTER });
-            return;
-        }
-
-        const authResponse = await res.json();
-        const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
-
-        const nango = new Nango({ host: hostUrl, publicKey });
-        nango
-            .auth(integrationKey, connectionId, {
-                user_scope: [],
-                params: {},
-                hmac: hmacDigest
-            })
-            .then(async () => {
-                setGithubAppIsConnected(true);
-                // TODO
-                setSlackIsConnected(false);
-                toast.success('Github App connection created!', { position: toast.POSITION.BOTTOM_CENTER });
-                void mutate();
-            })
-            .catch((err: { message: string; type: string }) => {
-                console.log(err);
-            });
-    };
-
-    const disconnectGithubApp = async () => {
-        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}`, {
-            method: 'DELETE'
-        });
-
-        if (res?.status !== 204) {
-            toast.error('There was a problem when disconnecting Github App', { position: toast.POSITION.BOTTOM_CENTER });
-        } else {
-            toast.success('Github App was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
-            setGithubAppIsConnected(false);
-            void mutate();
-        }
     };
 
     return (
@@ -653,36 +600,6 @@ export const EnvironmentSettings: React.FC = () => {
                                     <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
                                         <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
                                         {slackIsConnected ? 'Disconnect' : 'Connect'}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                        {env === 'dev' && (
-                            <div className="flex items-center justify-between mx-8 mt-8">
-                                <div>
-                                    <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
-                                        Github App
-                                        <Tooltip
-                                            text={
-                                                <div className="flex text-black text-sm">
-                                                    {githubAppIsConnected
-                                                        ? 'Stop on nango-integrations push automatically deploy your integrations.'
-                                                        : 'On nango-integrations push automatically deploy your integrations.'}
-                                                </div>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                    </label>
-                                </div>
-                                <div className="">
-                                    <Button
-                                        className="flex items-center"
-                                        variant="primary"
-                                        onClick={githubAppIsConnected ? disconnectGithubApp : connectGithubApp}
-                                    >
-                                        <IntegrationLogo provider="github" height={6} width={6} classNames="" />
-                                        {githubAppIsConnected ? 'Disconnect' : 'Connect'}
                                     </Button>
                                 </div>
                             </div>

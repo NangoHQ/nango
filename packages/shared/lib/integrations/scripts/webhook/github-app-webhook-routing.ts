@@ -31,8 +31,5 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         }
     }
 
-    console.log('received webhook');
-    console.log(body);
-
     return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
 }
