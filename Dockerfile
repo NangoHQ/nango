@@ -1,7 +1,7 @@
 # ------------------
 # New tmp image
 # ------------------
-FROM node:18.19.1-bullseye-slim AS build
+FROM node:20.12.2-bullseye-slim AS build
 
 # Setup the app WORKDIR
 WORKDIR /app/tmp
@@ -15,6 +15,7 @@ COPY packages/persist/package.json ./packages/persist/package.json
 COPY packages/runner/package.json ./packages/runner/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
+COPY packages/utils/package.json ./packages/utils/package.json
 COPY packages/webapp/package.json ./packages/webapp/package.json
 COPY packages/data-ingestion/package.json ./packages/data-ingestion/package.json
 COPY packages/logs/package.json ./packages/logs/package.json
@@ -61,7 +62,7 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:18.19.1-bullseye-slim as web
+FROM node:20.12.2-bullseye-slim as web
 
 
 # - Bash is just to be able to log inside the image and have a decent shell
