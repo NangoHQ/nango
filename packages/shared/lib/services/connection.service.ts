@@ -220,7 +220,7 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            await connectionCreatedHook(
+            void connectionCreatedHook(
                 {
                     id: importedConnection?.id,
                     connection_id,
@@ -254,7 +254,7 @@ class ConnectionService {
         const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            await connectionCreatedHook(
+            void connectionCreatedHook(
                 {
                     id: importedConnection.id,
                     connection_id,
@@ -885,7 +885,7 @@ class ConnectionService {
         );
 
         if (updatedConnection) {
-            await connectionCreatedHook(
+            void connectionCreatedHook(
                 {
                     id: updatedConnection.id,
                     connection_id: connectionId,
