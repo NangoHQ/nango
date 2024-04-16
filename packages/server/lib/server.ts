@@ -137,25 +137,26 @@ app.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController
 
 app.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
-// Webapp routes (no auth).
-if (AUTH_ENABLED) {
-    app.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
-    app.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
-    app.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
-    app.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
-    app.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
-    app.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
-}
-
-if (MANAGED_AUTH_ENABLED) {
-    app.route('/api/v1/managed/signup').post(rateLimiterMiddleware, authController.getManagedLogin.bind(authController));
-    app.route('/api/v1/managed/signup/:token').post(rateLimiterMiddleware, authController.getManagedLoginWithInvite.bind(authController));
-    app.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
-}
-
 // Webapp routes (session auth).
 const web = express.Router();
 setupAuth(web);
+
+// Webapp routes (no auth).
+if (AUTH_ENABLED) {
+    web.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
+    web.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
+    web.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
+    web.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
+    web.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
+    web.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+}
+
+if (MANAGED_AUTH_ENABLED) {
+    web.route('/api/v1/managed/signup').post(rateLimiterMiddleware, authController.getManagedLogin.bind(authController));
+    web.route('/api/v1/managed/signup/:token').post(rateLimiterMiddleware, authController.getManagedLoginWithInvite.bind(authController));
+    web.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
+}
+
 web.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
 web.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 web.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
