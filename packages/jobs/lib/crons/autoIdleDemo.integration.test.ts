@@ -16,7 +16,7 @@ import {
     DEMO_SYNC_NAME
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
-import { nanoid } from 'nanoid';
+import { nanoid } from '@nangohq/utils';
 
 describe('Auto Idle Demo', async () => {
     let env: Environment;

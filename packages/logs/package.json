@@ -13,7 +13,6 @@
     "dependencies": {
         "@elastic/elasticsearch": "8.12.2",
         "@nangohq/utils": "file:../utils",
-        "nanoid": "5.0.7",
         "zod": "3.22.4"
     },
     "devDependencies": {
