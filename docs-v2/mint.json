@@ -281,6 +281,7 @@
                         "integrations/integration-templates/hubspot",
                         "integrations/integration-templates/intercom",
                         "integrations/integration-templates/jira",
+                        "integrations/integration-templates/kustomer",
                         "integrations/integration-templates/lever",
                         "integrations/integration-templates/linear",
                         "integrations/integration-templates/microsoft-active-directory",
@@ -382,6 +383,7 @@
                         "integrations/all/jira",
                         "integrations/all/keap",
                         "integrations/all/klaviyo",
+                        "integrations/all/kustomer",
                         "integrations/all/lever",
                         "integrations/all/linear",
                         "integrations/all/linkedin",
@@ -558,7 +560,8 @@
                         "reference/sdks/php"
                     ],
                     "icon": "cubes"
-                }
+                },
+                "reference/limits"
             ]
         },
         {

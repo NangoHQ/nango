@@ -1107,6 +1107,17 @@ klaviyo:
         headers:
             Authorization: Klaviyo-API-Key ${apiKey}
     docs: https://docs.nango.dev/integrations/all/klaviyo
+kustomer:
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.extension}.kustomerapp.com
+        retry:
+            after: 'x-ratelimit-reset'
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/kustomer
 lever:
     categories:
         - ats

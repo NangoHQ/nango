@@ -13,7 +13,8 @@ export function getRunnerClient(url: string): ProxyAppRouter {
         links: [
             httpBatchLink({
                 url,
-                fetch(url: string, options: RequestInit) {
+                // @ts-expect-error type discrepancy between undici and node and trpc
+                fetch(url: string, options?: RequestInit) {
                     return fetch(url, {
                         ...options,
                         dispatcher: new Agent({
