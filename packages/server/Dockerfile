@@ -17,6 +17,6 @@ COPY packages/utils/ packages/utils/
 COPY packages/node-client/ packages/node-client/
 
 RUN npm pkg delete scripts.prepare
-RUN npm ci --omit=dev
+RUN npm install
 
 CMD [ "node", "packages/server/dist/server.js" ]
