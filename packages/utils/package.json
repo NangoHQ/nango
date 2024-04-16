@@ -17,6 +17,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "nanoid": "5.0.7",
         "winston": "3.8.2",
         "serialize-error": "11.0.3",
         "zod": "3.22.4"
