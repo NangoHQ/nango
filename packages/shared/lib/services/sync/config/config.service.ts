@@ -482,12 +482,12 @@ export async function deleteSyncConfig(id: number): Promise<void> {
     });
 }
 
-export async function disableScriptConfig(id: number, environment_id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id, environment_id, deleted: false }).update({ enabled: false });
+export async function disableScriptConfig(id: number): Promise<void> {
+    await schema().from<SyncConfig>(TABLE).where({ id }).update({ enabled: false });
 }
 
-export async function enableScriptConfig(id: number, environment_id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id, environment_id, deleted: false }).update({ enabled: true });
+export async function enableScriptConfig(id: number): Promise<void> {
+    await schema().from<SyncConfig>(TABLE).where({ id }).update({ enabled: true });
 }
 
 export async function deleteByConfigId(nango_config_id: number): Promise<void> {

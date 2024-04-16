@@ -229,7 +229,7 @@ class FlowController {
                 return;
             }
 
-            await enableConfig(Number(id), environmentId);
+            await enableConfig(Number(id));
 
             await syncOrchestrator.triggerIfConnectionsExist([flow], environmentId);
 
@@ -275,7 +275,7 @@ class FlowController {
                 }
             }
 
-            await disableConfig(Number(id), environmentId);
+            await disableConfig(Number(id));
 
             res.send({ ...flow, enabled: false });
         } catch (e) {
