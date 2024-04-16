@@ -560,7 +560,8 @@
                         "reference/sdks/php"
                     ],
                     "icon": "cubes"
-                }
+                },
+                "reference/limits"
             ]
         },
         {
