@@ -1,0 +1,35 @@
+---
+title: Kustomer
+sidebarTitle: Kustomer
+---
+
+API configuration: [`kustomer`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Generate an API key in your kustomer account](https://par-yumaai-regan.kustomerapp.com/app/settings/api_keys)
+-   [kustomer API docs](https://developer.kustomer.com/)
+-   [Authentication and API key](https://developer.kustomer.com/kustomer-api-docs/reference/authentication)
+-   [API rate limits](https://developer.kustomer.com/kustomer-api-docs/reference/rate-limiting)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- kustomer uses API_KEY auth mode with Authorization: Bearer `api_key` in the request header to access different endpoints.
+- Depending on the pricing plan, there are various rate limits.
+- kustomer uses different domain extensions for different regions, i.e `api` for US Hosted Customers. For EU based clients, add `api.prod2` as your extension.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/kustomer.mdx)</Note>

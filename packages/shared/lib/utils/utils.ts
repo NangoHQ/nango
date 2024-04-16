@@ -273,7 +273,7 @@ export function getAccount(res: Response): number {
     const accountId = res.locals[accountIdLocalsKey];
 
     if (Number.isInteger(accountId)) {
-        return accountId;
+        return accountId as number;
     } else {
         throw new NangoError('account_malformed_in_locals');
     }
@@ -287,7 +287,7 @@ export function getEnvironmentId(res: Response): number {
     const environmentId = res.locals[environmentIdLocalsKey];
 
     if (Number.isInteger(environmentId)) {
-        return environmentId;
+        return environmentId as number;
     } else {
         throw new NangoError('environment_malformed_in_locals');
     }
@@ -308,9 +308,8 @@ export async function getEnvironmentAndAccountId(
     } else {
         const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
-
         const response = { accountId, environmentId, isWeb: false };
-        return Promise.resolve({ response, error: null, success: true });
+        return { response, error: null, success: true };
     }
 }
 
