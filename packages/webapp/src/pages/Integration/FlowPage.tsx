@@ -62,7 +62,9 @@ export default function FlowPage(props: FlowPageProps) {
             name: flow?.name,
             provider: integration.provider,
             is_public: flow?.is_public,
-            public_route: flowConfig?.rawName || integration.provider
+            public_route: flowConfig?.rawName || integration.provider,
+            providerConfigKey: integration.unique_key,
+            flowType: flow?.type
         };
 
         const response = await fetch('/api/v1/flow/download', {

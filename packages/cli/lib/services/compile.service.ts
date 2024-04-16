@@ -4,6 +4,7 @@ import { glob } from 'glob';
 import chalk from 'chalk';
 import path from 'path';
 import { SyncConfigType, localFileService } from '@nangohq/shared';
+import type { StandardNangoConfig } from '@nangohq/shared';
 
 import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
@@ -50,21 +51,21 @@ class CompileService {
             printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
         }
 
-        let scriptDirectory = process.cwd();
-        if (scriptName && providerConfigKey && type) {
-            scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type });
-        }
-
-        const integrationFiles = listFilesToCompile({ scriptName, cwd: scriptDirectory });
-        console.log(integrationFiles);
-        let success = true;
-
         const { success: loadSuccess, error, response: config } = await configService.load('', debug);
 
         if (!loadSuccess || !config) {
             console.log(chalk.red(error?.message));
             throw new Error('Error loading config');
         }
+
+        let scriptDirectory = process.cwd();
+        if (scriptName && providerConfigKey && type) {
+            scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type });
+            console.log(chalk.green(`Compiling ${scriptName}.ts in ${scriptDirectory}`));
+        }
+
+        const integrationFiles = listFilesToCompile({ scriptName, cwd: scriptDirectory, config });
+        let success = true;
 
         const modelNames = configService.getModelNames(config);
 
@@ -109,24 +110,34 @@ export interface ListedFile {
 }
 
 export function getFileToCompile(filePath: string): ListedFile {
-    console.log(filePath);
-    // TOOD why this?
-    //if (!filePath.startsWith('./')) {
-    //filePath = `./${filePath}`;
-    //}
     return {
         inputPath: filePath,
-        //outputPath: filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`),
-        // TODO this should be less dynamic
-        outputPath: filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`),
+        outputPath: './dist/' + path.basename(filePath, '.ts') + '.js',
         baseName: path.basename(filePath, '.ts')
     };
 }
-export function listFilesToCompile({ cwd, scriptName }: { cwd?: string; scriptName?: string | undefined } = {}): ListedFile[] {
-    console.log(cwd);
-    console.log(process.cwd());
-    const files = scriptName ? [`${cwd || process.cwd()}/${scriptName}.ts`] : glob.sync(`./*.ts`, { dotRelative: true, cwd: cwd || process.cwd() });
-    console.log(files);
+
+export function listFilesToCompile({
+    cwd,
+    scriptName,
+    config
+}: { cwd?: string; scriptName?: string | undefined; config?: StandardNangoConfig[] } = {}): ListedFile[] {
+    let files: string[] = [];
+    console.log(cwd, scriptName);
+    if (scriptName) {
+        files = [`${cwd || process.cwd()}/${scriptName}.ts`];
+    } else {
+        files = glob.sync(`${cwd || process.cwd()}/**/*.ts`);
+
+        if (config) {
+            config.forEach((providerConfig) => {
+                const syncPath = `${providerConfig.providerConfigKey}/syncs`;
+                const actionPath = `${providerConfig.providerConfigKey}/actions`;
+
+                files = [...files, ...glob.sync(`${cwd || process.cwd()}/${syncPath}/**/*.ts`), ...glob.sync(`${cwd || process.cwd()}/${actionPath}/**/*.ts`)];
+            });
+        }
+    }
 
     return files.map((filePath) => {
         return getFileToCompile(filePath);

@@ -208,10 +208,12 @@ class RemoteFileService {
         accountId: number,
         environmentId: number,
         nangoConfigId: number,
-        file_location: string
+        file_location: string,
+        providerConfigKey: string,
+        flowType: string
     ): Promise<void> {
         if (!isCloud && !useS3) {
-            return localFileService.zipAndSendFiles(res, integrationName, accountId, environmentId, nangoConfigId);
+            return localFileService.zipAndSendFiles(res, integrationName, accountId, environmentId, nangoConfigId, providerConfigKey, flowType);
         } else {
             const nangoConfigLocation = file_location.split('/').slice(0, -3).join('/');
             const { success, error, response: nangoYaml } = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
