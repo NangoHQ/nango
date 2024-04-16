@@ -25,12 +25,11 @@ import {
     DEMO_ACTION_NAME,
     createActivityLog,
     LogActionEnum,
-    isErr,
     analytics,
     AnalyticsTypes
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, isErr } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 const logger = getLogger('Server.Onboarding');

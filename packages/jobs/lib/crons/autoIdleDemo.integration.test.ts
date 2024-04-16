@@ -11,12 +11,11 @@ import {
     createSchedule,
     ScheduleStatus,
     SyncClient,
-    resultOk,
     DEMO_GITHUB_CONFIG_KEY,
     DEMO_SYNC_NAME
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
-import { nanoid } from '@nangohq/utils';
+import { nanoid, resultOk } from '@nangohq/utils';
 
 describe('Auto Idle Demo', async () => {
     let env: Environment;
