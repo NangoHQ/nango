@@ -32,7 +32,21 @@ type ExtendedFlow = ExtendedPreBuiltFlow &
     Pick<Flow, 'sync_type' | 'track_deletes' | 'scopes' | 'input' | 'returns' | 'endpoints' | 'is_public' | 'output' | 'pre_built'> &
     Pick<Sync, 'metadata'>;
 
-export default function EnableDisableSync({ flow, provider, providerConfigKey, reload, rawName, connections, setIsEnabling, showSpinner }: FlowProps) {
+export default function EnableDisableSync({
+    flow,
+    endpoints,
+    provider,
+    providerConfigKey,
+    reload,
+    rawName,
+    connections,
+    setIsEnabling,
+    showSpinner
+}: FlowProps) {
+    const syncs = endpoints?.allFlows?.syncs;
+    const actions = endpoints?.allFlows?.actions;
+    const currentFlow = flow.type === 'sync' ? syncs?.find((sync) => sync.name === flow.name) : actions?.find((action) => action.name === flow.name);
+    console.log(currentFlow);
     const { setVisible, bindings } = useModal();
     const createFlow = useCreateFlow();
     const connectionIds = connections.map((connection) => connection.connection_id);
@@ -46,7 +60,7 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
     const [modalAction, setModalAction] = useState<(() => void) | null>(null);
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [modalTitleColor, setModalTitleColor] = useState('text-white');
-    const [enabled, setEnabled] = useState(flow?.enabled);
+    const [enabled, setEnabled] = useState(currentFlow ? currentFlow.enabled : flow?.enabled);
 
     const resetModal = () => {
         setModalTitle('');
