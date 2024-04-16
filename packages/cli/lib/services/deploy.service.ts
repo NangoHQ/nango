@@ -289,7 +289,7 @@ class DeployService {
                     type,
                     fileBody: {
                         js: localFileService.getIntegrationFile(syncName, './') as string,
-                        ts: localFileService.getIntegrationTsFile(syncName, './') as string
+                        ts: localFileService.getIntegrationTsFile(syncName, providerConfigKey, type) as string
                     },
                     model_schema: JSON.stringify(model_schema),
                     endpoints: flow.endpoints,
