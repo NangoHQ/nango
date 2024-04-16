@@ -19,7 +19,7 @@ const sessionStore = new KnexSessionStore({
     sidfieldname: 'sid'
 });
 
-export function setupAuth(app: express.Express) {
+export function setupAuth(app: express.Router) {
     app.use(cookieParser());
     app.use(express.static(path.join(dirname(), 'public')));
 
