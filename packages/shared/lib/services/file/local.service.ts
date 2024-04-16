@@ -105,14 +105,12 @@ class LocalFileService {
     }
 
     public resolveTsFileLocation({ scriptName, providerConfigKey, type }: { scriptName: string; providerConfigKey: string; type: string }) {
-        const filePath = `./${scriptName}.ts`;
-
         const nestedPath = path.resolve(`./${providerConfigKey}/${type}s/${scriptName}.ts`);
         if (fs.existsSync(nestedPath)) {
             return fs.realpathSync(path.resolve(nestedPath, '../'));
         }
 
-        return fs.realpathSync(filePath);
+        return fs.realpathSync('./');
     }
 
     // TODO this is wrong
