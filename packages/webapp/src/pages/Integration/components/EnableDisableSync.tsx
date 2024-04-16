@@ -128,7 +128,7 @@ export default function EnableDisableSync({ flow, provider, providerConfigKey, r
                 setModalOkButtonTitle('Upgrade');
                 setModalCancelButtonTitle('Learn more');
                 setModalOkButtonLink('https://nango.dev/chat');
-                setModalCancelButtonLink('https://docs.nango.dev/REPLACE-ME');
+                setModalCancelButtonLink('https://docs.nango.dev/reference/limits');
                 setVisible(true);
 
                 return;
