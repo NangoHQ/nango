@@ -31,6 +31,7 @@ npm ci
 # Utils
 mkdir -p "$GIT_ROOT_DIR/packages/shared/vendor"
 pushd "$GIT_ROOT_DIR/packages/utils"
+jq '.bundleDependencies = true' package.json > temp.json && mv temp.json package.json
 npm install --workspaces=false
 npm run build
 npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
