@@ -5,15 +5,12 @@ import util from 'util';
 import { resetPasswordSecret, getUserFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
-import type { User, Result } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl, getLogger } from '@nangohq/utils';
+import type { User } from '@nangohq/shared';
+import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
 import {
     userService,
     accountService,
     errorManager,
-    isOk,
-    resultOk,
-    resultErr,
     ErrorSourceEnum,
     environmentService,
     analytics,

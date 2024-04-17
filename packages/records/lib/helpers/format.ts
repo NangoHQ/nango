@@ -3,8 +3,7 @@ import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import type { FormattedRecord, UnencryptedRecordData } from '../types.js';
-import { NangoError, resultErr, resultOk } from '@nangohq/shared';
-import type { Result } from '@nangohq/shared';
+import { resultErr, resultOk, type Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -31,7 +30,7 @@ export const formatRecords = (
         }
 
         if (!datum['id']) {
-            const error = new NangoError('missing_id_field', model);
+            const error = new Error(`Missing id field in record: ${JSON.stringify(datum)}. Model: ${model}`);
             return resultErr(error);
         }
 
