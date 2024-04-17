@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const ENVS = z.object({
     // Node ecosystem
-    NODE_ENV: z.enum(['production', 'development', 'test']).default('development'),
+    NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
     CI: z.coerce.boolean().default(false),
     VITEST: z.coerce.boolean().default(false),
     TZ: z.string().default('UTC'),
@@ -34,7 +34,7 @@ export const ENVS = z.object({
     // Runner
     RUNNER_SERVICE_URL: z.string().url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
-    RUNNER_OWNER_ID: z.coerce.number().optional(),
+    RUNNER_OWNER_ID: z.string().optional(),
     RUNNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
 

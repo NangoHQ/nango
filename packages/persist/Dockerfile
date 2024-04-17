@@ -12,6 +12,7 @@ COPY packages/node-client/ packages/node-client/
 COPY packages/shared/ packages/shared/
 COPY packages/persist/ packages/persist/
 COPY packages/utils/ packages/utils/
+COPY packages/records/ packages/records/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare
