@@ -1,18 +1,17 @@
 import { create } from 'zustand';
-import Cookies from 'js-cookie';
 
 interface Env {
     name: string;
 }
 
 interface State {
-    cookieValue: string;
+    env: string;
     baseUrl: string;
     envs: Env[];
     email: string;
     showInteractiveDemo: boolean;
     debugMode: boolean;
-    setCookieValue: (value: string) => void;
+    setEnv: (value: string) => void;
     setEnvs: (envs: Env[]) => void;
     setBaseUrl: (value: string) => void;
     setEmail: (value: string) => void;
@@ -21,24 +20,19 @@ interface State {
 }
 
 export const useStore = create<State>((set, get) => ({
-    cookieValue: Cookies.get('env') || 'dev',
+    env: 'dev',
     envs: [{ name: 'dev' }, { name: 'prod' }],
     baseUrl: 'https://api.nango.dev',
     email: '',
     showInteractiveDemo: true,
     debugMode: false,
 
-    setCookieValue: (value) => {
-        Cookies.set('env', value);
-        set({ cookieValue: value });
+    setEnv: (value) => {
+        set({ env: value });
     },
 
     setEnvs: (envs: Env[]) => {
         set({ envs });
-    },
-
-    getCookieValue: () => {
-        return get().cookieValue;
     },
 
     getEnvs: () => {

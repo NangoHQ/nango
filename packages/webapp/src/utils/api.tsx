@@ -97,7 +97,7 @@ export function useHostedSigninAPI() {
     };
 }
 
-export function useEditCallbackUrlAPI() {
+export function useEditCallbackUrlAPI(env: string) {
     const signout = useSignout();
 
     return async (callbackUrl: string) => {
@@ -108,7 +108,7 @@ export function useEditCallbackUrlAPI() {
                 body: JSON.stringify({ callback_url: callbackUrl })
             };
 
-            const res = await fetch('/api/v1/environment/callback', options);
+            const res = await fetch(`/api/v1/environment/callback?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -125,7 +125,7 @@ export function useEditCallbackUrlAPI() {
     };
 }
 
-export function useEditHmacEnabledAPI() {
+export function useEditHmacEnabledAPI(env: string) {
     const signout = useSignout();
 
     return async (hmacEnabled: boolean) => {
@@ -136,7 +136,7 @@ export function useEditHmacEnabledAPI() {
                 body: JSON.stringify({ hmac_enabled: hmacEnabled })
             };
 
-            const res = await fetch('/api/v1/environment/hmac-enabled', options);
+            const res = await fetch(`/api/v1/environment/hmac-enabled?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -153,7 +153,7 @@ export function useEditHmacEnabledAPI() {
     };
 }
 
-export function useEditAlwaysSendWebhookAPI() {
+export function useEditAlwaysSendWebhookAPI(env: string) {
     const signout = useSignout();
 
     return async (alwaysSendWebhook: boolean) => {
@@ -164,7 +164,7 @@ export function useEditAlwaysSendWebhookAPI() {
                 body: JSON.stringify({ always_send_webhook: alwaysSendWebhook })
             };
 
-            const res = await fetch('/api/v1/environment/webhook-send', options);
+            const res = await fetch(`/api/v1/environment/webhook-send?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -181,7 +181,7 @@ export function useEditAlwaysSendWebhookAPI() {
     };
 }
 
-export function useEditSendAuthWebhookAPI() {
+export function useEditSendAuthWebhookAPI(env: string) {
     const signout = useSignout();
 
     return async (sendAuthWebhook: boolean) => {
@@ -192,7 +192,7 @@ export function useEditSendAuthWebhookAPI() {
                 body: JSON.stringify({ send_auth_webhook: sendAuthWebhook })
             };
 
-            const res = await fetch('/api/v1/environment/webhook-auth-send', options);
+            const res = await fetch(`/api/v1/environment/webhook-auth-send?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -209,7 +209,7 @@ export function useEditSendAuthWebhookAPI() {
     };
 }
 
-export function useEditHmacKeyAPI() {
+export function useEditHmacKeyAPI(env: string) {
     const signout = useSignout();
 
     return async (hmacKey: string) => {
@@ -220,7 +220,7 @@ export function useEditHmacKeyAPI() {
                 body: JSON.stringify({ hmac_key: hmacKey })
             };
 
-            const res = await fetch('/api/v1/environment/hmac-key', options);
+            const res = await fetch(`/api/v1/environment/hmac-key?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -237,7 +237,7 @@ export function useEditHmacKeyAPI() {
     };
 }
 
-export function useEditEnvVariablesAPI() {
+export function useEditEnvVariablesAPI(env: string) {
     const signout = useSignout();
 
     return async (envVariables: Record<string, string>[]) => {
@@ -248,7 +248,7 @@ export function useEditEnvVariablesAPI() {
                 body: JSON.stringify(envVariables)
             };
 
-            const res = await fetch('/api/v1/environment/environment-variables', options);
+            const res = await fetch(`/api/v1/environment/environment-variables?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -265,7 +265,7 @@ export function useEditEnvVariablesAPI() {
     };
 }
 
-export function useEditWebhookUrlAPI() {
+export function useEditWebhookUrlAPI(env: string) {
     const signout = useSignout();
 
     return async (webhookUrl: string) => {
@@ -276,7 +276,7 @@ export function useEditWebhookUrlAPI() {
                 body: JSON.stringify({ webhook_url: webhookUrl })
             };
 
-            const res = await fetch('/api/v1/environment/webhook', options);
+            const res = await fetch(`/api/v1/environment/webhook?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -293,12 +293,12 @@ export function useEditWebhookUrlAPI() {
     };
 }
 
-export function useGetIntegrationListAPI() {
+export function useGetIntegrationListAPI(env: string) {
     const signout = useSignout();
 
     return async () => {
         try {
-            const res = await fetch('/api/v1/integration', { headers: getHeaders() });
+            const res = await fetch(`/api/v1/integration?env=${env}`, { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -315,12 +315,12 @@ export function useGetIntegrationListAPI() {
     };
 }
 
-export function useGetIntegrationDetailsAPI() {
+export function useGetIntegrationDetailsAPI(env: string) {
     const signout = useSignout();
 
     return async (providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?include_creds=true`, {
+            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}&include_creds=true`, {
                 headers: getHeaders()
             });
 
@@ -339,7 +339,7 @@ export function useGetIntegrationDetailsAPI() {
     };
 }
 
-export function useCreateIntegrationAPI() {
+export function useCreateIntegrationAPI(env: string) {
     const signout = useSignout();
 
     return async (
@@ -368,7 +368,7 @@ export function useCreateIntegrationAPI() {
                 })
             };
 
-            const res = await fetch('/api/v1/integration', options);
+            const res = await fetch(`/api/v1/integration?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -381,7 +381,7 @@ export function useCreateIntegrationAPI() {
     };
 }
 
-export function useCreateEmptyIntegrationAPI() {
+export function useCreateEmptyIntegrationAPI(env: string) {
     const signout = useSignout();
 
     return async (provider: string) => {
@@ -394,7 +394,7 @@ export function useCreateEmptyIntegrationAPI() {
                 })
             };
 
-            const res = await fetch('/api/v1/integration/new', options);
+            const res = await fetch(`/api/v1/integration/new?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -407,7 +407,7 @@ export function useCreateEmptyIntegrationAPI() {
     };
 }
 
-export function useEditIntegrationAPI() {
+export function useEditIntegrationAPI(env: string) {
     const signout = useSignout();
 
     return async (
@@ -436,7 +436,7 @@ export function useEditIntegrationAPI() {
                 })
             };
 
-            const res = await fetch('/api/v1/integration', options);
+            const res = await fetch(`/api/v1/integration?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -453,7 +453,7 @@ export function useEditIntegrationAPI() {
     };
 }
 
-export function useEditIntegrationNameAPI() {
+export function useEditIntegrationNameAPI(env: string) {
     const signout = useSignout();
 
     return async (providerConfigKey: string, name: string) => {
@@ -467,7 +467,7 @@ export function useEditIntegrationNameAPI() {
                 })
             };
 
-            const res = await fetch(`/api/v1/integration/name`, options);
+            const res = await fetch(`/api/v1/integration/name?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -480,12 +480,12 @@ export function useEditIntegrationNameAPI() {
     };
 }
 
-export function useDeleteIntegrationAPI() {
+export function useDeleteIntegrationAPI(env: string) {
     const signout = useSignout();
 
     return async (providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}`, {
+            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}`, {
                 headers: getHeaders(),
                 method: 'DELETE'
             });
@@ -505,12 +505,12 @@ export function useDeleteIntegrationAPI() {
     };
 }
 
-export function useGetProvidersAPI() {
+export function useGetProvidersAPI(env: string) {
     const signout = useSignout();
 
     return async () => {
         try {
-            const res = await fetch('/api/v1/provider', { headers: getHeaders() });
+            const res = await fetch(`/api/v1/provider?env=${env}`, { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -527,12 +527,12 @@ export function useGetProvidersAPI() {
     };
 }
 
-export function useGetConnectionListAPI() {
+export function useGetConnectionListAPI(env: string) {
     const signout = useSignout();
 
     return async () => {
         try {
-            const res = await fetch('/api/v1/connection', { headers: getHeaders() });
+            const res = await fetch(`/api/v1/connection?env=${env}`, { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -549,13 +549,13 @@ export function useGetConnectionListAPI() {
     };
 }
 
-export function useGetConnectionDetailsAPI() {
+export function useGetConnectionDetailsAPI(env: string) {
     const signout = useSignout();
 
     return async (connectionId: string, providerConfigKey: string, force_refresh: boolean) => {
         try {
             const res = await fetch(
-                `/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(
+                `/api/v1/connection/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(
                     providerConfigKey
                 )}&force_refresh=${force_refresh}`,
                 {
@@ -574,15 +574,18 @@ export function useGetConnectionDetailsAPI() {
     };
 }
 
-export function useDeleteConnectionAPI() {
+export function useDeleteConnectionAPI(env: string) {
     const signout = useSignout();
 
     return async (connectionId: string, providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(providerConfigKey)}`, {
-                headers: getHeaders(),
-                method: 'DELETE'
-            });
+            const res = await fetch(
+                `/api/v1/connection/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(providerConfigKey)}`,
+                {
+                    headers: getHeaders(),
+                    method: 'DELETE'
+                }
+            );
 
             if (res.status === 401) {
                 return signout();
@@ -631,33 +634,10 @@ export function useResetPasswordAPI() {
     };
 }
 
-export function useActivityAPI() {
-    return async (limit: number, offset: number, status?: string, script?: string, integration?: string, connection?: string, date?: string) => {
-        try {
-            const res = await fetch(
-                `/api/v1/activity?limit=${limit}&offset=${offset}` +
-                    `${status ? `&status=${status}` : ''}` +
-                    `${script ? `&script=${script}` : ''}` +
-                    `${integration ? `&integration=${integration}` : ''}` +
-                    `${connection ? `&connection=${connection}` : ''}` +
-                    `${date ? `&date=${date}` : ''}`,
-                {
-                    method: 'GET',
-                    headers: getHeaders()
-                }
-            );
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetSyncAPI() {
+export function useGetSyncAPI(env: string) {
     return async (connectionId: string, providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/sync?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+            const res = await fetch(`/api/v1/sync?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
                 headers: getHeaders()
             });
@@ -669,10 +649,10 @@ export function useGetSyncAPI() {
     };
 }
 
-export function useGetHmacAPI() {
+export function useGetHmacAPI(env: string) {
     return async (providerConfigKey: string, connectionId: string) => {
         try {
-            const res = await fetch(`/api/v1/environment/hmac?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+            const res = await fetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
                 headers: getHeaders()
             });
@@ -684,10 +664,10 @@ export function useGetHmacAPI() {
     };
 }
 
-export function useGetAllSyncsAPI() {
+export function useGetAllSyncsAPI(env: string) {
     return async () => {
         try {
-            const res = await fetch(`/api/v1/syncs`, {
+            const res = await fetch(`/api/v1/syncs?env=${env}`, {
                 method: 'GET',
                 headers: getHeaders()
             });
@@ -699,10 +679,10 @@ export function useGetAllSyncsAPI() {
     };
 }
 
-export function useRunSyncAPI() {
+export function useRunSyncAPI(env: string) {
     return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: string, sync_name: string, provider?: string) => {
         try {
-            const res = await fetch(`/api/v1/sync/command`, {
+            const res = await fetch(`/api/v1/sync/command?env=${env}`, {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({ command, schedule_id, nango_connection_id, sync_id, sync_name, provider })
@@ -715,12 +695,12 @@ export function useRunSyncAPI() {
     };
 }
 
-export function useGetAccountAPI() {
+export function useGetAccountAPI(env: string) {
     const signout = useSignout();
 
     return async () => {
         try {
-            const res = await fetch('/api/v1/account', { headers: getHeaders() });
+            const res = await fetch(`/api/v1/account?env=${env}`, { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -733,12 +713,12 @@ export function useGetAccountAPI() {
     };
 }
 
-export function useEditAccountNameAPI() {
+export function useEditAccountNameAPI(env: string) {
     const signout = useSignout();
 
     return async (name: string) => {
         try {
-            const res = await fetch('/api/v1/account', {
+            const res = await fetch(`/api/v1/account?env=${env}`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ name })
@@ -838,10 +818,10 @@ export function useInviteSignupAPI() {
     };
 }
 
-export function useGetFlows() {
+export function useGetFlows(env: string) {
     return async () => {
         try {
-            const res = await fetch(`/api/v1/flows`, {
+            const res = await fetch(`/api/v1/flows?env=${env}`, {
                 method: 'GET',
                 headers: getHeaders()
             });
@@ -853,10 +833,10 @@ export function useGetFlows() {
     };
 }
 
-export function useCreateFlow() {
+export function useCreateFlow(env: string) {
     return async (flow: PreBuiltFlow[]) => {
         try {
-            const res = await fetch(`/api/v1/flow/deploy/pre-built`, {
+            const res = await fetch(`/api/v1/flow/deploy/pre-built?env=${env}`, {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify(flow)
@@ -869,10 +849,10 @@ export function useCreateFlow() {
     };
 }
 
-export function useGetIntegrationEndpointsAPI() {
+export function useGetIntegrationEndpointsAPI(env: string) {
     return async (integration: string, provider: string) => {
         try {
-            const res = await fetch(`/api/v1/integration/${integration}/endpoints?provider=${provider}`, {
+            const res = await fetch(`/api/v1/integration/${integration}/endpoints?provider=${provider}&env=${env}`, {
                 method: 'GET',
                 headers: getHeaders()
             });
@@ -884,10 +864,10 @@ export function useGetIntegrationEndpointsAPI() {
     };
 }
 
-export function useGetFlowDetailsAPI() {
+export function useGetFlowDetailsAPI(env: string) {
     return async (providerConfigKey: string, flowName: string) => {
         try {
-            const res = await fetch(`/api/v1/flow/${flowName}?provider_config_key=${providerConfigKey}`, {
+            const res = await fetch(`/api/v1/flow/${flowName}?provider_config_key=${providerConfigKey}&env=${env}`, {
                 method: 'GET',
                 headers: getHeaders()
             });
@@ -899,10 +879,10 @@ export function useGetFlowDetailsAPI() {
     };
 }
 
-export function useUpdateSyncFrequency() {
+export function useUpdateSyncFrequency(env: string) {
     return async (syncId: number, frequency: string) => {
         try {
-            const res = await fetch(`/api/v1/sync/${syncId}/frequency`, {
+            const res = await fetch(`/api/v1/sync/${syncId}/frequency?env=${env}`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ frequency })
@@ -915,10 +895,10 @@ export function useUpdateSyncFrequency() {
     };
 }
 
-export function useGetConnectionAPI() {
+export function useGetConnectionAPI(env: string) {
     return async (providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/integration/${providerConfigKey}/connections`, {
+            const res = await fetch(`/api/v1/integration/${providerConfigKey}/connections?env=${env}`, {
                 method: 'GET',
                 headers: getHeaders()
             });

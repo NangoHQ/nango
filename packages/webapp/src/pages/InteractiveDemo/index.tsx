@@ -25,8 +25,8 @@ export const InteractiveDemo: React.FC = () => {
     const [records, setRecords] = useState<Record<string, unknown>[]>([]);
     const analyticsTrack = useAnalyticsTrack();
 
-    const env = useStore((state) => state.cookieValue);
-    const { environment } = useEnvironment();
+    const env = useStore((state) => state.env);
+    const { environment } = useEnvironment(env);
 
     useEffect(() => {
         if (env !== 'dev') {
@@ -49,6 +49,7 @@ export const InteractiveDemo: React.FC = () => {
     useEffect(() => {
         const getProgress = async () => {
             const params = {
+                env,
                 connection_id: connectionId
             };
 
@@ -75,10 +76,10 @@ export const InteractiveDemo: React.FC = () => {
         if (connectionId) {
             void getProgress();
         }
-    }, [setInitialLoad, connectionId]);
+    }, [setInitialLoad, connectionId, env]);
 
     const updateProgress = async (args: { progress: number }) => {
-        const res = await fetch(`/api/v1/onboarding`, {
+        const res = await fetch(`/api/v1/onboarding?env=${env}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ progress: args.progress })
@@ -95,7 +96,7 @@ export const InteractiveDemo: React.FC = () => {
         }
 
         void updateProgress({ progress: step });
-    }, [onboardingId, step]);
+    }, [onboardingId, step, env]);
 
     const onAuthorize = (id: number) => {
         setOnboardingId(id);

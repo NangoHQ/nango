@@ -13,12 +13,12 @@ export const PrivateRoute: React.FC = () => {
     const { user } = useUser(Boolean(meta && ready && !notFoundEnv));
     const identify = useAnalyticsIdentify();
 
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
     const setStoredEnvs = useStore((state) => state.setEnvs);
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setEmail = useStore((state) => state.setEmail);
     const setDebugMode = useStore((state) => state.setDebugMode);
-    const setCookieValue = useStore((state) => state.setCookieValue);
+    const setEnv = useStore((state) => state.setEnv);
 
     useEffect(() => {
         if (!meta || error) {
@@ -39,31 +39,31 @@ export const PrivateRoute: React.FC = () => {
 
         let currentEnv = env;
 
-        // sync path with cookie
+        // sync path with datastore
         const pathSplit = location.pathname.split('/');
         if (pathSplit.length > 0 && env !== pathSplit[1]) {
             currentEnv = pathSplit[1];
         }
 
-        // The cookie set does not match available envs
+        // The store set does not match available envs
         if (!meta.environments.find(({ name }) => name === currentEnv)) {
             if (currentEnv !== 'dev' && meta.environments.find(({ name }) => name === 'dev')) {
-                // If the specified env is not dev and it's available we set the cookie so the back home button works
+                // If the specified env is not dev and it's available we set the store value so the back home button works
                 // because of self hosting we can't assume dev is always there
-                setCookieValue('dev');
+                setEnv('dev');
             } else {
                 // Otherwise we pick the first one available
-                setCookieValue(meta.environments[0].name);
+                setEnv(meta.environments[0].name);
             }
 
             setNotFoundEnv(true);
         } else {
-            setCookieValue(currentEnv);
+            setEnv(currentEnv);
         }
 
-        // it's ready when cookie and path is finally reconciliated
+        // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loading, env, error, setCookieValue]);
+    }, [meta, loading, env, error, setEnv]);
 
     useEffect(() => {
         if (user) {

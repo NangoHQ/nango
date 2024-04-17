@@ -1,41 +1,53 @@
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import type { Request } from 'express';
 import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { getLogger, resultErr, resultOk, isErr } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
 
 const logger = getLogger('Server.Utils');
 
-export async function getUserAccountAndEnvironmentFromSession(
-    req: Request<any, any>
-): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
+export async function getUserFromSession(req: Request<any, any>): Promise<Result<User, NangoError>> {
     const sessionUser = req.user;
-    const currentEnvironment: string = req.cookies['env'] || 'dev';
-
-    if (sessionUser == null) {
+    if (!sessionUser) {
         const error = new NangoError('user_not_found');
 
-        return { success: false, error, response: null };
+        return resultErr(error);
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
-    if (user == null) {
+    if (!user) {
         const error = new NangoError('user_not_found');
-        return { success: false, error, response: null };
+        return resultErr(error);
+    }
+
+    return resultOk(user);
+}
+
+export async function getUserAccountAndEnvironmentFromSession(
+    req: Request<any, any>
+): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
+    const getUser = await getUserFromSession(req);
+    if (isErr(getUser)) {
+        return { error: getUser.err, response: null, success: false };
+    }
+
+    const user = getUser.res;
+    const currentEnvironment = req.query['env'];
+    if (typeof currentEnvironment !== 'string') {
+        return { success: false, error: new NangoError('invalid_env'), response: null };
     }
 
     const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
-
     if (!environmentAndAccount) {
         const error = new NangoError('account_not_found');
         return { success: false, error, response: null };
     }
 
     const response = { user, ...environmentAndAccount };
-
     return { success: true, error: null, response };
 }
 
