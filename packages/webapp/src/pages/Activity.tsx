@@ -95,7 +95,7 @@ export default function Activity() {
     const fifteenDaysAgo = new Date();
     fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
 
     const isInitialMount = useRef(true);
     const [msgs, setMsgs] = useState<ActivityMessageResponse>([]);
@@ -139,7 +139,7 @@ export default function Activity() {
     }, [activities, error]);
 
     const { data: rawMsgs, error: logActivitiesError } = useSWR<ActivityMessageResponse>(
-        () => (logIds.length > 0 ? `/api/v1/activity-messages?logIds=${logIds.join(',')}` : null),
+        () => (logIds.length > 0 ? `/api/v1/activity-messages?env=${env}&logIds=${logIds.join(',')}` : null),
         swrFetcher,
         {
             refreshInterval: expandedRow !== -1 ? 5000 : 60000

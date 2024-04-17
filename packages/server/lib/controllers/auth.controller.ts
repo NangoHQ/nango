@@ -2,11 +2,11 @@ import type { Request, Response, NextFunction } from 'express';
 import { WorkOS } from '@workos-inc/node';
 import crypto from 'crypto';
 import util from 'util';
-import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { resetPasswordSecret, getUserFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
+import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, type Result, isErr } from '@nangohq/utils';
 import {
     userService,
     accountService,
@@ -82,13 +82,13 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 class AuthController {
     async signin(req: Request, res: Response, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
+            const getUser = await getUserFromSession(req);
+            if (isErr(getUser)) {
+                errorManager.errResFromNangoErr(res, getUser.err);
                 return;
             }
-            const { user } = response;
 
+            const user = getUser.res;
             const webUser: WebUser = {
                 id: user.id,
                 accountId: user.account_id,

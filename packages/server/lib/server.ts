@@ -38,6 +38,7 @@ import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthE
 import { getGlobalOAuthCallbackUrl, environmentService, getPort, errorManager, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
+import { migrate as migrateRecords } from '@nangohq/records';
 import tracer from 'dd-trace';
 import { start as migrateLogs } from '@nangohq/logs';
 
@@ -78,6 +79,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 if (NANGO_MIGRATE_AT_START === 'true') {
     await migrate();
     await migrateLogs();
+    await migrateRecords();
 } else {
     logger.info('Not migrating database');
 }

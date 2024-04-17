@@ -29,6 +29,8 @@ interface Flow {
 type Integration = Record<string, Flow>;
 
 export default function FlowCreate() {
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [integration, setIntegration] = useState<string>('');
@@ -44,9 +46,8 @@ export default function FlowCreate() {
     const [frequencyValue, setFrequencyValue] = useState<number>();
     const [frequencyUnit, setFrequencyUnit] = useState<string>();
     const [showFrequencyError, setShowFrequencyError] = useState(false);
-    const getFlows = useGetFlows();
-    const createFlow = useCreateFlow();
-    const env = useStore((state) => state.cookieValue);
+    const getFlows = useGetFlows(env);
+    const createFlow = useCreateFlow(env);
 
     const navigate = useNavigate();
 
@@ -247,7 +248,7 @@ export default function FlowCreate() {
             public_route: flowObject.rawName || integration
         };
 
-        const response = await fetch('/api/v1/flow/download', {
+        const response = await fetch(`/api/v1/flow/download?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
