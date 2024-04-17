@@ -19,7 +19,7 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   cache: 'npm'
-                  node-version: '.nvmrc'
+                  node-version-file: '.nvmrc'
 
             - uses: reviewdog/action-eslint@v1
               with:
