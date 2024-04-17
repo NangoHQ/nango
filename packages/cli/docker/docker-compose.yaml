@@ -82,6 +82,7 @@ services:
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - RECORDS_DATABASE_URL=postgres://${NANGO_DB_USER}:${NANGO_DB_PASSWORD}@${NANGO_DB_HOST}:5432/${NANGO_DB_NAME}$([[ "${NANGO_DB_SSL}" == "true" ]] && echo "?sslmode=require")
         depends_on:
             - nango-db
         networks:

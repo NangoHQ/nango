@@ -15,6 +15,7 @@ COPY packages/webapp/build/ packages/webapp/build/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
 COPY packages/node-client/ packages/node-client/
+COPY packages/records/ packages/records/
 
 RUN npm pkg delete scripts.prepare
 RUN npm ci --omit=dev
