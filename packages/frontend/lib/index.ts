@@ -83,7 +83,6 @@ export default class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param connectionId -  The ID of the connection
      * @param connectionConfig - Optional. Additional configuration for the connection
-     * @throws A rejected promise in case of an error
      * @returns A promise that resolves with the authentication result
      */
     public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult> {
@@ -250,7 +249,6 @@ export default class Nango {
      * @param connectionId - The ID of the connection for which to create the custom Authorization
      * @param connectionConfigWithCredentials - The connection configuration containing the credentials
      * @param connectionConfig - Optional. Additional connection configuration
-     * @throws A rejected promise in case of an error
      * @returns A promise that resolves with the authorization result
      */
     private async customAuth(
