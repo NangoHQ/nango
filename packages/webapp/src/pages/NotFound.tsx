@@ -20,7 +20,7 @@ export const NotFound: React.FC = () => {
     const navigate = useNavigate();
 
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
 
     useEffect(() => {
         const pathSegments = location.pathname.split('/').filter(Boolean);

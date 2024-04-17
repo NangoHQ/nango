@@ -13,10 +13,11 @@ import { LinkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
-import type { IntegrationConfig, Flow, Account } from '../../types';
+import type { IntegrationConfig, Flow } from '../../types';
 import { useStore } from '../../store';
 import { requestErrorToast } from '../../utils/api';
 import PageNotFound from '../PageNotFound';
+import { useEnvironment } from '../../hooks/useEnvironment';
 
 export enum Tabs {
     API,
@@ -44,13 +45,14 @@ export interface EndpointResponse {
 
 export default function ShowIntegration() {
     const { providerConfigKey } = useParams();
+    const env = useStore((state) => state.env);
 
     const [loaded, setLoaded] = useState(true);
     const { data, error } = useSWR<{ config: IntegrationConfig; flows: EndpointResponse; error?: string; type?: string }>(
-        `/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true&loaded=${loaded}`
+        `/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true&loaded=${loaded}&env=${env}`
     );
 
-    const { data: accountData, error: accountError } = useSWR<{ account: Account }>(`/api/v1/environment`);
+    const { environment, error: accountError } = useEnvironment(env);
 
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
     const [subTab, setSubTab] = useState<SubTabs | null>(null);
@@ -58,7 +60,6 @@ export default function ShowIntegration() {
     const [flowConfig, setFlowConfig] = useState<FlowConfiguration | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
-    const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
         if (location.hash === '#api') {
@@ -85,7 +86,7 @@ export default function ShowIntegration() {
         );
     }
 
-    if (!data || !accountData)
+    if (!data || !environment)
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
                 <Loading spaceRatio={2.5} className="-top-36" />
@@ -93,7 +94,6 @@ export default function ShowIntegration() {
         );
 
     const { config: integration, flows: endpoints } = data;
-    const { account } = accountData;
 
     const showDocs = () => {
         window.open(integration?.docs, '_blank');
@@ -162,11 +162,11 @@ export default function ShowIntegration() {
                     </ul>
                 </section>
                 <section className="mt-10">
-                    {activeTab === Tabs.API && integration && endpoints && account && (
+                    {activeTab === Tabs.API && integration && endpoints && (
                         <>
                             {subTab === SubTabs.Reference ? (
                                 <EndpointReference
-                                    account={account}
+                                    account={environment}
                                     integration={integration}
                                     activeFlow={currentFlow}
                                     setActiveTab={setActiveTab}
@@ -177,7 +177,7 @@ export default function ShowIntegration() {
                                     integration={integration}
                                     setActiveTab={setActiveTab}
                                     endpoints={endpoints}
-                                    account={account}
+                                    account={environment}
                                     setSubTab={setSubTab}
                                     setFlow={setCurrentFlow}
                                 />
@@ -189,7 +189,7 @@ export default function ShowIntegration() {
                             {subTab === SubTabs.Flow ? (
                                 <FlowPage
                                     integration={integration}
-                                    account={account}
+                                    account={environment}
                                     flow={currentFlow}
                                     flowConfig={flowConfig}
                                     reload={() => setLoaded(!loaded)}
@@ -210,7 +210,7 @@ export default function ShowIntegration() {
                             )}
                         </>
                     )}
-                    {activeTab === Tabs.Auth && integration && account && <AuthSettings integration={integration} account={account} />}
+                    {activeTab === Tabs.Auth && integration && <AuthSettings integration={integration} account={environment} />}
                 </section>
             </div>
         </DashboardLayout>

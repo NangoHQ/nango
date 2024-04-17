@@ -315,7 +315,10 @@ export async function getEnvironmentAndAccountId(
 
 export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<ServiceResponse<{ accountId: number; environmentId: number }>> {
     const sessionUser = req.user as User;
-    const currentEnvironment: string = req.cookies['env'] || 'dev';
+    const currentEnvironment = req.query['env'];
+    if (typeof currentEnvironment !== 'string') {
+        return { success: false, error: new NangoError('invalid_env'), response: null };
+    }
 
     if (sessionUser == null) {
         const error = new NangoError('user_not_found');
