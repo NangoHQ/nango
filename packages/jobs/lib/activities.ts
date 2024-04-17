@@ -165,7 +165,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         });
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
+            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
         );
         await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', { error: err, syncName });
         await logCtx.failed();
@@ -230,7 +230,7 @@ export async function syncProvider(
         // TODO: move that outside try/catch
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
+            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
         );
 
         if (debug) {
@@ -295,7 +295,7 @@ export async function syncProvider(
         });
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
+            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
         );
         await logCtx.error('Failed to create the job', { error: err });
         await logCtx.failed();

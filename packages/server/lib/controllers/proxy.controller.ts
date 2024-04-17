@@ -88,7 +88,7 @@ class ProxyController {
                 ? getExistingOperationContext({ id: String(existingActivityLogId) })
                 : await getOperationContext(
                       { operation: { type: 'action' }, message: 'Start action' },
-                      { account: { id: accountId, name: '' }, environment: { id: environment_id } }
+                      { account: { id: accountId }, environment: { id: environment_id } }
                   );
 
             const { method } = req;

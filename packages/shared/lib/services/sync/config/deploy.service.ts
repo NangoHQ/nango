@@ -79,7 +79,7 @@ export async function deploy(
     const activityLogId = await createActivityLog(log);
     const logCtx = await getOperationContext(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'custom' }, message: 'Deploying custom syncs' },
-        { account: { id: accountId, name: '' }, environment: { id: environment_id } }
+        { account: { id: accountId }, environment: { id: environment_id } }
     );
 
     if (nangoYamlBody) {
@@ -263,7 +263,7 @@ export async function deployPreBuilt(
     const activityLogId = await createActivityLog(log);
     const logCtx = await getOperationContext(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'prebuilt' }, message: 'Deploying pre-built flow' },
-        { account: { id: accountId, name: '' }, environment: { id: environment_id } }
+        { account: { id: accountId }, environment: { id: environment_id } }
     );
 
     const idsToMarkAsInvactive = [];

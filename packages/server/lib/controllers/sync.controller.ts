@@ -420,7 +420,7 @@ class SyncController {
             // TODO: move that outside try/catch
             const logCtx = await getOperationContext(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account: { id: -1, name: '' }, environment: { id: environmentId } }
+                { account: { id: -1 }, environment: { id: environmentId } }
             );
 
             const syncClient = await SyncClient.getInstance();
@@ -634,7 +634,7 @@ class SyncController {
             // TODO: message
             const logCtx = await getOperationContext(
                 { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
-                { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
+                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name } }
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {

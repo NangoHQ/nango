@@ -196,10 +196,7 @@ const initDb = async () => {
         throw new Error('Activity log not created');
     }
 
-    await getOperationContext(
-        { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-        { account: { id: env.account_id, name: '' } }
-    );
+    await getOperationContext({ id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' }, { account: { id: env.account_id } });
 
     const connectionRes = await connectionService.upsertConnection(`conn-test`, `provider-test`, 'google', {} as AuthCredentials, {}, env.id, 0);
     const connectionId = connectionRes[0]?.id;

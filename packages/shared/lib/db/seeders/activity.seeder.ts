@@ -15,7 +15,7 @@ export const createActivityLogSeed = async (environmentId: number): Promise<numb
     const activityLogId = await activityService.createActivityLog(log as ActivityLog);
     await getOperationContext(
         { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'test' },
-        { account: { id: 1, name: '' }, environment: { id: environmentId } }
+        { account: { id: 1 }, environment: { id: environmentId } }
     );
 
     return activityLogId as number;

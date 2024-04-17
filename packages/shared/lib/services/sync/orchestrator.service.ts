@@ -195,7 +195,7 @@ export class Orchestrator {
 
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
-            { account: { id: -1, name: '' }, environment: { id: environmentId } }
+            { account: { id: -1 }, environment: { id: environmentId } }
         );
 
         const syncClient = await SyncClient.getInstance();

@@ -61,7 +61,7 @@ export async function exec(): Promise<void> {
 
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
-            { account: { id: sync.account_id, name: '' }, environment: { id: sync.environment_id } }
+            { account: { id: sync.account_id }, environment: { id: sync.environment_id } }
         );
 
         const syncClient = await SyncClient.getInstance();

@@ -2,7 +2,7 @@ import { nanoid } from '@nangohq/utils';
 import type { MessageRow } from '../types/messages';
 
 export interface FormatMessageData {
-    account?: { id: number; name: string };
+    account?: { id: number; name?: string };
     user?: { id: number } | undefined;
     environment?: { id: number; name?: string } | undefined;
 }

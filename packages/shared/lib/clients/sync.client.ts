@@ -175,7 +175,7 @@ class SyncClient {
             // TODO: do that outside try/catch
             const logCtx = await getOperationContext(
                 { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
-                { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: nangoConnection.environment_id } }
+                { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
             );
 
             const { success, error, response } = getInterval(syncData.runs, new Date());
@@ -703,7 +703,7 @@ class SyncClient {
         const activityLogId = await createActivityLog(log);
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
-            { account: { id: nangoConnection.account_id!, name: '' }, environment: { id: environment_id } }
+            { account: { id: nangoConnection.account_id! }, environment: { id: environment_id } }
         );
 
         const workflowId = generateWebhookWorkflowId(parentSyncName, webhookName, nangoConnection.connection_id);

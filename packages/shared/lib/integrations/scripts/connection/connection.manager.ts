@@ -109,7 +109,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 });
                 const logCtx = await getOperationContext(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Authentication' },
-                    { account: { id: accountId!, name: '' }, environment: { id: connection.environment_id } }
+                    { account: { id: accountId! }, environment: { id: connection.environment_id } }
                 );
                 await logCtx.error('Post connection script failed', { error: e });
                 await logCtx.failed();

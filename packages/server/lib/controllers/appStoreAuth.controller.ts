@@ -45,7 +45,7 @@ class AppStoreAuthController {
         const activityLogId = await createActivityLog(log);
         const logCtx = await getOperationContext(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
-            { account: { id: accountId, name: '' }, environment: { id: environmentId } }
+            { account: { id: accountId }, environment: { id: environmentId } }
         );
 
         try {
