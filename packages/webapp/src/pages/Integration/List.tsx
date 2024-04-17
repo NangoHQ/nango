@@ -13,7 +13,7 @@ import { useListIntegration } from '../../hooks/useIntegration';
 export default function IntegrationList() {
     const navigate = useNavigate();
 
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
 
     const { list: data, error } = useListIntegration(env);
 

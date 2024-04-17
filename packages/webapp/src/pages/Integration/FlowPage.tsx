@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import useSWR from 'swr';
 import { Loading, useModal } from '@geist-ui/core';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 
@@ -18,6 +18,7 @@ import Info from '../../components/ui/Info';
 import { parseInput, generateResponseModel, formatDateToShortUSFormat } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippets';
+import { useStore } from '../../store';
 
 interface FlowPageProps {
     account: Account;
@@ -33,17 +34,14 @@ interface FlowPageProps {
 
 export default function FlowPage(props: FlowPageProps) {
     const { account, integration, flow, flowConfig, reload, endpoints, setFlow, setActiveTab, setSubTab } = props;
-    const { data: connections, error } = useSWR<Connection[]>(`/api/v1/integration/${integration.unique_key}/connections`);
-
-    if (error) {
-        requestErrorToast();
-    }
+    const env = useStore((state) => state.env);
+    const { data: connections, error } = useSWR<Connection[]>(`/api/v1/integration/${integration.unique_key}/connections?env=${env}`);
 
     const [showMetadataCode, setShowMetadataCode] = useState(false);
     const [showAutoStartCode, setShowAutoStartCode] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isEnabling, setIsEnabling] = useState(false);
-    const updateSyncFrequency = useUpdateSyncFrequency();
+    const updateSyncFrequency = useUpdateSyncFrequency(env);
     const { setVisible, bindings } = useModal();
 
     const [modalTitle, setModalTitle] = useState('');
@@ -55,6 +53,12 @@ export default function FlowPage(props: FlowPageProps) {
     const [showFrequencyEditMenu, setShowFrequencyEditMenu] = useState(false);
     const [frequencyEdit, setFrequencyEdit] = useState('');
 
+    useEffect(() => {
+        if (error) {
+            requestErrorToast();
+        }
+    }, [error]);
+
     const downloadFlow = async () => {
         setIsDownloading(true);
         const flowInfo = {
@@ -65,7 +69,7 @@ export default function FlowPage(props: FlowPageProps) {
             public_route: flowConfig?.rawName || integration.provider
         };
 
-        const response = await fetch('/api/v1/flow/download', {
+        const response = await fetch(`/api/v1/flow/download?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -116,7 +120,7 @@ export default function FlowPage(props: FlowPageProps) {
         setShowFrequencyEditMenu(true);
     };
 
-    const onSaveFrequency = async () => {
+    const onSaveFrequency = () => {
         // just in case they included every
         const frequencyWithoutEvery = frequencyEdit.replace('every ', '');
         const frequencyWithoutNumber = frequencyWithoutEvery.replace(/\d+/g, '');
@@ -177,6 +181,10 @@ export default function FlowPage(props: FlowPageProps) {
             } as Flow);
         });
     };
+
+    if (error) {
+        return <></>;
+    }
 
     if (!flow) {
         return <Loading spaceRatio={2.5} className="-top-36" />;

@@ -5,8 +5,8 @@ import ActionModal from '../../../components/ui/ActionModal';
 import ToggleButton from '../../../components/ui/button/ToggleButton';
 import Spinner from '../../../components/ui/Spinner';
 import type { PreBuiltFlow, Flow, Connection, Sync } from '../../../types';
-import { useCreateFlow } from '../../../utils/api';
 import type { EndpointResponse } from '../Show';
+import { useStore } from '../../../store';
 
 export interface FlowProps {
     flow: Flow;
@@ -43,12 +43,11 @@ export default function EnableDisableSync({
     setIsEnabling,
     showSpinner
 }: FlowProps) {
+    const env = useStore((state) => state.env);
     const syncs = endpoints?.allFlows?.syncs;
     const actions = endpoints?.allFlows?.actions;
     const currentFlow = flow.type === 'sync' ? syncs?.find((sync) => sync.name === flow.name) : actions?.find((action) => action.name === flow.name);
-    console.log(currentFlow);
     const { setVisible, bindings } = useModal();
-    const createFlow = useCreateFlow();
     const connectionIds = connections.map((connection) => connection.connection_id);
 
     const [modalTitle, setModalTitle] = useState('');
@@ -208,7 +207,7 @@ export default function EnableDisableSync({
 
     const onDisableSync = async (flow: Flow) => {
         setModalShowSpinner(true);
-        const res = await fetch(`/api/v1/flow/${flow?.id}/disable?sync_name=${flow.name}&connectionIds=${connectionIds.join(',')}`, {
+        const res = await fetch(`/api/v1/flow/${flow?.id}/disable?env=${env}&sync_name=${flow.name}&connectionIds=${connectionIds.join(',')}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'

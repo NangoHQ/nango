@@ -12,8 +12,7 @@ import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
 import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
 import { isCloud, isLocal, isEnterprise, getLogger } from '@nangohq/utils';
-import type { Result } from '../utils/result.js';
-import { resultOk, resultErr } from '../utils/result.js';
+import { resultOk, resultErr, type Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 

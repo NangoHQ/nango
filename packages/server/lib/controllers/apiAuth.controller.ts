@@ -12,7 +12,6 @@ import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     connectionTest as connectionTestHook,
-    isErr,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
@@ -25,6 +24,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import { isErr } from '@nangohq/utils';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response, next: NextFunction) {

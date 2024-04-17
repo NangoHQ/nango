@@ -2,8 +2,8 @@ import useSWR from 'swr';
 import type { Account } from '../types';
 import { swrFetcher } from '../utils/api';
 
-export function useEnvironment() {
-    const { data, error, mutate } = useSWR<{ account: Account }>('/api/v1/environment', swrFetcher, {});
+export function useEnvironment(env: string) {
+    const { data, error, mutate } = useSWR<{ account: Account }>(`/api/v1/environment?env=${env}`, swrFetcher, {});
 
     const loading = !data && !error;
 

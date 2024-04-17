@@ -31,6 +31,8 @@ interface Integration {
 
 export default function IntegrationCreate() {
     const { mutate } = useSWRConfig();
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
@@ -48,7 +50,7 @@ export default function IntegrationCreate() {
     const [websocketsPath, setWebsocketsPath] = useState('');
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
-    const getIntegrationListAPI = useGetIntegrationListAPI();
+    const getIntegrationListAPI = useGetIntegrationListAPI(env);
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
@@ -58,10 +60,9 @@ export default function IntegrationCreate() {
     const [privateKey, setPrivateKey] = useState('');
     const [issuerId, setIssuerId] = useState('');
     const analyticsTrack = useAnalyticsTrack();
-    const getHmacAPI = useGetHmacAPI();
+    const getHmacAPI = useGetHmacAPI(env);
     const { providerConfigKey } = useParams();
-    const env = useStore((state) => state.cookieValue);
-    const { environment } = useEnvironment();
+    const { environment } = useEnvironment(env);
 
     useEffect(() => {
         setLoaded(false);

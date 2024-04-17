@@ -22,8 +22,7 @@ export async function up(knex: Knex): Promise<void> {
             updated_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
             deleted_at timestamp with time zone,
             sync_id uuid,
-            sync_job_id integer,
-            CONSTRAINT ${TABLE}_connection_id_external_id_model UNIQUE (connection_id, external_id, model)
+            sync_job_id integer
             ) PARTITION BY HASH (connection_id, model)
         `);
         for (let i = 0; i < PARTITION_COUNT; i++) {
@@ -71,7 +70,7 @@ export async function up(knex: Knex): Promise<void> {
         `);
         // INDEXES
         await knex.schema.alterTable(TABLE, function (table) {
-            table.index(['connection_id', 'model', 'external_id']);
+            table.unique(['connection_id', 'model', 'external_id']);
             table.index(['connection_id', 'model', 'updated_at', 'id']);
             table.index('sync_id');
             table.index('sync_job_id');
