@@ -544,6 +544,7 @@ class ConnectionService {
         connectionId: string,
         providerConfigKey: string,
         activityLogId?: number | null | undefined,
+        logCtx?: LogContext,
         action?: LogAction,
         instantRefresh = false
     ): Promise<ServiceResponse<Connection>> {
@@ -583,8 +584,9 @@ class ConnectionService {
 
         const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key, environmentId);
 
-        if (activityLogId) {
-            await updateProviderActivityLog(activityLogId, config?.provider as string);
+        if (activityLogId && config) {
+            await updateProviderActivityLog(activityLogId, config.provider);
+            await logCtx?.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
         }
 
         if (config === null) {
@@ -596,6 +598,9 @@ class ConnectionService {
                     content: `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`,
                     timestamp: Date.now()
                 });
+                await logCtx?.error(
+                    `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`
+                );
             }
 
             const error = new NangoError('unknown_provider_config');

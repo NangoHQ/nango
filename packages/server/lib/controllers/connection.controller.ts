@@ -279,7 +279,16 @@ class ConnectionController {
                 success,
                 error,
                 response: connection
-            } = await connectionService.getConnectionCredentials(accountId, environmentId, connectionId, providerConfigKey, null, action, instantRefresh);
+            } = await connectionService.getConnectionCredentials(
+                accountId,
+                environmentId,
+                connectionId,
+                providerConfigKey,
+                null,
+                undefined,
+                action,
+                instantRefresh
+            );
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);

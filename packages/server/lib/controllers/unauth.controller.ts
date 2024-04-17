@@ -135,7 +135,8 @@ class UnAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
+            await logCtx.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
 
             await createActivityLogMessage({
                 level: 'info',

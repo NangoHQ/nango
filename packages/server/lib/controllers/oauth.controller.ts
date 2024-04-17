@@ -185,8 +185,6 @@ class OAuthController {
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
-
             if (config == null) {
                 const error = WSErrBuilder.UnknownProviderConfigKey(providerConfigKey);
                 await createActivityLogMessageAndEnd({
@@ -202,6 +200,9 @@ class OAuthController {
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
+
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
+            await logCtx.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
 
             let template: ProviderTemplate;
             try {
@@ -474,7 +475,8 @@ class OAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
+            await logCtx.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
 
             const { success, error, response: credentials } = await connectionService.getOauthClientCredentials(template, client_id, client_secret);
 

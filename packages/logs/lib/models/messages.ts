@@ -59,6 +59,9 @@ export async function getOperation(opts: { id: MessageRow['id'] }): Promise<Mess
     return res._source;
 }
 
+/**
+ * Update a row (can be a partial update)
+ */
 export async function update(opts: { id: MessageRow['id']; data: Partial<Omit<MessageRow, 'id'>> }): Promise<void> {
     await client.update<Partial<Omit<MessageRow, 'id'>>>({
         index: indexMessages.index,

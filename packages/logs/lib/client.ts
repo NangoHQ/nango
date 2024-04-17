@@ -1,5 +1,5 @@
 import type { MessageRow, MessageRowInsert, MessageMeta, OperationRowInsert } from './types/messages.js';
-import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess } from './models/messages.js';
+import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
 import type { FormatMessageData } from './models/helpers.js';
 import { getFormattedMessage } from './models/helpers.js';
 import type { SetRequired } from 'type-fest';
@@ -15,6 +15,10 @@ export class LogContext {
         this.id = data.parentId;
         this.dryRun = options.dryRun;
         this.logToConsole = options.logToConsole;
+    }
+
+    async enrichOperation(data: Partial<MessageRow>): Promise<void> {
+        await update({ id: this.id, data });
     }
 
     /**

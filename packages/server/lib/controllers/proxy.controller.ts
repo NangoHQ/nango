@@ -117,7 +117,16 @@ class ProxyController {
                 success: connSuccess,
                 error: connError,
                 response: connection
-            } = await connectionService.getConnectionCredentials(accountId, environment_id, connectionId, providerConfigKey, activityLogId, logAction, false);
+            } = await connectionService.getConnectionCredentials(
+                accountId,
+                environment_id,
+                connectionId,
+                providerConfigKey,
+                activityLogId,
+                logCtx,
+                logAction,
+                false
+            );
 
             if (!connSuccess || !connection) {
                 throw new Error(`Failed to get connection credentials: '${connError}'`);
@@ -139,6 +148,7 @@ class ProxyController {
             }
             if (activityLogId && providerConfig) {
                 await updateProviderActivityLog(activityLogId, providerConfig.provider);
+                await logCtx.enrichOperation({ configId: String(providerConfig.id!), configName: providerConfig.unique_key });
             }
 
             const internalConfig: InternalProxyConfiguration = {
