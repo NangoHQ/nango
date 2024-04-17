@@ -27,6 +27,8 @@ export enum Tabs {
 
 export default function ShowIntegration() {
     const { mutate } = useSWRConfig();
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
     const [syncs, setSyncs] = useState<SyncResponse[] | null>(null);
@@ -36,11 +38,10 @@ export default function ShowIntegration() {
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [pageNotFound, setPageNotFound] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
-    const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
-    const deleteConnectionAPI = useDeleteConnectionAPI();
-    const getSyncAPI = useGetSyncAPI();
+    const getConnectionDetailsAPI = useGetConnectionDetailsAPI(env);
+    const deleteConnectionAPI = useDeleteConnectionAPI(env);
+    const getSyncAPI = useGetSyncAPI(env);
 
-    const env = useStore((state) => state.cookieValue);
     const navigate = useNavigate();
     const location = useLocation();
     const { setVisible, bindings } = useModal();

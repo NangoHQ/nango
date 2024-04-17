@@ -25,10 +25,9 @@ interface SyncsProps {
     env: string;
 }
 
-export default function Syncs(props: SyncsProps) {
-    const { syncs, connection, setSyncLoaded, loaded, syncLoaded, env } = props;
+export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLoaded, env }: SyncsProps) {
     const [openDropdownHash, setOpenDropdownHash] = useState<string | null>(null);
-    const runCommandSyncAPI = useRunSyncAPI();
+    const runCommandSyncAPI = useRunSyncAPI(env);
 
     const toggleDropdown = (hash: string) => {
         if (openDropdownHash === hash) {

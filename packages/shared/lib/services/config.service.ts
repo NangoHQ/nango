@@ -4,7 +4,7 @@ import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import { isCloud } from '../utils/temp/environment/detection.js';
+import { isCloud, nanoid } from '@nangohq/utils';
 import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -151,11 +151,15 @@ class ConfigService {
     }
 
     async createEmptyProviderConfig(provider: string, environment_id: number): Promise<Pick<ProviderConfig, 'id' | 'unique_key'>> {
-        const existingProviders = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ provider, environment_id, deleted: false });
+        const exists = await db.knex
+            .count<{ count: number }>('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider, environment_id, deleted: false })
+            .first();
 
         const config = {
             environment_id,
-            unique_key: existingProviders.length === 0 ? provider : `${provider}-${existingProviders.length + 1}`,
+            unique_key: exists?.count === 0 ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
             provider
         };
 

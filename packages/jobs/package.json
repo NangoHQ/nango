@@ -33,7 +33,6 @@
         "js-yaml": "^4.1.0",
         "knex": "3.1.0",
         "md5": "^2.3.0",
-        "nanoid": "3.x",
         "node-cron": "3.0.3",
         "superjson": "^2.2.1",
         "uuid": "^9.0.0",
@@ -42,7 +41,7 @@
     "devDependencies": {
         "@tsconfig/node16": "^1.0.0",
         "@types/md5": "^2.3.2",
-        "@types/node": "^18.7.6",
+        "@types/node": "^20.12.2",
         "nodemon": "^3.0.1",
         "typescript": "^5.3.3",
         "vitest": "1.4.0"

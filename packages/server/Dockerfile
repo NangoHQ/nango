@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:20.12.2-slim
 
 ENV SERVER_RUN_MODE=DOCKERIZED
 ENV NANGO_DB_MIGRATION_FOLDER=./packages/shared/lib/db/migrations
@@ -17,6 +17,6 @@ COPY packages/utils/ packages/utils/
 COPY packages/node-client/ packages/node-client/
 
 RUN npm pkg delete scripts.prepare
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
 CMD [ "node", "packages/server/dist/server.js" ]

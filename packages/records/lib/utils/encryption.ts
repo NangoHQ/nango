@@ -1,9 +1,11 @@
 import type { EncryptedRecordData, FormattedRecord, UnencryptedRecord, UnencryptedRecordData } from '../types';
-import { encryptionManager } from '@nangohq/shared';
+import { Encryption } from '@nangohq/utils';
+import { envs } from '../env.js';
 
 function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is EncryptedRecordData {
     return 'encryptedValue' in data;
 }
+const encryptionManager = new Encryption(envs.NANGO_ENCRYPTION_KEY);
 
 export function decryptRecordData(record: FormattedRecord): UnencryptedRecordData {
     const { json } = record;
@@ -27,10 +29,6 @@ export function decryptRecords(records: FormattedRecord[]): UnencryptedRecord[] 
 }
 
 export function encryptDataRecords(records: FormattedRecord[]): FormattedRecord[] {
-    if (!encryptionManager.shouldEncrypt()) {
-        return records;
-    }
-
     const encryptedDataRecords: FormattedRecord[] = Object.assign([], records);
 
     for (const record of encryptedDataRecords) {

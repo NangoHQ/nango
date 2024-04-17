@@ -1,5 +1,5 @@
+import { nanoid } from '@nangohq/utils';
 import type { MessageRow } from '../types/messages';
-import { nanoid } from '../utils.js';
 
 export function getFormattedMessage(data: Partial<MessageRow>): MessageRow {
     return {

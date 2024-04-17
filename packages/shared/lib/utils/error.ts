@@ -127,6 +127,11 @@ export class NangoError extends Error {
                 this.message = 'The requested OAuth scopes are invalid. OAuth scopes should be comma separated and not an array';
                 break;
 
+            case 'invalid_env':
+                this.status = 400;
+                this.message = "Invalid param 'env'";
+                break;
+
             case 'missing_environment_id':
                 this.status = 400;
                 this.message = `Missing param 'environment_id'.`;
@@ -563,7 +568,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 // TODO docs link
                 this.message =
-                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/REPLACE-ME).';
+                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
                 break;
 
             default:

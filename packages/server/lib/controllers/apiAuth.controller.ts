@@ -12,7 +12,6 @@ import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     connectionTest as connectionTestHook,
-    isErr,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
@@ -25,6 +24,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import { isErr } from '@nangohq/utils';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response, next: NextFunction) {
@@ -188,7 +188,7 @@ class ApiAuthController {
             );
 
             if (updatedConnection) {
-                await connectionCreatedHook(
+                void connectionCreatedHook(
                     {
                         id: updatedConnection.id,
                         connection_id: connectionId,
@@ -224,7 +224,7 @@ class ApiAuthController {
                 }
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId as string,
@@ -397,7 +397,7 @@ class ApiAuthController {
             );
 
             if (updatedConnection) {
-                await connectionCreatedHook(
+                void connectionCreatedHook(
                     {
                         id: updatedConnection.id,
                         connection_id: connectionId,
@@ -433,7 +433,7 @@ class ApiAuthController {
                 }
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId as string,

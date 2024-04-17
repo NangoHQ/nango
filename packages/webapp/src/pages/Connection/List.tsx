@@ -24,7 +24,7 @@ interface Connection {
 
 export default function ConnectionList() {
     const navigate = useNavigate();
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
     const { data, error } = useSWR<{ connections: Connection[] }>(`/api/v1/connection?env=${env}`);
 
     const [connections, setConnections] = useState<Connection[] | null>(null);

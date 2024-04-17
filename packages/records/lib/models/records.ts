@@ -14,8 +14,7 @@ import { decryptRecordData, decryptRecords, encryptDataRecords } from '../utils/
 import { RECORDS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
-import { resultErr, resultOk } from '@nangohq/shared';
-import type { Result } from '@nangohq/shared';
+import { resultErr, resultOk, type Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
