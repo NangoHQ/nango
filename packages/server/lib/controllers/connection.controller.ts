@@ -784,7 +784,7 @@ class ConnectionController {
             }
 
             if (updatedConnection && updatedConnection.id && runHook) {
-                await connectionCreatedHook(
+                void connectionCreatedHook(
                     {
                         id: updatedConnection.id,
                         connection_id,

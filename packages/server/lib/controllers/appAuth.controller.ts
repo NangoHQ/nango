@@ -193,7 +193,7 @@ class AppAuthController {
                     }
                 );
 
-                await connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         id: -1,
                         connection_id: connectionId,
@@ -224,7 +224,7 @@ class AppAuthController {
             );
 
             if (updatedConnection) {
-                await connectionCreatedHook(
+                void connectionCreatedHook(
                     {
                         id: updatedConnection.id,
                         connection_id: connectionId,
@@ -283,7 +283,7 @@ class AppAuthController {
                 connectionId: String(connectionId)
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId,

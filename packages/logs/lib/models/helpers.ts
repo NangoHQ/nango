@@ -1,5 +1,5 @@
+import { nanoid } from '@nangohq/utils';
 import type { MessageRow } from '../types/messages';
-import { nanoid } from '../utils.js';
 
 export interface FormatMessageData {
     account?: { id: number; name: string };

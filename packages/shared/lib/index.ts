@@ -30,7 +30,6 @@ export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/onboarding.service.js';
-export * from './utils/result.js';
 
 export * from './hooks/hooks.js';
 

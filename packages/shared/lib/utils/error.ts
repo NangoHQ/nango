@@ -563,7 +563,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 // TODO docs link
                 this.message =
-                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/REPLACE-ME).';
+                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
                 break;
 
             default:

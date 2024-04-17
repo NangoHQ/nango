@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { LogLevel, DataResponse, DataRecord, UpsertResponse, Result } from '@nangohq/shared';
+import type { LogLevel, DataResponse, DataRecord, UpsertResponse } from '@nangohq/shared';
 import {
     createActivityLogMessage,
     errorManager,
@@ -9,15 +9,13 @@ import {
     dataService,
     syncDataService,
     getSyncConfigByJobId,
-    resultOk,
-    resultErr,
-    isOk,
     telemetry,
     MetricTypes
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import { getExistingOperationContext, oldLevelToNewLevel } from '@nangohq/logs';
+import { resultErr, resultOk, isOk, type Result } from '@nangohq/utils';
 
 type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<

@@ -164,7 +164,7 @@ class AppStoreAuthController {
             const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
 
             if (!success || !credentials) {
-                await connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         id: -1,
                         connection_id: connectionId,
@@ -206,7 +206,7 @@ class AppStoreAuthController {
             );
 
             if (updatedConnection) {
-                await connectionCreatedHook(
+                void connectionCreatedHook(
                     {
                         id: updatedConnection.id,
                         connection_id: connectionId,
@@ -246,7 +246,7 @@ class AppStoreAuthController {
                 }
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId as string,

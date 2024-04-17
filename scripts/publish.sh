@@ -26,7 +26,19 @@ if [[ ! "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+|0\.0\.1-[0-9a-fA-F]{40})$ ]]; the
     exit 1
 fi
 
-npm install
+npm ci
+
+# Utils
+mkdir -p "$GIT_ROOT_DIR/packages/shared/vendor"
+pushd "$GIT_ROOT_DIR/packages/utils"
+jq '.bundleDependencies = true' package.json > temp.json && mv temp.json package.json
+npm install --workspaces=false
+npm run build
+npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
+popd
+pushd "$GIT_ROOT_DIR/packages/shared"
+npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=false
+popd
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"

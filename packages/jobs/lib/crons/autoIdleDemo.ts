@@ -9,11 +9,10 @@ import {
     errorManager,
     updateSuccess as updateSuccessActivityLog,
     updateScheduleStatus,
-    isErr,
     findPausableDemoSyncs,
     SpanTypes
 } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, isErr } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { getOperationContext } from '@nangohq/logs';
 

@@ -4,8 +4,8 @@ import { createActivityLogMessage } from '../../activity/activity.service.js';
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
-import { getLogger } from '../../../utils/temp/logger.js';
 import type { LogContext } from '@nangohq/logs';
+import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Data');
 

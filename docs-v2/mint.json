@@ -281,6 +281,7 @@
                         "integrations/integration-templates/hubspot",
                         "integrations/integration-templates/intercom",
                         "integrations/integration-templates/jira",
+                        "integrations/integration-templates/kustomer",
                         "integrations/integration-templates/lever",
                         "integrations/integration-templates/linear",
                         "integrations/integration-templates/microsoft-active-directory",
@@ -343,6 +344,8 @@
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
                         "integrations/all/exact-online",
+                        "integrations/all/exa",
+                        "integrations/all/jotform",
                         "integrations/all/exist",
                         "integrations/all/facebook",
                         "integrations/all/factorial",
@@ -360,6 +363,7 @@
                         "integrations/all/google",
                         "integrations/all/google-ads",
                         "integrations/all/google-calendar",
+                        "integrations/all/google-docs",
                         "integrations/all/google-drive",
                         "integrations/all/google-mail",
                         "integrations/all/google-sheet",
@@ -379,6 +383,7 @@
                         "integrations/all/jira",
                         "integrations/all/keap",
                         "integrations/all/klaviyo",
+                        "integrations/all/kustomer",
                         "integrations/all/lever",
                         "integrations/all/linear",
                         "integrations/all/linkedin",
@@ -555,7 +560,8 @@
                         "reference/sdks/php"
                     ],
                     "icon": "cubes"
-                }
+                },
+                "reference/limits"
             ]
         },
         {

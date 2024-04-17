@@ -42,11 +42,10 @@ import {
     setFrequency,
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    isOk,
-    isErr,
     createActivityLogMessage
 } from '@nangohq/shared';
 import { getExistingOperationContext, getOperationContext, syncCommandToOperation } from '@nangohq/logs';
+import { isErr, isOk } from '@nangohq/utils';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
