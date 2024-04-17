@@ -6,7 +6,7 @@ import { resetPasswordSecret, getUserFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
+import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, type Result, isErr } from '@nangohq/utils';
 import {
     userService,
     accountService,
@@ -16,8 +16,7 @@ import {
     analytics,
     AnalyticsTypes,
     NangoError,
-    createOnboardingProvider,
-    isErr
+    createOnboardingProvider
 } from '@nangohq/shared';
 
 export interface WebUser {

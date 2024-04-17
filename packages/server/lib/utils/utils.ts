@@ -1,10 +1,11 @@
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import type { Request } from 'express';
-import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse, Result } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
+import type { Result } from '@nangohq/utils';
+import { getLogger, resultErr, resultOk, isErr } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
-import { NangoError, userService, environmentService, interpolateString, resultErr, resultOk, isErr } from '@nangohq/shared';
+import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
 
 const logger = getLogger('Server.Utils');
 
