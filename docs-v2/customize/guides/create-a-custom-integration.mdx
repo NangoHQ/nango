@@ -53,7 +53,7 @@ integrations:
             salesforce-contact-fields: # Action name (must match integration script name)
                 description: Fetch available contact fields
                 output: ContactSchema # Output model
-                endpoint: /crm/contact-field # Unified Nango endpoint (defaults to GET for actions)
+                endpoint: /crm/contact-field # Unified Nango endpoint (defaults to POST for actions)
                 scopes: offline_access,api # Necessary scopes
 
 models:
