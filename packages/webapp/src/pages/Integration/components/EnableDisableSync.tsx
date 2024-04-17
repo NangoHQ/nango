@@ -6,6 +6,7 @@ import ToggleButton from '../../../components/ui/button/ToggleButton';
 import Spinner from '../../../components/ui/Spinner';
 import type { PreBuiltFlow, Flow, Connection, Sync } from '../../../types';
 import type { EndpointResponse } from '../Show';
+import { useCreateFlow } from '../../../utils/api';
 import { useStore } from '../../../store';
 
 export interface FlowProps {
@@ -44,6 +45,7 @@ export default function EnableDisableSync({
     showSpinner
 }: FlowProps) {
     const env = useStore((state) => state.env);
+    const createFlow = useCreateFlow(env);
     const syncs = endpoints?.allFlows?.syncs;
     const actions = endpoints?.allFlows?.actions;
     const currentFlow = flow.type === 'sync' ? syncs?.find((sync) => sync.name === flow.name) : actions?.find((action) => action.name === flow.name);
