@@ -257,7 +257,7 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
     return { success: true, error: null, response: inputModel };
 };
 
-const getEnabledStatus = (script: NangoIntegrationDataV2, isPublic: boolean, preBuilt: boolean): boolean => {
+const isEnabled = (script: NangoIntegrationDataV2, isPublic: boolean, preBuilt: boolean): boolean => {
     if (script.enabled !== undefined) {
         return script.enabled;
     }
@@ -381,7 +381,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             const is_public = (isPublic !== undefined ? isPublic : sync.is_public === true) as boolean;
             const pre_built = (isPublic !== undefined ? isPublic : sync.pre_built === true) as boolean;
 
-            const enabled = getEnabledStatus(sync, is_public, pre_built);
+            const enabled = isEnabled(sync, is_public, pre_built);
             const syncObject: NangoSyncConfig = {
                 name: syncName,
                 type: SyncConfigType.SYNC,
@@ -484,7 +484,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             const is_public = (isPublic !== undefined ? isPublic : action.is_public === true) as boolean;
             const pre_built = (isPublic !== undefined ? isPublic : action.pre_built === true) as boolean;
 
-            const enabled = getEnabledStatus(action, is_public, pre_built);
+            const enabled = isEnabled(action, is_public, pre_built);
 
             const actionObject: NangoSyncConfig = {
                 name: actionName,
