@@ -44,15 +44,41 @@ export interface ListIntegration {
     integrations: Integration[];
 }
 
-interface SyncConfigs {
-    enabledSyncs: NangoSyncConfig[];
-    disabledSyncs: NangoSyncConfig[];
+interface FlowConfigs {
+    enabledFlows: NangoSyncConfig[];
+    disabledFlows: NangoSyncConfig[];
 }
 
-interface ActionConfigs {
-    enabledActions: NangoSyncConfig[];
-    disabledActions: NangoSyncConfig[];
-}
+const separateFlows = (flows: NangoSyncConfig[]): FlowConfigs => {
+    return flows.reduce(
+        (acc: FlowConfigs, flow) => {
+            const key = flow.enabled ? 'enabledFlows' : 'disabledFlows';
+            acc[key].push(flow);
+            return acc;
+        },
+        { enabledFlows: [], disabledFlows: [] }
+    );
+};
+
+const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: StandardNangoConfig) => {
+    const { syncs: publicSyncs, actions: publicActions } = publicFlows;
+    const { syncs, actions } = allFlows;
+
+    const { enabledFlows: enabledSyncs, disabledFlows: disabledSyncs } = separateFlows(syncs);
+    const { enabledFlows: enabledActions, disabledFlows: disabledActions } = separateFlows(actions);
+
+    const filterFlows = (publicFlows: NangoSyncConfig[], enabled: NangoSyncConfig[], disabled: NangoSyncConfig[]) => {
+        return publicFlows.filter((publicFlow) => !enabled.concat(disabled).some((flow) => flow.name === publicFlow.name));
+    };
+
+    const filteredSyncs = filterFlows(publicSyncs, enabledSyncs, disabledSyncs);
+    const filteredActions = filterFlows(publicActions, enabledActions, disabledActions);
+
+    const disabledFlows = { syncs: filteredSyncs.concat(disabledSyncs), actions: filteredActions.concat(disabledActions) };
+    const flows = { syncs: enabledSyncs.concat(disabledSyncs), actions: enabledActions.concat(disabledActions) };
+
+    return { disabledFlows, flows };
+};
 
 class ConfigController {
     /**
@@ -363,43 +389,16 @@ class ConfigController {
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
             if (includeFlows && !isHosted) {
-                const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-                const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === config.provider);
+                const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
+                const [publicFlows] = availablePublicFlows.filter((flow) => flow.providerConfigKey === config.provider);
+                const allFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
 
-                const enabledAndDisabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
-                const publicFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
-                const disabledFlows = publicFlows;
-
-                if (availableFlows && enabledAndDisabledFlows && publicFlows) {
-                    const { syncs, actions } = enabledAndDisabledFlows;
-                    const { enabledSyncs, disabledSyncs } = syncs.reduce<SyncConfigs>(
-                        (acc, sync: NangoSyncConfig) => (sync.enabled ? acc.enabledSyncs.push(sync) : acc.disabledSyncs.push(sync), acc),
-                        { enabledSyncs: [], disabledSyncs: [] }
-                    );
-                    const { enabledActions, disabledActions } = actions.reduce<ActionConfigs>(
-                        (acc, action: NangoSyncConfig) => (action.enabled ? acc.enabledActions.push(action) : acc.disabledActions.push(action), acc),
-                        { enabledActions: [], disabledActions: [] }
-                    );
-
-                    enabledAndDisabledFlows.syncs = enabledSyncs;
-                    enabledAndDisabledFlows.actions = enabledActions;
-
-                    const { syncs: publicSyncs, actions: publicActions } = publicFlows;
-
-                    const filteredSyncs = publicSyncs.filter(
-                        (sync) => ![...enabledSyncs, ...disabledSyncs].some((enabledSync) => enabledSync.name === sync.name)
-                    );
-                    const filteredActions = publicActions.filter(
-                        (action) => ![...enabledActions, ...disabledActions].some((enabledAction) => enabledAction.name === action.name)
-                    );
-
-                    disabledFlows.syncs = [...filteredSyncs, ...disabledSyncs];
-                    disabledFlows.actions = [...filteredActions, ...disabledActions];
+                if (availablePublicFlows.length && publicFlows && allFlows) {
+                    const { disabledFlows, flows } = getEnabledAndDisabledFlows(publicFlows, allFlows);
+                    res.status(200).send({ config: configRes, flows: { disabledFlows, allFlows: flows } });
+                    return;
                 }
-
-                const flows = { disabledFlows, allFlows: enabledAndDisabledFlows };
-                res.status(200).send({ config: configRes, flows });
-
+                res.status(200).send({ config: configRes, flows: { allFlows, disabledFlows: publicFlows } });
                 return;
             }
 
