@@ -257,7 +257,7 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
     return { success: true, error: null, response: inputModel };
 };
 
-const isEnabled = (script: NangoIntegrationDataV2, isPublic: boolean, preBuilt: boolean): boolean => {
+const isEnabled = (script: NangoIntegrationDataV2, isPublic: boolean | null, preBuilt: boolean | null): boolean => {
     if (script.enabled !== undefined) {
         return script.enabled;
     }
@@ -378,8 +378,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                     webhookSubscriptions = [sync['webhook-subscriptions'] as string];
                 }
             }
-            const is_public = (isPublic !== undefined ? isPublic : sync.is_public === true) as boolean;
-            const pre_built = (isPublic !== undefined ? isPublic : sync.pre_built === true) as boolean;
+            const is_public = isPublic !== undefined ? isPublic : sync.is_public === true;
+            const pre_built = isPublic !== undefined ? isPublic : sync.pre_built === true;
 
             const enabled = isEnabled(sync, is_public, pre_built);
             const syncObject: NangoSyncConfig = {
@@ -481,8 +481,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             }
 
             const scopes = action?.scopes || action?.metadata?.scopes || [];
-            const is_public = (isPublic !== undefined ? isPublic : action.is_public === true) as boolean;
-            const pre_built = (isPublic !== undefined ? isPublic : action.pre_built === true) as boolean;
+            const is_public = isPublic !== undefined ? isPublic : action.is_public === true;
+            const pre_built = isPublic !== undefined ? isPublic : action.pre_built === true;
 
             const enabled = isEnabled(action, is_public, pre_built);
 
