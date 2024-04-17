@@ -4,7 +4,7 @@ import type { Request } from 'express';
 import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse, Result } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
-import { NangoError, userService, environmentService, interpolateString, resultErr, resultOk } from '@nangohq/shared';
+import { NangoError, userService, environmentService, interpolateString, resultErr, resultOk, isErr } from '@nangohq/shared';
 
 const logger = getLogger('Server.Utils');
 
@@ -30,7 +30,7 @@ export async function getUserAccountAndEnvironmentFromSession(
     req: Request<any, any>
 ): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
     const getUser = await getUserFromSession(req);
-    if (!getUser.ok) {
+    if (isErr(getUser)) {
         return { error: getUser.err, response: null, success: false };
     }
 
