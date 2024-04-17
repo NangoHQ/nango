@@ -1,7 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
-import { integrationFilesAreRemote, isCloud, isProd, getLogger } from '@nangohq/utils';
-import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError, isOk } from '@nangohq/shared';
+import { integrationFilesAreRemote, isCloud, isProd, getLogger, isOk } from '@nangohq/utils';
+import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';

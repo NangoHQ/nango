@@ -1,7 +1,6 @@
-import type { CipherGCMTypes } from 'crypto';
 import utils from 'node:util';
 import crypto from 'crypto';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, Encryption } from '@nangohq/utils';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
@@ -18,41 +17,13 @@ interface DataRecordJson {
 }
 
 export const pbkdf2 = utils.promisify(crypto.pbkdf2);
-export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'];
+export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'] || '';
 
-class EncryptionManager {
-    private key: string | undefined;
-    private algo: CipherGCMTypes = 'aes-256-gcm';
-    private encoding: BufferEncoding = 'base64';
-    private encryptionKeyByteLength = 32;
+class EncryptionManager extends Encryption {
     private keySalt = 'X89FHEGqR3yNK0+v7rPWxQ==';
 
-    constructor(key: string | undefined) {
-        this.key = key;
-
-        if (key && Buffer.from(key, this.encoding).byteLength !== this.encryptionKeyByteLength) {
-            throw new Error('Encryption key must be base64-encoded and 256-bit long.');
-        }
-    }
-
     public shouldEncrypt(): boolean {
-        return Boolean((this?.key as string) && (this.key as string).length > 0);
-    }
-
-    public encrypt(str: string): [string, string, string] {
-        const iv = crypto.randomBytes(12);
-        const cipher = crypto.createCipheriv(this.algo, Buffer.from(this.key!, this.encoding), iv);
-        let enc = cipher.update(str, 'utf8', this.encoding);
-        enc += cipher.final(this.encoding);
-        return [enc, iv.toString(this.encoding), cipher.getAuthTag().toString(this.encoding)];
-    }
-
-    public decrypt(enc: string, iv: string, authTag: string): string {
-        const decipher = crypto.createDecipheriv(this.algo, Buffer.from(this.key!, this.encoding), Buffer.from(iv, this.encoding));
-        decipher.setAuthTag(Buffer.from(authTag, this.encoding));
-        let str = decipher.update(enc, this.encoding, 'utf8');
-        str += decipher.final('utf8');
-        return str;
+        return Boolean(this?.key && this.key.length > 0);
     }
 
     public encryptEnvironment(environment: Environment) {
