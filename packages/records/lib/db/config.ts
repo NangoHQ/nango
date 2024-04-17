@@ -9,7 +9,8 @@ const config: Knex.Config = {
     client: 'postgres',
     connection: {
         connectionString: envs.RECORDS_DATABASE_URL,
-        statement_timeout: 60000
+        statement_timeout: 60000,
+        ssl: 'no-verify' // RDS CA cert is self-signed and not in the CA store
     },
     searchPath: schema,
     pool: { min: 2, max: 20 },
