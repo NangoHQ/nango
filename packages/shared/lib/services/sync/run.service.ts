@@ -22,7 +22,7 @@ import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoC
 import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
-import * as recordsService from './data/records.service.js';
+import * as legacyRecordsService from './data/records.service.js';
 
 interface BigQueryClientInterface {
     insert(row: RunScriptRow): void;
@@ -49,6 +49,7 @@ interface RunScriptRow {
 interface SyncRunConfig {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
+    recordsService: RecordsServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
     isInvokedImmediately?: boolean;
@@ -75,9 +76,14 @@ interface SyncRunConfig {
     temporalContext?: Context;
 }
 
+export interface RecordsServiceInterface {
+    markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, syncId: string, generation: number): Promise<string[]>;
+}
+
 export default class SyncRun {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
+    recordsService: RecordsServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
     isInvokedImmediately: boolean;
@@ -107,6 +113,7 @@ export default class SyncRun {
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
+        this.recordsService = config.recordsService;
         if (config.bigQueryClient) {
             this.bigQueryClient = config.bigQueryClient;
         }
@@ -456,12 +463,22 @@ export default class SyncRun {
         for (const model of models) {
             let deletedKeys: string[] = [];
             if (!this.isWebhook && trackDeletes) {
-                deletedKeys = await recordsService.markNonCurrentGenerationRecordsAsDeleted(
+                deletedKeys = await legacyRecordsService.markNonCurrentGenerationRecordsAsDeleted(
                     this.nangoConnection.id as number,
                     model,
                     this.syncId as string,
                     this.syncJobId as number
                 );
+                this.recordsService
+                    .markNonCurrentGenerationRecordsAsDeleted(this.nangoConnection.id as number, model, this.syncId as string, this.syncJobId as number)
+                    .catch((e) => {
+                        console.error(`Error marking non current generation records as deleted:`, e, {
+                            connectionId: this.nangoConnection.id,
+                            model,
+                            syncId: this.syncId,
+                            syncJobId: this.syncJobId
+                        });
+                    });
             }
 
             await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);
