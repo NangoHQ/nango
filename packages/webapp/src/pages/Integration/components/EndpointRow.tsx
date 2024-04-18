@@ -26,7 +26,7 @@ export default function EndpointRow({ flow, endpoint, setSubTab, setFlow }: Endp
                 <div className="text-gray-400 ml-12 w-[36rem] truncate">{flow.description}</div>
             </div>
             <div className="flex flex-end relative group hover:bg-neutral-800 rounded p-2 ml-12">
-                {'version' in flow && flow.version !== null ? (
+                {flow.enabled ? (
                     <div className="w-2 h-2 bg-green-500 rounded-full cursor-pointer"></div>
                 ) : (
                     <div className="w-2 h-2 bg-pink-600 rounded-full cursor-pointer"></div>

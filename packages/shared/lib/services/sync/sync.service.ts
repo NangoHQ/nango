@@ -544,7 +544,7 @@ export const getAndReconcileDifferences = async ({
          * the sync if there are connections
          */
         let syncsByConnection: Sync[] = [];
-        if (exists && connections.length > 0) {
+        if (exists && exists.enabled && connections.length > 0) {
             syncsByConnection = await findSyncByConnections(
                 connections.map((connection) => connection.id as number),
                 syncName
@@ -575,7 +575,7 @@ export const getAndReconcileDifferences = async ({
         }
 
         // in some cases syncs are missing so let's also create them if missing
-        if (performAction && syncsByConnection.length !== 0 && syncsByConnection.length !== connections.length) {
+        if (performAction && !exists?.enabled && syncsByConnection.length !== 0 && syncsByConnection.length !== connections.length) {
             const missingConnections = connections.filter((connection) => {
                 return !syncsByConnection.find((sync) => sync.nango_connection_id === connection.id);
             });

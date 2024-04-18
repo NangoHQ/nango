@@ -432,7 +432,8 @@ export async function deployPreBuilt(
             attributes,
             metadata,
             pre_built: true,
-            is_public
+            is_public,
+            enabled: true
         };
 
         insertData.push(flowData);
@@ -730,10 +731,15 @@ async function compileDeployInfo({
     }
 
     const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
+    let lastSyncWasEnabled = true;
 
     if (oldConfigs.length > 0) {
         const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
         idsToMarkAsInvactive.push(...ids);
+        const lastConfig = oldConfigs[oldConfigs.length - 1];
+        if (lastConfig) {
+            lastSyncWasEnabled = lastConfig.enabled;
+        }
 
         if (debug) {
             await createActivityLogMessage({
@@ -764,7 +770,8 @@ async function compileDeployInfo({
         model_schema: model_schema as unknown as SyncModelSchema[],
         input: flow.input || '',
         sync_type: flow.sync_type,
-        webhook_subscriptions: flow.webhookSubscriptions || []
+        webhook_subscriptions: flow.webhookSubscriptions || [],
+        enabled: lastSyncWasEnabled
     });
 
     flowReturnData.push({
