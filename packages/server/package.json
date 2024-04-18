@@ -32,7 +32,7 @@
         "connect-session-knex": "4.0.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
-        "dd-trace": "5.2.0",
+        "dd-trace": "5.10.0",
         "dotenv": "^16.0.3",
         "exponential-backoff": "^3.1.1",
         "express": "^4.19.2",
