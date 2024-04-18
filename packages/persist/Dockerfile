@@ -1,4 +1,4 @@
-FROM node:20.12.2-slim
+FROM node:20.12.2-bullseye-slim
 
 RUN apt-get update \
     && apt-get install -y ca-certificates \
