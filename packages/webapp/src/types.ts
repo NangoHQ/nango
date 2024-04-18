@@ -122,7 +122,7 @@ export enum AuthModes {
 
 export interface Connection {
     id: number;
-    connectionId: string;
+    connection_id: string;
     provider: string;
     providerConfigKey: string;
     creationDate: string;
@@ -221,6 +221,7 @@ export interface Flow {
     attributes: Record<string, unknown>;
     endpoints: NangoSyncEndpoint[];
     scopes: string[];
+    enabled: boolean;
     sync_type?: 'FULL' | 'INCREMENTAL';
     is_public: boolean;
     pre_built: boolean;

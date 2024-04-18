@@ -1,6 +1,5 @@
 import { v2, client } from '@datadog/datadog-api-client';
 import { isCloud } from '@nangohq/utils';
-import tracer from 'dd-trace';
 
 export enum LogTypes {
     AUTH_TOKEN_REFRESH_START = 'auth_token_refresh_start',
@@ -34,22 +33,6 @@ export enum LogTypes {
     INCOMING_WEBHOOK_ISSUE_WEBHOOK_SUBSCRIPTION_NOT_FOUND_REGISTERED = 'incoming_webhook_issue_webhook_subscription_not_found_registered',
     INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY = 'incoming_webhook_processed_successfully',
     INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing'
-}
-
-export enum MetricTypes {
-    ACTION_TRACK_RUNTIME = 'action_track_runtime',
-    SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
-    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
-    RUNNER_SDK = 'nango.runner.sdk',
-    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
-    JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',
-    JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
-    JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
-    JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
-    JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
-    PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
-    PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
-    AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey'
 }
 
 export enum SpanTypes {
@@ -88,60 +71,6 @@ class Telemetry {
         };
 
         await this.logInstance?.submitLog(params);
-    }
-
-    public increment(metricName: MetricTypes, value?: number): void {
-        tracer.dogstatsd.increment(metricName, value ?? 1);
-    }
-
-    public decrement(metricName: MetricTypes, value?: number): void {
-        tracer.dogstatsd.decrement(metricName, value ?? 1);
-    }
-
-    public duration(metricName: MetricTypes, value: number): void {
-        tracer.dogstatsd.distribution(metricName, value);
-    }
-
-    public time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: MetricTypes, func: F): F {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const that = this;
-
-        const duration = (start: [number, number]) => {
-            const durationComponents = process.hrtime(start);
-            const seconds = durationComponents[0];
-            const nanoseconds = durationComponents[1];
-            const duration = seconds * 1000 + nanoseconds / 1e6;
-
-            that.duration(metricName, duration);
-        };
-
-        // This function should handle both async/sync function
-        // So it's try/catch regular execution and use .then() for async
-        // @ts-expect-error can't fix this
-        return function wrapped(...args: any) {
-            const start = process.hrtime();
-
-            try {
-                const res = func(...args);
-                if (res[Symbol.toStringTag] === 'Promise') {
-                    return res.then(
-                        (v) => {
-                            duration(start);
-                            return v;
-                        },
-                        (err) => {
-                            duration(start);
-                            throw err;
-                        }
-                    );
-                }
-
-                return res;
-            } catch (err) {
-                duration(start);
-                throw err;
-            }
-        };
     }
 }
 

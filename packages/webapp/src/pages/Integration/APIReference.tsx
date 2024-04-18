@@ -17,10 +17,10 @@ export default function APIReference(props: APIReferenceProps) {
     const { integration, endpoints, setSubTab, setFlow } = props;
 
     const allFlows = [
-        ...(endpoints?.enabledFlows?.syncs || []),
-        ...(endpoints?.enabledFlows?.actions || []),
-        ...(endpoints?.unEnabledFlows?.syncs || []),
-        ...(endpoints?.unEnabledFlows?.actions || [])
+        ...(endpoints?.allFlows?.syncs || []),
+        ...(endpoints?.allFlows?.actions || []),
+        ...(endpoints?.disabledFlows?.syncs || []),
+        ...(endpoints?.disabledFlows?.actions || [])
     ];
     // if any element in the array has elements in the endpoints array then return true
     const hasEndpoints = allFlows.some((flow) => flow.endpoints.length > 0);

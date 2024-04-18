@@ -28,6 +28,7 @@ export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
     scopes?: string[];
     output?: string | string[];
     id?: number;
+    enabled?: boolean;
 }
 
 export interface NangoIntegrationV1 {
@@ -121,8 +122,8 @@ export interface NangoSyncConfig {
     returns: string[];
     models: NangoSyncModel[];
     endpoints: NangoSyncEndpoint[];
-    is_public?: boolean;
-    pre_built?: boolean;
+    is_public?: boolean | null;
+    pre_built?: boolean | null;
     version?: string | null;
     last_deployed?: string | null;
     id?: number;
@@ -132,6 +133,7 @@ export interface NangoSyncConfig {
     sync_type?: SyncType;
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];
+    enabled?: boolean;
 }
 
 export interface StandardNangoConfig {
