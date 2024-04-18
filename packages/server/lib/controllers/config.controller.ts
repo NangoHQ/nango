@@ -75,7 +75,7 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
     const filteredActions = filterFlows(publicActions, enabledActions, disabledActions);
 
     const disabledFlows = { syncs: filteredSyncs.concat(disabledSyncs), actions: filteredActions.concat(disabledActions) };
-    const flows = { syncs: enabledSyncs.concat(disabledSyncs), actions: enabledActions.concat(disabledActions) };
+    const flows = { syncs: enabledSyncs, actions: enabledActions };
 
     return { disabledFlows, flows };
 };
