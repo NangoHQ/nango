@@ -28,4 +28,4 @@ jobs:
               run: npm run ts-build
 
             - name: Lint
-              run: npm run lint
+              run: npm run lint -- --quiet

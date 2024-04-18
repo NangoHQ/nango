@@ -159,9 +159,9 @@ export async function createActivityLogMessage(logMessage: ActivityLogMessage, l
 
 export async function addEndTime(activity_log_id: number): Promise<void> {
     try {
-            await db.knex.from<ActivityLog>(activityLogTableName).where({ id: activity_log_id }).update({
-                end: Date.now()
-            });
+        await db.knex.from<ActivityLog>(activityLogTableName).where({ id: activity_log_id }).update({
+            end: Date.now()
+        });
     } catch (e) {
         errorManager.report(e, {
             source: ErrorSourceEnum.PLATFORM,
