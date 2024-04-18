@@ -45,6 +45,7 @@ import {
     createActivityLogMessage
 } from '@nangohq/shared';
 import { isErr, isOk } from '@nangohq/utils';
+import { records as recordsService } from '@nangohq/records';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
@@ -287,6 +288,7 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
 
             const { success, error } = await syncOrchestrator.runSyncCommand(
+                recordsService,
                 environmentId,
                 provider_config_key,
                 syncNames as string[],
@@ -485,7 +487,14 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
-            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.PAUSE, connection_id);
+            await syncOrchestrator.runSyncCommand(
+                recordsService,
+                environmentId,
+                provider_config_key as string,
+                syncNames as string[],
+                SyncCommand.PAUSE,
+                connection_id
+            );
 
             res.sendStatus(200);
         } catch (e) {
@@ -517,7 +526,14 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
-            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.UNPAUSE, connection_id);
+            await syncOrchestrator.runSyncCommand(
+                recordsService,
+                environmentId,
+                provider_config_key as string,
+                syncNames as string[],
+                SyncCommand.UNPAUSE,
+                connection_id
+            );
 
             res.sendStatus(200);
         } catch (e) {
@@ -646,7 +662,8 @@ class SyncController {
                 providerConfigKey: connection?.provider_config_key as string,
                 connectionId: connection?.connection_id as string,
                 syncName: sync_name,
-                nangoConnectionId: connection?.id
+                nangoConnectionId: connection?.id,
+                recordsService
             });
 
             if (isErr(result)) {

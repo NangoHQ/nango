@@ -46,6 +46,10 @@ const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
 const namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
 
+export interface RecordsServiceInterface {
+    deleteRecordsBySyncId({ syncId }: { syncId: string }): Promise<{ totalDeletedRecords: number }>;
+}
+
 class SyncClient {
     private static instance: Promise<SyncClient | null>;
     private client: Client | null = null;
@@ -367,7 +371,8 @@ class SyncClient {
         providerConfigKey,
         connectionId,
         syncName,
-        nangoConnectionId
+        nangoConnectionId,
+        recordsService
     }: {
         scheduleId: string;
         syncId: string;
@@ -378,6 +383,7 @@ class SyncClient {
         connectionId: string;
         syncName: string;
         nangoConnectionId?: number | undefined;
+        recordsService: RecordsServiceInterface;
     }): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
@@ -424,6 +430,7 @@ class SyncClient {
 
                         await clearLastSyncDate(syncId);
                         await deleteRecordsBySyncId({ syncId });
+                        await recordsService.deleteRecordsBySyncId({ syncId });
                         await createActivityLogMessage({
                             level: 'info',
                             environment_id: environmentId,

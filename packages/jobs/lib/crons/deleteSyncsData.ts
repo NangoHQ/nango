@@ -10,6 +10,7 @@ import {
     db,
     findRecentlyDeletedSync
 } from '@nangohq/shared';
+import { records } from '@nangohq/records';
 import { getLogger } from '@nangohq/utils';
 import tracer from 'dd-trace';
 
@@ -73,6 +74,7 @@ export async function exec(): Promise<void> {
             // ----
             // hard delete records
             const res = await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
+            await records.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
             telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalDeletedRecords);
         }
     });
