@@ -42,10 +42,13 @@ import {
     setFrequency,
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    createActivityLogMessage
+    createActivityLogMessage,
+    featureFlags
 } from '@nangohq/shared';
-import { isErr, isOk } from '@nangohq/utils';
+import { isErr, isOk, getLogger } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
+
+const logger = getLogger('sync.controller');
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
@@ -176,7 +179,11 @@ class SyncController {
                 return;
             }
 
-            const { success, error, response } = await syncDataService.getAllDataRecords(
+            const {
+                success,
+                error: legacyError,
+                response
+            } = await syncDataService.getAllDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
@@ -188,11 +195,51 @@ class SyncController {
             );
 
             if (!success || !response) {
-                errorManager.errResFromNangoErr(res, error);
-
+                errorManager.errResFromNangoErr(res, legacyError);
                 return;
             }
 
+            const shouldFetchNewRecords = await featureFlags.isEnabled('new-records-fetch', 'global', false);
+            if (shouldFetchNewRecords) {
+                const { error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+
+                if (error || !connection) {
+                    errorManager.errResFromNangoErr(res, error);
+                    return;
+                }
+
+                const newResponse = await recordsService.getRecords({
+                    connectionId: connection.id as number,
+                    model: model as string,
+                    modifiedAfter: (delta || modified_after) as string,
+                    limit: limit as string,
+                    filter: filter as LastAction,
+                    cursor: cursor as string
+                });
+
+                if (isErr(newResponse)) {
+                    logger.error('Error fetching records from new records service', newResponse.err);
+                } else {
+                    if (JSON.stringify(response) !== JSON.stringify(newResponse.res)) {
+                        logger.error(
+                            `[RECORDS MIGRATION] Differences between legacy and new records: ${JSON.stringify(response)} <<<>>> ${JSON.stringify(newResponse.res)}`,
+                            {
+                                connectionId,
+                                model,
+                                modifiedAfter: delta || modified_after,
+                                limit,
+                                filter,
+                                cursor
+                            }
+                        );
+                    } else {
+                        logger.info('[RECORDS MIGRATION] No differences between legacy and new records');
+                    }
+                }
+
+                // TODO: enable track fetch once the call to legacy getAllDataRecords is removed
+                // await trackFetch(connection.id as number);
+            }
             res.send(response);
         } catch (e) {
             next(e);
