@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { LogLevel, DataResponse, DataRecord, UpsertResponse } from '@nangohq/shared';
+import { records as recordsService, format as recordsFormatter, type FormattedRecord, type UnencryptedRecordData } from '@nangohq/records';
 import {
     createActivityLogMessage,
     errorManager,
@@ -15,7 +16,9 @@ import {
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import { getExistingOperationContext, oldLevelToNewLevel } from '@nangohq/logs';
-import { resultErr, resultOk, isOk, type Result } from '@nangohq/utils';
+import { getLogger, resultErr, resultOk, isOk, isErr, type Result } from '@nangohq/utils';
+
+const logger = getLogger('PersistController');
 
 type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
@@ -73,8 +76,18 @@ class PersistController {
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
         const logCtx = getExistingOperationContext({ id: String(activityLogId) });
-        const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
+        const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
+            recordsService
+                .upsert(records, nangoConnectionId, model, false)
+                .then((res) => {
+                    if (isErr(res)) {
+                        throw res.err;
+                    }
+                })
+                .catch((reason) => {
+                    logger.error(`Failed to save records: ${reason}`);
+                });
+            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'save',
@@ -103,8 +116,18 @@ class PersistController {
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
         const logCtx = getExistingOperationContext({ id: String(activityLogId) });
-        const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.upsert(dataRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
+        const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
+            recordsService
+                .upsert(records, nangoConnectionId, model, true)
+                .then((res) => {
+                    if (isErr(res)) {
+                        throw res.err;
+                    }
+                })
+                .catch((reason) => {
+                    logger.error(`Failed to delete records: ${reason}`);
+                });
+            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'delete',
@@ -133,8 +156,18 @@ class PersistController {
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
         const logCtx = getExistingOperationContext({ id: String(activityLogId) });
-        const persist = async (dataRecords: DataRecord[]) => {
-            return await dataService.update(dataRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
+        const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
+            recordsService
+                .update(records, nangoConnectionId, model)
+                .then((res) => {
+                    if (isErr(res)) {
+                        throw res.err;
+                    }
+                })
+                .catch((reason) => {
+                    logger.error(`Failed to update records: ${reason}`);
+                });
+            return await dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'update',
@@ -182,7 +215,7 @@ class PersistController {
         records: Record<string, any>[];
         activityLogId: number;
         softDelete: boolean;
-        persistFunction: (records: DataRecord[]) => Promise<UpsertResponse>;
+        persistFunction: (records: FormattedRecord[], legacyRecords: DataRecord[]) => Promise<UpsertResponse>;
     }): Promise<Result<void>> {
         const active = tracer.scope().active();
         const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
@@ -203,14 +236,22 @@ class PersistController {
             }
         });
 
+        let formattedRecords: FormattedRecord[] = [];
+        const formatting = recordsFormatter.formatRecords(records as UnencryptedRecordData[], nangoConnectionId, model, syncId, syncJobId, softDelete);
+        if (isErr(formatting)) {
+            logger.error('Failed to format records: ' + formatting.err.message);
+        } else {
+            formattedRecords = formatting.res;
+        }
+
         const {
             success,
             error,
-            response: formattedRecords
+            response: legacyFormattedRecords
         } = syncDataService.formatDataRecords(records as unknown as DataResponse[], nangoConnectionId, model, syncId, syncJobId, softDelete);
 
         const logCtx = getExistingOperationContext({ id: String(activityLogId) });
-        if (!success || formattedRecords === null) {
+        if (!success || legacyFormattedRecords === null) {
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
@@ -234,7 +275,19 @@ class PersistController {
             return res;
         }
 
-        const persistResult = await persistFunction(formattedRecords);
+        const persistResult = await persistFunction(formattedRecords, legacyFormattedRecords);
+        // TODO after migrating records
+        // add activityLog if persistResult.nonUniqueKeys is not empty
+        //
+        // for (const nonUniqueKey of persistResult.summary.nonUniqueKeys) {
+        //     await createActivityLogMessage({
+        //         level: 'error',
+        //         environment_id,
+        //         activity_log_id: activityLogId,
+        //         content: `Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`,
+        //         timestamp: Date.now()
+        //     });
+        // }
 
         if (persistResult.success) {
             const { summary } = persistResult;

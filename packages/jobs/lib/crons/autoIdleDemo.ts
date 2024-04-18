@@ -15,6 +15,7 @@ import {
 import { getLogger, isErr } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { getOperationContext } from '@nangohq/logs';
+import { records as recordsService } from '@nangohq/records';
 
 const logger = getLogger('Jobs');
 
@@ -80,7 +81,8 @@ export async function exec(): Promise<void> {
             providerConfigKey: sync.unique_key,
             connectionId: sync.connection_id,
             syncName: sync.name,
-            logCtx
+            logCtx,
+            recordsService
         });
         if (isErr(resTemporal)) {
             await logCtx.failed();

@@ -36,6 +36,7 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 import type { LogContext } from '@nangohq/logs';
 import { getOperationContext, syncCommandToOperation } from '@nangohq/logs';
+import type { RecordsServiceInterface } from '../../clients/sync.client.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -167,6 +168,7 @@ export class Orchestrator {
     }
 
     public async runSyncCommand(
+        recordsService: RecordsServiceInterface,
         environmentId: number,
         providerConfigKey: string,
         syncNames: string[],
@@ -236,7 +238,8 @@ export class Orchestrator {
                     connectionId,
                     syncName,
                     nangoConnectionId: connection.id,
-                    logCtx
+                    logCtx,
+                    recordsService
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
@@ -276,7 +279,8 @@ export class Orchestrator {
                     connectionId: connection.connection_id,
                     syncName: sync.name,
                     nangoConnectionId: connection.id,
-                    logCtx
+                    logCtx,
+                    recordsService
                 });
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);

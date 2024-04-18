@@ -18,10 +18,11 @@
             "path": "../utils"
         },
         {
+            "path": "../records"
+        },
+        {
             "path": "../data-ingestion"
         }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }

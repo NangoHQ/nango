@@ -13,9 +13,10 @@
         },
         {
             "path": "../utils"
+        },
+        {
+            "path": "../records"
         }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }
