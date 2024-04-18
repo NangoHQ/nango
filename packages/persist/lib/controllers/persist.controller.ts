@@ -9,13 +9,11 @@ import {
     updateSyncJobResult,
     dataService,
     syncDataService,
-    getSyncConfigByJobId,
-    telemetry,
-    MetricTypes
+    getSyncConfigByJobId
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
-import { getLogger, resultErr, resultOk, isOk, isErr, type Result } from '@nangohq/utils';
+import { getLogger, resultErr, resultOk, isOk, isErr, type Result, metrics } from '@nangohq/utils';
 
 const logger = getLogger('PersistController');
 
@@ -297,8 +295,8 @@ class PersistController {
 
             await updateSyncJobResult(syncJobId, updatedResults, model);
 
-            telemetry.increment(MetricTypes.PERSIST_RECORDS_COUNT, records.length);
-            telemetry.increment(MetricTypes.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
+            metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
+            metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
 
             span.finish();
             return resultOk(void 0);
