@@ -64,7 +64,7 @@ class CompileService {
             console.log(chalk.green(`Compiling ${scriptName}.ts in ${scriptDirectory}`));
         }
 
-        const integrationFiles = listFilesToCompile({ scriptName, cwd: scriptDirectory, config });
+        const integrationFiles = listFilesToCompile({ scriptName, cwd: scriptDirectory, config, debug });
         let success = true;
 
         const modelNames = configService.getModelNames(config);
@@ -120,13 +120,23 @@ export function getFileToCompile(filePath: string): ListedFile {
 export function listFilesToCompile({
     cwd,
     scriptName,
-    config
-}: { cwd?: string; scriptName?: string | undefined; config?: StandardNangoConfig[] } = {}): ListedFile[] {
+    config,
+    debug
+}: { cwd?: string; scriptName?: string | undefined; config?: StandardNangoConfig[]; debug?: boolean } = {}): ListedFile[] {
     let files: string[] = [];
     if (scriptName) {
+        if (debug) {
+            printDebug(`Compiling ${scriptName}.ts`);
+        }
+
         files = [`${cwd || process.cwd()}/${scriptName}.ts`];
     } else {
         files = glob.sync(`${cwd || process.cwd()}/*.ts`);
+
+        // models.ts is the one expected file
+        if (files.length === 1 && debug) {
+            printDebug(`No files found in the root: ${cwd || process.cwd()}`);
+        }
 
         if (config) {
             config.forEach((providerConfig) => {
@@ -134,6 +144,15 @@ export function listFilesToCompile({
                 const actionPath = `${providerConfig.providerConfigKey}/actions`;
 
                 files = [...files, ...glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`), ...glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`)];
+
+                if (debug) {
+                    if (glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`).length > 0) {
+                        printDebug(`Found nested sync files in ${syncPath}`);
+                    }
+                    if (glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`).length > 0) {
+                        printDebug(`Found nested action files in ${actionPath}`);
+                    }
+                }
             });
         }
     }
