@@ -21,10 +21,5 @@ jobs:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
 
-            - uses: reviewdog/action-eslint@v1
-              with:
-                  github_token: ${{ secrets.GITHUB_TOKEN }}
-                  reporter: github-pr-review # Change reporter.
-                  eslint_flags: '.'
-                  level: 'error'
-                  fail_on_error: true
+            - name: Lint
+              run: npm run lint
