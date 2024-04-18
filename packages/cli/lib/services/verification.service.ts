@@ -130,7 +130,7 @@ class VerificationService {
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = listFilesToCompile();
+        const tsFiles = listFilesToCompile({ config });
 
         const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 

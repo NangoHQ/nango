@@ -126,14 +126,14 @@ export function listFilesToCompile({
     if (scriptName) {
         files = [`${cwd || process.cwd()}/${scriptName}.ts`];
     } else {
-        files = glob.sync(`${cwd || process.cwd()}/**/*.ts`);
+        files = glob.sync(`${cwd || process.cwd()}/*.ts`);
 
         if (config) {
             config.forEach((providerConfig) => {
                 const syncPath = `${providerConfig.providerConfigKey}/syncs`;
                 const actionPath = `${providerConfig.providerConfigKey}/actions`;
 
-                files = [...files, ...glob.sync(`${cwd || process.cwd()}/${syncPath}/**/*.ts`), ...glob.sync(`${cwd || process.cwd()}/${actionPath}/**/*.ts`)];
+                files = [...files, ...glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`), ...glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`)];
             });
         }
     }
