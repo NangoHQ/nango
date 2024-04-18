@@ -22,6 +22,7 @@ import {
     getSyncByIdAndName,
     getLastSyncDate
 } from '@nangohq/shared';
+import { records as recordsService } from '@nangohq/records';
 import { getLogger, env } from '@nangohq/utils';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
@@ -61,6 +62,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const syncRun = new syncRunService({
         bigQueryClient,
         integrationService,
+        recordsService,
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
@@ -234,6 +236,7 @@ export async function syncProvider(
         const syncRun = new syncRunService({
             bigQueryClient,
             integrationService,
+            recordsService,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -322,6 +325,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     const syncRun = new syncRunService({
         bigQueryClient,
         integrationService,
+        recordsService,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,
@@ -415,6 +419,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
         const syncRun = new syncRunService({
             bigQueryClient,
             integrationService,
+            recordsService,
             writeToDb: true,
             syncId,
             nangoConnection,

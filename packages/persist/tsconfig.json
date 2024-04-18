@@ -4,6 +4,6 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
-    "references": [{ "path": "../shared" }, { "path": "../utils" }],
+    "references": [{ "path": "../shared" }, { "path": "../utils" }, { "path": "../records" }],
     "include": ["lib/**/*"]
 }

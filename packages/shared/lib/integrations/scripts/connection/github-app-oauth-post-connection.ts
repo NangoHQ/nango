@@ -28,5 +28,5 @@ export default async function execute(nango: Nango) {
         };
     }
 
-    await nango.updateConnectionConfig({ handle, userCredentials: connection.credentials });
+    await nango.updateConnectionConfig(updatedConfig);
 }

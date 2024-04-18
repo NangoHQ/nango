@@ -100,7 +100,8 @@
             ],
             "rules": {
                 "no-constant-condition": "off",
-                "@typescript-eslint/no-dynamic-delete": "off"
+                "@typescript-eslint/no-dynamic-delete": "off",
+                "@typescript-eslint/no-redundant-type-constituents": "off"
             }
         },
         {

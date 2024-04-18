@@ -152,14 +152,14 @@ class ConfigService {
 
     async createEmptyProviderConfig(provider: string, environment_id: number): Promise<Pick<ProviderConfig, 'id' | 'unique_key'>> {
         const exists = await db.knex
-            .count<{ count: number }>('*')
+            .count<{ count: string }>('*')
             .from<ProviderConfig>(`_nango_configs`)
             .where({ provider, environment_id, deleted: false })
             .first();
 
         const config = {
             environment_id,
-            unique_key: exists?.count === 0 ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
+            unique_key: exists?.count === '0' ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
             provider
         };
 
