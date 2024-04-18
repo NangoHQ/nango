@@ -123,7 +123,6 @@ export enum AuthModes {
 export interface Connection {
     id: number;
     connection_id: string;
-    connectionId: string;
     provider: string;
     providerConfigKey: string;
     creationDate: string;
