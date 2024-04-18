@@ -25,6 +25,6 @@ jobs:
               with:
                   github_token: ${{ secrets.GITHUB_TOKEN }}
                   reporter: github-pr-review # Change reporter.
-                  eslint_flags: '.'
+                  eslint_flags: '. --quiet'
                   level: 'error'
                   fail_on_error: true

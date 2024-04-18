@@ -1066,6 +1066,7 @@ class OAuthController {
 
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
+            await logCtx.enrichOperation({ connectionId, configId: String(config.id), configName: config.unique_key });
 
             if (session.authMode === ProviderAuthModes.OAuth2 || session.authMode === ProviderAuthModes.Custom) {
                 return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId!, session.environmentId, logCtx);
@@ -1421,6 +1422,7 @@ class OAuthController {
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
+            await logCtx.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',
