@@ -66,7 +66,8 @@ export default function ShowIntegration() {
                 setPageNotFound(true);
             } else if (res?.status === 200) {
                 const data = await res.json();
-                setConnection(data['connection']);
+                const connection = data['connection'];
+                setConnection({ ...connection, connection_id: connectionId });
             } else if (res != null) {
                 setServerErrorMessage(`
 We could not retrieve and/or refresh your access token due to the following error:
@@ -74,7 +75,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 `);
                 setConnection({
                     providerConfigKey,
-                    connectionId
+                    connection_id: connectionId
                 } as Connection);
             }
         };

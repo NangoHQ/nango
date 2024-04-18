@@ -102,12 +102,13 @@ export interface SyncConfig extends TimestampsAndDeleted {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     version?: string;
-    pre_built?: boolean;
-    is_public?: boolean;
+    pre_built?: boolean | null;
+    is_public?: boolean | null;
     endpoints?: NangoSyncEndpoint[];
     input?: string | SyncModelSchema;
     sync_type?: SyncType | undefined;
     webhook_subscriptions?: string[];
+    enabled: boolean;
 }
 
 export interface SyncEndpoint extends Timestamps {
@@ -125,6 +126,7 @@ export interface SlimSync {
     sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
+    enabled?: boolean;
 }
 
 export interface SlimAction {
