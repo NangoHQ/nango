@@ -104,7 +104,7 @@ export default function EnableDisableSync({
             setIsEnabling(true);
         }
 
-        const res = await fetch(`/api/v1/flow/${flow?.id}/enable`, {
+        const res = await fetch(`/api/v1/flow/${flow?.id}/enable?env=${env}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
