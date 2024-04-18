@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import type { IncomingPreBuiltFlowConfig, FlowDownloadBody, StandardNangoConfig } from '@nangohq/shared';
+import type { IncomingPreBuiltFlowConfig, FlowDownloadBody } from '@nangohq/shared';
 import {
     flowService,
     accountService,
@@ -13,9 +13,10 @@ import {
     remoteFileService,
     getAllSyncsAndActions,
     getNangoConfigIdAndLocationFromId,
-    getConfigWithEndpointsByProviderConfigKey,
     getConfigWithEndpointsByProviderConfigKeyAndName,
-    getSyncsByConnectionIdsAndEnvironmentIdAndSyncName
+    getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
+    enableScriptConfig as enableConfig,
+    disableScriptConfig as disableConfig
 } from '@nangohq/shared';
 
 class FlowController {
@@ -209,7 +210,36 @@ class FlowController {
         }
     }
 
-    public async deleteFlow(req: Request, res: Response, next: NextFunction) {
+    public async enableFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { environmentId } = response;
+
+            const id = req.params['id'];
+            const flow = req.body;
+
+            if (!id) {
+                res.status(400).send('Missing id');
+                return;
+            }
+
+            await enableConfig(Number(id));
+
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environmentId);
+
+            res.status(200).send([{ ...flow, enabled: true }]);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async disableFlow(req: Request, res: Response, next: NextFunction) {
         try {
             const { success, error, response } = await getEnvironmentAndAccountId(res, req);
 
@@ -223,6 +253,7 @@ class FlowController {
             const id = req.params['id'];
             const connectionIds = req.query['connectionIds'] as string;
             const syncName = req.query['sync_name'] as string;
+            const flow = req.body;
 
             if (!id) {
                 res.status(400).send('Missing id');
@@ -244,51 +275,9 @@ class FlowController {
                 }
             }
 
-            await syncOrchestrator.deleteConfig(Number(id), environmentId);
+            await disableConfig(Number(id));
 
-            res.sendStatus(204);
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async getEndpoints(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { environmentId } = response;
-            const providerConfigKey = req.params['providerConfigKey'];
-            const provider = req.query['provider'];
-
-            if (!providerConfigKey) {
-                res.status(400).send('Missing providerConfigKey');
-                return;
-            }
-
-            const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-            const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === provider);
-
-            const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
-            const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
-
-            if (availableFlows && enabledFlows && unEnabledFlows) {
-                const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
-
-                const { syncs, actions } = unEnabledFlows;
-
-                const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
-                const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
-
-                unEnabledFlows.syncs = filteredSyncs;
-                unEnabledFlows.actions = filteredActions;
-            }
-
-            res.send({ unEnabledFlows, enabledFlows });
+            res.send({ ...flow, enabled: false });
         } catch (e) {
             next(e);
         }

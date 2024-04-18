@@ -104,6 +104,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
       {
         "attributes": {},
         "description": "Get a GitHub issue.",
+        "enabled": true,
         "endpoints": [
           {
             "GET": "/ticketing/tickets/{GithubCreateIssueInput:id}",
@@ -185,6 +186,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
       {
         "attributes": {},
         "description": "Creates a GitHub issue.",
+        "enabled": true,
         "endpoints": [
           {
             "POST": "/ticketing/tickets",
@@ -266,6 +268,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
       {
         "attributes": {},
         "description": "Deletes a GitHub issue.",
+        "enabled": true,
         "endpoints": [
           {
             "DELETE": "/ticketing/tickets/{GithubIssue:id}",
@@ -308,6 +311,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "auto_start": true,
         "description": "Sync github issues continuously from public repos
 ",
+        "enabled": true,
         "endpoints": [
           {
             "GET": "/ticketing/tickets",
@@ -390,6 +394,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "auto_start": true,
         "description": "Sync github issues continuously from public repos example two
 ",
+        "enabled": true,
         "endpoints": [
           {
             "GET": "/ticketing/tickets-two",
@@ -469,6 +474,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "attributes": {},
         "auto_start": true,
         "description": "Sync github issues to multiple models",
+        "enabled": true,
         "endpoints": [
           {
             "GET": "/ticketing/ticket",

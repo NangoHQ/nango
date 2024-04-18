@@ -6,7 +6,8 @@ import type {
     Config as ProviderConfig,
     IntegrationWithCreds,
     Integration as ProviderIntegration,
-    Config
+    Config,
+    NangoSyncConfig
 } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
 import {
@@ -42,6 +43,59 @@ export interface Integration {
 export interface ListIntegration {
     integrations: Integration[];
 }
+
+interface FlowConfigs {
+    enabledFlows: NangoSyncConfig[];
+    disabledFlows: NangoSyncConfig[];
+}
+
+const separateFlows = (flows: NangoSyncConfig[]): FlowConfigs => {
+    return flows.reduce(
+        (acc: FlowConfigs, flow) => {
+            const key = flow.enabled ? 'enabledFlows' : 'disabledFlows';
+            acc[key].push(flow);
+            return acc;
+        },
+        { enabledFlows: [], disabledFlows: [] }
+    );
+};
+
+const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: StandardNangoConfig) => {
+    const { syncs: publicSyncs, actions: publicActions } = publicFlows;
+    const { syncs, actions } = allFlows;
+
+    const { enabledFlows: enabledSyncs, disabledFlows: disabledSyncs } = separateFlows(syncs);
+    const { enabledFlows: enabledActions, disabledFlows: disabledActions } = separateFlows(actions);
+
+    const filterFlows = (publicFlows: NangoSyncConfig[], enabled: NangoSyncConfig[], disabled: NangoSyncConfig[]) => {
+        // We don't want to show public flows in a few different scenarios
+        // 1. If a public flow is active (can be enabled or disabled) then it will show in allFlows so we filter it out
+        // 2. If an active flow has the same endpoint as a public flow, we filter it out
+        // 3. If an active flow has the same model name as a public flow, we filter it out
+        return publicFlows.filter(
+            (publicFlow) =>
+                !enabled.concat(disabled).some((flow) => {
+                    const flowModelNames = flow.models.map((model) => model.name);
+                    const publicModelNames = publicFlow.models.map((model) => model.name);
+                    const flowEndpointPaths = flow.endpoints.map((endpoint) => `${Object.keys(endpoint)[0]} ${Object.values(endpoint)[0]}`);
+                    const publicEndpointPaths = publicFlow.endpoints.map((endpoint) => `${Object.keys(endpoint)[0]} ${Object.values(endpoint)[0]}`);
+                    return (
+                        flow.name === publicFlow.name ||
+                        flowEndpointPaths.some((endpoint) => publicEndpointPaths.includes(endpoint)) ||
+                        flowModelNames.some((model) => publicModelNames.includes(model))
+                    );
+                })
+        );
+    };
+
+    const filteredSyncs = filterFlows(publicSyncs, enabledSyncs, disabledSyncs);
+    const filteredActions = filterFlows(publicActions, enabledActions, disabledActions);
+
+    const disabledFlows = { syncs: filteredSyncs.concat(disabledSyncs), actions: filteredActions.concat(disabledActions) };
+    const flows = { syncs: enabledSyncs, actions: enabledActions };
+
+    return { disabledFlows, flows };
+};
 
 class ConfigController {
     /**
@@ -352,27 +406,16 @@ class ConfigController {
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
             if (includeFlows && !isHosted) {
-                const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-                const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === config.provider);
+                const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
+                const [publicFlows] = availablePublicFlows.filter((flow) => flow.providerConfigKey === config.provider);
+                const allFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
 
-                const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
-                const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
-
-                if (availableFlows && enabledFlows && unEnabledFlows) {
-                    const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
-
-                    const { syncs, actions } = unEnabledFlows;
-
-                    const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
-                    const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
-
-                    unEnabledFlows.syncs = filteredSyncs;
-                    unEnabledFlows.actions = filteredActions;
+                if (availablePublicFlows.length && publicFlows && allFlows) {
+                    const { disabledFlows, flows } = getEnabledAndDisabledFlows(publicFlows, allFlows);
+                    res.status(200).send({ config: configRes, flows: { disabledFlows, allFlows: flows } });
+                    return;
                 }
-
-                const flows = { unEnabledFlows, enabledFlows };
-                res.status(200).send({ config: configRes, flows });
-
+                res.status(200).send({ config: configRes, flows: { allFlows, disabledFlows: publicFlows } });
                 return;
             }
 
