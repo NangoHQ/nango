@@ -202,7 +202,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
 
             let template: ProviderTemplate;
             try {
@@ -476,7 +476,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
 
             const { success, error, response: credentials } = await connectionService.getOauthClientCredentials(template, client_id, client_secret);
 
@@ -1422,7 +1422,7 @@ class OAuthController {
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
-            await logCtx.enrichOperation({ configId: String(config.id!), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',
