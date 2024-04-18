@@ -6,8 +6,7 @@ import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import { getLogger } from '@nangohq/utils';
-import telemetry, { MetricTypes } from '../utils/telemetry.js';
+import { getLogger, metrics } from '@nangohq/utils';
 
 const logger = getLogger('SDK');
 
@@ -854,7 +853,7 @@ export function instrumentSDK(rawNango: NangoAction | NangoSync) {
                 return target[propKey];
             }
 
-            return telemetry.time(`${MetricTypes.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
+            return metrics.time(`${metrics.Types.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
         }
     });
 }

@@ -13,11 +13,11 @@ import environmentService from '../environment.service.js';
 import accountService from '../account.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { integrationFilesAreRemote, isCloud, getLogger } from '@nangohq/utils';
+import { integrationFilesAreRemote, isCloud, getLogger, metrics } from '@nangohq/utils';
 import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
-import telemetry, { LogTypes, MetricTypes } from '../../utils/telemetry.js';
+import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -452,7 +452,7 @@ export default class SyncRun {
             } finally {
                 if (!this.isInvokedImmediately) {
                     const totalRunTime = (Date.now() - startTime) / 1000;
-                    telemetry.duration(MetricTypes.SYNC_TRACK_RUNTIME, totalRunTime);
+                    metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, totalRunTime);
                 }
             }
         }

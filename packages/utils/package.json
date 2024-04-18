@@ -16,6 +16,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "dd-trace": "5.2.0",
         "nanoid": "5.0.7",
         "serialize-error": "11.0.3",
         "winston": "3.8.2",
