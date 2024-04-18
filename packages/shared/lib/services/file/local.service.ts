@@ -113,7 +113,6 @@ class LocalFileService {
         return fs.realpathSync('./');
     }
 
-    // TODO this is wrong
     public getIntegrationTsFile(scriptName: string, providerConfigKey: string, type: string) {
         try {
             const realPath = this.resolveTsFileLocation({ scriptName, providerConfigKey, type });
