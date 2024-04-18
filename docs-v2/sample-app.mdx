@@ -1,22 +1,18 @@
 ---
 title: 'Sample Application'
 sidebarTitle: 'Sample App'
-description: 'Integrate Nango with this example application'
+description: 'Learn how to integrate Nango using our example application'
 ---
 
-Get started quickly with Nango by looking at our sample application.
-This [repository](https://github.com/NangoHQ/sample-app) provides a practical demonstration of integrating Nango into your codebase. It includes Syncs scripts, a backend API for managing Nango's webhooks, and a straightforward frontend for user interaction and data retrieval.
+Jumpstart your integration with Nango by exploring our sample application, which includes a front-end, a back-end, and integrations.
 
 ## Highlights
 
-- Folder `nango-integrations/`
-To use Nango you need some integrations, this folder (setup with our [CLI](./reference/cli)) contains the scripts that will fetch your users' data.
+- **`front-end/` folder**: Features a frontend interface where users can connect to integrations and visualize external data.
 
-- Folder `back-end/`
-To ingegrate with Nango you need a backend that will listen to Nango's [webhooks](./understand/concepts/webhooks) and interact with our [API](./reference/overview).
+- **`back-end/` folder**: Includes a backend API that receives Nango's [webhooks](/understand/concepts/webhooks), fetches the latest data from the Nango API, persists it in a database, and powers the frontend.
 
-- Folder `front-end/`
-Finally to let your user connect to your integration you need a frontend and call to our [auth library](./integrate/guides/authorize-an-api).
+- **`nango-integrations/` folder**: Contains integration scripts that are deployed to Nango using the [CLI](/reference/cli), syncing data between Nango and external APIs.
 
 ## Access the repository
 
