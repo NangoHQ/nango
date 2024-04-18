@@ -7,7 +7,7 @@ const containers: StartedTestContainer[] = [];
 export async function setupElasticsearch() {
     console.log('Starting ES...');
     const es = await new ElasticsearchContainer('elasticsearch:8.12.2')
-        .withName('es-test')
+        .withName(`es-test-${randomUUID()}`)
         .withEnvironment({ 'xpack.security.enabled': 'false', 'discovery.type': 'single-node' })
         .withExposedPorts(9200)
         .start();

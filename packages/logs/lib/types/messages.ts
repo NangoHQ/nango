@@ -1,4 +1,4 @@
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export type MessageMeta = Record<any, any>;
 

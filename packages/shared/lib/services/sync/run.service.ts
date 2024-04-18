@@ -734,7 +734,12 @@ export default class SyncRun {
             content
         });
         await this.logCtx?.error(content);
-        await this.logCtx?.failed();
+        // TODO: fix this
+        if (content === 'The script was cancelled successfully') {
+            await this.logCtx?.cancel();
+        } else {
+            await this.logCtx?.failed();
+        }
 
         errorManager.report(content, {
             environmentId: this.nangoConnection.environment_id,
