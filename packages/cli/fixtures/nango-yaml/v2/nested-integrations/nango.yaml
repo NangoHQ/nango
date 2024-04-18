@@ -1,0 +1,25 @@
+integrations:
+    hubspot:
+        syncs:
+            contacts:
+                endpoint: /hubspot/contacts
+                sync_type: incremental
+                output: Contact
+        actions:
+            create-contact:
+                endpoint: /hubspot/contact
+    github:
+        syncs:
+            issues:
+                endpoint: /github/issues
+                sync_type: incremental
+                output: Issue
+        actions:
+            create-issue:
+                endpoint: /github/issue
+
+models:
+    Contact:
+        id: string
+    Issue:
+        id: string
