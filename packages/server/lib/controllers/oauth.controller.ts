@@ -282,7 +282,6 @@ class OAuthController {
                 const appCallBackUrl = getGlobalAppCallbackUrl();
                 return this.appRequest(template, config, session, res, authorizationParams, appCallBackUrl, activityLogId!, environmentId);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
-                // test
                 return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId!, environmentId);
             }
 
