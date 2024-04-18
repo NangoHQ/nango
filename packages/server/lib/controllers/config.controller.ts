@@ -68,7 +68,24 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
     const { enabledFlows: enabledActions, disabledFlows: disabledActions } = separateFlows(actions);
 
     const filterFlows = (publicFlows: NangoSyncConfig[], enabled: NangoSyncConfig[], disabled: NangoSyncConfig[]) => {
-        return publicFlows.filter((publicFlow) => !enabled.concat(disabled).some((flow) => flow.name === publicFlow.name));
+        // We don't want to show public flows in a few different scenarios
+        // 1. If a public flow is active (can be enabled or disabled) then it will show in allFlows so we filter it out
+        // 2. If an active flow has the same endpoint as a public flow, we filter it out
+        // 3. If an active flow has the same model name as a public flow, we filter it out
+        return publicFlows.filter(
+            (publicFlow) =>
+                !enabled.concat(disabled).some((flow) => {
+                    const flowModelNames = flow.models.map((model) => model.name);
+                    const publicModelNames = publicFlow.models.map((model) => model.name);
+                    const flowEndpointPaths = flow.endpoints.map((endpoint) => `${Object.keys(endpoint)[0]} ${Object.values(endpoint)[0]}`);
+                    const publicEndpointPaths = publicFlow.endpoints.map((endpoint) => `${Object.keys(endpoint)[0]} ${Object.values(endpoint)[0]}`);
+                    return (
+                        flow.name === publicFlow.name ||
+                        flowEndpointPaths.some((endpoint) => publicEndpointPaths.includes(endpoint)) ||
+                        flowModelNames.some((model) => publicModelNames.includes(model))
+                    );
+                })
+        );
     };
 
     const filteredSyncs = filterFlows(publicSyncs, enabledSyncs, disabledSyncs);
