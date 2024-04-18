@@ -21,5 +21,11 @@ jobs:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
 
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run ts-build
+
             - name: Lint
               run: npm run lint
