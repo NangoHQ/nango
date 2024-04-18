@@ -37,6 +37,7 @@ services:
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
             - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://localhost:9500}
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
@@ -61,6 +62,7 @@ services:
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
         depends_on:
             - nango-db
             - temporal
@@ -82,7 +84,7 @@ services:
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
-            - RECORDS_DATABASE_URL=postgres://${NANGO_DB_USER}:${NANGO_DB_PASSWORD}@${NANGO_DB_HOST}:5432/${NANGO_DB_NAME}$([[ "${NANGO_DB_SSL}" == "true" ]] && echo "?sslmode=require")
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
         depends_on:
             - nango-db
         networks:
