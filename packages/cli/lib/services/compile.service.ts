@@ -123,7 +123,6 @@ export function listFilesToCompile({
     config
 }: { cwd?: string; scriptName?: string | undefined; config?: StandardNangoConfig[] } = {}): ListedFile[] {
     let files: string[] = [];
-    console.log(cwd, scriptName);
     if (scriptName) {
         files = [`${cwd || process.cwd()}/${scriptName}.ts`];
     } else {

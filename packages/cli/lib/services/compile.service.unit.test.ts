@@ -11,7 +11,7 @@ describe('listFiles', () => {
         expect(files.length).toBeGreaterThan(1);
         expect(files[0]).toStrictEqual({
             baseName: 'verification.service',
-            inputPath: './verification.service.ts',
+            inputPath: `${thisFolder}/verification.service.ts`,
             outputPath: './dist/verification.service.js'
         });
     });
@@ -21,7 +21,7 @@ describe('listFiles', () => {
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',
-            inputPath: './compile.service.ts',
+            inputPath: `${thisFolder}/compile.service.ts`,
             outputPath: './dist/compile.service.js'
         });
     });
@@ -30,7 +30,7 @@ describe('listFiles', () => {
         const file = getFileToCompile('foobar.ts');
         expect(file).toStrictEqual({
             baseName: 'foobar',
-            inputPath: './foobar.ts',
+            inputPath: 'foobar.ts',
             outputPath: './dist/foobar.js'
         });
     });
