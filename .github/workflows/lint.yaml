@@ -1,0 +1,30 @@
+name: Lint
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+
+jobs:
+    tests:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: '0'
+
+            - uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - uses: reviewdog/action-eslint@v1
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  reporter: github-pr-review # Change reporter.
+                  eslint_flags: '.'
+                  level: 'error'
+                  fail_on_error: true
