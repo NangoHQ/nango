@@ -13,7 +13,7 @@ import environmentService from '../environment.service.js';
 import accountService from '../account.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { integrationFilesAreRemote, isCloud } from '@nangohq/utils';
+import { integrationFilesAreRemote, isCloud, getLogger } from '@nangohq/utils';
 import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
@@ -23,6 +23,8 @@ import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
 import * as legacyRecordsService from './data/records.service.js';
+
+const logger = getLogger('run.service');
 
 interface BigQueryClientInterface {
     insert(row: RunScriptRow): void;
@@ -189,7 +191,7 @@ export default class SyncRun {
                     content
                 });
             } else {
-                console.log(content);
+                logger.info(content);
             }
         }
         const nangoConfig = this.loadLocation
@@ -201,7 +203,7 @@ export default class SyncRun {
             if (this.activityLogId) {
                 await this.reportFailureForResults({ content: message, runTime: 0 });
             } else {
-                console.error(message);
+                logger.error(message);
             }
 
             const errorType = this.determineErrorType();
@@ -270,7 +272,7 @@ export default class SyncRun {
                             content
                         });
                     } else {
-                        console.log(content);
+                        logger.info(content);
                     }
                 }
 
@@ -352,7 +354,7 @@ export default class SyncRun {
                         content
                     });
                 } else {
-                    console.log(content);
+                    logger.info(content);
                 }
             }
 
@@ -472,7 +474,7 @@ export default class SyncRun {
                 this.recordsService
                     .markNonCurrentGenerationRecordsAsDeleted(this.nangoConnection.id as number, model, this.syncId as string, this.syncJobId as number)
                     .catch((e) => {
-                        console.error(`Error marking non current generation records as deleted:`, e, {
+                        logger.error(`Error marking non current generation records as deleted:`, e, {
                             connectionId: this.nangoConnection.id,
                             model,
                             syncId: this.syncId,
@@ -703,7 +705,7 @@ export default class SyncRun {
         }
 
         if (!this.activityLogId || !this.syncJobId) {
-            console.error(content);
+            logger.error(content);
             return;
         }
 
