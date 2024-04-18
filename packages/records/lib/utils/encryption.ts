@@ -2,12 +2,20 @@ import type { EncryptedRecordData, FormattedRecord, UnencryptedRecord, Unencrypt
 import { Encryption } from '@nangohq/utils';
 import { envs } from '../env.js';
 
+function getEncryption(): Encryption {
+    const encryptionKey = envs.NANGO_ENCRYPTION_KEY;
+    if (!encryptionKey) {
+        throw new Error('NANGO_ENCRYPTION_KEY is not set');
+    }
+    return new Encryption(encryptionKey);
+}
+
 function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is EncryptedRecordData {
     return 'encryptedValue' in data;
 }
-const encryptionManager = new Encryption(envs.NANGO_ENCRYPTION_KEY);
 
-export function decryptRecordData(record: FormattedRecord): UnencryptedRecordData {
+export function decryptRecord(record: FormattedRecord): UnencryptedRecordData {
+    const encryptionManager = getEncryption();
     const { json } = record;
     if (isEncrypted(json)) {
         const { encryptedValue, iv, authTag } = json;
@@ -22,13 +30,14 @@ export function decryptRecords(records: FormattedRecord[]): UnencryptedRecord[] 
     for (const record of records) {
         decryptedRecords.push({
             ...record,
-            record: decryptRecordData(record)
+            record: decryptRecord(record)
         });
     }
     return decryptedRecords;
 }
 
-export function encryptDataRecords(records: FormattedRecord[]): FormattedRecord[] {
+export function encryptRecords(records: FormattedRecord[]): FormattedRecord[] {
+    const encryptionManager = getEncryption();
     const encryptedDataRecords: FormattedRecord[] = Object.assign([], records);
 
     for (const record of encryptedDataRecords) {

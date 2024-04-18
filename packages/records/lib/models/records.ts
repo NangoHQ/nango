@@ -10,7 +10,7 @@ import type {
     UnencryptedRecord,
     UpsertSummary
 } from '../types.js';
-import { decryptRecordData, decryptRecords, encryptDataRecords } from '../utils/encryption.js';
+import { decryptRecord, decryptRecords, encryptRecords } from '../utils/encryption.js';
 import { RECORDS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
@@ -146,7 +146,7 @@ export async function getRecords({
         }
 
         const results = rawResults.map((item) => {
-            const decryptedData = decryptRecordData(item);
+            const decryptedData = decryptRecord(item);
             const encodedCursor = Buffer.from(`${item.last_modified_at}||${item.id}`).toString('base64');
             return {
                 ...decryptedData,
@@ -203,7 +203,7 @@ export async function upsert(records: FormattedRecord[], connectionId: number, m
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                 addedKeys.push(...(await getAddedKeys(chunk, connectionId, model)));
                 updatedKeys.push(...(await getUpdatedKeys(chunk, connectionId, model)));
-                const encryptedRecords = encryptDataRecords(chunk);
+                const encryptedRecords = encryptRecords(chunk);
                 const insertedIds = await trx
                     .from<FormattedRecord>(RECORDS_TABLE)
                     .insert(encryptedRecords)
@@ -291,7 +291,7 @@ export async function update(records: FormattedRecord[], connectionId: number, m
                     };
                     recordsToUpdate.push(newRecord);
                 }
-                const encryptedRecords = encryptDataRecords(recordsToUpdate);
+                const encryptedRecords = encryptRecords(recordsToUpdate);
                 await trx.from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
             }
         });

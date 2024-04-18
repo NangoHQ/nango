@@ -14,6 +14,7 @@ import {
 } from '@nangohq/shared';
 import { getLogger, isErr } from '@nangohq/utils';
 import tracer from 'dd-trace';
+import { records as recordsService } from '@nangohq/records';
 
 const logger = getLogger('Jobs');
 
@@ -73,7 +74,8 @@ export async function exec(): Promise<void> {
             environmentId: sync.environment_id,
             providerConfigKey: sync.unique_key,
             connectionId: sync.connection_id,
-            syncName: sync.name
+            syncName: sync.name,
+            recordsService
         });
         if (isErr(resTemporal)) {
             continue;
