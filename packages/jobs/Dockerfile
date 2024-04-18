@@ -11,12 +11,13 @@ WORKDIR /nango
 COPY packages/node-client/ packages/node-client/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
+COPY packages/records/ packages/records/
 COPY packages/data-ingestion/ packages/data-ingestion/
 COPY packages/jobs/ packages/jobs/
 COPY packages/runner/ packages/runner/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
 CMD [ "node", "/nango/packages/jobs/dist/app.js" ]

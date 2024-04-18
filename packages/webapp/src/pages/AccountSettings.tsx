@@ -10,8 +10,11 @@ import { useEditAccountNameAPI, useGetAccountAPI } from '../utils/api';
 import type { User, InvitedUser } from '../types';
 import { formatDateToUSFormat } from '../utils/utils';
 import { Admin } from './AccountSettings/Admin';
+import { useStore } from '../store';
 
 export default function AccountSettings() {
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [accountName, setAccountName] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
@@ -21,8 +24,8 @@ export default function AccountSettings() {
 
     const [accountEditMode, setAccountEditMode] = useState(false);
 
-    const getAccountInfo = useGetAccountAPI();
-    const editAccountNameAPI = useEditAccountNameAPI();
+    const getAccountInfo = useGetAccountAPI(env);
+    const editAccountNameAPI = useEditAccountNameAPI(env);
 
     const formRef = useRef<HTMLFormElement>(null);
     const { setVisible, bindings } = useModal();
@@ -106,7 +109,7 @@ export default function AccountSettings() {
             email: { value: string };
         };
 
-        const res = await fetch('/api/v1/users/invite', {
+        const res = await fetch(`/api/v1/users/invite?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -7,11 +7,10 @@ import environmentService from '../environment.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
-import { basePublicUrl } from '../../utils/temp/environment/detection.js';
+import { basePublicUrl, isOk } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import SyncClient from '../../clients/sync.client.js';
-import { isOk } from '../../utils/result.js';
 
 const TABLE = dbNamespace + 'slack_notifications';
 

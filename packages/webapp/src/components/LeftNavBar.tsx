@@ -42,7 +42,10 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const navigate = useNavigate();
     const signout = useSignout();
     const { meta } = useMeta();
-    const { mutate } = useEnvironment();
+    const env = useStore((state) => state.env);
+    const setEnv = useStore((state) => state.setEnv);
+    const email = useStore((state) => state.email);
+    const { mutate } = useEnvironment(env);
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
 
     useEffect(() => {
@@ -59,13 +62,9 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         };
     }, [showUserSettings]);
 
-    const env = useStore((state) => state.cookieValue);
-    const setCookieValue = useStore((state) => state.setCookieValue);
-    const email = useStore((state) => state.email);
-
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
-        setCookieValue(newEnv);
+        setEnv(newEnv);
         void mutate();
 
         const pathSegments = window.location.pathname.split('/').filter(Boolean);

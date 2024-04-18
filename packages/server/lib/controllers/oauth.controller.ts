@@ -247,7 +247,10 @@ class OAuthController {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
-            if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
+            if (
+                template.auth_mode !== ProviderAuthModes.App &&
+                (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null)
+            ) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 await createActivityLogMessageAndEnd({
                     level: 'error',
@@ -474,7 +477,7 @@ class OAuthController {
             );
 
             if (updatedConnection) {
-                await connectionCreatedHook(
+                void connectionCreatedHook(
                     {
                         id: updatedConnection.id,
                         connection_id: connectionId,
@@ -510,7 +513,7 @@ class OAuthController {
                 }
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId as string,
@@ -1060,7 +1063,7 @@ class OAuthController {
                 authMode: String(template.auth_mode)
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId,
@@ -1206,7 +1209,7 @@ class OAuthController {
                     }
                 );
 
-                await connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         id: -1,
                         connection_id: connectionId,
@@ -1321,7 +1324,7 @@ class OAuthController {
                 // don't initiate a sync if custom because this is the first step of the oauth flow
                 const initiateSync = template.auth_mode === ProviderAuthModes.Custom ? false : true;
                 const runPostConnectionScript = true;
-                await connectionCreatedHook(
+                void connectionCreatedHook(
                     {
                         id: updatedConnection.id,
                         connection_id: connectionId,
@@ -1387,7 +1390,7 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId,
@@ -1430,7 +1433,7 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
-            await connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     id: -1,
                     connection_id: connectionId,
@@ -1491,7 +1494,7 @@ class OAuthController {
                     // syncs not support for oauth1
                     const initiateSync = false;
                     const runPostConnectionScript = true;
-                    await connectionCreatedHook(
+                    void connectionCreatedHook(
                         {
                             id: updatedConnection.id,
                             connection_id: connectionId,
@@ -1538,7 +1541,7 @@ class OAuthController {
                     timestamp: Date.now()
                 });
 
-                await connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         id: -1,
                         connection_id: connectionId,

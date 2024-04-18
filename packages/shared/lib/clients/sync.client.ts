@@ -30,9 +30,8 @@ import telemetry, { LogTypes, MetricTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
-import { isTest, isProd } from '../utils/temp/environment/detection.js';
-import { isErr, resultOk, type Result, resultErr } from '../utils/result.js';
-import { getLogger } from '../utils/temp/logger.js';
+import { isTest, isProd, getLogger } from '@nangohq/utils';
+import { isErr, resultOk, type Result, resultErr } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Client');
 
@@ -46,6 +45,10 @@ const generateScheduleId = (sync: Pick<Sync, 'id'>, syncName: string, connection
 const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
 const namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
+
+export interface RecordsServiceInterface {
+    deleteRecordsBySyncId({ syncId }: { syncId: string }): Promise<{ totalDeletedRecords: number }>;
+}
 
 class SyncClient {
     private static instance: Promise<SyncClient | null>;
@@ -368,7 +371,8 @@ class SyncClient {
         providerConfigKey,
         connectionId,
         syncName,
-        nangoConnectionId
+        nangoConnectionId,
+        recordsService
     }: {
         scheduleId: string;
         syncId: string;
@@ -379,6 +383,7 @@ class SyncClient {
         connectionId: string;
         syncName: string;
         nangoConnectionId?: number | undefined;
+        recordsService: RecordsServiceInterface;
     }): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
@@ -425,6 +430,7 @@ class SyncClient {
 
                         await clearLastSyncDate(syncId);
                         await deleteRecordsBySyncId({ syncId });
+                        await recordsService.deleteRecordsBySyncId({ syncId });
                         await createActivityLogMessage({
                             level: 'info',
                             environment_id: environmentId,

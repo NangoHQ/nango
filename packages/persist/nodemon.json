@@ -1,5 +1,5 @@
 {
-    "watch": ["lib", "../shared/dist", "../utils/dist", "../../.env"],
+    "watch": ["lib", "../shared/dist", "../utils/dist", "../records/dist", "../../.env"],
     "ext": "js,ts,json",
     "ignore": ["lib/**/*.test.ts"],
     "exec": "tsc && tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env"

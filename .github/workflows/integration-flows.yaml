@@ -17,18 +17,19 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Install Node.js
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
-                  node-version: '18'
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
 
             - name: Install nango CLI
               run: |
                   # Build, install CLI and verify it can run
-                  npm install
-                  npm run build -w @nangohq/node -w @nangohq/utils -w @nangohq/shared -w nango
+                  npm ci
+                  npm run build -w @nangohq/node -w @nangohq/utils -w @nangohq/records -w @nangohq/shared -w nango
                   npm install -g ./packages/cli
                   NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
 

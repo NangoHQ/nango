@@ -49,7 +49,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
 
         try {
             // Deploy the provider
-            const res = await fetch(`/api/v1/onboarding/action`, {
+            const res = await fetch(`/api/v1/onboarding/action?env=dev`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ connectionId, title })

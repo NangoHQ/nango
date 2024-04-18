@@ -26,7 +26,7 @@ export const AuthorizeBloc: React.FC<{
 
         try {
             // Setup the onboarding process
-            const res = await fetch(`/api/v1/onboarding`, {
+            const res = await fetch(`/api/v1/onboarding?env=dev`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });

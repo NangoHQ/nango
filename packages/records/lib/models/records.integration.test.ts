@@ -6,9 +6,8 @@ import { RECORDS_TABLE } from '../constants.js';
 import { db } from '../db/client.js';
 import * as Records from '../models/records.js';
 import { formatRecords } from '../helpers/format.js';
-import type { UnencryptedRecordData } from '../types.js';
-import type { UpsertSummary } from '../types.js';
-import { isErr } from '@nangohq/shared';
+import type { UnencryptedRecordData, UpsertSummary } from '../types.js';
+import { isErr } from '@nangohq/utils';
 
 describe('Records service', () => {
     beforeAll(async () => {

@@ -52,7 +52,7 @@ models:
 
         try {
             // Deploy the provider
-            const res = await fetch(`/api/v1/onboarding/deploy`, {
+            const res = await fetch(`/api/v1/onboarding/deploy?env=dev`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });

@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import path, { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd } from './temp/environment/detection.js';
+import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
 import { NangoError } from './error.js';
 import type { User, Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
@@ -15,10 +15,7 @@ interface PackageJson {
     version: string;
 }
 
-const PORT = process.env['SERVER_PORT'] || 3003;
-export const localhostUrl = `http://localhost:${PORT}`;
-export const cloudHost = 'https://api.nango.dev';
-export const stagingHost = 'https://api-staging.nango.dev';
+export { cloudHost, stagingHost };
 
 const accountIdLocalsKey = 'nangoAccountId';
 const environmentIdLocalsKey = 'nangoEnvironmentId';
@@ -276,7 +273,7 @@ export function getAccount(res: Response): number {
     const accountId = res.locals[accountIdLocalsKey];
 
     if (Number.isInteger(accountId)) {
-        return accountId;
+        return accountId as number;
     } else {
         throw new NangoError('account_malformed_in_locals');
     }
@@ -290,7 +287,7 @@ export function getEnvironmentId(res: Response): number {
     const environmentId = res.locals[environmentIdLocalsKey];
 
     if (Number.isInteger(environmentId)) {
-        return environmentId;
+        return environmentId as number;
     } else {
         throw new NangoError('environment_malformed_in_locals');
     }
@@ -311,15 +308,17 @@ export async function getEnvironmentAndAccountId(
     } else {
         const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
-
         const response = { accountId, environmentId, isWeb: false };
-        return Promise.resolve({ response, error: null, success: true });
+        return { response, error: null, success: true };
     }
 }
 
 export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<ServiceResponse<{ accountId: number; environmentId: number }>> {
     const sessionUser = req.user as User;
-    const currentEnvironment: string = req.cookies['env'] || 'dev';
+    const currentEnvironment = req.query['env'];
+    if (typeof currentEnvironment !== 'string') {
+        return { success: false, error: new NangoError('invalid_env'), response: null };
+    }
 
     if (sessionUser == null) {
         const error = new NangoError('user_not_found');
