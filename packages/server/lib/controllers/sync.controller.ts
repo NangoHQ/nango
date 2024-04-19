@@ -220,18 +220,28 @@ class SyncController {
                 if (isErr(newResponse)) {
                     logger.error('Error fetching records from new records service', newResponse.err);
                 } else {
-                    if (JSON.stringify(response) !== JSON.stringify(newResponse.res)) {
-                        logger.error(
-                            `[RECORDS MIGRATION] Differences between legacy and new records: ${JSON.stringify(response)} <<<>>> ${JSON.stringify(newResponse.res)}`,
-                            {
-                                connectionId,
-                                model,
-                                modifiedAfter: delta || modified_after,
-                                limit,
-                                filter,
-                                cursor
-                            }
-                        );
+                    // Compare legacy and new records
+                    // dates are set by the database and may differ
+                    // so we need to remove them before comparing
+                    const oldRecords = response.records.map((r) => {
+                        const { _nango_metadata: _ignored, ...rest } = r;
+                        return rest;
+                    });
+                    const newRecords = newResponse.res.records.map((r) => {
+                        const { _nango_metadata: _ignored, ...rest } = r;
+                        return rest;
+                    });
+                    const oldRecordsJson = JSON.stringify(oldRecords);
+                    const newRecordsJson = JSON.stringify(newRecords);
+                    if (oldRecordsJson !== newRecordsJson) {
+                        logger.error(`[RECORDS MIGRATION] Differences between legacy and new records: ${oldRecordsJson} <<<>>> ${newRecordsJson}`, {
+                            connectionId,
+                            model,
+                            modifiedAfter: delta || modified_after,
+                            limit,
+                            filter,
+                            cursor
+                        });
                     } else {
                         logger.info('[RECORDS MIGRATION] No differences between legacy and new records');
                     }
