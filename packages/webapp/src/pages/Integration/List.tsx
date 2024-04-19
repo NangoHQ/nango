@@ -53,42 +53,37 @@ export default function IntegrationList() {
             {integrations?.length > 0 && (
                 <>
                     <div className="h-fit rounded-md text-white text-sm">
-                        <table className="w-full">
-                            <tbody className="">
-                                <tr>
-                                    <td className="flex items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md justify-between">
-                                        <div className="w-[33rem]">Name</div>
-                                        <div className="w-52">Connections</div>
-                                        <div className="">Active Scripts</div>
-                                    </td>
-                                </tr>
-                                {integrations?.map(({ uniqueKey, provider, connection_count, scripts }) => (
-                                    <tr key={`tr-${uniqueKey}`}>
-                                        <td
-                                            className={`flex ${
-                                                uniqueKey !== integrations.at(-1)?.uniqueKey ? 'border-b border-border-gray' : ''
-                                            } h-14 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
-                                            onClick={() => {
-                                                navigate(`/${env}/integration/${uniqueKey}`);
-                                            }}
-                                        >
-                                            <div className="flex w-full justify-between">
-                                                <div className="flex w-[31rem] items-center">
-                                                    <IntegrationLogo provider={provider} height={7} width={7} classNames="mr-0.5 mt-0.5" />
-                                                    <p className="mt-1.5 mr-4 ml-0.5">{uniqueKey}</p>
-                                                </div>
-                                                <div className="flex items-center flex w-40">
-                                                    <p className="">{connection_count}</p>
-                                                </div>
-                                                <div className="flex items-center pl-20 flex">
-                                                    <p className="">{scripts}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="w-full">
+                            <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md justify-between">
+                                <div className="w-2/3">Name</div>
+                                <div className="w-1/3">Connections</div>
+                                <div className="w-24">Active Scripts</div>
+                            </div>
+                            {integrations?.map(({ uniqueKey, provider, connection_count, scripts }) => (
+                                <div
+                                    key={`tr-${uniqueKey}`}
+                                    className={`flex gap-4 ${
+                                        uniqueKey !== integrations.at(-1)?.uniqueKey ? 'border-b border-border-gray' : ''
+                                    } min-h-[4em] px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
+                                    onClick={() => {
+                                        navigate(`/${env}/integration/${uniqueKey}`);
+                                    }}
+                                >
+                                    <div className="flex items-center w-2/3 gap-2 py-2 truncate">
+                                        <div className="w-10 shrink-0">
+                                            <IntegrationLogo provider={provider} height={7} width={7} />
+                                        </div>
+                                        <p className="truncate">{uniqueKey}</p>
+                                    </div>
+                                    <div className="flex items-center w-1/3">
+                                        <p className="">{connection_count}</p>
+                                    </div>
+                                    <div className="flex items-center w-24">
+                                        <p className="">{scripts}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </>
             )}
