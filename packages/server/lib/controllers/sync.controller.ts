@@ -234,14 +234,19 @@ class SyncController {
                     const oldRecordsJson = JSON.stringify(oldRecords);
                     const newRecordsJson = JSON.stringify(newRecords);
                     if (oldRecordsJson !== newRecordsJson) {
-                        logger.error(`[RECORDS MIGRATION] Differences between legacy and new records: ${oldRecordsJson} <<<>>> ${newRecordsJson}`, {
+                        const context = {
+                            environmentId,
+                            providerConfigKey,
                             connectionId,
                             model,
                             modifiedAfter: delta || modified_after,
                             limit,
                             filter,
                             cursor
-                        });
+                        };
+                        logger.error(
+                            `[RECORDS MIGRATION] Differences between legacy and new records (${JSON.stringify(context)}): ${oldRecordsJson} <<<>>> ${newRecordsJson}`
+                        );
                     } else {
                         logger.info('[RECORDS MIGRATION] No differences between legacy and new records');
                     }
