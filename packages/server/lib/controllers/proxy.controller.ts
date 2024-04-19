@@ -149,7 +149,7 @@ class ProxyController {
             }
             if (activityLogId && providerConfig) {
                 await updateProviderActivityLog(activityLogId, providerConfig.provider);
-                await logCtx.enrichOperation({ configId: String(providerConfig.id), configName: providerConfig.unique_key });
+                await logCtx.enrichOperation({ configId: providerConfig.id!, configName: providerConfig.unique_key });
             }
 
             const internalConfig: InternalProxyConfiguration = {

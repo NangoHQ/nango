@@ -5,9 +5,12 @@ export interface FormatMessageData {
     account?: { id: number; name?: string };
     user?: { id: number } | undefined;
     environment?: { id: number; name?: string } | undefined;
+    connection?: { id: number; name?: string } | undefined;
+    config?: { id: number; name?: string } | undefined;
+    sync?: { id: string; name?: string } | undefined;
 }
 
-export function getFormattedMessage(data: Partial<MessageRow>, { account, user, environment }: FormatMessageData = {}): MessageRow {
+export function getFormattedMessage(data: Partial<MessageRow>, { account, user, environment, config, connection, sync }: FormatMessageData = {}): MessageRow {
     return {
         id: data.id || nanoid(),
 
@@ -26,14 +29,14 @@ export function getFormattedMessage(data: Partial<MessageRow>, { account, user, 
         environmentId: environment?.id || data.environmentId || null,
         environmentName: environment?.name || data.environmentName || null,
 
-        configId: data.configId || null,
-        configName: data.configName || null,
+        configId: config?.id || data.configId || null,
+        configName: config?.name || data.configName || null,
 
-        connectionId: data.connectionId || null,
-        connectionName: data.connectionName || null,
+        connectionId: connection?.id || data.connectionId || null,
+        connectionName: connection?.name || data.connectionName || null,
 
-        syncId: data.syncId || null,
-        syncName: data.syncName || null,
+        syncId: sync?.id || data.syncId || null,
+        syncName: sync?.name || data.syncName || null,
 
         jobId: data.jobId || null,
 

@@ -1,5 +1,6 @@
 import type { estypes } from '@elastic/elasticsearch';
 import type { MessageRow } from '../types/messages';
+import { envs } from '../env.js';
 
 const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
@@ -66,7 +67,7 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 };
 
 export const indexMessages: estypes.IndicesCreateRequest = {
-    index: 'messages',
+    index: envs.NANGO_LOGS_ES_INDEX ?? 'messages',
     settings: {
         analysis: {
             analyzer: {

@@ -141,7 +141,7 @@ class ApiAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
-            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             if (!req.body.apiKey) {
                 errorManager.errRes(res, 'missing_api_key');
@@ -412,7 +412,7 @@ class ApiAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
-            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             await createActivityLogMessage({
                 level: 'info',

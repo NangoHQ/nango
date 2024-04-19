@@ -178,7 +178,7 @@ class SyncClient {
             // TODO: do that outside try/catch
             const logCtx = await getOperationContext(
                 { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
-                { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
+                { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id }, connection: { id: nangoConnection.id! } }
             );
 
             const { success, error, response } = getInterval(syncData.runs, new Date());

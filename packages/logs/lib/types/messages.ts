@@ -69,10 +69,10 @@ export type MessageRow = {
     environmentId: number | null;
     environmentName: string | null;
 
-    configId: string | null;
+    configId: number | null;
     configName: string | null;
 
-    connectionId: string | null;
+    connectionId: number | null;
     connectionName: string | null;
 
     syncId: string | null;
@@ -88,6 +88,7 @@ export type MessageRow = {
     error: { name: string; message: string } | null;
     request: {
         url: string;
+        method: string;
         headers: Record<string, string>;
     } | null;
     response: {

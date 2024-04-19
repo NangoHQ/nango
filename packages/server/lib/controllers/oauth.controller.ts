@@ -202,7 +202,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             let template: ProviderTemplate;
             try {
@@ -476,7 +476,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             const { success, error, response: credentials } = await connectionService.getOauthClientCredentials(template, client_id, client_secret);
 
@@ -1066,7 +1066,7 @@ class OAuthController {
 
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
-            await logCtx.enrichOperation({ connectionId, configId: String(config.id), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             if (session.authMode === ProviderAuthModes.OAuth2 || session.authMode === ProviderAuthModes.Custom) {
                 return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId!, session.environmentId, logCtx);
@@ -1422,7 +1422,7 @@ class OAuthController {
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
-            await logCtx.enrichOperation({ configId: String(config.id), configName: config.unique_key });
+            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',
