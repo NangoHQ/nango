@@ -17,17 +17,17 @@ interface ScriptProps {
 
 export default function Scripts(props: ScriptProps) {
     const { integration, endpoints, reload, setFlow, setSubTab, setFlowConfig } = props;
-    const syncs = [...(endpoints?.enabledFlows?.syncs || []), ...(endpoints?.unEnabledFlows?.syncs || [])];
-    const actions = [...(endpoints?.enabledFlows?.actions || []), ...(endpoints?.unEnabledFlows?.actions || [])];
+    const syncs = [...(endpoints?.allFlows?.syncs || []), ...(endpoints?.disabledFlows?.syncs || [])];
+    const actions = [...(endpoints?.allFlows?.actions || []), ...(endpoints?.disabledFlows?.actions || [])];
     const hasScripts = syncs.length || actions.length;
 
     const routeToScript = (flow: Flow) => {
         setFlow(flow);
         setSubTab(SubTabs.Flow);
         if (flow.is_public) {
-            setFlowConfig(endpoints.unEnabledFlows as FlowConfiguration);
+            setFlowConfig(endpoints.disabledFlows as FlowConfiguration);
         } else {
-            setFlowConfig(endpoints.enabledFlows as FlowConfiguration);
+            setFlowConfig(endpoints.allFlows as FlowConfiguration);
         }
     };
 
@@ -95,7 +95,7 @@ export default function Scripts(props: ScriptProps) {
                                                         provider={integration.provider}
                                                         providerConfigKey={integration.unique_key}
                                                         reload={reload}
-                                                        rawName={endpoints?.unEnabledFlows?.rawName}
+                                                        rawName={endpoints?.disabledFlows?.rawName}
                                                         connections={integration?.connections}
                                                     />
                                                 </div>
@@ -139,7 +139,7 @@ export default function Scripts(props: ScriptProps) {
                                                         provider={integration.provider}
                                                         providerConfigKey={integration.unique_key}
                                                         reload={reload}
-                                                        rawName={endpoints?.unEnabledFlows?.rawName}
+                                                        rawName={endpoints?.disabledFlows?.rawName}
                                                         connections={integration?.connections}
                                                         showSpinner={true}
                                                     />

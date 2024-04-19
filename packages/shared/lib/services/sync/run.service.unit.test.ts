@@ -21,10 +21,16 @@ class integrationServiceMock implements IntegrationServiceInterface {
 }
 
 const integrationService = new integrationServiceMock();
+const recordsService = {
+    markNonCurrentGenerationRecordsAsDeleted: (_connectionId: number, _model: string, _syncId: string, _generation: number): Promise<string[]> => {
+        return Promise.resolve([]);
+    }
+};
 
 describe('SyncRun', () => {
     const dryRunConfig = {
         integrationService: integrationService as unknown as IntegrationServiceInterface,
+        recordsService,
         writeToDb: false,
         nangoConnection: {
             id: 1,
@@ -42,6 +48,7 @@ describe('SyncRun', () => {
     it('should initialize correctly', () => {
         const config = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
+            recordsService,
             writeToDb: true,
             nangoConnection: {
                 id: 1,

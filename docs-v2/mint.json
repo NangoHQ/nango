@@ -124,7 +124,8 @@
             "group": "Get Started",
             "pages": [
                 "introduction",
-                "demo"
+                "demo",
+                "sample-app"
             ]
         },
         {

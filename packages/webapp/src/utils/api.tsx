@@ -849,36 +849,6 @@ export function useCreateFlow(env: string) {
     };
 }
 
-export function useGetIntegrationEndpointsAPI(env: string) {
-    return async (integration: string, provider: string) => {
-        try {
-            const res = await fetch(`/api/v1/integration/${integration}/endpoints?provider=${provider}&env=${env}`, {
-                method: 'GET',
-                headers: getHeaders()
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetFlowDetailsAPI(env: string) {
-    return async (providerConfigKey: string, flowName: string) => {
-        try {
-            const res = await fetch(`/api/v1/flow/${flowName}?provider_config_key=${providerConfigKey}&env=${env}`, {
-                method: 'GET',
-                headers: getHeaders()
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useUpdateSyncFrequency(env: string) {
     return async (syncId: number, frequency: string) => {
         try {

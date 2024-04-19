@@ -28,7 +28,7 @@ fi
 
 npm ci
 
-# Utils
+# pack utils and install it in shared
 mkdir -p "$GIT_ROOT_DIR/packages/shared/vendor"
 pushd "$GIT_ROOT_DIR/packages/utils"
 jq '.bundleDependencies = true' package.json > temp.json && mv temp.json package.json
@@ -47,6 +47,7 @@ npm install @nangohq/node@^$VERSION
 popd
 
 # Shared
+npm run build -w @nangohq/records # records is required to build shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
 # Update all packages to use the new shared version
 package_dirs=("cli" "server" "runner" "jobs" "persist")

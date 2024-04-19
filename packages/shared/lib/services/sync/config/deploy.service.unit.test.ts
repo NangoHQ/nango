@@ -106,7 +106,8 @@ describe('Sync config create', () => {
                     runs: 'every 6h',
                     auto_start: true,
                     track_deletes: false,
-                    version: '1'
+                    version: '1',
+                    enabled: true
                 }
             ]);
         });
@@ -125,7 +126,8 @@ describe('Sync config create', () => {
                 runs: 'every 6h',
                 auto_start: true,
                 track_deletes: false,
-                version: '1'
+                version: '1',
+                enabled: true
             });
         });
 
@@ -143,7 +145,8 @@ describe('Sync config create', () => {
                 runs: 'every 6h',
                 auto_start: true,
                 track_deletes: false,
-                version: '1'
+                version: '1',
+                enabled: true
             });
         });
 

@@ -1,7 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Span } from 'dd-trace';
 import tracer from 'dd-trace';
-import { routeWebhook, featureFlags, environmentService, telemetry, MetricTypes } from '@nangohq/shared';
+import { routeWebhook, featureFlags, environmentService } from '@nangohq/shared';
+import { metrics } from '@nangohq/utils';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
@@ -44,7 +45,7 @@ class WebhookController {
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 
-                telemetry.duration(MetricTypes.WEBHOOK_TRACK_RUNTIME, totalRunTime);
+                metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, totalRunTime);
             } else {
                 res.status(404).send();
 

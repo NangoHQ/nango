@@ -91,7 +91,7 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
 
     const renderBubble = (bubbleType: ReactNode, styles: string, sync: SyncResponse) => {
         const hasActivityLogId = sync.latest_sync?.activity_log_id !== null;
-        const linkPath = `/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`;
+        const linkPath = `/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`;
 
         return hasActivityLogId ? (
             <Link to={linkPath} className={styles}>
@@ -166,7 +166,7 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
                                             <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
                                                 {sync.latest_sync?.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className="block w-32 ml-1"
                                                     >
                                                         {formatDateToUSFormat(sync.latest_sync?.updated_at)}
@@ -179,7 +179,7 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
                                             <>
                                                 {sync.latest_sync?.activity_log_id ? (
                                                     <Link
-                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connectionId}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                         className=""
                                                     >
                                                         {formatDateToUSFormat(sync.latest_sync?.updated_at)}
