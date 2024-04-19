@@ -162,24 +162,19 @@ class OnboardingController {
                 payload.progress = 3;
             }
 
-            let getRecords: Result<CustomerFacingDataRecord[], Error> = resultErr('failed_to_get_records');
+            let getRecords: Result<CustomerFacingDataRecord[], Error>;
             const shouldReturnNewRecords = await featureFlags.isEnabled('new-records-return', 'global', false);
             if (shouldReturnNewRecords) {
-                const { error, response: connection } = await connectionService.getConnection(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id);
-                if (!error && connection) {
-                    const newGetRecords = await recordsService.getRecords({
-                        connectionId: connection.id as number,
-                        model: DEMO_MODEL
-                    });
-                    if (isOk(newGetRecords)) {
-                        getRecords = resultOk(newGetRecords.res.records);
-                    }
-                }
+                const newGetRecords = await recordsService.getRecords({
+                    connectionId: connectionExists.id,
+                    model: DEMO_MODEL
+                });
+                getRecords = isOk(newGetRecords) ? resultOk(newGetRecords.res.records) : newGetRecords;
             } else {
                 const legacyGetRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
-                if (legacyGetRecords.success) {
-                    getRecords = resultOk(legacyGetRecords.response?.records || []);
-                }
+                getRecords = legacyGetRecords.success
+                    ? resultOk(legacyGetRecords.response?.records || [])
+                    : resultErr(legacyGetRecords.error || 'failed_to_get_records');
             }
 
             if (isErr(getRecords)) {
