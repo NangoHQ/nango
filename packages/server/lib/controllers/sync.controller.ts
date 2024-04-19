@@ -221,16 +221,21 @@ class SyncController {
                     logger.error('Error fetching records from new records service', newResponse.err);
                 } else {
                     // Compare legacy and new records
-                    // dates are set by the database and may differ
+                    // Dates are set by the database and may differ
                     // so we need to remove them before comparing
-                    const oldRecords = response.records.map((r) => {
-                        const { _nango_metadata: _ignored, ...rest } = r;
-                        return rest;
-                    });
-                    const newRecords = newResponse.res.records.map((r) => {
-                        const { _nango_metadata: _ignored, ...rest } = r;
-                        return rest;
-                    });
+                    // Also sorting the records by id since the order depends on updatedAt
+                    const oldRecords = response.records
+                        .map((r) => {
+                            const { _nango_metadata: _ignored, ...rest } = r;
+                            return rest;
+                        })
+                        .sort(({ id: a }, { id: b }) => (a as string).localeCompare(b as string));
+                    const newRecords = newResponse.res.records
+                        .map((r) => {
+                            const { _nango_metadata: _ignored, ...rest } = r;
+                            return rest;
+                        })
+                        .sort(({ id: a }, { id: b }) => (a as string).localeCompare(b as string));
                     const oldRecordsJson = JSON.stringify(oldRecords);
                     const newRecordsJson = JSON.stringify(newRecords);
                     if (oldRecordsJson !== newRecordsJson) {
