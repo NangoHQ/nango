@@ -1,9 +1,9 @@
 import { Client } from '@elastic/elasticsearch';
 import { envs } from '../env.js';
 
-// TODO: remove this
 export const client = new Client({
-    nodes: envs.NANGO_LOGS_ES_URL!,
+    // Because it's loaded in CLI and runner we can't required any envs
+    nodes: envs.NANGO_LOGS_ES_URL! || 'http://localhost:1/fake',
     requestTimeout: 5000,
     maxRetries: 1,
     auth: { username: envs.NANGO_LOGS_ES_USER!, password: envs.NANGO_LOGS_ES_PWD! },
