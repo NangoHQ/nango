@@ -28,7 +28,7 @@ class ConfigService {
         }
 
         if (debug) {
-            printDebug(`Config file file found`);
+            printDebug(`Config file found`);
         }
 
         return { success: true, error: null, response: config };

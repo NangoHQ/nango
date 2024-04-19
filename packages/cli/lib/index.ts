@@ -196,7 +196,7 @@ program
         const { autoConfirm, debug } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
         await verificationService.filesMatchConfig();
-        const success = await compileService.run(debug);
+        const success = await compileService.run({ debug });
         if (!success) {
             process.exitCode = 1;
         }

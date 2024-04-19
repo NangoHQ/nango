@@ -6,11 +6,29 @@ import { SyncConfigType } from '@nangohq/shared';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
 import configService from './services/config.service.js';
+import compileService from './services/compile.service.js';
 import parserService from './services/parser.service.js';
+
+const copyDirectoryAndContents = async (source: string, destination: string) => {
+    await fs.promises.mkdir(destination, { recursive: true });
+
+    const files = await fs.promises.readdir(source, { withFileTypes: true });
+
+    for (const file of files) {
+        const sourcePath = path.join(source, file.name);
+        const destinationPath = path.join(destination, file.name);
+
+        if (file.isDirectory()) {
+            await copyDirectoryAndContents(sourcePath, destinationPath);
+        } else {
+            await fs.promises.copyFile(sourcePath, destinationPath);
+        }
+    }
+};
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
-    const fixturesPath = './packages/cli/lib/fixtures';
+    const fixturesPath = './packages/cli/fixtures';
 
     beforeAll(async () => {
         if (!fs.existsSync('./packages/cli/dist/nango-sync.d.ts')) {
@@ -378,7 +396,7 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
-        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1/valid`));
+        const { response: config } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v1/valid`));
         expect(config).toBeDefined();
         expect(config).toMatchSnapshot();
     });
@@ -396,20 +414,20 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
-        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/valid`));
+        const { response: config } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/valid`));
         expect(config).toBeDefined();
         expect(config).toMatchSnapshot();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', async () => {
-        const { response: config, error } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/invalid.1`));
+        const { response: config, error } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.1`));
         expect(config).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toEqual('Problem validating the nango.yaml file.');
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- webhook subscriptions are not allowed in an action', async () => {
-        const { response: config, error } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/invalid.2`));
+        const { response: config, error } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.2`));
         expect(config).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toEqual('Problem validating the nango.yaml file.');
@@ -450,5 +468,41 @@ describe('generate function tests', () => {
         expect(modelsFile).toContain(`def: 'male' | string | null | undefined;`);
         expect(modelsFile).toContain(`reference: Other[];`);
         expect(modelsFile).toContain(`nullableDate: Date | null;`);
+    });
+
+    it('should be able to compile files in nested directories', async () => {
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/hubspot`, './hubspot');
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/nested-integrations/nango.yaml`, `./nango.yaml`);
+
+        const success = await compileService.run({ debug: true });
+
+        await fs.promises.rm('./hubspot', { recursive: true, force: true });
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+
+        expect(success).toBe(true);
+    });
+
+    it('should be backwards compatible with the single directory for integration files', async () => {
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/non-nested-integrations`, './');
+
+        const success = await compileService.run({ debug: true });
+
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+        await fs.promises.rm('./contacts.ts', { force: true });
+        await fs.promises.rm('./create-contact.ts', { force: true });
+        await fs.promises.rm('./create-issue.ts', { force: true });
+        await fs.promises.rm('./issues.ts', { force: true });
+
+        expect(success).toBe(true);
     });
 });
