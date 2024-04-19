@@ -41,6 +41,7 @@ export const formatDataRecords = (
         return uuid.v5(`${nango_connection_id}${model}${rawRecord.id}`, namespace);
     };
     const formattedRecords: SyncDataRecord[] = [];
+    const now = new Date();
     for (const record of records) {
         const data_hash = md5(JSON.stringify(record));
 
@@ -68,8 +69,8 @@ export const formatDataRecords = (
 
         if (softDelete) {
             const deletedAt = record['deletedAt'];
-            formattedRecord.updated_at = new Date();
-            formattedRecord.external_deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : new Date();
+            formattedRecord.updated_at = now;
+            formattedRecord.external_deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : now;
         } else {
             formattedRecord.external_deleted_at = null;
         }

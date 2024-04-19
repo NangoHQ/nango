@@ -22,6 +22,7 @@ export const formatRecords = (
         return uuid.v5(`${connection_id}${model}${unencryptedData.id}`, namespace);
     };
     const formattedRecords: FormattedRecord[] = [];
+    const now = new Date();
     for (const datum of data) {
         const data_hash = md5(JSON.stringify(datum));
 
@@ -47,8 +48,8 @@ export const formatRecords = (
 
         if (softDelete) {
             const deletedAt = datum['deletedAt'];
-            formattedRecord.updated_at = new Date();
-            formattedRecord.deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : new Date();
+            formattedRecord.updated_at = now;
+            formattedRecord.deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : now;
         } else {
             formattedRecord.deleted_at = null;
         }
