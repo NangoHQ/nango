@@ -96,26 +96,6 @@ function writeRecords(records: any[]): Promise<{ id: string; created_at: Date }[
         .merge()
         .returning(['id', 'created_at']);
 }
-// async function writeRecords(records: any[]): Promise<{ id: string; created_at: Date }[]> {
-//     const chunkSize = Math.ceil(records.length / 4);
-//     const chunks = [];
-//
-//     for (let i = 0; i < records.length; i += chunkSize) {
-//         chunks.push(records.slice(i, i + chunkSize));
-//     }
-//
-//     const promises = chunks.map((chunk) => {
-//         return targetKnex
-//             .insert(chunk)
-//             .into<{ id: string; updated_at: string }>(`nango_records.records`)
-//             .onConflict(['connection_id', 'model', 'external_id'])
-//             .merge()
-//             .returning(['id', 'created_at']);
-//     });
-//
-//     const results = await Promise.all(promises);
-//     return results.flat();
-// }
 
 async function migrate() {
     console.log('Starting records migration...');
