@@ -44,6 +44,7 @@ vendor "logs"
 
 pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=false
+npm install "@nangohq/logs@file:vendor/nangohq-logs-1.0.0.tgz" --workspaces=false
 popd
 
 # Node client

@@ -58,6 +58,16 @@ exports[`mapping > should apply mapping 1`] = `
       "enabled": false,
       "type": "object",
     },
+    "operation": {
+      "properties": {
+        "action": {
+          "type": "keyword",
+        },
+        "type": {
+          "type": "keyword",
+        },
+      },
+    },
     "parentId": {
       "type": "keyword",
     },
