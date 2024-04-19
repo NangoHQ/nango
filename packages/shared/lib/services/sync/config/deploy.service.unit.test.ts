@@ -54,7 +54,7 @@ describe('Sync config create', () => {
         });
 
         const { error } = await DeployConfigService.deploy(environment_id, syncs, '', debug);
-        await expect(error?.message).toBe(
+        expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
   "providerConfigKey": "google-wrong"
 }`
