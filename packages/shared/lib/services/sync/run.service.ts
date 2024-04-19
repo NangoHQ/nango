@@ -23,6 +23,7 @@ import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
 import * as legacyRecordsService from './data/records.service.js';
+import type { NangoProps } from '../../sdk/sync.js';
 
 const logger = getLogger('run.service');
 
@@ -52,6 +53,7 @@ interface SyncRunConfig {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    dryRunService?: NangoProps['dryRunService'];
     writeToDb: boolean;
     isAction?: boolean;
     isInvokedImmediately?: boolean;
@@ -86,6 +88,7 @@ export default class SyncRun {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    dryRunService?: NangoProps['dryRunService'];
     writeToDb: boolean;
     isAction: boolean;
     isInvokedImmediately: boolean;
@@ -118,6 +121,9 @@ export default class SyncRun {
         this.recordsService = config.recordsService;
         if (config.bigQueryClient) {
             this.bigQueryClient = config.bigQueryClient;
+        }
+        if (config.dryRunService) {
+            this.dryRunService = config.dryRunService;
         }
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
@@ -323,7 +329,7 @@ export default class SyncRun {
                 }
             }
 
-            const nangoProps = {
+            const nangoProps: NangoProps = {
                 host: optionalHost || getApiUrl(),
                 accountId: environment?.account_id as number,
                 connectionId: String(this.nangoConnection?.connection_id),
@@ -342,6 +348,10 @@ export default class SyncRun {
                 logMessages: this.logMessages,
                 stubbedMetadata: this.stubbedMetadata
             };
+
+            if (this.dryRunService) {
+                nangoProps.dryRunService = this.dryRunService;
+            }
 
             if (this.debug) {
                 const content = `Last sync date is ${lastSyncDate}`;

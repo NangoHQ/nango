@@ -20,9 +20,26 @@ interface RunArgs extends GlobalOptions {
 }
 
 class DryRunService {
-    public async run(options: RunArgs, environment: string, debug = false) {
+    environment?: string;
+    returnOutput?: boolean;
+
+    constructor(environment?: string, returnOutput = false) {
+        if (environment) {
+            this.environment = environment;
+        }
+
+        this.returnOutput = returnOutput;
+    }
+    public async run(options: RunArgs, optionalEnvironment?: string, debug = false): Promise<string | void> {
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata;
+
+        const environment = optionalEnvironment || this.environment;
+
+        if (!environment) {
+            console.log(chalk.red('Environment is required'));
+            return;
+        }
 
         await parseSecretKey(environment, debug);
 
@@ -166,6 +183,7 @@ class DryRunService {
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
+            dryRunService: new DryRunService(environment, true),
             writeToDb: false,
             nangoConnection,
             provider,
@@ -186,8 +204,11 @@ class DryRunService {
             const secretKey = process.env['NANGO_SECRET_KEY'];
             const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
 
+            let resultOutput = '';
+
             if (results) {
                 console.log(JSON.stringify(results, null, 2));
+                resultOutput += JSON.stringify(results, null, 2);
             }
 
             if (syncRun.logMessages && syncRun.logMessages.messages.length > 0) {
@@ -199,11 +220,14 @@ class DryRunService {
                     for (let i = 0; i < batchCount && index < logMessages.length; i++, index++) {
                         const logs = logMessages[index];
                         console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
+                        resultOutput += JSON.stringify(logs, null, 2);
                     }
                 };
 
                 console.log(chalk.yellow(`The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`));
+                resultOutput += `The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`;
                 console.log(chalk.yellow('The following log messages were generated:'));
+                resultOutput += 'The following log messages were generated:';
 
                 displayBatch();
 
@@ -218,6 +242,10 @@ class DryRunService {
                         break;
                     }
                 }
+            }
+
+            if (this.returnOutput) {
+                return resultOutput;
             }
 
             process.exit(0);
