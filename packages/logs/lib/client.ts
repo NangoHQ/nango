@@ -4,7 +4,7 @@ import type { FormatMessageData } from './models/helpers.js';
 import { getFormattedMessage } from './models/helpers.js';
 import type { SetRequired } from 'type-fest';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
-import { logger } from './utils.js';
+import { isCli, logger } from './utils.js';
 import { envs } from './env.js';
 
 interface Options {
@@ -19,7 +19,7 @@ export class LogContext {
 
     constructor(data: { parentId: string }, options: Options = { dryRun: false, logToConsole: true }) {
         this.id = data.parentId;
-        this.dryRun = envs.NANGO_LOGS_ENABLED === true ? options.dryRun || false : true;
+        this.dryRun = isCli || envs.NANGO_LOGS_ENABLED === true ? options.dryRun || false : true;
         this.logToConsole = options.logToConsole ?? true;
     }
 

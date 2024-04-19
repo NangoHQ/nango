@@ -10,7 +10,8 @@
         "prepublishOnly": "npm install && npm run build"
     },
     "bundleDependencies": [
-        "@nangohq/utils"
+        "@nangohq/utils",
+        "@nangohq/logs"
     ],
     "keywords": [],
     "repository": {
