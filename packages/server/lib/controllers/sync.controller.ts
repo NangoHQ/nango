@@ -229,13 +229,13 @@ class SyncController {
                             const { _nango_metadata: _ignored, ...rest } = r;
                             return rest;
                         })
-                        .sort(({ id: a }, { id: b }) => (a as string).localeCompare(b as string));
+                        .sort(({ id: a }, { id: b }) => (a > b ? 1 : a < b ? -1 : 0));
                     const newRecords = newResponse.res.records
                         .map((r) => {
                             const { _nango_metadata: _ignored, ...rest } = r;
                             return rest;
                         })
-                        .sort(({ id: a }, { id: b }) => (a as string).localeCompare(b as string));
+                        .sort(({ id: a }, { id: b }) => (a > b ? 1 : a < b ? -1 : 0));
                     const oldRecordsJson = JSON.stringify(oldRecords);
                     const newRecordsJson = JSON.stringify(newRecords);
                     if (oldRecordsJson !== newRecordsJson) {
