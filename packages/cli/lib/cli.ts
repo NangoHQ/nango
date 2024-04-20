@@ -11,7 +11,7 @@ import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
 import type { NangoConfig } from '@nangohq/shared';
-import { nangoConfigFile, SyncConfigType } from '@nangohq/shared';
+import { nangoConfigFile, SyncConfigType, LayoutMode } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
 import configService from './services/config.service.js';
 import modelService from './services/model.service.js';
@@ -76,7 +76,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const allSyncNames: Record<string, boolean> = {};
 
     for (const standardConfig of config) {
-        const { syncs, actions, postConnectionScripts } = standardConfig;
+        const { syncs, actions, postConnectionScripts, providerConfigKey } = standardConfig;
 
         if (postConnectionScripts) {
             for (const name of postConnectionScripts) {
@@ -99,12 +99,14 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models } = flow;
+            const { name, type, returns: models, layout_mode } = flow;
             let { input } = flow;
 
-            if (allSyncNames[name] === undefined) {
+            if (allSyncNames[name] === undefined && layout_mode === LayoutMode.ROOT) {
                 allSyncNames[name] = true;
-            } else {
+            }
+
+            if (allSyncNames[name] === true && layout_mode === LayoutMode.ROOT) {
                 console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
                 process.exit(1);
             }
@@ -161,7 +163,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
             const stripped = rendered.replace(/^\s+/, '');
 
-            if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
+            if (!fs.existsSync(`${dirPrefix}/${name}.ts`) && !fs.existsSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`)) {
                 fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
                 if (debug) {
                     printDebug(`Created ${name}.ts file`);

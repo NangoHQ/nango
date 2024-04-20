@@ -16,8 +16,10 @@ import type {
     NangoSyncEndpoint,
     NangoIntegrationDataV2
 } from '../models/NangoConfig.js';
+import { LayoutMode } from '../models/NangoConfig.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
+import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
 import { isJsOrTsType } from '../utils/utils.js';
 
@@ -170,7 +172,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints: sync?.endpoints || [],
-                nango_yaml_version: 'v1'
+                nango_yaml_version: 'v1',
+                layout_mode: LayoutMode.ROOT
             };
 
             if (sync.type === SyncConfigType.ACTION) {
@@ -403,7 +406,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 endpoints,
                 nango_yaml_version: sync.nango_yaml_version || 'v2',
                 webhookSubscriptions,
-                enabled
+                enabled,
+                layout_mode: localFileService.getLayoutMode(syncName, providerConfigKey, 'sync')
             };
 
             if (sync.id) {
@@ -502,7 +506,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 input: inputModel,
                 endpoints,
                 nango_yaml_version: action.nango_yaml_version || 'v2',
-                enabled
+                enabled,
+                layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action')
             };
 
             if (action.id) {
