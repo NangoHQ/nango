@@ -316,7 +316,7 @@ export const tscWatch = async (debug = false) => {
     watcher.on('change', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             // config file changed, re-compile each ts file
-            const integrationFiles = listFilesToCompile();
+            const integrationFiles = listFilesToCompile({ config });
             for (const file of integrationFiles) {
                 compileFile(file);
             }
