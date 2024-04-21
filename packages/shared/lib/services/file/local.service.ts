@@ -13,10 +13,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 class LocalFileService {
-    public getIntegrationFile(syncName: string, setIntegrationPath?: string | null) {
+    public getIntegrationFile(syncName: string, providerConfigKey: string, setIntegrationPath?: string | null) {
         try {
-            const filePath = setIntegrationPath ? `${setIntegrationPath}/dist/${syncName}.${SYNC_FILE_EXTENSION}` : this.resolveIntegrationFile(syncName);
-            const realPath = fs.realpathSync(filePath);
+            const filePath = setIntegrationPath ? `${setIntegrationPath}dist/${syncName}.${SYNC_FILE_EXTENSION}` : this.resolveIntegrationFile(syncName);
+            const fileNameWithProviderConfigKey = filePath.replace(`.${SYNC_FILE_EXTENSION}`, `-${providerConfigKey}.${SYNC_FILE_EXTENSION}`);
+
+            let realPath;
+            if (fs.existsSync(fileNameWithProviderConfigKey)) {
+                realPath = fs.realpathSync(fileNameWithProviderConfigKey);
+            } else {
+                realPath = fs.realpathSync(filePath);
+            }
             const integrationFileContents = fs.readFileSync(realPath, 'utf8');
 
             return integrationFileContents;
@@ -43,7 +50,7 @@ class LocalFileService {
         }
     }
 
-    public checkForIntegrationDistFile(syncName: string, optionalNangoIntegrationsDirPath?: string) {
+    public checkForIntegrationDistFile(syncName: string, providerConfigKey: string, optionalNangoIntegrationsDirPath?: string) {
         let nangoIntegrationsDirPath = '';
 
         if (optionalNangoIntegrationsDirPath) {
@@ -68,8 +75,14 @@ class LocalFileService {
             };
         }
 
-        const filePath = path.resolve(distDirPath, `${syncName}.${SYNC_FILE_EXTENSION}`);
+        let filePath = path.resolve(distDirPath, `${syncName}.${SYNC_FILE_EXTENSION}`);
         let realPath;
+
+        const fileNameWithProviderConfigKey = filePath.replace(`.${SYNC_FILE_EXTENSION}`, `-${providerConfigKey}.${SYNC_FILE_EXTENSION}`);
+
+        if (fs.existsSync(fileNameWithProviderConfigKey)) {
+            filePath = fileNameWithProviderConfigKey;
+        }
         try {
             realPath = fs.realpathSync(filePath);
         } catch {
