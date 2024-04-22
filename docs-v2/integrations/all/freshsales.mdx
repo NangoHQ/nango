@@ -1,0 +1,33 @@
+---
+title: Freshsales
+sidebarTitle: Freshsales
+---
+
+API configuration: [`freshsales`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Generate an API key in your Freshsales account](https://support.freshsales.io/en/support/solutions/articles/220099-how-to-find-my-api-key)
+-   [Freshsales API docs](https://developer.freshsales.io/api)
+-   [Freshsales Authentication](https://developer.freshsales.io/api/#authentication)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- Freshsales uses API_KEY auth mode with `Authorization: Token token= API_KEY` in the request header to access different endpoints.
+- In Freshsales, the rate limit is on an account level. It is irrespective of number of users. For details check on [freshsales rate limit](https://support.freshsales.io/en/support/solutions/articles/223406-does-freshsales-have-api-request-limits-for-an-account-)
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshsales.mdx)</Note>
