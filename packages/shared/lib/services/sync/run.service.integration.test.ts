@@ -4,15 +4,19 @@ import type { SyncRunConfig } from './run.service.js';
 import SyncRun from './run.service.js';
 import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as database from '../../db/database.js';
-import * as dataMocks from './data/mocks.js';
-import * as dataService from './data/data.service.js';
-import * as legacyRecordsService from './data/records.service.js';
 import * as jobService from './job.service.js';
-import type { CustomerFacingDataRecord, IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
-import type { DataResponse } from '../../models/Data.js';
+import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
-import { LogContext, logContextGetter } from '@nangohq/logs';
-import { records as recordsService } from '@nangohq/records';
+import { logContextGetter } from '@nangohq/logs';
+import { records as recordsService, format as recordsFormatter, migrate as migrateRecords } from '@nangohq/records';
+import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
+import { isErr, isOk } from '@nangohq/utils';
+import { createEnvironmentSeed } from '../../db/seeders/environment.seeder.js';
+import { createConnectionSeeds } from '../../db/seeders/connection.seeder.js';
+import { createSyncSeeds } from '../../db/seeders/sync.seeder.js';
+import { createSyncJobSeeds } from '../../db/seeders/sync-job.seeder.js';
+import connectionService from '../connection.service.js';
+import { createActivityLog } from '../activity/activity.service.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -29,7 +33,7 @@ const integrationService = new integrationServiceMock();
 
 describe('Running sync', () => {
     beforeAll(async () => {
-        await database.multipleMigrations();
+        await initDb();
     });
 
     afterAll(async () => {
@@ -212,12 +216,18 @@ describe('SyncRun', () => {
     });
 });
 
+const initDb = async () => {
+    await database.multipleMigrations();
+    await migrateRecords();
+};
+
 const clearDb = async () => {
     await db.knex.raw(`DROP SCHEMA nango CASCADE`);
+    // TODO: clear records???
 };
 
 const runJob = async (
-    rawRecords: DataResponse[],
+    rawRecords: UnencryptedRecordData[],
     activityLogId: number,
     model: string,
     connection: Connection,
@@ -246,29 +256,27 @@ const runJob = async (
     const syncRun = new SyncRun(config);
 
     // format and upsert records
-    const { response: records } = legacyRecordsService.formatDataRecords(rawRecords, connection.id!, model, sync.id, syncJob.id, softDelete);
-    if (!records) {
+    const formatting = recordsFormatter.formatRecords({
+        data: rawRecords,
+        connectionId: connection.id as number,
+        model,
+        syncId: sync.id,
+        syncJobId: syncJob.id,
+        softDelete
+    });
+    if (isErr(formatting)) {
         throw new Error(`failed to format records`);
     }
-
-    const logCtx = new LogContext({ parentId: String(activityLogId) }, { dryRun: true, logToConsole: false });
-    const { error: upsertError, summary } = await dataService.upsert(
-        records,
-        connection.id!,
-        model,
-        activityLogId,
-        connection.environment_id,
-        softDelete,
-        logCtx
-    );
-    if (upsertError) {
-        throw new Error(`failed to upsert records: ${upsertError}`);
+    const upserting = await recordsService.upsert({ records: formatting.res, connectionId: connection.id as number, model, softDelete });
+    if (isErr(upserting)) {
+        throw new Error(`failed to upsert records: ${upserting.err.message}`);
     }
+    const summary = upserting.res;
     const updatedResults = {
         [model]: {
-            added: summary?.addedKeys.length as number,
-            updated: summary?.updatedKeys.length as number,
-            deleted: summary?.deletedKeys?.length as number
+            added: summary.addedKeys.length,
+            updated: summary.updatedKeys.length,
+            deleted: summary.deletedKeys?.length || 0
         }
     };
     await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
@@ -284,14 +292,14 @@ const runJob = async (
 };
 
 const verifySyncRun = async (
-    initialRecords: DataResponse[],
-    newRecords: DataResponse[],
+    initialRecords: UnencryptedRecordData[],
+    newRecords: UnencryptedRecordData[],
     trackDeletes: boolean,
     expectedResult: SyncResult,
     softDelete: boolean = false
-): Promise<{ connection: Connection; model: string; sync: Sync; activityLogId: number; records: CustomerFacingDataRecord[] }> => {
+): Promise<{ connection: Connection; model: string; sync: Sync; activityLogId: number; records: ReturnedRecord[] }> => {
     // Write initial records
-    const { connection, model, sync, activityLogId } = await dataMocks.upsertRecords(initialRecords);
+    const { connection, model, sync, activityLogId } = await populateRecords(initialRecords);
 
     // Run job to save new records
     const result = await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, softDelete);
@@ -303,14 +311,93 @@ const verifySyncRun = async (
 };
 
 const getRecords = async (connection: Connection, model: string) => {
-    const { response } = await legacyRecordsService.getAllDataRecords(
-        connection.connection_id,
-        connection.provider_config_key,
-        connection.environment_id,
-        model
-    );
-    if (response) {
-        return response.records;
+    const res = await recordsService.getRecords({ connectionId: connection.id!, model });
+    if (isOk(res)) {
+        return res.res.records;
     }
     throw new Error('cannot fetch records');
 };
+
+async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
+    connection: Connection;
+    model: string;
+    sync: Sync;
+    syncJob: SyncJob;
+    activityLogId: number;
+}> {
+    const {
+        records,
+        meta: { env, model, connectionId, sync, syncJob }
+    } = await mockRecords(toInsert);
+    const connection = await connectionService.getConnectionById(connectionId);
+
+    if (!connection) {
+        throw new Error(`Connection '${connectionId}' not found`);
+    }
+    const activityLogId = await createActivityLog({
+        level: 'info',
+        success: false,
+        environment_id: env.id,
+        action: 'sync',
+        start: Date.now(),
+        end: Date.now(),
+        timestamp: Date.now(),
+        connection_id: connection.connection_id,
+        provider: connection?.provider_config_key,
+        provider_config_key: connection.provider_config_key
+    });
+    if (!activityLogId) {
+        throw new Error('Failed to create activity log');
+    }
+    const chunkSize = 1000;
+    for (let i = 0; i < records.length; i += chunkSize) {
+        const res = await recordsService.upsert({ records: records.slice(i, i + chunkSize), connectionId, model });
+        if (isErr(res)) {
+            throw new Error(`Failed to upsert records: ${res.err.message}`);
+        }
+    }
+    return {
+        connection: connection as Connection,
+        model,
+        sync,
+        syncJob,
+        activityLogId
+    };
+}
+
+async function mockRecords(records: UnencryptedRecordData[]) {
+    const envName = Math.random().toString(36).substring(7);
+    const env = await createEnvironmentSeed(envName);
+
+    const connections = await createConnectionSeeds(env);
+
+    const [connectionId]: number[] = connections;
+    if (!connectionId) {
+        throw new Error('Failed to create connection');
+    }
+    const sync = await createSyncSeeds(connectionId);
+    if (!sync.id) {
+        throw new Error('Failed to create sync');
+    }
+    const job = await createSyncJobSeeds(sync.id);
+    if (!job.id) {
+        throw new Error('Failed to create job');
+    }
+    const model = Math.random().toString(36).substring(7);
+    const formattedRecords = recordsFormatter.formatRecords({ data: records, connectionId, model, syncId: sync.id, syncJobId: job.id });
+
+    if (isErr(formattedRecords)) {
+        throw new Error(`Failed to format records: ${formattedRecords.err.message}`);
+    }
+
+    return {
+        meta: {
+            env,
+            connectionId,
+            model,
+            sync,
+            syncJob: job
+        },
+        records: formattedRecords.res
+    };
+}
