@@ -79,7 +79,7 @@ describe('client', () => {
 
         // Create operation
         expect(spyMsg).not.toHaveBeenCalled();
-        const ctx = await getOperationContext(operationPayload, { account }, { dryRun: true, logToConsole: true });
+        const ctx = await getOperationContext(operationPayload, { account, environment }, { dryRun: true, logToConsole: true });
 
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spyMsg).not.toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe('client', () => {
 
         // Create operation
         expect(spy).not.toHaveBeenCalled();
-        const ctx = await getOperationContext(operationPayload, { account }, { dryRun: true, logToConsole: false });
+        const ctx = await getOperationContext(operationPayload, { account, environment }, { dryRun: true, logToConsole: false });
 
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).not.toHaveBeenCalled();

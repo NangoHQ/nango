@@ -1,9 +1,29 @@
+/**
+ * Level of the log and operation
+ */
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
+/**
+ * Free form JSON (not indexed)
+ */
 export type MessageMeta = Record<any, any>;
 
+/**
+ * Kind of messages
+ * - log: classic string message
+ * - http: an HTTP request with request/response added to the log
+ */
 export type MessageType = 'log' | 'http';
+
+/**
+ * Error code attached to the message
+ * Not used yet
+ */
 export type MessageCode = 'success';
+
+/**
+ * State of the Operation
+ */
 export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeout' | 'cancelled';
 
 /**

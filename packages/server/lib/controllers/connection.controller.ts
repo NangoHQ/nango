@@ -160,7 +160,7 @@ class ConnectionController {
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
                     { account: response.account, environment: response.environment }
                 );
-                await logCtx.info('Token manual refresh fetch was successful');
+                await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
                 await logCtx.success();
             }
 

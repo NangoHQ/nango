@@ -27,19 +27,7 @@ export class LogContext {
      * Add more data to the parentId
      */
     async enrichOperation(data: Partial<MessageRow>): Promise<void> {
-        if (this.logToConsole) {
-            logger.info(`[debug] enrich(${JSON.stringify(data)})`);
-        }
-        if (this.dryRun) {
-            return;
-        }
-
-        try {
-            await update({ id: this.id, data });
-        } catch (err) {
-            // TODO: reup throw
-            logger.error(`failed_to_enrich ${stringifyError(err)}`);
-        }
+        await this.logOrExec(`enrich(${JSON.stringify(data)})`, async () => await update({ id: this.id, data }));
     }
 
     /**
@@ -98,82 +86,38 @@ export class LogContext {
      * ------ State
      */
     async start(): Promise<void> {
-        if (this.logToConsole) {
-            logger.info(`[debug] start(${this.id})`);
-        }
-        if (this.dryRun) {
-            return;
-        }
-
-        try {
-            await setRunning({ id: this.id });
-        } catch (err) {
-            // TODO: reup throw
-            logger.error(`failed_to_enrich ${stringifyError(err)}`);
-        }
+        await this.logOrExec('start', async () => await setRunning({ id: this.id }));
     }
 
     async failed(): Promise<void> {
-        if (this.logToConsole) {
-            logger.info(`[debug] failed(${this.id})`);
-        }
-        if (this.dryRun) {
-            return;
-        }
-
-        try {
-            await setFailed({ id: this.id });
-        } catch (err) {
-            // TODO: reup throw
-            logger.error(`failed_to_set_failed ${stringifyError(err)}`);
-        }
+        await this.logOrExec('failed', async () => await setFailed({ id: this.id }));
     }
 
     async success(): Promise<void> {
-        if (this.logToConsole) {
-            logger.info(`[debug] success(${this.id})`);
-        }
-        if (this.dryRun) {
-            return;
-        }
-
-        try {
-            await setSuccess({ id: this.id });
-        } catch (err) {
-            // TODO: reup throw
-            logger.error(`failed_to_set_success ${stringifyError(err)}`);
-        }
+        await this.logOrExec('success', async () => await setSuccess({ id: this.id }));
     }
 
     async cancel(): Promise<void> {
-        if (this.logToConsole) {
-            logger.info(`[debug] cancel(${this.id})`);
-        }
-        if (this.dryRun) {
-            return;
-        }
-
-        try {
-            await setCancelled({ id: this.id });
-        } catch (err) {
-            // TODO: reup throw
-            logger.error(`failed_to_set_cancelled ${stringifyError(err)}`);
-        }
+        await this.logOrExec('cancel', async () => await setCancelled({ id: this.id }));
     }
 
     async timeout(): Promise<void> {
+        await this.logOrExec('timeout', async () => await setTimeouted({ id: this.id }));
+    }
+
+    private async logOrExec(log: string, callback: () => Promise<void>) {
         if (this.logToConsole) {
-            logger.info(`[debug] timeout(${this.id})`);
+            logger.info(`[debug] ${log}(${this.id})`);
         }
         if (this.dryRun) {
             return;
         }
 
         try {
-            await setTimeouted({ id: this.id });
+            await callback();
         } catch (err) {
             // TODO: reup throw
-            logger.error(`failed_to_set_timeout ${stringifyError(err)}`);
+            logger.error(`failed_to_set_${log} ${stringifyError(err)}`);
         }
     }
 }
@@ -187,7 +131,7 @@ export interface OperationContextData extends FormatMessageData {
  */
 export async function getOperationContext(
     data: OperationRowInsert,
-    { start, account, user, environment }: SetRequired<OperationContextData, 'account'>,
+    { start, account, user, environment }: SetRequired<OperationContextData, 'account' | 'environment'>,
     options?: Options
 ): Promise<LogContext> {
     const msg = getFormattedMessage(data, { account, user, environment });

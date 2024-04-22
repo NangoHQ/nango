@@ -301,6 +301,7 @@ class SyncClient {
                     syncData: JSON.stringify(syncData)
                 }
             });
+            // TODO: reup this
             // await logCtx.error('Failed to init sync', {error: err});
             // await logCtx.failed();
         }
