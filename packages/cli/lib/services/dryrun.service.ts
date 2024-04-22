@@ -123,7 +123,9 @@ class DryRunService {
             lastSyncDate = new Date(suppliedLastSyncDate);
         }
 
-        const result = await compileService.run(debug, syncName);
+        const type = syncInfo?.type === SyncConfigType.ACTION ? 'action' : 'sync';
+
+        const result = await compileService.run({ debug, scriptName: syncName, providerConfigKey, type });
 
         if (!result) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
