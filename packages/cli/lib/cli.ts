@@ -101,13 +101,13 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         for (const flow of [...syncs, ...actions]) {
             const { name, type, returns: models, layout_mode } = flow;
             let { input } = flow;
+            const uniqueName = layout_mode === LayoutMode.ROOT ? `${name}` : `${providerConfigKey}-${name}`;
 
-            if (allSyncNames[name] === undefined && layout_mode === LayoutMode.ROOT) {
-                allSyncNames[name] = true;
-            }
-
-            if (allSyncNames[name] === true && layout_mode === LayoutMode.ROOT) {
-                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+            if (allSyncNames[uniqueName] === undefined) {
+                // a sync and an action within the same provider cannot have the same name
+                allSyncNames[uniqueName] = true;
+            } else {
+                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync and action names must be unique.`));
                 process.exit(1);
             }
 
