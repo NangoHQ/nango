@@ -188,7 +188,8 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: {},
                 connection_config: {},
-                environment_id
+                environment_id,
+                config_id: config_id!
             },
             ['id']
         );
