@@ -17,10 +17,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {
-        "build": "npm run copytypes",
-        "copyfiles": "copyfiles -u 1 lib/templates/* dist",
-        "copytypes": "cp `node -p \"require.resolve('@nangohq/shared/dist/sdk/sync.d.ts')\"` './dist/nango-sync.d.ts'",
-        "prepublishOnly": "npm run copyfiles && npm run copytypes"
+        "postbuild": "npm run copy:types",
+        "copy:files": "copy:files -u 1 lib/templates/* dist",
+        "copy:types": "cp `node -p \"require.resolve('@nangohq/shared/dist/sdk/sync.d.ts')\"` './dist/nango-sync.d.ts'",
+        "prepublishOnly": "npm run copy:files && npm run copy:types"
     },
     "dependencies": {
         "@babel/parser": "^7.22.5",
