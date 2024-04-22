@@ -24,8 +24,19 @@ This reference covers a list of all the limits that apply on Nango.
 
 # Global limitations
 
-- **API rate limit of 2,400 requests per minute:** This includes all requests made from both your applications and scripts combined. If the rate limit is exceeded, check the standard rate-limit headers to know when to resume API requests. This rate limit can be increased for paying customers.
+### API rate-limit
 
+The API rate limit is 2,400 requests per minute. This includes all requests made from both your applications and scripts combined. If the rate limit is exceeded, check the standard rate-limit headers to know when to resume API requests. This rate limit can be increased for paying customers.
+
+### Integration scripts
+
+[Integration scripts](/understand/concepts/scripts) have the following limits: 
+
+| Script Type | Max execution time | Max enqueuing time |
+| - | - | - |
+| [Syncs](/understand/concepts/syncs) | 24h | 1h |
+| [Actions](/understand/concepts/actions) | 15min | 1h |
+| [External webhooks](/integrate/guides/receive-webhooks-from-an-api#handle-external-webhooks-in-syncs) | 15min | 1min |
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

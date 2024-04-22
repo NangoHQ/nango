@@ -164,11 +164,9 @@
                         "customize/guides/create-a-custom-integration",
                         "customize/guides/extend-an-integration-template",
                         "customize/guides/contribute-an-api",
-                        "customize/guides/contribute-an-integration-template",
                         {
                             "group": "Advanced",
                             "pages": [
-                                "customize/guides/advanced/validate-api-responses",
                                 "customize/guides/advanced/handle-rate-limits",
                                 "customize/guides/advanced/sync-data-incrementally",
                                 "customize/guides/advanced/support-custom-field-mappings",
