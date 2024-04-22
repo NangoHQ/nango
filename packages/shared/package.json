@@ -5,10 +5,7 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
-    "scripts": {
-        "build": "rimraf dist && tsc",
-        "prepublishOnly": "npm install && npm run build"
-    },
+    "scripts": {},
     "bundleDependencies": [
         "@nangohq/utils"
     ],

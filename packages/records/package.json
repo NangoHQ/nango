@@ -4,7 +4,6 @@
     "type": "module",
     "main": "dist/index.js",
     "scripts": {
-        "build": "rimraf ./dist && tsc",
         "dev:migration:create": "npm run knex -- migrate:make",
         "dev:migration:run": "npm run knex -- migrate:latest",
         "knex": "tsx ../../node_modules/knex/bin/cli.js --knexfile lib/db/knexfile.ts",
