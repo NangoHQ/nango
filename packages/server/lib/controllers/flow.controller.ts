@@ -162,7 +162,7 @@ class FlowController {
                 return;
             }
 
-            const { id, name, provider, is_public } = body;
+            const { id, name, provider, is_public, providerConfigKey, flowType } = body;
 
             if (!name || !provider || typeof is_public === 'undefined') {
                 res.status(400).send('Missing required fields');
@@ -183,7 +183,7 @@ class FlowController {
                 }
 
                 const { nango_config_id, file_location } = configLookupResult;
-                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location);
+                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location, providerConfigKey, flowType);
                 return;
             }
         } catch (e) {

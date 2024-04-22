@@ -39,7 +39,7 @@ class VerificationService {
                 }
                 init(debug);
                 await generate(debug);
-                await compileService.run(debug);
+                await compileService.run({ debug });
             } else {
                 console.log(chalk.red(`Exiting...`));
                 process.exit(1);
@@ -70,7 +70,7 @@ class VerificationService {
                 }
                 fs.mkdirSync(distDir);
                 await generate(debug);
-                await compileService.run(debug);
+                await compileService.run({ debug });
             }
         } else {
             const files = fs.readdirSync(distDir);
@@ -86,7 +86,7 @@ class VerificationService {
                     if (debug) {
                         printDebug(`Generating the default integration files.`);
                     }
-                    await compileService.run(debug);
+                    await compileService.run({ debug });
                 }
             }
         }
@@ -130,7 +130,7 @@ class VerificationService {
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = listFilesToCompile();
+        const tsFiles = listFilesToCompile({ config });
 
         const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 

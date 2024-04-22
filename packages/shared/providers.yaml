@@ -1599,6 +1599,15 @@ reddit:
     proxy:
         base_url: https://oauth.reddit.com
     docs: https://docs.nango.dev/integrations/all/reddit
+refiner:
+    categories:
+        - surveys
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.refiner.io/v1
+    docs: https://docs.nango.dev/integrations/all/refiner
 ring-central:
     categories:
         - support

@@ -164,45 +164,40 @@ export default function ConnectionList() {
                         </select>
                     </div>
                     <div className="h-fit rounded-md text-white text-sm">
-                        <table className="w-full">
-                            <tbody className="">
-                                <tr>
-                                    <td className="flex items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md">
-                                        <div className="w-2/3">ID</div>
-                                        <div className="w-96 ml-2">Integration</div>
-                                        <div className="">Created</div>
-                                    </td>
-                                </tr>
-                                {filteredConnections.map(
-                                    ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate }) => (
-                                        <tr key={`tr-${id}`}>
-                                            <td
-                                                className={`flex ${
-                                                    id !== connections.at(-1)?.id ? 'border-b border-border-gray' : ''
-                                                } h-14 px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
-                                                onClick={() => {
-                                                    navigate(
-                                                        `/${env}/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`
-                                                    );
-                                                }}
-                                            >
-                                                <div className="flex items-center w-2/3 gap-2">
-                                                    <span>{connectionId}</span>
-                                                    <CopyButton dark text={connectionId} />
-                                                </div>
-                                                <div className="flex items-center w-1/3 mr-8">
-                                                    <IntegrationLogo provider={provider} height={7} width={7} classNames="mr-0.5" />
-                                                    <p className="ml-2">{providerConfigKey}</p>
-                                                </div>
-                                                <div className="flex w-20">
-                                                    <p className="">{formatDate(creationDate)}</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )
-                                )}
-                            </tbody>
-                        </table>
+                        <div className="w-full">
+                            <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md">
+                                <div className="w-2/3">ID</div>
+                                <div className="w-1/3">Integration</div>
+                                <div className="w-20">Created</div>
+                            </div>
+                            {filteredConnections.map(
+                                ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate }) => (
+                                    <div
+                                        key={`tr-${id}`}
+                                        className={`flex gap-4 ${
+                                            id !== connections.at(-1)?.id ? 'border-b border-border-gray' : ''
+                                        } min-h-[4em] px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
+                                        onClick={() => {
+                                            navigate(`/${env}/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
+                                        }}
+                                    >
+                                        <div className="flex items-center w-2/3 gap-2 py-2 truncate">
+                                            <span className="break-words break-all truncate">{connectionId}</span>
+                                            <CopyButton dark text={connectionId} />
+                                        </div>
+                                        <div className="flex items-center w-1/3 gap-3">
+                                            <div className="w-7">
+                                                <IntegrationLogo provider={provider} height={7} width={7} />
+                                            </div>
+                                            <p className="break-words break-all">{providerConfigKey}</p>
+                                        </div>
+                                        <div className="flex w-20">
+                                            <p className="">{formatDate(creationDate)}</p>
+                                        </div>
+                                    </div>
+                                )
+                            )}
+                        </div>
                     </div>
                 </>
             )}
