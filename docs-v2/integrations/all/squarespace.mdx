@@ -29,6 +29,6 @@ API configuration: [`squarespace`](https://nango.dev/providers.yaml)
 
 -   Squarespace enforces different rate limits for different endpoints with a cool down period of one minute. For more details check [squarespace rate limits](https://developers.squarespace.com/commerce-apis/rate-limits)
 -   Different APIs have different versions. Please confirm the latest version and append it to your resource endpoint, i.e `/{api-version}/commerce/inventory`
--   When creating a connection, you will need to add your `customappDescription`, which will be appended to the request header as follows: `User-Agent: YOUR_CUSTOM_APP_DESCRIPTION`. Requests without the `User-Agent` header are rejected.
+-   When creating a connection, you need to add the `customappDescription` as a connection configuration parameter, which will be appended to the request header as follows: `User-Agent: YOUR_CUSTOM_APP_DESCRIPTION`. Requests without the `User-Agent` header are rejected.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/squarespace.mdx)</Note>
