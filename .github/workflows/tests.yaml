@@ -39,7 +39,7 @@ jobs:
 
                   REPO_DIRTY=$(git status --short)
                   if [[ ! -z "$REPO_DIRTY" ]]; then
-                    git diff
+                    git diff -- . ':!models.ts'
                     echo ""
                     echo -e "\r⛔️ flows.yaml hasn't been compiled, please run:"
                     echo -e "node ./scripts/flows.js"
