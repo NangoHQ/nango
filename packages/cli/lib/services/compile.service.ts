@@ -71,13 +71,13 @@ class CompileService {
 
         for (const file of integrationFiles) {
             try {
-                const isNested =
-                    file.inputPath.split('/')[file.inputPath.split('/').length - 2] === 'syncs' ||
-                    file.inputPath.split('/')[file.inputPath.split('/').length - 2] === 'actions';
+                const pathSegments = file.inputPath.split('/');
+                const scriptType = pathSegments[pathSegments.length - 2];
+                const isNested = scriptType === 'syncs' || scriptType === 'actions';
 
                 let providerConfiguration;
                 if (isNested) {
-                    const providerConfigKey = file.inputPath.split('/')[file.inputPath.split('/').length - 3];
+                    const providerConfigKey = pathSegments[pathSegments.length - 3];
                     providerConfiguration = config.find((config) => config.providerConfigKey === providerConfigKey);
                 } else {
                     providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));

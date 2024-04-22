@@ -109,10 +109,7 @@ export type NangoSyncEndpoint = {
     [key in HTTP_VERB]?: string;
 };
 
-export enum LayoutMode {
-    ROOT = 'root',
-    NESTED = 'nested'
-}
+export type LayoutMode = 'root' | 'nested';
 
 export interface NangoSyncConfig {
     name: string;
@@ -140,7 +137,7 @@ export interface NangoSyncConfig {
     webhookSubscriptions?: string[];
     enabled?: boolean;
 
-    layout_mode: LayoutMode;
+    layout_mode: 'root' | 'nested';
 }
 
 export interface StandardNangoConfig {

@@ -11,7 +11,7 @@ import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
 import type { NangoConfig } from '@nangohq/shared';
-import { nangoConfigFile, SyncConfigType, LayoutMode } from '@nangohq/shared';
+import { nangoConfigFile, SyncConfigType } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
 import configService from './services/config.service.js';
 import modelService from './services/model.service.js';
@@ -101,7 +101,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         for (const flow of [...syncs, ...actions]) {
             const { name, type, returns: models, layout_mode } = flow;
             let { input } = flow;
-            const uniqueName = layout_mode === LayoutMode.ROOT ? `${name}` : `${providerConfigKey}-${name}`;
+            const uniqueName = layout_mode === 'root' ? `${name}` : `${providerConfigKey}-${name}`;
 
             if (allSyncNames[uniqueName] === undefined) {
                 // a sync and an action within the same provider cannot have the same name

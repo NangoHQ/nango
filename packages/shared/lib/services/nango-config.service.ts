@@ -16,7 +16,7 @@ import type {
     NangoSyncEndpoint,
     NangoIntegrationDataV2
 } from '../models/NangoConfig.js';
-import { LayoutMode } from '../models/NangoConfig.js';
+import type { LayoutMode } from '../models/NangoConfig.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';
@@ -160,6 +160,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
 
             const scopes = sync?.scopes || sync?.metadata?.scopes || [];
 
+            const layout_mode: LayoutMode = 'root';
+
             const flowObject = {
                 name: syncName,
                 runs: sync.runs || '',
@@ -173,7 +175,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints: sync?.endpoints || [],
                 nango_yaml_version: 'v1',
-                layout_mode: LayoutMode.ROOT
+                layout_mode
             };
 
             if (sync.type === SyncConfigType.ACTION) {

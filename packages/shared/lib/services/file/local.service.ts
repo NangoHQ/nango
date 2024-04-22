@@ -6,7 +6,7 @@ import archiver from 'archiver';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import { LayoutMode } from '../../models/NangoConfig.js';
+import type { LayoutMode } from '../../models/NangoConfig.js';
 import { nangoConfigFile, SYNC_FILE_EXTENSION } from '../nango-config.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -142,10 +142,10 @@ class LocalFileService {
     public getLayoutMode(scriptName: string, providerConfigKey: string, type: string): LayoutMode {
         const nestedPath = path.resolve(`./${providerConfigKey}/${type}s/${scriptName}.ts`);
         if (fs.existsSync(nestedPath)) {
-            return LayoutMode.NESTED;
+            return 'nested';
         }
 
-        return LayoutMode.ROOT;
+        return 'root';
     }
 
     public getNangoYamlFileContents(setIntegrationPath?: string | null) {
