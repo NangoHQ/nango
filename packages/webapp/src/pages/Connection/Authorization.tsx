@@ -31,12 +31,12 @@ export default function Authorization(props: AuthorizationProps) {
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
-            <div className="flex">
+            <div className="flex gap-4">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
                     <div className="flex items-center gap-2">
-                        <span className="text-white">{connection?.connectionId}</span>
-                        <CopyButton text={connection?.connectionId as string} dark />
+                        <span className="text-white break-all">{connection?.connection_id}</span>
+                        <CopyButton text={connection?.connection_id as string} dark />
                     </div>
                 </div>
                 <div className="flex flex-col w-1/2">

@@ -124,7 +124,8 @@
             "group": "Get Started",
             "pages": [
                 "introduction",
-                "demo"
+                "demo",
+                "sample-app"
             ]
         },
         {
@@ -416,6 +417,7 @@
                         "integrations/all/quickbooks",
                         "integrations/all/ramp",
                         "integrations/all/reddit",
+                        "integrations/all/refiner",
                         "integrations/all/ring-central",
                         "integrations/all/sage",
                         "integrations/all/salesforce",

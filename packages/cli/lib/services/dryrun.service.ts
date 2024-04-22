@@ -8,6 +8,7 @@ import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '
 import configService from './config.service.js';
 import compileService from './compile.service.js';
 import integrationService from './local-integration.service.js';
+import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -122,7 +123,9 @@ class DryRunService {
             lastSyncDate = new Date(suppliedLastSyncDate);
         }
 
-        const result = await compileService.run(debug, syncName);
+        const type = syncInfo?.type === SyncConfigType.ACTION ? 'action' : 'sync';
+
+        const result = await compileService.run({ debug, scriptName: syncName, providerConfigKey, type });
 
         if (!result) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
@@ -148,8 +151,23 @@ class DryRunService {
             messages: []
         };
 
+        // dry-run mode does not read or write to the records database
+        // so we can safely mock the records service
+        const recordsService: RecordsServiceInterface = {
+            markNonCurrentGenerationRecordsAsDeleted: (
+                _connectionId: number,
+                _model: string,
+                _syncId: string,
+                _generation: number
+                // eslint-disable-next-line @typescript-eslint/require-await
+            ): Promise<string[]> => {
+                return Promise.resolve([]);
+            }
+        };
+
         const syncRun = new syncRunService({
             integrationService,
+            recordsService,
             writeToDb: false,
             nangoConnection,
             provider,

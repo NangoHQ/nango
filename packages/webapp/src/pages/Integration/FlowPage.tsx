@@ -66,7 +66,9 @@ export default function FlowPage(props: FlowPageProps) {
             name: flow?.name,
             provider: integration.provider,
             is_public: flow?.is_public,
-            public_route: flowConfig?.rawName || integration.provider
+            public_route: flowConfig?.rawName || integration.provider,
+            providerConfigKey: integration.unique_key,
+            flowType: flow?.type
         };
 
         const response = await fetch(`/api/v1/flow/download?env=${env}`, {
@@ -275,7 +277,6 @@ export default function FlowPage(props: FlowPageProps) {
                                     rawName={flowConfig?.rawName}
                                     connections={connections}
                                     endpoints={endpoints}
-                                    setFlow={setFlow}
                                     setIsEnabling={setIsEnabling}
                                 />
                                 {flow.type === 'action' && isEnabling && (
@@ -336,7 +337,6 @@ export default function FlowPage(props: FlowPageProps) {
                                                 onChange={(e) => setFrequencyEdit(e.target.value)}
                                                 className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
                                                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                                                    console.log(e.key);
                                                     if (e.key === 'Enter') {
                                                         onSaveFrequency();
                                                     }

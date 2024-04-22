@@ -66,7 +66,8 @@ export default function ShowIntegration() {
                 setPageNotFound(true);
             } else if (res?.status === 200) {
                 const data = await res.json();
-                setConnection(data['connection']);
+                const connection = data['connection'];
+                setConnection({ ...connection, connection_id: connectionId });
             } else if (res != null) {
                 setServerErrorMessage(`
 We could not retrieve and/or refresh your access token due to the following error:
@@ -74,7 +75,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 `);
                 setConnection({
                     providerConfigKey,
-                    connectionId
+                    connection_id: connectionId
                 } as Connection);
             }
         };
@@ -187,27 +188,27 @@ We could not retrieve and/or refresh your access token due to the following erro
                 </Modal.Action>
             </Modal>
             <div className="mx-auto">
-                <div className="flex justify-between items-center">
-                    <div className="flex">
+                <div className="flex gap-4 justify-between">
+                    <div className="flex gap-6">
                         <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
                             {connection?.provider && (
                                 <IntegrationLogo
                                     provider={connection?.provider}
                                     height={24}
                                     width={24}
-                                    classNames="mr-2 cursor-pointer p-1 border border-border-gray rounded-xl"
+                                    classNames="cursor-pointer p-1 border border-border-gray rounded-xl"
                                 />
                             )}
                         </Link>
-                        <div className="mt-3 ml-6">
+                        <div className="mt-3">
                             <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">Connection</span>
-                            <h2 className="text-left text-3xl font-semibold tracking-tight text-white">{connectionId}</h2>
+                            <h2 className="text-left text-3xl font-semibold tracking-tight text-white break-all">{connectionId}</h2>
                         </div>
                     </div>
                     <Button
                         variant="zinc"
                         size="sm"
-                        className="flex cursor-pointer text-gray-400 neutral-700 items-center"
+                        className="flex cursor-pointer text-gray-400 neutral-700 items-center mt-4"
                         onClick={() => {
                             setVisible(true);
                         }}
