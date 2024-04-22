@@ -28,6 +28,10 @@ jobs:
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
                   always-auth: true
+            - name: Build
+              run: |
+                  npm ci
+                  npm run ts-build
             - name: Publish packages to github registry so they can be bumped
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
