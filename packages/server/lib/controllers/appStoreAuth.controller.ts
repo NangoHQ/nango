@@ -21,7 +21,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response, next: NextFunction) {
@@ -43,7 +43,7 @@ class AppStoreAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
             { account: { id: accountId }, environment: { id: environmentId } }
         );
@@ -219,6 +219,7 @@ class AppStoreAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
+                    logContextGetter,
                     activityLogId,
                     undefined,
                     logCtx

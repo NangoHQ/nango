@@ -21,7 +21,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 class UnAuthController {
     async create(req: Request, res: Response, next: NextFunction) {
@@ -43,7 +43,7 @@ class UnAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Unauthenticated' },
             { account: { id: accountId }, environment: { id: environmentId } }
         );
@@ -169,6 +169,7 @@ class UnAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
+                    logContextGetter,
                     activityLogId,
                     undefined,
                     logCtx

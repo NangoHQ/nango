@@ -55,14 +55,6 @@ export function getFormattedMessage(data: Partial<MessageRow>, { account, user, 
     };
 }
 
-export const syncCommandToOperation = {
-    PAUSE: 'pause',
-    UNPAUSE: 'unpause',
-    RUN: 'run',
-    RUN_FULL: 'run_full',
-    CANCEL: 'cancel'
-} as const;
-
 export const oldLevelToNewLevel = {
     debug: 'debug',
     info: 'info',

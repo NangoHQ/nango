@@ -6,14 +6,22 @@ import { LogActionEnum } from '../../../models/Activity.js';
 import { internalNango } from './internal-nango.js';
 import { getLogger } from '@nangohq/utils';
 
-const logger = getLogger('Webhook.Manager');
-
 import * as webhookHandlers from './index.js';
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
+import type { LogContextGetter } from '@nangohq/logs';
+
+const logger = getLogger('Webhook.Manager');
 
 const handlers: WebhookHandlersMap = webhookHandlers as unknown as WebhookHandlersMap;
 
-async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string): Promise<any> {
+async function execute(
+    environmentUuid: string,
+    providerConfigKey: string,
+    headers: Record<string, any>,
+    body: any,
+    rawBody: string,
+    logContextGetter: LogContextGetter
+): Promise<any> {
     if (!body) {
         return;
     }
@@ -33,7 +41,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
     try {
         if (handler) {
-            res = await handler(internalNango, integration, headers, body, rawBody);
+            res = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
         }
     } catch (e) {
         logger.error(`error processing incoming webhook for ${providerConfigKey} - `, e);
@@ -51,7 +59,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
     const webhookBodyToForward = res?.parsedBody || body;
     const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, connectionIds, provider, webhookBodyToForward, headers);
+    await webhookService.forward(integration.environment_id, providerConfigKey, connectionIds, provider, webhookBodyToForward, headers, logContextGetter);
 
     await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
         accountId: String(accountId),

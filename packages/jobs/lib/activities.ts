@@ -27,7 +27,7 @@ import { getLogger, env } from '@nangohq/utils';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Jobs');
 
@@ -64,6 +64,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         bigQueryClient,
         integrationService,
         recordsService,
+        logContextGetter,
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
@@ -165,7 +166,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             timestamp: Date.now(),
             content
         });
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
         );
@@ -230,7 +231,7 @@ export async function syncProvider(
         };
         const activityLogId = (await createActivityLog(log)) as number;
         // TODO: move that outside try/catch
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
         );
@@ -257,6 +258,7 @@ export async function syncProvider(
             bigQueryClient,
             integrationService,
             recordsService,
+            logContextGetter,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -296,7 +298,7 @@ export async function syncProvider(
             timestamp: Date.now(),
             content
         });
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
         );
@@ -352,6 +354,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         bigQueryClient,
         integrationService,
         recordsService,
+        logContextGetter,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,
@@ -446,6 +449,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
             bigQueryClient,
             integrationService,
             recordsService,
+            logContextGetter,
             writeToDb: true,
             syncId,
             nangoConnection,

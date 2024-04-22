@@ -30,8 +30,7 @@ import telemetry, { LogTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
-import { getOperationContext } from '@nangohq/logs';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { isTest, isProd, getLogger, metrics, isErr, resultOk, type Result, resultErr } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Client');
@@ -102,7 +101,7 @@ class SyncClient {
         }
     }
 
-    async initiate(nangoConnectionId: number): Promise<void> {
+    async initiate(nangoConnectionId: number, logContextGetter: LogContextGetter): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
         if (!nangoConfig) {
@@ -137,7 +136,7 @@ class SyncClient {
             const sync = await createSync(nangoConnectionId, syncName);
 
             if (sync) {
-                await this.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData);
+                await this.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData, logContextGetter);
             }
         }
     }
@@ -154,6 +153,7 @@ class SyncClient {
         syncConfig: ProviderConfig,
         syncName: string,
         syncData: NangoIntegrationData,
+        logContextGetter: LogContextGetter,
         debug = false
     ): Promise<void> {
         try {
@@ -176,7 +176,7 @@ class SyncClient {
             }
 
             // TODO: do that outside try/catch
-            const logCtx = await getOperationContext(
+            const logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
                 { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id }, connection: { id: nangoConnection.id! } }
             );
@@ -691,7 +691,8 @@ class SyncClient {
         provider: string,
         parentSyncName: string,
         input: object,
-        environment_id: number
+        environment_id: number,
+        logContextGetter: LogContextGetter
     ): Promise<ServiceResponse<T>> {
         const log = {
             level: 'info' as LogLevel,
@@ -708,7 +709,7 @@ class SyncClient {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
             { account: { id: nangoConnection.account_id! }, environment: { id: environment_id } }
         );

@@ -14,7 +14,7 @@ import {
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -491,7 +491,8 @@ export const getAndReconcileDifferences = async ({
     activityLogId,
     debug = false,
     singleDeployMode = false,
-    logCtx
+    logCtx,
+    logContextGetter
 }: {
     environmentId: number;
     syncs: IncomingFlowConfig[];
@@ -500,6 +501,7 @@ export const getAndReconcileDifferences = async ({
     debug?: boolean | undefined;
     singleDeployMode?: boolean | undefined;
     logCtx?: LogContext;
+    logContextGetter: LogContextGetter;
 }): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
@@ -609,7 +611,7 @@ export const getAndReconcileDifferences = async ({
             await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        const result = await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId!, logCtx);
+        const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, debug, activityLogId!, logCtx);
 
         if (!result) {
             if (activityLogId) {

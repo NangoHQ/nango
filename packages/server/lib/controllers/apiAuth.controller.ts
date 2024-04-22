@@ -24,7 +24,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import { isErr } from '@nangohq/utils';
 
 class ApiAuthController {
@@ -48,7 +48,7 @@ class ApiAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization API Key' },
             { account: { id: accountId }, environment: { id: environmentId } }
         );
@@ -216,6 +216,7 @@ class ApiAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
+                    logContextGetter,
                     activityLogId,
                     undefined,
                     logCtx
@@ -285,7 +286,7 @@ class ApiAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Basic' },
             { account: { id: accountId }, environment: { id: environmentId } }
         );
@@ -447,6 +448,7 @@ class ApiAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
+                    logContextGetter,
                     activityLogId,
                     undefined,
                     logCtx

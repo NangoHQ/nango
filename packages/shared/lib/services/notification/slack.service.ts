@@ -11,8 +11,7 @@ import { basePublicUrl, isOk } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import SyncClient from '../../clients/sync.client.js';
-import type { LogContext } from '@nangohq/logs';
-import { getOperationContext } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'slack_notifications';
 
@@ -204,7 +203,8 @@ class SlackService {
         syncType: SyncType,
         originalActivityLogId: number,
         environment_id: number,
-        provider: string
+        provider: string,
+        logContextGetter: LogContextGetter
     ) {
         const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
 
@@ -252,7 +252,7 @@ class SlackService {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
             { account, environment: { id: environment_id } }
         );
@@ -366,7 +366,8 @@ class SlackService {
         provider: string,
         slack_timestamp: string,
         admin_slack_timestamp: string,
-        connectionCount: number
+        connectionCount: number,
+        logContextGetter: LogContextGetter
     ) {
         if (syncName === this.actionName) {
             return;
@@ -430,7 +431,7 @@ class SlackService {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
             { account, environment: { id: environment_id } }
         );
@@ -592,7 +593,8 @@ class SlackService {
         type: SyncType,
         originalActivityLogId: number,
         environment_id: number,
-        provider: string
+        provider: string,
+        logContextGetter: LogContextGetter
     ): Promise<void> {
         const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
 
@@ -637,7 +639,8 @@ class SlackService {
             provider,
             slack_timestamp as string,
             admin_slack_timestamp as string,
-            connection_list.length
+            connection_list.length,
+            logContextGetter
         );
     }
 

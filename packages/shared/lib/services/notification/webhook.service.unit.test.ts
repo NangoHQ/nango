@@ -7,7 +7,7 @@ import type { RecentlyCreatedConnection, NangoConnection } from '../../models/Co
 import WebhookService from './webhook.service.js';
 import type { Environment } from '../../models/Environment.js';
 import { mockCreateActivityLog } from '../activity/mocks.js';
-import { LogContext } from '@nangohq/logs';
+import { LogContext, logContextGetter } from '@nangohq/logs';
 
 vi.mock('axios', () => ({
     default: {
@@ -94,7 +94,7 @@ describe('Webhook notification tests', () => {
             } as Environment);
         });
 
-        await WebhookService.forward(1, 'providerKey', ['connection_1'], 'provider', {}, {});
+        await WebhookService.forward(1, 'providerKey', ['connection_1'], 'provider', {}, {}, logContextGetter);
         expect(axios.post).not.toHaveBeenCalled();
     });
 
@@ -106,7 +106,7 @@ describe('Webhook notification tests', () => {
                 secret_key: 'secret'
             } as Environment);
         });
-        await WebhookService.forward(1, 'providerKey', ['connection_1'], 'provider', {}, {});
+        await WebhookService.forward(1, 'providerKey', ['connection_1'], 'provider', {}, {}, logContextGetter);
         expect(axios.post).toHaveBeenCalled();
     });
 

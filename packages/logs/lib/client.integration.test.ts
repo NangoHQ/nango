@@ -1,12 +1,12 @@
 import { describe, beforeAll, it, expect, vi } from 'vitest';
 import * as model from './models/messages.js';
 import { logger } from './utils.js';
-import { getOperationContext } from './client.js';
 import { deleteIndex, migrateMapping } from './es/helpers.js';
 import type { ListOperations } from './models/messages.js';
 import { getOperation, listMessages, listOperations } from './models/messages.js';
 import type { OperationRowInsert } from './types/messages.js';
 import { afterEach } from 'node:test';
+import { logContextGetter } from './models/logContextGetter.js';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };
@@ -29,7 +29,7 @@ describe('client', () => {
 
     it('should insert an operation', async () => {
         const spy = vi.spyOn(model, 'createMessage');
-        const ctx = await getOperationContext(operationPayload, { start: false, account, environment }, { logToConsole: false });
+        const ctx = await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).toHaveBeenCalled();
 
@@ -79,7 +79,7 @@ describe('client', () => {
 
         // Create operation
         expect(spyMsg).not.toHaveBeenCalled();
-        const ctx = await getOperationContext(operationPayload, { account, environment }, { dryRun: true, logToConsole: true });
+        const ctx = await logContextGetter.create(operationPayload, { account, environment }, { dryRun: true, logToConsole: true });
 
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spyMsg).not.toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe('client', () => {
 
         // Create operation
         expect(spy).not.toHaveBeenCalled();
-        const ctx = await getOperationContext(operationPayload, { account, environment }, { dryRun: true, logToConsole: false });
+        const ctx = await logContextGetter.create(operationPayload, { account, environment }, { dryRun: true, logToConsole: false });
 
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).not.toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe('client', () => {
 
     describe('states', () => {
         it('should set operation as started', async () => {
-            const ctx = await getOperationContext(operationPayload, { account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.start();
 
             const operation = await getOperation({ id: ctx.id });
@@ -123,7 +123,7 @@ describe('client', () => {
         });
 
         it('should set operation as cancelled', async () => {
-            const ctx = await getOperationContext(operationPayload, { account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.cancel();
 
             const operation = await getOperation({ id: ctx.id });
@@ -138,7 +138,7 @@ describe('client', () => {
         });
 
         it('should set operation as timeout', async () => {
-            const ctx = await getOperationContext(operationPayload, { account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.timeout();
 
             const operation = await getOperation({ id: ctx.id });
@@ -153,7 +153,7 @@ describe('client', () => {
         });
 
         it('should set operation as success', async () => {
-            const ctx = await getOperationContext(operationPayload, { account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.success();
 
             const operation = await getOperation({ id: ctx.id });
@@ -168,7 +168,7 @@ describe('client', () => {
         });
 
         it('should set operation as failed', async () => {
-            const ctx = await getOperationContext(operationPayload, { account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.failed();
 
             const operation = await getOperation({ id: ctx.id });
@@ -185,7 +185,7 @@ describe('client', () => {
 
     describe('log type', () => {
         it('should log all types', async () => {
-            const ctx = await getOperationContext(operationPayload, { account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.trace('trace msg');
             await ctx.debug('debug msg');
             await ctx.info('info msg');

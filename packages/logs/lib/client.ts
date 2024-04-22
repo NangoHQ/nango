@@ -1,8 +1,6 @@
-import type { MessageRow, MessageRowInsert, MessageMeta, OperationRowInsert } from './types/messages.js';
+import type { MessageRow, MessageRowInsert, MessageMeta } from './types/messages.js';
 import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
-import type { FormatMessageData } from './models/helpers.js';
 import { getFormattedMessage } from './models/helpers.js';
-import type { SetRequired } from 'type-fest';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 import { isCli, logger } from './utils.js';
 import { envs } from './env.js';
@@ -120,47 +118,4 @@ export class LogContext {
             logger.error(`failed_to_set_${log} ${stringifyError(err)}`);
         }
     }
-}
-
-export interface OperationContextData extends FormatMessageData {
-    start?: boolean;
-}
-
-/**
- * Create an operation and return a context
- */
-export async function getOperationContext(
-    data: OperationRowInsert,
-    { start, account, user, environment }: SetRequired<OperationContextData, 'account' | 'environment'>,
-    options?: Options
-): Promise<LogContext> {
-    const msg = getFormattedMessage(data, { account, user, environment });
-    if (typeof start === 'undefined' || start) {
-        msg.startedAt = msg.startedAt ?? new Date().toISOString();
-        msg.state = msg.state === 'waiting' ? 'running' : msg.state;
-    }
-
-    try {
-        if (envs.NANGO_LOGS_ENABLED && !options?.dryRun) {
-            await createMessage(msg);
-        } else if (options?.logToConsole !== false) {
-            logger.info(`[debug] operation(${JSON.stringify(msg)})`);
-        }
-    } catch (err) {
-        // TODO: reup throw
-        logger.error(`failed_to_create_operation ${stringifyError(err)}`);
-    }
-
-    return new LogContext({ parentId: msg.id }, options);
-}
-
-/**
- * Return a context without creating an operation
- */
-export function getExistingOperationContext({ id }: { id: MessageRow['id'] }): LogContext {
-    if (!id) {
-        logger.error('getExistingOperationContext: id is empty');
-    }
-
-    return new LogContext({ parentId: id });
 }

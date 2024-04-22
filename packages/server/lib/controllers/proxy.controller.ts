@@ -36,7 +36,7 @@ import {
     configService
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { getExistingOperationContext, getOperationContext, oldLevelToNewLevel } from '@nangohq/logs';
+import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -85,8 +85,8 @@ class ProxyController {
             }
             // TODO: move that outside try/catch
             const logCtx = existingActivityLogId
-                ? getExistingOperationContext({ id: String(existingActivityLogId) })
-                : await getOperationContext(
+                ? logContextGetter.get({ id: String(existingActivityLogId) })
+                : await logContextGetter.create(
                       { operation: { type: 'action' }, message: 'Start action' },
                       { account: { id: accountId }, environment: { id: environment_id } },
                       { dryRun: isDryRun }
@@ -123,6 +123,7 @@ class ProxyController {
                 environment_id,
                 connectionId,
                 providerConfigKey,
+                logContextGetter,
                 activityLogId,
                 logCtx,
                 logAction,

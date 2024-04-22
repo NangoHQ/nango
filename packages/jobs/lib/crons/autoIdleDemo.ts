@@ -14,7 +14,7 @@ import {
 } from '@nangohq/shared';
 import { getLogger, isErr } from '@nangohq/utils';
 import tracer from 'dd-trace';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 
 const logger = getLogger('Jobs');
@@ -60,7 +60,7 @@ export async function exec(): Promise<void> {
             continue;
         }
 
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
             { account: { id: sync.account_id }, environment: { id: sync.environment_id } }
         );

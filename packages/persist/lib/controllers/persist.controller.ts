@@ -13,7 +13,7 @@ import {
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
-import { getExistingOperationContext, oldLevelToNewLevel } from '@nangohq/logs';
+import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import { getLogger, resultErr, resultOk, isOk, isErr, type Result, metrics } from '@nangohq/utils';
 
 const logger = getLogger('PersistController');
@@ -58,7 +58,7 @@ class PersistController {
             },
             false
         );
-        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         await logCtx.log({ type: 'log', message: msg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
 
         if (result) {
@@ -73,7 +73,7 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
-        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
             recordsService
                 .upsert(records, nangoConnectionId, model, false)
@@ -113,7 +113,7 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
-        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
             recordsService
                 .upsert(records, nangoConnectionId, model, true)
@@ -153,7 +153,7 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
-        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
             recordsService
                 .update(records, nangoConnectionId, model)
@@ -248,7 +248,7 @@ class PersistController {
             response: legacyFormattedRecords
         } = syncDataService.formatDataRecords(records as unknown as DataResponse[], nangoConnectionId, model, syncId, syncJobId, softDelete);
 
-        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         if (!success || legacyFormattedRecords === null) {
             await createActivityLogMessage({
                 level: 'error',

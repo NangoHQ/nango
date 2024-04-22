@@ -43,9 +43,10 @@ import {
     getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
     createActivityLogMessage,
-    featureFlags
+    featureFlags,
+    syncCommandToOperation
 } from '@nangohq/shared';
-import { getExistingOperationContext, getOperationContext, syncCommandToOperation } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import { isErr, isOk, getLogger } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 
@@ -63,7 +64,11 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
-            const { success, error, response: syncConfigDeployResult } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', debug);
+            const {
+                success,
+                error,
+                response: syncConfigDeployResult
+            } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', logContextGetter, debug);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -72,7 +77,7 @@ class SyncController {
             }
 
             if (reconcile) {
-                const logCtx = getExistingOperationContext({ id: String(syncConfigDeployResult?.activityLogId) });
+                const logCtx = logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
                 const success = await getAndReconcileDifferences({
                     environmentId,
                     syncs,
@@ -80,7 +85,8 @@ class SyncController {
                     activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
                     singleDeployMode,
-                    logCtx
+                    logCtx,
+                    logContextGetter
                 });
                 if (!success) {
                     reconcileSuccess = false;
@@ -115,7 +121,15 @@ class SyncController {
                 req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileDifferences({ environmentId, syncs, performAction: false, activityLogId: null, debug, singleDeployMode });
+            const result = await getAndReconcileDifferences({
+                environmentId,
+                syncs,
+                performAction: false,
+                activityLogId: null,
+                debug,
+                singleDeployMode,
+                logContextGetter
+            });
 
             res.send(result);
         } catch (e) {
@@ -363,6 +377,7 @@ class SyncController {
                 provider_config_key,
                 syncNames as string[],
                 full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
+                logContextGetter,
                 connection_id
             );
 
@@ -487,7 +502,7 @@ class SyncController {
             }
 
             // TODO: move that outside try/catch
-            const logCtx = await getOperationContext(
+            const logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
                 { account: { id: -1 }, environment: { id: environmentId } }
             );
@@ -715,7 +730,7 @@ class SyncController {
             const activityLogId = await createActivityLog(log);
             // TODO: move that outside try/catch
             // TODO: message
-            const logCtx = await getOperationContext(
+            const logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
                 { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name } }
             );

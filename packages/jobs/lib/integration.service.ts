@@ -5,7 +5,7 @@ import { createActivityLogMessage, localFileService, remoteFileService, NangoErr
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
-import { getExistingOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('integration.service');
 
@@ -48,7 +48,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     content: `Failed to cancel script`,
                     timestamp: Date.now()
                 });
-                const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+                const logCtx = logContextGetter.get({ id: String(activityLogId) });
                 await logCtx.error('Failed to cancel script');
             }
         }
@@ -77,7 +77,7 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncId', nangoProps.syncId)
             .setTag('syncName', syncName);
 
-        const logCtx = activityLogId ? getExistingOperationContext({ id: String(activityLogId) }) : null;
+        const logCtx = activityLogId ? logContextGetter.get({ id: String(activityLogId) }) : null;
         try {
             const script: string | null =
                 (isCloud || integrationFilesAreRemote) && !optionalLoadLocation

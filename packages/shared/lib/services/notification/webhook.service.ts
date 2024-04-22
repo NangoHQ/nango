@@ -13,8 +13,7 @@ import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBod
 import { WebhookType } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
-import type { LogContext } from '@nangohq/logs';
-import { getOperationContext } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
 dayjs.extend(utc);
 
@@ -312,7 +311,8 @@ class WebhookService {
         connectionIds: string[],
         provider: string,
         payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, string>
+        webhookOriginalHeaders: Record<string, string>,
+        logContextGetter: LogContextGetter
     ) {
         const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
@@ -321,12 +321,12 @@ class WebhookService {
         }
 
         if (!connectionIds || connectionIds.length === 0) {
-            await this.forwardHandler(environment_id, providerConfigKey, '', provider, payload, webhookOriginalHeaders);
+            await this.forwardHandler(environment_id, providerConfigKey, '', provider, payload, webhookOriginalHeaders, logContextGetter);
             return;
         }
 
         for (const connectionId of connectionIds) {
-            await this.forwardHandler(environment_id, providerConfigKey, connectionId, provider, payload, webhookOriginalHeaders);
+            await this.forwardHandler(environment_id, providerConfigKey, connectionId, provider, payload, webhookOriginalHeaders, logContextGetter);
         }
     }
 
@@ -336,7 +336,8 @@ class WebhookService {
         connectionId: string,
         provider: string,
         payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, string>
+        webhookOriginalHeaders: Record<string, string>,
+        logContextGetter: LogContextGetter
     ) {
         const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
 
@@ -360,7 +361,7 @@ class WebhookService {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
             { account: { id: -1 }, environment: { id: environment_id } }
         );

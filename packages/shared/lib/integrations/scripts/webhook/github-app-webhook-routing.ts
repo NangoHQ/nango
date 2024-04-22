@@ -3,6 +3,7 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import { getLogger } from '@nangohq/utils';
 
 import crypto from 'crypto';
+import type { LogContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Webook.GithubApp');
 
@@ -18,7 +19,7 @@ function validate(integration: ProviderConfig, headerSignature: string, body: an
     return crypto.timingSafeEqual(trusted, untrusted);
 }
 
-export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {
+export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any, logContextGetter: LogContextGetter) {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
@@ -31,5 +32,5 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         }
     }
 
-    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
+    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id', logContextGetter);
 }

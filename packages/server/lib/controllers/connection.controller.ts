@@ -33,7 +33,7 @@ import {
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 class ConnectionController {
     /**
@@ -83,7 +83,7 @@ class ConnectionController {
                     timestamp: Date.now(),
                     content: 'Unknown connection'
                 });
-                const logCtx = await getOperationContext(
+                const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
                     { account: response.account, environment: response.environment }
                 );
@@ -105,7 +105,7 @@ class ConnectionController {
                     timestamp: Date.now(),
                     content: 'Unknown provider config'
                 });
-                const logCtx = await getOperationContext(
+                const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
                     { account: response.account, environment: response.environment }
                 );
@@ -134,7 +134,8 @@ class ConnectionController {
                     activityLogId: null,
                     environment_id: environment.id,
                     instantRefresh,
-                    logAction: LogActionEnum.TOKEN
+                    logAction: LogActionEnum.TOKEN,
+                    logContextGetter
                 });
 
                 if (!success) {
@@ -156,7 +157,7 @@ class ConnectionController {
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
                     timestamp: Date.now()
                 });
-                const logCtx = await getOperationContext(
+                const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
                     { account: response.account, environment: response.environment }
                 );
@@ -284,6 +285,7 @@ class ConnectionController {
                 environmentId,
                 connectionId,
                 providerConfigKey,
+                logContextGetter,
                 null,
                 undefined,
                 action,
@@ -645,7 +647,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    oAuthCredentials
+                    oAuthCredentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -677,7 +680,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    oAuthCredentials
+                    oAuthCredentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -703,7 +707,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    credentials
+                    credentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -728,7 +733,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    credentials
+                    credentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -803,6 +809,7 @@ class ConnectionController {
                         operation: updatedConnection?.operation || AuthOperation.UNKNOWN
                     },
                     provider,
+                    logContextGetter,
                     null
                 );
             }

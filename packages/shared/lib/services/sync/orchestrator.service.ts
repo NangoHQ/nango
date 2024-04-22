@@ -34,9 +34,17 @@ import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
-import type { LogContext } from '@nangohq/logs';
-import { getOperationContext, syncCommandToOperation } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
+
+// Should be in "logs" package but impossible thanks to CLI
+export const syncCommandToOperation = {
+    PAUSE: 'pause',
+    UNPAUSE: 'unpause',
+    RUN: 'run',
+    RUN_FULL: 'run_full',
+    CANCEL: 'cancel'
+} as const;
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -53,6 +61,7 @@ export class Orchestrator {
         providerConfigKey: string,
         environmentId: number,
         sync: IncomingFlowConfig,
+        logContextGetter: LogContextGetter,
         debug = false,
         activityLogId?: number,
         logCtx?: LogContext
@@ -84,6 +93,7 @@ export class Orchestrator {
                     syncConfig as ProviderConfig,
                     syncName,
                     { ...sync, returns: sync.models, input: '' },
+                    logContextGetter,
                     debug
                 );
             }
@@ -114,11 +124,17 @@ export class Orchestrator {
         }
     }
 
-    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number, logCtx?: LogContext): Promise<boolean> {
+    public async createSyncs(
+        syncArgs: CreateSyncArgs[],
+        logContextGetter: LogContextGetter,
+        debug = false,
+        activityLogId?: number,
+        logCtx?: LogContext
+    ): Promise<boolean> {
         let success = true;
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId, logCtx);
+            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, logContextGetter, debug, activityLogId, logCtx);
             if (!result) {
                 success = false;
             }
@@ -173,6 +189,7 @@ export class Orchestrator {
         providerConfigKey: string,
         syncNames: string[],
         command: SyncCommand,
+        logContextGetter: LogContextGetter,
         connectionId?: string
     ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
@@ -195,7 +212,7 @@ export class Orchestrator {
             return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
         }
 
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
             { account: { id: -1 }, environment: { id: environmentId } }
         );
@@ -386,7 +403,7 @@ export class Orchestrator {
      * Trigger If Connections Exist
      * @desc for the recently deploy flows, create the sync and trigger it if there are connections
      */
-    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number) {
+    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number, logContextGetter: LogContextGetter) {
         for (const flow of flows) {
             if (flow.type === SyncConfigType.ACTION) {
                 continue;
@@ -407,6 +424,7 @@ export class Orchestrator {
                 providerConfigKey,
                 environmentId,
                 flow as unknown as IncomingFlowConfig,
+                logContextGetter,
                 false
             );
         }

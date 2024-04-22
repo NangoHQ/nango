@@ -6,7 +6,7 @@ import connectionService from '../../../services/connection.service.js';
 import configService from '../../../services/config.service.js';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
-import { getExistingOperationContext } from '@nangohq/logs';
+import type { LogContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -24,7 +24,7 @@ function validate(integration: ProviderConfig, headerSignature: string, body: an
     return crypto.timingSafeEqual(trusted, untrusted);
 }
 
-export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {
+export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any, logContextGetter: LogContextGetter) {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
@@ -37,13 +37,13 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     }
 
     if (get(body, 'action') === 'created') {
-        await handleCreateWebhook(integration, body);
+        await handleCreateWebhook(integration, body, logContextGetter);
     }
 
-    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
+    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id', logContextGetter);
 }
 
-async function handleCreateWebhook(integration: ProviderConfig, body: any) {
+async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter) {
     if (!get(body, 'requester.login')) {
         return;
     }
@@ -79,7 +79,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
             installation_id: installationId
         };
 
-        const logCtx = getExistingOperationContext({ id: activityLogId });
+        const logCtx = logContextGetter.get({ id: activityLogId });
 
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
@@ -87,7 +87,8 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
             template,
             connectionConfig as ConnectionConfig,
             activityLogId,
-            logCtx
+            logCtx,
+            logContextGetter
         );
     }
 }

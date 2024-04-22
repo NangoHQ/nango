@@ -22,8 +22,7 @@ import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoC
 import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
-import type { LogContext } from '@nangohq/logs';
-import { getExistingOperationContext } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import * as legacyRecordsService from './data/records.service.js';
 
 const logger = getLogger('run.service');
@@ -50,10 +49,12 @@ interface RunScriptRow {
     createdAt: number;
 }
 
-interface SyncRunConfig {
+export interface SyncRunConfig {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    logContextGetter: LogContextGetter;
+
     writeToDb: boolean;
     isAction?: boolean;
     isInvokedImmediately?: boolean;
@@ -88,6 +89,8 @@ export default class SyncRun {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    logContextGetter: LogContextGetter;
+
     writeToDb: boolean;
     isAction: boolean;
     isInvokedImmediately: boolean;
@@ -120,6 +123,7 @@ export default class SyncRun {
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
         this.recordsService = config.recordsService;
+        this.logContextGetter = config.logContextGetter;
         if (config.bigQueryClient) {
             this.bigQueryClient = config.bigQueryClient;
         }
@@ -141,7 +145,7 @@ export default class SyncRun {
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
-            this.logCtx = getExistingOperationContext({ id: String(config.activityLogId) });
+            this.logCtx = this.logContextGetter.get({ id: String(config.activityLogId) });
         }
 
         if (config.loadLocation) {
@@ -435,7 +439,8 @@ export default class SyncRun {
                         this.syncType,
                         this.activityLogId as number,
                         this.nangoConnection.environment_id,
-                        this.provider as string
+                        this.provider as string,
+                        this.logContextGetter
                     );
 
                     await this.finishFlow(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
@@ -547,7 +552,8 @@ export default class SyncRun {
                     this.syncType,
                     this.activityLogId,
                     this.nangoConnection.environment_id,
-                    this.provider as string
+                    this.provider as string,
+                    this.logContextGetter
                 );
             }
         }
@@ -699,7 +705,8 @@ export default class SyncRun {
                     this.syncType,
                     this.activityLogId as number,
                     this.nangoConnection.environment_id,
-                    this.provider as string
+                    this.provider as string,
+                    this.logContextGetter
                 );
             } catch {
                 errorManager.report('slack notification service reported a failure', {

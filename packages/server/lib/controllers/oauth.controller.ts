@@ -57,7 +57,7 @@ import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import type { LogContext } from '@nangohq/logs';
-import { getExistingOperationContext, getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import { errorToObject } from '@nangohq/utils';
 
 class OAuthController {
@@ -82,7 +82,7 @@ class OAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth' },
             { account: { id: accountId }, environment: { id: environmentId } }
         );
@@ -383,7 +383,7 @@ class OAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await getOperationContext(
+        const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth2 CC' },
             { account: { id: accountId }, environment: { id: environmentId } }
         );
@@ -531,6 +531,7 @@ class OAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
+                    logContextGetter,
                     activityLogId,
                     undefined,
                     logCtx
@@ -1044,7 +1045,7 @@ class OAuthController {
 
         const activityLogId = await findActivityLogBySession(session.id);
         // TODO: fix this
-        const logCtx = getExistingOperationContext({ id: String(activityLogId) });
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
@@ -1468,6 +1469,7 @@ class OAuthController {
                         operation: updatedConnection.operation
                     },
                     session.provider,
+                    logContextGetter,
                     activityLogId,
                     { initiateSync, runPostConnectionScript },
                     logCtx
@@ -1482,7 +1484,8 @@ class OAuthController {
                     template,
                     connectionConfig as ConnectionConfig,
                     activityLogId,
-                    logCtx
+                    logCtx,
+                    logContextGetter
                 );
             } else {
                 await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
@@ -1649,6 +1652,7 @@ class OAuthController {
                             operation: updatedConnection.operation
                         },
                         session.provider,
+                        logContextGetter,
                         activityLogId,
                         { initiateSync, runPostConnectionScript },
                         logCtx

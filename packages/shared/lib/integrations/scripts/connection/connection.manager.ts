@@ -11,7 +11,7 @@ import environmentService from '../../../services/environment.service.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 
 import * as postConnectionHandlers from './index.js';
-import { getOperationContext } from '@nangohq/logs';
+import type { LogContextGetter } from '@nangohq/logs';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -25,7 +25,7 @@ export interface InternalNango {
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
-async function execute(createdConnection: RecentlyCreatedConnection, provider: string) {
+async function execute(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter) {
     const { connection_id, environment_id, provider_config_key } = createdConnection;
     try {
         const accountId = await environmentService.getAccountIdFromEnvironment(environment_id);
@@ -33,7 +33,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             accountId as number,
             environment_id,
             connection_id,
-            provider_config_key
+            provider_config_key,
+            logContextGetter
         );
 
         if (!success || !connection) {
@@ -107,7 +108,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     timestamp: Date.now(),
                     content: `Post connection script failed with the error: ${errorString}`
                 });
-                const logCtx = await getOperationContext(
+                const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Authentication' },
                     { account: { id: accountId! }, environment: { id: connection.environment_id } }
                 );

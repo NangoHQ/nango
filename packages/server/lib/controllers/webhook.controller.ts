@@ -3,6 +3,7 @@ import type { Span } from 'dd-trace';
 import tracer from 'dd-trace';
 import { routeWebhook, featureFlags, environmentService } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
+import { logContextGetter } from '@nangohq/logs';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
@@ -41,7 +42,7 @@ class WebhookController {
 
             if (areWebhooksEnabled) {
                 const startTime = Date.now();
-                responsePayload = await routeWebhook(environmentUuid, providerConfigKey, headers, req.body, req.rawBody!);
+                responsePayload = await routeWebhook(environmentUuid, providerConfigKey, headers, req.body, req.rawBody!, logContextGetter);
                 const endTime = Date.now();
                 const totalRunTime = (endTime - startTime) / 1000;
 

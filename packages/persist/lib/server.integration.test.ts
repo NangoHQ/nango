@@ -13,7 +13,7 @@ import {
     SyncStatus,
     db
 } from '@nangohq/shared';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 describe('Persist API', () => {
     const port = 3096;
@@ -196,7 +196,7 @@ const initDb = async () => {
         throw new Error('Activity log not created');
     }
 
-    await getOperationContext(
+    await logContextGetter.create(
         { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
         { account: { id: env.account_id }, environment: { id: env.id } }
     );

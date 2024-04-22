@@ -30,8 +30,7 @@ import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env } from '@nangohq/utils';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
-import type { LogContext } from '@nangohq/logs';
-import { getOperationContext } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'sync_configs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
@@ -44,6 +43,7 @@ export async function deploy(
     environment_id: number,
     flows: IncomingFlowConfig[],
     nangoYamlBody: string,
+    logContextGetter: LogContextGetter,
     debug = false
 ): Promise<ServiceResponse<SyncConfigResult | null>> {
     const insertData: SyncConfig[] = [];
@@ -77,7 +77,7 @@ export async function deploy(
     });
 
     const activityLogId = await createActivityLog(log);
-    const logCtx = await getOperationContext(
+    const logCtx = await logContextGetter.create(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'custom' }, message: 'Deploying custom syncs' },
         { account: { id: accountId }, environment: { id: environment_id } }
     );
@@ -239,7 +239,8 @@ export async function deploy(
 export async function deployPreBuilt(
     environment_id: number,
     configs: IncomingPreBuiltFlowConfig[],
-    nangoYamlBody: string
+    nangoYamlBody: string,
+    logContextGetter: LogContextGetter
 ): Promise<ServiceResponse<SyncConfigResult | null>> {
     const [firstConfig] = configs;
 
@@ -261,7 +262,7 @@ export async function deployPreBuilt(
     const providerConfigKeys = [];
 
     const activityLogId = await createActivityLog(log);
-    const logCtx = await getOperationContext(
+    const logCtx = await logContextGetter.create(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'prebuilt' }, message: 'Deploying pre-built flow' },
         { account: { id: accountId }, environment: { id: environment_id } }
     );

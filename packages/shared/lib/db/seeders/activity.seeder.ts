@@ -1,6 +1,6 @@
 import * as activityService from '../../services/activity/activity.service.js';
 import type { ActivityLog } from '../../models/Activity.js';
-import { getOperationContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 export const createActivityLogSeed = async (environmentId: number): Promise<number> => {
     const log = {
@@ -13,7 +13,7 @@ export const createActivityLogSeed = async (environmentId: number): Promise<numb
         operation_name: 'test'
     };
     const activityLogId = await activityService.createActivityLog(log as ActivityLog);
-    await getOperationContext(
+    await logContextGetter.create(
         { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'test' },
         { account: { id: 1 }, environment: { id: environmentId } }
     );
