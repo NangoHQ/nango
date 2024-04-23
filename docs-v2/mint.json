@@ -353,6 +353,7 @@
                         "integrations/all/fitbit",
                         "integrations/all/freshbooks",
                         "integrations/all/freshdesk",
+                        "integrations/all/freshsales",
                         "integrations/all/freshservice",
                         "integrations/all/front",
                         "integrations/all/guru",

@@ -683,6 +683,17 @@ freshdesk:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
     docs: https://docs.nango.dev/integrations/all/freshdesk
+freshsales:
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshsales.io
+        headers:
+            Authorization: Token token=${apiKey}
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/freshsales
 freshservice:
     categories:
         - support
