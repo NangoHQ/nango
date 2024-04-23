@@ -7,7 +7,7 @@ const containers: StartedTestContainer[] = [];
 export async function setupElasticsearch() {
     console.log('Starting OpenSearch...');
     const openSearchPort = 9200;
-    const os = await new GenericContainer('opensearchproject/opensearch:1.3.15')
+    const os = await new GenericContainer('opensearchproject/opensearch:2.13.0')
         .withName(`os-test-${randomUUID()}`)
         .withEnvironment({
             'discovery.type': 'single-node',
