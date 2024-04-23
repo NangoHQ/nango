@@ -44,13 +44,12 @@ import {
     getSyncAndActionConfigsBySyncNameAndConfigId,
     createActivityLogMessage,
     featureFlags,
+    trackFetch,
     syncCommandToOperation
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import { isErr, isOk, getLogger } from '@nangohq/utils';
+import { isErr, isOk } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
-
-const logger = getLogger('sync.controller');
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
@@ -196,36 +195,17 @@ class SyncController {
                 return;
             }
 
-            const {
-                success,
-                error: legacyError,
-                response
-            } = await syncDataService.getAllDataRecords(
-                connectionId,
-                providerConfigKey,
-                environmentId,
-                model as string,
-                (delta || modified_after) as string,
-                limit as string,
-                filter as LastAction,
-                cursor as string
-            );
-
-            if (!success || !response) {
-                errorManager.errResFromNangoErr(res, legacyError);
-                return;
-            }
-
-            const shouldFetchNewRecords = await featureFlags.isEnabled('new-records-fetch', 'global', false);
-            if (shouldFetchNewRecords) {
+            const shouldReturnNewRecords = await featureFlags.isEnabled('new-records-return', 'global', false);
+            if (shouldReturnNewRecords) {
                 const { error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
                 if (error || !connection) {
-                    errorManager.errResFromNangoErr(res, error);
+                    const nangoError = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentId });
+                    errorManager.errResFromNangoErr(res, nangoError);
                     return;
                 }
 
-                const newResponse = await recordsService.getRecords({
+                const result = await recordsService.getRecords({
                     connectionId: connection.id as number,
                     model: model as string,
                     modifiedAfter: (delta || modified_after) as string,
@@ -234,50 +214,34 @@ class SyncController {
                     cursor: cursor as string
                 });
 
-                if (isErr(newResponse)) {
-                    logger.error('Error fetching records from new records service', newResponse.err);
-                } else {
-                    // Compare legacy and new records
-                    // Dates are set by the database and may differ
-                    // so we need to remove them before comparing
-                    // Also sorting the records by id since the order depends on updatedAt
-                    const oldRecords = response.records
-                        .map((r) => {
-                            const { _nango_metadata: _ignored, ...rest } = r;
-                            return rest;
-                        })
-                        .sort(({ id: a }, { id: b }) => (a > b ? 1 : a < b ? -1 : 0));
-                    const newRecords = newResponse.res.records
-                        .map((r) => {
-                            const { _nango_metadata: _ignored, ...rest } = r;
-                            return rest;
-                        })
-                        .sort(({ id: a }, { id: b }) => (a > b ? 1 : a < b ? -1 : 0));
-                    const oldRecordsJson = JSON.stringify(oldRecords);
-                    const newRecordsJson = JSON.stringify(newRecords);
-                    if (oldRecordsJson !== newRecordsJson) {
-                        const context = {
-                            environmentId,
-                            providerConfigKey,
-                            connectionId,
-                            model,
-                            modifiedAfter: delta || modified_after,
-                            limit,
-                            filter,
-                            cursor
-                        };
-                        logger.error(
-                            `[RECORDS MIGRATION] Differences between legacy and new records (${JSON.stringify(context)}): ${oldRecordsJson} <<<>>> ${newRecordsJson}`
-                        );
-                    } else {
-                        logger.info('[RECORDS MIGRATION] No differences between legacy and new records');
-                    }
+                if (isErr(result)) {
+                    errorManager.errResFromNangoErr(res, new NangoError('pass_through_error', result.err));
+                    return;
                 }
+                await trackFetch(connection.id as number);
+                res.send(result.res);
+            } else {
+                const {
+                    success,
+                    error: legacyError,
+                    response
+                } = await syncDataService.getAllDataRecords(
+                    connectionId,
+                    providerConfigKey,
+                    environmentId,
+                    model as string,
+                    (delta || modified_after) as string,
+                    limit as string,
+                    filter as LastAction,
+                    cursor as string
+                );
 
-                // TODO: enable track fetch once the call to legacy getAllDataRecords is removed
-                // await trackFetch(connection.id as number);
+                if (!success || !response) {
+                    errorManager.errResFromNangoErr(res, legacyError);
+                    return;
+                }
+                res.send(response);
             }
-            res.send(response);
         } catch (e) {
             next(e);
         }

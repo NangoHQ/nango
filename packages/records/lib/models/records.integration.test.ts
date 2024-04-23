@@ -37,6 +37,30 @@ describe('Records service', () => {
         expect(updateRes).toStrictEqual({ addedKeys: [], updatedKeys: ['2'], deletedKeys: [], nonUniqueKeys: [] });
     });
 
+    it('Should delete records', async () => {
+        const connectionId = 1;
+        const model = 'my-model';
+        const syncId = '00000000-0000-0000-0000-000000000000';
+        const records = [
+            { id: '1', name: 'John Doe' },
+            { id: '2', name: 'Jane Doe' },
+            { id: '3', name: 'Max Doe' }
+        ];
+        await upsertRecords(records, connectionId, model, syncId, 1);
+
+        const toDelete = [
+            { id: '1', name: 'John Doe' },
+            { id: '2', name: 'Jane Doe' }
+        ];
+        const res1 = await upsertRecords(toDelete, connectionId, model, syncId, 1, true);
+        expect(res1).toStrictEqual({ addedKeys: [], updatedKeys: [], deletedKeys: ['1', '2'], nonUniqueKeys: [] });
+
+        // Try to delete the same records again
+        // Should not have any effect
+        const res2 = await upsertRecords(toDelete, connectionId, model, syncId, 1, true);
+        expect(res2).toStrictEqual({ addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
+    });
+
     it('Should retrieve records', async () => {
         const n = 10;
         const { connectionId, model } = await upsertNRecords(n);
@@ -149,12 +173,19 @@ async function upsertNRecords(n: number): Promise<{ connectionId: number; model:
     };
 }
 
-async function upsertRecords(records: UnencryptedRecordData[], connectionId: number, model: string, syncId: string, syncJobId: number): Promise<UpsertSummary> {
-    const formatRes = formatRecords(records, connectionId, model, syncId, syncJobId);
+async function upsertRecords(
+    records: UnencryptedRecordData[],
+    connectionId: number,
+    model: string,
+    syncId: string,
+    syncJobId: number,
+    softDelete = false
+): Promise<UpsertSummary> {
+    const formatRes = formatRecords(records, connectionId, model, syncId, syncJobId, softDelete);
     if (isErr(formatRes)) {
         throw new Error(`Failed to format records: ${formatRes.err.message}`);
     }
-    const updateRes = await Records.upsert(formatRes.res, connectionId, model);
+    const updateRes = await Records.upsert(formatRes.res, connectionId, model, softDelete);
     if (isErr(updateRes)) {
         throw new Error(`Failed to update records: ${updateRes.err.message}`);
     }

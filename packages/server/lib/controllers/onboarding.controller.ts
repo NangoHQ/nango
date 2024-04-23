@@ -26,10 +26,11 @@ import {
     createActivityLog,
     LogActionEnum,
     analytics,
-    AnalyticsTypes
+    AnalyticsTypes,
+    featureFlags
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger, isErr } from '@nangohq/utils';
+import { getLogger, isErr, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -162,12 +163,26 @@ class OnboardingController {
                 payload.progress = 3;
             }
 
-            const getRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
-            if (!getRecords.success) {
+            let getRecords: Result<CustomerFacingDataRecord[], Error>;
+            const shouldReturnNewRecords = await featureFlags.isEnabled('new-records-return', 'global', false);
+            if (shouldReturnNewRecords) {
+                const newGetRecords = await recordsService.getRecords({
+                    connectionId: connectionExists.id,
+                    model: DEMO_MODEL
+                });
+                getRecords = isOk(newGetRecords) ? resultOk(newGetRecords.res.records) : newGetRecords;
+            } else {
+                const legacyGetRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
+                getRecords = legacyGetRecords.success
+                    ? resultOk(legacyGetRecords.response?.records || [])
+                    : resultErr(legacyGetRecords.error || 'failed_to_get_records');
+            }
+
+            if (isErr(getRecords)) {
                 res.status(400).json({ message: 'failed_to_get_records' });
                 return;
             } else {
-                payload.records = getRecords.response?.records || [];
+                payload.records = getRecords.res;
             }
             if (payload.records.length > 0) {
                 payload.progress = status.progress > 4 ? status.progress : 4;

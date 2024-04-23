@@ -35,11 +35,12 @@ export async function upsert(
 
     const addedKeys = await getAddedKeys(recordsWithoutDuplicates, nangoConnectionId, model);
     const updatedKeys = await getUpdatedKeys(recordsWithoutDuplicates, nangoConnectionId, model);
+    const deletedKeys = await getDeletedKeys(recordsWithoutDuplicates, nangoConnectionId, model);
 
     try {
         const encryptedRecords = encryptionManager.encryptDataRecords(recordsWithoutDuplicates);
 
-        const externalIds = await schema()
+        await schema()
             .from<DataRecord>(RECORDS_TABLE)
             .insert(encryptedRecords)
             .onConflict(['nango_connection_id', 'external_id', 'model'])
@@ -50,7 +51,7 @@ export async function upsert(
             return {
                 success: true,
                 summary: {
-                    deletedKeys: externalIds.map(({ external_id }) => external_id),
+                    deletedKeys: deletedKeys,
                     addedKeys: [],
                     updatedKeys: []
                 }
@@ -240,4 +241,17 @@ export async function getUpdatedKeys(response: DataRecord[], nangoConnectionId: 
         .whereNotIn(['external_id', 'data_hash'], keysWithHash);
 
     return rowsToUpdate;
+}
+
+export async function getDeletedKeys(response: DataRecord[], nangoConnectionId: number, model: string): Promise<string[]> {
+    const keys: string[] = response.map((data: DataRecord) => String(data[RECORD_UNIQUE_KEY]));
+    return await schema()
+        .from(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model,
+            external_deleted_at: null
+        })
+        .whereIn('external_id', keys)
+        .pluck('external_id');
 }

@@ -219,7 +219,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         ) as thirty_day_timestamps`
     );
 
-    const result = await schema()
+    const result = await db.knex
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
@@ -228,7 +228,18 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
-            `${SYNC_CONFIG_TABLE}.models`,
+            db.knex.raw(
+                `(
+                    SELECT models
+                    FROM
+                        _nango_connections
+                        JOIN _nango_configs ON _nango_configs.id = _nango_connections.config_id
+                        JOIN _nango_sync_configs ON _nango_sync_configs.nango_config_id = _nango_configs.id
+                            AND _nango_sync_configs.deleted = FALSE
+                            AND _nango_sync_configs.active = TRUE
+                    WHERE _nango_connections.id = _nango_syncs.nango_connection_id AND _nango_sync_configs.sync_name = _nango_syncs.name
+                ) as models`
+            ),
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -258,14 +269,11 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         )
         .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
-        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
         .where({
             nango_connection_id: nangoConnection.id,
             [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
             [`${SYNC_JOB_TABLE}.deleted`]: false,
-            [`${TABLE}.deleted`]: false,
-            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
-            [`${SYNC_CONFIG_TABLE}.active`]: true
+            [`${TABLE}.deleted`]: false
         })
         .orderBy(`${TABLE}.name`, 'asc')
         .groupBy(
@@ -274,7 +282,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
-            `${SYNC_CONFIG_TABLE}.models`
+            'models'
         );
 
     const syncsWithSchedule = result.map(async (sync) => {
