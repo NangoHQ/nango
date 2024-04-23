@@ -9,9 +9,9 @@ export default defineConfig({
         include: ['**/*.unit.{test,spec}.?(c|m)[jt]s?(x)'],
         env: {
             NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU=',
-            NANGO_LOGS_ES_URL: 'http://fake.com',
-            NANGO_LOGS_ES_USER: '',
-            NANGO_LOGS_ES_PWD: ''
+            NANGO_LOGS_OS_URL: 'http://fake.com',
+            NANGO_LOGS_OS_USER: '',
+            NANGO_LOGS_OS_PWD: ''
         }
     }
 });

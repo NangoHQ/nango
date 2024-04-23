@@ -13,7 +13,7 @@
         "directory": "packages/logs"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "8.12.2",
+        "@opensearch-project/opensearch": "2.7.0",
         "@nangohq/utils": "file:../utils",
         "zod": "3.22.4"
     },
