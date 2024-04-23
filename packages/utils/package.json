@@ -5,9 +5,7 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
-    "scripts": {
-        "build": "rimraf ./dist && tsc"
-    },
+    "scripts": {},
     "keywords": [],
     "repository": {
         "type": "git",
