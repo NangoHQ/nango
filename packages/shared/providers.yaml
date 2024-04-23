@@ -1010,6 +1010,16 @@ hubspot:
             cursor_name_in_request: after
             response_path: results
     docs: https://docs.nango.dev/integrations/all/hubspot
+insightly:
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.${connectionConfig.pod}.insightly.com
+        verification:
+            method: GET
+            endpoint: /v3.1/Contacts
+    docs: https://docs.nango.dev/integrations/all/insightly
 instagram:
     categories:
         - marketing
