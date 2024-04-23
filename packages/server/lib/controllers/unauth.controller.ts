@@ -117,7 +117,7 @@ class UnAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config?.provider);
 
             if (template.auth_mode !== AuthModes.None) {
                 await createActivityLogMessageAndEnd({

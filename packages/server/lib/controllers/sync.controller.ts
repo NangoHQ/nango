@@ -45,7 +45,8 @@ import {
     createActivityLogMessage,
     featureFlags,
     trackFetch,
-    syncCommandToOperation
+    syncCommandToOperation,
+    getAccount
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import { isErr, isOk } from '@nangohq/utils';
@@ -405,6 +406,7 @@ class SyncController {
         });
 
         const { input, action_name } = req.body;
+        const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
@@ -439,7 +441,7 @@ class SyncController {
                 return;
             }
 
-            const provider = await configService.getProviderName(providerConfigKey);
+            const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             const log = {
                 level: 'info' as LogLevel,
@@ -449,7 +451,7 @@ class SyncController {
                 end: Date.now(),
                 timestamp: Date.now(),
                 connection_id: connection.connection_id,
-                provider,
+                provider: provider!.provider,
                 provider_config_key: connection.provider_config_key,
                 environment_id: environmentId,
                 operation_name: action_name
@@ -468,7 +470,7 @@ class SyncController {
             // TODO: move that outside try/catch
             const logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account: { id: -1 }, environment: { id: environmentId } }
+                { account: { id: accountId }, environment: { id: environmentId }, config: { id: provider!.id! }, connection: { id: connection.id! } }
             );
 
             const syncClient = await SyncClient.getInstance();
@@ -696,7 +698,7 @@ class SyncController {
             // TODO: message
             const logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
-                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name } }
+                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name }, connection: { id: connection!.id! } }
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {

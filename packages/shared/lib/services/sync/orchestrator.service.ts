@@ -193,7 +193,7 @@ export class Orchestrator {
         connectionId?: string
     ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
-        const provider = await configService.getProviderName(providerConfigKey);
+        const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
 
         const log = {
             level: 'info' as LogLevel,
@@ -203,7 +203,7 @@ export class Orchestrator {
             end: Date.now(),
             timestamp: Date.now(),
             connection_id: connectionId || '',
-            provider,
+            provider: provider!.provider,
             provider_config_key: providerConfigKey,
             environment_id: environmentId
         };
@@ -214,7 +214,7 @@ export class Orchestrator {
 
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
-            { account: { id: -1 }, environment: { id: environmentId } }
+            { account: { id: -1 }, environment: { id: environmentId }, config: { id: provider!.id! } }
         );
 
         const syncClient = await SyncClient.getInstance();

@@ -26,16 +26,15 @@ async function execute(
         return;
     }
 
-    const provider = await configService.getProviderName(providerConfigKey);
     const integration = await configService.getProviderConfigByUuid(providerConfigKey, environmentUuid);
 
-    if (!provider || !integration) {
+    if (!integration) {
         return;
     }
 
     const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
 
-    const handler = handlers[`${provider.replace(/-/g, '')}Webhook`];
+    const handler = handlers[`${integration.provider.replace(/-/g, '')}Webhook`];
 
     let res: WebhookResponse = undefined;
 
@@ -59,7 +58,7 @@ async function execute(
     const webhookBodyToForward = res?.parsedBody || body;
     const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, connectionIds, provider, webhookBodyToForward, headers, logContextGetter);
+    await webhookService.forward(integration, connectionIds, webhookBodyToForward, headers, logContextGetter);
 
     await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
         accountId: String(accountId),

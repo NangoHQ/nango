@@ -168,7 +168,12 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         });
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
         );
         await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', { error: err, syncName });
         await logCtx.failed();
@@ -233,7 +238,12 @@ export async function syncProvider(
         // TODO: move that outside try/catch
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
         );
 
         if (debug) {
@@ -300,7 +310,12 @@ export async function syncProvider(
         });
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
         );
         await logCtx.error('Failed to create the job', { error: err });
         await logCtx.failed();

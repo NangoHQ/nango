@@ -4,7 +4,7 @@ import type { NangoConnection, Connection as NangoFullConnection } from '../mode
 import type { StringValue } from 'ms';
 import ms from 'ms';
 import fs from 'fs-extra';
-import type { Config as ProviderConfig } from '../models/Provider.js';
+import type { Config, Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
 import type { Sync, SyncWithSchedule } from '../models/Sync.js';
 import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
@@ -686,12 +686,11 @@ class SyncClient {
     }
 
     async triggerWebhook<T = any>(
+        integration: Config,
         nangoConnection: NangoConnection,
         webhookName: string,
-        provider: string,
         parentSyncName: string,
         input: object,
-        environment_id: number,
         logContextGetter: LogContextGetter
     ): Promise<ServiceResponse<T>> {
         const log = {
@@ -703,7 +702,7 @@ class SyncClient {
             timestamp: Date.now(),
             connection_id: nangoConnection?.connection_id,
             provider_config_key: nangoConnection?.provider_config_key,
-            provider,
+            provider: integration.provider,
             environment_id: nangoConnection?.environment_id,
             operation_name: webhookName
         };
@@ -711,7 +710,7 @@ class SyncClient {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: environment_id } }
+            { account: { id: nangoConnection.account_id! }, environment: { id: integration.environment_id }, config: { id: integration.id! } }
         );
 
         const workflowId = generateWebhookWorkflowId(parentSyncName, webhookName, nangoConnection.connection_id);
@@ -719,7 +718,7 @@ class SyncClient {
         try {
             await createActivityLogMessage({
                 level: 'info',
-                environment_id,
+                environment_id: integration.environment_id,
                 activity_log_id: activityLogId as number,
                 content: `Starting webhook workflow ${workflowId} in the task queue: ${WEBHOOK_TASK_QUEUE}`,
                 params: {
@@ -751,7 +750,7 @@ class SyncClient {
             if (success === false || error) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id,
+                    environment_id: integration.environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The webhook workflow ${workflowId} did not complete successfully`
@@ -764,7 +763,7 @@ class SyncClient {
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
-                environment_id,
+                environment_id: integration.environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `The webhook workflow ${workflowId} was successfully run.`
@@ -781,7 +780,7 @@ class SyncClient {
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
-                environment_id,
+                environment_id: integration.environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `The webhook workflow ${workflowId} failed with error: ${errorMessage}`

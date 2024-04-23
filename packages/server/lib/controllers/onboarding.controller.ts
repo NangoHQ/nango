@@ -464,7 +464,7 @@ class OnboardingController {
             // TODO: move that outside try/catch
             const logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account, environment, user }
+                { account, environment, user, config: { id: connection.config_id! } }
             );
             const actionResponse = await syncClient.triggerAction({
                 connection,
