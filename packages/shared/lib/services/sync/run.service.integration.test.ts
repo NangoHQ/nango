@@ -8,7 +8,7 @@ import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
 import { logContextGetter } from '@nangohq/logs';
-import { records as recordsService, format as recordsFormatter, migrate as migrateRecords } from '@nangohq/records';
+import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { isErr, isOk } from '@nangohq/utils';
 import { createEnvironmentSeed } from '../../db/seeders/environment.seeder.js';
@@ -38,6 +38,7 @@ describe('Running sync', () => {
 
     afterAll(async () => {
         await clearDb();
+        await clearRecordsDb();
     });
 
     describe(`with track_deletes=false`, () => {
