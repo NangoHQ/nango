@@ -69,18 +69,18 @@ describe('Running sync', () => {
             const expectedResult = { added: 1, updated: 1, deleted: 0 };
             const { records } = await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
 
-            const record1 = records.find((record) => record.id == 1);
+            const record1 = records.find((record) => record.id == '1');
             if (!record1) throw new Error('record1 is not defined');
             expect(record1['name']).toEqual('A');
             expect(record1._nango_metadata.first_seen_at < record1._nango_metadata.last_modified_at).toBeTruthy();
             expect(record1._nango_metadata.deleted_at).toBeNull();
             expect(record1._nango_metadata.last_action).toEqual('UPDATED');
 
-            const record2 = records.find((record) => record.id == 2);
+            const record2 = records.find((record) => record.id == '2');
             if (!record2) throw new Error('record2 is not defined');
             expect(record2._nango_metadata.first_seen_at).toEqual(record2._nango_metadata.last_modified_at);
             expect(record2._nango_metadata.last_action).toEqual('ADDED'); // record was added as part of the initial save
-            const record3 = records.find((record) => record.id == 3);
+            const record3 = records.find((record) => record.id == '3');
             if (!record3) throw new Error('record3 is not defined');
             expect(record3._nango_metadata.first_seen_at).toEqual(record3._nango_metadata.last_modified_at);
             expect(record3._nango_metadata.last_action).toEqual('ADDED');
@@ -114,18 +114,18 @@ describe('Running sync', () => {
             ];
             const expectedResult = { added: 1, updated: 1, deleted: 1 };
             const { records } = await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
-            const record1 = records.find((record) => record.id == 1);
+            const record1 = records.find((record) => record.id == '1');
             if (!record1) throw new Error('record1 is not defined');
             expect(record1['name']).toEqual('A');
             expect(record1._nango_metadata.first_seen_at < record1._nango_metadata.last_modified_at).toBeTruthy();
             expect(record1._nango_metadata.deleted_at).toBeNull();
             expect(record1._nango_metadata.last_action).toEqual('UPDATED');
-            const record2 = records.find((record) => record.id == 2);
+            const record2 = records.find((record) => record.id == '2');
             if (!record2) throw new Error('record2 is not defined');
             expect(record2._nango_metadata.first_seen_at < record2._nango_metadata.last_modified_at).toBeTruthy();
             expect(record2._nango_metadata.deleted_at).not.toBeNull();
             expect(record2._nango_metadata.last_action).toEqual('DELETED');
-            const record3 = records.find((record) => record.id == 3);
+            const record3 = records.find((record) => record.id == '3');
             if (!record3) throw new Error('record3 is not defined');
             expect(record3._nango_metadata.first_seen_at).toEqual(record3._nango_metadata.last_modified_at);
             expect(record3._nango_metadata.last_action).toEqual('ADDED');
@@ -143,7 +143,7 @@ describe('Running sync', () => {
             await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, false);
 
             const records = await getRecords(connection, model);
-            const record = records.find((record) => record.id == 2);
+            const record = records.find((record) => record.id == '2');
             if (!record) throw new Error('record is not defined');
             expect(record._nango_metadata.first_seen_at < record._nango_metadata.last_modified_at).toBeTruthy();
             expect(record._nango_metadata.deleted_at).not.toBeNull();
@@ -154,7 +154,7 @@ describe('Running sync', () => {
             expect(result).toEqual({ added: 1, updated: 0, deleted: 0 });
 
             const recordsAfter = await getRecords(connection, model);
-            const recordAfter = recordsAfter.find((record) => record.id == 2);
+            const recordAfter = recordsAfter.find((record) => record.id == '2');
             if (!recordAfter) throw new Error('record is not defined');
             expect(recordAfter._nango_metadata.first_seen_at).toEqual(recordAfter._nango_metadata.last_modified_at);
             expect(recordAfter._nango_metadata.deleted_at).toBeNull();
