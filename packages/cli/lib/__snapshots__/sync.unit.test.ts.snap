@@ -9,6 +9,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "auto_start": true,
         "description": "",
         "endpoints": [],
+        "layout_mode": "root",
         "models": [
           {
             "fields": null,
@@ -31,6 +32,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "auto_start": true,
         "description": "",
         "endpoints": [],
+        "layout_mode": "root",
         "models": [
           {
             "fields": [
@@ -121,6 +123,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         },
         "is_public": false,
         "last_deployed": null,
+        "layout_mode": "root",
         "models": [
           {
             "fields": [
@@ -243,6 +246,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         },
         "is_public": false,
         "last_deployed": null,
+        "layout_mode": "root",
         "models": [
           {
             "fields": [
@@ -285,6 +289,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         },
         "is_public": false,
         "last_deployed": null,
+        "layout_mode": "root",
         "models": [
           {
             "fields": null,
@@ -320,6 +325,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "input": {},
         "is_public": false,
         "last_deployed": null,
+        "layout_mode": "root",
         "models": [
           {
             "fields": [
@@ -403,6 +409,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "input": {},
         "is_public": false,
         "last_deployed": null,
+        "layout_mode": "root",
         "models": [
           {
             "fields": [
@@ -486,6 +493,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "input": {},
         "is_public": false,
         "last_deployed": null,
+        "layout_mode": "root",
         "models": [
           {
             "fields": [

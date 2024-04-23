@@ -7,7 +7,7 @@ const thisFolder = path.dirname(fileURLToPath(import.meta.url));
 
 describe('listFiles', () => {
     it('should list files with glob', () => {
-        const files = listFilesToCompile({ cwd: thisFolder });
+        const files = listFilesToCompile({ cwd: thisFolder, config: [] });
         expect(files.length).toBeGreaterThan(1);
         expect(files[0]).toStrictEqual({
             baseName: 'verification.service',
@@ -17,7 +17,7 @@ describe('listFiles', () => {
     });
 
     it('should list files with syncName', () => {
-        const files = listFilesToCompile({ scriptName: 'compile.service', cwd: thisFolder });
+        const files = listFilesToCompile({ scriptName: 'compile.service', cwd: thisFolder, config: [] });
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',
