@@ -168,7 +168,6 @@
                             "group": "Advanced",
                             "pages": [
                                 "customize/guides/advanced/handle-rate-limits",
-                                "customize/guides/advanced/sync-data-incrementally",
                                 "customize/guides/advanced/support-custom-field-mappings",
                                 "customize/guides/advanced/detect-deletions",
                                 "customize/guides/advanced/paginate-api-responses",
