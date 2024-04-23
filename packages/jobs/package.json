@@ -5,8 +5,7 @@
     "main": "dist/index.js",
     "scripts": {
         "start": "tsc && node dist/app.js",
-        "dev": "nodemon",
-        "build": "rimraf dist && tsc"
+        "dev": "nodemon"
     },
     "keywords": [],
     "repository": {

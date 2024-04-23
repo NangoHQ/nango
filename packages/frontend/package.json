@@ -13,10 +13,7 @@
         "directory": "packages/frontend"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
-    "scripts": {
-        "build": "tsc",
-        "prepublishOnly": "npm install && npm run build"
-    },
+    "scripts": {},
     "dependencies": {},
     "files": [
         "dist/**/*.js",
