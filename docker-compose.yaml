@@ -27,7 +27,7 @@ services:
             - NANGO_DB_SSL=${NANGO_DB_SSL}
             - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
-            - RECORDS_DATABASE_URL=postgres://${NANGO_DB_USER}:${NANGO_DB_PASSWORD}@${NANGO_DB_HOST}:5432/${NANGO_DB_NAME}$([[ "${NANGO_DB_SSL}" == "true" ]] && echo "?sslmode=require")
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL}
             - SERVER_PORT=${SERVER_PORT}
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
             - NANGO_DASHBOARD_USERNAME=${NANGO_DASHBOARD_USERNAME}
