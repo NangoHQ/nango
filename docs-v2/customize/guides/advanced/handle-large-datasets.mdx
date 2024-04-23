@@ -45,11 +45,11 @@ export default async function fetchData(nango: NangoSync) {
 
 The preferred method for syncing larger datasets is to fetch only the incremental changes from the external API. This method is known as an ["incremental" sync](https://docs.nango.dev/understand/concepts/syncs#incremental-syncs). 
 
-Nango automatically stores the timestamp of the last sync execution start. You can use this timestamp to instruct the external API to send only the changes since that date. That way, you only receive and persist the modified records in the Nango cache.
+Sync scripts expose the timestamp of the last sync execution start under `nango.lastSyncate`. You can use this timestamp to instruct the external API to send only the changes since that date. That way, you only receive and persist the modified records in the Nango cache.
 
 For example, if you are syncing tens of thousands of contacts from a Salesforce account on an hourly basis, only a small portion of the contacts will be updated or created in any given hour. If you were doing a full refresh sync, you would need to fetch the entire contact list every hour, which is inefficient. With an incremental sync, you can fetch only the modified contacts from the past hour, as allowed by Salesforce. 
 
-Here is an example of a sync script that updates the list of Salesforce contact incrementally on each execution:
+Here is an example of a sync script that updates the list of Salesforce contact incrementally on each execution, leveraging `nango.lastSyncDate`:
 
 ```ts
 export default async function fetchData(nango: NangoSync) {
