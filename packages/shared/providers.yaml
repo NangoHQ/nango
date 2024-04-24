@@ -951,6 +951,26 @@ hackerrank-work:
     proxy:
         base_url: https://www.hackerrank.com
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
+harvest:
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://id.getharvest.com/oauth2/authorize
+    token_url: https://id.getharvest.com/api/v2/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            User-Agent: ${connectionConfig.appDetails}
+        retry:
+            after: 'Retry-After'
+        base_url: https://api.harvestapp.com
+    docs: https://docs.nango.dev/integrations/all/harvest
 health-gorilla:
     auth_mode: OAUTH2
     authorization_url: https://api.healthgorilla.com/oauth/authorize
