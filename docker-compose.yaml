@@ -71,7 +71,7 @@ services:
             - 9600:9300
         environment:
             - discovery.type=single-node
-            - plugins.security.disabled=true
+            - DISABLE_SECURITY_PLUGIN=true
         networks:
             - nango
 
