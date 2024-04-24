@@ -82,7 +82,7 @@ class IntegrationService implements IntegrationServiceInterface {
             const script: string | null =
                 (isCloud || integrationFilesAreRemote) && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
-                    : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
+                    : localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
 
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;

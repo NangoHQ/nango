@@ -227,7 +227,11 @@ class DeployService {
             for (const flow of flows) {
                 const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = flow;
 
-                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
+                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
+                    syncName,
+                    providerConfigKey,
+                    './'
+                );
 
                 const metadata = {} as NangoConfigMetadata;
 
@@ -288,7 +292,7 @@ class DeployService {
                     sync_type: flow.sync_type as SyncType,
                     type,
                     fileBody: {
-                        js: localFileService.getIntegrationFile(syncName, './') as string,
+                        js: localFileService.getIntegrationFile(syncName, providerConfigKey, './') as string,
                         ts: localFileService.getIntegrationTsFile(syncName, providerConfigKey, type) as string
                     },
                     model_schema: JSON.stringify(model_schema),

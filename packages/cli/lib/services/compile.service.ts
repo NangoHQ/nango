@@ -71,7 +71,17 @@ class CompileService {
 
         for (const file of integrationFiles) {
             try {
-                const providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
+                const pathSegments = file.inputPath.split('/');
+                const scriptType = pathSegments[pathSegments.length - 2];
+                const isNested = scriptType === 'syncs' || scriptType === 'actions';
+
+                let providerConfiguration;
+                if (isNested) {
+                    const providerConfigKey = pathSegments[pathSegments.length - 3];
+                    providerConfiguration = config.find((config) => config.providerConfigKey === providerConfigKey);
+                } else {
+                    providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
+                }
 
                 if (!providerConfiguration) {
                     continue;
@@ -89,8 +99,14 @@ class CompileService {
                     continue;
                 }
                 const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
+                const dirname = path.dirname(file.outputPath);
+                const extname = path.extname(file.outputPath);
+                const basename = path.basename(file.outputPath, extname);
 
-                fs.writeFileSync(file.outputPath, result);
+                const fileNameWithExtension = `${basename}-${providerConfiguration.providerConfigKey}${extname}`;
+                const outputPath = path.join(dirname, fileNameWithExtension);
+
+                fs.writeFileSync(outputPath, result);
                 console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
             } catch (error) {
                 console.error(`Error compiling "${file.inputPath}":`);
@@ -122,7 +138,12 @@ export function listFilesToCompile({
     scriptName,
     config,
     debug
-}: { cwd?: string; scriptName?: string | undefined; config?: StandardNangoConfig[]; debug?: boolean } = {}): ListedFile[] {
+}: {
+    cwd?: string;
+    scriptName?: string | undefined;
+    config: StandardNangoConfig[];
+    debug?: boolean;
+}): ListedFile[] {
     let files: string[] = [];
     if (scriptName) {
         if (debug) {

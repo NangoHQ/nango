@@ -76,7 +76,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const allSyncNames: Record<string, boolean> = {};
 
     for (const standardConfig of config) {
-        const { syncs, actions, postConnectionScripts } = standardConfig;
+        const { syncs, actions, postConnectionScripts, providerConfigKey } = standardConfig;
 
         if (postConnectionScripts) {
             for (const name of postConnectionScripts) {
@@ -99,13 +99,15 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models } = flow;
+            const { name, type, returns: models, layout_mode } = flow;
             let { input } = flow;
+            const uniqueName = layout_mode === 'root' ? `${name}` : `${providerConfigKey}-${name}`;
 
-            if (allSyncNames[name] === undefined) {
-                allSyncNames[name] = true;
+            if (allSyncNames[uniqueName] === undefined) {
+                // a sync and an action within the same provider cannot have the same name
+                allSyncNames[uniqueName] = true;
             } else {
-                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync and action names must be unique.`));
                 process.exit(1);
             }
 
@@ -161,7 +163,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
             const stripped = rendered.replace(/^\s+/, '');
 
-            if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
+            if (!fs.existsSync(`${dirPrefix}/${name}.ts`) && !fs.existsSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`)) {
                 fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
                 if (debug) {
                     printDebug(`Created ${name}.ts file`);
@@ -314,7 +316,7 @@ export const tscWatch = async (debug = false) => {
     watcher.on('change', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             // config file changed, re-compile each ts file
-            const integrationFiles = listFilesToCompile();
+            const integrationFiles = listFilesToCompile({ config });
             for (const file of integrationFiles) {
                 compileFile(file);
             }

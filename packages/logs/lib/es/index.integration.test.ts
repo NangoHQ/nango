@@ -16,13 +16,13 @@ describe('mapping', () => {
         const mappingBefore = await client.indices.getMapping({
             index: indexMessages.index
         });
-        expect(mappingBefore[indexMessages.index]).toStrictEqual({ mappings: {} });
+        expect(mappingBefore.body[indexMessages.index]).toStrictEqual({ mappings: {} });
 
         await migrateMapping();
 
         const mappingAfter = await client.indices.getMapping({
             index: indexMessages.index
         });
-        expect(mappingAfter[indexMessages.index]?.mappings).toMatchSnapshot();
+        expect(mappingAfter.body[indexMessages.index]?.mappings).toMatchSnapshot();
     });
 });

@@ -45,8 +45,8 @@ import {
     createActivityLogMessage,
     featureFlags,
     trackFetch,
-    syncCommandToOperation,
-    getAccount
+    getAccount,
+    syncCommandToOperation
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import { isErr, isOk } from '@nangohq/utils';

@@ -51,12 +51,11 @@ const app = express();
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
-const webAuth =
-    isCloud || isEnterprise
-        ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
-        : isBasicAuthEnabled
-          ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
-          : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
+const webAuth = AUTH_ENABLED
+    ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
+    : isBasicAuthEnabled
+      ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+      : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 app.use(
     express.json({

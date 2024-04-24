@@ -40,8 +40,11 @@ npm run ts-build
 
 # pack utils and install it in shared
 mkdir -p "$GIT_ROOT_DIR/packages/shared/vendor"
-vendor "utils"
-
+pushd "$GIT_ROOT_DIR/packages/utils"
+jq '.bundleDependencies = true' package.json >temp.json && mv temp.json package.json
+npm install --workspaces=false
+npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
+popd
 pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=false
 popd
