@@ -30,6 +30,7 @@ import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
+import { HNDemo } from './pages/HNDemo';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -113,6 +114,7 @@ const App = () => {
                         )}
                     </Route>
                     <Route path="/auth-link" element={<AuthLink />} />
+                    {true && <Route path="/hn-demo" element={<HNDemo />} />}
                     {AUTH_ENABLED && (
                         <>
                             <Route path="/signin" element={<Signin />} />
