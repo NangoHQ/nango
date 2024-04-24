@@ -43,7 +43,7 @@
         "webapp:dev:watch": "cd ./packages/webapp && npm run start:hosted",
         "prepare": "husky install",
         "build:watch": "tsc -b -w --preserveWatchOutput tsconfig.build.json",
-        "dev:watch": "npm run -w nango copyfiles && npm run build:watch",
+        "dev:watch": "npm run -w nango copy:files && npm run build:watch",
         "watch:dev": "npm run dev:watch",
         "dev:watch:apps": "concurrently --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\"",
         "watch:dev:apps": "npm run dev:watch:apps",
