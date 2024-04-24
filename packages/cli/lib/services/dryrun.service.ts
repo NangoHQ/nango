@@ -164,10 +164,19 @@ class DryRunService {
                 return Promise.resolve([]);
             }
         };
+        const logContextGetter = {
+            create: () => {
+                return Promise.resolve({}) as any;
+            },
+            get: () => {
+                return {} as any;
+            }
+        };
 
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
+            logContextGetter,
             writeToDb: false,
             nangoConnection,
             provider,

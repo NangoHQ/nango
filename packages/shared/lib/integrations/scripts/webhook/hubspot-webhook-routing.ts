@@ -2,6 +2,7 @@ import type { InternalNango as Nango } from './internal-nango.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
+import type { LogContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Webhook.Hubspot');
 
@@ -18,7 +19,7 @@ export function validate(integration: ProviderConfig, headers: Record<string, an
     return crypto.timingSafeEqual(signatureBuffer, hashBuffer);
 }
 
-export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {
+export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any, logContextGetter: LogContextGetter) {
     const valid = validate(integration, headers, body);
 
     if (!valid) {
@@ -42,7 +43,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
             });
 
             for (const event of sorted) {
-                const response = await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId');
+                const response = await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId', logContextGetter);
                 if (response && response.connectionIds?.length > 0) {
                     connectionIds = connectionIds.concat(response.connectionIds);
                 }
@@ -51,6 +52,6 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
 
         return { connectionIds };
     } else {
-        return nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId');
+        return nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
     }
 }

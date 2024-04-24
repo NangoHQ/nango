@@ -15,7 +15,7 @@ import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
 import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
-import syncOrchestrator from './services/sync/orchestrator.service.js';
+import syncOrchestrator, { syncCommandToOperation } from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
 import slackNotificationService from './services/notification/slack.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
@@ -79,5 +79,6 @@ export {
     analytics,
     AnalyticsTypes,
     routeWebhook,
-    featureFlags
+    featureFlags,
+    syncCommandToOperation
 };

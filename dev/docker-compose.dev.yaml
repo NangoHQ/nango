@@ -50,21 +50,21 @@ services:
         networks:
             - nango
 
-    es:
-        container_name: es
-        image: elasticsearch:8.12.2
+    opensearch:
+        container_name: opensearch
+        image: opensearchproject/opensearch:2.13.0
         ulimits:
             memlock:
                 soft: -1
                 hard: -1
         volumes:
-            - esdata1:/usr/share/elasticsearch/data
+            - opensearch-data1:/usr/share/opensearch/data
         ports:
             - 9500:9200
             - 9600:9300
         environment:
             - discovery.type=single-node
-            - xpack.security.enabled=false
+            - plugins.security.disabled=true
         networks:
             - nango
         deploy:
@@ -76,5 +76,5 @@ networks:
     nango:
 
 volumes:
-    esdata1:
+    opensearch-data1:
         driver: local

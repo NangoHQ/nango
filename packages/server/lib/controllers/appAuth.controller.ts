@@ -23,6 +23,7 @@ import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import publisher from '../clients/publisher.client.js';
+import { logContextGetter } from '@nangohq/logs';
 
 class AppAuthController {
     async connect(req: Request, res: Response, _next: NextFunction) {
@@ -56,6 +57,8 @@ class AppAuthController {
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);
+        // TODO: fix this
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
 
         try {
             if (!providerConfigKey) {
@@ -80,6 +83,8 @@ class AppAuthController {
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Error during API Key auth: config not found');
+                await logCtx.failed();
 
                 await updateSuccessActivityLog(activityLogId as number, false);
 
@@ -99,6 +104,8 @@ class AppAuthController {
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support app creation`
                 });
+                await logCtx.error('Provider does not support app creation', { provider: config.provider });
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
@@ -117,6 +124,11 @@ class AppAuthController {
                     auth_mode: AuthModes.App,
                     url: req.originalUrl
                 });
+                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
+                    provider: config.provider,
+                    url: req.originalUrl
+                });
+                await logCtx.failed();
 
                 await updateSuccessActivityLog(activityLogId as number, false);
 
@@ -144,11 +156,14 @@ class AppAuthController {
                         ...connectionConfig
                     }
                 });
+                await logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
+                await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
             if (!installation_id) {
+                await logCtx.failed();
                 res.sendStatus(400);
                 return;
             }
@@ -163,6 +178,8 @@ class AppAuthController {
                     content: `Error during app token retrieval call: ${error?.message}`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Error during app token retrieval call', { error });
+                await logCtx.failed();
 
                 await telemetry.log(
                     LogTypes.AUTH_TOKEN_REQUEST_FAILURE,
@@ -187,7 +204,8 @@ class AppAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
@@ -216,7 +234,10 @@ class AppAuthController {
                         operation: updatedConnection.operation
                     },
                     session.provider,
-                    activityLogId
+                    logContextGetter,
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
@@ -227,6 +248,8 @@ class AppAuthController {
                 content: 'App connection was successful and credentials were saved',
                 timestamp: Date.now()
             });
+            await logCtx.error('App connection was successful and credentials were saved');
+            await logCtx.success();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
                 environmentId: String(environmentId),
@@ -252,6 +275,8 @@ class AppAuthController {
                 auth_mode: AuthModes.App,
                 url: req.originalUrl
             });
+            await logCtx.error(error.message, { error: err, url: req.originalUrl });
+            await logCtx.failed();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
                 environmentId: String(environmentId),
@@ -270,7 +295,8 @@ class AppAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));

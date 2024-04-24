@@ -36,7 +36,7 @@ services:
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
-            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://localhost:9500}
+            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://localhost:9500}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
         restart: always
         ports:
@@ -107,20 +107,20 @@ services:
         networks:
             - nango
 
-    nanog-es:
-        image: elasticsearch:8.12.2
+    nanog-opensearch:
+        image: opensearchproject/opensearch:2.13.0
         ulimits:
             memlock:
                 soft: -1
                 hard: -1
         volumes:
-            - esdata1:/usr/share/elasticsearch/data
+            - opensearch-data1:/usr/share/opensearch/data
         ports:
             - 9500:9500
             - 9600:9300
         environment:
             - discovery.type=single-node
-            - xpack.security.enabled=false
+            - plugins.security.disabled=true
         networks:
             - nango
 
@@ -128,5 +128,5 @@ networks:
     nango:
 
 volumes:
-    esdata1:
+    opensearch-data1:
         driver: local

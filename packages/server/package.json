@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@hapi/boom": "^10.0.1",
+        "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "^0.39.18",
         "@nangohq/utils": "file:../utils",

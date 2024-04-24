@@ -34,7 +34,17 @@ import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
+
+// Should be in "logs" package but impossible thanks to CLI
+export const syncCommandToOperation = {
+    PAUSE: 'pause',
+    UNPAUSE: 'unpause',
+    RUN: 'run',
+    RUN_FULL: 'run_full',
+    CANCEL: 'cancel'
+} as const;
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -51,8 +61,10 @@ export class Orchestrator {
         providerConfigKey: string,
         environmentId: number,
         sync: IncomingFlowConfig,
+        logContextGetter: LogContextGetter,
         debug = false,
-        activityLogId?: number
+        activityLogId?: number,
+        logCtx?: LogContext
     ): Promise<boolean> {
         try {
             const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
@@ -64,6 +76,7 @@ export class Orchestrator {
                     timestamp: Date.now(),
                     content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
+                await logCtx?.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
             for (const connection of connections) {
                 const syncExists = await getSyncByIdAndName(connection.id as number, syncName);
@@ -80,6 +93,7 @@ export class Orchestrator {
                     syncConfig as ProviderConfig,
                     syncName,
                     { ...sync, returns: sync.models, input: '' },
+                    logContextGetter,
                     debug
                 );
             }
@@ -91,6 +105,7 @@ export class Orchestrator {
                     timestamp: Date.now(),
                     content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
+                await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
 
             return true;
@@ -103,16 +118,23 @@ export class Orchestrator {
                 timestamp: Date.now(),
                 content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
             });
+            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: e });
 
             return false;
         }
     }
 
-    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number): Promise<boolean> {
+    public async createSyncs(
+        syncArgs: CreateSyncArgs[],
+        logContextGetter: LogContextGetter,
+        debug = false,
+        activityLogId?: number,
+        logCtx?: LogContext
+    ): Promise<boolean> {
         let success = true;
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId);
+            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, logContextGetter, debug, activityLogId, logCtx);
             if (!result) {
                 success = false;
             }
@@ -167,6 +189,7 @@ export class Orchestrator {
         providerConfigKey: string,
         syncNames: string[],
         command: SyncCommand,
+        logContextGetter: LogContextGetter,
         connectionId?: string
     ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
@@ -188,6 +211,11 @@ export class Orchestrator {
         if (!activityLogId) {
             return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
         }
+
+        const logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
+            { account: { id: -1 }, environment: { id: environmentId } }
+        );
 
         const syncClient = await SyncClient.getInstance();
         if (!syncClient) {
@@ -227,11 +255,12 @@ export class Orchestrator {
                     connectionId,
                     syncName,
                     nangoConnectionId: connection.id,
+                    logCtx,
                     recordsService
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
                 }
             }
         } else {
@@ -267,10 +296,11 @@ export class Orchestrator {
                     connectionId: connection.connection_id,
                     syncName: sync.name,
                     nangoConnectionId: connection.id,
+                    logCtx,
                     recordsService
                 });
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
                 }
             }
         }
@@ -284,6 +314,9 @@ export class Orchestrator {
         });
 
         await updateSuccessActivityLog(activityLogId, true);
+
+        await logCtx.info('Sync was successfully updated', { action, syncNames });
+        await logCtx.success();
 
         return { success: true, error: null, response: true };
     }
@@ -370,7 +403,7 @@ export class Orchestrator {
      * Trigger If Connections Exist
      * @desc for the recently deploy flows, create the sync and trigger it if there are connections
      */
-    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number) {
+    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number, logContextGetter: LogContextGetter) {
         for (const flow of flows) {
             if (flow.type === SyncConfigType.ACTION) {
                 continue;
@@ -391,6 +424,7 @@ export class Orchestrator {
                 providerConfigKey,
                 environmentId,
                 flow as unknown as IncomingFlowConfig,
+                logContextGetter,
                 false
             );
         }
@@ -425,7 +459,7 @@ export class Orchestrator {
         return { schedule, latestJob, status, nextScheduledSyncAt };
     }
 
-    private async reportedStatus(
+    private reportedStatus(
         sync: Sync,
         latestJob: SyncJob | null,
         schedule: SyncSchedule | null,

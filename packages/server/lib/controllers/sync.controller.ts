@@ -44,8 +44,10 @@ import {
     getSyncAndActionConfigsBySyncNameAndConfigId,
     createActivityLogMessage,
     featureFlags,
-    trackFetch
+    trackFetch,
+    syncCommandToOperation
 } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
 import { isErr, isOk } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 
@@ -61,7 +63,11 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
-            const { success, error, response: syncConfigDeployResult } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', debug);
+            const {
+                success,
+                error,
+                response: syncConfigDeployResult
+            } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', logContextGetter, debug);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -70,13 +76,16 @@ class SyncController {
             }
 
             if (reconcile) {
+                const logCtx = logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
                 const success = await getAndReconcileDifferences({
                     environmentId,
                     syncs,
                     performAction: reconcile,
                     activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
-                    singleDeployMode
+                    singleDeployMode,
+                    logCtx,
+                    logContextGetter
                 });
                 if (!success) {
                     reconcileSuccess = false;
@@ -111,7 +120,15 @@ class SyncController {
                 req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileDifferences({ environmentId, syncs, performAction: false, activityLogId: null, debug, singleDeployMode });
+            const result = await getAndReconcileDifferences({
+                environmentId,
+                syncs,
+                performAction: false,
+                activityLogId: null,
+                debug,
+                singleDeployMode,
+                logContextGetter
+            });
 
             res.send(result);
         } catch (e) {
@@ -324,6 +341,7 @@ class SyncController {
                 provider_config_key,
                 syncNames as string[],
                 full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
+                logContextGetter,
                 connection_id
             );
 
@@ -447,13 +465,26 @@ class SyncController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
+            // TODO: move that outside try/catch
+            const logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                { account: { id: -1 }, environment: { id: environmentId } }
+            );
+
             const syncClient = await SyncClient.getInstance();
 
             if (!syncClient) {
                 throw new NangoError('failed_to_get_sync_client');
             }
 
-            const actionResponse = await syncClient.triggerAction({ connection, actionName: action_name, input, activityLogId, environment_id: environmentId });
+            const actionResponse = await syncClient.triggerAction({
+                connection,
+                actionName: action_name,
+                input,
+                activityLogId,
+                environment_id: environmentId,
+                logCtx
+            });
 
             if (isOk(actionResponse)) {
                 res.send(actionResponse.res);
@@ -661,6 +692,12 @@ class SyncController {
                 operation_name: sync_name
             };
             const activityLogId = await createActivityLog(log);
+            // TODO: move that outside try/catch
+            // TODO: message
+            const logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
+                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name } }
+            );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
                 await createActivityLogMessage({
@@ -670,6 +707,8 @@ class SyncController {
                     timestamp: Date.now(),
                     content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
+                await logCtx.error('Unauthorized access to run the command');
+                await logCtx.failed();
 
                 res.sendStatus(401);
                 return;
@@ -680,6 +719,7 @@ class SyncController {
             if (!syncClient) {
                 const error = new NangoError('failed_to_get_sync_client');
                 errorManager.errResFromNangoErr(res, error);
+                await logCtx.failed();
 
                 return;
             }
@@ -694,16 +734,18 @@ class SyncController {
                 connectionId: connection?.connection_id as string,
                 syncName: sync_name,
                 nangoConnectionId: connection?.id,
+                logCtx,
                 recordsService
             });
 
             if (isErr(result)) {
                 errorManager.handleGenericError(result.err, req, res, tracer);
+                await logCtx.failed();
                 return;
             }
 
             if (command !== SyncCommand.RUN) {
-                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
+                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id, logCtx);
             }
 
             await createActivityLogMessageAndEnd({
@@ -714,6 +756,8 @@ class SyncController {
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
             });
             await updateSuccessActivityLog(activityLogId as number, true);
+            await logCtx.info('Sync command run successfully', { action, syncId: sync_id });
+            await logCtx.success();
 
             let event = AnalyticsTypes.SYNC_RUN;
 
@@ -742,8 +786,11 @@ class SyncController {
             });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            // TODO: up this
+            // await logCtx.error('Failed to sync command', {error: err});
+            // await logCtx.failed();
+            next(err);
         }
     }
 

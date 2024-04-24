@@ -5,6 +5,7 @@ import { createActivityLogMessage, localFileService, remoteFileService, NangoErr
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
+import { logContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('integration.service');
 
@@ -47,6 +48,8 @@ class IntegrationService implements IntegrationServiceInterface {
                     content: `Failed to cancel script`,
                     timestamp: Date.now()
                 });
+                const logCtx = logContextGetter.get({ id: String(activityLogId) });
+                await logCtx.error('Failed to cancel script');
             }
         }
     }
@@ -73,6 +76,8 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('providerConfigKey', nangoProps.providerConfigKey)
             .setTag('syncId', nangoProps.syncId)
             .setTag('syncName', syncName);
+
+        const logCtx = activityLogId ? logContextGetter.get({ id: String(activityLogId) }) : null;
         try {
             const script: string | null =
                 (isCloud || integrationFilesAreRemote) && !optionalLoadLocation
@@ -90,6 +95,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         content,
                         timestamp: Date.now()
                     });
+                    await logCtx?.error(content);
                 }
             }
 
@@ -101,6 +107,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     content: `Unable to find integration file for ${syncName}`,
                     timestamp: Date.now()
                 });
+                await logCtx?.error(`Unable to find integration file for ${syncName}`);
 
                 const error = new NangoError('Unable to find integration file', 404);
 
@@ -139,6 +146,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (res && res.response && res.response.cancelled) {
                     const error = new NangoError('script_cancelled');
                     runSpan.setTag('error', error);
+
                     return { success: false, error, response: null };
                 }
 
@@ -183,6 +191,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         content: error.message,
                         timestamp: Date.now()
                     });
+                    await logCtx?.error(`Failed`, { error });
                 }
                 return { success, error, response };
             } finally {
@@ -201,6 +210,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     content,
                     timestamp: Date.now()
                 });
+                await logCtx?.error(content, { error: err });
             }
 
             return { success: false, error: new NangoError(content, 500), response: null };

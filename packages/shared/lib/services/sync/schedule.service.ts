@@ -5,6 +5,7 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
+import type { LogContext } from '@nangohq/logs';
 import { resultOk, type Result, resultErr } from '@nangohq/utils';
 
 const TABLE = dbNamespace + 'sync_schedules';
@@ -63,7 +64,8 @@ export const updateScheduleStatus = async (
     schedule_id: string,
     status: SyncCommand,
     activityLogId: number | null,
-    environment_id: number
+    environment_id: number,
+    logCtx?: LogContext
 ): Promise<Result<boolean>> => {
     try {
         await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
@@ -76,6 +78,7 @@ export const updateScheduleStatus = async (
                 activityLogId,
                 environment_id
             );
+            await logCtx?.error(`Failed to update schedule status to ${status} for schedule_id: ${schedule_id}`, { error });
         }
 
         return resultErr(error as Error);
@@ -87,7 +90,8 @@ export const updateSyncScheduleFrequency = async (
     interval: string,
     syncName: string,
     environmentId: number,
-    activityLogId?: number
+    activityLogId?: number,
+    logCtx?: LogContext
 ): Promise<ServiceResponse<boolean>> => {
     const existingSchedule = await getSchedule(sync_id);
 
@@ -106,7 +110,7 @@ export const updateSyncScheduleFrequency = async (
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, environmentId, syncName, activityLogId);
+        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, environmentId, syncName, activityLogId, logCtx);
 
         return { success: true, error: null, response: true };
     }

@@ -32,6 +32,7 @@ import {
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger, isErr, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 
 const logger = getLogger('Server.Onboarding');
@@ -245,14 +246,14 @@ class OnboardingController {
                 }
             ];
 
-            const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');
+            const deploy = await deployPreBuiltSyncConfig(environment.id, config, '', logContextGetter);
             if (!deploy.success || deploy.response === null) {
                 void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, deploy.error);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id);
+            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter);
 
             void analytics.track(AnalyticsTypes.DEMO_2_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ success: true });
@@ -302,6 +303,7 @@ class OnboardingController {
                     DEMO_GITHUB_CONFIG_KEY,
                     [DEMO_SYNC_NAME],
                     SyncCommand.RUN_FULL,
+                    logContextGetter,
                     req.body.connectionId
                 );
                 await syncOrchestrator.runSyncCommand(
@@ -310,6 +312,7 @@ class OnboardingController {
                     DEMO_GITHUB_CONFIG_KEY,
                     [DEMO_SYNC_NAME],
                     SyncCommand.UNPAUSE,
+                    logContextGetter,
                     req.body.connectionId
                 );
 
@@ -332,6 +335,7 @@ class OnboardingController {
                     DEMO_GITHUB_CONFIG_KEY,
                     [DEMO_SYNC_NAME],
                     SyncCommand.RUN_FULL,
+                    logContextGetter,
                     req.body.connectionId
                 );
             }
@@ -456,20 +460,29 @@ class OnboardingController {
             if (!activityLogId) {
                 throw new NangoError('failed_to_create_activity_log');
             }
+
+            // TODO: move that outside try/catch
+            const logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                { account, environment, user }
+            );
             const actionResponse = await syncClient.triggerAction({
                 connection,
                 actionName: DEMO_ACTION_NAME,
                 input: { title: req.body.title },
                 activityLogId,
-                environment_id: environment.id
+                environment_id: environment.id,
+                logCtx
             });
 
             if (isErr(actionResponse)) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.failed();
                 return;
             }
 
+            await logCtx.success();
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {

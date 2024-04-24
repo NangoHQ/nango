@@ -11,6 +11,7 @@ import environmentService from '../../../services/environment.service.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 
 import * as postConnectionHandlers from './index.js';
+import type { LogContextGetter } from '@nangohq/logs';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -24,7 +25,7 @@ export interface InternalNango {
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
-async function execute(createdConnection: RecentlyCreatedConnection, provider: string) {
+async function execute(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter) {
     const { connection_id, environment_id, provider_config_key } = createdConnection;
     try {
         const accountId = await environmentService.getAccountIdFromEnvironment(environment_id);
@@ -32,7 +33,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             accountId as number,
             environment_id,
             connection_id,
-            provider_config_key
+            provider_config_key,
+            logContextGetter
         );
 
         if (!success || !connection) {
@@ -76,13 +78,15 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
         if (handler) {
             try {
                 await handler(internalNango);
-            } catch (e: any) {
-                const errorMessage = e.message || 'Unknown error';
-                const errorDetails = {
-                    message: errorMessage,
-                    name: e.name || 'Error',
-                    stack: e.stack || 'No stack trace'
-                };
+            } catch (e) {
+                const errorDetails =
+                    e instanceof Error
+                        ? {
+                              message: e.message || 'Unknown error',
+                              name: e.name || 'Error',
+                              stack: e.stack || 'No stack trace'
+                          }
+                        : 'Unknown error';
 
                 const errorString = JSON.stringify(errorDetails);
                 const log = {
@@ -98,12 +102,18 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     environment_id
                 };
 
-                await createActivityLogAndLogMessage(log, {
+                const activityLogId = await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     environment_id: environment_id,
                     timestamp: Date.now(),
                     content: `Post connection script failed with the error: ${errorString}`
                 });
+                const logCtx = await logContextGetter.create(
+                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Authentication' },
+                    { account: { id: accountId! }, environment: { id: connection.environment_id } }
+                );
+                await logCtx.error('Post connection script failed', { error: e });
+                await logCtx.failed();
 
                 await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
                     environmentId: String(environment_id),

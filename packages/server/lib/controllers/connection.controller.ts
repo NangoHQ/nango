@@ -33,6 +33,7 @@ import {
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { logContextGetter } from '@nangohq/logs';
 
 class ConnectionController {
     /**
@@ -76,12 +77,18 @@ class ConnectionController {
             }
 
             if (!connection) {
-                await createActivityLogAndLogMessage(log, {
+                const activityLogId = await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     environment_id: environment.id,
                     timestamp: Date.now(),
                     content: 'Unknown connection'
                 });
+                const logCtx = await logContextGetter.create(
+                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { account: response.account, environment: response.environment }
+                );
+                await logCtx.error('Unknown connection');
+                await logCtx.failed();
 
                 const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
                 errorManager.errResFromNangoErr(res, error);
@@ -92,12 +99,18 @@ class ConnectionController {
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
             if (!config) {
-                await createActivityLogAndLogMessage(log, {
+                const activityLogId = await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     environment_id: environment.id,
                     timestamp: Date.now(),
                     content: 'Unknown provider config'
                 });
+                const logCtx = await logContextGetter.create(
+                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { account: response.account, environment: response.environment }
+                );
+                await logCtx.error('Unknown provider config');
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'unknown_provider_config');
                 return;
@@ -121,7 +134,8 @@ class ConnectionController {
                     activityLogId: null,
                     environment_id: environment.id,
                     instantRefresh,
-                    logAction: LogActionEnum.TOKEN
+                    logAction: LogActionEnum.TOKEN,
+                    logContextGetter
                 });
 
                 if (!success) {
@@ -136,13 +150,19 @@ class ConnectionController {
                 log.provider = config.provider;
                 log.success = true;
 
-                await createActivityLogAndLogMessage(log, {
+                const activityLogId = await createActivityLogAndLogMessage(log, {
                     level: 'info',
                     environment_id: environment.id,
                     auth_mode: template?.auth_mode,
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
                     timestamp: Date.now()
                 });
+                const logCtx = await logContextGetter.create(
+                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { account: response.account, environment: response.environment }
+                );
+                await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
+                await logCtx.success();
             }
 
             let rawCredentials = null;
@@ -260,7 +280,17 @@ class ConnectionController {
                 success,
                 error,
                 response: connection
-            } = await connectionService.getConnectionCredentials(accountId, environmentId, connectionId, providerConfigKey, null, action, instantRefresh);
+            } = await connectionService.getConnectionCredentials(
+                accountId,
+                environmentId,
+                connectionId,
+                providerConfigKey,
+                logContextGetter,
+                null,
+                undefined,
+                action,
+                instantRefresh
+            );
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -617,7 +647,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    oAuthCredentials
+                    oAuthCredentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -649,7 +680,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    oAuthCredentials
+                    oAuthCredentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -675,7 +707,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    credentials
+                    credentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -700,7 +733,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    credentials
+                    credentials,
+                    logContextGetter
                 );
 
                 if (imported) {
@@ -775,6 +809,7 @@ class ConnectionController {
                         operation: updatedConnection?.operation || AuthOperation.UNKNOWN
                     },
                     provider,
+                    logContextGetter,
                     null
                 );
             }

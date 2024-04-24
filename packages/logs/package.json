@@ -4,18 +4,25 @@
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.js",
-    "scripts": {},
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/logs"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "8.12.2",
+        "@opensearch-project/opensearch": "2.7.0",
         "@nangohq/utils": "file:../utils",
         "zod": "3.22.4"
     },
     "devDependencies": {
-        "vitest": "1.4.0"
-    }
+        "type-fest": "4.14.0",
+        "vitest": "1.4.0",
+        "winston": "3.8.2"
+    },
+    "files": [
+        "dist/**/*"
+    ]
 }

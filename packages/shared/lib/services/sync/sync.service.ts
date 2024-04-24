@@ -14,6 +14,7 @@ import {
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -497,7 +498,9 @@ export const getAndReconcileDifferences = async ({
     performAction,
     activityLogId,
     debug = false,
-    singleDeployMode = false
+    singleDeployMode = false,
+    logCtx,
+    logContextGetter
 }: {
     environmentId: number;
     syncs: IncomingFlowConfig[];
@@ -505,6 +508,8 @@ export const getAndReconcileDifferences = async ({
     activityLogId: number | null;
     debug?: boolean | undefined;
     singleDeployMode?: boolean | undefined;
+    logCtx?: LogContext;
+    logContextGetter: LogContextGetter;
 }): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
@@ -573,6 +578,7 @@ export const getAndReconcileDifferences = async ({
                         timestamp: Date.now(),
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`
                     });
+                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
                 syncsToCreate.push({ connections, syncName, sync, providerConfigKey, environmentId });
             }
@@ -593,6 +599,7 @@ export const getAndReconcileDifferences = async ({
                         timestamp: Date.now(),
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`
                     });
+                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
                 syncsToCreate.push({ connections: missingConnections, syncName, sync, providerConfigKey, environmentId });
             }
@@ -609,13 +616,15 @@ export const getAndReconcileDifferences = async ({
                 timestamp: Date.now(),
                 content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
             });
+            await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        const result = await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId as number);
+        const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, debug, activityLogId!, logCtx);
 
         if (!result) {
             if (activityLogId) {
                 await updateSuccessActivityLog(activityLogId, false);
+                await logCtx?.failed();
             }
             return null;
         }
@@ -656,6 +665,7 @@ export const getAndReconcileDifferences = async ({
                             timestamp: Date.now(),
                             content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
                         });
+                        await logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
                     }
                     await syncOrchestrator.deleteConfig(existingSync.id, environmentId);
 
@@ -680,6 +690,7 @@ export const getAndReconcileDifferences = async ({
                             timestamp: Date.now(),
                             content
                         });
+                        await logCtx?.debug(content);
                     }
                 }
             }
@@ -694,6 +705,7 @@ export const getAndReconcileDifferences = async ({
             timestamp: Date.now(),
             content: 'Sync deploy diff in debug mode process complete successfully.'
         });
+        await logCtx?.debug('Sync deploy diff in debug mode process complete successfully.');
     }
 
     return {
@@ -709,6 +721,7 @@ export interface PausableSyncs {
     name: string;
     environment_id: number;
     provider: string;
+    account_id: number;
     connection_id: string;
     unique_key: string;
     schedule_id: string;
@@ -720,6 +733,7 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         .select(
             '_nango_syncs.id',
             '_nango_syncs.name',
+            '_nango_environments.account_id',
             '_nango_connections.environment_id',
             '_nango_configs.provider',
             '_nango_configs.unique_key',

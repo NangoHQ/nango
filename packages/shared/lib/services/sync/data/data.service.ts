@@ -4,6 +4,7 @@ import { createActivityLogMessage } from '../../activity/activity.service.js';
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
+import type { LogContext } from '@nangohq/logs';
 import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Data');
@@ -20,9 +21,10 @@ export async function upsert(
     model: string,
     activityLogId: number,
     environment_id: number,
-    softDelete = false
+    softDelete = false,
+    logCtx: LogContext
 ): Promise<UpsertResponse> {
-    const recordsWithoutDuplicates = await removeDuplicateKey(records, activityLogId, environment_id, model);
+    const recordsWithoutDuplicates = await removeDuplicateKey(records, activityLogId, environment_id, model, logCtx);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
         return {
@@ -94,9 +96,10 @@ export async function update(
     nangoConnectionId: number,
     model: string,
     activityLogId: number,
-    environment_id: number
+    environment_id: number,
+    logCtx: LogContext
 ): Promise<UpsertResponse> {
-    const recordsWithoutDuplicates = await removeDuplicateKey(records, activityLogId, environment_id, model);
+    const recordsWithoutDuplicates = await removeDuplicateKey(records, activityLogId, environment_id, model, logCtx);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
         return {
@@ -163,7 +166,13 @@ export async function update(
     }
 }
 
-export async function removeDuplicateKey(response: DataRecord[], activityLogId: number, environment_id: number, model: string): Promise<DataRecord[]> {
+export async function removeDuplicateKey(
+    response: DataRecord[],
+    activityLogId: number,
+    environment_id: number,
+    model: string,
+    logCtx: LogContext
+): Promise<DataRecord[]> {
     const { nonUniqueKeys } = verifyUniqueKeysAreUnique(response, RECORD_UNIQUE_KEY);
 
     for (const nonUniqueKey of nonUniqueKeys) {
@@ -174,6 +183,7 @@ export async function removeDuplicateKey(response: DataRecord[], activityLogId: 
             content: `There was a duplicate key found: ${nonUniqueKey}. This record will be ignore in relation to the model ${model}.`,
             timestamp: Date.now()
         });
+        await logCtx.error(`There was a duplicate key found: ${nonUniqueKey}. This record will be ignore in relation to the model ${model}`);
     }
 
     const seen = new Set();
