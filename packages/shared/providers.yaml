@@ -1098,6 +1098,19 @@ keap:
     proxy:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
+klipfolio:
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.klipfolio.com
+        headers:
+            kf-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/1.0/profile
+    docs: https://docs.nango.dev/integrations/all/klipfolio
 klaviyo:
     categories:
         - marketing
