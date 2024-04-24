@@ -55,9 +55,7 @@ export const HNDemo: React.FC = () => {
     return (
         <div className="w-screen h-screen flex justify-center items-center">
             <div className="text-white">
-                {String(isAnUser)}
                 <Spinner size={1} />
-                ahllo
             </div>
         </div>
     );
