@@ -339,6 +339,7 @@
                         "integrations/all/discord",
                         "integrations/all/dropbox",
                         "integrations/all/docusign",
+                        "integrations/all/egnyte",
                         "integrations/all/entrata",
                         "integrations/all/epic-games",
                         "integrations/all/evaluagent",
