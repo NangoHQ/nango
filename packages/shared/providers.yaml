@@ -286,6 +286,15 @@ bitbucket:
     proxy:
         base_url: https://api.bitbucket.org
     docs: https://docs.nango.dev/integrations/all/bitbucket
+bitdefender:
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: ${connectionConfig.ACCESS_URL}
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/bitdefender
 blackbaud:
     categories:
         - crm
