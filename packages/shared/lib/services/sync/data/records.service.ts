@@ -21,6 +21,7 @@ import encryptionManager from '../../../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { trackFetch } from '../sync.service.js';
+import { stringifyError } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -469,7 +470,7 @@ export async function getAllDataRecords(
             providerConfigKey,
             modifiedAfter: String(modifiedAfter),
             model,
-            error: JSON.stringify(e)
+            error: stringifyError(e)
         });
 
         const error = new Error(errorMessage);

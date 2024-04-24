@@ -1,6 +1,6 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
-import { integrationFilesAreRemote, isCloud, isProd, getLogger, isOk } from '@nangohq/utils';
+import { integrationFilesAreRemote, isCloud, isProd, getLogger, isOk, stringifyError } from '@nangohq/utils';
 import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
@@ -199,7 +199,7 @@ class IntegrationService implements IntegrationServiceInterface {
             }
         } catch (err) {
             span.setTag('error', err);
-            const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(err, { pretty: true });
             const content = `There was an error running integration '${syncName}': ${errorMessage}`;
 
             if (activityLogId && writeToDb) {

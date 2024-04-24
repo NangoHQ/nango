@@ -1,9 +1,9 @@
 import os from 'os';
 import fs from 'fs';
-import { stringifyError, type NangoProps } from '@nangohq/shared';
+import type { NangoProps } from '@nangohq/shared';
 import * as superjson from 'superjson';
 import { fetch } from 'undici';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, stringifyError } from '@nangohq/utils';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 const logger = getLogger('Runner');

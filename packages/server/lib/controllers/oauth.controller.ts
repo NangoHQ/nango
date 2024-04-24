@@ -58,7 +58,7 @@ import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
-import { errorToObject } from '@nangohq/utils';
+import { errorToObject, stringifyError } from '@nangohq/utils';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _next: NextFunction) {
@@ -322,7 +322,7 @@ class OAuthController {
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
         } catch (e) {
-            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
+            const prettyError = stringifyError(e, { pretty: true });
             const error = WSErrBuilder.UnknownError();
             await createActivityLogMessage({
                 level: 'error',
@@ -540,7 +540,7 @@ class OAuthController {
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -773,7 +773,7 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
         } catch (err: any) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();
             const content = error.message + '\n' + prettyError;
@@ -878,7 +878,7 @@ class OAuthController {
 
             res.redirect(authorizationUri);
         } catch (error) {
-            const prettyError = JSON.stringify(error, ['message', 'name'], 2);
+            const prettyError = stringifyError(error, { pretty: true });
 
             const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
 
@@ -1091,7 +1091,7 @@ class OAuthController {
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -1502,7 +1502,7 @@ class OAuthController {
             await logCtx.success();
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
@@ -1673,7 +1673,7 @@ class OAuthController {
                         connectionId: session.connectionId
                     }
                 });
-                const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+                const prettyError = stringifyError(err, { pretty: true });
 
                 await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth1 token request failed', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),

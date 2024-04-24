@@ -14,6 +14,7 @@ import { WebhookType } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { stringifyError } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -210,7 +211,7 @@ class WebhookService {
                 );
             }
         } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(e, { pretty: true });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -292,7 +293,7 @@ class WebhookService {
             }
         } catch (e) {
             if (activityLogId) {
-                const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+                const errorMessage = stringifyError(e, { pretty: true });
 
                 await createActivityLogMessage({
                     level: 'error',
@@ -420,7 +421,7 @@ class WebhookService {
                 await logCtx.failed();
             }
         } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(e, { pretty: true });
 
             await createActivityLogMessageAndEnd({
                 level: 'error',

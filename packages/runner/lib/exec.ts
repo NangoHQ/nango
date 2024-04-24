@@ -7,6 +7,7 @@ import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
 import tracer from 'dd-trace';
+import { stringifyError } from '@nangohq/utils';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -102,7 +103,7 @@ export async function exec(
                     response: null
                 };
             } else {
-                throw new Error(`Error executing code '${JSON.stringify(error)}'`);
+                throw new Error(`Error executing code '${stringifyError(error)}'`);
             }
         } finally {
             span.finish();
