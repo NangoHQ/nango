@@ -335,15 +335,15 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
-            const { success, error } = await syncOrchestrator.runSyncCommand(
+            const { success, error } = await syncOrchestrator.runSyncCommand({
                 recordsService,
                 environmentId,
-                provider_config_key,
-                syncNames as string[],
-                full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
+                providerConfigKey: provider_config_key,
+                syncNames: syncNames as string[],
+                command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
                 logContextGetter,
-                connection_id
-            );
+                connectionId: connection_id!
+            });
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -549,14 +549,15 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
-            await syncOrchestrator.runSyncCommand(
+            await syncOrchestrator.runSyncCommand({
                 recordsService,
                 environmentId,
-                provider_config_key as string,
-                syncNames as string[],
-                SyncCommand.PAUSE,
-                connection_id
-            );
+                providerConfigKey: provider_config_key as string,
+                syncNames: syncNames as string[],
+                command: SyncCommand.PAUSE,
+                logContextGetter,
+                connectionId: connection_id
+            });
 
             res.sendStatus(200);
         } catch (e) {
@@ -588,14 +589,15 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
-            await syncOrchestrator.runSyncCommand(
+            await syncOrchestrator.runSyncCommand({
                 recordsService,
                 environmentId,
-                provider_config_key as string,
-                syncNames as string[],
-                SyncCommand.UNPAUSE,
-                connection_id
-            );
+                providerConfigKey: provider_config_key as string,
+                syncNames: syncNames as string[],
+                command: SyncCommand.UNPAUSE,
+                logContextGetter,
+                connectionId: connection_id
+            });
 
             res.sendStatus(200);
         } catch (e) {
