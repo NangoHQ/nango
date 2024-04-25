@@ -6,4 +6,7 @@ tracer.init({
 tracer.use('pg', {
     service: 'nango-postgres'
 });
+tracer.use('opensearch', {
+    service: 'nango-opensearch'
+});
 tracer.use('express');
