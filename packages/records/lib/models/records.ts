@@ -178,7 +178,7 @@ export async function getRecords({
         //     connectionId: String(connectionId),
         //     modifiedAfter: String(modifiedAfter),
         //     model,
-        //     error: JSON.stringify(e)
+        //     error: stringifyError(e)
         // });
         const e = new Error(`List records error for model ${model}`);
         return resultErr(e);

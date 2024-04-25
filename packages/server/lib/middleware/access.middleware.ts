@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, isBasicAuthEnabled, getLogger, metrics } from '@nangohq/utils';
+import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError } from '@nangohq/utils';
 import {
     LogActionEnum,
     ErrorSourceEnum,
@@ -9,8 +9,7 @@ import {
     setAccount,
     setEnvironmentId,
     errorManager,
-    userService,
-    stringifyError
+    userService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';

@@ -22,6 +22,7 @@ import {
     LogActionEnum
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
+import { stringifyError } from '@nangohq/utils';
 
 class UnAuthController {
     async create(req: Request, res: Response, next: NextFunction) {
@@ -178,7 +179,7 @@ class UnAuthController {
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             await createActivityLogMessage({
                 level: 'error',

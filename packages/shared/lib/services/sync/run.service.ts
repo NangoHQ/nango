@@ -13,7 +13,7 @@ import environmentService from '../environment.service.js';
 import accountService from '../account.service.js';
 import slackNotificationService from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
-import { integrationFilesAreRemote, isCloud, getLogger, metrics } from '@nangohq/utils';
+import { integrationFilesAreRemote, isCloud, getLogger, metrics, stringifyError } from '@nangohq/utils';
 import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
@@ -454,7 +454,7 @@ export default class SyncRun {
                 return { success: true, error: null, response: true };
             } catch (e) {
                 result = false;
-                const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+                const errorMessage = stringifyError(e, { pretty: true });
                 await this.reportFailureForResults({
                     content: `The ${this.syncType} "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData?.version}` : ''

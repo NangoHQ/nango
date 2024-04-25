@@ -2,7 +2,7 @@ import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import { env } from '@nangohq/utils';
+import { env, stringifyError } from '@nangohq/utils';
 import { NodeEnv, getPersistAPIUrl } from '@nangohq/shared';
 import { RenderAPI } from './render.api.js';
 import tracer from 'dd-trace';
@@ -98,7 +98,7 @@ export class RenderRunner implements Runner {
             }
             return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);
         } catch (err) {
-            throw new Error(`Unable to get runner ${runnerId}: ${JSON.stringify(err)}`);
+            throw new Error(`Unable to get runner ${runnerId}: ${stringifyError(err)}`);
         }
     }
 }

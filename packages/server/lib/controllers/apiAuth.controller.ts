@@ -25,7 +25,7 @@ import {
     LogActionEnum
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import { isErr } from '@nangohq/utils';
+import { isErr, stringifyError } from '@nangohq/utils';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response, next: NextFunction) {
@@ -225,7 +225,7 @@ class ApiAuthController {
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -457,7 +457,7 @@ class ApiAuthController {
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             await createActivityLogMessage({
                 level: 'error',

@@ -195,7 +195,8 @@ class DeployService {
                 }
             })
             .catch((err) => {
-                const errorMessage = JSON.stringify(err instanceof AxiosError ? err.response?.data : err, null, 2);
+                const errorMessage =
+                    err instanceof AxiosError ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
                 console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                 process.exit(1);
             });

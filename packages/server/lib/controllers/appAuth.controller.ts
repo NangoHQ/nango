@@ -24,6 +24,7 @@ import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import publisher from '../clients/publisher.client.js';
 import { logContextGetter } from '@nangohq/logs';
+import { stringifyError } from '@nangohq/utils';
 
 class AppAuthController {
     async connect(req: Request, res: Response, _next: NextFunction) {
@@ -261,7 +262,7 @@ class AppAuthController {
 
             return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();
             const content = error.message + '\n' + prettyError;
