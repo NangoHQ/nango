@@ -558,6 +558,22 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+egnyte:
+    categories:
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.egnyte.com/puboauth/token
+    token_url: https://${connectionConfig.subdomain}.egnyte.com/puboauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.egnyte.com/pubapi
+    docs: https://docs.nango.dev/integrations/all/egnyte
 entrata:
     categories:
         - other
