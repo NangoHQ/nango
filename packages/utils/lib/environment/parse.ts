@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const bool = z
-    .enum(['true', 'false'])
+    .enum(['true', 'false', ''])
     .optional()
     .default('false')
     .transform((value) => value === 'true');
