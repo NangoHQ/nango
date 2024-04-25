@@ -59,6 +59,7 @@ class PersistController {
             false
         );
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
+        logCtx.logToConsole = false;
         await logCtx.log({ type: 'log', message: msg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
 
         if (result) {
