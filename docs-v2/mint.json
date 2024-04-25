@@ -272,6 +272,7 @@
                         "integrations/integration-templates/bamboohr",
                         "integrations/integration-templates/confluence",
                         "integrations/integration-templates/clari-copilot",
+                        "integrations/integration-templates/expensify",
                         "integrations/integration-templates/github",
                         "integrations/integration-templates/gmail",
                         "integrations/integration-templates/google-workspace",

@@ -1,9 +1,9 @@
 integrations:
-    expensify-2:
+    expensify:
         actions:
             expensify-list-policy:
                 description: |
-                    Sync to fetch a list of policies with some relevant information about them
+                    Action to fetch a list of policies with some relevant information about them
                 endpoint: POST /expensify/list-policy
                 input: ExpensifyListPolicyInput
                 output: ExpensifyListPolicyOutput
