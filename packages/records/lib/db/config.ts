@@ -12,7 +12,7 @@ const config: Knex.Config = {
         statement_timeout: 60000
     },
     searchPath: schema,
-    pool: { min: 2, max: 20 },
+    pool: { min: 2, max: 50 },
     migrations: {
         extension: isJS ? 'js' : 'ts',
         directory: 'migrations',
