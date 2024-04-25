@@ -383,6 +383,7 @@
                         "integrations/all/jira",
                         "integrations/all/keap",
                         "integrations/all/klaviyo",
+                        "integrations/all/klipfolio",
                         "integrations/all/kustomer",
                         "integrations/all/lever",
                         "integrations/all/linear",
