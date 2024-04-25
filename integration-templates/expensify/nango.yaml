@@ -1,0 +1,20 @@
+integrations:
+    expensify-2:
+        actions:
+            expensify-list-policy:
+                description: |
+                    Sync to fetch a list of policies with some relevant information about them
+                endpoint: POST /expensify/list-policy
+                input: ExpensifyListPolicyInput
+                output: ExpensifyListPolicyOutput
+
+models:
+    ExpensifyListPolicyInput:
+        requestJobDescription: RequestJobDescription
+        inputSettings: InputSettings
+    RequestJobDescription:
+        type: string
+    InputSettings:
+        type: string
+    ExpensifyListPolicyOutput:
+        policyList: array

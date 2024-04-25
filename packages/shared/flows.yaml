@@ -419,6 +419,17 @@ integrations:
                 id: string
                 title: string
                 name: string
+    expensify:
+        models:
+            ExpensifyListPolicyInput:
+                requestJobDescription: RequestJobDescription
+                inputSettings: InputSettings
+            RequestJobDescription:
+                type: string
+            InputSettings:
+                type: string
+            ExpensifyListPolicyOutput:
+                policyList: array
     github:
         syncs:
             github-issues:

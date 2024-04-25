@@ -619,6 +619,11 @@ exist:
             type: link
             link_path_in_response_body: next
     docs: https://docs.nango.dev/integrations/all/exist
+expensify:
+    categories:
+        - productivity
+    auth_mode: BASIC
+    docs: https://docs.nango.dev/integrations/all/expensify
 factorial:
     categories:
         - hr

@@ -1,0 +1,65 @@
+---
+title: Expensify
+sidebarTitle: Expensify
+---
+
+API configuration: [`expensify`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Generate API credentials](https://www.expensify.com/tools/integrations)
+-   [API docs](https://integrations.expensify.com/Integration-Server/doc)
+-   [Auth-related docs](https://integrations.expensify.com/Integration-Server/doc/#authentication)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+## API gotchas
+- Expensify in Nango uses `Basic` auth mode to access different endpoints. Provide your `partnerUserID` as the Username value and `partnerUserSecret` as the Password value.
+- After creating a connection, you can use the Basic credentials as follows;
+```js
+const connection = await nango.getConnection();
+let credentials: { partnerUserID?: string; partnerUserSecret?: string } = {};
+        if ('username' in connection.credentials && 'password' in connection.credentials) {
+            credentials = {
+                partnerUserID: connection.credentials.username,
+                partnerUserSecret: connection.credentials.password,
+            };
+        } else {
+            throw new nango.ActionError({
+                message: `Basic API credentials are incomplete`
+            });
+        }
+        const postData = 'requestJobDescription=' + encodeURIComponent(JSON.stringify({
+            type: input.requestJobDescription.type,
+            credentials: credentials,
+            inputSettings: {
+                type: input.inputSettings.type
+            }
+        }));
+
+        const resp = await nango.post({
+            baseUrlOverride: `https://integrations.expensify.com/Integration-Server`,
+            endpoint: `/ExpensifyIntegrations`,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            data: postData,
+        });
+```
+- You can have a look at the following simple [action template](/integrations/integration-templates/expensify)
+- Expensify enforces a general rate limit of 50 jobs started per minute.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/expensify.mdx)</Note>
