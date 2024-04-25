@@ -184,15 +184,23 @@ export class Orchestrator {
         }
     }
 
-    public async runSyncCommand(
-        recordsService: RecordsServiceInterface,
-        environmentId: number,
-        providerConfigKey: string,
-        syncNames: string[],
-        command: SyncCommand,
-        logContextGetter: LogContextGetter,
-        connectionId?: string
-    ): Promise<ServiceResponse<boolean>> {
+    public async runSyncCommand({
+        recordsService,
+        environmentId,
+        providerConfigKey,
+        syncNames,
+        command,
+        logContextGetter,
+        connectionId
+    }: {
+        recordsService: RecordsServiceInterface;
+        environmentId: number;
+        providerConfigKey: string;
+        syncNames: string[];
+        command: SyncCommand;
+        logContextGetter: LogContextGetter;
+        connectionId?: string;
+    }): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderName(providerConfigKey);
 

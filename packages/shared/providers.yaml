@@ -286,6 +286,15 @@ bitbucket:
     proxy:
         base_url: https://api.bitbucket.org
     docs: https://docs.nango.dev/integrations/all/bitbucket
+bitdefender:
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: ${connectionConfig.ACCESS_URL}
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/bitdefender
 blackbaud:
     categories:
         - crm
@@ -549,6 +558,22 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+egnyte:
+    categories:
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.egnyte.com/puboauth/token
+    token_url: https://${connectionConfig.subdomain}.egnyte.com/puboauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.egnyte.com/pubapi
+    docs: https://docs.nango.dev/integrations/all/egnyte
 entrata:
     categories:
         - other
@@ -619,6 +644,11 @@ exist:
             type: link
             link_path_in_response_body: next
     docs: https://docs.nango.dev/integrations/all/exist
+expensify:
+    categories:
+        - productivity
+    auth_mode: BASIC
+    docs: https://docs.nango.dev/integrations/all/expensify
 factorial:
     categories:
         - hr
@@ -962,6 +992,26 @@ hackerrank-work:
     proxy:
         base_url: https://www.hackerrank.com
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
+harvest:
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://id.getharvest.com/oauth2/authorize
+    token_url: https://id.getharvest.com/api/v2/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            User-Agent: ${connectionConfig.appDetails}
+        retry:
+            after: 'Retry-After'
+        base_url: https://api.harvestapp.com
+    docs: https://docs.nango.dev/integrations/all/harvest
 health-gorilla:
     auth_mode: OAUTH2
     authorization_url: https://api.healthgorilla.com/oauth/authorize
@@ -1119,6 +1169,19 @@ keap:
     proxy:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
+klipfolio:
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.klipfolio.com
+        headers:
+            kf-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/1.0/profile
+    docs: https://docs.nango.dev/integrations/all/klipfolio
 klaviyo:
     categories:
         - marketing
