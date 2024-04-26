@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "type": "module",
     "main": "dist/index.js",
+    "private": true,
     "scripts": {
         "start": "tsc && node dist/app.js",
         "dev": "nodemon"
@@ -16,8 +17,8 @@
     "dependencies": {
         "@nangohq/data-ingestion": "file:../data-ingestion",
         "@nangohq/logs": "file:../logs",
-        "@nangohq/nango-runner": "^1.0.0",
-        "@nangohq/shared": "^0.39.18",
+        "@nangohq/nango-runner": "file:../shared",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/records": "file:../records",
         "@temporalio/activity": "^1.9.1",
