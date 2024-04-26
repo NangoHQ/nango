@@ -11,4 +11,3 @@ export * from './Flow.js';
 export * from './NangoConfig.js';
 export * from './Proxy.js';
 export * from './Runner.js';
-export * from './Onboarding.js';

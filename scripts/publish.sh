@@ -17,6 +17,14 @@ function bump_and_npm_publish {
     fi
 }
 
+function bump_other_pkg {
+    folder=$1
+    package=$2
+    pushd "$GIT_ROOT_DIR/packages/$folder"
+    npm install @nangohq/$package@$VERSION
+    popd
+}
+
 GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
 VERSION=$1
 
@@ -39,6 +47,12 @@ popd
 pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=false
 popd
+
+# Types
+bump_and_npm_publish "@nangohq/types" "$VERSION"
+bump_other_pkg "shared" "types"
+bump_other_pkg "server" "types"
+bump_other_pkg "webapp" "types"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"

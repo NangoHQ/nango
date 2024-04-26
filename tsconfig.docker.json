@@ -2,16 +2,25 @@
     "files": [],
     "references": [
         {
+            "path": "packages/data-ingestion"
+        },
+        {
             "path": "packages/frontend"
         },
         {
             "path": "packages/jobs"
         },
         {
+            "path": "packages/logs"
+        },
+        {
             "path": "packages/node-client"
         },
         {
             "path": "packages/persist"
+        },
+        {
+            "path": "packages/records"
         },
         {
             "path": "packages/runner"
