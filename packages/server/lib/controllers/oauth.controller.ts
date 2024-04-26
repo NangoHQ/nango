@@ -82,12 +82,13 @@ class OAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth' },
-            { account: { id: accountId }, environment: { id: environmentId } }
-        );
+        let logCtx: LogContext | undefined;
 
         try {
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth' },
+                { account: { id: accountId }, environment: { id: environmentId } }
+            );
             if (!wsClientId) {
                 void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
@@ -331,8 +332,10 @@ class OAuthController {
                 content: error.message + '\n' + prettyError,
                 timestamp: Date.now()
             });
-            await logCtx.error(error.message, { error: e });
-            await logCtx.failed();
+            if (logCtx) {
+                await logCtx.error(error.message, { error: e });
+                await logCtx.failed();
+            }
 
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -383,12 +386,13 @@ class OAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth2 CC' },
-            { account: { id: accountId }, environment: { id: environmentId } }
-        );
+        let logCtx: LogContext | undefined;
 
         try {
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth2 CC' },
+                { account: { id: accountId }, environment: { id: environmentId } }
+            );
             void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, accountId);
 
             if (!providerConfigKey) {
@@ -549,8 +553,24 @@ class OAuthController {
                 content: `Error during OAuth2 client credentials create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
-            await logCtx.failed();
+            if (logCtx) {
+                void connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: ProviderAuthModes.OAuth2CC,
+                        error: `Error during Unauth create: ${prettyError}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    'unknown',
+                    activityLogId,
+                    logCtx
+                );
+                await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
+                await logCtx.failed();
+            }
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -561,21 +581,6 @@ class OAuthController {
                     connectionId
                 }
             });
-
-            void connectionCreationFailedHook(
-                {
-                    id: -1,
-                    connection_id: connectionId as string,
-                    provider_config_key: providerConfigKey as string,
-                    environment_id: environmentId,
-                    auth_mode: ProviderAuthModes.OAuth2CC,
-                    error: `Error during Unauth create: ${prettyError}`,
-                    operation: AuthOperation.UNKNOWN
-                },
-                'unknown',
-                activityLogId,
-                logCtx
-            );
 
             next(err);
         }

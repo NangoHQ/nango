@@ -21,7 +21,7 @@ async function execute(
     body: any,
     rawBody: string,
     logContextGetter: LogContextGetter
-): Promise<any> {
+): Promise<unknown> {
     if (!body) {
         return;
     }
@@ -32,21 +32,24 @@ async function execute(
         return;
     }
 
-    const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
+    const account = await environmentService.getAccountFromEnvironment(integration.environment_id);
+    if (!account) {
+        return;
+    }
 
     const handler = handlers[`${integration.provider.replace(/-/g, '')}Webhook`];
+    if (!handler) {
+        return;
+    }
 
     let res: WebhookResponse = undefined;
-
     try {
-        if (handler) {
-            res = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
-        }
+        res = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
     } catch (e) {
         logger.error(`error processing incoming webhook for ${providerConfigKey} - `, e);
 
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
-            accountId: String(accountId),
+            accountId: String(account.id),
             environmentId: String(integration.environment_id),
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
@@ -58,19 +61,17 @@ async function execute(
     const webhookBodyToForward = res?.parsedBody || body;
     const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward(integration, connectionIds, webhookBodyToForward, headers, logContextGetter);
+    await webhookService.forward({ integration, account, connectionIds, payload: webhookBodyToForward, webhookOriginalHeaders: headers, logContextGetter });
 
     await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
-        accountId: String(accountId),
+        accountId: String(account.id),
         environmentId: String(integration.environment_id),
         provider: integration.provider,
         providerConfigKey: integration.unique_key,
         payload: JSON.stringify(webhookBodyToForward)
     });
 
-    if (res) {
-        return res.acknowledgementResponse;
-    }
+    return res ? res.acknowledgementResponse : null;
 }
 
 export default execute;

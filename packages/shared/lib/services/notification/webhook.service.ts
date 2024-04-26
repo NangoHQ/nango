@@ -6,7 +6,7 @@ import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
 import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Connection.js';
-import type { Config, Environment, SyncResult } from '../../models/index.js';
+import type { Account, Config, Environment, SyncResult } from '../../models/index.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
@@ -291,9 +291,9 @@ class WebhookService {
                     );
                 }
             }
-        } catch (e) {
+        } catch (err) {
             if (activityLogId) {
-                const errorMessage = stringifyError(e, { pretty: true });
+                const errorMessage = stringifyError(err, { pretty: true });
 
                 await createActivityLogMessage({
                     level: 'error',
@@ -302,17 +302,26 @@ class WebhookService {
                     content: `Auth Webhook failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                     timestamp: Date.now()
                 });
-                await logCtx?.error(`Auth Webhook failed to send to ${webhookUrl}`, { error: e });
+                await logCtx?.error(`Auth Webhook failed to send to ${webhookUrl}`, { error: err });
             }
         }
     }
-    async forward(
-        integration: Config,
-        connectionIds: string[],
-        payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, string>,
-        logContextGetter: LogContextGetter
-    ) {
+
+    async forward({
+        integration,
+        account,
+        connectionIds,
+        payload,
+        webhookOriginalHeaders,
+        logContextGetter
+    }: {
+        integration: Config;
+        account: Account;
+        connectionIds: string[];
+        payload: Record<string, any> | null;
+        webhookOriginalHeaders: Record<string, string>;
+        logContextGetter: LogContextGetter;
+    }) {
         const { send, environmentInfo } = await this.shouldSendWebhook(integration.environment_id, { forward: true });
 
         if (!send || !environmentInfo) {
@@ -320,22 +329,30 @@ class WebhookService {
         }
 
         if (!connectionIds || connectionIds.length === 0) {
-            await this.forwardHandler(integration, '', payload, webhookOriginalHeaders, logContextGetter);
+            await this.forwardHandler({ integration, account, connectionId: '', payload, webhookOriginalHeaders, logContextGetter });
             return;
         }
 
         for (const connectionId of connectionIds) {
-            await this.forwardHandler(integration, connectionId, payload, webhookOriginalHeaders, logContextGetter);
+            await this.forwardHandler({ integration, account, connectionId, payload, webhookOriginalHeaders, logContextGetter });
         }
     }
 
-    async forwardHandler(
-        integration: Config,
-        connectionId: string,
-        payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, string>,
-        logContextGetter: LogContextGetter
-    ) {
+    async forwardHandler({
+        integration,
+        account,
+        connectionId,
+        payload,
+        webhookOriginalHeaders,
+        logContextGetter
+    }: {
+        integration: Config;
+        account: Account;
+        connectionId: string;
+        payload: Record<string, any> | null;
+        webhookOriginalHeaders: Record<string, string>;
+        logContextGetter: LogContextGetter;
+    }) {
         const { send, environmentInfo } = await this.shouldSendWebhook(integration.environment_id, { forward: true });
 
         if (!send || !environmentInfo) {
@@ -360,7 +377,7 @@ class WebhookService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
-            { account: { id: -1 }, environment: { id: integration.environment_id }, config: { id: integration.id! } }
+            { account: { id: account.id }, environment: { id: integration.environment_id }, config: { id: integration.id! } }
         );
 
         const body: NangoForwardWebhookBody = {

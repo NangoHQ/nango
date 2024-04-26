@@ -3,6 +3,7 @@ import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils';
 import { getEnvironmentAndAccountId, accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
@@ -104,6 +105,7 @@ class AccountController {
             return;
         }
 
+        let logCtx: LogContext | undefined;
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -168,7 +170,7 @@ class AccountController {
                 timestamp: Date.now(),
                 content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
             });
-            const logCtx = await logContextGetter.create(
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
                 { account: response.account, environment: response.environment }
             );
@@ -195,6 +197,10 @@ class AccountController {
                 });
             });
         } catch (err) {
+            if (logCtx) {
+                await logCtx.error('uncaught error', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

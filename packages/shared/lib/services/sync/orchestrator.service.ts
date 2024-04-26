@@ -37,6 +37,7 @@ import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActiv
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
 import { stringifyError } from '@nangohq/utils';
+import environmentService from '../environment.service.js';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -203,6 +204,7 @@ export class Orchestrator {
     }): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
+        const account = await environmentService.getAccountFromEnvironment(environmentId);
 
         const log = {
             level: 'info' as LogLevel,
@@ -223,7 +225,7 @@ export class Orchestrator {
 
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
-            { account: { id: -1 }, environment: { id: environmentId }, config: { id: provider!.id! } }
+            { account: { id: account!.id }, environment: { id: environmentId }, config: { id: provider!.id! } }
         );
 
         const syncClient = await SyncClient.getInstance();

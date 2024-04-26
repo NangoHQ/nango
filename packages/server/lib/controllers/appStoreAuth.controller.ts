@@ -21,6 +21,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 
@@ -44,12 +45,13 @@ class AppStoreAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
-            { account: { id: accountId }, environment: { id: environmentId } }
-        );
+        let logCtx: LogContext | undefined;
 
         try {
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
+                { account: { id: accountId }, environment: { id: environmentId } }
+            );
             void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
 
             if (!providerConfigKey) {
@@ -238,8 +240,24 @@ class AppStoreAuthController {
                 content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during API key auth', { error: err });
-            await logCtx.failed();
+            if (logCtx) {
+                void connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.AppStore,
+                        error: `Error during App store auth: ${prettyError}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    'unknown',
+                    activityLogId,
+                    logCtx
+                );
+                await logCtx.error('Error during API key auth', { error: err });
+                await logCtx.failed();
+            }
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -250,21 +268,6 @@ class AppStoreAuthController {
                     connectionId
                 }
             });
-
-            void connectionCreationFailedHook(
-                {
-                    id: -1,
-                    connection_id: connectionId as string,
-                    provider_config_key: providerConfigKey as string,
-                    environment_id: environmentId,
-                    auth_mode: AuthModes.AppStore,
-                    error: `Error during App store auth: ${prettyError}`,
-                    operation: AuthOperation.UNKNOWN
-                },
-                'unknown',
-                activityLogId,
-                logCtx
-            );
 
             next(err);
         }

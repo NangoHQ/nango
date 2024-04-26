@@ -8,7 +8,7 @@ import WebhookService from './webhook.service.js';
 import type { Environment } from '../../models/Environment.js';
 import { mockCreateActivityLog } from '../activity/mocks.js';
 import { LogContext, logContextGetter } from '@nangohq/logs';
-import type { Config } from '../../models/index.js';
+import type { Account, Config } from '../../models/index.js';
 
 vi.mock('axios', () => ({
     default: {
@@ -18,6 +18,7 @@ vi.mock('axios', () => ({
 }));
 
 const integration: Config = { id: 1, unique_key: 'providerKey', provider: 'provider', environment_id: 1, oauth_client_id: '', oauth_client_secret: '' };
+const account: Account = { id: 1, name: 'account', secret_key: '' };
 
 describe('Webhook notification tests', () => {
     beforeEach(() => {
@@ -97,7 +98,7 @@ describe('Webhook notification tests', () => {
             } as Environment);
         });
 
-        await WebhookService.forward(integration, ['connection_1'], {}, {}, logContextGetter);
+        await WebhookService.forward({ integration, account, connectionIds: ['connection_1'], payload: {}, webhookOriginalHeaders: {}, logContextGetter });
         expect(axios.post).not.toHaveBeenCalled();
     });
 
@@ -109,7 +110,7 @@ describe('Webhook notification tests', () => {
                 secret_key: 'secret'
             } as Environment);
         });
-        await WebhookService.forward(integration, ['connection_1'], {}, {}, logContextGetter);
+        await WebhookService.forward({ integration, account, connectionIds: ['connection_1'], payload: {}, webhookOriginalHeaders: {}, logContextGetter });
         expect(axios.post).toHaveBeenCalled();
     });
 

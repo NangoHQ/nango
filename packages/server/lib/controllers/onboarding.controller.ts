@@ -32,6 +32,7 @@ import {
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger, isErr, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 
@@ -402,6 +403,7 @@ class OnboardingController {
      * Trigger an action to write a test GitHub issue
      */
     async writeGithubIssue(req: Request<unknown, unknown, { connectionId?: string; title?: string }>, res: Response, next: NextFunction) {
+        let logCtx: LogContext | undefined;
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -461,10 +463,9 @@ class OnboardingController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
-            // TODO: move that outside try/catch
-            const logCtx = await logContextGetter.create(
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account, environment, user, config: { id: connection.config_id! } }
+                { account, environment, user, config: { id: connection.config_id! }, connection: { id: connection.id! } }
             );
             const actionResponse = await syncClient.triggerAction({
                 connection,
@@ -486,6 +487,10 @@ class OnboardingController {
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {
+            if (logCtx) {
+                await logCtx.error('uncaught error', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

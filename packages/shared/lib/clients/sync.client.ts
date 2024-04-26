@@ -156,6 +156,7 @@ class SyncClient {
         logContextGetter: LogContextGetter,
         debug = false
     ): Promise<void> {
+        let logCtx: LogContext | undefined;
         try {
             const activityLogId = await createActivityLog({
                 level: 'info' as LogLevel,
@@ -175,8 +176,7 @@ class SyncClient {
                 return;
             }
 
-            // TODO: do that outside try/catch
-            const logCtx = await logContextGetter.create(
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
                 { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id }, connection: { id: nangoConnection.id! } }
             );
@@ -288,8 +288,8 @@ class SyncClient {
 
             await updateSuccessActivityLog(activityLogId, true);
             await logCtx.success();
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: nangoConnection.environment_id,
@@ -301,9 +301,10 @@ class SyncClient {
                     syncData: JSON.stringify(syncData)
                 }
             });
-            // TODO: reup this
-            // await logCtx.error('Failed to init sync', {error: err});
-            // await logCtx.failed();
+            if (logCtx) {
+                await logCtx.error('Failed to init sync', { error: err });
+                await logCtx.failed();
+            }
         }
     }
 

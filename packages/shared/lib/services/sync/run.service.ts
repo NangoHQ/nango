@@ -405,7 +405,7 @@ export default class SyncRun {
 
                     const runTime = (Date.now() - startTime) / 1000;
                     if (error.type === 'script_cancelled') {
-                        await this.reportFailureForResults({ content: error.message, runTime });
+                        await this.reportFailureForResults({ content: error.message, runTime, isCancel: true });
                     } else {
                         await this.reportFailureForResults({ content: message, runTime });
                     }
@@ -673,7 +673,7 @@ export default class SyncRun {
         );
     }
 
-    async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
+    async reportFailureForResults({ content, runTime, isCancel }: { content: string; runTime: number; isCancel?: true }) {
         if (!this.writeToDb) {
             return;
         }
@@ -742,8 +742,7 @@ export default class SyncRun {
             content
         });
         await this.logCtx?.error(content);
-        // TODO: fix this
-        if (content === 'The script was cancelled successfully') {
+        if (isCancel) {
             await this.logCtx?.cancel();
         } else {
             await this.logCtx?.failed();
