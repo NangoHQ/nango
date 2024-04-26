@@ -64,7 +64,7 @@
     "devDependencies": {
         "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
-        "@nangohq/types": "1.0.0",
+        "@nangohq/types": "0.39.18",
         "@octokit/types": "^9.2.1",
         "@types/amqplib": "^0.8.2",
         "@types/cors": "^2.8.12",
