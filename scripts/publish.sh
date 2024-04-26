@@ -49,7 +49,7 @@ popd
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
 # Update all packages to use the new shared version
-package_dirs=("cli" "server" "runner" "jobs" "persist")
+package_dirs=("cli")
 for dir in "${package_dirs[@]}"; do
     pushd "$GIT_ROOT_DIR/packages/$dir"
     npm install @nangohq/shared@^$VERSION
