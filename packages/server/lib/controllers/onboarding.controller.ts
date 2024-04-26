@@ -267,7 +267,7 @@ class OnboardingController {
      * Check the sync completion state.
      * It could be replaced by regular API calls.
      */
-    async checkSyncCompletion(req: Request<unknown, unknown, { connectionId?: string }>, res: Response, next: NextFunction) {
+    async checkSyncCompletion(req: Request<unknown, unknown, { connectionId?: string } | undefined>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
 
@@ -276,7 +276,7 @@ class OnboardingController {
                 return;
             }
 
-            if (!req.body.connectionId || typeof req.body.connectionId !== 'string') {
+            if (!req.body?.connectionId || typeof req.body.connectionId !== 'string') {
                 res.status(400).json({ message: 'connection_id must be a string' });
                 return;
             }
@@ -354,7 +354,7 @@ class OnboardingController {
     /**
      * Log the progress, this is merely informative and for BI.
      */
-    async updateStatus(req: Request<unknown, unknown, { progress?: number }>, res: Response, next: NextFunction) {
+    async updateStatus(req: Request<unknown, unknown, { progress?: number } | undefined>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -367,7 +367,7 @@ class OnboardingController {
                 return;
             }
 
-            if (typeof req.body.progress !== 'number' || req.body.progress > 6 || req.body.progress < 0) {
+            if (typeof req.body?.progress !== 'number' || req.body.progress > 6 || req.body.progress < 0) {
                 res.status(400).json({ message: 'Missing progress' });
                 return;
             }
@@ -402,7 +402,7 @@ class OnboardingController {
     /**
      * Trigger an action to write a test GitHub issue
      */
-    async writeGithubIssue(req: Request<unknown, unknown, { connectionId?: string; title?: string }>, res: Response, next: NextFunction) {
+    async writeGithubIssue(req: Request<unknown, unknown, { connectionId?: string; title?: string } | undefined>, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -415,7 +415,7 @@ class OnboardingController {
                 return;
             }
 
-            if (!req.body.connectionId || typeof req.body.connectionId !== 'string') {
+            if (!req.body?.connectionId || typeof req.body.connectionId !== 'string') {
                 res.status(400).json({ message: 'connection_id must be a string' });
                 return;
             }
