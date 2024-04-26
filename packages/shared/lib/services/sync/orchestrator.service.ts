@@ -36,6 +36,7 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
+import { stringifyError } from '@nangohq/utils';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -110,7 +111,7 @@ export class Orchestrator {
 
             return true;
         } catch (e) {
-            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
+            const prettyError = stringifyError(e, { pretty: true });
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
@@ -183,15 +184,23 @@ export class Orchestrator {
         }
     }
 
-    public async runSyncCommand(
-        recordsService: RecordsServiceInterface,
-        environmentId: number,
-        providerConfigKey: string,
-        syncNames: string[],
-        command: SyncCommand,
-        logContextGetter: LogContextGetter,
-        connectionId?: string
-    ): Promise<ServiceResponse<boolean>> {
+    public async runSyncCommand({
+        recordsService,
+        environmentId,
+        providerConfigKey,
+        syncNames,
+        command,
+        logContextGetter,
+        connectionId
+    }: {
+        recordsService: RecordsServiceInterface;
+        environmentId: number;
+        providerConfigKey: string;
+        syncNames: string[];
+        command: SyncCommand;
+        logContextGetter: LogContextGetter;
+        connectionId?: string;
+    }): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
 

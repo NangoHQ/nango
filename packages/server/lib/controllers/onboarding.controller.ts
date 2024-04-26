@@ -297,24 +297,24 @@ class OnboardingController {
             if (!status || status.length <= 0) {
                 // If for any reason we don't have a sync, because of a partial state
                 logger.info(`[demo] no sync were found ${environment.id}`);
-                await syncOrchestrator.runSyncCommand(
+                await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environment.id,
-                    DEMO_GITHUB_CONFIG_KEY,
-                    [DEMO_SYNC_NAME],
-                    SyncCommand.RUN_FULL,
+                    environmentId: environment.id,
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    syncNames: [DEMO_SYNC_NAME],
+                    command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    req.body.connectionId
-                );
-                await syncOrchestrator.runSyncCommand(
+                    connectionId: req.body.connectionId
+                });
+                await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environment.id,
-                    DEMO_GITHUB_CONFIG_KEY,
-                    [DEMO_SYNC_NAME],
-                    SyncCommand.UNPAUSE,
+                    environmentId: environment.id,
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    syncNames: [DEMO_SYNC_NAME],
+                    command: SyncCommand.UNPAUSE,
                     logContextGetter,
-                    req.body.connectionId
-                );
+                    connectionId: req.body.connectionId
+                });
 
                 res.status(200).json({ retry: true });
                 return;
@@ -329,15 +329,15 @@ class OnboardingController {
             if (!job.nextScheduledSyncAt && job.jobStatus === SyncStatus.PAUSED) {
                 // If the sync has never run
                 logger.info(`[demo] no job were found ${environment.id}`);
-                await syncOrchestrator.runSyncCommand(
+                await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environment.id,
-                    DEMO_GITHUB_CONFIG_KEY,
-                    [DEMO_SYNC_NAME],
-                    SyncCommand.RUN_FULL,
+                    environmentId: environment.id,
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    syncNames: [DEMO_SYNC_NAME],
+                    command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    req.body.connectionId
-                );
+                    connectionId: req.body.connectionId
+                });
             }
 
             if (job.jobStatus === SyncStatus.SUCCESS) {

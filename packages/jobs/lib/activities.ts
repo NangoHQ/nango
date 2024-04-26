@@ -23,7 +23,7 @@ import {
     getLastSyncDate
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
-import { getLogger, env } from '@nangohq/utils';
+import { getLogger, env, stringifyError } from '@nangohq/utils';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
@@ -144,7 +144,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             debug
         );
     } catch (err) {
-        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+        const prettyError = stringifyError(err, { pretty: true });
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -285,7 +285,7 @@ export async function syncProvider(
 
         return result.response;
     } catch (err) {
-        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+        const prettyError = stringifyError(err, { pretty: true });
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -432,7 +432,7 @@ export async function reportFailure(
         name,
         connectionId: nangoConnection?.connection_id,
         providerConfigKey: nangoConnection?.provider_config_key,
-        error: JSON.stringify(error),
+        error: stringifyError(error),
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
         runId: context.info.workflowExecution.runId
@@ -484,7 +484,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
 
         await syncRun.cancel();
     } catch (e) {
-        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : JSON.stringify(e)}`;
+        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : stringifyError(e)}`;
         errorManager.report(content, {
             environmentId: workflowArguments.nangoConnection?.environment_id,
             source: ErrorSourceEnum.PLATFORM,

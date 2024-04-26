@@ -31,7 +31,7 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, getLogger, metrics, isErr, resultOk, type Result, resultErr } from '@nangohq/utils';
+import { isTest, isProd, getLogger, metrics, isErr, resultOk, type Result, resultErr, stringifyError } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Client');
 
@@ -469,7 +469,7 @@ class SyncClient {
 
             return resultOk(true);
         } catch (err) {
-            const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(err, { pretty: true });
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
@@ -637,7 +637,7 @@ class SyncClient {
 
             return resultOk(response);
         } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+            const errorMessage = stringifyError(e, { pretty: true });
             const error = new NangoError('action_failure', { errorMessage });
 
             const content = `The action workflow ${workflowId} failed with error: ${e}`;
@@ -775,7 +775,7 @@ class SyncClient {
 
             return { success, error, response };
         } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+            const errorMessage = stringifyError(e, { pretty: true });
             const error = new NangoError('webhook_script_failure', { errorMessage });
 
             await createActivityLogMessageAndEnd({
