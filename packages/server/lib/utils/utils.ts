@@ -355,3 +355,11 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 export function resetPasswordSecret() {
     return process.env['NANGO_ADMIN_KEY'] || 'nango';
 }
+
+export function constructFinalRedirectUrl(finalRedirectUrl: string, queryParams: Record<string, any>) {
+    const url = new URL(finalRedirectUrl);
+    for (const queryKey in queryParams) {
+        url.searchParams.append(queryKey, queryParams[queryKey]);
+    }
+    return url.toString();
+}

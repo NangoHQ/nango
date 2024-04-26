@@ -51,6 +51,11 @@ export interface OAuthSession {
 
     // Needed for oAuth 1.0a
     requestTokenSecret?: string;
+
+    // URL to redirect the user at the end of the authorization flow.
+    // URL will contain in query parameters the connection ID, provider config key and connection status.
+    // This can be used in cases where you don't want to follow the frontend flows via websocket communication.
+    finalRedirectUrl: string | undefined;
 }
 
 export interface TemplateOAuth2 extends Template {

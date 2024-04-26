@@ -4,7 +4,7 @@ import * as uuid from 'uuid';
 import { createClient } from 'redis';
 import { getLogger } from '@nangohq/utils';
 import type { WSErr } from '../utils/web-socket-error.js';
-import { errorHtml, successHtml } from '../utils/utils.js';
+import { constructFinalRedirectUrl, errorHtml, successHtml } from '../utils/utils.js';
 import { getRedisUrl } from '@nangohq/shared';
 
 const logger = getLogger('Server.Publisher');
@@ -186,7 +186,8 @@ export class Publisher {
         wsClientId: WebSocketClientId | undefined,
         providerConfigKey: string | undefined,
         connectionId: string | undefined,
-        wsErr: WSErr
+        wsErr: WSErr,
+        finalRedirectUrl: string | undefined
     ) {
         logger.debug(`OAuth flow error for provider config "${providerConfigKey}" and connectionId "${connectionId}": ${wsErr.type} - ${wsErr.message}`);
         if (wsClientId) {
@@ -202,10 +203,13 @@ export class Publisher {
                 await this.unsubscribe(wsClientId);
             }
         }
+        if (typeof finalRedirectUrl === 'string') {
+            return res.redirect(constructFinalRedirectUrl(finalRedirectUrl, { providerConfigKey, connectionId, error: wsErr }));
+        }
         errorHtml(res, wsClientId, wsErr);
     }
 
-    public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string, isPending = false) {
+    public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string, isPending = false, finalRedirectUrl?: string | undefined) {
         if (wsClientId) {
             const data = JSON.stringify({
                 message_type: MessageType.Success,
@@ -217,6 +221,9 @@ export class Publisher {
             if (published) {
                 await this.unsubscribe(wsClientId);
             }
+        }
+        if (typeof finalRedirectUrl === 'string') {
+            return res.redirect(constructFinalRedirectUrl(finalRedirectUrl, { providerConfigKey, connectionId, success: 'success' }));
         }
         successHtml(res, wsClientId, providerConfigKey, connectionId);
     }
