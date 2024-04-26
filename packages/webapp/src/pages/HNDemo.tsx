@@ -3,7 +3,8 @@ import Spinner from '../components/ui/Spinner';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useSignupAPI } from '../utils/api';
 import { useAnalyticsTrack } from '../utils/analytics';
-import { useSignin, type User } from '../utils/user';
+import { useSignin } from '../utils/user';
+import type { User } from '../utils/user';
 
 export const HNDemo: React.FC = () => {
     const [isAnUser, setIsAnUser] = useState<null | boolean>(null);

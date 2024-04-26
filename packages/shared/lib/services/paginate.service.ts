@@ -157,7 +157,7 @@ class PaginationService {
         passPaginationParamsInBody ? (config.data = updatedBodyOrParams) : (config.params = updatedBodyOrParams);
     }
 
-    private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
+    private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse, paginationConfig: Pagination) {
         if (linkPagination.link_rel_in_response_header) {
             const linkHeader = parseLinksHeader(response.headers['link']);
             return linkHeader?.[linkPagination.link_rel_in_response_header]?.url;

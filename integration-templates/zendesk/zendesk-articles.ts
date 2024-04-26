@@ -40,7 +40,7 @@ async function paginate(
     pageSize = 250,
     subdomain: string | undefined
 ): Promise<ResultPage | null> {
-    if (contentPage && contentPage.has_more == false) {
+    if (contentPage && !contentPage.has_more) {
         return null;
     }
 
@@ -48,7 +48,7 @@ async function paginate(
 
     const res = await nango.get({
         baseUrlOverride: `https://${subdomain}.zendesk.com`,
-        endpoint: `${contentPage ? contentPage.nextPageEndpoint : endpoint}`,
+        endpoint: contentPage ? contentPage.nextPageEndpoint : endpoint,
         method: method,
         params: { 'page[size]': `${pageSize}` },
         retries: 10 // Exponential backoff + long-running job = handles rate limits well.

@@ -2,7 +2,7 @@ import knex from 'knex';
 import type { Knex } from 'knex';
 import { retry } from '../utils/retry.js';
 
-export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
+export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
     return {
         client: process.env['NANGO_DB_CLIENT'] || 'pg',
         connection: process.env['NANGO_DATABASE_URL'] || {

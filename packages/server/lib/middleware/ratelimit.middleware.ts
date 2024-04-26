@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { createClient } from 'redis';
-import type { RateLimiterRes } from 'rate-limiter-flexible';
-import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
+import { RateLimiterRes, RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { getAccount, getRedisUrl } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
@@ -43,11 +42,16 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
             setXRateLimitHeaders(rateLimiterRes);
             next();
         })
-        .catch((rateLimiterRes) => {
-            res.setHeader('Retry-After', Math.floor(rateLimiterRes.msBeforeNext / 1000));
-            setXRateLimitHeaders(rateLimiterRes);
-            logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
-            res.status(429).send('Too Many Requests');
+        .catch((rateLimiterRes: unknown) => {
+            if (rateLimiterRes instanceof RateLimiterRes) {
+                res.setHeader('Retry-After', Math.floor(rateLimiterRes.msBeforeNext / 1000));
+                setXRateLimitHeaders(rateLimiterRes);
+                logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
+                res.status(429).send('Too Many Requests');
+                return;
+            }
+
+            res.status(500).send('Too Many Requests');
         });
 };
 
