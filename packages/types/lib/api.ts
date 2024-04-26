@@ -5,7 +5,10 @@ export interface ApiError<TCode extends string> {
     };
 }
 
-export interface Res<
+/**
+ * API Request/Response type
+ */
+export interface Endpoint<
     T extends {
         Params?: Record<string, any>;
         Body?: Record<string, any>;
@@ -16,12 +19,42 @@ export interface Res<
         Success: Record<string, any> | never;
     }
 > {
+    // ------------
+    // ------------ Request
+    /**
+     * URL params
+     */
     Params: T['Params'] extends Record<string, any> ? T['Params'] : never;
-    Success: T['Success'];
-    Errors: T['Error'];
-    Reply: T['Error'] extends ApiError<any> ? T['Error'] | T['Success'] : T['Success'];
-    Body: T['Body'] extends Record<string, any> ? T['Body'] : never;
-    Query: T['Querystring'] extends Record<string, any> ? T['Querystring'] : never;
-    // Querystring + Params
+
+    /**
+     * URL query string
+     */
+    Querystring: T['Querystring'] extends Record<string, any> ? T['Querystring'] : never;
+
+    /**
+     * Helpers: Querystring + Params
+     */
     QP: (T['Params'] extends Record<string, any> ? T['Params'] : never) & (T['Querystring'] extends Record<string, any> ? T['Querystring'] : never);
+
+    /**
+     * Received body
+     */
+    Body: T['Body'] extends Record<string, any> ? T['Body'] : never;
+
+    // ------------
+    // ------------ Response
+    /**
+     * Response body for success
+     */
+    Success: T['Success'];
+
+    /**
+     * Response body for any error
+     */
+    Errors: T['Error'];
+
+    /**
+     * Response body (success + error)
+     */
+    Reply: T['Error'] extends ApiError<any> ? T['Error'] | T['Success'] : T['Success'];
 }
