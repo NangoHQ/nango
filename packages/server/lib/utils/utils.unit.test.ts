@@ -1,5 +1,10 @@
 import { expect, describe, it } from 'vitest';
-import { getConnectionMetadataFromTokenResponse, parseConnectionConfigParamsFromTemplate, getAdditionalAuthorizationParams } from './utils.js';
+import {
+    getConnectionMetadataFromTokenResponse,
+    parseConnectionConfigParamsFromTemplate,
+    getAdditionalAuthorizationParams,
+    constructFinalRedirectUrl
+} from './utils.js';
 import type { Template as ProviderTemplate } from '@nangohq/shared';
 import { AuthModes } from '@nangohq/shared';
 
@@ -221,5 +226,19 @@ describe('Utils unit tests', () => {
         expect(result).toEqual({});
         result = getAdditionalAuthorizationParams(undefined);
         expect(result).toEqual({});
+    });
+
+    it('Should construct final redirect URL', () => {
+        const url = 'https://external-website.com/confirm-connection?externalSession=dummy';
+        const result = constructFinalRedirectUrl(url, { providerConfigKey: 'provider-key', connectionId: 'test-connection-id', error: 'failed' });
+        expect(result).toEqual(
+            'https://external-website.com/confirm-connection?externalSession=dummy&providerConfigKey=provider-key&connectionId=test-connection-id&error=failed'
+        );
+
+        // error can be an object, serialized into JSON
+        const result2 = constructFinalRedirectUrl(url, { providerConfigKey: 'provider-key', connectionId: 'test-connection-id', error: { message: 'failed' } });
+        expect(result2).toEqual(
+            'https://external-website.com/confirm-connection?externalSession=dummy&providerConfigKey=provider-key&connectionId=test-connection-id&error=%7B%22message%22%3A%22failed%22%7D'
+        );
     });
 });

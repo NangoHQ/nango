@@ -187,7 +187,7 @@ export class Publisher {
         providerConfigKey: string | undefined,
         connectionId: string | undefined,
         wsErr: WSErr,
-        finalRedirectUrl: string | undefined
+        finalRedirectUrl?: string | undefined
     ) {
         logger.debug(`OAuth flow error for provider config "${providerConfigKey}" and connectionId "${connectionId}": ${wsErr.type} - ${wsErr.message}`);
         if (wsClientId) {

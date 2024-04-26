@@ -16,6 +16,7 @@ const mockRes = ({ status }: { status: number }) => {
     mock.status = () => status;
     mock.set = vi.fn();
     mock.send = vi.fn();
+    mock.redirect = vi.fn();
     return mock;
 };
 
@@ -107,5 +108,35 @@ describe('Publisher', () => {
         await publisher1.notifyErr(res, wsClientId, 'provider-key', 'connection-id', {} as any);
         expect(ws.send).toHaveBeenCalledTimes(2); // connection_ack + error
         expect(publisher1.unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it('redirects to final redirect URL with error', async () => {
+        const url = 'https://external-website.com/confirm-connection?externalSession=dummy';
+        const res = mockRes({ status: 200 });
+
+        vi.spyOn(publisher1, 'unsubscribe');
+
+        await publisher1.subscribe(ws, wsClientId);
+        await publisher1.notifyErr(res, wsClientId, 'provider-key', 'connection-id', { message: 'failed' } as any, url);
+        expect(ws.send).toHaveBeenCalledTimes(2); // connection_ack + error
+        expect(publisher1.unsubscribe).toHaveBeenCalledTimes(1);
+        expect(res.redirect).toHaveBeenCalledTimes(1);
+        expect(res.redirect).toHaveBeenCalledWith('https://external-website.com/confirm-connection?externalSession=dummy&providerConfigKey=provider-key&connectionId=connection-id&error=%7B%22message%22%3A%22failed%22%7D');
+        expect(res.set).not.toHaveBeenCalled();
+    });
+
+    it('redirects to final redirect URL with success', async () => {
+        const url = 'https://external-website.com/confirm-connection?externalSession=dummy';
+        const res = mockRes({ status: 200 });
+
+        vi.spyOn(publisher1, 'unsubscribe');
+
+        await publisher1.subscribe(ws, wsClientId);
+        await publisher1.notifySuccess(res, wsClientId, 'provider-key', 'connection-id', false, url);
+        expect(ws.send).toHaveBeenCalledTimes(2); // connection_ack + error
+        expect(publisher1.unsubscribe).toHaveBeenCalledTimes(1);
+        expect(res.redirect).toHaveBeenCalledTimes(1);
+        expect(res.redirect).toHaveBeenCalledWith('https://external-website.com/confirm-connection?externalSession=dummy&providerConfigKey=provider-key&connectionId=connection-id&success=success');
+        expect(res.set).not.toHaveBeenCalled();
     });
 });
