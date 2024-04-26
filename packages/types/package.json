@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/types",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "description": "Types used in Nango applications",
     "type": "module",
     "typings": "dist/index.d.ts",
@@ -12,8 +12,6 @@
         "directory": "packages/utils"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
-    "dependencies": {},
-    "devDependencies": {},
     "files": [
         "dist/**/*"
     ]
