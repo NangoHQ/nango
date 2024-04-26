@@ -31,6 +31,6 @@
         "@types/node": "20.12.2",
         "node-fetch": "^3.3.2",
         "typescript": "^5.3.3",
-        "vitest": "1.4.0"
+        "vitest": "0.33.0"
     }
 }

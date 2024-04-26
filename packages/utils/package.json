@@ -22,7 +22,7 @@
     },
     "devDependencies": {
         "rimraf": "3.0.2",
-        "vitest": "1.4.0"
+        "vitest": "0.33.0"
     },
     "files": [
         "dist/**/*"
