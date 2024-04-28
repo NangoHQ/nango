@@ -18,6 +18,7 @@ import compileService from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
 import dryrunService from './services/dryrun.service.js';
 import configService from './services/config.service.js';
+import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
 import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
@@ -156,7 +157,14 @@ program
     .command('migrate-config')
     .description('Migrate the nango.yaml from v1 (deprecated) to v2')
     .action(async function (this: Command) {
-        await verificationService.runMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+        await v1toV2Migration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    });
+
+program
+    .command('migrate-to-directories')
+    .description('Migrate the script files from root level to structured directories.')
+    .action(async function (this: Command) {
+        await directoryMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
     });
 
 // Hidden commands //
