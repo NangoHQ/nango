@@ -19,9 +19,9 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/logs": "file:../logs",
+        "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "@nangohq/records": "file:../records",
         "dd-trace": "5.2.0",
         "express": "^4.19.2",
         "zod": "^3.22.4",

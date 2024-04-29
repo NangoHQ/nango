@@ -1,8 +1,14 @@
+import { envs } from '../env.js';
 import { logger } from '../utils.js';
 import { client } from './client.js';
 import { indices } from './schema.js';
 
 export async function start() {
+    if (!envs.NANGO_LOGS_ENABLED) {
+        logger.warning('OpenSearch is disabled, skipping');
+        return;
+    }
+
     logger.info('🔄 OpenSearch service starting...');
 
     await migrateMapping();
