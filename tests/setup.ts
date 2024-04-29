@@ -23,7 +23,7 @@ export async function setupElasticsearch() {
     process.env['NANGO_LOGS_OS_URL'] = url;
     process.env['NANGO_LOGS_OS_USER'] = '';
     process.env['NANGO_LOGS_OS_PWD'] = '';
-    process.env['NANGO_LOGS_ENABLED'] = 'false';
+    process.env['NANGO_LOGS_ENABLED'] = 'true';
     console.log('OS running at', url);
 }
 
