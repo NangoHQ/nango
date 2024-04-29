@@ -71,6 +71,9 @@ rm packages/utils/package-lock.json
 pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:../utils"
 popd
+pushd "$GIT_ROOT_DIR/packages/utils"
+jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.json
+popd
 npm i
 
 # DEBUG: show changes in CI
