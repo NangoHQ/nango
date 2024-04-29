@@ -5,4 +5,4 @@ const required = isCloud || isLocal;
 
 export const envs = parseEnvs(required ? ENVS.required({ NANGO_LOGS_OS_URL: true, NANGO_LOGS_OS_USER: true, NANGO_LOGS_OS_PWD: true }) : ENVS);
 
-envs.NANGO_LOGS_ENABLED = envs.NANGO_LOGS_ENABLED ? Boolean(envs.NANGO_LOGS_OS_URL && envs.NANGO_LOGS_OS_USER && envs.NANGO_LOGS_OS_PWD) : false;
+envs.NANGO_LOGS_ENABLED = Boolean(envs.NANGO_LOGS_ENABLED && envs.NANGO_LOGS_OS_URL);

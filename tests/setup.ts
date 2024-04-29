@@ -6,20 +6,15 @@ const containers: StartedTestContainer[] = [];
 
 export async function setupElasticsearch() {
     console.log('Starting OpenSearch...');
-    const openSearchPort = 9200;
     const os = await new GenericContainer('opensearchproject/opensearch:2.13.0')
         .withName(`os-test-${randomUUID()}`)
         .withEnvironment({
             'discovery.type': 'single-node',
             DISABLE_INSTALL_DEMO_CONFIG: 'true',
-            DISABLE_SECURITY_PLUGIN: 'true',
-            'http.port': `${openSearchPort}`
+            DISABLE_SECURITY_PLUGIN: 'true'
         })
         .withStartupTimeout(120_000)
-        .withExposedPorts({
-            container: openSearchPort,
-            host: openSearchPort
-        })
+        .withExposedPorts(9200)
         .start();
     containers.push(os);
 
@@ -28,7 +23,8 @@ export async function setupElasticsearch() {
     process.env['NANGO_LOGS_OS_URL'] = url;
     process.env['NANGO_LOGS_OS_USER'] = '';
     process.env['NANGO_LOGS_OS_PWD'] = '';
-    console.log('ES running at', url);
+    process.env['NANGO_LOGS_ENABLED'] = 'false';
+    console.log('OS running at', url);
 }
 
 async function setupPostgres() {
