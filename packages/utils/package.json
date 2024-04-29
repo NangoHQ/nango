@@ -5,6 +5,7 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "private": true,
     "scripts": {},
     "keywords": [],
     "repository": {
@@ -26,6 +27,5 @@
     },
     "files": [
         "dist/**/*"
-    ],
-    "bundleDependencies": true
+    ]
 }
