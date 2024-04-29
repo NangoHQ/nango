@@ -64,6 +64,7 @@ export const ENVS = z.object({
     NANGO_LOGS_OS_PWD: z.string().optional(),
     NANGO_LOGS_ENABLED: bool,
     NANGO_LOGS_OS_INDEX: z.string().optional(),
+    NANGO_LOGS_RETENTION: z.coerce.number().default(1),
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),

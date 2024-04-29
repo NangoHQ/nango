@@ -140,3 +140,20 @@ export async function listMessages(opts: { parentId: MessageRow['parentId']; lim
         })
     };
 }
+
+export async function deleteOldLogs(opts: { days: number }): Promise<{ deleted: number }> {
+    const res = await client.deleteByQuery<{ deleted: number }>({
+        index: indexMessages.index,
+        body: {
+            query: {
+                range: {
+                    createdAt: {
+                        lte: `now-${opts.days}d`
+                    }
+                }
+            }
+        }
+    });
+
+    return { deleted: res.body.deleted };
+}

@@ -6,6 +6,7 @@ export enum Types {
     WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
     RUNNER_SDK = 'nango.runner.sdk',
     JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
+    JOBS_DELETE_OLD_LOGS = 'nango.jobs.cron.deleteOldLogs',
     JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',
     JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',

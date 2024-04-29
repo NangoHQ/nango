@@ -6,6 +6,7 @@ import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { JOBS_PORT } from './constants.js';
+import { cronDeleteOldLogs } from './crons/deleteOldLogs.js';
 
 const logger = getLogger('Jobs');
 
@@ -22,6 +23,7 @@ try {
     cronAutoIdleDemo();
     deleteOldActivityLogs();
     deleteSyncsData();
+    cronDeleteOldLogs();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {
