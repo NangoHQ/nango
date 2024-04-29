@@ -5,6 +5,7 @@
     "type": "module",
     "main": "dist/app.js",
     "typings": "dist/index.d.ts",
+    "private": true,
     "scripts": {
         "start": "node dist/app.js",
         "dev": "nodemon"
@@ -19,7 +20,7 @@
     "dependencies": {
         "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
-        "@nangohq/shared": "^0.39.19",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.2.0",
         "express": "^4.19.2",
