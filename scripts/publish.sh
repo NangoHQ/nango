@@ -65,5 +65,14 @@ pushd "$GIT_ROOT_DIR/packages/webapp"
 npm install @nangohq/frontend@^$VERSION
 popd
 
+# clean up
+rm packages/shared/package-lock.json
+rm packages/utils/package-lock.json
+pushd "$GIT_ROOT_DIR/packages/shared"
+npm install "@nangohq/utils@file:../utils"
+popd
+npm i
+
 # DEBUG: show changes in CI
+git diff --name-only
 git diff
