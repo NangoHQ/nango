@@ -41,6 +41,7 @@ import migrate from './utils/migrate.js';
 import { migrate as migrateRecords } from '@nangohq/records';
 import tracer from 'dd-trace';
 import { start as migrateLogs } from '@nangohq/logs';
+import { listOperations } from './controllers/v1/logs/listOperations.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
@@ -205,6 +206,8 @@ web.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userC
 web.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
 web.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
 web.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibleFilters.bind(activityController));
+
+web.route('/api/v1/logs').get(webAuth, listOperations);
 
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
