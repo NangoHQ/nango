@@ -18,7 +18,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@aws-sdk/client-s3": "3.348.0",
+        "@aws-sdk/client-s3": "3.564.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
         "@nangohq/node": "^0.39.19",
