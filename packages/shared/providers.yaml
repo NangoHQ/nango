@@ -1597,6 +1597,16 @@ personio-recruiting:
                 accept: application/xml
                 content-type: xml
     docs: https://docs.nango.dev/integrations/all/personio
+pingboard:
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://app.pingboard.com/api/v2
+    authorization_url: https://app.pingboard.com/oauth/token
+    authorization_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/pingboard
 pinterest:
     categories:
         - design
