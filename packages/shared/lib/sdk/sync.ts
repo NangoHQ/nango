@@ -264,7 +264,7 @@ interface EnvironmentVariable {
 const MEMOIZED_CONNECTION_TTL = 60000;
 
 export class NangoAction {
-    private nango: Nango;
+    protected nango: Nango;
     private attributes = {};
     activityLogId?: number;
     syncId?: string;
@@ -554,6 +554,9 @@ export class NangoAction {
         const response = await persistApi({
             method: 'POST',
             url: `/environment/${this.environmentId}/log`,
+            headers: {
+                Authorization: `Bearer ${this.nango.secretKey}`
+            },
             data: {
                 activityLogId: this.activityLogId,
                 level: userDefinedLevel?.level ?? 'info',
@@ -731,6 +734,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'POST',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -779,6 +785,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'DELETE',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -827,6 +836,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'PUT',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,

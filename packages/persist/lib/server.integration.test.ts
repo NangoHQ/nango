@@ -1,4 +1,4 @@
-import { expect, describe, it, beforeAll, afterAll } from 'vitest';
+import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
 import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment } from '@nangohq/shared';
@@ -15,6 +15,8 @@ import {
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 
+const mockSecretKey = 'secret-key';
+
 describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
@@ -30,6 +32,13 @@ describe('Persist API', () => {
         await multipleMigrations();
         seed = await initDb();
         server.listen(port);
+
+        vi.spyOn(environmentService, 'getAccountIdAndEnvironmentIdBySecretKey').mockImplementation((secretKey) => {
+            if (secretKey === mockSecretKey) {
+                return Promise.resolve({ accountId: seed.env.account_id, environmentId: seed.env.id });
+            }
+            return Promise.resolve(null);
+        });
     });
 
     afterAll(async () => {
@@ -47,6 +56,7 @@ describe('Persist API', () => {
             method: 'POST',
             body: JSON.stringify({ activityLogId: seed.activityLogId, level: 'info', msg: 'Hello, world!' }),
             headers: {
+                Authorization: `Bearer ${mockSecretKey}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -70,6 +80,7 @@ describe('Persist API', () => {
                         activityLogId: seed.activityLogId
                     }),
                     headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
                         'Content-Type': 'application/json'
                     }
                 }
@@ -115,6 +126,7 @@ describe('Persist API', () => {
                         trackDeletes: false
                     }),
                     headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
                         'Content-Type': 'application/json'
                     }
                 }
@@ -143,6 +155,7 @@ describe('Persist API', () => {
                     trackDeletes: false
                 }),
                 headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
                     'Content-Type': 'application/json'
                 }
             }
@@ -171,11 +184,30 @@ describe('Persist API', () => {
                     softDelete: true
                 }),
                 headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
                     'Content-Type': 'application/json'
                 }
             }
         );
         expect(response.status).toEqual(201);
+    });
+
+    it('should fail if passing incorrect authorization header ', async () => {
+        const recordsUrl = `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records`;
+        const reqs = [`POST ${serverUrl}/environment/${seed.env.id}/log`, `POST ${recordsUrl}`, `PUT ${recordsUrl}`, `DELETE ${recordsUrl}`];
+
+        for (const req of reqs) {
+            const [method, url] = req.split(' ');
+            if (method && url) {
+                const res = await fetch(url, {
+                    method,
+                    headers: { Authorization: `Bearer WRONG_SECRET_KEY` }
+                });
+                expect(res.status).toEqual(401);
+            } else {
+                throw new Error('Invalid request');
+            }
+        }
     });
 });
 
