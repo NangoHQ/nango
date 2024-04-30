@@ -181,7 +181,7 @@ export default class Nango {
             );
             if (options?.detectClosedAuthWindow || false) {
                 this.tm = setInterval(() => {
-                    if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
+                    if (!this.win?.modal.window || this.win.modal.window.closed) {
                         if (this.win?.isProcessingMessage === true) {
                             // Modal is still processing a web socket message from the server
                             // We ignore the window being closed for now
@@ -346,7 +346,7 @@ export default class Nango {
             return res.json();
         }
 
-        return Promise.reject('Something went wrong with the authorization');
+        return Promise.reject(new Error('Something went wrong with the authorization'));
     }
 
     /**
@@ -492,7 +492,7 @@ class AuthorizationModal {
 
         this.swClient = new WebSocket(webSocketUrl);
 
-        this.swClient.onmessage = (message: MessageEvent<any>) => {
+        this.swClient.onmessage = (message: MessageEvent) => {
             this.isProcessingMessage = true;
             this.handleMessage(message, successHandler, errorHandler);
             this.isProcessingMessage = false;
@@ -506,7 +506,7 @@ class AuthorizationModal {
      * @param errorHandler - The error handler function to be called when an error message is received
      */
     handleMessage(
-        message: MessageEvent<any>,
+        message: MessageEvent,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any
     ) {

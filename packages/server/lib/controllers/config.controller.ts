@@ -124,7 +124,7 @@ class ConfigController {
                         authMode: template?.auth_mode || AuthModes.App,
                         uniqueKey: config.unique_key,
                         provider: config.provider,
-                        scripts: activeFlows?.length,
+                        scripts: activeFlows.length,
                         connection_count: connections.filter((connection) => connection.provider === config.unique_key).length,
                         creationDate: config.created_at
                     };
@@ -195,7 +195,7 @@ class ConfigController {
 
             const provider = req.body['provider'];
 
-            const template = await configService.getTemplate(provider as string);
+            const template = configService.getTemplate(provider as string);
             const authMode = template.auth_mode;
 
             if (authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) {
@@ -328,7 +328,7 @@ class ConfigController {
             }
             const { environmentId } = response;
 
-            const providerConfigKey = req.params['providerConfigKey'] as string;
+            const providerConfigKey = req.params['providerConfigKey'] as string | null;
             const includeCreds = req.query['include_creds'] === 'true';
             const includeFlows = req.query['include_flows'] === 'true';
 
@@ -345,7 +345,7 @@ class ConfigController {
                 return;
             }
 
-            const providerTemplate = configService.getTemplate(config?.provider);
+            const providerTemplate = configService.getTemplate(config.provider);
             const authMode = providerTemplate.auth_mode;
 
             let client_secret = config.oauth_client_secret;
@@ -432,7 +432,7 @@ class ConfigController {
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
-            const providerConfigKey = req.params['providerConfigKey'] as string;
+            const providerConfigKey = req.params['providerConfigKey'] as string | null;
             const { environmentId } = response;
 
             if (providerConfigKey == null) {
@@ -471,17 +471,13 @@ class ConfigController {
 
             const result = await configService.createEmptyProviderConfig(provider, environmentId);
 
-            if (result) {
-                void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider });
-                res.status(200).send({
-                    config: {
-                        unique_key: result.unique_key,
-                        provider
-                    }
-                });
-            } else {
-                throw new NangoError('provider_config_creation_failure');
-            }
+            void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider });
+            res.status(200).send({
+                config: {
+                    unique_key: result.unique_key,
+                    provider
+                }
+            });
         } catch (err) {
             next(err);
         }
@@ -636,7 +632,7 @@ class ConfigController {
 
             const provider = req.body['provider'];
 
-            const template = await configService.getTemplate(provider as string);
+            const template = configService.getTemplate(provider as string);
             const authMode = template.auth_mode;
 
             if (authMode === AuthModes.ApiKey || authMode === AuthModes.Basic) {
@@ -720,7 +716,7 @@ class ConfigController {
                 return;
             }
             const { environmentId } = response;
-            const providerConfigKey = req.params['providerConfigKey'] as string;
+            const providerConfigKey = req.params['providerConfigKey'] as string | null;
 
             if (providerConfigKey == null) {
                 errorManager.errRes(res, 'missing_provider_config');

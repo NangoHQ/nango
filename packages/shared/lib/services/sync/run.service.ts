@@ -28,7 +28,7 @@ import * as legacyRecordsService from './data/records.service.js';
 const logger = getLogger('run.service');
 
 interface BigQueryClientInterface {
-    insert(row: RunScriptRow): void;
+    insert(row: RunScriptRow): Promise<void>;
 }
 
 interface RunScriptRow {
@@ -255,7 +255,7 @@ export default class SyncRun {
                 return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
 
-            const secretKey = optionalSecretKey || (environment ? environment?.secret_key : '');
+            const secretKey = optionalSecretKey || (environment ? environment.secret_key : '');
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
@@ -338,13 +338,13 @@ export default class SyncRun {
             const nangoProps = {
                 host: optionalHost || getApiUrl(),
                 accountId: environment?.account_id as number,
-                connectionId: String(this.nangoConnection?.connection_id),
-                environmentId: this.nangoConnection?.environment_id,
-                providerConfigKey: String(this.nangoConnection?.provider_config_key),
+                connectionId: String(this.nangoConnection.connection_id),
+                environmentId: this.nangoConnection.environment_id,
+                providerConfigKey: String(this.nangoConnection.provider_config_key),
                 provider: this.provider as string,
                 activityLogId: this.activityLogId as number,
                 secretKey,
-                nangoConnectionId: this.nangoConnection?.id as number,
+                nangoConnectionId: this.nangoConnection.id as number,
                 syncId: this.syncId,
                 syncJobId: this.syncJobId,
                 lastSyncDate: lastSyncDate as Date,
@@ -400,7 +400,7 @@ export default class SyncRun {
 
                 if (!success || (error && userDefinedResults === null)) {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
-                        syncData?.version ? ` version: ${syncData.version}` : ''
+                        syncData.version ? ` version: ${syncData.version}` : ''
                     }`;
 
                     const runTime = (Date.now() - startTime) / 1000;
@@ -457,7 +457,7 @@ export default class SyncRun {
                 const errorMessage = stringifyError(e, { pretty: true });
                 await this.reportFailureForResults({
                     content: `The ${this.syncType} "${this.syncName}"${
-                        syncData?.version ? ` version: ${syncData?.version}` : ''
+                        syncData.version ? ` version: ${syncData.version}` : ''
                     } sync did not complete successfully and has the following error: ${errorMessage}`,
                     runTime: (Date.now() - startTime) / 1000
                 });
@@ -489,8 +489,8 @@ export default class SyncRun {
                 );
                 this.recordsService
                     .markNonCurrentGenerationRecordsAsDeleted(this.nangoConnection.id as number, model, this.syncId as string, this.syncJobId as number)
-                    .catch((e) => {
-                        logger.error(`Error marking non current generation records as deleted:`, e, {
+                    .catch((err: unknown) => {
+                        logger.error(`Error marking non current generation records as deleted:`, err, {
                             connectionId: this.nangoConnection.id,
                             model,
                             syncId: this.syncId,

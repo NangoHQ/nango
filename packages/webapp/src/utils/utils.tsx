@@ -1,5 +1,6 @@
 import parser from 'cron-parser';
-import { clsx, type ClassValue } from 'clsx';
+import { clsx } from 'clsx';
+import type { ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
 

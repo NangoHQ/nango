@@ -6,7 +6,7 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import { logContextGetter } from '@nangohq/logs';
 
 vi.mock('crypto', async () => {
-    const actualCrypto = await vi.importActual('crypto');
+    const actualCrypto = (await vi.importActual('crypto')) as any;
     return {
         ...actualCrypto,
         timingSafeEqual: () => true

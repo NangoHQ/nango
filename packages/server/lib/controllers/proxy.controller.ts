@@ -35,8 +35,8 @@ import {
     connectionService,
     configService
 } from '@nangohq/shared';
-import type { LogContext } from '@nangohq/logs';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
+import type { LogContext } from '@nangohq/logs';
 
 type ForwardedHeaders = Record<string, string>;
 

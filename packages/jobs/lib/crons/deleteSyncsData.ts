@@ -34,7 +34,7 @@ export async function exec(): Promise<void> {
         // Because it's slow and create deadlocks
         // we need to acquire a Lock that prevents any other duplicate cron to execute the same thing
         const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [123456789]);
-        if (!rows || rows.length <= 0 || rows[0]!.pg_try_advisory_xact_lock === false) {
+        if (!rows || rows.length <= 0 || !rows[0]!.pg_try_advisory_xact_lock) {
             logger.info(`[deleteSyncs] could not acquire lock, skipping`);
             return;
         }

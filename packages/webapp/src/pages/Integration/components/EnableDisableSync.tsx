@@ -230,10 +230,10 @@ export default function EnableDisableSync({
 
     const toggleSync = async (flow: Flow) => {
         if (enabled) {
-            flow?.type === 'sync' ? await disableSync(flow) : await onDisableSync(flow);
+            flow?.type === 'sync' ? disableSync(flow) : await onDisableSync(flow);
             setEnabled(false);
         } else {
-            flow?.type === 'sync' ? await enableSync(flow) : await onEnableSync(flow);
+            flow?.type === 'sync' ? enableSync(flow) : await onEnableSync(flow);
             setEnabled(true);
         }
     };
