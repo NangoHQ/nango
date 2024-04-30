@@ -61,6 +61,11 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
+bland:
+    categories:
+        - support
+    auth_mode: API_KEY
+    docs: https://docs.nango.dev/integrations/all/bland
 algolia:
     categories:
         - search
