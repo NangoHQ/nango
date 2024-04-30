@@ -217,14 +217,14 @@ class FlowController {
 
     public async enableFlow(req: Request, res: Response, next: NextFunction) {
         try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
 
             if (!success || response === null) {
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
 
-            const { environmentId } = response;
+            const { account, environment } = response;
 
             const id = req.params['id'];
             const flow = req.body;
@@ -234,9 +234,18 @@ class FlowController {
                 return;
             }
 
+            if (account.is_capped && flow?.providerConfigKey) {
+                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: flow?.providerConfigKey, environmentId: environment.id });
+
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
+                    return;
+                }
+            }
+
             await enableConfig(Number(id));
 
-            await syncOrchestrator.triggerIfConnectionsExist([flow], environmentId, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter);
 
             res.status(200).send([{ ...flow, enabled: true }]);
         } catch (e) {

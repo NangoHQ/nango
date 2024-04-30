@@ -16,15 +16,18 @@ import { resultOk, resultErr, type Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
+import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 
 const logger = getLogger('hooks');
 
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
-    environmentId
+    environmentId,
+    creationType
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
+    creationType: string;
 }): Promise<boolean> => {
     if (!providerConfigKey) {
         return false;
@@ -38,6 +41,9 @@ export const connectionCreationStartCapCheck = async ({
 
             if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
                 logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+                const analyticsType =
+                    creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
+                void analytics.trackByEnvironmentId(analyticsType, environmentId);
                 return true;
             }
         }
