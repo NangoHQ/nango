@@ -154,6 +154,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
             const rendered = ejs.render(ejsTemplateContents, {
                 syncName: flowNameCamel,
+                interfacePath: layout_mode === 'root' ? './' : '../../',
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames,
                 mappings,
@@ -164,7 +165,17 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             const stripped = rendered.replace(/^\s+/, '');
 
             if (!fs.existsSync(`${dirPrefix}/${name}.ts`) && !fs.existsSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`)) {
-                fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
+                if (layout_mode === 'root') {
+                    fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
+                } else {
+                    if (!fs.existsSync(`${dirPrefix}/${providerConfigKey}`)) {
+                        fs.mkdirSync(`${dirPrefix}/${providerConfigKey}`);
+                    }
+                    if (!fs.existsSync(`${dirPrefix}/${providerConfigKey}/${type}s`)) {
+                        fs.mkdirSync(`${dirPrefix}/${providerConfigKey}/${type}s`);
+                    }
+                    fs.writeFileSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
+                }
                 if (debug) {
                     printDebug(`Created ${name}.ts file`);
                 }
