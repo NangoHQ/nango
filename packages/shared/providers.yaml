@@ -1633,6 +1633,18 @@ pipedrive:
             response_path: data
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/pipedrive
+pivotaltracker:
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            X-TrackerToken: ${apiKey}
+        base_url: https://www.pivotaltracker.com/services/v5
+        verification:
+            method: GET
+            endpoint: /accounts
+    docs: https://docs.nango.dev/integrations/all/pivotaltracker
 qualtrics:
     categories:
         - surveys
