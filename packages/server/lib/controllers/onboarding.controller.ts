@@ -35,17 +35,9 @@ import type { Result } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
+import type { GetOnboardingStatus } from '@nangohq/types';
 
 const logger = getLogger('Server.Onboarding');
-
-interface OnboardingStatus {
-    id: number;
-    progress: number;
-    records: CustomerFacingDataRecord[] | null;
-    provider: boolean;
-    connection: boolean;
-    sync: boolean;
-}
 
 class OnboardingController {
     /**
@@ -102,7 +94,7 @@ class OnboardingController {
      * So we check if each step has been correctly achieved.
      * This is particularly useful if we retry, if some parts have failed or if the user has deleted part of the state
      */
-    async status(req: Request, res: Response, next: NextFunction) {
+    async status(req: Request, res: Response<GetOnboardingStatus['Reply']>, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -112,17 +104,17 @@ class OnboardingController {
 
             const { user, environment } = response;
             if (environment.name !== 'dev') {
-                res.status(400).json({ message: 'onboarding_dev_only' });
+                res.status(400).json({ error: { code: 'onboarding_dev_only' } });
                 return;
             }
 
             const status = await getOnboardingProgress(user.id);
             if (!status) {
-                res.status(404).send({ message: 'no_onboarding' });
+                res.status(404).send({ error: { code: 'no_onboarding' } });
                 return;
             }
 
-            const payload: OnboardingStatus = {
+            const payload: GetOnboardingStatus['Success'] = {
                 id: status.id,
                 progress: status.progress,
                 connection: false,
@@ -132,7 +124,7 @@ class OnboardingController {
             };
             const { connection_id: connectionId } = req.query;
             if (!connectionId || typeof connectionId !== 'string') {
-                res.status(400).json({ message: 'connection_id must be a string' });
+                res.status(400).json({ error: { code: 'invalid_query_params' } });
                 return;
             }
 
@@ -180,7 +172,7 @@ class OnboardingController {
             }
 
             if (isErr(getRecords)) {
-                res.status(400).json({ message: 'failed_to_get_records' });
+                res.status(400).json({ error: { code: 'failed_to_get_records' } });
                 return;
             } else {
                 payload.records = getRecords.res;

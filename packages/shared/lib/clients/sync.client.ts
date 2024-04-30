@@ -134,6 +134,9 @@ class SyncClient {
         for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
+            if (!syncData.enabled) {
+                continue;
+            }
             const sync = await createSync(nangoConnectionId, syncName);
 
             if (sync) {

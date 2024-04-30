@@ -185,7 +185,8 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 version: syncConfig.version as string,
                 pre_built: syncConfig.pre_built as boolean,
                 is_public: syncConfig.is_public as boolean,
-                metadata: syncConfig.metadata as NangoConfigMetadata
+                metadata: syncConfig.metadata as NangoConfigMetadata,
+                enabled: syncConfig.enabled
             };
 
             nangoConfig.integrations[key] = providerConfig;
