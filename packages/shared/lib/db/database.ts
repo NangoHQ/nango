@@ -1,6 +1,6 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { retry } from '../utils/retry.js';
+import { retry } from '@nangohq/utils';
 
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
     return {
@@ -34,7 +34,8 @@ export class KnexDatabase {
     async migrate(directory: string): Promise<any> {
         return retry(async () => await this.knex.migrate.latest({ directory: directory, tableName: '_nango_auth_migrations', schemaName: this.schema() }), {
             maxAttempts: 4,
-            delayMs: (attempt) => 500 * attempt
+            delayMs: (attempt) => 500 * attempt,
+            retryIf: () => true
         });
     }
 
