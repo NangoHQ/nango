@@ -1,0 +1,18 @@
+{
+    "name": "@nangohq/types",
+    "version": "0.39.18",
+    "description": "Types used in Nango applications",
+    "type": "module",
+    "typings": "dist/index.d.ts",
+    "scripts": {},
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/utils"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "files": [
+        "dist/**/*"
+    ]
+}

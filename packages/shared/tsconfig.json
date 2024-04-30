@@ -12,6 +12,9 @@
             "path": "../node-client"
         },
         {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         },
         {

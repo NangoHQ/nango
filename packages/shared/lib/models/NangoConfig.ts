@@ -18,6 +18,7 @@ export interface NangoIntegrationDataV1 {
     is_public?: boolean;
     endpoint?: string | string[];
     nango_yaml_version?: string;
+    enabled?: boolean;
 }
 
 export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
@@ -28,7 +29,6 @@ export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
     scopes?: string[];
     output?: string | string[];
     id?: number;
-    enabled?: boolean;
 }
 
 export interface NangoIntegrationV1 {
