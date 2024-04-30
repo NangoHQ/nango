@@ -7,6 +7,8 @@ import persistController from './controllers/persist.controller.js';
 import { logLevelValues } from '@nangohq/shared';
 
 const logger = getLogger('Persist');
+const maxSizeJsonLog = '100kb';
+const maxSizeJsonRecords = '100mb';
 
 export const server = express();
 
@@ -31,7 +33,7 @@ server.get('/health', (_req: Request, res: Response) => {
 
 server.post(
     '/environment/:environmentId/log',
-    express.json({ limit: '100kb' }),
+    express.json({ limit: maxSizeJsonLog }),
     validateRequest({
         params: z.object({
             environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
@@ -61,9 +63,9 @@ const validateRecordsRequest = validateRequest({
     })
 });
 const recordPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
-server.post(recordPath, express.json({ limit: '100mb' }), validateRecordsRequest, persistController.saveRecords.bind(persistController));
-server.delete(recordPath, express.json({ limit: '100mb' }), validateRecordsRequest, persistController.deleteRecords.bind(persistController));
-server.put(recordPath, express.json({ limit: '100mb' }), validateRecordsRequest, persistController.updateRecords.bind(persistController));
+server.post(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.saveRecords.bind(persistController));
+server.delete(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.deleteRecords.bind(persistController));
+server.put(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.updateRecords.bind(persistController));
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);
