@@ -164,7 +164,8 @@ program
     .command('migrate-to-directories')
     .description('Migrate the script files from root level to structured directories.')
     .action(async function (this: Command) {
-        await directoryMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+        const { debug } = this.opts();
+        await directoryMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION), debug);
     });
 
 // Hidden commands //

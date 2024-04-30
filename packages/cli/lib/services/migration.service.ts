@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { exec } from 'child_process';
 
 import { nangoConfigFile, loadLocalNangoConfig, determineVersion } from '@nangohq/shared';
-import { getNangoRootPath } from '../utils.js';
+import { printDebug, getNangoRootPath } from '../utils.js';
 
 export const v1toV2Migration = async (loadLocation: string): Promise<void> => {
     if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
@@ -32,25 +32,29 @@ export const v1toV2Migration = async (loadLocation: string): Promise<void> => {
     }
 };
 
-async function createDirectory(dirPath: string): Promise<void> {
+async function createDirectory(dirPath: string, debug = false): Promise<void> {
     if (fs.existsSync(dirPath)) {
         return;
     }
     try {
         await fs.promises.mkdir(dirPath, { recursive: true });
-        console.log(chalk.green(`Created directory at ${dirPath}.`));
+        if (debug) {
+            printDebug(`Created directory at ${dirPath}.`);
+        }
     } catch (error) {
         console.error(chalk.red(`There was an issue creating the directory at ${dirPath}.`), error);
     }
 }
 
-async function moveFile(source: string, destination: string): Promise<boolean> {
+async function moveFile(source: string, destination: string, debug = false): Promise<boolean> {
     if (fs.existsSync(destination)) {
         return false;
     }
     try {
         await fs.promises.rename(source, destination);
-        console.log(chalk.green(`Moved file from ${source} to ${destination}.`));
+        if (debug) {
+            printDebug(`Moved file from ${source} to ${destination}.`);
+        }
 
         return true;
     } catch (error) {
@@ -60,18 +64,20 @@ async function moveFile(source: string, destination: string): Promise<boolean> {
     return false;
 }
 
-async function updateModelImport(filePath: string): Promise<void> {
+async function updateModelImport(filePath: string, debug = false): Promise<void> {
     try {
         const data = await fs.promises.readFile(filePath, 'utf8');
         const updatedData = data.replace(/from '\.\/models/, "from '../../models");
         await fs.promises.writeFile(filePath, updatedData, 'utf8');
-        console.log(chalk.green(`Updated imports in ${filePath}.`));
+        if (debug) {
+            printDebug(`Updated imports in ${filePath}.`);
+        }
     } catch (error) {
         console.error(chalk.red(`There was an issue updating the imports in ${filePath}.`), error);
     }
 }
 
-export const directoryMigration = async (loadLocation: string): Promise<void> => {
+export const directoryMigration = async (loadLocation: string, debug?: boolean): Promise<void> => {
     const localConfig = await loadLocalNangoConfig(loadLocation);
 
     if (!localConfig) {
@@ -87,32 +93,34 @@ export const directoryMigration = async (loadLocation: string): Promise<void> =>
 
     for (const integration of Object.keys(localConfig.integrations)) {
         const integrationPath = `${loadLocation}/${integration}`;
-        await createDirectory(integrationPath);
+        await createDirectory(integrationPath, debug);
 
         const scripts = localConfig.integrations[integration];
 
         if (scripts?.syncs) {
             const syncsPath: string = path.join(integrationPath, 'syncs');
-            await createDirectory(syncsPath);
+            await createDirectory(syncsPath, debug);
             for (const sync of Object.keys(scripts.syncs)) {
                 const syncPath: string = path.join(syncsPath, `${sync}.ts`);
-                const moved = await moveFile(path.join(loadLocation, `${sync}.ts`), syncPath);
+                const moved = await moveFile(path.join(loadLocation, `${sync}.ts`), syncPath, debug);
                 if (moved) {
-                    await updateModelImport(syncPath);
+                    await updateModelImport(syncPath, debug);
                 }
             }
         }
 
         if (scripts?.actions) {
             const actionsPath: string = path.join(integrationPath, 'actions');
-            await createDirectory(actionsPath);
+            await createDirectory(actionsPath, debug);
             for (const action of Object.keys(scripts.actions)) {
                 const actionPath: string = path.join(actionsPath, `${action}.ts`);
-                const moved = await moveFile(path.join(loadLocation, `${action}.ts`), actionPath);
+                const moved = await moveFile(path.join(loadLocation, `${action}.ts`), actionPath, debug);
                 if (moved) {
-                    await updateModelImport(actionPath);
+                    await updateModelImport(actionPath, debug);
                 }
             }
         }
     }
+
+    console.log(chalk.green(`Migration to nested directories complete.`));
 };
