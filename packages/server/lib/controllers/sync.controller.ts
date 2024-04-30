@@ -47,7 +47,8 @@ import {
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import { isErr, isOk } from '@nangohq/utils';
-import { records as recordsService, type LastAction } from '@nangohq/records';
+import type { LastAction } from '@nangohq/records';
+import { records as recordsService } from '@nangohq/records';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
