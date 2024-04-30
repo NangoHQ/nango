@@ -160,6 +160,7 @@ class SyncClient {
         debug = false
     ): Promise<void> {
         let logCtx: LogContext | undefined;
+
         try {
             const activityLogId = await createActivityLog({
                 level: 'info' as LogLevel,

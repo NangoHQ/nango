@@ -490,13 +490,16 @@ class SyncController {
             });
 
             if (isOk(actionResponse)) {
-                res.send(actionResponse.res);
                 span.finish();
+                await logCtx.success();
+                res.send(actionResponse.res);
 
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.err);
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.error('Failed to trigger action', { err: actionResponse.err });
+                await logCtx.failed();
                 span.finish();
 
                 return;
@@ -505,7 +508,7 @@ class SyncController {
             span.setTag('nango.error', err);
             span.finish();
             if (logCtx) {
-                await logCtx.error('uncaught error', { error: err });
+                await logCtx.error('Failed to trigger action', { error: err });
                 await logCtx.failed();
             }
 
@@ -675,6 +678,7 @@ class SyncController {
 
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
         let logCtx: LogContext | undefined;
+
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -797,7 +801,7 @@ class SyncController {
             res.sendStatus(200);
         } catch (err) {
             if (logCtx) {
-                await logCtx.error('uncaught error', { error: err });
+                await logCtx.error('Failed to sync command', { error: err });
                 await logCtx.failed();
             }
             next(err);

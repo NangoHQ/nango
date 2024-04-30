@@ -471,6 +471,7 @@ class OnboardingController {
             if (isErr(actionResponse)) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.error('Failed to trigger action', { error: actionResponse.err });
                 await logCtx.failed();
                 return;
             }
@@ -480,7 +481,7 @@ class OnboardingController {
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {
             if (logCtx) {
-                await logCtx.error('uncaught error', { error: err });
+                await logCtx.error('Failed to trigger action', { error: err });
                 await logCtx.failed();
             }
             next(err);
