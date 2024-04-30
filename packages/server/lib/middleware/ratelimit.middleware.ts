@@ -51,7 +51,7 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
                 return;
             }
 
-            res.status(500).send('Too Many Requests');
+            res.status(500).send('Server error');
         });
 };
 
