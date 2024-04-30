@@ -19,7 +19,19 @@ All your integrations live in a folder called `nango-integrations`. Whether loca
 
 To initialize your integrations folder (e.g. at the root of your repository), run:
 ```bash
-nango init # Creates `./nango-integrations` folder with some initial configuration
+nango init
+```
+
+This `./nango-integrations` folder with some initial configuration and an example
+sync script with the following structure:
+```
+nango-integrations/
+├── .env
+├── nango.yaml
+├── models.ts
+└── demo-github-integration
+    └── syncs/
+        └── github-issue-example.ts
 ```
 
 # Authenticate the CLI

@@ -67,7 +67,7 @@ Sync executions are driven by [integration scripts](/understand/concepts/scripts
 Sync scripts have the following structure:
 
 ```typescript
-import type { NangoSync, ResponseModel } from './models';
+import type { NangoSync, ResponseModel } from '../../models';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const records: ResponseModel[] = [];
