@@ -14,8 +14,10 @@ import { decryptRecord, decryptRecords, encryptRecords } from '../utils/encrypti
 import { RECORDS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
-import { resultErr, resultOk, type Result } from '@nangohq/utils';
+import { resultErr, resultOk } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
+import { retry } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -197,18 +199,32 @@ export async function upsert(records: FormattedRecord[], connectionId: number, m
 
     let summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
     try {
-        await db.transaction(async (trx) => {
-            for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
-                const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
-                const chunkSummary = await getUpsertSummary(chunk, connectionId, model, nonUniqueKeys, softDelete, trx);
-                summary = {
-                    addedKeys: [...summary.addedKeys, ...chunkSummary.addedKeys],
-                    updatedKeys: [...summary.updatedKeys, ...chunkSummary.updatedKeys],
-                    deletedKeys: [...(summary.deletedKeys || []), ...(chunkSummary.deletedKeys || [])],
-                    nonUniqueKeys: nonUniqueKeys
-                };
-                const encryptedRecords = encryptRecords(chunk);
-                await trx.from<FormattedRecord>(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
+        const upserting = async () =>
+            await db.transaction(async (trx) => {
+                for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
+                    const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
+                    const chunkSummary = await getUpsertSummary(chunk, connectionId, model, nonUniqueKeys, softDelete, trx);
+                    summary = {
+                        addedKeys: [...summary.addedKeys, ...chunkSummary.addedKeys],
+                        updatedKeys: [...summary.updatedKeys, ...chunkSummary.updatedKeys],
+                        deletedKeys: [...(summary.deletedKeys || []), ...(chunkSummary.deletedKeys || [])],
+                        nonUniqueKeys: nonUniqueKeys
+                    };
+                    const encryptedRecords = encryptRecords(chunk);
+                    await trx.from<FormattedRecord>(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
+                }
+            });
+        // Retry upserting if deadlock detected
+        // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
+        await retry(upserting, {
+            maxAttempts: 3,
+            delayMs: 500,
+            retryIf: (error) => {
+                if ('code' in error) {
+                    const errorCode = (error as { code: string }).code;
+                    return errorCode === '40P01'; // deadlock_detected                    }
+                }
+                return false;
             }
         });
 

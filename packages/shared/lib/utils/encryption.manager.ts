@@ -317,7 +317,7 @@ class EncryptionManager extends Encryption {
         const encryptionKeyHash = this.key ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
         const isEncryptionKeyNew = dbConfig == null && this.key;
-        const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && dbConfig.encryption_complete == false;
+        const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && !dbConfig.encryption_complete;
 
         if (isEncryptionKeyNew || isEncryptionIncomplete) {
             if (isEncryptionKeyNew) {

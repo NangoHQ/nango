@@ -101,7 +101,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         for (const flow of [...syncs, ...actions]) {
             const { name, type, returns: models, layout_mode } = flow;
             let { input } = flow;
-            const uniqueName = layout_mode === 'root' ? `${name}` : `${providerConfigKey}-${name}`;
+            const uniqueName = layout_mode === 'root' ? name : `${providerConfigKey}-${name}`;
 
             if (allSyncNames[uniqueName] === undefined) {
                 // a sync and an action within the same provider cannot have the same name

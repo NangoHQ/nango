@@ -14,9 +14,9 @@ import type {
     NangoSyncModel,
     NangoV2Integration,
     NangoSyncEndpoint,
-    NangoIntegrationDataV2
+    NangoIntegrationDataV2,
+    LayoutMode
 } from '../models/NangoConfig.js';
-import type { LayoutMode } from '../models/NangoConfig.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';

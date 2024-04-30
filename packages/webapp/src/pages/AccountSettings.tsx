@@ -95,7 +95,7 @@ export default function AccountSettings() {
 
         setVisible(false);
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             toast.success('Member suspended!', { position: toast.POSITION.BOTTOM_CENTER });
             setMembers(members.filter((m) => m.id !== pendingSuspendMember.id));
         }
@@ -120,7 +120,7 @@ export default function AccountSettings() {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             toast.success('Member invited!', { position: toast.POSITION.BOTTOM_CENTER });
             setInvitedMembers([...invitedMembers, await res.json()]);
             setInviteVisible(false);
@@ -132,7 +132,7 @@ export default function AccountSettings() {
 
     const handleSubmit = () => {
         if (formRef.current) {
-            const submitButton = formRef.current?.querySelector('button[type="submit"]');
+            const submitButton = formRef.current.querySelector('button[type="submit"]');
             if (submitButton) {
                 (submitButton as HTMLElement).click();
             }
