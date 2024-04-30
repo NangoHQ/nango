@@ -39,13 +39,10 @@ async function createDirectory(dirPath: string, debug = false): Promise<void> {
         }
         return;
     }
-    try {
-        await fs.promises.mkdir(dirPath, { recursive: true });
-        if (debug) {
-            printDebug(`Created directory at ${dirPath}.`);
-        }
-    } catch (error) {
-        console.error(chalk.red(`There was an issue creating the directory at ${dirPath}.`), error);
+
+    await fs.promises.mkdir(dirPath, { recursive: true });
+    if (debug) {
+        printDebug(`Created directory at ${dirPath}.`);
     }
 }
 
@@ -56,18 +53,13 @@ async function moveFile(source: string, destination: string, debug = false): Pro
         }
         return false;
     }
-    try {
-        await fs.promises.rename(source, destination);
-        if (debug) {
-            printDebug(`Moved file from ${source} to ${destination}.`);
-        }
 
-        return true;
-    } catch (error) {
-        console.error(chalk.red(`There was an issue moving the file from ${source} to ${destination}.`), error);
+    await fs.promises.rename(source, destination);
+    if (debug) {
+        printDebug(`Moved file from ${source} to ${destination}.`);
     }
 
-    return false;
+    return true;
 }
 
 async function updateModelImport(filePath: string, debug = false): Promise<void> {
