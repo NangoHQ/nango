@@ -27,7 +27,7 @@ export async function migrateMapping() {
         );
     } catch (err) {
         logger.error(err);
-        //throw new Error('failed_to_init_opensearch');
+        throw new Error('failed_to_init_opensearch');
     }
 }
 
