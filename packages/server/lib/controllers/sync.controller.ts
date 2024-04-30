@@ -706,9 +706,12 @@ class SyncController {
                 operation_name: sync_name
             };
             const activityLogId = await createActivityLog(log);
-            // TODO: message
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] },
+                    message: `Trigger ${command}`
+                },
                 { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name }, connection: { id: connection!.id! } }
             );
 

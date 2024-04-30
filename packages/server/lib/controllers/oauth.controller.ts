@@ -31,10 +31,8 @@ import {
     createActivityLogMessage,
     updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
-    findActivityLogBySession,
     updateProviderConfigAndConnectionId as updateProviderConfigAndConnectionIdActivityLog,
     AuthOperation,
-    updateSessionId as updateSessionIdActivityLog,
     addEndTime as addEndTimeActivityLog,
     LogActionEnum,
     configService,
@@ -234,15 +232,13 @@ class OAuthController {
                 id: uuid.v1(),
                 connectionConfig,
                 environmentId,
-                webSocketClientId: wsClientId
+                webSocketClientId: wsClientId,
+                activityLogId: String(activityLogId)
             };
 
             if (userScope) {
                 session.connectionConfig['user_scope'] = userScope;
             }
-
-            await updateSessionIdActivityLog(activityLogId as number, session.id);
-            // TODO: handle that
 
             // certain providers need the credentials to be specified in the config
             if (overrideCredentials) {
@@ -1048,21 +1044,20 @@ class OAuthController {
             await oAuthSessionService.delete(state as string);
         }
 
-        const activityLogId = await findActivityLogBySession(session.id);
-        // TODO: fix this
-        const logCtx = logContextGetter.get({ id: String(activityLogId) });
+        const activityLogId = Number(session.activityLogId);
+        const logCtx = logContextGetter.get({ id: session.activityLogId });
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
-        await updateProviderConfigAndConnectionIdActivityLog(activityLogId as number, providerConfigKey, connectionId);
-
         try {
+            await updateProviderConfigAndConnectionIdActivityLog(activityLogId, providerConfigKey, connectionId);
+
             await createActivityLogMessage({
                 level: 'debug',
                 environment_id: session.environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 content: `Received callback from ${session.providerConfigKey} for connection ${session.connectionId}`,
                 state: state as string,
                 timestamp: Date.now(),
@@ -1075,16 +1070,16 @@ class OAuthController {
             await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             if (session.authMode === ProviderAuthModes.OAuth2 || session.authMode === ProviderAuthModes.Custom) {
-                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId!, session.environmentId, logCtx);
+                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId, session.environmentId, logCtx);
             } else if (session.authMode === ProviderAuthModes.OAuth1) {
-                return this.oauth1Callback(template, config, session, req, res, activityLogId!, session.environmentId, logCtx);
+                return this.oauth1Callback(template, config, session, req, res, activityLogId, session.environmentId, logCtx);
             }
 
             const error = WSErrBuilder.UnknownAuthMode(session.authMode);
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: session.environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 content: error.message,
                 state: state as string,
                 timestamp: Date.now(),
@@ -1111,7 +1106,7 @@ class OAuthController {
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: session.environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 content,
                 timestamp: Date.now(),
                 params: {
