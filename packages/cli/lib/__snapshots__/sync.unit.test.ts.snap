@@ -123,7 +123,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         },
         "is_public": false,
         "last_deployed": null,
-        "layout_mode": "root",
+        "layout_mode": "nested",
         "models": [
           {
             "fields": [
@@ -246,7 +246,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         },
         "is_public": false,
         "last_deployed": null,
-        "layout_mode": "root",
+        "layout_mode": "nested",
         "models": [
           {
             "fields": [
@@ -289,7 +289,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         },
         "is_public": false,
         "last_deployed": null,
-        "layout_mode": "root",
+        "layout_mode": "nested",
         "models": [
           {
             "fields": null,
@@ -325,7 +325,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "input": {},
         "is_public": false,
         "last_deployed": null,
-        "layout_mode": "root",
+        "layout_mode": "nested",
         "models": [
           {
             "fields": [
@@ -409,7 +409,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "input": {},
         "is_public": false,
         "last_deployed": null,
-        "layout_mode": "root",
+        "layout_mode": "nested",
         "models": [
           {
             "fields": [
@@ -493,7 +493,7 @@ exports[`generate function tests > should parse a nango.yaml file that is versio
         "input": {},
         "is_public": false,
         "last_deployed": null,
-        "layout_mode": "root",
+        "layout_mode": "nested",
         "models": [
           {
             "fields": [
