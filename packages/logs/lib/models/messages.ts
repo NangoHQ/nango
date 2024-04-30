@@ -1,10 +1,11 @@
 import { client } from '../es/client.js';
-import type { MessageRow } from '../types/messages.js';
+import type { MessageRow, OperationRow } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
+import type { opensearchtypes } from '@opensearch-project/opensearch';
 
 export interface ListOperations {
     count: number;
-    items: MessageRow[];
+    items: OperationRow[];
 }
 export interface ListMessages {
     count: number;
@@ -26,19 +27,24 @@ export async function createMessage(row: MessageRow): Promise<void> {
 /**
  * List operations
  */
-export async function listOperations(opts: { limit: number }): Promise<ListOperations> {
+export async function listOperations(opts: { accountId: number; environmentId?: number; limit: number }): Promise<ListOperations> {
+    const q: opensearchtypes.QueryDslQueryContainer = {
+        bool: {
+            must: [{ term: { accountId: opts.accountId } }],
+            must_not: { exists: { field: 'parentId' } },
+            should: []
+        }
+    };
+    if (opts.environmentId && Array.isArray(q.bool?.must)) {
+        q.bool.must.push({ term: { environmentId: opts.environmentId } });
+    }
+
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
-        body: {
-            query: {
-                bool: {
-                    must_not: [{ exists: { field: 'parentId' } }]
-                }
-            }
-        }
+        body: { query: q }
     });
     const hits = res.body.hits;
 

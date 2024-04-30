@@ -234,6 +234,12 @@ if (!isCloud && !isEnterprise) {
     });
 }
 
+// -------
+// 404
+web.use('/api/*', (_req: Request, res: Response) => {
+    res.status(404).json({ error: { code: 'not_found' } });
+});
+
 app.use(web);
 
 // -------
@@ -246,12 +252,6 @@ staticSite.get('*', (_, res) => {
     res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
 });
 app.use(staticSite);
-
-// -------
-// 404
-app.use('*', (_req: Request, res: Response) => {
-    res.status(404).json({ error: { code: 'not_found' } });
-});
 
 // -------
 // Error handling.

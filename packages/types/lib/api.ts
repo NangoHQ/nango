@@ -1,11 +1,17 @@
-export interface ApiError<TCode extends string> {
+export interface ApiError<TCode extends string, TErrors = undefined> {
     error: {
         code: TCode;
         message?: string | undefined;
+        errors?: TErrors;
     };
 }
+export interface ValidationError {
+    code: string;
+    message: string;
+    path: (string | number)[];
+}
 
-export type ResErrors = ApiError<'invalid_query_params'>;
+export type ResDefaultErrors = ApiError<'not_found'> | ApiError<'invalid_query_params', ValidationError[]> | ApiError<'invalid_body', ValidationError[]>;
 
 /**
  * API Request/Response type
@@ -58,5 +64,5 @@ export interface Endpoint<
     /**
      * Response body (success + error)
      */
-    Reply: T['Error'] extends ApiError<any> ? T['Error'] | T['Success'] : T['Success'];
+    Reply: ResDefaultErrors | (T['Error'] extends ApiError<any> ? T['Error'] | T['Success'] : T['Success']);
 }
