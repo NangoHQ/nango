@@ -12,7 +12,7 @@ import TagsInput from '../../components/ui/input/TagsInput';
 
 interface AuthorizationProps {
     connection: Connection | null;
-    forceRefresh: () => void;
+    forceRefresh: () => Promise<void>;
     loaded: boolean;
     syncLoaded: boolean;
 }

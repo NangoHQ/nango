@@ -30,12 +30,12 @@ export function useSignout() {
     const { mutate } = useSWRConfig();
     const logoutAPI = useLogoutAPI();
 
-    return () => {
+    return async () => {
         storage.clear();
         analyticsReset();
-        void logoutAPI(); // Destroy server session.
+        await logoutAPI(); // Destroy server session.
 
-        void mutate(() => true, undefined, { revalidate: false }); // clean all cache
+        await mutate(() => true, undefined, { revalidate: false }); // clean all cache
         nav('/signin', { replace: true });
     };
 }

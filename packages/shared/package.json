@@ -76,7 +76,7 @@
         "@types/parse-link-header": "^2.0.0",
         "@types/uuid": "^9.0.0",
         "typescript": "^5.3.3",
-        "vitest": "1.4.0"
+        "vitest": "0.33.0"
     },
     "files": [
         "dist/**/*",

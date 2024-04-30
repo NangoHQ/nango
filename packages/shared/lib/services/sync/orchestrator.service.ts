@@ -359,7 +359,7 @@ export class Orchestrator {
                 }
 
                 const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
-                const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -375,7 +375,7 @@ export class Orchestrator {
 
             for (const sync of syncs) {
                 const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
-                const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);
             }

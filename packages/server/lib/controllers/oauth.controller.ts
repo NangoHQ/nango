@@ -266,7 +266,7 @@ class OAuthController {
 
             if (
                 template.auth_mode !== ProviderAuthModes.App &&
-                (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null)
+                (config.oauth_client_id == null || config.oauth_client_secret == null || config.oauth_scopes == null)
             ) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 await createActivityLogMessageAndEnd({
@@ -457,7 +457,7 @@ class OAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== ProviderAuthModes.OAuth2CC) {
                 await createActivityLogMessageAndEnd({
@@ -465,7 +465,7 @@ class OAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Provider ${config?.provider} does not support oauth2 client credentials creation`
+                    content: `Provider ${config.provider} does not support oauth2 client credentials creation`
                 });
                 await logCtx.error('Provider does not support OAuth2 client credentials creation', { provider: config.provider });
                 await logCtx.failed();
@@ -530,7 +530,7 @@ class OAuthController {
                         auth_mode: ProviderAuthModes.None,
                         operation: updatedConnection.operation
                     },
-                    config?.provider,
+                    config.provider,
                     logContextGetter,
                     activityLogId,
                     undefined,
@@ -1149,13 +1149,13 @@ class OAuthController {
                 params: {
                     scopes: config.oauth_scopes,
                     basic_auth_enabled: template.token_request_auth_method === 'basic',
-                    token_params: template?.token_params as string
+                    token_params: template.token_params as string
                 }
             });
             await logCtx.error(error.message, {
                 scopes: config.oauth_scopes,
                 basicAuthEnabled: template.token_request_auth_method === 'basic',
-                tokenParams: template?.token_params as string
+                tokenParams: template.token_params as string
             });
             await logCtx.failed();
 
@@ -1257,7 +1257,7 @@ class OAuthController {
                     code: code as string,
                     scopes: config.oauth_scopes,
                     basic_auth_enabled: template.token_request_auth_method === 'basic',
-                    token_params: template?.token_params as string
+                    token_params: template.token_params as string
                 }
             });
             await logCtx.info('Initiating token request', {
@@ -1268,7 +1268,7 @@ class OAuthController {
                 code,
                 scopes: config.oauth_scopes,
                 basicAuthEnabled: template.token_request_auth_method === 'basic',
-                tokenParams: template?.token_params
+                tokenParams: template.token_params
             });
 
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
@@ -1362,7 +1362,7 @@ class OAuthController {
                     ...connectionConfig,
                     app_id: custom['app_id'],
                     pending,
-                    pendingLog: activityLogId?.toString()
+                    pendingLog: activityLogId.toString()
                 };
             }
 
@@ -1439,7 +1439,7 @@ class OAuthController {
                     code: code as string,
                     scopes: config.oauth_scopes,
                     basic_auth_enabled: template.token_request_auth_method === 'basic',
-                    token_params: template?.token_params as string
+                    token_params: template.token_params as string
                 }
             });
             await logCtx.debug(
@@ -1451,7 +1451,7 @@ class OAuthController {
                     code,
                     scopes: config.oauth_scopes,
                     basicAuthEnabled: template.token_request_auth_method === 'basic',
-                    tokenParams: template?.token_params
+                    tokenParams: template.token_params
                 }
             );
 
@@ -1662,7 +1662,7 @@ class OAuthController {
 
                 return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
             })
-            .catch(async (err) => {
+            .catch(async (err: unknown) => {
                 errorManager.report(err, {
                     source: ErrorSourceEnum.PLATFORM,
                     operation: LogActionEnum.AUTH,

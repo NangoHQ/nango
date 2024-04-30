@@ -107,14 +107,14 @@ export default function FlowCreate() {
 
         const flowObject = flows[data['integration'] as string];
 
-        const models = Array.isArray(flow?.returns) ? (showModels(flow.returns) as any) : flow?.returns;
+        const models = Array.isArray(flow.returns) ? (showModels(flow.returns) as any) : flow.returns;
         const flowPayload = {
             provider: data['integration'].toString(),
-            type: flow?.type || 'sync',
+            type: flow.type || 'sync',
             name: data['flow-name'].toString(),
-            runs: flow?.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
-            auto_start: flow?.auto_start !== false,
-            models: Array.isArray(flow?.returns) ? flow?.returns : [flow?.returns],
+            runs: flow.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
+            auto_start: flow.auto_start !== false,
+            models: Array.isArray(flow.returns) ? flow.returns : [flow.returns],
             model_schema: JSON.stringify(
                 Object.keys(models).map((model) => ({
                     name: model,
@@ -362,7 +362,7 @@ export default function FlowCreate() {
                                         </label>
                                     </div>
                                     <div className="mt-1">
-                                        <span className="text-text-light-gray">{flow?.description}</span>
+                                        <span className="text-text-light-gray">{flow.description}</span>
                                     </div>
                                 </div>
                             )}
@@ -420,7 +420,7 @@ export default function FlowCreate() {
                                     <div>
                                         <div className="flex">
                                             <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
-                                                Model{flow?.returns?.length > 1 ? 's' : ''}
+                                                Model{flow.returns.length > 1 ? 's' : ''}
                                             </label>
                                         </div>
                                         <Prism language="json" colorScheme="dark">
@@ -431,7 +431,7 @@ export default function FlowCreate() {
                             )}
                             <div className="flex flex-col">
                                 <div className="flex flex-row items-center">
-                                    {canAdd !== false && (
+                                    {canAdd && (
                                         <button type="submit" className="bg-white h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black mr-4">
                                             Add {flow?.type === 'action' ? 'Action' : 'Sync'}
                                         </button>

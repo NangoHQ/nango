@@ -124,7 +124,7 @@ class ApiAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.ApiKey) {
                 await createActivityLogMessageAndEnd({
@@ -142,7 +142,7 @@ class ApiAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             if (!req.body.apiKey) {
@@ -159,7 +159,7 @@ class ApiAuthController {
             };
 
             const connectionResponse = await connectionTestHook(
-                config?.provider,
+                config.provider,
                 template,
                 credentials,
                 connectionId,
@@ -174,7 +174,7 @@ class ApiAuthController {
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: `The credentials provided were not valid for the ${config?.provider} provider`,
+                    content: `The credentials provided were not valid for the ${config.provider} provider`,
                     timestamp: Date.now()
                 });
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
@@ -200,7 +200,7 @@ class ApiAuthController {
             const [updatedConnection] = await connectionService.upsertApiConnection(
                 connectionId,
                 providerConfigKey,
-                config?.provider,
+                config.provider,
                 credentials,
                 connectionConfig,
                 environmentId,
@@ -217,7 +217,7 @@ class ApiAuthController {
                         auth_mode: AuthModes.ApiKey,
                         operation: updatedConnection.operation
                     },
-                    config?.provider,
+                    config.provider,
                     logContextGetter,
                     activityLogId,
                     undefined,
@@ -365,7 +365,7 @@ class ApiAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.Basic) {
                 await createActivityLogMessageAndEnd({
@@ -373,7 +373,7 @@ class ApiAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Provider ${config?.provider} does not support Basic API auth`
+                    content: `Provider ${config.provider} does not support Basic API auth`
                 });
                 await logCtx.error('Provider does not support Basic API auth', { provider: config.provider });
                 await logCtx.failed();
@@ -390,7 +390,7 @@ class ApiAuthController {
             };
 
             const connectionResponse = await connectionTestHook(
-                config?.provider,
+                config.provider,
                 template,
                 credentials,
                 connectionId,
@@ -405,7 +405,7 @@ class ApiAuthController {
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: `The credentials provided were not valid for the ${config?.provider} provider`,
+                    content: `The credentials provided were not valid for the ${config.provider} provider`,
                     timestamp: Date.now()
                 });
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
@@ -416,7 +416,7 @@ class ApiAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             await createActivityLogMessage({
