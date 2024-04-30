@@ -11,10 +11,10 @@ import { Steps, providerConfigKey } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
-import type { OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
 import Spinner from '../../components/ui/Spinner';
 import { useEnvironment } from '../../hooks/useEnvironment';
+import type { GetOnboardingStatus } from '@nangohq/types';
 
 export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
@@ -64,12 +64,16 @@ export const InteractiveDemo: React.FC = () => {
                 return;
             }
 
-            const { progress, id, records: fetchedRecords } = (await res.json()) as OnboardingStatus;
-            setStep(progress || 0);
-            setOnboardingId(id);
+            const json = (await res.json()) as GetOnboardingStatus['Reply'];
+            if ('error' in json) {
+                return;
+            }
 
-            if (fetchedRecords) {
-                setRecords(fetchedRecords);
+            setStep(json.progress || 0);
+            setOnboardingId(json.id);
+
+            if (json.records) {
+                setRecords(json.records);
             }
         };
 

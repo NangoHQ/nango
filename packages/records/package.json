@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "type": "module",
     "main": "dist/index.js",
+    "private": true,
     "scripts": {
         "dev:migration:create": "npm run knex -- migrate:make",
         "dev:migration:run": "npm run knex -- migrate:latest",
@@ -25,6 +26,6 @@
         "zod": "3.22.4"
     },
     "devDependencies": {
-        "vitest": "1.4.0"
+        "vitest": "0.33.0"
     }
 }

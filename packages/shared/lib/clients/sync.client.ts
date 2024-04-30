@@ -31,7 +31,8 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, getLogger, metrics, isErr, resultOk, type Result, resultErr, stringifyError } from '@nangohq/utils';
+import { isTest, isProd, getLogger, metrics, isErr, resultOk, resultErr, stringifyError } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Client');
 
@@ -133,6 +134,9 @@ class SyncClient {
         for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
+            if (!syncData.enabled) {
+                continue;
+            }
             const sync = await createSync(nangoConnectionId, syncName);
 
             if (sync) {
@@ -590,7 +594,7 @@ class SyncClient {
             // Errors received from temporal are raw objects not classes
             const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
 
-            if (success === false || error) {
+            if (!success || error) {
                 if (writeLogs) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',

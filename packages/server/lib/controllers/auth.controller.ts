@@ -6,7 +6,8 @@ import { resetPasswordSecret, getUserFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, type Result, isErr } from '@nangohq/utils';
+import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, isErr } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 import {
     userService,
     accountService,
@@ -46,7 +47,7 @@ if (process.env['WORKOS_API_KEY'] && process.env['WORKOS_CLIENT_ID']) {
 
 const allowedProviders = ['GoogleOAuth'];
 
-const parseState = (state: string): Result<InviteAccountState, Error> => {
+const parseState = (state: string): Result<InviteAccountState> => {
     try {
         const parsed = JSON.parse(Buffer.from(state, 'base64').toString('ascii')) as InviteAccountState;
         return resultOk(parsed);
@@ -395,14 +396,14 @@ class AuthController {
             if (!workos) {
                 const error = new NangoError('workos_not_configured');
                 logger.error(error);
-                res.redirect(`${basePublicUrl}`);
+                res.redirect(basePublicUrl);
                 return;
             }
 
             if (!code) {
                 const error = new NangoError('missing_managed_login_callback_code');
                 logger.error(error);
-                res.redirect(`${basePublicUrl}`);
+                res.redirect(basePublicUrl);
                 return;
             }
 

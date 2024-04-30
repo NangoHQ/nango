@@ -573,7 +573,7 @@ class ConnectionController {
                 }
             }
 
-            const template = await configService.getTemplate(provider);
+            const template = configService.getTemplate(provider);
 
             let oAuthCredentials: ImportedCredentials;
             let updatedConnection: ConnectionUpsertResponse = {} as ConnectionUpsertResponse;

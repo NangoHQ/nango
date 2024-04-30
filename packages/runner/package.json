@@ -5,6 +5,7 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "private": true,
     "scripts": {
         "start": "node dist/app.js",
         "dev": "nodemon"
@@ -17,7 +18,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "^0.39.18",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "^10.45.1",
         "@trpc/server": "^10.45.1",
@@ -32,6 +33,6 @@
         "@types/connect-timeout": "^0.0.39",
         "@types/node": "20.12.2",
         "typescript": "^5.3.3",
-        "vitest": "1.4.0"
+        "vitest": "0.33.0"
     }
 }

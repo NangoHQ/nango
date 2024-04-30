@@ -4,7 +4,7 @@ tracer.init({
     service: 'nango-jobs'
 });
 tracer.use('pg', {
-    service: 'nango-postgres'
+    service: (params: { database: string }) => `postgres-${params.database}`
 });
 tracer.use('opensearch', {
     service: 'nango-opensearch'
