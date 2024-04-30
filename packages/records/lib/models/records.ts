@@ -14,10 +14,9 @@ import { decryptRecord, decryptRecords, encryptRecords } from '../utils/encrypti
 import { RECORDS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
-import { resultErr, resultOk } from '@nangohq/utils';
+import { resultErr, resultOk, retry } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
-import { retry } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -402,7 +401,7 @@ async function getUpsertSummary(
             nonUniqueKeys: nonUniqueKeys
         };
     } else {
-        const addedKeys = keys?.filter((key: string) => !nonDeletedKeys.includes(key));
+        const addedKeys = keys.filter((key: string) => !nonDeletedKeys.includes(key));
         const updatedKeys = await getUpdatedKeys(records, connectionId, model, trx);
         return {
             addedKeys,
