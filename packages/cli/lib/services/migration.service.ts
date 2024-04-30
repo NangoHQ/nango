@@ -33,6 +33,9 @@ export const v1toV2Migration = async (loadLocation: string): Promise<void> => {
 };
 
 async function createDirectory(dirPath: string): Promise<void> {
+    if (fs.existsSync(dirPath)) {
+        return;
+    }
     try {
         await fs.promises.mkdir(dirPath, { recursive: true });
         console.log(chalk.green(`Created directory at ${dirPath}.`));
@@ -41,19 +44,26 @@ async function createDirectory(dirPath: string): Promise<void> {
     }
 }
 
-async function moveFile(source: string, destination: string): Promise<void> {
+async function moveFile(source: string, destination: string): Promise<boolean> {
+    if (fs.existsSync(destination)) {
+        return false;
+    }
     try {
         await fs.promises.rename(source, destination);
         console.log(chalk.green(`Moved file from ${source} to ${destination}.`));
+
+        return true;
     } catch (error) {
         console.error(chalk.red(`There was an issue moving the file from ${source} to ${destination}.`), error);
     }
+
+    return false;
 }
 
-async function updateImports(filePath: string): Promise<void> {
+async function updateModelImport(filePath: string): Promise<void> {
     try {
         const data = await fs.promises.readFile(filePath, 'utf8');
-        const updatedData = data.replace(/from '\.\//g, "from '../../");
+        const updatedData = data.replace(/from '\.\/models/, "from '../../models");
         await fs.promises.writeFile(filePath, updatedData, 'utf8');
         console.log(chalk.green(`Updated imports in ${filePath}.`));
     } catch (error) {
@@ -69,6 +79,7 @@ export const directoryMigration = async (loadLocation: string): Promise<void> =>
     }
 
     const version = determineVersion(localConfig);
+
     if (version !== 'v2') {
         console.log(chalk.red(`nango.yaml is not at v2. Nested directories are not supported in v1.`));
         return;
@@ -85,8 +96,10 @@ export const directoryMigration = async (loadLocation: string): Promise<void> =>
             await createDirectory(syncsPath);
             for (const sync of Object.keys(scripts.syncs)) {
                 const syncPath: string = path.join(syncsPath, `${sync}.ts`);
-                await moveFile(path.join(loadLocation, `${sync}.ts`), syncPath);
-                await updateImports(syncPath);
+                const moved = await moveFile(path.join(loadLocation, `${sync}.ts`), syncPath);
+                if (moved) {
+                    await updateModelImport(syncPath);
+                }
             }
         }
 
@@ -95,8 +108,10 @@ export const directoryMigration = async (loadLocation: string): Promise<void> =>
             await createDirectory(actionsPath);
             for (const action of Object.keys(scripts.actions)) {
                 const actionPath: string = path.join(actionsPath, `${action}.ts`);
-                await moveFile(path.join(loadLocation, `${action}.ts`), actionPath);
-                await updateImports(actionPath);
+                const moved = await moveFile(path.join(loadLocation, `${action}.ts`), actionPath);
+                if (moved) {
+                    await updateModelImport(actionPath);
+                }
             }
         }
     }
