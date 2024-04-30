@@ -13,7 +13,8 @@ export default defineConfig({
         threads: false,
         testTimeout: 20000,
         env: {
-            NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU='
+            NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU=',
+            NANGO_LOGS_ENABLED: 'true'
         }
     }
 });

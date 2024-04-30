@@ -140,7 +140,9 @@ class DryRunService {
             lastSyncDate = new Date(suppliedLastSyncDate);
         }
 
-        const result = await compileService.run(debug, syncName);
+        const type = syncInfo?.type === SyncConfigType.ACTION ? 'action' : 'sync';
+
+        const result = await compileService.run({ debug, scriptName: syncName, providerConfigKey, type });
 
         if (!result) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
@@ -179,11 +181,20 @@ class DryRunService {
                 return Promise.resolve([]);
             }
         };
+        const logContextGetter = {
+            create: () => {
+                return Promise.resolve({}) as any;
+            },
+            get: () => {
+                return {} as any;
+            }
+        };
 
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
             dryRunService: new DryRunService(environment, true),
+            logContextGetter,
             writeToDb: false,
             nangoConnection,
             provider,

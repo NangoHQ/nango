@@ -113,6 +113,7 @@ const App = () => {
                         )}
                     </Route>
                     <Route path="/auth-link" element={<AuthLink />} />
+                    {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
                     {AUTH_ENABLED && (
                         <>
                             <Route path="/signin" element={<Signin />} />

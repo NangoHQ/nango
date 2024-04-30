@@ -1,4 +1,4 @@
-import { serializeError } from 'serialize-error';
+import { stringifyError } from '@nangohq/utils';
 
 export class NangoError extends Error {
     public readonly status: number = 500;
@@ -595,7 +595,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
     } else if (err.message) {
         errorMessage = err.message;
     } else if (typeof err === 'object' && Object.keys(err as object).length > 0) {
-        errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+        errorMessage = stringifyError(err, { pretty: true, stack: true });
     } else {
         errorMessage = String(err);
     }
@@ -607,7 +607,3 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
 
     return { success: false, error, response: null };
 };
-
-export function stringifyError(err: unknown) {
-    return JSON.stringify(serializeError(err));
-}

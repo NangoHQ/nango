@@ -105,113 +105,108 @@ export default function ShowIntegration() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-            <div>
-                {integration && (
-                    <div className="mx-auto">
-                        <div className="flex justify-between items-center">
-                            <div className="flex">
-                                <IntegrationLogo
-                                    provider={integration?.provider}
-                                    height={24}
-                                    width={24}
-                                    classNames="mr-2 p-1 border border-border-gray rounded-xl"
-                                />
-                                <div className="mt-3 ml-6">
-                                    <span className="text-left text-xl font-semibold tracking-tight text-gray-400">Integration</span>
-                                    <div className="flex items-center -mt-2">
-                                        <h2 className="text-left text-3xl font-semibold tracking-tight text-white">{providerConfigKey}</h2>
-                                        <BookOpenIcon onClick={() => showDocs()} className="ml-4 h-8 w-8 text-gray-400 cursor-pointer hover:text-white" />
-                                    </div>
-                                </div>
+            <div className="mx-auto">
+                <div className="flex gap-4 justify-between">
+                    <div className="flex gap-6">
+                        <div className="shrink-0 ">
+                            <IntegrationLogo provider={integration?.provider} height={24} width={24} classNames="p-1 border border-border-gray rounded-xl" />
+                        </div>
+                        <div className="mt-3">
+                            <span className="text-left text-xl font-semibold tracking-tight text-gray-400">Integration</span>
+                            <div className="flex gap-4">
+                                <h2 className="text-left text-3xl font-semibold tracking-tight text-white break-all">{providerConfigKey}</h2>
+                                <BookOpenIcon onClick={() => showDocs()} className="mt-1.5 h-8 w-8 text-gray-400 cursor-pointer hover:text-white shrink-0" />
                             </div>
-                            <Button
-                                variant="zinc"
-                                size="sm"
-                                className="flex cursor-pointer text-gray-400 neutral-700 items-center"
-                                onClick={() => {
-                                    navigate(`/${env}/connections/create/${providerConfigKey}`);
-                                }}
-                            >
-                                <LinkIcon className="flex h-5 w-5" />
-                                <span className="px-1">Add Connection</span>
-                            </Button>
                         </div>
                     </div>
-                )}
-                <section className="mt-14">
-                    <ul className="flex text-gray-400 space-x-2 text-sm cursor-pointer">
-                        <li
-                            className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
-                            onClick={() => updateTab(Tabs.API)}
+                    <div className="shrink-0">
+                        <Button
+                            variant="zinc"
+                            size="sm"
+                            className="flex cursor-pointer text-gray-400 neutral-700 items-center mt-4"
+                            onClick={() => {
+                                navigate(`/${env}/connections/create/${providerConfigKey}`);
+                            }}
                         >
-                            API Reference
-                        </li>
-                        <li
-                            className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
-                            onClick={() => updateTab(Tabs.Scripts)}
-                        >
-                            Scripts
-                        </li>
-                        <li
-                            className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
-                            onClick={() => setActiveTab(Tabs.Auth)}
-                        >
-                            Settings
-                        </li>
-                    </ul>
-                </section>
-                <section className="mt-10">
-                    {activeTab === Tabs.API && integration && endpoints && (
-                        <>
-                            {subTab === SubTabs.Reference ? (
-                                <EndpointReference
-                                    account={environment}
-                                    integration={integration}
-                                    activeFlow={currentFlow}
-                                    setActiveTab={setActiveTab}
-                                    setSubTab={setSubTab}
-                                />
-                            ) : (
-                                <APIReference
-                                    integration={integration}
-                                    setActiveTab={setActiveTab}
-                                    endpoints={endpoints}
-                                    account={environment}
-                                    setSubTab={setSubTab}
-                                    setFlow={setCurrentFlow}
-                                />
-                            )}
-                        </>
-                    )}
-                    {activeTab === Tabs.Scripts && integration && endpoints && (
-                        <>
-                            {subTab === SubTabs.Flow ? (
-                                <FlowPage
-                                    integration={integration}
-                                    account={environment}
-                                    flow={currentFlow}
-                                    flowConfig={flowConfig}
-                                    reload={() => mutate()}
-                                    endpoints={endpoints}
-                                    setFlow={setCurrentFlow}
-                                    setActiveTab={setActiveTab}
-                                    setSubTab={setSubTab}
-                                />
-                            ) : (
-                                <Scripts
-                                    integration={integration}
-                                    endpoints={endpoints}
-                                    reload={() => mutate()}
-                                    setFlow={setCurrentFlow}
-                                    setFlowConfig={setFlowConfig}
-                                    setSubTab={setSubTab}
-                                />
-                            )}
-                        </>
-                    )}
-                    {activeTab === Tabs.Auth && integration && <AuthSettings integration={integration} account={environment} />}
-                </section>
+                            <LinkIcon className="flex h-5 w-5" />
+                            <span className="px-1">Add Connection</span>
+                        </Button>
+                    </div>
+                </div>
             </div>
+            <section className="mt-14">
+                <ul className="flex text-gray-400 space-x-2 text-sm cursor-pointer">
+                    <li
+                        className={`p-2 rounded ${activeTab === Tabs.API ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        onClick={() => updateTab(Tabs.API)}
+                    >
+                        API Reference
+                    </li>
+                    <li
+                        className={`p-2 rounded ${activeTab === Tabs.Scripts ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        onClick={() => updateTab(Tabs.Scripts)}
+                    >
+                        Scripts
+                    </li>
+                    <li
+                        className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        onClick={() => setActiveTab(Tabs.Auth)}
+                    >
+                        Settings
+                    </li>
+                </ul>
+            </section>
+            <section className="mt-10">
+                {activeTab === Tabs.API && integration && endpoints && (
+                    <>
+                        {subTab === SubTabs.Reference ? (
+                            <EndpointReference
+                                account={environment}
+                                integration={integration}
+                                activeFlow={currentFlow}
+                                setActiveTab={setActiveTab}
+                                setSubTab={setSubTab}
+                            />
+                        ) : (
+                            <APIReference
+                                integration={integration}
+                                setActiveTab={setActiveTab}
+                                endpoints={endpoints}
+                                account={environment}
+                                setSubTab={setSubTab}
+                                setFlow={setCurrentFlow}
+                            />
+                        )}
+                    </>
+                )}
+                {activeTab === Tabs.Scripts && integration && endpoints && (
+                    <>
+                        {subTab === SubTabs.Flow ? (
+                            <FlowPage
+                                integration={integration}
+                                account={environment}
+                                flow={currentFlow}
+                                flowConfig={flowConfig}
+                                reload={() => mutate()}
+                                endpoints={endpoints}
+                                setFlow={setCurrentFlow}
+                                setActiveTab={setActiveTab}
+                                setSubTab={setSubTab}
+                            />
+                        ) : (
+                            <Scripts
+                                integration={integration}
+                                endpoints={endpoints}
+                                reload={() => mutate()}
+                                setFlow={setCurrentFlow}
+                                setFlowConfig={setFlowConfig}
+                                setSubTab={setSubTab}
+                            />
+                        )}
+                    </>
+                )}
+                {activeTab === Tabs.Auth && integration && <AuthSettings integration={integration} account={environment} />}
+            </section>
         </DashboardLayout>
     );
 }

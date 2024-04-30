@@ -1,5 +1,6 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import db from '../../db/database.js';
+import type { SyncRunConfig } from './run.service.js';
 import SyncRun from './run.service.js';
 import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as database from '../../db/database.js';
@@ -10,6 +11,7 @@ import * as jobService from './job.service.js';
 import type { CustomerFacingDataRecord, IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { DataResponse } from '../../models/Data.js';
 import type { Connection } from '../../models/Connection.js';
+import { LogContext, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 
 class integrationServiceMock implements IntegrationServiceInterface {
@@ -175,9 +177,10 @@ describe('Running sync', () => {
 
 describe('SyncRun', () => {
     it('should initialize correctly', () => {
-        const config = {
+        const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
             recordsService: recordsService,
+            logContextGetter,
             writeToDb: true,
             nangoConnection: {
                 id: 1,
@@ -227,9 +230,11 @@ const runJob = async (
     if (!syncJob) {
         throw new Error('Fail to create sync job');
     }
-    const config = {
+
+    const config: SyncRunConfig = {
         integrationService: integrationService,
         recordsService: recordsService,
+        logContextGetter: logContextGetter,
         writeToDb: true,
         nangoConnection: connection,
         syncName: sync.name,
@@ -245,7 +250,17 @@ const runJob = async (
     if (!records) {
         throw new Error(`failed to format records`);
     }
-    const { error: upsertError, summary } = await dataService.upsert(records, connection.id!, model, activityLogId, connection.environment_id, softDelete);
+
+    const logCtx = new LogContext({ parentId: String(activityLogId) }, { dryRun: true, logToConsole: false });
+    const { error: upsertError, summary } = await dataService.upsert(
+        records,
+        connection.id!,
+        model,
+        activityLogId,
+        connection.environment_id,
+        softDelete,
+        logCtx
+    );
     if (upsertError) {
         throw new Error(`failed to upsert records: ${upsertError}`);
     }

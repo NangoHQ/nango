@@ -3,10 +3,10 @@
     "version": "1.0.0",
     "type": "module",
     "main": "dist/index.js",
+    "private": true,
     "scripts": {
         "start": "tsc && node dist/app.js",
-        "dev": "nodemon",
-        "build": "rimraf dist && tsc"
+        "dev": "nodemon"
     },
     "keywords": [],
     "repository": {
@@ -16,10 +16,11 @@
     },
     "dependencies": {
         "@nangohq/data-ingestion": "file:../data-ingestion",
-        "@nangohq/nango-runner": "^1.0.0",
-        "@nangohq/shared": "^0.39.18",
-        "@nangohq/utils": "file:../utils",
+        "@nangohq/logs": "file:../logs",
+        "@nangohq/nango-runner": "file:../runner",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/records": "file:../records",
+        "@nangohq/utils": "file:../utils",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",
         "@temporalio/worker": "^1.9.1",

@@ -1,13 +1,13 @@
 {
     "name": "@nangohq/node",
-    "version": "0.39.18",
+    "version": "0.39.19",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
     "module": "./dist/index.js",
     "scripts": {
-        "build": "tsup lib/index.ts --format cjs && tsc",
-        "prepublishOnly": "npm install && npm run build"
+        "build": "tsup lib/index.ts --format cjs",
+        "prepublishOnly": "npm run build"
     },
     "exports": {
         ".": {

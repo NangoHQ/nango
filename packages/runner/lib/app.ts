@@ -1,6 +1,6 @@
 import './tracer.js';
 import { server } from './server.js';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, stringifyError } from '@nangohq/utils';
 
 const logger = getLogger('Runner');
 
@@ -11,6 +11,6 @@ try {
         logger.info(`🚀 '${id}' ready at http://localhost:${port}`);
     });
 } catch (err) {
-    logger.error(`Unable to start runner: ${JSON.stringify(err)}`);
+    logger.error(`Unable to start runner: ${stringifyError(err)}`);
     process.exit(1);
 }

@@ -14,6 +14,7 @@ COPY packages/utils/ packages/utils/
 COPY packages/records/ packages/records/
 COPY packages/data-ingestion/ packages/data-ingestion/
 COPY packages/jobs/ packages/jobs/
+COPY packages/logs/ packages/logs/
 COPY packages/runner/ packages/runner/
 COPY package*.json ./
 

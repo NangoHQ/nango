@@ -13,7 +13,8 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
-    AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey'
+    AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
+    LOGS_LOG = 'nango.logs.log'
 }
 
 export function increment(metricName: Types, value?: number): void {

@@ -109,6 +109,8 @@ export type NangoSyncEndpoint = {
     [key in HTTP_VERB]?: string;
 };
 
+export type LayoutMode = 'root' | 'nested';
+
 export interface NangoSyncConfig {
     name: string;
     type?: SyncConfigType;
@@ -134,6 +136,8 @@ export interface NangoSyncConfig {
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];
     enabled?: boolean;
+
+    layout_mode: 'root' | 'nested';
 }
 
 export interface StandardNangoConfig {

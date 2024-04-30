@@ -4,6 +4,9 @@ tracer.init({
     service: 'nango'
 });
 tracer.use('pg', {
-    service: 'nango-postgres'
+    service: (params: { database: string }) => `postgres-${params.database}`
+});
+tracer.use('opensearch', {
+    service: 'nango-opensearch'
 });
 tracer.use('express');

@@ -14,7 +14,7 @@ class IntegrationService implements IntegrationServiceInterface {
     async runScript({ syncName, nangoProps, isInvokedImmediately, isWebhook, optionalLoadLocation, input }: RunScriptOptions): Promise<RunnerOutput> {
         try {
             const nango = new NangoSync(nangoProps);
-            const script: string | null = localFileService.getIntegrationFile(syncName, optionalLoadLocation);
+            const script: string | null = localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
 
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;

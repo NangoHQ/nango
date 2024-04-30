@@ -1,3 +1,4 @@
+import { stringifyError } from '@nangohq/utils';
 import type { KVStore } from '../kvstore/KVStore.js';
 
 export class Locking {
@@ -33,7 +34,7 @@ export class Locking {
         try {
             await this.store.set(key, '1', false, ttlInMs);
         } catch (err) {
-            throw new Error(`Failed to acquire lock for key: ${key} ${JSON.stringify(err)}`);
+            throw new Error(`Failed to acquire lock for key: ${key} ${stringifyError(err)}`);
         }
     }
 

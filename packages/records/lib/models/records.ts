@@ -15,6 +15,7 @@ import { RECORDS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
 import { resultErr, resultOk, type Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 dayjs.extend(utc);
 
@@ -178,7 +179,7 @@ export async function getRecords({
         //     connectionId: String(connectionId),
         //     modifiedAfter: String(modifiedAfter),
         //     model,
-        //     error: JSON.stringify(e)
+        //     error: stringifyError(e)
         // });
         const e = new Error(`List records error for model ${model}`);
         return resultErr(e);
@@ -194,41 +195,24 @@ export async function upsert(records: FormattedRecord[], connectionId: number, m
         );
     }
 
-    const addedKeys: string[] = [];
-    const updatedKeys: string[] = [];
+    let summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
     try {
-        const externalIds: { external_id: string }[] = [];
         await db.transaction(async (trx) => {
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
-                addedKeys.push(...(await getAddedKeys(chunk, connectionId, model)));
-                updatedKeys.push(...(await getUpdatedKeys(chunk, connectionId, model)));
+                const chunkSummary = await getUpsertSummary(chunk, connectionId, model, nonUniqueKeys, softDelete, trx);
+                summary = {
+                    addedKeys: [...summary.addedKeys, ...chunkSummary.addedKeys],
+                    updatedKeys: [...summary.updatedKeys, ...chunkSummary.updatedKeys],
+                    deletedKeys: [...(summary.deletedKeys || []), ...(chunkSummary.deletedKeys || [])],
+                    nonUniqueKeys: nonUniqueKeys
+                };
                 const encryptedRecords = encryptRecords(chunk);
-                const insertedIds = await trx
-                    .from<FormattedRecord>(RECORDS_TABLE)
-                    .insert(encryptedRecords)
-                    .onConflict(['connection_id', 'external_id', 'model'])
-                    .merge()
-                    .returning('external_id');
-                externalIds.push(...insertedIds);
+                await trx.from<FormattedRecord>(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
             }
         });
 
-        if (softDelete) {
-            return resultOk({
-                deletedKeys: externalIds.map(({ external_id }) => external_id),
-                addedKeys: [],
-                updatedKeys: [],
-                nonUniqueKeys
-            });
-        }
-
-        return resultOk({
-            addedKeys,
-            updatedKeys,
-            deletedKeys: [],
-            nonUniqueKeys
-        });
+        return resultOk(summary);
     } catch (error: any) {
         let errorMessage = `Failed to upsert records to table ${RECORDS_TABLE}.\n`;
         errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
@@ -268,10 +252,10 @@ export async function update(records: FormattedRecord[], connectionId: number, m
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
 
-                updatedKeys.push(...(await getUpdatedKeys(chunk, connectionId, model)));
+                updatedKeys.push(...(await getUpdatedKeys(chunk, connectionId, model, trx)));
 
                 const recordsToUpdate: FormattedRecord[] = [];
-                const rawOldRecords = await getRecordsByExternalIds(updatedKeys, connectionId, model);
+                const rawOldRecords = await getRecordsByExternalIds(updatedKeys, connectionId, model, trx);
                 for (const rawOldRecord of rawOldRecords) {
                     if (!rawOldRecord) {
                         continue;
@@ -355,39 +339,14 @@ export async function markNonCurrentGenerationRecordsAsDeleted(connectionId: num
 }
 
 /**
- * Compute Added Keys
- * @desc for any incoming payload use the provided unique to check against the rows
- * in the database and return the keys that are not in the database
- *
+ * getUpdatedKeys
+ * @desc returns a list of the keys that exist in the records tables but have a different data_hash
  */
-async function getAddedKeys(response: FormattedRecord[], connectionId: number, model: string): Promise<string[]> {
-    const keys: string[] = response.map((record: FormattedRecord) => getUniqueId(record));
+async function getUpdatedKeys(records: FormattedRecord[], connectionId: number, model: string, trx: Knex.Transaction): Promise<string[]> {
+    const keys: string[] = records.map((record: FormattedRecord) => getUniqueId(record));
+    const keysWithHash: [string, string][] = records.map((record: FormattedRecord) => [getUniqueId(record), record.data_hash]);
 
-    const knownKeys: string[] = (await db
-        .from(RECORDS_TABLE)
-        .where({
-            connection_id: connectionId,
-            model,
-            deleted_at: null
-        })
-        .whereIn('external_id', keys)
-        .pluck('external_id')) as unknown as string[];
-
-    return keys?.filter((key: string) => !knownKeys.includes(key));
-}
-
-/**
- * Get Updated Keys
- * @desc generate an array of the keys that exist in the database and also in
- * the incoming payload that will be used to update the database.
- * Compare using the data_hash key
- *
- */
-async function getUpdatedKeys(response: FormattedRecord[], connectionId: number, model: string): Promise<string[]> {
-    const keys: string[] = response.map((record: FormattedRecord) => getUniqueId(record));
-    const keysWithHash: [string, string][] = response.map((record: FormattedRecord) => [getUniqueId(record), record.data_hash]);
-
-    const rowsToUpdate = (await db
+    const rowsToUpdate = (await trx
         .from(RECORDS_TABLE)
         .pluck('external_id')
         .where({
@@ -400,8 +359,46 @@ async function getUpdatedKeys(response: FormattedRecord[], connectionId: number,
     return rowsToUpdate;
 }
 
-async function getRecordsByExternalIds(external_ids: string[], connection_id: number, model: string): Promise<UnencryptedRecord[]> {
-    const encryptedRecords = await db
+async function getUpsertSummary(
+    records: FormattedRecord[],
+    connectionId: number,
+    model: string,
+    nonUniqueKeys: string[],
+    softDelete: boolean,
+    trx: Knex.Transaction
+): Promise<UpsertSummary> {
+    const keys: string[] = records.map((record: FormattedRecord) => getUniqueId(record));
+    const nonDeletedKeys: string[] = await trx
+        .from(RECORDS_TABLE)
+        .where({
+            connection_id: connectionId,
+            model,
+            deleted_at: null
+        })
+        .whereIn('external_id', keys)
+        .pluck('external_id');
+
+    if (softDelete) {
+        return {
+            addedKeys: [],
+            updatedKeys: [],
+            deletedKeys: nonDeletedKeys,
+            nonUniqueKeys: nonUniqueKeys
+        };
+    } else {
+        const addedKeys = keys?.filter((key: string) => !nonDeletedKeys.includes(key));
+        const updatedKeys = await getUpdatedKeys(records, connectionId, model, trx);
+        return {
+            addedKeys,
+            updatedKeys,
+            deletedKeys: [],
+            nonUniqueKeys: nonUniqueKeys
+        };
+    }
+}
+
+async function getRecordsByExternalIds(external_ids: string[], connection_id: number, model: string, trx: Knex.Transaction): Promise<UnencryptedRecord[]> {
+    const encryptedRecords = await trx
         .from<FormattedRecord>(RECORDS_TABLE)
         .where({
             connection_id,

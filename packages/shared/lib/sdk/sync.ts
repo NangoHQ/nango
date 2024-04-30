@@ -717,7 +717,9 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.added = Number(this.logMessages?.counts.added) + results.length;
             }
@@ -763,7 +765,9 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.deleted = Number(this.logMessages?.counts.deleted) + results.length;
             }
@@ -809,7 +813,9 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.updated = Number(this.logMessages?.counts.updated) + results.length;
             }

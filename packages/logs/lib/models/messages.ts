@@ -18,7 +18,7 @@ export async function createMessage(row: MessageRow): Promise<void> {
     await client.create<MessageRow>({
         index: indexMessages.index,
         id: row.id,
-        document: row,
+        body: row,
         refresh: true
     });
 }
@@ -27,23 +27,25 @@ export async function createMessage(row: MessageRow): Promise<void> {
  * List operations
  */
 export async function listOperations(opts: { limit: number }): Promise<ListOperations> {
-    const res = await client.search<MessageRow>({
+    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
-        query: {
-            // @ts-expect-error I don't get the error
-            bool: {
-                must_not: [{ exists: { field: 'parentId' } }]
+        body: {
+            query: {
+                bool: {
+                    must_not: [{ exists: { field: 'parentId' } }]
+                }
             }
         }
     });
+    const hits = res.body.hits;
 
     return {
-        count: typeof res.hits.total === 'number' ? res.hits.total : res.hits.hits.length,
-        items: res.hits.hits.map((hit) => {
-            return hit._source!;
+        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        items: hits.hits.map((hit) => {
+            return hit._source;
         })
     };
 }
@@ -52,19 +54,27 @@ export async function listOperations(opts: { limit: number }): Promise<ListOpera
  * Get a single operation
  */
 export async function getOperation(opts: { id: MessageRow['id'] }): Promise<MessageRow | undefined> {
-    const res = await client.get<MessageRow>({
+    const res = await client.get<{ id: string; _source: MessageRow }>({
         index: indexMessages.index,
         id: opts.id
     });
-    return res._source;
+    return res.body._source;
 }
 
+/**
+ * Update a row (can be a partial update)
+ */
 export async function update(opts: { id: MessageRow['id']; data: Partial<Omit<MessageRow, 'id'>> }): Promise<void> {
     await client.update<Partial<Omit<MessageRow, 'id'>>>({
         index: indexMessages.index,
         id: opts.id,
         refresh: true,
-        doc: { ...opts.data, updatedAt: new Date().toISOString() }
+        body: {
+            doc: {
+                ...opts.data,
+                updatedAt: new Date().toISOString()
+            }
+        }
     });
 }
 
@@ -107,23 +117,26 @@ export async function setTimeouted(opts: Pick<MessageRow, 'id'>): Promise<void> 
  * List messages
  */
 export async function listMessages(opts: { parentId: MessageRow['parentId']; limit: number }): Promise<ListMessages> {
-    const res = await client.search<MessageRow>({
+    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: 5000,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
-        query: {
-            // @ts-expect-error I don't get the error
-            bool: {
-                must: [{ term: { parentId: opts.parentId } }]
+        body: {
+            query: {
+                bool: {
+                    must: [{ term: { parentId: opts.parentId } }]
+                }
             }
         }
     });
 
+    const hits = res.body.hits;
+
     return {
-        count: typeof res.hits.total === 'number' ? res.hits.total : res.hits.hits.length,
-        items: res.hits.hits.map((hit) => {
-            return hit._source!;
+        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        items: hits.hits.map((hit) => {
+            return hit._source;
         })
     };
 }

@@ -18,6 +18,7 @@ import {
     enableScriptConfig as enableConfig,
     disableScriptConfig as disableConfig
 } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
 
 class FlowController {
     public async getFlows(req: Request, res: Response, next: NextFunction) {
@@ -61,14 +62,14 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environmentId, config, req.body.nangoYamlBody || '');
+            } = await deployPreBuiltSyncConfig(environmentId, config, req.body.nangoYamlBody || '', logContextGetter);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter);
 
             res.sendStatus(200);
         } catch (e) {
@@ -129,14 +130,18 @@ class FlowController {
                 }
             }
 
-            const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await deployPreBuiltSyncConfig(environmentId, config, '');
+            const {
+                success: preBuiltSuccess,
+                error: preBuiltError,
+                response: preBuiltResponse
+            } = await deployPreBuiltSyncConfig(environmentId, config, '', logContextGetter);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter);
 
             res.status(201).send(preBuiltResponse.result);
         } catch (e) {
@@ -162,7 +167,7 @@ class FlowController {
                 return;
             }
 
-            const { id, name, provider, is_public } = body;
+            const { id, name, provider, is_public, providerConfigKey, flowType } = body;
 
             if (!name || !provider || typeof is_public === 'undefined') {
                 res.status(400).send('Missing required fields');
@@ -183,7 +188,7 @@ class FlowController {
                 }
 
                 const { nango_config_id, file_location } = configLookupResult;
-                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location);
+                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location, providerConfigKey, flowType);
                 return;
             }
         } catch (e) {
@@ -231,7 +236,7 @@ class FlowController {
 
             await enableConfig(Number(id));
 
-            await syncOrchestrator.triggerIfConnectionsExist([flow], environmentId);
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environmentId, logContextGetter);
 
             res.status(200).send([{ ...flow, enabled: true }]);
         } catch (e) {

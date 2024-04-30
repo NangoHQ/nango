@@ -5,8 +5,8 @@
     "type": "module",
     "main": "dist/app.js",
     "typings": "dist/index.d.ts",
+    "private": true,
     "scripts": {
-        "build": "rimraf ./dist && tsc",
         "start": "node dist/app.js",
         "dev": "nodemon"
     },
@@ -18,9 +18,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "^0.39.18",
-        "@nangohq/utils": "file:../utils",
+        "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
+        "@nangohq/shared": "file:../shared",
+        "@nangohq/utils": "file:../utils",
         "dd-trace": "5.2.0",
         "express": "^4.19.2",
         "zod": "^3.22.4",

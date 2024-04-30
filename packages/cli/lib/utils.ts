@@ -225,7 +225,7 @@ export async function getConnection(providerConfigKey: string, connectionId: str
             return res.data;
         })
         .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+            console.log(`❌ ${err.response?.data.error || err.message}`);
         });
 }
 
@@ -241,7 +241,7 @@ export async function getConfig(providerConfigKey: string, debug = false) {
             return res.data;
         })
         .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+            console.log(`❌ ${err.response?.data.error || err.message}`);
         });
 }
 

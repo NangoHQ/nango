@@ -26,11 +26,13 @@ import {
     createActivityLog,
     LogActionEnum,
     analytics,
-    AnalyticsTypes
+    AnalyticsTypes,
+    featureFlags
 } from '@nangohq/shared';
 import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger, isErr } from '@nangohq/utils';
+import { getLogger, isErr, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 
 const logger = getLogger('Server.Onboarding');
@@ -161,12 +163,26 @@ class OnboardingController {
                 payload.progress = 3;
             }
 
-            const getRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
-            if (!getRecords.success) {
+            let getRecords: Result<CustomerFacingDataRecord[], Error>;
+            const shouldReturnNewRecords = await featureFlags.isEnabled('new-records-return', 'global', false);
+            if (shouldReturnNewRecords) {
+                const newGetRecords = await recordsService.getRecords({
+                    connectionId: connectionExists.id,
+                    model: DEMO_MODEL
+                });
+                getRecords = isOk(newGetRecords) ? resultOk(newGetRecords.res.records) : newGetRecords;
+            } else {
+                const legacyGetRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
+                getRecords = legacyGetRecords.success
+                    ? resultOk(legacyGetRecords.response?.records || [])
+                    : resultErr(legacyGetRecords.error || 'failed_to_get_records');
+            }
+
+            if (isErr(getRecords)) {
                 res.status(400).json({ message: 'failed_to_get_records' });
                 return;
             } else {
-                payload.records = getRecords.response?.records || [];
+                payload.records = getRecords.res;
             }
             if (payload.records.length > 0) {
                 payload.progress = status.progress > 4 ? status.progress : 4;
@@ -230,14 +246,14 @@ class OnboardingController {
                 }
             ];
 
-            const deploy = await deployPreBuiltSyncConfig(environment.id, config, '');
+            const deploy = await deployPreBuiltSyncConfig(environment.id, config, '', logContextGetter);
             if (!deploy.success || deploy.response === null) {
                 void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, deploy.error);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id);
+            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter);
 
             void analytics.track(AnalyticsTypes.DEMO_2_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ success: true });
@@ -281,22 +297,24 @@ class OnboardingController {
             if (!status || status.length <= 0) {
                 // If for any reason we don't have a sync, because of a partial state
                 logger.info(`[demo] no sync were found ${environment.id}`);
-                await syncOrchestrator.runSyncCommand(
+                await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environment.id,
-                    DEMO_GITHUB_CONFIG_KEY,
-                    [DEMO_SYNC_NAME],
-                    SyncCommand.RUN_FULL,
-                    req.body.connectionId
-                );
-                await syncOrchestrator.runSyncCommand(
+                    environmentId: environment.id,
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    syncNames: [DEMO_SYNC_NAME],
+                    command: SyncCommand.RUN_FULL,
+                    logContextGetter,
+                    connectionId: req.body.connectionId
+                });
+                await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environment.id,
-                    DEMO_GITHUB_CONFIG_KEY,
-                    [DEMO_SYNC_NAME],
-                    SyncCommand.UNPAUSE,
-                    req.body.connectionId
-                );
+                    environmentId: environment.id,
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    syncNames: [DEMO_SYNC_NAME],
+                    command: SyncCommand.UNPAUSE,
+                    logContextGetter,
+                    connectionId: req.body.connectionId
+                });
 
                 res.status(200).json({ retry: true });
                 return;
@@ -311,14 +329,15 @@ class OnboardingController {
             if (!job.nextScheduledSyncAt && job.jobStatus === SyncStatus.PAUSED) {
                 // If the sync has never run
                 logger.info(`[demo] no job were found ${environment.id}`);
-                await syncOrchestrator.runSyncCommand(
+                await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environment.id,
-                    DEMO_GITHUB_CONFIG_KEY,
-                    [DEMO_SYNC_NAME],
-                    SyncCommand.RUN_FULL,
-                    req.body.connectionId
-                );
+                    environmentId: environment.id,
+                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                    syncNames: [DEMO_SYNC_NAME],
+                    command: SyncCommand.RUN_FULL,
+                    logContextGetter,
+                    connectionId: req.body.connectionId
+                });
             }
 
             if (job.jobStatus === SyncStatus.SUCCESS) {
@@ -441,20 +460,29 @@ class OnboardingController {
             if (!activityLogId) {
                 throw new NangoError('failed_to_create_activity_log');
             }
+
+            // TODO: move that outside try/catch
+            const logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                { account, environment, user }
+            );
             const actionResponse = await syncClient.triggerAction({
                 connection,
                 actionName: DEMO_ACTION_NAME,
                 input: { title: req.body.title },
                 activityLogId,
-                environment_id: environment.id
+                environment_id: environment.id,
+                logCtx
             });
 
             if (isErr(actionResponse)) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.failed();
                 return;
             }
 
+            await logCtx.success();
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {

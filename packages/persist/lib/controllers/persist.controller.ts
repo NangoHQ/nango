@@ -13,6 +13,7 @@ import {
 } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
+import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import { getLogger, resultErr, resultOk, isOk, isErr, type Result, metrics } from '@nangohq/utils';
 
 const logger = getLogger('PersistController');
@@ -57,6 +58,10 @@ class PersistController {
             },
             false
         );
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
+        logCtx.logToConsole = false;
+        await logCtx.log({ type: 'log', message: msg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
+
         if (result) {
             res.status(201).send();
         } else {
@@ -69,6 +74,7 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
             recordsService
                 .upsert(records, nangoConnectionId, model, false)
@@ -80,7 +86,7 @@ class PersistController {
                 .catch((reason) => {
                     logger.error(`Failed to save records: ${reason}`);
                 });
-            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false);
+            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'save',
@@ -108,6 +114,7 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
             recordsService
                 .upsert(records, nangoConnectionId, model, true)
@@ -119,7 +126,7 @@ class PersistController {
                 .catch((reason) => {
                     logger.error(`Failed to delete records: ${reason}`);
                 });
-            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true);
+            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'delete',
@@ -147,6 +154,7 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
             recordsService
                 .update(records, nangoConnectionId, model)
@@ -158,7 +166,7 @@ class PersistController {
                 .catch((reason) => {
                     logger.error(`Failed to update records: ${reason}`);
                 });
-            return await dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId);
+            return await dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
         };
         const result = await PersistController.persistRecords({
             persistType: 'update',
@@ -241,6 +249,7 @@ class PersistController {
             response: legacyFormattedRecords
         } = syncDataService.formatDataRecords(records as unknown as DataResponse[], nangoConnectionId, model, syncId, syncJobId, softDelete);
 
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
         if (!success || legacyFormattedRecords === null) {
             await createActivityLogMessage({
                 level: 'error',
@@ -249,7 +258,9 @@ class PersistController {
                 content: `There was an issue with the batch ${persistType}. ${error?.message}`,
                 timestamp: Date.now()
             });
+            await logCtx.error('There was an issue with the batch', { error, persistType });
             const res = resultErr(`Failed to ${persistType} records ${activityLogId}`);
+
             span.setTag('error', res.err).finish();
             return res;
         }
@@ -257,6 +268,8 @@ class PersistController {
 
         if (syncConfig && !syncConfig?.models.includes(model)) {
             const res = resultErr(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            await logCtx.error('The model is not included in the declared sync models', { model });
+
             span.setTag('error', res.err).finish();
             return res;
         }
@@ -292,6 +305,7 @@ class PersistController {
                 content: `Batch ${persistType} was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
             });
+            await logCtx.info('Batch saved successfully', { persistType, updatedResults });
 
             await updateSyncJobResult(syncJobId, updatedResults, model);
 
@@ -310,6 +324,7 @@ class PersistController {
                 content,
                 timestamp: Date.now()
             });
+            await logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
 
             errorManager.report(content, {
                 environmentId: environmentId,

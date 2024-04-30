@@ -10,6 +10,7 @@ import type { Connection } from '../../../models/Connection.js';
 import type { Sync, Job as SyncJob } from '../../../models/Sync.js';
 import { createActivityLog } from '../../activity/activity.service.js';
 import type { Environment } from '../../../models/Environment.js';
+import { LogContext } from '@nangohq/logs';
 
 export async function upsertNRecords(n: number): Promise<{
     env: Environment;
@@ -59,8 +60,18 @@ export async function upsertRecords(toInsert: DataResponse[]): Promise<{
         throw new Error('Failed to create activity log');
     }
     const chunkSize = 1000;
+
+    const logCtx = new LogContext({ parentId: String(activityLogId) }, { dryRun: true, logToConsole: false });
     for (let i = 0; i < records.length; i += chunkSize) {
-        const { error, success } = await DataService.upsert(records.slice(i, i + chunkSize), nangoConnectionId, modelName, activityLogId, env.id);
+        const { error, success } = await DataService.upsert(
+            records.slice(i, i + chunkSize),
+            nangoConnectionId,
+            modelName,
+            activityLogId,
+            env.id,
+            undefined,
+            logCtx
+        );
         if (!success) {
             throw new Error(`Failed to upsert records: ${error}`);
         }

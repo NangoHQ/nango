@@ -21,6 +21,8 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
+import { stringifyError } from '@nangohq/utils';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response, next: NextFunction) {
@@ -42,6 +44,10 @@ class AppStoreAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
+            { account: { id: accountId }, environment: { id: environmentId } }
+        );
 
         try {
             void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
@@ -69,6 +75,8 @@ class AppStoreAuthController {
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
                     });
+                    await logCtx.error('Missing HMAC in query params');
+                    await logCtx.failed();
 
                     errorManager.errRes(res, 'missing_hmac');
 
@@ -83,6 +91,8 @@ class AppStoreAuthController {
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
                     });
+                    await logCtx.error('Invalid HMAC');
+                    await logCtx.failed();
 
                     errorManager.errRes(res, 'invalid_hmac');
 
@@ -100,6 +110,8 @@ class AppStoreAuthController {
                     content: `Error during App store auth: config not found`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Invalid HMAC');
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'unknown_provider_config');
 
@@ -116,6 +128,8 @@ class AppStoreAuthController {
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support App store auth`
                 });
+                await logCtx.error('Provider does not support API key auth', { provider: config.provider });
+                await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
@@ -123,6 +137,7 @@ class AppStoreAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             if (!req.body.privateKeyId) {
                 errorManager.errRes(res, 'missing_private_key_id');
@@ -164,7 +179,8 @@ class AppStoreAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     config?.provider,
-                    activityLogId
+                    activityLogId,
+                    logCtx
                 );
 
                 errorManager.errResFromNangoErr(res, error);
@@ -178,6 +194,8 @@ class AppStoreAuthController {
                 content: `App store auth creation was successful`,
                 timestamp: Date.now()
             });
+            await logCtx.info('App Store auth creation was successful');
+            await logCtx.success();
 
             await updateSuccessActivityLog(activityLogId as number, true);
 
@@ -202,13 +220,16 @@ class AppStoreAuthController {
                         operation: updatedConnection.operation
                     },
                     config?.provider,
-                    activityLogId
+                    logContextGetter,
+                    activityLogId,
+                    undefined,
+                    logCtx
                 );
             }
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
-            const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+            const prettyError = stringifyError(err, { pretty: true });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -217,6 +238,8 @@ class AppStoreAuthController {
                 content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
             });
+            await logCtx.error('Error during API key auth', { error: err });
+            await logCtx.failed();
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -239,7 +262,8 @@ class AppStoreAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId
+                activityLogId,
+                logCtx
             );
 
             next(err);

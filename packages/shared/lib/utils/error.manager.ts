@@ -5,7 +5,7 @@ import type { Tracer } from 'dd-trace';
 import type { ErrorEvent } from '@sentry/types';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
-import { getLogger, isCloud } from '@nangohq/utils';
+import { getLogger, isCloud, stringifyError } from '@nangohq/utils';
 import { getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, isApiAuthenticated, isUserAuthenticated, packageJsonFile } from './utils.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
@@ -111,7 +111,7 @@ class ErrorManager {
             }
         });
 
-        logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
+        logger.error(`Exception caught: ${stringifyError(e)}`);
 
         if (e instanceof Error && tracer) {
             // Log to datadog manually

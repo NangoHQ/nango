@@ -10,6 +10,6 @@ export function errorToObject(err: unknown) {
 /**
  * Transform any Error or primitive to a string
  */
-export function stringifyError(err: unknown) {
-    return JSON.stringify(serializeError(err));
+export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: boolean }) {
+    return JSON.stringify(serializeError(err), ['name', 'message', opts?.stack ? 'stack' : ''], opts?.pretty ? 2 : undefined);
 }

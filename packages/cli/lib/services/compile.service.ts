@@ -3,7 +3,8 @@ import * as tsNode from 'ts-node';
 import { glob } from 'glob';
 import chalk from 'chalk';
 import path from 'path';
-import { SyncConfigType } from '@nangohq/shared';
+import { SyncConfigType, localFileService } from '@nangohq/shared';
+import type { StandardNangoConfig } from '@nangohq/shared';
 
 import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
@@ -12,7 +13,17 @@ import modelService from './model.service.js';
 import parserService from './parser.service.js';
 
 class CompileService {
-    public async run(debug = false, syncName?: string): Promise<boolean> {
+    public async run({
+        debug,
+        scriptName,
+        providerConfigKey,
+        type
+    }: {
+        debug: boolean;
+        scriptName?: string;
+        providerConfigKey?: string;
+        type?: string;
+    }): Promise<boolean> {
         const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
         const distDir = './dist';
@@ -40,9 +51,6 @@ class CompileService {
             printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
         }
 
-        const integrationFiles = listFilesToCompile({ syncName });
-        let success = true;
-
         const { success: loadSuccess, error, response: config } = await configService.load('', debug);
 
         if (!loadSuccess || !config) {
@@ -50,11 +58,30 @@ class CompileService {
             throw new Error('Error loading config');
         }
 
+        let scriptDirectory = process.cwd();
+        if (scriptName && providerConfigKey && type) {
+            scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type });
+            console.log(chalk.green(`Compiling ${scriptName}.ts in ${scriptDirectory}`));
+        }
+
+        const integrationFiles = listFilesToCompile({ scriptName, cwd: scriptDirectory, config, debug });
+        let success = true;
+
         const modelNames = configService.getModelNames(config);
 
         for (const file of integrationFiles) {
             try {
-                const providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
+                const pathSegments = file.inputPath.split('/');
+                const scriptType = pathSegments[pathSegments.length - 2];
+                const isNested = scriptType === 'syncs' || scriptType === 'actions';
+
+                let providerConfiguration;
+                if (isNested) {
+                    const providerConfigKey = pathSegments[pathSegments.length - 3];
+                    providerConfiguration = config.find((config) => config.providerConfigKey === providerConfigKey);
+                } else {
+                    providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
+                }
 
                 if (!providerConfiguration) {
                     continue;
@@ -66,14 +93,20 @@ class CompileService {
                 const type = syncConfig?.type || SyncConfigType.SYNC;
 
                 if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
-                    if (syncName && file.inputPath.includes(syncName)) {
+                    if (scriptName && file.inputPath.includes(scriptName)) {
                         success = false;
                     }
                     continue;
                 }
                 const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
+                const dirname = path.dirname(file.outputPath);
+                const extname = path.extname(file.outputPath);
+                const basename = path.basename(file.outputPath, extname);
 
-                fs.writeFileSync(file.outputPath, result);
+                const fileNameWithExtension = `${basename}-${providerConfiguration.providerConfigKey}${extname}`;
+                const outputPath = path.join(dirname, fileNameWithExtension);
+
+                fs.writeFileSync(outputPath, result);
                 console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
             } catch (error) {
                 console.error(`Error compiling "${file.inputPath}":`);
@@ -93,17 +126,57 @@ export interface ListedFile {
 }
 
 export function getFileToCompile(filePath: string): ListedFile {
-    if (!filePath.startsWith('./')) {
-        filePath = `./${filePath}`;
-    }
     return {
         inputPath: filePath,
-        outputPath: filePath.replace(/\/[^/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`),
+        outputPath: './dist/' + path.basename(filePath, '.ts') + '.js',
         baseName: path.basename(filePath, '.ts')
     };
 }
-export function listFilesToCompile({ cwd, syncName }: { cwd?: string; syncName?: string | undefined } = {}): ListedFile[] {
-    const files = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`, { dotRelative: true, cwd: cwd || process.cwd() });
+
+export function listFilesToCompile({
+    cwd,
+    scriptName,
+    config,
+    debug
+}: {
+    cwd?: string;
+    scriptName?: string | undefined;
+    config: StandardNangoConfig[];
+    debug?: boolean;
+}): ListedFile[] {
+    let files: string[] = [];
+    if (scriptName) {
+        if (debug) {
+            printDebug(`Compiling ${scriptName}.ts`);
+        }
+
+        files = [`${cwd || process.cwd()}/${scriptName}.ts`];
+    } else {
+        files = glob.sync(`${cwd || process.cwd()}/*.ts`);
+
+        // models.ts is the one expected file
+        if (files.length === 1 && debug) {
+            printDebug(`No files found in the root: ${cwd || process.cwd()}`);
+        }
+
+        if (config) {
+            config.forEach((providerConfig) => {
+                const syncPath = `${providerConfig.providerConfigKey}/syncs`;
+                const actionPath = `${providerConfig.providerConfigKey}/actions`;
+
+                files = [...files, ...glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`), ...glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`)];
+
+                if (debug) {
+                    if (glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`).length > 0) {
+                        printDebug(`Found nested sync files in ${syncPath}`);
+                    }
+                    if (glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`).length > 0) {
+                        printDebug(`Found nested action files in ${actionPath}`);
+                    }
+                }
+            });
+        }
+    }
 
     return files.map((filePath) => {
         return getFileToCompile(filePath);

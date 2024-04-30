@@ -1,12 +1,76 @@
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
+/**
+ * Level of the log and operation
+ */
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-export type MessageMeta = Record<string, unknown> | null;
+/**
+ * Free form JSON (not indexed)
+ */
+export type MessageMeta = Record<any, any>;
 
-export type MessageType = 'sync' | 'log' | 'http' | 'proxy' | 'webhook_outgoing' | 'webhook_incoming';
+/**
+ * Kind of messages
+ * - log: classic string message
+ * - http: an HTTP request with request/response added to the log
+ */
+export type MessageType = 'log' | 'http';
+
+/**
+ * Error code attached to the message
+ * Not used yet
+ */
 export type MessageCode = 'success';
+
+/**
+ * State of the Operation
+ */
 export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeout' | 'cancelled';
 
-export interface MessageRow {
+/**
+ * Operations
+ */
+export interface MessageOpSync {
+    type: 'sync';
+    action: 'pause' | 'unpause' | 'run' | 'run_full' | 'cancel' | 'init';
+}
+export interface MessageOpProxy {
+    type: 'proxy';
+}
+export interface MessageOpAction {
+    type: 'action';
+}
+export interface MessageOpAuth {
+    type: 'auth';
+}
+export interface MessageOpToken {
+    type: 'token';
+}
+export interface MessageOpAdmin {
+    type: 'admin';
+    action: 'impersonation';
+}
+export interface MessageOpWebhook {
+    type: 'webhook';
+    action: 'incoming' | 'outgoing';
+}
+export interface MessageOpDeploy {
+    type: 'deploy';
+    action: 'prebuilt' | 'custom';
+}
+export type MessageOperation =
+    | MessageOpSync
+    | MessageOpProxy
+    | MessageOpAction
+    | MessageOpWebhook
+    | MessageOpDeploy
+    | MessageOpAuth
+    | MessageOpAdmin
+    | MessageOpToken;
+
+/**
+ * Full schema
+ */
+export type MessageRow = {
     id: string;
 
     // State
@@ -25,10 +89,10 @@ export interface MessageRow {
     environmentId: number | null;
     environmentName: string | null;
 
-    configId: string | null;
+    configId: number | null;
     configName: string | null;
 
-    connectionId: string | null;
+    connectionId: number | null;
     connectionName: string | null;
 
     syncId: string | null;
@@ -36,33 +100,34 @@ export interface MessageRow {
 
     jobId: string | null;
 
-    userId: string | null;
+    userId: number | null;
 
     parentId: string | null;
 
     // Associated meta
-    error: Error | null;
+    error: { name: string; message: string } | null;
     request: {
         url: string;
+        method: string;
         headers: Record<string, string>;
     } | null;
     response: {
         code: number;
         headers: Record<string, string>;
     } | null;
-    meta: MessageMeta;
+    meta: MessageMeta | null;
 
     // Dates
     createdAt: string;
     updatedAt: string;
     startedAt: string | null;
     endedAt: string | null;
-}
+} & { operation: MessageOperation | null };
 
 /**
  * What is required to insert a Message
  */
-export type OperationRequired = 'type' | 'message' | 'accountId' | 'accountName';
+export type OperationRequired = 'operation' | 'message';
 export type OperationRowInsert = Pick<MessageRow, OperationRequired> & Partial<Omit<MessageRow, OperationRequired>>;
 
 /**

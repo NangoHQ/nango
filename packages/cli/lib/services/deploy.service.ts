@@ -35,7 +35,7 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        await compileService.run(debug);
+        await compileService.run({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -108,7 +108,7 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        await compileService.run(debug);
+        await compileService.run({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -195,7 +195,8 @@ class DeployService {
                 }
             })
             .catch((err) => {
-                const errorMessage = JSON.stringify(err instanceof AxiosError ? err.response?.data : err, null, 2);
+                const errorMessage =
+                    err instanceof AxiosError ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
                 console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                 process.exit(1);
             });
@@ -227,7 +228,11 @@ class DeployService {
             for (const flow of flows) {
                 const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = flow;
 
-                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
+                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
+                    syncName,
+                    providerConfigKey,
+                    './'
+                );
 
                 const metadata = {} as NangoConfigMetadata;
 
@@ -288,8 +293,8 @@ class DeployService {
                     sync_type: flow.sync_type as SyncType,
                     type,
                     fileBody: {
-                        js: localFileService.getIntegrationFile(syncName, './') as string,
-                        ts: localFileService.getIntegrationTsFile(syncName, './') as string
+                        js: localFileService.getIntegrationFile(syncName, providerConfigKey, './') as string,
+                        ts: localFileService.getIntegrationTsFile(syncName, providerConfigKey, type) as string
                     },
                     model_schema: JSON.stringify(model_schema),
                     endpoints: flow.endpoints,
