@@ -34,6 +34,9 @@ export const v1toV2Migration = async (loadLocation: string): Promise<void> => {
 
 async function createDirectory(dirPath: string, debug = false): Promise<void> {
     if (fs.existsSync(dirPath)) {
+        if (debug) {
+            printDebug(`Directory already exists at ${dirPath}.`);
+        }
         return;
     }
     try {
@@ -48,6 +51,9 @@ async function createDirectory(dirPath: string, debug = false): Promise<void> {
 
 async function moveFile(source: string, destination: string, debug = false): Promise<boolean> {
     if (fs.existsSync(destination)) {
+        if (debug) {
+            printDebug(`File already exists at ${destination}.`);
+        }
         return false;
     }
     try {
