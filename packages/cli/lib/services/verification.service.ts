@@ -1,12 +1,11 @@
 import fs from 'fs';
 import chalk from 'chalk';
 import promptly from 'promptly';
-import { exec } from 'child_process';
 
-import { nangoConfigFile, loadLocalNangoConfig, determineVersion } from '@nangohq/shared';
+import { nangoConfigFile } from '@nangohq/shared';
 import configService from './config.service.js';
 import compileService, { listFilesToCompile } from './compile.service.js';
-import { printDebug, getNangoRootPath } from '../utils.js';
+import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
 
@@ -89,32 +88,6 @@ class VerificationService {
                     await compileService.run({ debug });
                 }
             }
-        }
-    }
-
-    public async runMigration(loadLocation: string): Promise<void> {
-        if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
-            return;
-        }
-        const localConfig = await loadLocalNangoConfig(loadLocation);
-
-        if (!localConfig) {
-            return;
-        }
-
-        const version = determineVersion(localConfig);
-        if (version === 'v2') {
-            console.log(chalk.blue(`nango.yaml is already at v2.`));
-        }
-        if (version === 'v1' && localConfig.integrations) {
-            exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error) => {
-                if (error) {
-                    console.log(chalk.red(`There was an issue migrating your nango.yaml to v2.`));
-                    console.error(error);
-                    return;
-                }
-                console.log(chalk.blue(`Migrated to v2 of nango.yaml!`));
-            });
         }
     }
 
