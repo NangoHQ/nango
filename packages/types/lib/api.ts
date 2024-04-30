@@ -5,6 +5,8 @@ export interface ApiError<TCode extends string> {
     };
 }
 
+export type ResErrors = ApiError<'invalid_query_params'>;
+
 /**
  * API Request/Response type
  */
