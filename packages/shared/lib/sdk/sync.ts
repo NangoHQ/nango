@@ -219,6 +219,21 @@ export class ActionError<T = Record<string, unknown>> extends Error {
     }
 }
 
+interface RunArgs {
+    sync: string;
+    connectionId: string;
+    lastSyncDate?: string;
+    useServerLastSyncDate?: boolean;
+    input?: object;
+    metadata?: Metadata;
+    autoConfirm: boolean;
+    debug: boolean;
+}
+
+export interface DryRunServiceInterface {
+    run: (options: RunArgs, environment?: string, debug?: boolean) => Promise<string | void>;
+}
+
 export interface NangoProps {
     host?: string;
     secretKey: string;
@@ -238,6 +253,7 @@ export interface NangoProps {
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
 }
 
 interface EnvironmentVariable {
@@ -257,6 +273,7 @@ export class NangoAction {
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
 
     public connectionId: string;
     public providerConfigKey: string;
@@ -312,6 +329,10 @@ export class NangoAction {
 
         if (config.abortSignal) {
             this.abortSignal = config.abortSignal;
+        }
+
+        if (config.dryRunService) {
+            this.dryRunService = config.dryRunService;
         }
     }
 
@@ -620,8 +641,17 @@ export class NangoAction {
         return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input) as T;
     }
 
-    public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void> {
-        return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
+    public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {
+        if (this.dryRun && this.dryRunService) {
+            return this.dryRunService.run({
+                sync: syncName,
+                connectionId,
+                autoConfirm: true,
+                debug: false
+            });
+        } else {
+            return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
+        }
     }
 }
 
