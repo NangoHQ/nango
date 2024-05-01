@@ -12,111 +12,138 @@ import { TYPES_FILE_NAME } from '../constants.js';
 import modelService from './model.service.js';
 import parserService from './parser.service.js';
 
-class CompileService {
-    public async run({
-        debug,
-        scriptName,
-        providerConfigKey,
-        type
-    }: {
-        debug: boolean;
-        scriptName?: string;
-        providerConfigKey?: string;
-        type?: string;
-    }): Promise<boolean> {
-        const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+export async function compileAllFiles({
+    debug,
+    scriptName,
+    providerConfigKey,
+    type
+}: {
+    debug: boolean;
+    scriptName?: string;
+    providerConfigKey?: string;
+    type?: string;
+}): Promise<boolean> {
+    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-        const distDir = './dist';
-        if (!fs.existsSync(distDir)) {
-            if (debug) {
-                printDebug(`Creating ${distDir} directory`);
-            }
-            fs.mkdirSync(distDir);
-        }
-
-        if (!fs.existsSync(`./${TYPES_FILE_NAME}`)) {
-            if (debug) {
-                printDebug(`Creating ${TYPES_FILE_NAME} file`);
-            }
-            await modelService.createModelFile();
-        }
-
-        const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
-        const compiler = tsNode.create({
-            skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-            compilerOptions
-        });
-
+    const distDir = './dist';
+    if (!fs.existsSync(distDir)) {
         if (debug) {
-            printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
+            printDebug(`Creating ${distDir} directory`);
         }
+        fs.mkdirSync(distDir);
+    }
 
-        const { success: loadSuccess, error, response: config } = await configService.load('', debug);
-
-        if (!loadSuccess || !config) {
-            console.log(chalk.red(error?.message));
-            throw new Error('Error loading config');
+    if (!fs.existsSync(`./${TYPES_FILE_NAME}`)) {
+        if (debug) {
+            printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
+        await modelService.createModelFile();
+    }
 
-        let scriptDirectory = process.cwd();
-        if (scriptName && providerConfigKey && type) {
-            scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type });
-            console.log(chalk.green(`Compiling ${scriptName}.ts in ${scriptDirectory}`));
-        }
+    const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
+    const compiler = tsNode.create({
+        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+        compilerOptions
+    });
 
-        const integrationFiles = listFilesToCompile({ scriptName, cwd: scriptDirectory, config, debug });
-        let success = true;
+    if (debug) {
+        printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
+    }
 
-        const modelNames = configService.getModelNames(config);
+    const { success: loadSuccess, error, response: config } = await configService.load('', debug);
 
-        for (const file of integrationFiles) {
-            try {
-                const pathSegments = file.inputPath.split('/');
-                const scriptType = pathSegments[pathSegments.length - 2];
-                const isNested = scriptType === 'syncs' || scriptType === 'actions';
+    if (!loadSuccess || !config) {
+        console.log(chalk.red(error?.message));
+        throw new Error('Error loading config');
+    }
 
-                let providerConfiguration;
-                if (isNested) {
-                    const providerConfigKey = pathSegments[pathSegments.length - 3];
-                    providerConfiguration = config.find((config) => config.providerConfigKey === providerConfigKey);
-                } else {
-                    providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === file.baseName));
-                }
+    let scriptDirectory = process.cwd();
+    if (scriptName && providerConfigKey && type) {
+        scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type });
+        console.log(chalk.green(`Compiling ${scriptName}.ts in ${scriptDirectory}`));
+    }
 
-                if (!providerConfiguration) {
-                    continue;
-                }
+    const integrationFiles = listFilesToCompile({ scriptName, cwd: scriptDirectory, config, debug });
+    let success = true;
 
-                const syncConfig = [...(providerConfiguration?.syncs || []), ...(providerConfiguration?.actions || [])].find(
-                    (sync) => sync.name === file.baseName
-                );
-                const type = syncConfig?.type || SyncConfigType.SYNC;
+    const modelNames = configService.getModelNames(config);
 
-                if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
-                    if (scriptName && file.inputPath.includes(scriptName)) {
-                        success = false;
-                    }
-                    continue;
-                }
-                const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
-                const dirname = path.dirname(file.outputPath);
-                const extname = path.extname(file.outputPath);
-                const basename = path.basename(file.outputPath, extname);
-
-                const fileNameWithExtension = `${basename}-${providerConfiguration.providerConfigKey}${extname}`;
-                const outputPath = path.join(dirname, fileNameWithExtension);
-
-                fs.writeFileSync(outputPath, result);
-                console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
-            } catch (error) {
-                console.error(`Error compiling "${file.inputPath}":`);
-                console.error(error);
+    for (const file of integrationFiles) {
+        try {
+            const completed = compile({ file, config, compiler, modelNames });
+            if (!completed) {
                 success = false;
             }
+        } catch (error) {
+            console.error(`Error compiling "${file.inputPath}":`);
+            console.error(error);
+            success = false;
         }
-
-        return success;
     }
+
+    return success;
+}
+
+export function compileSingleFile({
+    file,
+    tsconfig,
+    config,
+    modelNames
+}: {
+    file: ListedFile;
+    tsconfig: string;
+    config: StandardNangoConfig[];
+    modelNames: string[];
+}) {
+    // This needs to be re-declared each time
+    const compiler = tsNode.create({
+        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+        compilerOptions: JSON.parse(tsconfig).compilerOptions
+    });
+
+    try {
+        compile({ file, config, compiler, modelNames });
+    } catch (error) {
+        console.error(`Error compiling ${file.inputPath}:`);
+        console.error(error);
+        return;
+    }
+}
+
+function compile({
+    file,
+    config,
+    compiler,
+    modelNames
+}: {
+    file: ListedFile;
+    config: StandardNangoConfig[];
+    compiler: tsNode.Service;
+    modelNames: string[];
+}): boolean {
+    const providerConfiguration = localFileService.getProviderConfigurationFromPath(file.inputPath, config);
+
+    if (!providerConfiguration) {
+        return false;
+    }
+
+    const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
+    const type = syncConfig?.type || SyncConfigType.SYNC;
+
+    if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
+        return false;
+    }
+    const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
+    const dirname = path.dirname(file.outputPath);
+    const extname = path.extname(file.outputPath);
+    const basename = path.basename(file.outputPath, extname);
+
+    const fileNameWithExtension = `${basename}-${providerConfiguration.providerConfigKey}${extname}`;
+    const outputPath = path.join(dirname, fileNameWithExtension);
+
+    fs.writeFileSync(outputPath, result);
+    console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
+    return true;
 }
 
 export interface ListedFile {
@@ -182,6 +209,3 @@ export function listFilesToCompile({
         return getFileToCompile(filePath);
     });
 }
-
-const compileService = new CompileService();
-export default compileService;
