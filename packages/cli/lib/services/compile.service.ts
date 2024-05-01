@@ -75,7 +75,7 @@ export async function compileAllFiles({
                 success = false;
             }
         } catch (error) {
-            console.error(`Error compiling "${file.inputPath}":`);
+            console.log(chalk.red(`Error compiling "${file.inputPath}":`));
             console.error(error);
             success = false;
         }
