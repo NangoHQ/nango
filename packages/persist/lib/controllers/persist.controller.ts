@@ -77,7 +77,7 @@ class PersistController {
         } = req;
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            const newUpsert = recordsService.upsert(records, nangoConnectionId, model, false);
+            const newUpsert = recordsService.upsert({ records, connectionId: nangoConnectionId, model, softDelete: false });
             const legacyUpsert = dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
             const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
             return newRes;
@@ -110,7 +110,7 @@ class PersistController {
         } = req;
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            const newUpsert = recordsService.upsert(records, nangoConnectionId, model, true);
+            const newUpsert = recordsService.upsert({ records, connectionId: nangoConnectionId, model, softDelete: true });
             const legacyUpsert = dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
             const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
             return newRes;
@@ -143,7 +143,7 @@ class PersistController {
         } = req;
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            const newUpsert = recordsService.update(records, nangoConnectionId, model);
+            const newUpsert = recordsService.update({ records, connectionId: nangoConnectionId, model });
             const legacyUpsert = dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
             const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
             return newRes;
@@ -216,7 +216,14 @@ class PersistController {
         });
 
         let formattedRecords: FormattedRecord[] = [];
-        const formatting = recordsFormatter.formatRecords(records as UnencryptedRecordData[], nangoConnectionId, model, syncId, syncJobId, softDelete);
+        const formatting = recordsFormatter.formatRecords({
+            data: records as UnencryptedRecordData[],
+            connectionId: nangoConnectionId,
+            model,
+            syncId,
+            syncJobId,
+            softDelete
+        });
         if (isErr(formatting)) {
             logger.error('Failed to format records: ' + formatting.err.message);
         } else {

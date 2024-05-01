@@ -181,23 +181,23 @@ async function upsertRecords(
     syncJobId: number,
     softDelete = false
 ): Promise<UpsertSummary> {
-    const formatRes = formatRecords(records, connectionId, model, syncId, syncJobId, softDelete);
+    const formatRes = formatRecords({ data: records, connectionId, model, syncId, syncJobId, softDelete });
     if (isErr(formatRes)) {
         throw new Error(`Failed to format records: ${formatRes.err.message}`);
     }
-    const updateRes = await Records.upsert(formatRes.res, connectionId, model, softDelete);
-    if (isErr(updateRes)) {
-        throw new Error(`Failed to update records: ${updateRes.err.message}`);
+    const upsertRes = await Records.upsert({ records: formatRes.res, connectionId, model, softDelete });
+    if (isErr(upsertRes)) {
+        throw new Error(`Failed to update records: ${upsertRes.err.message}`);
     }
-    return updateRes.res;
+    return upsertRes.res;
 }
 
 async function updateRecords(records: UnencryptedRecordData[], connectionId: number, model: string, syncId: string, syncJobId: number) {
-    const formatRes = formatRecords(records, connectionId, model, syncId, syncJobId);
+    const formatRes = formatRecords({ data: records, connectionId, model, syncId, syncJobId });
     if (isErr(formatRes)) {
         throw new Error(`Failed to format records: ${formatRes.err.message}`);
     }
-    const updateRes = await Records.update(formatRes.res, connectionId, model);
+    const updateRes = await Records.update({ records: formatRes.res, connectionId, model });
     if (isErr(updateRes)) {
         throw new Error(`Failed to update records: ${updateRes.err.message}`);
     }

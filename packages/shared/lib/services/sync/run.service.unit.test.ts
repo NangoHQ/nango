@@ -24,7 +24,17 @@ class integrationServiceMock implements IntegrationServiceInterface {
 
 const integrationService = new integrationServiceMock();
 const recordsService = {
-    markNonCurrentGenerationRecordsAsDeleted: (_connectionId: number, _model: string, _syncId: string, _generation: number): Promise<string[]> => {
+    markNonCurrentGenerationRecordsAsDeleted: ({
+        connectionId: _connectionId,
+        model: _model,
+        syncId: _syncId,
+        generation: _generation
+    }: {
+        connectionId: number;
+        model: string;
+        syncId: string;
+        generation: number;
+    }): Promise<string[]> => {
         return Promise.resolve([]);
     }
 };

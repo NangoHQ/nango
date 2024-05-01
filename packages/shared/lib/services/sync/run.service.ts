@@ -84,7 +84,17 @@ export interface SyncRunConfig {
 }
 
 export interface RecordsServiceInterface {
-    markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, syncId: string, generation: number): Promise<string[]>;
+    markNonCurrentGenerationRecordsAsDeleted({
+        connectionId,
+        model,
+        syncId,
+        generation
+    }: {
+        connectionId: number;
+        model: string;
+        syncId: string;
+        generation: number;
+    }): Promise<string[]>;
 }
 
 export default class SyncRun {
@@ -498,7 +508,12 @@ export default class SyncRun {
                     this.syncJobId as number
                 );
                 this.recordsService
-                    .markNonCurrentGenerationRecordsAsDeleted(this.nangoConnection.id as number, model, this.syncId as string, this.syncJobId as number)
+                    .markNonCurrentGenerationRecordsAsDeleted({
+                        connectionId: this.nangoConnection.id as number,
+                        model,
+                        syncId: this.syncId as string,
+                        generation: this.syncJobId as number
+                    })
                     .catch((err: unknown) => {
                         logger.error(`Error marking non current generation records as deleted:`, err, {
                             connectionId: this.nangoConnection.id,
