@@ -5,6 +5,8 @@ import tracer from 'dd-trace';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
+    getAccount,
+    accountService,
     deploy as deploySyncConfig,
     syncDataService,
     connectionService,
@@ -61,6 +63,22 @@ class SyncController {
                 singleDeployMode
             }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
+            const accountId = getAccount(res);
+
+            const account = await accountService.getAccountById(accountId);
+
+            if (account?.is_capped) {
+                for (const sync of syncs) {
+                    const { providerConfigKey } = sync;
+                    const isCapped = await connectionService.shouldCapUsage({ providerConfigKey, environmentId });
+
+                    if (isCapped) {
+                        errorManager.errRes(res, 'resource_capped');
+                        return;
+                    }
+                }
+            }
+
             let reconcileSuccess = true;
 
             const {
