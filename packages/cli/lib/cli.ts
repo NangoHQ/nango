@@ -168,12 +168,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 if (layout_mode === 'root') {
                     fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
                 } else {
-                    if (!fs.existsSync(`${dirPrefix}/${providerConfigKey}`)) {
-                        fs.mkdirSync(`${dirPrefix}/${providerConfigKey}`);
-                    }
-                    if (!fs.existsSync(`${dirPrefix}/${providerConfigKey}/${type}s`)) {
-                        fs.mkdirSync(`${dirPrefix}/${providerConfigKey}/${type}s`);
-                    }
+                    fs.mkdirSync(`${dirPrefix}/${providerConfigKey}/${type}s`, { recursive: true });
                     fs.writeFileSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
                 }
                 if (debug) {
