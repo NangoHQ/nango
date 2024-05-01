@@ -19,11 +19,11 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
-import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
+import type { UpsertSummary } from '@nangohq/records';
 
 const logger = getLogger('run.service');
 
@@ -508,7 +508,15 @@ export default class SyncRun {
                 });
             }
 
-            await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);
+            await this.reportResults(
+                model,
+                { addedKeys: [], updatedKeys: [], deletedKeys, nonUniqueKeys: [] },
+                i,
+                models.length,
+                syncStartDate,
+                version,
+                totalRunTime
+            );
             i++;
         }
 
