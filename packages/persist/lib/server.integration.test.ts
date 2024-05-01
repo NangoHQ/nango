@@ -14,6 +14,7 @@ import {
     db
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
+import { migrate as migrateRecords } from '@nangohq/records';
 
 const mockSecretKey = 'secret-key';
 
@@ -30,6 +31,7 @@ describe('Persist API', () => {
 
     beforeAll(async () => {
         await multipleMigrations();
+        await migrateRecords();
         seed = await initDb();
         server.listen(port);
 

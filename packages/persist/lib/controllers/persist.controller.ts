@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { LogLevel, DataResponse, DataRecord, UpsertResponse } from '@nangohq/shared';
+import type { LogLevel, DataResponse, DataRecord } from '@nangohq/shared';
 import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
-import type { FormattedRecord, UnencryptedRecordData } from '@nangohq/records';
+import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
 import {
     createActivityLogMessage,
     errorManager,
@@ -77,17 +77,10 @@ class PersistController {
         } = req;
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            recordsService
-                .upsert(records, nangoConnectionId, model, false)
-                .then((res) => {
-                    if (isErr(res)) {
-                        throw res.err;
-                    }
-                })
-                .catch((err: unknown) => {
-                    logger.error(`Failed to save records: ${stringifyError(err)}`);
-                });
-            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
+            const newUpsert = recordsService.upsert(records, nangoConnectionId, model, false);
+            const legacyUpsert = dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
+            const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
+            return newRes;
         };
         const result = await PersistController.persistRecords({
             persistType: 'save',
@@ -117,17 +110,10 @@ class PersistController {
         } = req;
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            recordsService
-                .upsert(records, nangoConnectionId, model, true)
-                .then((res) => {
-                    if (isErr(res)) {
-                        throw res.err;
-                    }
-                })
-                .catch((err: unknown) => {
-                    logger.error(`Failed to delete records: ${stringifyError(err)}`);
-                });
-            return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
+            const newUpsert = recordsService.upsert(records, nangoConnectionId, model, true);
+            const legacyUpsert = dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
+            const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
+            return newRes;
         };
         const result = await PersistController.persistRecords({
             persistType: 'delete',
@@ -157,17 +143,10 @@ class PersistController {
         } = req;
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
         const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            recordsService
-                .update(records, nangoConnectionId, model)
-                .then((res) => {
-                    if (isErr(res)) {
-                        throw res.err;
-                    }
-                })
-                .catch((err: unknown) => {
-                    logger.error(`Failed to update records: ${stringifyError(err)}`);
-                });
-            return await dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
+            const newUpsert = recordsService.update(records, nangoConnectionId, model);
+            const legacyUpsert = dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
+            const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
+            return newRes;
         };
         const result = await PersistController.persistRecords({
             persistType: 'update',
@@ -215,7 +194,7 @@ class PersistController {
         records: Record<string, any>[];
         activityLogId: number;
         softDelete: boolean;
-        persistFunction: (records: FormattedRecord[], legacyRecords: DataRecord[]) => Promise<UpsertResponse>;
+        persistFunction: (records: FormattedRecord[], legacyRecords: DataRecord[]) => Promise<Result<UpsertSummary>>;
     }): Promise<Result<void>> {
         const active = tracer.scope().active();
         const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
@@ -289,13 +268,13 @@ class PersistController {
         //     });
         // }
 
-        if (persistResult.success) {
-            const { summary } = persistResult;
+        if (isOk(persistResult)) {
+            const summary = persistResult.res;
             const updatedResults = {
                 [model]: {
-                    added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number,
-                    deleted: summary?.deletedKeys?.length as number
+                    added: summary.addedKeys.length,
+                    updated: summary.updatedKeys.length,
+                    deleted: summary.deletedKeys?.length as number
                 }
             };
 
@@ -316,7 +295,7 @@ class PersistController {
             span.finish();
             return resultOk(void 0);
         } else {
-            const content = `There was an issue with the batch ${persistType}. ${persistResult.error}`;
+            const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.err)}`;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -325,7 +304,7 @@ class PersistController {
                 content,
                 timestamp: Date.now()
             });
-            await logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
+            await logCtx.error('There was an issue with the batch', { error: persistResult.err, persistType });
 
             errorManager.report(content, {
                 environmentId: environmentId,
@@ -339,7 +318,7 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            const res = resultErr(persistResult.error!);
+            const res = resultErr(persistResult.err);
             span.setTag('error', res.err).finish();
             return res;
         }
