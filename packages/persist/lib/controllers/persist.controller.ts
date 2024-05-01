@@ -28,7 +28,7 @@ type RecordRequest = Request<
         syncId: string;
         syncJobId: number;
     },
-    any,
+    void,
     {
         model: string;
         records: Record<string, any>[];
@@ -36,12 +36,12 @@ type RecordRequest = Request<
         connectionId: string;
         activityLogId: number;
     },
-    any
+    void
 >;
 
 class PersistController {
     public async saveActivityLog(
-        req: Request<{ environmentId: number }, any, { activityLogId: number; level: LogLevel; msg: string }, any>,
+        req: Request<{ environmentId: number }, void, { activityLogId: number; level: LogLevel; msg: string }, void>,
         res: Response,
         next: NextFunction
     ) {
