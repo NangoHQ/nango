@@ -72,7 +72,9 @@ export async function compileAllFiles({
         try {
             const completed = compile({ file, config, compiler, modelNames });
             if (!completed) {
-                success = false;
+                if (scriptName && file.inputPath.includes(scriptName)) {
+                    success = false;
+                }
             }
         } catch (error) {
             console.log(chalk.red(`Error compiling "${file.inputPath}":`));
