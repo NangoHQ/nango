@@ -42,7 +42,7 @@ describe('generate function tests', () => {
 
     it('should init the expected files in the nango-integrations directory', async () => {
         await init();
-        expect(fs.existsSync(`./${testDirectory}/${exampleSyncName}.ts`)).toBe(true);
+        expect(fs.existsSync(`./${testDirectory}/demo-github-integration/syncs/${exampleSyncName}.ts`)).toBe(true);
         expect(fs.existsSync(`./${testDirectory}/.env`)).toBe(true);
         expect(fs.existsSync(`./${testDirectory}/nango.yaml`)).toBe(true);
     });
@@ -97,7 +97,7 @@ describe('generate function tests', () => {
         expect(fs.existsSync(`${testDirectory}/some-other-sync.ts`)).toBe(true);
     });
 
-    it('should support a single model return', async () => {
+    it('should support a single model return in v1 format', async () => {
         await init();
         const data = {
             integrations: {
@@ -129,6 +129,43 @@ describe('generate function tests', () => {
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
         await generate(false, true);
         expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(true);
+    });
+
+    it('should support a single model return in v2 format', async () => {
+        await init();
+        const data = {
+            integrations: {
+                'demo-github-integration': {
+                    syncs: {
+                        'single-model-return': {
+                            type: 'sync',
+                            runs: 'every half hour',
+                            endpoint: '/issues',
+                            output: 'GithubIssue'
+                        }
+                    }
+                }
+            },
+            models: {
+                GithubIssue: {
+                    id: 'integer',
+                    owner: 'string',
+                    repo: 'string',
+                    issue_number: 'number',
+                    title: 'string',
+                    author: 'string',
+                    author_id: 'string',
+                    state: 'string',
+                    date_created: 'date',
+                    date_last_modified: 'date',
+                    body: 'string'
+                }
+            }
+        };
+        const yamlData = yaml.dump(data);
+        await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
+        await generate(false, true);
+        expect(fs.existsSync(`${testDirectory}/demo-github-integration/syncs/single-model-return.ts`)).toBe(true);
     });
 
     it('should not create a file if endpoint is missing from a v2 config', async () => {
@@ -163,7 +200,7 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
-        expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(false);
+        expect(fs.existsSync(`${testDirectory}/demo-github-integration/syncs/single-model-return.ts`)).toBe(false);
     });
 
     it('should generate missing from a v2 config', async () => {
@@ -200,7 +237,7 @@ describe('generate function tests', () => {
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
         await generate(false, true);
-        expect(fs.existsSync(`${testDirectory}/single-model-issue-output.ts`)).toBe(true);
+        expect(fs.existsSync(`${testDirectory}/demo-github-integration/syncs/single-model-issue-output.ts`)).toBe(true);
     });
 
     it('should throw an error if a model is missing an id that is actively used', async () => {

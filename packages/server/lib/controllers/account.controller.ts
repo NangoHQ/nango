@@ -113,7 +113,7 @@ class AccountController {
 
             const { account } = response;
 
-            if (account?.uuid !== NANGO_ADMIN_UUID) {
+            if (account.uuid !== NANGO_ADMIN_UUID) {
                 res.status(401).send({ message: 'Unauthorized' });
                 return;
             }

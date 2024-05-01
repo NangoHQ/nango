@@ -1,7 +1,7 @@
 <%
     const formattedInterfaceNames = Array.isArray(interfaceNames) ? interfaceNames.join(', ') : interfaceNames;
 %>
-import type { NangoSync<%= formattedInterfaceNames ? ', ' + formattedInterfaceNames : '' %> } from './<%= interfaceFileName %>';
+import type { NangoSync<%= formattedInterfaceNames ? ', ' + formattedInterfaceNames : '' %> } from '<%= interfacePath %><%= interfaceFileName %>';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     // Integration code goes here

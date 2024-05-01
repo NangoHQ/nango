@@ -6,7 +6,8 @@ import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext } from '@nangohq/logs';
-import { resultOk, type Result, resultErr } from '@nangohq/utils';
+import { resultOk, resultErr } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 const TABLE = dbNamespace + 'sync_schedules';
 

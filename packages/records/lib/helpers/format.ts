@@ -3,7 +3,8 @@ import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import type { FormattedRecord, UnencryptedRecordData } from '../types.js';
-import { resultErr, resultOk, type Result } from '@nangohq/utils';
+import { resultErr, resultOk } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
 

@@ -94,7 +94,7 @@ class AppAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[AuthModes.App] as string);
 
             if (template.auth_mode !== AuthModes.App) {
@@ -103,7 +103,7 @@ class AppAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Provider ${config?.provider} does not support app creation`
+                    content: `Provider ${config.provider} does not support app creation`
                 });
                 await logCtx.error('Provider does not support app creation', { provider: config.provider });
                 await logCtx.failed();
@@ -140,7 +140,7 @@ class AppAuthController {
 
             const connectionConfig = {
                 installation_id,
-                app_id: config?.oauth_client_id
+                app_id: config.oauth_client_id
             };
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {

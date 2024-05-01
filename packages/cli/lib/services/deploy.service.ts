@@ -71,8 +71,8 @@ class DeployService {
                 .then(() => {
                     console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
                 })
-                .catch((err: any) => {
-                    const errorMessage = JSON.stringify(err.response.data, null, 2);
+                .catch((err: unknown) => {
+                    const errorMessage = JSON.stringify(err instanceof AxiosError ? err.response?.data : err, null, 2);
                     console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                     process.exit(1);
                 });
@@ -194,7 +194,7 @@ class DeployService {
                     console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
                 }
             })
-            .catch((err) => {
+            .catch((err: unknown) => {
                 const errorMessage =
                     err instanceof AxiosError ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
                 console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
@@ -275,7 +275,7 @@ class DeployService {
                     printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
                 }
 
-                if (flow?.input?.fields) {
+                if (flow.input?.fields) {
                     model_schema.push(flow.input);
                 }
 
@@ -289,7 +289,7 @@ class DeployService {
                     auto_start: flow.auto_start === false ? false : true,
                     attributes: flow.attributes || {},
                     metadata: metadata || {},
-                    input: flow?.input?.name || '',
+                    input: flow.input?.name || '',
                     sync_type: flow.sync_type as SyncType,
                     type,
                     fileBody: {

@@ -7,3 +7,4 @@ export * from './id.js';
 export * from './result.js';
 export * from './encryption.js';
 export * as metrics from './telemetry/metrics.js';
+export * from './retry.js';

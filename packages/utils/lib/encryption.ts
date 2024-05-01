@@ -1,4 +1,5 @@
-import crypto, { type CipherGCMTypes } from 'crypto';
+import crypto from 'crypto';
+import type { CipherGCMTypes } from 'crypto';
 
 export class Encryption {
     protected key: string;
