@@ -355,7 +355,7 @@ export async function deployPreBuilt(
         let file_location = '';
         if (is_public) {
             file_location = (await remoteFileService.copy(
-                `${config?.public_route}/dist`,
+                `${config.public_route}/dist`,
                 `${sync_name}.js`,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
                 environment_id
@@ -384,13 +384,13 @@ export async function deployPreBuilt(
 
         if (is_public) {
             await remoteFileService.copy(
-                config?.public_route as string,
+                config.public_route as string,
                 `${sync_name}.ts`,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
+                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${type}s/${sync_name}.ts`,
                 environment_id
             );
         } else {
-            if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
+            if (typeof config.fileBody === 'object' && config.fileBody.ts) {
                 await remoteFileService.upload(
                     config.fileBody.ts,
                     `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
@@ -697,7 +697,7 @@ async function compileDeployInfo({
         environment_id
     )) as string;
 
-    if (typeof fileBody === 'object' && fileBody?.ts) {
+    if (typeof fileBody === 'object' && fileBody.ts) {
         await remoteFileService.upload(
             fileBody.ts,
             `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
