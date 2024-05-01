@@ -91,7 +91,7 @@ This command starts a process that continuously compiles your integration script
 Open the generated sync script (named `[sync-name].ts`) which should contain the following scaffolding : 
 
 ```typescript salesforce-contacts.ts
-import { NangoSync, Contact } from '../../models';
+import type { NangoSync, Contact } from '../../models';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
 	// Integration code goes here.
@@ -101,7 +101,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
 Fill in the `fetchData` method with your integration code (in the example here, we fetch tasks from Salesforce):
 
 ```ts salesforce-contacts.ts
-import { NangoSync, Contact } from '../../models';
+import type { NangoSync, Contact } from '../../models';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const query = buildQuery(nango.lastSyncDate);
