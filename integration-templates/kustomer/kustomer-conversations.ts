@@ -1,4 +1,4 @@
-import type { NangoSync, KustomerConversation } from './models';
+import type { NangoSync, KustomerConversation } from '../../models';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     try {
