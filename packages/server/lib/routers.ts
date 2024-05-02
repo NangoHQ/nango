@@ -1,5 +1,3 @@
-import './tracer.js';
-import './utils/config.js';
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import oauthController from './controllers/oauth.controller.js';
@@ -30,29 +28,23 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, getLogger } from '@nangohq/utils';
-import { environmentService, errorManager } from '@nangohq/shared';
-import oAuthSessionService from './services/oauth-session.service.js';
-import migrate from './utils/migrate.js';
-import { migrate as migrateRecords } from '@nangohq/records';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
+import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { start as migrateLogs } from '@nangohq/logs';
 import { listOperations } from './controllers/v1/logs/listOperations.js';
-
-const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
-
-const logger = getLogger('Server');
 
 export const app = express();
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
-const webAuth = AUTH_ENABLED
-    ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
-    : isBasicAuthEnabled
-      ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
-      : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
+const webAuth = isTest
+    ? [authMiddleware.testAuth.bind(authMiddleware), rateLimiterMiddleware]
+    : AUTH_ENABLED
+      ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
+      : isBasicAuthEnabled
+        ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+        : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 app.use(
     express.json({
@@ -67,21 +59,6 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 const upload = multer({ storage: multer.memoryStorage() });
-
-// Set to 'false' to disable migration at startup. Appropriate when you
-// have multiple replicas of the service running and you do not want them
-// all trying to migrate the database at the same time. In this case, the
-// operator should run migrate.ts once before starting the service.
-if (NANGO_MIGRATE_AT_START === 'true') {
-    await migrate();
-    await migrateLogs();
-    await migrateRecords();
-} else {
-    logger.info('Not migrating database');
-}
-
-await environmentService.cacheSecrets();
-await oAuthSessionService.clearStaleSessions();
 
 // API routes (no/public auth).
 app.get('/health', (_, res) => {
@@ -203,7 +180,7 @@ web.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(acti
 web.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
 web.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibleFilters.bind(activityController));
 
-web.route('/api/v1/logs/operations').get(webAuth, listOperations);
+web.route('/api/v1/logs/operations').post(webAuth, listOperations);
 
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));

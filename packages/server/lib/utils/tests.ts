@@ -3,24 +3,38 @@ import type { Server } from 'node:http';
 import { createServer } from 'node:http';
 import { expect } from 'vitest';
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
-
-import { app } from '../routers.js';
 import { getServerPort } from '@nangohq/shared';
 
+import { app } from '../routers.js';
+
+/**
+ * Type safe API fetch
+ */
 export function apiFetch(baseUrl: string) {
     return async function apiFetch<
         TPath extends APIEndpoints['Path'],
         TEndpoint extends APIEndpointsPickerWithPath<TPath>,
         TMethod extends TEndpoint['Method'],
-        TQuery extends TEndpoint['Querystring']
+        TQuery extends TEndpoint['Querystring'],
+        TBody extends TEndpoint['Body']
     >(
         path: TPath,
-        { method, query }: { method?: TMethod; query?: TQuery } = {}
+        { method, query, token, body }: { method?: TMethod; query?: TQuery; token?: string; body?: TBody } = {}
     ): Promise<{ res: Response; json: APIEndpointsPicker<TMethod, TPath>['Reply'] }> {
         const search = new URLSearchParams(query);
         const url = new URL(`${baseUrl}${path}?${search.toString()}`);
+        const headers = new Headers();
+
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`);
+        }
+        if (body) {
+            headers.append('content-type', 'application/json');
+        }
         const res = await fetch(url, {
-            method: method || 'GET'
+            method: method || 'GET',
+            headers,
+            body: body ? JSON.stringify(body) : null
         });
 
         let json: any = null;
@@ -32,6 +46,9 @@ export function apiFetch(baseUrl: string) {
     };
 }
 
+/**
+ * Type guard API response
+ */
 export function isError(json: any): asserts json is ApiError<any, any> {
     if (!('error' in json)) {
         console.log('isError', inspect(json, true, 100));
@@ -39,16 +56,32 @@ export function isError(json: any): asserts json is ApiError<any, any> {
     }
 }
 
+/**
+ * Check if an endpoint is protected by some auth
+ */
 export function shouldBeProtected({ res, json }: { res: Response; json: any }) {
     isError(json);
-    expect(json).toStrictEqual({
-        error: {
-            code: '401_unauthorized'
-        }
-    });
+    expect(json).toStrictEqual({ error: { code: 'missing_auth_header' } });
     expect(res.status).toBe(401);
 }
 
+/**
+ * Check if an endpoint requires the query params to be set
+ */
+export function shouldRequireQueryEnv({ res, json }: { res: Response; json: any }) {
+    isError(json);
+    expect(json).toStrictEqual({
+        error: {
+            code: 'invalid_query_params',
+            errors: [{ code: 'invalid_type', message: 'Required', path: ['env'] }]
+        }
+    });
+    expect(res.status).toBe(400);
+}
+
+/**
+ * Run the API in the test
+ */
 export async function runServer(): Promise<{ server: Server; url: string; fetch: ReturnType<typeof apiFetch> }> {
     const server = createServer(app);
     return new Promise((resolve) => {

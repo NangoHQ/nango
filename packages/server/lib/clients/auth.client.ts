@@ -7,11 +7,12 @@ import path from 'path';
 import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils';
 import { dirname, userService, database } from '@nangohq/shared';
 import crypto from 'crypto';
-import util from 'util';
+import { promisify } from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
 
 const KnexSessionStore = connectSessionKnex(session);
+const pbkdf2 = promisify(crypto.pbkdf2);
 
 const sessionStore = new KnexSessionStore({
     knex: database.knex,
@@ -60,7 +61,7 @@ export function setupAuth(app: express.Router) {
                     return cb(null, false, { message: 'Incorrect email or password.' });
                 }
 
-                const proposedHashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
+                const proposedHashedPassword = await pbkdf2(password, user.salt, 310000, 32, 'sha256');
                 const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
                 if (proposedHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, proposedHashedPassword)) {

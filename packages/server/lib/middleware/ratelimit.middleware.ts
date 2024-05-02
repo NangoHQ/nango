@@ -47,11 +47,11 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
                 res.setHeader('Retry-After', Math.floor(rateLimiterRes.msBeforeNext / 1000));
                 setXRateLimitHeaders(rateLimiterRes);
                 logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
-                res.status(429).send('Too Many Requests');
+                res.status(429).send({ error: { code: 'too_many_request' } });
                 return;
             }
 
-            res.status(500).send('Server error');
+            res.status(500).send({ error: { code: 'server_error' } });
         });
 };
 

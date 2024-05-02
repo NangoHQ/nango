@@ -16,6 +16,8 @@ import tracer from 'dd-trace';
 
 const logger = getLogger('AccessMiddleware');
 
+const secretKeyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
         const authorizationHeader = req.get('authorization');
@@ -30,7 +32,7 @@ export class AccessMiddleware {
             return errorManager.errRes(res, 'malformed_auth_header');
         }
 
-        if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(secret)) {
+        if (!secretKeyRegex.test(secret)) {
             return errorManager.errRes(res, 'invalid_secret_key_format');
         }
 
@@ -70,7 +72,7 @@ export class AccessMiddleware {
         const fullAccount = await accountService.getAccountById(accountId);
 
         if (fullAccount?.uuid !== NANGO_ADMIN_UUID) {
-            res.status(401).send('Unauthorized');
+            res.status(401).send({ error: { code: 'unauthorized' } });
             return;
         }
         next();
@@ -110,7 +112,7 @@ export class AccessMiddleware {
 
     async sessionAuth(req: Request, res: Response, next: NextFunction) {
         if (!req.isAuthenticated()) {
-            res.status(401).send({ error: 'Not authenticated.' });
+            res.status(401).send({ error: { code: 'unauthorized' } });
             return;
         }
 
@@ -133,7 +135,7 @@ export class AccessMiddleware {
         }
     }
 
-    async basicAuth(req: Request, res: Response, next: NextFunction) {
+    basicAuth(req: Request, res: Response, next: NextFunction) {
         // Already signed in.
         if (req.isAuthenticated()) {
             next();
@@ -142,7 +144,7 @@ export class AccessMiddleware {
 
         // Protected by basic auth: should be signed in.
         if (isBasicAuthEnabled) {
-            res.status(401).send({ error: 'Not authenticated.' });
+            res.status(401).send({ error: { code: 'unauthorized' } });
             return;
         }
     }
@@ -167,6 +169,43 @@ export class AccessMiddleware {
         const candidateKey = authorizationHeader.split('Bearer ').pop();
         if (candidateKey !== adminKey) {
             return errorManager.errRes(res, 'invalid_admin_key');
+        }
+
+        next();
+    }
+
+    async testAuth(req: Request, res: Response, next: NextFunction) {
+        const authorizationHeader = req.get('authorization');
+
+        if (!authorizationHeader) {
+            res.status(401).send({ error: { code: 'missing_auth_header' } });
+            return;
+        }
+
+        const secret = authorizationHeader.split('Bearer ').pop();
+
+        if (!secret) {
+            res.status(401).send({ error: { code: 'malformed_auth_header' } });
+            return;
+        }
+
+        if (!secretKeyRegex.test(secret)) {
+            res.status(401).send({ error: { code: 'invalid_key' } });
+            return;
+        }
+
+        try {
+            const result = await environmentService.getAccountIdAndEnvironmentIdBySecretKey(secret);
+            if (!result) {
+                res.status(401).send({ error: { code: 'unknown_key' } });
+                return;
+            }
+
+            setAccount(result.accountId, res);
+            setEnvironmentId(result.environmentId, res);
+        } catch {
+            res.status(401).send({ error: { code: 'unknown_key' } });
+            return;
         }
 
         next();
