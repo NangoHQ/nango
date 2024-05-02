@@ -566,7 +566,7 @@ export class NangoAction {
 
         if (response.status > 299) {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
+            throw new Error(`Failed to log: ${'error' in response.data ? response.data.error : JSON.stringify(response.data)}`);
         }
 
         return;
@@ -590,7 +590,7 @@ export class NangoAction {
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         const template = configService.getTemplate(this.provider as string);
-        const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
+        const templatePaginationConfig: Pagination | undefined = template.proxy.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
             throw Error('There was no pagination configuration for this integration or configuration passed in.');
@@ -724,7 +724,7 @@ export class NangoSync extends NangoAction {
                 this.logMessages?.messages.push(msg);
             }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.added = Number(this.logMessages?.counts.added) + results.length;
+                this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
             }
             return null;
         }
@@ -775,7 +775,7 @@ export class NangoSync extends NangoAction {
                 this.logMessages?.messages.push(msg);
             }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.deleted = Number(this.logMessages?.counts.deleted) + results.length;
+                this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
             }
             return null;
         }
@@ -826,7 +826,7 @@ export class NangoSync extends NangoAction {
                 this.logMessages?.messages.push(msg);
             }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.updated = Number(this.logMessages?.counts.updated) + results.length;
+                this.logMessages.counts.updated = Number(this.logMessages.counts.updated) + results.length;
             }
             return null;
         }

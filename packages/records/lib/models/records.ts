@@ -447,7 +447,7 @@ async function getUpsertSummary({
             nonUniqueKeys: nonUniqueKeys
         };
     } else {
-        const addedKeys = keys?.filter((key: string) => !nonDeletedKeys.includes(key));
+        const addedKeys = keys.filter((key: string) => !nonDeletedKeys.includes(key));
         const updatedKeys = await getUpdatedKeys({ records, connectionId, model, trx });
         return {
             addedKeys,

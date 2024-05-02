@@ -65,6 +65,24 @@ describe('Persist API', () => {
         expect(response.status).toEqual(201);
     });
 
+    it('should refuse huge log', async () => {
+        const msg: number[] = [];
+
+        for (let index = 0; index < 150_000; index++) {
+            msg.push(index);
+        }
+        const response = await fetch(`${serverUrl}/environment/${seed.env.id}/log`, {
+            method: 'POST',
+            body: JSON.stringify({ activityLogId: seed.activityLogId, level: 'info', msg: msg.join(',') }),
+            headers: {
+                Authorization: `Bearer ${mockSecretKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        expect(response.status).toEqual(400);
+        expect(await response.json()).toStrictEqual({ error: 'Entity too large' });
+    });
+
     describe('save records', () => {
         it('should error if no records', async () => {
             const response = await fetch(
