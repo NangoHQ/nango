@@ -7,6 +7,7 @@ integrations:
                 description: |
                     Fetches a list of spaces from confluence
                 sync_type: full
+                scopes: read:space:confluence
                 endpoint: /confluence/spaces
             pages:
                 runs: every 4 hours
@@ -14,6 +15,7 @@ integrations:
                 description: |
                     Fetches a list of pages from confluence
                 sync_type: full
+                scopes: read:page:confluence
                 endpoint: /confluence/pages
 models:
     ConfluenceSpace:
