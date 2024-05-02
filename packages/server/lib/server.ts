@@ -123,7 +123,6 @@ app.route('/environment-variables').get(apiAuth, environmentController.getEnviro
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
-app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController)); //TODO: to deprecate
 app.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
@@ -231,20 +230,33 @@ if (!isCloud && !isEnterprise) {
     });
 }
 
-// Webapp assets, static files and build.
-const webappBuildPath = '../../../webapp/build';
-web.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-web.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
-web.get('*', (_, res) => {
-    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+// -------
+// 404
+web.use('/api/*', (_req: Request, res: Response) => {
+    res.status(404).json({ error: { code: 'not_found' } });
 });
 
 app.use(web);
 
+// -------
+// Webapp assets, static files and build.
+const webappBuildPath = '../../../webapp/build';
+const staticSite = express.Router();
+staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
+staticSite.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+staticSite.get('*', (_, res) => {
+    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+});
+app.use(staticSite);
+
+// -------
 // Error handling.
-app.use(async (e: any, req: Request, res: Response, __: any) => {
+app.use(async (e: any, req: Request, res: Response, _: any) => {
     await errorManager.handleGenericError(e, req, res, tracer);
 });
+
+// -------
+// Websocket
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 

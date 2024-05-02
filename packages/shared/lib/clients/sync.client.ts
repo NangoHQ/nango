@@ -24,7 +24,6 @@ import { getSyncConfig } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
-import { deleteRecordsBySyncId } from '../services/sync/data/records.service.js';
 import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -452,7 +451,6 @@ class SyncClient {
                         await this.cancelSync(syncId);
 
                         await clearLastSyncDate(syncId);
-                        await deleteRecordsBySyncId({ syncId });
                         await recordsService.deleteRecordsBySyncId({ syncId });
                         await createActivityLogMessage({
                             level: 'info',

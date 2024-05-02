@@ -9,8 +9,8 @@ icon: 'code'
 <Tabs>
 
 <Tab title="Sync script">
-```ts 
-import type { GithubIssueDemo, NangoSync } from './models';
+```ts
+import type { GithubIssueDemo, NangoSync } from '../../models';
 
 export default async function fetchData(nango: NangoSync) {
     // Fetch issues from GitHub.
@@ -31,7 +31,7 @@ export default async function fetchData(nango: NangoSync) {
 
 <Tab title="Action script">
 ```ts
-import type { NangoAction, GithubCreateIssueInput, GithubCreateIssueResult } from './models';
+import type { NangoAction, GithubCreateIssueInput, GithubCreateIssueResult } from '../../models';
 
 export default async function runAction(nango: NangoAction, input: GithubCreateIssueInput): Promise<GithubCreateIssueResult> {
     // Create a GitHub issue.
