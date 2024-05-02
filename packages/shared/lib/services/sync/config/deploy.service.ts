@@ -288,7 +288,7 @@ export async function deployPreBuilt(
 
     for (const config of configs) {
         if (!config.providerConfigKey) {
-            const providerLookup = await configService.getConfigIdByProvider(config?.provider, environment_id);
+            const providerLookup = await configService.getConfigIdByProvider(config.provider, environment_id);
             if (!providerLookup) {
                 const error = new NangoError('provider_not_on_account');
 
@@ -335,7 +335,7 @@ export async function deployPreBuilt(
                 for (const syncConfig of syncsConfig) {
                     const { success, error } = await updateSyncScheduleFrequency(
                         syncConfig.id,
-                        syncConfig?.frequency || runs,
+                        syncConfig.frequency || runs,
                         sync_name,
                         environment_id,
                         activityLogId as number,
@@ -356,7 +356,7 @@ export async function deployPreBuilt(
         if (is_public) {
             file_location = (await remoteFileService.copy(
                 `${config.public_route}/dist`,
-                `${sync_name}.js`,
+                `${sync_name}-${config.provider}.js`,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
                 environment_id
             )) as string;
@@ -385,8 +385,8 @@ export async function deployPreBuilt(
         if (is_public) {
             await remoteFileService.copy(
                 config.public_route as string,
-                `${sync_name}.ts`,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${type}s/${sync_name}.ts`,
+                `${type}s/${sync_name}.ts`,
+                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
                 environment_id
             );
         } else {
