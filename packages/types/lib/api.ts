@@ -13,11 +13,14 @@ export interface ValidationError {
 
 export type ResDefaultErrors = ApiError<'not_found'> | ApiError<'invalid_query_params', ValidationError[]> | ApiError<'invalid_body', ValidationError[]>;
 
+export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**
  * API Request/Response type
  */
 export interface Endpoint<
     T extends {
+        Method: EndpointMethod;
+        Path: string;
         Params?: Record<string, any>;
         Body?: Record<string, any>;
         Querystring?: Record<string, any>;
@@ -29,6 +32,8 @@ export interface Endpoint<
 > {
     // ------------
     // ------------ Request
+    Method: T['Method'];
+    Path: T['Path'];
     /**
      * URL params
      */
