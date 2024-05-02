@@ -67,7 +67,7 @@ class IntegrationService implements IntegrationServiceInterface {
         optionalLoadLocation,
         input,
         temporalContext
-    }: RunScriptOptions): Promise<ServiceResponse<any>> {
+    }: RunScriptOptions): Promise<ServiceResponse> {
         const span = tracer
             .startSpan('runScript')
             .setTag('accountId', nangoProps.accountId)

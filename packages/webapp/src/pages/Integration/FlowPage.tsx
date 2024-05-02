@@ -366,7 +366,7 @@ export default function FlowPage(props: FlowPageProps) {
                         </div>
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Track Deletes</span>
-                            <div className="text-white">{flow?.track_deletes === true ? 'Yes' : 'No'}</div>
+                            <div className="text-white">{flow?.track_deletes ? 'Yes' : 'No'}</div>
                         </div>
                     </div>
                 )}

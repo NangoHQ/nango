@@ -32,7 +32,7 @@ export class InMemoryKVStore implements KVStore {
             this.store.set(key, { value: value, timestamp: Date.now(), ttlInMs: ttlInMs });
             return Promise.resolve();
         }
-        return Promise.reject('Key already exists');
+        return Promise.reject(new Error('Key already exists'));
     }
 
     public async delete(key: string): Promise<void> {

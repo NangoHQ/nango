@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import providerClientManager from '../clients/provider.client.js';
 import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
     Template as ProviderTemplate,
@@ -230,7 +229,7 @@ class ConnectionService {
                     provider_config_key,
                     environment_id: environmentId,
                     auth_mode: ProviderAuthModes.OAuth2,
-                    operation: importedConnection?.operation as AuthOperation
+                    operation: importedConnection?.operation
                 },
                 provider,
                 logContextGetter,
@@ -1032,8 +1031,8 @@ class ConnectionService {
         payload: Record<string, string | number>,
         additionalApiHeaders: Record<string, string> | null,
         options: object
-    ): Promise<ServiceResponse<any>> {
-        const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+    ): Promise<ServiceResponse> {
+        const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
 
         if (!hasLineBreak) {
             privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
@@ -1096,8 +1095,8 @@ class ConnectionService {
         providerConfig: ProviderConfig,
         template: ProviderTemplate
     ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials>> {
-        if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-            const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
+        if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
+            const rawCreds = await providerClient.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };

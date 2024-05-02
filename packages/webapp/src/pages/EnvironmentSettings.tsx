@@ -75,7 +75,7 @@ export const EnvironmentSettings: React.FC = () => {
         }
 
         setSecretKey(environment.pending_secret_key || environment.secret_key);
-        setSecretKeyRotatable(environment.secret_key_rotatable !== false);
+        setSecretKeyRotatable(environment.secret_key_rotatable);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
 
         setPublicKey(environment.pending_public_key || environment.public_key);
@@ -189,30 +189,27 @@ export const EnvironmentSettings: React.FC = () => {
         const formData = new FormData(e.target as HTMLFormElement);
         const entries = Array.from(formData.entries());
 
-        const envVariablesArray = entries.reduce(
-            (acc, [key, value]) => {
-                // we use the index to match on the name and value
-                // but strip everything before the dash to remove the dynamic aspect
-                // to the name. The dynamic aspect is needed to make sure the values
-                // show correctly when reloading environments
-                const strippedKey = key.split('-')[1];
-                const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
-                if (match) {
-                    const type = match[1];
-                    const index = parseInt(match[2], 10);
-                    if (!acc[index]) {
-                        acc[index] = {} as { name: string; value: string };
-                    }
-                    if (type === 'name') {
-                        acc[index].name = value as string;
-                    } else if (type === 'value') {
-                        acc[index].value = value as string;
-                    }
+        const envVariablesArray = entries.reduce<{ name: string; value: string }[]>((acc, [key, value]) => {
+            // we use the index to match on the name and value
+            // but strip everything before the dash to remove the dynamic aspect
+            // to the name. The dynamic aspect is needed to make sure the values
+            // show correctly when reloading environments
+            const strippedKey = key.split('-')[1];
+            const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
+            if (match) {
+                const type = match[1];
+                const index = parseInt(match[2], 10);
+                if (!acc[index]) {
+                    acc[index] = {} as { name: string; value: string };
                 }
-                return acc;
-            },
-            [] as { name: string; value: string }[]
-        );
+                if (type === 'name') {
+                    acc[index].name = value as string;
+                } else if (type === 'value') {
+                    acc[index].value = value as string;
+                }
+            }
+            return acc;
+        }, []);
 
         const res = await editEnvVariables(envVariablesArray);
 
@@ -257,7 +254,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             const key = (await res.json())['key'];
             if (publicKey) {
                 setPublicKey(key);
@@ -283,7 +280,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             const key = (await res.json())['key'];
             if (publicKey) {
                 setPublicKey(key);
@@ -309,7 +306,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             if (publicKey) {
                 toast.success('New public key activated', { position: toast.POSITION.BOTTOM_CENTER });
                 setVisible(false);
@@ -342,7 +339,7 @@ export const EnvironmentSettings: React.FC = () => {
             method: 'DELETE'
         });
 
-        if (res?.status !== 204) {
+        if (res.status !== 204) {
             toast.error('There was a problem when disconnecting Slack', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
             toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
@@ -361,7 +358,7 @@ export const EnvironmentSettings: React.FC = () => {
             }
         });
 
-        if (res?.status !== 200) {
+        if (res.status !== 200) {
             toast.error('Something went wrong during the lookup for the Slack connect', { position: toast.POSITION.BOTTOM_CENTER });
             return;
         }
@@ -382,7 +379,7 @@ export const EnvironmentSettings: React.FC = () => {
                 toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 void mutate();
             })
-            .catch((err: { message: string; type: string }) => {
+            .catch((err: unknown) => {
                 console.log(err);
             });
     };

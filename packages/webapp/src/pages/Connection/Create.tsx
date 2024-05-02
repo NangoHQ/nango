@@ -2,7 +2,7 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useSWRConfig } from 'swr';
-import Nango from '@nangohq/frontend';
+import Nango, { AuthError } from '@nangohq/frontend';
 import { Prism } from '@mantine/prism';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
@@ -190,8 +190,8 @@ export default function IntegrationCreate() {
                 void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })
-            .catch((err: { message: string; type: string }) => {
-                setServerErrorMessage(`${err.type} error: ${err.message}`);
+            .catch((err: unknown) => {
+                setServerErrorMessage(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'unknown error');
             });
     };
 
@@ -594,7 +594,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {integration?.connectionConfigParams?.map((paramName: string) => (
+                            {integration?.connectionConfigParams.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
                                         <label htmlFor="extra_configuration" className="text-text-light-gray block text-sm font-semibold">
@@ -642,7 +642,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                             Auth Type
                                         </label>
-                                        <p className="mt-3 mb-5">{`${authMode}`}</p>
+                                        <p className="mt-3 mb-5">{authMode}</p>
                                     </div>
 
                                     {authMode === AuthModes.Basic && (
