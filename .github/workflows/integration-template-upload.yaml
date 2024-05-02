@@ -42,6 +42,9 @@ jobs:
                   for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
                     dir=$(dirname $file)
 
+                    dir=${dir//\/syncs/}
+                    dir=${dir//\/actions/}
+
                     mkdir -p /tmp/nango-temp/nango-integrations
 
                     cp -r $dir/* /tmp/nango-temp/nango-integrations/
