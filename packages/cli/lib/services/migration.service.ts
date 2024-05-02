@@ -65,7 +65,7 @@ async function moveFile(source: string, destination: string, debug = false): Pro
 async function updateModelImport(filePath: string, debug = false): Promise<void> {
     try {
         const data = await fs.promises.readFile(filePath, 'utf8');
-        const updatedData = data.replace(/from '\.\/models/, "from '../../models");
+        const updatedData = data.replace(/\.\/models/g, '../../models');
         await fs.promises.writeFile(filePath, updatedData, 'utf8');
         if (debug) {
             printDebug(`Updated imports in ${filePath}.`);

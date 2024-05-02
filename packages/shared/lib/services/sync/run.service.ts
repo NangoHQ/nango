@@ -24,6 +24,7 @@ import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import * as legacyRecordsService from './data/records.service.js';
+import type { NangoProps } from '../../sdk/sync.js';
 
 const logger = getLogger('run.service');
 
@@ -53,6 +54,7 @@ export interface SyncRunConfig {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    dryRunService?: NangoProps['dryRunService'];
     logContextGetter: LogContextGetter;
 
     writeToDb: boolean;
@@ -82,13 +84,24 @@ export interface SyncRunConfig {
 }
 
 export interface RecordsServiceInterface {
-    markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, syncId: string, generation: number): Promise<string[]>;
+    markNonCurrentGenerationRecordsAsDeleted({
+        connectionId,
+        model,
+        syncId,
+        generation
+    }: {
+        connectionId: number;
+        model: string;
+        syncId: string;
+        generation: number;
+    }): Promise<string[]>;
 }
 
 export default class SyncRun {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    dryRunService?: NangoProps['dryRunService'];
     logContextGetter: LogContextGetter;
 
     writeToDb: boolean;
@@ -126,6 +139,9 @@ export default class SyncRun {
         this.logContextGetter = config.logContextGetter;
         if (config.bigQueryClient) {
             this.bigQueryClient = config.bigQueryClient;
+        }
+        if (config.dryRunService) {
+            this.dryRunService = config.dryRunService;
         }
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
@@ -335,7 +351,7 @@ export default class SyncRun {
                 }
             }
 
-            const nangoProps = {
+            const nangoProps: NangoProps = {
                 host: optionalHost || getApiUrl(),
                 accountId: environment?.account_id as number,
                 connectionId: String(this.nangoConnection.connection_id),
@@ -354,6 +370,10 @@ export default class SyncRun {
                 logMessages: this.logMessages,
                 stubbedMetadata: this.stubbedMetadata
             };
+
+            if (this.dryRunService) {
+                nangoProps.dryRunService = this.dryRunService;
+            }
 
             if (this.debug) {
                 const content = `Last sync date is ${lastSyncDate}`;
@@ -488,7 +508,12 @@ export default class SyncRun {
                     this.syncJobId as number
                 );
                 this.recordsService
-                    .markNonCurrentGenerationRecordsAsDeleted(this.nangoConnection.id as number, model, this.syncId as string, this.syncJobId as number)
+                    .markNonCurrentGenerationRecordsAsDeleted({
+                        connectionId: this.nangoConnection.id as number,
+                        model,
+                        syncId: this.syncId as string,
+                        generation: this.syncJobId as number
+                    })
                     .catch((err: unknown) => {
                         logger.error(`Error marking non current generation records as deleted:`, err, {
                             connectionId: this.nangoConnection.id,
