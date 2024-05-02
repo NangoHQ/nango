@@ -35,7 +35,7 @@ export type UnencryptedRecordData = Record<string, RecordValue> & { id: string }
 
 export type ReturnedRecord = {
     _nango_metadata: RecordMetadata;
-} & Record<string, RecordValue> & { id: string | number };
+} & Record<string, RecordValue> & { id: string };
 
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
 

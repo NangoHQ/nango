@@ -33,9 +33,6 @@ export * from './services/onboarding.service.js';
 
 export * from './hooks/hooks.js';
 
-export * as dataService from './services/sync/data/data.service.js';
-export * as syncDataService from './services/sync/data/records.service.js';
-
 export * as oauth2Client from './clients/oauth2.client.js';
 
 export * from './services/nango-config.service.js';
