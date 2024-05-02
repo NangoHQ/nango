@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { getLogger } from '@nangohq/utils';
 import persistController from './controllers/persist.controller.js';
 import { logLevelValues } from '@nangohq/shared';
+import { authMiddleware } from './middleware/auth.middleware.js';
 
 const logger = getLogger('Persist');
 const maxSizeJsonLog = '100kb';
@@ -26,6 +27,8 @@ server.use((req: Request, res: Response, next: NextFunction) => {
         logger.info(`${req.method} ${req.path} ${res.statusCode}`);
     }
 });
+
+server.use('/environment/:environmentId/*', authMiddleware);
 
 server.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok' });
