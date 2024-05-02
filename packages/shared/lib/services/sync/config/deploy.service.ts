@@ -252,7 +252,7 @@ export async function deployPreBuilt(
         end: Date.now(),
         timestamp: Date.now(),
         connection_id: null,
-        provider: configs.length === 1 && firstConfig?.provider ? firstConfig?.provider : null,
+        provider: configs.length === 1 && firstConfig?.provider ? firstConfig.provider : null,
         provider_config_key: '',
         environment_id: environment_id,
         operation_name: LogActionEnum.SYNC_DEPLOY
@@ -288,7 +288,7 @@ export async function deployPreBuilt(
 
     for (const config of configs) {
         if (!config.providerConfigKey) {
-            const providerLookup = await configService.getConfigIdByProvider(config?.provider, environment_id);
+            const providerLookup = await configService.getConfigIdByProvider(config.provider, environment_id);
             if (!providerLookup) {
                 const error = new NangoError('provider_not_on_account');
 
@@ -335,7 +335,7 @@ export async function deployPreBuilt(
                 for (const syncConfig of syncsConfig) {
                     const { success, error } = await updateSyncScheduleFrequency(
                         syncConfig.id,
-                        syncConfig?.frequency || runs,
+                        syncConfig.frequency || runs,
                         sync_name,
                         environment_id,
                         activityLogId as number,
@@ -355,8 +355,8 @@ export async function deployPreBuilt(
         let file_location = '';
         if (is_public) {
             file_location = (await remoteFileService.copy(
-                `${config?.public_route}/dist`,
-                `${sync_name}.js`,
+                `${config.public_route}/dist`,
+                `${sync_name}-${config.provider}.js`,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
                 environment_id
             )) as string;
@@ -384,13 +384,13 @@ export async function deployPreBuilt(
 
         if (is_public) {
             await remoteFileService.copy(
-                config?.public_route as string,
-                `${sync_name}.ts`,
+                config.public_route as string,
+                `${type}s/${sync_name}.ts`,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
                 environment_id
             );
         } else {
-            if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
+            if (typeof config.fileBody === 'object' && config.fileBody.ts) {
                 await remoteFileService.upload(
                     config.fileBody.ts,
                     `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
@@ -674,7 +674,7 @@ async function compileDeployInfo({
             for (const syncConfig of syncsConfig) {
                 const { success, error } = await updateSyncScheduleFrequency(
                     syncConfig.id,
-                    syncConfig?.frequency || runs,
+                    syncConfig.frequency || runs,
                     syncName,
                     environment_id,
                     activityLogId,
@@ -690,14 +690,14 @@ async function compileDeployInfo({
 
     const version = optionalVersion || bumpedVersion || '1';
 
-    const jsFile = typeof fileBody === 'string' ? fileBody : fileBody?.js;
+    const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
     const file_location = (await remoteFileService.upload(
         jsFile,
         `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
         environment_id
     )) as string;
 
-    if (typeof fileBody === 'object' && fileBody?.ts) {
+    if (typeof fileBody === 'object' && fileBody.ts) {
         await remoteFileService.upload(
             fileBody.ts,
             `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
@@ -756,7 +756,7 @@ async function compileDeployInfo({
 
     insertData.push({
         environment_id,
-        nango_config_id: config?.id as number,
+        nango_config_id: config.id as number,
         sync_name: syncName,
         type,
         models,

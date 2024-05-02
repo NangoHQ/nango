@@ -6,7 +6,7 @@ import { SyncConfigType } from '@nangohq/shared';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
 import configService from './services/config.service.js';
-import compileService from './services/compile.service.js';
+import { compileAllFiles } from './services/compile.service.js';
 import parserService from './services/parser.service.js';
 
 const copyDirectoryAndContents = async (source: string, destination: string) => {
@@ -514,7 +514,7 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/github`, './github');
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/nested-integrations/nango.yaml`, `./nango.yaml`);
 
-        const success = await compileService.run({ debug: true });
+        const success = await compileAllFiles({ debug: true });
 
         await fs.promises.rm('./hubspot', { recursive: true, force: true });
         await fs.promises.rm('./github', { recursive: true, force: true });
@@ -530,7 +530,7 @@ describe('generate function tests', () => {
         await fs.promises.mkdir(testDirectory, { recursive: true });
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/non-nested-integrations`, './');
 
-        const success = await compileService.run({ debug: true });
+        const success = await compileAllFiles({ debug: true });
 
         await fs.promises.rm('./dist', { recursive: true, force: true });
         await fs.promises.rm('./nango.yaml', { force: true });

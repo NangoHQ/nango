@@ -6,7 +6,7 @@ import archiver from 'archiver';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import type { LayoutMode } from '../../models/NangoConfig.js';
+import type { StandardNangoConfig, LayoutMode } from '../../models/NangoConfig.js';
 import { nangoConfigFile, SYNC_FILE_EXTENSION } from '../nango-config.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -196,6 +196,23 @@ class LocalFileService {
             console.log(error);
             return null;
         }
+    }
+
+    public getProviderConfigurationFromPath(filePath: string, config: StandardNangoConfig[]): StandardNangoConfig | null {
+        const pathSegments = filePath.split('/');
+        const scriptType = pathSegments.length > 1 ? pathSegments[pathSegments.length - 2] : null;
+        const isNested = scriptType === 'syncs' || scriptType === 'actions';
+
+        const baseName = path.basename(filePath, '.ts');
+        let providerConfiguration: StandardNangoConfig | null = null;
+        if (isNested) {
+            const providerConfigKey = pathSegments[pathSegments.length - 3];
+            providerConfiguration = config.find((config) => config.providerConfigKey === providerConfigKey) || null;
+        } else {
+            providerConfiguration = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === baseName)) || null;
+        }
+
+        return providerConfiguration;
     }
 
     private getFullPathTsFile(integrationPath: string, scriptName: string, providerConfigKey: string, type: string): null | string {

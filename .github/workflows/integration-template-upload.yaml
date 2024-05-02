@@ -26,7 +26,6 @@ jobs:
             - name: Install nango CLI
               run: |
                   npm install -g nango
-                  npm install @tsconfig/node18-strictest-esm --save-dev
 
             - name: Get specific changed files
               id: changed-files-specific

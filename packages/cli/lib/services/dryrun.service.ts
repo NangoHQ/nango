@@ -6,7 +6,7 @@ import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import configService from './config.service.js';
-import compileService from './compile.service.js';
+import { compileAllFiles } from './compile.service.js';
 import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
 
@@ -142,7 +142,7 @@ class DryRunService {
 
         const type = syncInfo?.type === SyncConfigType.ACTION ? 'action' : 'sync';
 
-        const result = await compileService.run({ debug, scriptName: syncName, providerConfigKey, type });
+        const result = await compileAllFiles({ debug, scriptName: syncName, providerConfigKey, type });
 
         if (!result) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
