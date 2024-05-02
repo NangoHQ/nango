@@ -335,6 +335,7 @@
                         "integrations/all/confluence",
                         "integrations/all/contentstack",
                         "integrations/all/deel",
+                        "integrations/all/dialpad",
                         "integrations/all/digitalocean",
                         "integrations/all/discord",
                         "integrations/all/dropbox",
