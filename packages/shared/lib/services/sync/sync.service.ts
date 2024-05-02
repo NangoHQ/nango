@@ -266,7 +266,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             ),
             syncJobTimestampsSubQuery
         )
-        .leftJoin(SYNC_SCHEDULE_TABLE, function () {
+        .join(SYNC_SCHEDULE_TABLE, function () {
             this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
         })
         .where({
