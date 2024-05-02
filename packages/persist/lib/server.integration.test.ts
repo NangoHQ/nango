@@ -75,6 +75,7 @@ describe('Persist API', () => {
             method: 'POST',
             body: JSON.stringify({ activityLogId: seed.activityLogId, level: 'info', msg: msg.join(',') }),
             headers: {
+                Authorization: `Bearer ${mockSecretKey}`,
                 'Content-Type': 'application/json'
             }
         });
