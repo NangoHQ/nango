@@ -1,7 +1,7 @@
 integrations:
     zoho-crm:
         syncs:
-            zoho-crm-accounts:
+            accounts:
                 runs: every half hour
                 auto_start: false
                 description: |
@@ -11,7 +11,7 @@ integrations:
                 endpoint: /zoho-crm/accounts
                 scopes:
                     - ZohoCRM.modules.accounts.READ
-            zoho-crm-contacts:
+            contacts:
                 runs: every half hour
                 auto_start: false
                 description: |
@@ -21,7 +21,7 @@ integrations:
                 endpoint: /zoho-crm/contacts
                 scopes:
                     - ZohoCRM.modules.contacts.READ
-            zoho-crm-deals:
+            deals:
                 runs: every half hour
                 auto_start: false
                 description: |

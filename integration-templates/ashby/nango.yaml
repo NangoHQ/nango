@@ -1,7 +1,7 @@
 integrations:
     ashby:
         syncs:
-            ashby-candidates:
+            candidates:
                 runs: every hour
                 output: AshbyCandidate
                 description: |
@@ -12,7 +12,7 @@ integrations:
                     scopes: candidatelastsyncToken
                 sync_type: incremental
                 endpoint: /ashby/candidates
-            ashby-jobs:
+            jobs:
                 runs: every hour
                 output: AshbyJob
                 description: |
@@ -24,13 +24,13 @@ integrations:
                 sync_type: incremental
                 endpoint: /ashby/jobs
         actions:
-            ashby-create-application:
+            create-application:
                 output: AshbyCreateApplicationResponse
                 input: AshbyCreateCandidateInput
                 description: |
                     Action to consider a candidate for a job
                 endpoint: POST /ashby/create-application
-            ashby-create-note:
+            create-note:
                 output: AshbyCreateNoteResponse
                 input: AshbyCreateNoteInput
                 description: |

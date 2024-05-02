@@ -1,7 +1,7 @@
 integrations:
     wildix-pbx:
         syncs:
-            wildix-pbx-colleagues:
+            colleagues:
                 runs: every 1 hour
                 description: |
                     Fetches a list of users from PBX

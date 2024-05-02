@@ -1,21 +1,21 @@
 integrations:
     greenhouse-basic:
         syncs:
-            greenhouse-applications:
+            applications:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all organization's applications from greenhouse
                 output: GreenhouseApplication
                 sync_type: incremental
                 endpoint: /greenhouse-basic/applications
-            greenhouse-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all organization's candidates from greenhouse
                 output: GreenhouseCandidate
                 sync_type: incremental
                 endpoint: /greenhouse-basic/candidates
-            greenhouse-jobs:
+            jobs:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all organization's jobs from greenhouse

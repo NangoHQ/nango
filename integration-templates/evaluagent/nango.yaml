@@ -1,21 +1,21 @@
 integrations:
     evaluagent:
         syncs:
-            evaluagent-users:
+            users:
                 runs: every day
                 output: EvaluAgentUser
                 description: |
                     Fetches a list of users from evaluagent
                 sync_type: full
                 endpoint: /evaluagent/users
-            evaluagent-groups:
+            groups:
                 runs: every day
                 output: EvaluAgentGroup
                 description: |
                     Fetches a list of groups from evaluagent
                 sync_type: full
                 endpoint: /evaluagent/groups
-            evaluagent-roles:
+            roles:
                 runs: every day
                 output: EvaluAgentRole
                 description: |

@@ -1,7 +1,7 @@
 integrations:
     jira:
         syncs:
-            jira-issues:
+            issues:
                 runs: every 5mins
                 description: |
                     Fetches a list of issues from Jira

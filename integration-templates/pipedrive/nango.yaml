@@ -1,7 +1,7 @@
 integrations:
     pipedrive:
         syncs:
-            pipedrive-activities:
+            activities:
                 runs: every hour
                 description: |
                     Fetches a list of activities from pipedrive
@@ -10,7 +10,7 @@ integrations:
                 endpoint: /pipedrive/activities
                 scopes:
                     - activities:read
-            pipedrive-deals:
+            deals:
                 runs: every hour
                 description: |
                     Fetches a list of deals from pipedrive
@@ -19,7 +19,7 @@ integrations:
                 endpoint: /pipedrive/deals
                 scopes:
                     - deals:read
-            pipedrive-organizations:
+            organizations:
                 runs: every hour
                 description: |
                     Fetches a list of organizations from pipedrive
@@ -28,7 +28,7 @@ integrations:
                 endpoint: /pipedrive/organizations
                 scopes:
                     - contacts:read
-            pipedrive-persons:
+            persons:
                 runs: every half hour
                 description: |
                     Fetches persons from pipedrive

@@ -1,7 +1,7 @@
 integrations:
     microsoft-teams:
         syncs:
-            microsoft-org-unit:
+            org-units:
                 runs: every 6 hours
                 description: |
                     Continuously fetches groups from either Microsoft 365 or Azure Active
@@ -13,7 +13,7 @@ integrations:
                 endpoint: /microsoft-teams/microsoft-org-unit
                 scopes:
                     - GroupMember.Read.All
-            microsoft-users:
+            users:
                 runs: every hour
                 description: |
                     Continuously fetches users from either Microsoft 365 or Azure Active

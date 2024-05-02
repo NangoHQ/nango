@@ -1,7 +1,7 @@
 integrations:
-    lever-basic:
+    basic:
         actions:
-            lever-create-note:
+            create-note:
                 description: |
                     Action to create a note and add it to a candidate profile in Lever
                 output: LeverOpportunityNote
@@ -9,7 +9,7 @@ integrations:
                 endpoint: POST /lever/create-note
                 scopes:
                     - notes:write:admin
-            lever-create-opportunity:
+            create-opportunity:
                 description: |
                     Action to create candidates and opportunities in Lever
                 output: LeverOpportunity
@@ -18,7 +18,7 @@ integrations:
                 scopes:
                     - opportunities:write:admin
         syncs:
-            lever-opportunities:
+            opportunities:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all pipeline opportunities for contacts in Lever
@@ -27,7 +27,7 @@ integrations:
                 endpoint: /lever/opportunities
                 scopes:
                     - opportunities:read:admin
-            lever-opportunities-applications:
+            opportunities-applications:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all applications for a candidate in Lever
@@ -36,7 +36,7 @@ integrations:
                 endpoint: /lever/opportunities-applications
                 scopes:
                     - applications:read:admin
-            lever-opportunities-feedbacks:
+            opportunities-feedbacks:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all feedback forms for a candidate for a specific Opportunity in lever
@@ -45,7 +45,7 @@ integrations:
                 endpoint: /lever/opportunities-feedbacks
                 scopes:
                     - feedback:read:admin
-            lever-opportunities-interviews:
+            opportunities-interviews:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all interviewers for a specific Opportunity in lever
@@ -54,7 +54,7 @@ integrations:
                 endpoint: /lever/opportunities-interviews
                 scopes:
                     - interviews:read:admin
-            lever-opportunities-notes:
+            opportunities-notes:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all notes for a specific candidate in lever
@@ -63,7 +63,7 @@ integrations:
                 endpoint: /lever/opportunities-notes
                 scopes:
                     - notes:read:admin
-            lever-opportunities-offers:
+            opportunities-offers:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all offers for a specific candidate in lever.
@@ -72,7 +72,7 @@ integrations:
                 endpoint: /lever/opportunities-offers
                 scopes:
                     - offers:write:admin
-            lever-postings:
+            postings:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all postings in Lever
@@ -81,7 +81,7 @@ integrations:
                 endpoint: /lever/postings
                 scopes:
                     - postings:read:admin
-            lever-postings-apply:
+            postings-apply:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all questions included in a posting’s application form in Lever
@@ -90,7 +90,7 @@ integrations:
                 endpoint: /lever/postings-apply
                 scopes:
                     - postings:read:admin
-            lever-stage:
+            stage:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all pipeline stages in Lever

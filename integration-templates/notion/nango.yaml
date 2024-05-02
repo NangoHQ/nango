@@ -1,7 +1,7 @@
 integrations:
     notion:
         syncs:
-            notion-pages:
+            pages:
                 runs: every 6 hours
                 description: |
                     Sync pages, subpages, database entries, entries of
@@ -11,7 +11,7 @@ integrations:
                 output: NotionPage
                 sync_type: incremental
                 endpoint: /notion/pages
-            notion-rich-pages:
+            rich-pages:
                 runs: every 6 hours
                 track_deletes: true
                 description: |

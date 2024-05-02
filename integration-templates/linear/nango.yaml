@@ -1,28 +1,28 @@
 integrations:
     linear:
         syncs:
-            linear-issues:
+            issues:
                 runs: every 5min
                 description: |
                     Fetches a list of issues from Linear
                 output: LinearIssue
                 sync_type: incremental
                 endpoint: /linear/issues
-            linear-projects:
+            projects:
                 runs: every 5min
                 description: |
                     Fetches a list of projects from Linear
                 output: LinearProject
                 sync_type: incremental
                 endpoint: /linear/projects
-            linear-teams:
+            teams:
                 runs: every 5min
                 description: |
                     Fetches a list of teams from Linear
                 output: LinearTeam
                 sync_type: incremental
                 endpoint: /linear/teams
-            linear-roadmaps:
+            roadmaps:
                 runs: every 5min
                 description: |
                     Fetches a list of roadmaps from Linear

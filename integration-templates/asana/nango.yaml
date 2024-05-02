@@ -1,7 +1,7 @@
 integrations:
     asana:
         syncs:
-            asana-tasks:
+            tasks:
                 runs: every 30min
                 description: |
                     Fetches a list of tasks from Asana, retrieving tasks from only the first project of the first workspace

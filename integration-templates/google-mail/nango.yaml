@@ -1,7 +1,7 @@
 integrations:
     google-mail:
         syncs:
-            gmail-emails:
+            emails:
                 runs: every hour
                 description: |
                     Fetches a list of emails from gmail

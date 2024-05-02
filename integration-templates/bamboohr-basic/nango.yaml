@@ -1,7 +1,7 @@
 integrations:
     bamboohr-basic:
         syncs:
-            bamboohr-employees:
+            employees:
                 runs: every 6 hours
                 description: |
                     Fetches a list of current employees from bamboohr
@@ -9,7 +9,7 @@ integrations:
                 sync_type: incremental
                 endpoint: /bamboohr/employees
         actions:
-            bamboohr-create-employee:
+            create-employee:
                 description: |
                     Action to create a new employee
                 output: BamboohrCreateEmployeeResponse

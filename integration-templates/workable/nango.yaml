@@ -1,7 +1,7 @@
 integrations:
     workable:
         syncs:
-            workable-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of candidates from workable
@@ -10,7 +10,7 @@ integrations:
                 endpoint: /workable/candidates
                 scopes:
                     - r_candidates
-            workable-candidates-activities:
+            candidates-activities:
                 runs: every 6 hours
                 description: |
                     Fetches a list of activity streams of the given candidate
@@ -19,7 +19,7 @@ integrations:
                 endpoint: /workable/candidates-activities
                 scopes:
                     - r_candidates
-            workable-candidates-offer:
+            candidates-offer:
                 runs: every 6 hours
                 description: |
                     Fetches candidate's latest offer from workable
@@ -28,7 +28,7 @@ integrations:
                 endpoint: /workable/candidates-offer
                 scopes:
                     - r_candidates
-            workable-jobs:
+            jobs:
                 runs: every 6 hours
                 description: |
                     Fetches a list of jobs from workable
@@ -37,7 +37,7 @@ integrations:
                 endpoint: /workable/jobs
                 scopes:
                     - r_jobs
-            workable-jobs-candidates:
+            jobs-candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of candidates for the specified job from workable
@@ -46,7 +46,7 @@ integrations:
                 endpoint: /workable/jobs-candidates
                 scopes:
                     - r_jobs
-            workable-jobs-questions:
+            jobs-questions:
                 runs: every 6 hours
                 description: |
                     Fetches a list of questions for the specified job from workable
@@ -55,7 +55,7 @@ integrations:
                 endpoint: /workable/jobs-questions
                 scopes:
                     - r_jobs
-            workable-members:
+            members:
                 runs: every 6 hours
                 description: |
                     Fetches a list of account members from workable
@@ -65,7 +65,7 @@ integrations:
                 scopes:
                     - r_jobs
         actions:
-            workable-create-candidate:
+            create-candidate:
                 description: |
                     Action to create a candidate at the specified job
                 scopes:
@@ -73,7 +73,7 @@ integrations:
                 output: WorkableCreateCandidateResponse
                 input: WorkableCreateCandidateInput
                 endpoint: POST /workable/create-candidate
-            workable-create-comment:
+            create-comment:
                 description: |
                     Action to create a comment on the applicant's timeline
                 scopes:

@@ -1,7 +1,7 @@
 integrations:
     google-drive:
         syncs:
-            google-drive-documents:
+            documents:
                 runs: every day
                 track_deletes: true
                 description: |
@@ -22,7 +22,7 @@ integrations:
                 endpoint: /google-drive/documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
-            google-drive-fetch-pdf:
+            fetch-pdf:
                 input: string
                 description: |
                     Fetch PDF data given an ID using a responseStream, chunk the data

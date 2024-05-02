@@ -1,7 +1,7 @@
 integrations:
     next-cloud-ocs:
         syncs:
-            next-cloud-users:
+            users:
                 runs: every hour
                 description: |
                     Fetches a list of all users' details from NextCloud account

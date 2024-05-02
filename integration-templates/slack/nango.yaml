@@ -1,7 +1,7 @@
 integrations:
     slack:
         syncs:
-            slack-users:
+            users:
                 runs: every hour
                 description: |
                     Syncs information about all Users on the Slack workspace
@@ -10,7 +10,7 @@ integrations:
                 endpoint: /slack/users
                 scopes:
                     - users:read
-            slack-channels:
+            channels:
                 runs: every hour
                 description: |
                     Syncs information about all Slack channels. Which channels get synced
@@ -25,7 +25,7 @@ integrations:
                 scopes:
                     - channels:read
                     - channels:join
-            slack-messages:
+            messages:
                 runs: every hour
                 description: |
                     Syncs Slack messages, thread replies and reactions from messages &

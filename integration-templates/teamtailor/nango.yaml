@@ -1,7 +1,7 @@
 integrations:
     teamtailor:
         syncs:
-            teamtailor-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all candidates from your teamtailor account.

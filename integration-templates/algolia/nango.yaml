@@ -1,7 +1,7 @@
 integrations:
     algolia:
         actions:
-            algolia-create-contacts:
+            create-contacts:
                 description: |
                     Action to add a single record contact to an index
                 output: AlgoliaContact

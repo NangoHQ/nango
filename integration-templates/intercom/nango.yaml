@@ -1,7 +1,7 @@
 integrations:
     intercom:
         syncs:
-            intercom-conversations:
+            conversations:
                 runs: every 6 hours
                 description: |
                     Fetches a list of conversations from Intercom
@@ -12,7 +12,7 @@ integrations:
                 endpoint:
                     - /intercom/conversations
                     - /intercom/conversations-message
-            intercom-contacts:
+            contacts:
                 runs: every 6 hours
                 description: |
                     Fetches a list of contacts from Intercom

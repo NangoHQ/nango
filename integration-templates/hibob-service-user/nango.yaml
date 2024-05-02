@@ -1,7 +1,7 @@
 integrations:
     hibob-service-user:
         syncs:
-            hibob-employees:
+            employees:
                 runs: every hour
                 description: |
                     Fetches a list of all active employees
