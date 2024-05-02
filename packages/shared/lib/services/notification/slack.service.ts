@@ -254,7 +254,7 @@ class SlackService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-            { account, environment: { id: environment_id } }
+            { account, environment: { id: environment_id }, config: { id: slackConnection.config_id! }, connection: { id: slackConnection.id! } }
         );
 
         if (!success || !slackNotificationStatus) {
@@ -433,7 +433,7 @@ class SlackService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-            { account, environment: { id: environment_id } }
+            { account, environment: { id: environment_id }, config: { id: slackConnection.config_id! }, connection: { id: slackConnection.id! } }
         );
 
         const actionResponse = await syncClient.triggerAction<SlackActionResponse>({

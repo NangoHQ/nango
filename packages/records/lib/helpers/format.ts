@@ -46,7 +46,7 @@ export const formatRecords = ({
         const formattedRecord: FormattedRecord = {
             id: stableId(datum),
             json: datum,
-            external_id: datum['id'],
+            external_id: String(datum['id']),
             data_hash,
             model,
             connection_id: connectionId,

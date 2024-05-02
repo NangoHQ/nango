@@ -1,7 +1,7 @@
 integrations:
     github:
         syncs:
-            github-issues:
+            issues:
                 runs: every half hour
                 output: GithubIssue
                 sync_type: full
@@ -9,7 +9,7 @@ integrations:
                 description: |
                     Fetches Github issues from all a user's repositories
                 endpoint: /github/issues
-            github-issues-lite:
+            issues-lite:
                 runs: every day
                 auto_start: false
                 sync_type: full
@@ -18,7 +18,7 @@ integrations:
                 description: |
                     Fetches Github issues but up to a maximum of 15
                 endpoint: /github/issues-lite
-            github-list-files:
+            list-files:
                 runs: every hour
                 description: |
                     Lists all the files of a Github repo given a specific branch
@@ -28,7 +28,7 @@ integrations:
                 output: GithubRepoFile
                 endpoint: /github/list-files
                 scopes: repo
-            github-issues-demo:
+            issues-demo:
                 runs: every 5 minutes
                 auto_start: false
                 sync_type: full
@@ -38,7 +38,7 @@ integrations:
                     Fetches GitHub issues from our showcase repository.
                 endpoint: GET /github/demo-issues
         actions:
-            github-write-file:
+            write-file:
                 scopes: repo
                 input: GithubWriteFileInput
                 output: GithubWriteFileActionResult
@@ -46,13 +46,13 @@ integrations:
                 description: |
                     Write content to a particular github file within a repo. If
                     the file doesn't exist it creates and then writes to it
-            github-list-repos:
+            list-repos:
                 scopes: read:org
                 endpoint: GET /github/list-repos
                 output: GithubRepo
                 description: |
                     List github repos from an organization.
-            github-create-demo-issue:
+            create-demo-issue:
                 endpoint: POST /github/create-demo-issue
                 input: GithubCreateIssueInput
                 output: GithubCreateIssueResult
