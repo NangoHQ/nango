@@ -1,5 +1,5 @@
 integrations:
-    basic:
+    lever-basic:
         actions:
             create-note:
                 description: |
