@@ -171,13 +171,18 @@ class DryRunService {
         // dry-run mode does not read or write to the records database
         // so we can safely mock the records service
         const recordsService: RecordsServiceInterface = {
-            markNonCurrentGenerationRecordsAsDeleted: (
-                _connectionId: number,
-                _model: string,
-                _syncId: string,
-                _generation: number
+            markNonCurrentGenerationRecordsAsDeleted: ({
+                connectionId: _connectionId,
+                model: _model,
+                syncId: _syncId,
+                generation: _generation
+            }: {
+                connectionId: number;
+                model: string;
+                syncId: string;
+                generation: number;
                 // eslint-disable-next-line @typescript-eslint/require-await
-            ): Promise<string[]> => {
+            }): Promise<string[]> => {
                 return Promise.resolve([]);
             }
         };

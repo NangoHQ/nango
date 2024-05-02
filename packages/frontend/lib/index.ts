@@ -383,10 +383,10 @@ export default class Nango {
             if (connectionConfig.credentials) {
                 const credentials = connectionConfig.credentials;
                 if ('oauth_client_id_override' in credentials) {
-                    query.push(`credentials[oauth_client_id_override]=${credentials.oauth_client_id_override}`);
+                    query.push(`credentials[oauth_client_id_override]=${encodeURIComponent(credentials.oauth_client_id_override)}`);
                 }
                 if ('oauth_client_secret_override' in credentials) {
-                    query.push(`credentials[oauth_client_secret_override]=${credentials.oauth_client_secret_override}`);
+                    query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
                 }
             }
 
