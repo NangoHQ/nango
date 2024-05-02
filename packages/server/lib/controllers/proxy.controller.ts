@@ -50,6 +50,7 @@ class ProxyController {
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      */
     public async routeCall(req: Request, res: Response, next: NextFunction) {
+        let logCtx: LogContext | undefined;
         try {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -83,8 +84,7 @@ class ProxyController {
             if (!isDryRun) {
                 activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
             }
-            // TODO: move that outside try/catch
-            const logCtx = existingActivityLogId
+            logCtx = existingActivityLogId
                 ? logContextGetter.get({ id: String(existingActivityLogId) })
                 : await logContextGetter.create(
                       { operation: { type: 'action' }, message: 'Start action' },
@@ -191,12 +191,12 @@ class ProxyController {
                 isDryRun,
                 logCtx
             });
-        } catch (error) {
+        } catch (err) {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            errorManager.report(error, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.PROXY,
                 environmentId,
@@ -205,18 +205,16 @@ class ProxyController {
                     providerConfigKey
                 }
             });
-            next(error);
+            if (logCtx) {
+                await logCtx.error('uncaught error', { error: err });
+                await logCtx.failed();
+            }
+            next(err);
         }
     }
 
     /**
      * Send to http method
-     * @desc route the call to a HTTP request based on HTTP method passed in
-     * @param {Request} req Express request object
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {HTTP_VERB} method
-     * @param {ApplicationConstructedProxyConfiguration} configBody
      */
     private sendToHttpMethod({
         res,
@@ -372,15 +370,6 @@ class ProxyController {
         }
     }
 
-    /**
-     * Get
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {HTTP_VERB} method
-     * @param {string} url
-     * @param {ApplicationConstructedProxyConfiguration} config
-     */
-
     private async request({
         res,
         method,
@@ -486,7 +475,6 @@ class ProxyController {
 
 /**
  * Parse Headers
- * @param {Request} req Express request object
  */
 export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
     const headers = req.rawHeaders;

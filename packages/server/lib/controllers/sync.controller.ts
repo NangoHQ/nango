@@ -43,8 +43,10 @@ import {
     getSyncAndActionConfigsBySyncNameAndConfigId,
     createActivityLogMessage,
     trackFetch,
+    getAccount,
     syncCommandToOperation
 } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { isErr, isOk } from '@nangohq/utils';
 import type { LastAction } from '@nangohq/records';
@@ -342,9 +344,11 @@ class SyncController {
         });
 
         const { input, action_name } = req.body;
+        const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
+        let logCtx: LogContext | undefined;
         try {
             if (!action_name || typeof action_name !== 'string') {
                 res.status(400).send({ error: 'Missing action name' });
@@ -376,7 +380,7 @@ class SyncController {
                 return;
             }
 
-            const provider = await configService.getProviderName(providerConfigKey);
+            const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             const log = {
                 level: 'info' as LogLevel,
@@ -386,7 +390,7 @@ class SyncController {
                 end: Date.now(),
                 timestamp: Date.now(),
                 connection_id: connection.connection_id,
-                provider,
+                provider: provider!.provider,
                 provider_config_key: connection.provider_config_key,
                 environment_id: environmentId,
                 operation_name: action_name
@@ -402,10 +406,9 @@ class SyncController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
-            // TODO: move that outside try/catch
-            const logCtx = await logContextGetter.create(
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account: { id: -1 }, environment: { id: environmentId } }
+                { account: { id: accountId }, environment: { id: environmentId }, config: { id: provider!.id! }, connection: { id: connection.id! } }
             );
 
             const syncClient = await SyncClient.getInstance();
@@ -424,22 +427,29 @@ class SyncController {
             });
 
             if (isOk(actionResponse)) {
-                res.send(actionResponse.res);
                 span.finish();
+                await logCtx.success();
+                res.send(actionResponse.res);
 
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.err);
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.error('Failed to trigger action', { err: actionResponse.err });
+                await logCtx.failed();
                 span.finish();
 
                 return;
             }
-        } catch (e) {
-            span.setTag('nango.error', e);
+        } catch (err) {
+            span.setTag('nango.error', err);
             span.finish();
+            if (logCtx) {
+                await logCtx.error('Failed to trigger action', { error: err });
+                await logCtx.failed();
+            }
 
-            next(e);
+            next(err);
         }
     }
 
@@ -604,6 +614,8 @@ class SyncController {
     }
 
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
+        let logCtx: LogContext | undefined;
+
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -631,11 +643,13 @@ class SyncController {
                 operation_name: sync_name
             };
             const activityLogId = await createActivityLog(log);
-            // TODO: move that outside try/catch
-            // TODO: message
-            const logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: '' },
-                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name } }
+            logCtx = await logContextGetter.create(
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] },
+                    message: `Trigger ${command}`
+                },
+                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name }, connection: { id: connection!.id! } }
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
@@ -678,7 +692,7 @@ class SyncController {
             });
 
             if (isErr(result)) {
-                errorManager.handleGenericError(result.err, req, res, tracer);
+                await errorManager.handleGenericError(result.err, req, res, tracer);
                 await logCtx.failed();
                 return;
             }
@@ -726,9 +740,10 @@ class SyncController {
 
             res.sendStatus(200);
         } catch (err) {
-            // TODO: up this
-            // await logCtx.error('Failed to sync command', {error: err});
-            // await logCtx.failed();
+            if (logCtx) {
+                await logCtx.error('Failed to sync command', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

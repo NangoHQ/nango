@@ -58,11 +58,11 @@ export const connectionCreated = async (
 
     if (options.initiateSync === true && !hosted) {
         const syncClient = await SyncClient.getInstance();
-        syncClient?.initiate(connection.id as number, logContextGetter);
+        await syncClient?.initiate(connection.id as number, logContextGetter);
     }
 
     if (options.runPostConnectionScript === true) {
-        integrationPostConnectionScript(connection, provider, logContextGetter);
+        await integrationPostConnectionScript(connection, provider, logContextGetter);
     }
 
     await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);

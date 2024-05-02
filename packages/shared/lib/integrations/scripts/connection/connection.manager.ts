@@ -12,6 +12,7 @@ import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 
 import * as postConnectionHandlers from './index.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import { stringifyError } from '@nangohq/utils';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -110,7 +111,12 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 });
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Authentication' },
-                    { account: { id: accountId! }, environment: { id: connection.environment_id } }
+                    {
+                        account: { id: accountId! },
+                        environment: { id: connection.environment_id },
+                        config: { id: connection.config_id! },
+                        connection: { id: connection.id! }
+                    }
                 );
                 await logCtx.error('Post connection script failed', { error: e });
                 await logCtx.failed();
@@ -123,17 +129,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 });
             }
         }
-    } catch (e: any) {
-        const errorMessage = e.message || 'Unknown error';
-        const errorDetails = {
-            message: errorMessage,
-            name: e.name || 'Error',
-            stack: e.stack || 'No stack trace'
-        };
-
-        const errorString = JSON.stringify(errorDetails);
-
-        await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${errorString}`, LogActionEnum.AUTH, {
+    } catch (err) {
+        await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
             environmentId: String(environment_id),
             connectionId: connection_id,
             providerConfigKey: provider_config_key,
