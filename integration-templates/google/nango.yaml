@@ -1,7 +1,7 @@
 integrations:
     google:
         syncs:
-            google-workspace-org-unit:
+            workspace-org-units:
                 runs: every 6 hours
                 track_deletes: true
                 output: OrganizationalUnit
@@ -10,12 +10,12 @@ integrations:
                 scopes:
                     - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
                     - https://www.googleapis.com/auth/admin.directory.user.readonly
-            google-workspace-users:
+            workspace-users:
                 runs: every hour
                 output: User
                 sync_type: full
                 endpoint: /google/workspace-users
-            google-workspace-user-access-tokens:
+            workspace-user-access-tokens:
                 runs: every hour
                 output: GoogleWorkspaceUserToken
                 sync_type: full

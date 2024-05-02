@@ -1,7 +1,7 @@
 integrations:
     zoho-mail:
         syncs:
-            zoho-mail-tasks:
+            tasks:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all your personal tasks in Zoho mail
@@ -10,7 +10,7 @@ integrations:
                 endpoint: /zoho-mail/tasks
                 scopes:
                     - ZohoMail.tasks.READ
-            zoho-mail-emails:
+            emails:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all your account's emails in Zoho mail
@@ -20,7 +20,7 @@ integrations:
                 scopes:
                     - ZohoMail.messages.READ
         actions:
-            zoho-mail-send-email:
+            send-email:
                 description: |
                     An action to send an email in zoho mail
                 output: ZohoMailSendEmailOutput
@@ -28,7 +28,7 @@ integrations:
                 endpoint: POST /zoho-mail/send-email
                 scopes:
                     - ZohoMail.messages.CREATE
-            zoho-mail-add-user:
+            add-user:
                 description: |
                     An action to add a user to the organization in zoho mail
                 output: ZohoMailAddUserOutput
