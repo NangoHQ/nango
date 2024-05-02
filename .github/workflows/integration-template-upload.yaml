@@ -47,6 +47,7 @@ jobs:
 
                     mkdir -p /tmp/nango-temp/nango-integrations
 
+                    cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
                     cp -r $dir/* /tmp/nango-temp/nango-integrations/
 
                     cd /tmp/nango-temp/nango-integrations
