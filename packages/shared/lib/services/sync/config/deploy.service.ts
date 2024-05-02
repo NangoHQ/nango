@@ -252,7 +252,7 @@ export async function deployPreBuilt(
         end: Date.now(),
         timestamp: Date.now(),
         connection_id: null,
-        provider: configs.length === 1 && firstConfig?.provider ? firstConfig?.provider : null,
+        provider: configs.length === 1 && firstConfig?.provider ? firstConfig.provider : null,
         provider_config_key: '',
         environment_id: environment_id,
         operation_name: LogActionEnum.SYNC_DEPLOY
@@ -674,7 +674,7 @@ async function compileDeployInfo({
             for (const syncConfig of syncsConfig) {
                 const { success, error } = await updateSyncScheduleFrequency(
                     syncConfig.id,
-                    syncConfig?.frequency || runs,
+                    syncConfig.frequency || runs,
                     syncName,
                     environment_id,
                     activityLogId,
@@ -690,7 +690,7 @@ async function compileDeployInfo({
 
     const version = optionalVersion || bumpedVersion || '1';
 
-    const jsFile = typeof fileBody === 'string' ? fileBody : fileBody?.js;
+    const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
     const file_location = (await remoteFileService.upload(
         jsFile,
         `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
@@ -756,7 +756,7 @@ async function compileDeployInfo({
 
     insertData.push({
         environment_id,
-        nango_config_id: config?.id as number,
+        nango_config_id: config.id as number,
         sync_name: syncName,
         type,
         models,
