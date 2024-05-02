@@ -255,12 +255,7 @@ app.use(staticSite);
 
 // -------
 // Error handling.
-app.use(async (e: any, req: Request, res: Response, next: any) => {
-    if (res.headersSent) {
-        next(e);
-        return;
-    }
-
+app.use(async (e: any, req: Request, res: Response, _: any) => {
     await errorManager.handleGenericError(e, req, res, tracer);
 });
 
