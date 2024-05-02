@@ -1,0 +1,48 @@
+integrations:
+    confluence:
+        syncs:
+            confluence-spaces:
+                runs: every 4 hours
+                output: ConfluenceSpace
+                description: |
+                    Fetches a list of spaces from confluence
+                sync_type: full
+                endpoint: /confluence/spaces
+            confluence-pages:
+                runs: every 4 hours
+                output: ConfluencePage
+                description: |
+                    Fetches a list of pages from confluence
+                sync_type: full
+                endpoint: /confluence/pages
+models:
+    ConfluenceSpace:
+        id: string
+        key: string
+        name: string
+        type: string
+        status: string
+        authorId: string
+        createdAt: string
+        homepageId: string
+        description: string
+    ConfluencePage:
+        id: string
+        title: string
+        type: string
+        status: string
+        authorId: string
+        createdAt: string
+        spaceId: string
+        parentId: string
+        parentType: string
+        position: number
+        version:
+            createdAt: string
+            message: string
+            number: number
+            minorEdit: boolean
+            authorId: string
+        body:
+            storage: object
+            atlas_doc_format: object

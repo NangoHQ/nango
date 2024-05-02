@@ -1,0 +1,19 @@
+integrations:
+    google-mail:
+        syncs:
+            gmail-emails:
+                runs: every hour
+                description: |
+                    Fetches a list of emails from gmail
+                output: GmailEmail
+                sync_type: incremental
+                endpoint: /google-mail/emails
+models:
+    GmailEmail:
+        id: string
+        sender: string
+        recipients: string
+        date: date
+        subject: string
+        body: string
+        threadId: string

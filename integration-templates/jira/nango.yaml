@@ -1,0 +1,22 @@
+integrations:
+    jira:
+        syncs:
+            jira-issues:
+                runs: every 5mins
+                description: |
+                    Fetches a list of issues from Jira
+                output: JiraIssue
+                sync_type: incremental
+                endpoint: /jira/issues
+models:
+    JiraIssue:
+        id: integer
+        key: string
+        summary: string
+        issueType: string
+        status: string
+        assignee: string
+        projectKey: string
+        projectName: string
+        createdAt: date
+        updatedAt: date
