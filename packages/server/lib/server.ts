@@ -231,20 +231,33 @@ if (!isCloud && !isEnterprise) {
     });
 }
 
-// Webapp assets, static files and build.
-const webappBuildPath = '../../../webapp/build';
-web.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-web.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
-web.get('*', (_, res) => {
-    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+// -------
+// 404
+web.use('/api/*', (_req: Request, res: Response) => {
+    res.status(404).json({ error: { code: 'not_found' } });
 });
 
 app.use(web);
 
+// -------
+// Webapp assets, static files and build.
+const webappBuildPath = '../../../webapp/build';
+const staticSite = express.Router();
+staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
+staticSite.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+staticSite.get('*', (_, res) => {
+    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+});
+app.use(staticSite);
+
+// -------
 // Error handling.
-app.use(async (e: any, req: Request, res: Response, __: any) => {
+app.use(async (e: any, req: Request, res: Response, _: any) => {
     await errorManager.handleGenericError(e, req, res, tracer);
 });
+
+// -------
+// Websocket
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 
