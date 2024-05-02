@@ -40,8 +40,9 @@ jobs:
                   for dir in */; do
                     if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
                         cd "$dir"
-                        mkdir -p nango-integrations
-                        find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
+                        mkdir -p nango-integrations/$dir
+                        mv nango.yaml nango-integrations/
+                        find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations/$dir {} +
                         cd nango-integrations
                         NANGO_CLI_UPGRADE_MODE=ignore nango compile
                         cd ../../
