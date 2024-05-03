@@ -44,10 +44,12 @@ jobs:
 
                     dir=${dir//\/syncs/}
                     dir=${dir//\/actions/}
+                    integration=$(basename $dir)
 
                     mkdir -p /tmp/nango-temp/nango-integrations
 
-                    cp -r $dir/* /tmp/nango-temp/nango-integrations/
+                    cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
+                    cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/
 
                     cd /tmp/nango-temp/nango-integrations
                     nango compile
