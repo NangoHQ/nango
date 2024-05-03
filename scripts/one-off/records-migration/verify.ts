@@ -162,7 +162,7 @@ async function getCheckpoint(): Promise<Checkpoint> {
     try {
         const data = await fs.promises.readFile(checkpointFile, 'utf8');
         return JSON.parse(data) as Checkpoint;
-    } catch (error: any) {
+    } catch (error: unknown) {
         if (error['code'] == 'ENOENT') {
             return { lastUpdatedAt: null, lastId: null };
         }
@@ -173,7 +173,7 @@ async function getCheckpoint(): Promise<Checkpoint> {
 // time execution
 const start = new Date();
 verify()
-    .catch((error) => {
+    .catch((error: unknown) => {
         console.error('Error occurred during verification:', error);
     })
     .finally(async () => {
