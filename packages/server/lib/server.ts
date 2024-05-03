@@ -12,7 +12,7 @@ import { migrate as migrateRecords } from '@nangohq/records';
 import { start as migrateLogs } from '@nangohq/logs';
 
 import publisher from './clients/publisher.client.js';
-import { app } from './routers.js';
+import { app } from './routes.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');

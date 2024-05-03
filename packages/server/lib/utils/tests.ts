@@ -5,7 +5,7 @@ import { expect } from 'vitest';
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
 import { getServerPort } from '@nangohq/shared';
 
-import { app } from '../routers.js';
+import { app } from '../routes.js';
 
 /**
  * Type safe API fetch
@@ -47,12 +47,22 @@ export function apiFetch(baseUrl: string) {
 }
 
 /**
- * Type guard API response
+ * Assert API response is an error
  */
 export function isError(json: any): asserts json is ApiError<any, any> {
     if (!('error' in json)) {
         console.log('isError', inspect(json, true, 100));
         throw new Error('Response is not an error');
+    }
+}
+
+/**
+ * Assert API response is a success
+ */
+export function isSuccess<TType extends Record<string, any>>(json: TType): asserts json is Exclude<TType, { error: any }> {
+    if (json && 'error' in json) {
+        console.log('isSuccess', inspect(json, true, 100));
+        throw new Error('Response is not a success');
     }
 }
 
