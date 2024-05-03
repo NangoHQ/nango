@@ -132,4 +132,29 @@ describe('GET /logs', () => {
             pagination: { total: 1 }
         });
     });
+
+    it('should search logs and not return results from an other account', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const env2 = await seeders.seedAccountEnvAndUser();
+
+        const logCtx = await logContextGetter.create(
+            { message: 'test 1', operation: { type: 'auth' } },
+            { account: { id: env.account_id }, environment: { id: env.id } }
+        );
+        await logCtx.info('test info');
+        await logCtx.success();
+
+        const res = await api.fetch('/api/v1/logs/search', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: env2.env.secret_key,
+            body: { limit: 10 }
+        });
+
+        expect(res.res.status).toBe(200);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: [],
+            pagination: { total: 0 }
+        });
+    });
 });
