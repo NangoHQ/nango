@@ -1,7 +1,7 @@
 integrations:
     kustomer:
         syncs:
-            kustomer-conversations:
+            conversations:
                 runs: every 6 hours
                 description: |
                     Retrieves a paginated list of conversations for the organization

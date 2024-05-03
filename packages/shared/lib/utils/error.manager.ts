@@ -24,7 +24,7 @@ interface ErrorOptionalConfig {
     source: ErrorSource;
     accountId?: number;
     userId?: number;
-    environmentId?: number;
+    environmentId?: number | undefined;
     metadata?: Record<string, unknown>;
     operation?: string;
 }
@@ -131,35 +131,34 @@ class ErrorManager {
         }
     }
 
-    public errRes(res: any, type: string) {
+    public errRes(res: Response, type: string) {
         const err = new NangoError(type);
         this.errResFromNangoErr(res, err);
     }
 
-    public async handleGenericError(err: any, req: Request, res: any, tracer: Tracer): Promise<void> {
+    public async handleGenericError(err: any, req: Request, res: Response, tracer: Tracer): Promise<void> {
         const errorId = uuid.v4();
+        let nangoErr: NangoError;
         if (!(err instanceof Error)) {
-            err = new NangoError('generic_error_malformed', errorId);
+            nangoErr = new NangoError('generic_error_malformed', errorId);
         } else if (!(err instanceof NangoError)) {
-            err = new NangoError(err.message, errorId);
-        }
-
-        const nangoErr: NangoError = err;
-
-        if (isApiAuthenticated(res)) {
-            const environmentId = getEnvironmentId(res);
-            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
-        } else if (isUserAuthenticated(req)) {
-            const { response, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
-            if (!success || response === null) {
-                this.report(error, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
-            } else {
-                const { environmentId } = response;
-                this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
-            }
+            nangoErr = new NangoError(err.message, errorId);
         } else {
-            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
+            nangoErr = err;
         }
+
+        let environmentId: number | undefined;
+        if (isApiAuthenticated(res)) {
+            environmentId = getEnvironmentId(res);
+        } else if (isUserAuthenticated(req) && req.query['env']) {
+            // TODO: most routes are already calling we should call it at the beginning and store it
+            const { response, success } = await getAccountIdAndEnvironmentIdFromSession(req);
+            if (success && response) {
+                environmentId = response.environmentId;
+            }
+        }
+
+        this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: nangoErr.payload }, tracer);
 
         const supportError = new NangoError('generic_error_support', errorId);
         this.errResFromNangoErr(res, supportError);

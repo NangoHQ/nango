@@ -4,7 +4,7 @@ import promptly from 'promptly';
 
 import { nangoConfigFile } from '@nangohq/shared';
 import configService from './config.service.js';
-import compileService, { listFilesToCompile } from './compile.service.js';
+import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
@@ -38,7 +38,7 @@ class VerificationService {
                 }
                 init(debug);
                 await generate(debug);
-                await compileService.run({ debug });
+                await compileAllFiles({ debug });
             } else {
                 console.log(chalk.red(`Exiting...`));
                 process.exit(1);
@@ -69,7 +69,7 @@ class VerificationService {
                 }
                 fs.mkdirSync(distDir);
                 await generate(debug);
-                await compileService.run({ debug });
+                await compileAllFiles({ debug });
             }
         } else {
             const files = fs.readdirSync(distDir);
@@ -85,7 +85,7 @@ class VerificationService {
                     if (debug) {
                         printDebug(`Generating the default integration files.`);
                     }
-                    await compileService.run({ debug });
+                    await compileAllFiles({ debug });
                 }
             }
         }

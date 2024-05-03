@@ -1,7 +1,7 @@
 integrations:
     expensify:
         actions:
-            expensify-list-policy:
+            list-policies:
                 description: |
                     Action to fetch a list of policies with some relevant information about them
                 endpoint: POST /expensify/list-policy

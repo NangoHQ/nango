@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, softDeleteSchedules, softDeleteJobs, syncDataService, db, findRecentlyDeletedSync } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, softDeleteSchedules, softDeleteJobs, db, findRecentlyDeletedSync } from '@nangohq/shared';
 import { records } from '@nangohq/records';
 import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
@@ -63,8 +63,7 @@ export async function exec(): Promise<void> {
 
             // ----
             // hard delete records
-            const res = await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
-            await records.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
+            const res = await records.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
             metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalDeletedRecords);
         }
     });

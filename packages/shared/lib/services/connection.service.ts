@@ -979,11 +979,22 @@ class ConnectionService {
         client_secret: string
     ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
         const url = template.authorization_url;
+        let authorizationParams = '';
+
+        if (template.authorization_params && Object.keys(template.authorization_params).length > 0) {
+            authorizationParams = new URLSearchParams(template.authorization_params).toString();
+        }
         try {
             const params = new URLSearchParams();
             params.append('client_id', client_id);
             params.append('client_secret', client_secret);
 
+            if (authorizationParams) {
+                const authorizationParamsEntries = new URLSearchParams(authorizationParams).entries();
+                for (const [key, value] of authorizationParamsEntries) {
+                    params.append(key, value);
+                }
+            }
             const fullUrl = `${url}?${params}`;
             const response = await axios.post(fullUrl);
 

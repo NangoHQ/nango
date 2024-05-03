@@ -21,6 +21,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 
@@ -44,12 +45,13 @@ class UnAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Unauthenticated' },
-            { account: { id: accountId }, environment: { id: environmentId } }
-        );
+        let logCtx: LogContext | undefined;
 
         try {
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Unauthenticated' },
+                { account: { id: accountId }, environment: { id: environmentId } }
+            );
             void analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
 
             if (!providerConfigKey) {
@@ -188,8 +190,24 @@ class UnAuthController {
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during Unauthenticated connection creation', { error: err });
-            await logCtx.failed();
+            if (logCtx) {
+                void connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.None,
+                        error: `Error during Unauth create: ${prettyError}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    'unknown',
+                    activityLogId,
+                    logCtx
+                );
+                await logCtx.error('Error during Unauthenticated connection creation', { error: err });
+                await logCtx.failed();
+            }
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -200,21 +218,6 @@ class UnAuthController {
                     connectionId
                 }
             });
-
-            void connectionCreationFailedHook(
-                {
-                    id: -1,
-                    connection_id: connectionId as string,
-                    provider_config_key: providerConfigKey as string,
-                    environment_id: environmentId,
-                    auth_mode: AuthModes.None,
-                    error: `Error during Unauth create: ${prettyError}`,
-                    operation: AuthOperation.UNKNOWN
-                },
-                'unknown',
-                activityLogId,
-                logCtx
-            );
 
             next(err);
         }

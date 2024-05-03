@@ -26,7 +26,6 @@ jobs:
             - name: Install nango CLI
               run: |
                   npm install -g nango
-                  npm install @tsconfig/node18-strictest-esm --save-dev
 
             - name: Get specific changed files
               id: changed-files-specific
@@ -43,9 +42,14 @@ jobs:
                   for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
                     dir=$(dirname $file)
 
+                    dir=${dir//\/syncs/}
+                    dir=${dir//\/actions/}
+                    integration=$(basename $dir)
+
                     mkdir -p /tmp/nango-temp/nango-integrations
 
-                    cp -r $dir/* /tmp/nango-temp/nango-integrations/
+                    cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
+                    cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/
 
                     cd /tmp/nango-temp/nango-integrations
                     nango compile

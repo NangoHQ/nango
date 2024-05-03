@@ -6,8 +6,8 @@ import configService from './config.service.js';
 export const DEFAULT_GITHUB_CLIENT_ID = process.env['DEFAULT_GITHUB_CLIENT_ID'] || '';
 export const DEFAULT_GITHUB_CLIENT_SECRET = process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '';
 export const DEMO_GITHUB_CONFIG_KEY = 'github-demo';
-export const DEMO_SYNC_NAME = 'github-issues-demo';
-export const DEMO_ACTION_NAME = 'github-create-demo-issue';
+export const DEMO_SYNC_NAME = 'issues-demo';
+export const DEMO_ACTION_NAME = 'create-demo-issue';
 export const DEMO_MODEL = 'GithubIssueDemo';
 
 const TABLE = `${dbNamespace}onboarding_demo_progress`;

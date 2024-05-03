@@ -51,6 +51,7 @@ export interface OAuthSession {
 
     // Needed for oAuth 1.0a
     requestTokenSecret?: string;
+    activityLogId: string;
 }
 
 export interface TemplateOAuth2 extends Template {
