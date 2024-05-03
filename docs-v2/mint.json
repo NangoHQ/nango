@@ -341,6 +341,7 @@
                         "integrations/all/docusign",
                         "integrations/all/egnyte",
                         "integrations/all/entrata",
+                        "integrations/all/envoy",
                         "integrations/all/epic-games",
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
