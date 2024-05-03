@@ -5,6 +5,7 @@ import environmentService from '../../environment.service.js';
 import * as SyncConfigService from './config.service.js';
 import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
+import connectionService from '../../connection.service.js';
 import configService from '../../config.service.js';
 import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../../activity/mocks.js';
 import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
@@ -149,6 +150,10 @@ describe('Sync config create', () => {
                 version: '1',
                 enabled: true
             });
+        });
+
+        vi.spyOn(connectionService, 'shouldCapUsage').mockImplementation(() => {
+            return Promise.resolve(false);
         });
 
         vi.spyOn(SyncService, 'getSyncsByProviderConfigAndSyncName').mockImplementation(() => {

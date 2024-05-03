@@ -160,7 +160,11 @@ class DeployService {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
                 }
-            } catch (err) {
+            } catch (err: any) {
+                if (err?.response?.data?.error) {
+                    console.log(chalk.red(err.response.data.error));
+                    process.exit(1);
+                }
                 let errorMessage;
                 if (err instanceof AxiosError) {
                     const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
