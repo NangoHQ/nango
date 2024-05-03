@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import { errorManager, ErrorSourceEnum, connectionService } from '@nangohq/shared';
-import { getLogger, metrics } from '@nangohq/utils';
+import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 
