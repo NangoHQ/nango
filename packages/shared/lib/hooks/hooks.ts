@@ -27,7 +27,7 @@ export const connectionCreationStartCapCheck = async ({
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
-    creationType: string;
+    creationType: "create" | "import";
 }): Promise<boolean> => {
     if (!providerConfigKey) {
         return false;
