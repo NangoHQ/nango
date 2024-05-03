@@ -7,12 +7,11 @@ import path from 'path';
 import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils';
 import { dirname, userService, database } from '@nangohq/shared';
 import crypto from 'crypto';
-import { promisify } from 'util';
+import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
 
 const KnexSessionStore = connectSessionKnex(session);
-const pbkdf2 = promisify(crypto.pbkdf2);
 
 const sessionStore = new KnexSessionStore({
     knex: database.knex,
@@ -61,7 +60,7 @@ export function setupAuth(app: express.Router) {
                     return cb(null, false, { message: 'Incorrect email or password.' });
                 }
 
-                const proposedHashedPassword = await pbkdf2(password, user.salt, 310000, 32, 'sha256');
+                const proposedHashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
                 const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
                 if (proposedHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, proposedHashedPassword)) {
@@ -98,10 +97,14 @@ export function setupAuth(app: express.Router) {
     }
 
     passport.serializeUser(function (user: Express.User, cb) {
-        cb(null, { id: user.id, email: user.email, name: user.name });
+        process.nextTick(function () {
+            cb(null, { id: user.id, email: user.email, name: user.name });
+        });
     });
 
     passport.deserializeUser(function (user: Express.User, cb) {
-        return cb(null, user);
+        process.nextTick(function () {
+            return cb(null, user);
+        });
     });
 }
