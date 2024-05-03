@@ -105,7 +105,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     pre_built?: boolean | null;
     is_public?: boolean | null;
     endpoints?: NangoSyncEndpoint[];
-    input?: string | SyncModelSchema;
+    input?: string | SyncModelSchema | undefined;
     sync_type?: SyncType | undefined;
     webhook_subscriptions?: string[];
     enabled: boolean;
