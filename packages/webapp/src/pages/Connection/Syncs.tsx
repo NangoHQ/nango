@@ -17,15 +17,15 @@ import { calculateTotalRuntime, getRunTime, parseLatestSyncResult, formatDateToU
 import { useRunSyncAPI } from '../../utils/api';
 
 interface SyncsProps {
-    syncs: SyncResponse[] | null;
+    syncs: SyncResponse[] | undefined;
     connection: Connection | null;
     loaded: boolean;
     syncLoaded: boolean;
-    setSyncLoaded: (loaded: boolean) => void;
+    reload: () => void;
     env: string;
 }
 
-export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLoaded, env }: SyncsProps) {
+export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, env }: SyncsProps) {
     const [openDropdownHash, setOpenDropdownHash] = useState<string | null>(null);
     const runCommandSyncAPI = useRunSyncAPI(env);
 
@@ -59,7 +59,7 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
 
         if (res?.status === 200) {
-            setSyncLoaded(false);
+            reload();
             const niceCommand = UserFacingSyncCommand[command];
             toast.success(`The sync was successfully ${niceCommand}`, { position: toast.POSITION.BOTTOM_CENTER });
         } else {
@@ -231,35 +231,35 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
                                                         {sync.schedule_status !== 'RUNNING' ? (
                                                             <>
                                                                 <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                                <span className="pl-2">Start Schedule</span>
+                                                                <span className="pl-2">Start schedule</span>
                                                             </>
                                                         ) : (
                                                             <>
                                                                 <PauseCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                                <span className="pl-2">Pause Schedule</span>
+                                                                <span className="pl-2">Pause schedule</span>
                                                             </>
                                                         )}
                                                     </div>
                                                     <div
-                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
+                                                        className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
                                                         onClick={() => syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
                                                         <StopCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                        <span className="pl-2">Interrupt Running Job</span>
+                                                        <span className="pl-2">Interrupt execution</span>
                                                     </div>
                                                     <div
-                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
+                                                        className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
                                                         onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
                                                         <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                        <span className="pl-2">Trigger Job (Incremental)</span>
+                                                        <span className="pl-2">Trigger execution (incremental)</span>
                                                     </div>
                                                     <div
-                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
+                                                        className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
                                                         onClick={() => syncCommand('RUN_FULL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
                                                         <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                        <span className="pl-2">Trigger Job (Full Refresh)</span>
+                                                        <span className="pl-2">Trigger execution (full refresh)</span>
                                                     </div>
                                                 </div>
                                             </div>
