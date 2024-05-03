@@ -5,7 +5,7 @@ import { expect } from 'vitest';
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
 import { getServerPort } from '@nangohq/shared';
 
-import { app } from '../routers.js';
+import { app } from '../routes.js';
 
 /**
  * Type safe API fetch
