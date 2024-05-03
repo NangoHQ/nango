@@ -48,8 +48,7 @@ export async function exec(): Promise<void> {
             await connectionService.getConnectionCredentials(account_id, environment_id, connection_id, provider_config_key, logContextGetter);
             metrics.increment(metrics.Types.REFRESH_TOKENS_SUCCESS);
         } catch (err) {
-            logger.error(`[refreshTokens] failed to refresh token for connectionId: ${connection_id}`);
-            logger.error(err);
+            logger.error(`[refreshTokens] failed to refresh token for connectionId: ${connection_id} ${stringifyError(err)}`);
             metrics.increment(metrics.Types.REFRESH_TOKENS_FAILED);
         }
     }
