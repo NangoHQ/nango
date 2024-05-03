@@ -309,7 +309,8 @@ export async function deployPreBuilt(
 
         providerConfigKeys.push(provider_config_key);
 
-        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {}, input } = config;
+        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {} } = config;
+        let { input } = config;
         const sync_name = config.name || config.syncName;
 
         if (type === SyncConfigType.SYNC && !runs) {
@@ -409,6 +410,10 @@ export async function deployPreBuilt(
         const created_at = new Date();
 
         const model_schema = JSON.parse(model_schema_string);
+
+        if (input && Object.keys(input).length === 0) {
+            input = undefined;
+        }
 
         if (input && typeof input !== 'string' && input.name) {
             model_schema.push(input);
