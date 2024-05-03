@@ -25,7 +25,6 @@ export const searchLogs = asyncWrapper<SearchLogs>(async (req, res) => {
         return;
     }
 
-    console.log('hello');
     const env = res.locals['environment'];
     const body = val.data;
     const rawOps = await model.listOperations({ accountId: env.account_id, environmentId: env.id, limit: body.limit });

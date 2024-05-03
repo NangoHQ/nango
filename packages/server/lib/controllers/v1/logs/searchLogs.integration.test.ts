@@ -92,7 +92,7 @@ describe('GET /logs', () => {
         });
 
         expect(res.res.status).toBe(200);
-        expect(res.json).toStrictEqual({
+        expect(res.json).toStrictEqual<typeof res.json>({
             data: [
                 {
                     accountId: env.account_id,
