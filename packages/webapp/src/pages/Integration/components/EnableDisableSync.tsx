@@ -133,7 +133,6 @@ export default function EnableDisableSync({
         } else {
             const payload = await res?.json();
             if (payload.type === 'resource_capped') {
-                // TODO
                 setModalShowSpinner(false);
                 setModalTitleColor('text-white');
                 setModalTitle('You’ve reached your connections limit!');
@@ -146,6 +145,10 @@ export default function EnableDisableSync({
                 setModalOkButtonLink('https://nango.dev/chat');
                 setModalCancelButtonLink('https://docs.nango.dev/reference/limits');
                 setVisible(true);
+
+                if (setIsEnabling) {
+                    setIsEnabling(false);
+                }
 
                 return false;
             } else {
