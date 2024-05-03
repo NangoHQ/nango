@@ -4,7 +4,7 @@ import './utils/config.js';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'http';
-import { getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath, packageJsonFile, environmentService } from '@nangohq/shared';
+import { getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
@@ -39,7 +39,6 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     logger.info('Not migrating database');
 }
 
-await environmentService.cacheSecrets();
 await oAuthSessionService.clearStaleSessions();
 
 const port = getPort();

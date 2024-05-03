@@ -9,7 +9,7 @@ export const isCloud = process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 export const isLocal = baseUrl === localhostUrl;
 export const isEnterprise = process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
 export const isDev = process.env['NODE_ENV'] === NodeEnv.Dev;
-export const isTest = Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
+export const isTest = true || Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
 export const isBasicAuthEnabled = !isCloud && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 export const isHosted = !isCloud && !isLocal && !isEnterprise;
 

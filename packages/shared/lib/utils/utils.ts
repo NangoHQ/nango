@@ -332,7 +332,7 @@ export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Pro
         return { response: null, error, success: false };
     }
 
-    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
+    const environmentAndAccount = await environmentService.getAccountAndEnvironment({ accountId: user.account_id, envName: currentEnvironment });
 
     if (!environmentAndAccount) {
         const error = new NangoError('account_not_found');

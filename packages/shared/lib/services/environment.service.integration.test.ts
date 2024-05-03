@@ -49,7 +49,7 @@ describe('Environment service', () => {
         const account = await createAccount();
         const env = await environmentService.createEnvironment(account.id, uuid());
 
-        const get = await environmentService.getAccountIdAndEnvironmentIdBySecretKey(env!.secret_key);
+        const get = await environmentService.getAccountAndEnvironmentBySecretKey(env!.secret_key);
 
         expect(get).toStrictEqual({
             accountId: account.id,

@@ -1,27 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
-import {
-    accountService,
-    getEnvironmentAndAccountId,
-    errorManager,
-    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook
-} from '@nangohq/shared';
+import { errorManager, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '@nangohq/shared';
 
 export const authCheck = async (req: Request, res: Response, next: NextFunction) => {
-    const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-    if (!success || response === null) {
-        errorManager.errResFromNangoErr(res, error);
-        return;
-    }
-
-    const { accountId, environmentId } = response;
-
-    const account = await accountService.getAccountById(accountId);
-
-    if (!account) {
-        errorManager.errRes(res, 'unknown_account');
-        return;
-    }
+    const environmentId = res.locals['environment']!.id;
+    const account = res.locals['account']!.id;
 
     const { providerConfigKey } = req.params;
 

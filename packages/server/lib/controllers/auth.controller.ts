@@ -19,6 +19,7 @@ import {
     NangoError,
     createOnboardingProvider
 } from '@nangohq/shared';
+import type { RequestLocals } from '../utils/asyncWrapper.js';
 
 export interface WebUser {
     id: number;
@@ -81,7 +82,7 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 };
 
 class AuthController {
-    async signin(req: Request, res: Response, next: NextFunction) {
+    async signin(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const getUser = await getUserFromSession(req);
             if (isErr(getUser)) {
@@ -102,7 +103,7 @@ class AuthController {
         }
     }
 
-    async logout(req: Request, res: Response, next: NextFunction) {
+    async logout(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             req.session.destroy((err) => {
                 if (err) {
@@ -116,7 +117,7 @@ class AuthController {
         }
     }
 
-    async signup(req: Request, res: Response, next: NextFunction) {
+    async signup(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -207,7 +208,7 @@ class AuthController {
         }
     }
 
-    async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    async forgotPassword(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { email } = req.body;
 
@@ -236,7 +237,7 @@ class AuthController {
         }
     }
 
-    async resetPassword(req: Request, res: Response, next: NextFunction) {
+    async resetPassword(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { password, token } = req.body;
 
@@ -277,7 +278,7 @@ class AuthController {
         try {
             const emailClient = EmailClient.getInstance();
             emailClient
-                ?.send(
+                .send(
                     user.email,
                     'Nango password reset',
                     `<p><b>Reset your password</b></p>
@@ -293,7 +294,7 @@ class AuthController {
         }
     }
 
-    async invitation(req: Request, res: Response, next: NextFunction) {
+    async invitation(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const token = req.query['token'] as string;
 
@@ -315,7 +316,7 @@ class AuthController {
         }
     }
 
-    getManagedLogin(req: Request, res: Response, next: NextFunction) {
+    getManagedLogin(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -329,7 +330,7 @@ class AuthController {
                 return;
             }
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = workos.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${basePublicUrl}/api/v1/login/callback`
@@ -341,7 +342,7 @@ class AuthController {
         }
     }
 
-    getManagedLoginWithInvite(req: Request, res: Response, next: NextFunction) {
+    getManagedLoginWithInvite(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -376,7 +377,7 @@ class AuthController {
                 token
             };
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = workos.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${basePublicUrl}/api/v1/login/callback`,
@@ -389,7 +390,7 @@ class AuthController {
         }
     }
 
-    async loginCallback(req: Request, res: Response, next: NextFunction) {
+    async loginCallback(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { code, state } = req.query;
 
