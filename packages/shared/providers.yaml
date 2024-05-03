@@ -1328,7 +1328,8 @@ microsoft-ads:
     default_scopes:
         - https://ads.microsoft.com/msads.manage
         - offline_access
-    proxy: null
+    proxy:
+        base_url: https://clientcenter.api.bingads.microsoft.com/Api
     refresh_params:
         grant_type: refresh_token
         scope: https://ads.microsoft.com/msads.manage
