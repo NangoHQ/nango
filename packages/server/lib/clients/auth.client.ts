@@ -98,14 +98,10 @@ export function setupAuth(app: express.Router) {
     }
 
     passport.serializeUser(function (user: Express.User, cb) {
-        process.nextTick(function () {
-            cb(null, { id: user.id, email: user.email, name: user.name });
-        });
+        cb(null, { id: user.id, email: user.email, name: user.name });
     });
 
     passport.deserializeUser(function (user: Express.User, cb) {
-        process.nextTick(function () {
-            return cb(null, user);
-        });
+        return cb(null, user);
     });
 }

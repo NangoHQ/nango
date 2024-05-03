@@ -81,6 +81,31 @@ class EnvironmentService {
         }
     }
 
+    async getAccountAndEnvironment(
+        opts: { secretKey: string } | { accountId: number; name: string }
+    ): Promise<{ account: Account; environment: Environment } | null> {
+        const q = db.knex
+            .select<{
+                account: Account;
+                environment: Environment;
+            }>(db.knex.raw('row_to_json(_nango_environments.*) as environment'), db.knex.raw('row_to_json(_nango_accounts.*) as account'))
+            .from<Environment>(TABLE)
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .first();
+
+        if ('secretKey' in opts) {
+            const hashed = await hashSecretKey(opts.secretKey);
+            q.where('secret_key_hashed', hashed);
+        } else if (opts.accountId !== undefined) {
+            q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.name);
+        } else {
+            return null;
+        }
+
+        const res = await q;
+        return res || null;
+    }
+
     async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_')) || [];

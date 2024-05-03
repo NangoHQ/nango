@@ -17,6 +17,7 @@ import tracer from 'dd-trace';
 const logger = getLogger('AccessMiddleware');
 
 const secretKeyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/users/:userId/suspend'];
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -116,10 +117,40 @@ export class AccessMiddleware {
             return;
         }
 
-        next();
+        if (ignoreEnvPaths.includes(req.route.path)) {
+            next();
+            return;
+        }
+
+        try {
+            const user = await userService.getUserById(req.user.id);
+            if (!user) {
+                res.status(401).send({ error: { code: 'unknown_user' } });
+                return;
+            }
+
+            const currentEnv = req.query['env'];
+            if (typeof currentEnv !== 'string') {
+                res.status(401).send({ error: { code: 'invalid_env' } });
+                return;
+            }
+
+            const result = await environmentService.getAccountAndEnvironment({ name: currentEnv, accountId: user.account_id });
+            if (!result) {
+                res.status(401).send({ error: { code: 'unknown_key' } });
+                return;
+            }
+
+            res.locals['account'] = result.account;
+            res.locals['environment'] = result.environment;
+            next();
+        } catch {
+            res.status(401).send({ error: { code: 'unknown_key' } });
+            return;
+        }
     }
 
-    async noAuth(req: Request, _: Response, next: NextFunction) {
+    async noAuth(req: Request, res: Response, next: NextFunction) {
         if (!req.isAuthenticated()) {
             const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
 
@@ -130,8 +161,39 @@ export class AccessMiddleware {
 
                 next();
             });
-        } else {
+            return;
+        }
+
+        if (ignoreEnvPaths.includes(req.route.path)) {
             next();
+            return;
+        }
+
+        try {
+            const user = await userService.getUserById(req.user.id);
+            if (!user) {
+                res.status(401).send({ error: { code: 'unknown_user' } });
+                return;
+            }
+
+            const currentEnv = req.query['env'];
+            if (typeof currentEnv !== 'string') {
+                res.status(401).send({ error: { code: 'invalid_env' } });
+                return;
+            }
+
+            const result = await environmentService.getAccountAndEnvironment({ name: currentEnv, accountId: user.account_id });
+            if (!result) {
+                res.status(401).send({ error: { code: 'unknown_user_account' } });
+                return;
+            }
+
+            res.locals['account'] = result.account;
+            res.locals['environment'] = result.environment;
+            next();
+        } catch {
+            res.status(401).send({ error: { code: 'unknown_key' } });
+            return;
         }
     }
 
@@ -195,14 +257,14 @@ export class AccessMiddleware {
         }
 
         try {
-            const result = await environmentService.getAccountIdAndEnvironmentIdBySecretKey(secret);
+            const result = await environmentService.getAccountAndEnvironment({ secretKey: secret });
             if (!result) {
                 res.status(401).send({ error: { code: 'unknown_key' } });
                 return;
             }
 
-            setAccount(result.accountId, res);
-            setEnvironmentId(result.environmentId, res);
+            res.locals['account'] = result.account;
+            res.locals['environment'] = result.environment;
         } catch {
             res.status(401).send({ error: { code: 'unknown_key' } });
             return;

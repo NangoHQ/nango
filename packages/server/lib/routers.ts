@@ -31,7 +31,7 @@ import type { Response, Request } from 'express';
 import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { listOperations } from './controllers/v1/logs/listOperations.js';
+import { searchLogs } from './controllers/v1/logs/searchLogs.js';
 
 export const app = express();
 
@@ -97,7 +97,6 @@ app.route('/environment-variables').get(apiAuth, environmentController.getEnviro
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
-app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController)); //TODO: to deprecate
 app.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
@@ -180,7 +179,7 @@ web.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(acti
 web.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
 web.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibleFilters.bind(activityController));
 
-web.route('/api/v1/logs/operations').post(webAuth, listOperations);
+web.route('/api/v1/logs/search').post(webAuth, searchLogs);
 
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
