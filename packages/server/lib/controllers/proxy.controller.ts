@@ -237,7 +237,7 @@ class ProxyController {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
 
-        if (configBody.decompress === true || configBody.template.proxy.decompress === true) {
+        if (configBody.decompress === true || configBody.template.proxy?.decompress === true) {
             decompress = true;
         }
 
