@@ -7,8 +7,7 @@ import { logContextGetter } from '@nangohq/logs';
 const logger = getLogger('Jobs');
 
 export function refreshTokens(): void {
-    //cron.schedule('0 6 * * *', () => {
-    cron.schedule('* * * * *', () => {
+    cron.schedule('0 6 * * *', () => {
         (async () => {
             const start = Date.now();
             try {
