@@ -410,7 +410,7 @@ export async function deployPreBuilt(
 
         const model_schema = JSON.parse(model_schema_string);
 
-        if (typeof input !== 'string' && input?.name) {
+        if (input && typeof input !== 'string' && input.name) {
             model_schema.push(input);
         }
 
@@ -423,7 +423,7 @@ export async function deployPreBuilt(
             models,
             active: true,
             runs,
-            input: typeof input !== 'string' ? String(input?.name) : input,
+            input: input && typeof input !== 'string' ? String(input.name) : input,
             model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id,
             deleted: false,
