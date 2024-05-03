@@ -42,7 +42,7 @@ export class LocalRunner implements Runner {
             const nangoRunnerPath = process.env['NANGO_RUNNER_PATH'] || '../runner/dist/app.js';
 
             const cmd = nodePath;
-            const runnerLocation = `${nangoRunnerPath}`;
+            const runnerLocation = nangoRunnerPath;
             const cmdOptions = [runnerLocation, port.toString(), runnerId];
             logger.info(`[Runner] Starting runner with command: ${cmd} ${cmdOptions.join(' ')} `);
 

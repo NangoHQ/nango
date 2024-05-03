@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { LogLevel, DataResponse, DataRecord, UpsertResponse } from '@nangohq/shared';
-import { records as recordsService, format as recordsFormatter, type FormattedRecord, type UnencryptedRecordData } from '@nangohq/records';
+import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
+import type { FormattedRecord, UnencryptedRecordData } from '@nangohq/records';
 import {
     createActivityLogMessage,
     errorManager,
@@ -14,7 +15,8 @@ import {
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
-import { getLogger, resultErr, resultOk, isOk, isErr, type Result, metrics } from '@nangohq/utils';
+import { getLogger, resultErr, resultOk, isOk, isErr, metrics, stringifyError } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('PersistController');
 
@@ -34,13 +36,12 @@ type RecordRequest = Request<
         connectionId: string;
         activityLogId: number;
     },
-    any,
-    Record<string, any>
+    any
 >;
 
 class PersistController {
     public async saveActivityLog(
-        req: Request<{ environmentId: number }, any, { activityLogId: number; level: LogLevel; msg: string }, any, Record<string, any>>,
+        req: Request<{ environmentId: number }, any, { activityLogId: number; level: LogLevel; msg: string }, any>,
         res: Response,
         next: NextFunction
     ) {
@@ -83,8 +84,8 @@ class PersistController {
                         throw res.err;
                     }
                 })
-                .catch((reason) => {
-                    logger.error(`Failed to save records: ${reason}`);
+                .catch((err: unknown) => {
+                    logger.error(`Failed to save records: ${stringifyError(err)}`);
                 });
             return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
         };
@@ -123,8 +124,8 @@ class PersistController {
                         throw res.err;
                     }
                 })
-                .catch((reason) => {
-                    logger.error(`Failed to delete records: ${reason}`);
+                .catch((err: unknown) => {
+                    logger.error(`Failed to delete records: ${stringifyError(err)}`);
                 });
             return await dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
         };
@@ -163,8 +164,8 @@ class PersistController {
                         throw res.err;
                     }
                 })
-                .catch((reason) => {
-                    logger.error(`Failed to update records: ${reason}`);
+                .catch((err: unknown) => {
+                    logger.error(`Failed to update records: ${stringifyError(err)}`);
                 });
             return await dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
         };
@@ -266,7 +267,7 @@ class PersistController {
         }
         const syncConfig = await getSyncConfigByJobId(syncJobId);
 
-        if (syncConfig && !syncConfig?.models.includes(model)) {
+        if (syncConfig && !syncConfig.models.includes(model)) {
             const res = resultErr(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
             await logCtx.error('The model is not included in the declared sync models', { model });
 
@@ -315,7 +316,7 @@ class PersistController {
             span.finish();
             return resultOk(void 0);
         } else {
-            const content = `There was an issue with the batch ${persistType}. ${persistResult?.error}`;
+            const content = `There was an issue with the batch ${persistType}. ${persistResult.error}`;
 
             await createActivityLogMessage({
                 level: 'error',

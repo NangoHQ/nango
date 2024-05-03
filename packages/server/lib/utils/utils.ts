@@ -9,7 +9,7 @@ import { NangoError, userService, environmentService, interpolateString } from '
 
 const logger = getLogger('Server.Utils');
 
-export async function getUserFromSession(req: Request<any, any>): Promise<Result<User, NangoError>> {
+export async function getUserFromSession(req: Request<any>): Promise<Result<User, NangoError>> {
     const sessionUser = req.user;
     if (!sessionUser) {
         const error = new NangoError('user_not_found');
@@ -28,7 +28,7 @@ export async function getUserFromSession(req: Request<any, any>): Promise<Result
 }
 
 export async function getUserAccountAndEnvironmentFromSession(
-    req: Request<any, any>
+    req: Request<any>
 ): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
     const getUser = await getUserFromSession(req);
     if (isErr(getUser)) {
@@ -150,9 +150,11 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
             // - redirect url metadata
             // - connection_configuration - this is what is parsed from the post connection script
             (param) =>
-                [...(template.token_response_metadata || []), ...(template.redirect_uri_metadata || []), ...(template.connection_configuration || [])].indexOf(
-                    cleanParamName(param)
-                ) == -1
+                ![
+                    ...(template.token_response_metadata || []),
+                    ...(template.redirect_uri_metadata || []),
+                    ...(template.connection_configuration || [])
+                ].includes(cleanParamName(param))
         );
         const proxyVerificationMatches =
             template.proxy?.verification?.endpoint?.match(/\${connectionConfig\.([^{}]*)}/g) ||

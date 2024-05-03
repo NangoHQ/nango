@@ -31,7 +31,7 @@ export default function GoogleButton({ text, setServerErrorMessage, invitedAccou
 
         const res = await fetch(endpoint, postBody);
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             const data = await res.json();
             const { url } = data;
             window.location = url;

@@ -127,8 +127,8 @@ class Analytics {
         userProperties?: Record<string | number, any>
     ) {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
-        if (accountId) {
-            this.track(name, accountId, eventProperties, userProperties);
+        if (typeof accountId !== 'undefined' && accountId !== null) {
+            return this.track(name, accountId, eventProperties, userProperties);
         }
     }
 

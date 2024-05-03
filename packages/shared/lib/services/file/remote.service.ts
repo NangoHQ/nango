@@ -139,7 +139,7 @@ class RemoteFileService {
                         reject(new Error('Response body is undefined or not a Readable stream'));
                     }
                 })
-                .catch(async (err) => {
+                .catch(async (err: unknown) => {
                     errorManager.report(err, {
                         source: ErrorSourceEnum.PLATFORM,
                         environmentId,
@@ -148,7 +148,7 @@ class RemoteFileService {
                             fileName
                         }
                     });
-                    reject(err);
+                    reject(err as Error);
                 });
         });
     }
@@ -162,7 +162,7 @@ class RemoteFileService {
 
             const response = await client?.send(getObjectCommand);
 
-            if (response?.Body && response?.Body instanceof Readable) {
+            if (response?.Body && response.Body instanceof Readable) {
                 return { success: true, error: null, response: response.Body };
             } else {
                 return { success: false, error: null, response: null };

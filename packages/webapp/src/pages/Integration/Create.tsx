@@ -60,7 +60,7 @@ export default function Create() {
         }
     };
 
-    const showDocs = (e: React.MouseEvent<SVGSVGElement, MouseEvent>, provider: Provider) => {
+    const showDocs = (e: React.MouseEvent<SVGSVGElement>, provider: Provider) => {
         e.stopPropagation();
         const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}`;
         window.open(documentationUrl, '_blank');
