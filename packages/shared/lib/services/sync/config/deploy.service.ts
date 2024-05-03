@@ -12,6 +12,7 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
+import connectionService from '../../connection.service.js';
 import type { LogLevel } from '../../../models/Activity.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
@@ -753,6 +754,10 @@ async function compileDeployInfo({
             await logCtx.debug('Marking old sync configs as inactive', { count: ids.length, syncName, activeVersion: version });
         }
     }
+    //
+    // if there are too many connections for this sync then we need to also
+    // mark it as disabled
+    const isCapped = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id });
 
     insertData.push({
         environment_id,
@@ -772,7 +777,7 @@ async function compileDeployInfo({
         input: flow.input || '',
         sync_type: flow.sync_type,
         webhook_subscriptions: flow.webhookSubscriptions || [],
-        enabled: lastSyncWasEnabled
+        enabled: lastSyncWasEnabled && !isCapped
     });
 
     flowReturnData.push({

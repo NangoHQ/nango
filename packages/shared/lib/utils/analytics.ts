@@ -40,6 +40,9 @@ export enum AnalyticsTypes {
     PRE_UNAUTH = 'server:pre_unauth',
     PRE_WS_OAUTH = 'server:pre_ws_oauth',
     PRE_OAUTH2_CC_AUTH = 'server:pre_oauth2_cc_auth',
+    RESOURCE_CAPPED_CONNECTION_CREATED = 'server:resource_capped:connection_creation',
+    RESOURCE_CAPPED_CONNECTION_IMPORTED = 'server:resource_capped:connection_imported',
+    RESOURCE_CAPPED_SCRIPT_ACTIVATE = 'server:resource_capped:script_activate',
     SYNC_DEPLOY_SUCCESS = 'sync:deploy_succeeded',
     SYNC_PAUSE = 'sync:command_pause',
     SYNC_RUN = 'sync:command_run',
@@ -124,8 +127,8 @@ class Analytics {
         userProperties?: Record<string | number, any>
     ) {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
-        if (accountId) {
-            this.track(name, accountId, eventProperties, userProperties);
+        if (typeof accountId !== 'undefined' && accountId !== null) {
+            return this.track(name, accountId, eventProperties, userProperties);
         }
     }
 
