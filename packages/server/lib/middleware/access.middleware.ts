@@ -30,7 +30,7 @@ export class AccessMiddleware {
 
         const start = Date.now();
         try {
-            const result = await environmentService.getAccountAndEnvironment({ secretKey: secret });
+            const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
             if (!result) {
                 res.status(401).send({ error: { code: 'unknown_user_account' } });
                 return;
