@@ -8,7 +8,7 @@ export const authCheck = async (req: Request, res: Response, next: NextFunction)
     const { providerConfigKey } = req.params;
 
     if (account.is_capped && providerConfigKey) {
-        const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey, environmentId });
+        const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey, environmentId, creationType: 'create' });
         if (isCapped) {
             errorManager.errRes(res, 'resource_capped');
             return;

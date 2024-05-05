@@ -528,7 +528,11 @@ class ConnectionController {
             }
 
             if (account.is_capped && provider_config_key) {
-                const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey: provider_config_key, environmentId: environment.id });
+                const isCapped = await connectionCreationStartCapCheckHook({
+                    providerConfigKey: provider_config_key,
+                    environmentId: environment.id,
+                    creationType: 'import'
+                });
                 if (isCapped) {
                     errorManager.errRes(res, 'resource_capped');
                     return;

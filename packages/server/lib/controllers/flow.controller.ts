@@ -184,7 +184,7 @@ class FlowController {
 
     public async enableFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environmentId = res.locals['environment'].id;
+            const { account, environment } = res.locals;
 
             const id = req.params['id'];
             const flow = req.body;
@@ -194,9 +194,18 @@ class FlowController {
                 return;
             }
 
+            if (account.is_capped && flow?.providerConfigKey) {
+                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: flow?.providerConfigKey, environmentId: environment.id });
+
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
+                    return;
+                }
+            }
+
             await enableConfig(Number(id));
 
-            await syncOrchestrator.triggerIfConnectionsExist([flow], environmentId, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter);
 
             res.status(200).send([{ ...flow, enabled: true }]);
         } catch (e) {
