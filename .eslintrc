@@ -63,7 +63,7 @@
         "@typescript-eslint/no-base-to-string": "warn",
         "@typescript-eslint/restrict-plus-operands": "warn",
         "@typescript-eslint/consistent-type-exports": "error",
-        "@typescript-eslint/no-unnecessary-condition": "warn",
+        "@typescript-eslint/no-unnecessary-condition": "off", // Our types are not good enough right now
         "@typescript-eslint/only-throw-error": "warn",
         "react/prop-types": "off",
         "@typescript-eslint/no-unused-vars": [
