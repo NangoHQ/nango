@@ -58,9 +58,7 @@ class EnvironmentController {
 
     async getEnvironment(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environment = res.locals['environment'];
-            const account = res.locals['account'];
-            const user = res.locals['user'];
+            const { environment, account, user } = res.locals;
 
             if (!isCloud) {
                 environment.websockets_path = getWebsocketsPath();

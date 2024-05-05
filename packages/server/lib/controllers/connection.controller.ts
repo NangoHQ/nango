@@ -502,8 +502,7 @@ class ConnectionController {
 
     async createConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environment = res.locals['environment'];
-            const account = res.locals['account'];
+            const { environment, account } = res.locals;
 
             const { connection_id, provider_config_key } = req.body;
 
