@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError } from '@nangohq/utils';
-import { LogActionEnum, ErrorSourceEnum, environmentService, setAccount, setEnvironmentId, errorManager, userService } from '@nangohq/shared';
+import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
 import type { RequestLocals } from '../utils/asyncWrapper.js';
@@ -8,7 +8,7 @@ import type { RequestLocals } from '../utils/asyncWrapper.js';
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/users/:userId/suspend'];
+const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/users/:userId/suspend', '/api/v1/signin'];
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -36,8 +36,6 @@ export class AccessMiddleware {
                 return;
             }
 
-            setAccount(result.account.id, res);
-            setEnvironmentId(result.environment.id, res);
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.account;
             res.locals['environment'] = result.environment;
@@ -79,8 +77,6 @@ export class AccessMiddleware {
                 return;
             }
 
-            setAccount(result.account.id, res);
-            setEnvironmentId(result.environment.id, res);
             res.locals['authType'] = 'publicKey';
             res.locals['account'] = result.account;
             res.locals['environment'] = result.environment;

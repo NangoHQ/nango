@@ -6,7 +6,7 @@ import type { ErrorEvent } from '@sentry/types';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
 import { getLogger, isCloud, stringifyError } from '@nangohq/utils';
-import { getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, isApiAuthenticated, isUserAuthenticated, packageJsonFile } from './utils.js';
+import { packageJsonFile } from './utils.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
@@ -136,7 +136,7 @@ class ErrorManager {
         this.errResFromNangoErr(res, err);
     }
 
-    public async handleGenericError(err: any, req: Request, res: Response, tracer: Tracer): Promise<void> {
+    public async handleGenericError(err: any, _: Request, res: Response, tracer: Tracer): Promise<void> {
         const errorId = uuid.v4();
         let nangoErr: NangoError;
         if (!(err instanceof Error)) {
@@ -148,14 +148,8 @@ class ErrorManager {
         }
 
         let environmentId: number | undefined;
-        if (isApiAuthenticated(res)) {
-            environmentId = getEnvironmentId(res);
-        } else if (isUserAuthenticated(req) && req.query['env']) {
-            // TODO: most routes are already calling we should call it at the beginning and store it
-            const { response, success } = await getAccountIdAndEnvironmentIdFromSession(req);
-            if (success && response) {
-                environmentId = response.environmentId;
-            }
+        if ('environment' in res.locals) {
+            environmentId = res.locals['environment'].id;
         }
 
         this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: nangoErr.payload }, tracer);

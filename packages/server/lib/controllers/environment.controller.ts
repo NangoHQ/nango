@@ -26,7 +26,7 @@ export interface GetMeta {
 }
 
 class EnvironmentController {
-    async meta(req: Request, res: Response<GetMeta>, next: NextFunction) {
+    async meta(req: Request, res: Response<GetMeta, never>, next: NextFunction) {
         try {
             const sessionUser = req.user;
             if (!sessionUser) {
