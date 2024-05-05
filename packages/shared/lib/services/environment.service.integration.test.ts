@@ -51,9 +51,9 @@ describe('Environment service', () => {
 
         const get = await environmentService.getAccountAndEnvironmentBySecretKey(env!.secret_key);
 
-        expect(get).toStrictEqual({
-            accountId: account.id,
-            environmentId: env!.id
+        expect(get).toMatchObject({
+            account: { id: account.id },
+            environment: { id: env!.id }
         });
     });
 
