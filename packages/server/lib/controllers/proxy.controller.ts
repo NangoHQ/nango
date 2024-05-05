@@ -35,7 +35,7 @@ import {
 } from '@nangohq/shared';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/asyncWrapper';
+import type { RequestLocals } from '../utils/express.js';
 
 type ForwardedHeaders = Record<string, string>;
 

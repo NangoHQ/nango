@@ -33,7 +33,7 @@ import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import type { GetOnboardingStatus } from '@nangohq/types';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 const logger = getLogger('Server.Onboarding');
 

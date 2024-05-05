@@ -4,7 +4,7 @@ import { isCloud } from '@nangohq/utils';
 import { accountService, userService, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
 export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;

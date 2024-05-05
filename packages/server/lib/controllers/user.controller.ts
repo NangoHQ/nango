@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
 import { isCloud, isEnterprise, basePublicUrl, isErr } from '@nangohq/utils';
 import { errorManager, userService } from '@nangohq/shared';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 export interface GetUser {
     user: {

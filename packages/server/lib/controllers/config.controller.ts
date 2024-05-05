@@ -26,7 +26,7 @@ import {
     getGlobalWebhookReceiveUrl
 } from '@nangohq/shared';
 import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 export interface Integration {
     authMode: AuthModes;

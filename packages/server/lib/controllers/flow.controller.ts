@@ -17,7 +17,7 @@ import {
     disableScriptConfig as disableConfig
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 class FlowController {
     public async getFlows(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {

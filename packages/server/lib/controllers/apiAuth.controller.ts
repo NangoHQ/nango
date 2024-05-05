@@ -25,7 +25,7 @@ import {
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { isErr, stringifyError } from '@nangohq/utils';
-import type { RequestLocals } from '../utils/asyncWrapper';
+import type { RequestLocals } from '../utils/express.js';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {

@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type { Environment, Account, User } from '@nangohq/shared';
 import { db, multipleMigrations, NangoError, configService } from '@nangohq/shared';
 import configController from './config.controller';
-import type { RequestLocals } from '../utils/asyncWrapper';
+import type { RequestLocals } from '../utils/express.js';
 
 const locals: Required<RequestLocals> = {
     authType: 'secretKey',

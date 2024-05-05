@@ -47,7 +47,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { isErr, isOk } from '@nangohq/utils';
 import type { LastAction } from '@nangohq/records';
 import { records as recordsService } from '@nangohq/records';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 class SyncController {
     public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {

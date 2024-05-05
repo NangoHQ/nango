@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 
 import { activityFilter, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs } from '@nangohq/shared';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 class ActivityController {
     public async retrieve(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {

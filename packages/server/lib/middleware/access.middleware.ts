@@ -3,7 +3,7 @@ import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError } from 
 import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
-import type { RequestLocals } from '../utils/asyncWrapper.js';
+import type { RequestLocals } from '../utils/express.js';
 
 const logger = getLogger('AccessMiddleware');
 

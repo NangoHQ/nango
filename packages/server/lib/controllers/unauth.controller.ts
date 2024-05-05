@@ -22,7 +22,7 @@ import {
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
-import type { RequestLocals } from '../utils/asyncWrapper';
+import type { RequestLocals } from '../utils/express.js';
 
 class UnAuthController {
     async create(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
