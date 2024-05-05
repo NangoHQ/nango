@@ -49,6 +49,9 @@ export class AccessMiddleware {
         }
     }
 
+    /**
+     * Inherit secretKeyAuth
+     */
     adminKeyAuth(_: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         if (res.locals['account']?.uuid !== NANGO_ADMIN_UUID) {
             res.status(401).send({ error: { code: 'unauthorized' } });
@@ -186,7 +189,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
 
         const result = await environmentService.getAccountAndEnvironment({ accountId: user.account_id, envName: currentEnv });
         if (!result) {
-            res.status(401).send({ error: { code: 'unknown_user_account' } });
+            res.status(401).send({ error: { code: 'unknown_account_or_env' } });
             return;
         }
 

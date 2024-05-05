@@ -673,7 +673,7 @@ class SyncController {
             });
 
             if (isErr(result)) {
-                await errorManager.handleGenericError(result.err, req, res, tracer);
+                errorManager.handleGenericError(result.err, req, res, tracer);
                 await logCtx.failed();
                 return;
             }

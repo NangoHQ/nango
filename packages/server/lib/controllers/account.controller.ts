@@ -55,7 +55,7 @@ class AccountController {
         }
     }
 
-    async editCustomer(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async editCustomer(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { is_capped, account_uuid: accountUUID } = req.body;
 

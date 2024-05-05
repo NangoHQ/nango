@@ -31,7 +31,7 @@ class FlowController {
         }
     }
 
-    public async adminDeployPrivateFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    public async adminDeployPrivateFlow(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { targetAccountUUID, targetEnvironment, config } = req.body;
 
