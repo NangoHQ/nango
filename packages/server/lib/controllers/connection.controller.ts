@@ -22,8 +22,6 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    MetricTypes,
-    telemetry,
     AuthOperation,
     NangoError,
     createActivityLogAndLogMessage,
@@ -35,6 +33,7 @@ import {
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 
 class ConnectionController {
@@ -280,7 +279,7 @@ class ConnectionController {
             const action = LogActionEnum.TOKEN;
 
             if (!isSync) {
-                telemetry.increment(MetricTypes.GET_CONNECTION, 1, { accountId });
+                metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId });
             }
 
             const {
