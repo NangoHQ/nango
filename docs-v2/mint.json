@@ -420,6 +420,7 @@
                         "integrations/all/pingboard",
                         "integrations/all/pinterest",
                         "integrations/all/pipedrive",
+                        "integrations/all/posthog",
                         "integrations/all/qualtrics",
                         "integrations/all/quickbooks",
                         "integrations/all/ramp",
