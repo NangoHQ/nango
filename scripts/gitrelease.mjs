@@ -1,10 +1,17 @@
 #!/usr/bin/env zx
-import 'zx/globals';
+import { $, echo } from 'zx';
 
 const { GITHUB_TOKEN } = process.env;
 const nextVersion = process.argv[3];
 const branch = process.argv[4] || 'master';
 const nextTag = `v${nextVersion}`;
+
+console.log('Publishing', nextVersion, 'on branch', branch);
+const tagExists = await $`git tag -l ${nextTag}`;
+if (tagExists.stdout !== '') {
+    echo`Tag ${nextTag} already exists`;
+    process.exit(1);
+}
 
 const releaseMessage = `chore(release): ${nextVersion} [skip ci]`;
 await $`git add -A package.json package-lock.json packages/**/package.json `;
@@ -20,7 +27,7 @@ const releaseNotes = $`npx git-cliff --latest`;
 const releaseData = JSON.stringify({
     name: nextTag,
     tag_name: nextTag,
-    body: releaseNotes
+    body: releaseNotes.stdout
 });
 
 await $`curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${repoName}/releases -d ${releaseData}`;

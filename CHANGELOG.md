@@ -2,6 +2,82 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.24] - 2024-05-06
+
+### Added
+
+- *(integration)* Add support for kustomer (#1958)
+- *(db)* Add public to search_path (#2002)
+- *(ci)* Add eslint (#2007)
+- Add temporal ui to docker-compose (#2006)
+- *(integration)* Add api support for insightly (#2028)
+- *(integration)* Add api support for freshsales (#2027)
+- *(integrations)* Add support for harvest api (#2039)
+- *(integrations)* Add support for egnyte api (#2044)
+- *(integrations)* Add support for expensify api (#2047)
+- *(integrations)* Add support for squarespace (#2031)
+- Add authentication (#2076)
+- *(oauth2cc)* Add authorization request parameters (#2053)
+- *(logs)* Add more context data (#2034)
+
+### Changed
+
+- *(integration)* Add support for google docs api (#1967)
+- *(sdks)* Document frontend and node sdks in code (#1984)
+- Correct default action HTTP method
+- Sample app (#2008)
+- Sample app feedback (#2013)
+- *(integrations)* Add support for refiner (#2009)
+- Improve Microsoft OAuth docs
+- Hn demo (#2041)
+- *(logs)* Implem v2 logging (#1945)
+- *(integrations)* Add support for klipfolio api (#2038)
+- *(pkg)* Dirty release commit (#2056)
+- *(integrations)* Add support for pingboard api (#2052)
+- Types package (#2055)
+- Return new upsert result + retry upsert (#2079)
+- Script to migrate records (#1934)
+- *(release)* 0.39.24 [skip ci]
+- *(release)* 0.39.24 [skip ci]
+
+### Fixed
+
+- *(npm)* Use ci instead of install (#1988)
+- *(webhooks)* Do not await send (#1977)
+- *(node)* Use version 20 (#1989)
+- *(api)* Only enable session for web (#1994)
+- *(integration)* Use random id on conflict (#1997)
+- *(api)* Stop using env cookie (#1987)
+- Type of count is a string (#2005)
+- *(ci)* Eslint (#2011)
+- *(utils)* Move metrics (#2012)
+- Logs don't show the context when detecting records differences (#2018)
+- 'localeCompare is not a function' error (#2020)
+- Set same deletedAt/updatedAt for deleted records in the same batch (#2021)
+- *(ui)* Handle long entity names (#2019)
+- Swap links in webhooks doc page (#2022)
+- BatchDelete counts already deleted records or non-existing ones as deleted (#2023)
+- *(api)* Wrong join for getSyncs (#2029)
+- *(release)* Unify build  (#2026)
+- Docker compose  (#2043)
+- *(error)* Use stringifier (#2042)
+- *(records)* Transaction not reusing opened connection (#2045)
+- *(logs)* Wrong zod coerce, add tracer (#2046)
+- *(logs)* Missing contextGetter in syncCommand (#2049)
+- *(envs)* Allow empty string (#2050)
+- *(logs)* Only require envs for cloud (#2060)
+- *(sync)* Maximum call stack for large dataset (#2064)
+- *(eslint)* Pass #11 (#2058)
+- *(persist)* Truncate big logs (#2074)
+- *(api)* Handle 404 as json (#2085)
+- *(db)* Slow query getSyncs (#2088)
+- *(api)* Setup for e2e tests (#2090)
+- *(Provider)* Proxy is optional (#2096)
+
+### Removed
+
+- *(ui)* Remove HN special login (#2057)
+
 ## [0.39.18] - 2024-04-11
 
 ### Fixed
@@ -912,6 +988,7 @@ All notable changes to this project will be documented in this file.
 - Remove Bearer's callback URL (#46)
 - Remove project link + version (#149)
 
+[0.39.24]: https://github.com///compare/v0.39.18..v0.39.24
 [0.39.18]: https://github.com///compare/v0.39.17..v0.39.18
 [0.39.17]: https://github.com///compare/v0.39.16..v0.39.17
 [0.39.16]: https://github.com///compare/v0.39.15..v0.39.16
