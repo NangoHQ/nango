@@ -28,14 +28,22 @@ export function refreshTokens(): void {
 }
 
 export async function exec(): Promise<void> {
+    const startTime = Date.now();
+    const maxDuration = 23 * 60 * 60 * 1000;
+
     logger.info('[refreshTokens] starting');
 
-    const staleConnections = await connectionService.getOldConnections({ days: 7, limit: 500 });
+    const staleConnections = await connectionService.getOldConnections({ days: 1 });
 
     logger.info(`[refreshTokens] found ${staleConnections.length} stale connections`);
 
     for (const staleConnection of staleConnections) {
         const { connection_id, environment_id, provider_config_key, account_id } = staleConnection;
+
+        if (Date.now() - startTime > maxDuration) {
+            logger.warn('[refreshTokens] stopping process due to time limit');
+            break;
+        }
 
         if (typeof account_id !== 'number') {
             logger.error(`[refreshTokens] connectionId: ${connection_id} is missing account_id`);
