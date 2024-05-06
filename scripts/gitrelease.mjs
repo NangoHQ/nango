@@ -6,7 +6,7 @@ const nextVersion = process.argv[3];
 const branch = process.argv[4] || 'master';
 const nextTag = `v${nextVersion}`;
 
-console.log('Publishing', nextVersion, 'on branch', branch);
+echo`Publishing ${nextVersion} on branch ${branch}`;
 const tagExists = await $`git tag -l ${nextTag}`;
 if (tagExists.stdout !== '') {
     echo`Tag ${nextTag} already exists`;
@@ -30,4 +30,4 @@ const releaseData = JSON.stringify({
     body: releaseNotes.stdout
 });
 
-await $`curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${repoName}/releases -d ${releaseData}`;
+await $`curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/NangoHQ/nango/releases -d ${releaseData}`;
