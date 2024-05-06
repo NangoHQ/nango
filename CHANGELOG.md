@@ -2,7 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.39.24] - 2024-05-06
+## [0.39.23] - 2024-05-01
+
+### Added
+
+- Add authentication (#2076)
+
+### Changed
+
+- Return new upsert result + retry upsert (#2079)
+
+## [0.39.22] - 2024-05-01
+
+### Fixed
+
+- *(eslint)* Pass #11 (#2058)
+
+## [0.39.21] - 2024-04-30
+
+### Changed
+
+- Types package (#2055)
+
+## [0.39.20] - 2024-04-30
+
+### Added
+
+- *(integrations)* Add support for squarespace (#2031)
+
+### Changed
+
+- *(pkg)* Dirty release commit (#2056)
+- *(integrations)* Add support for pingboard api (#2052)
+
+### Fixed
+
+- *(sync)* Maximum call stack for large dataset (#2064)
+
+## [0.39.19] - 2024-04-29
 
 ### Added
 
@@ -15,10 +52,6 @@ All notable changes to this project will be documented in this file.
 - *(integrations)* Add support for harvest api (#2039)
 - *(integrations)* Add support for egnyte api (#2044)
 - *(integrations)* Add support for expensify api (#2047)
-- *(integrations)* Add support for squarespace (#2031)
-- Add authentication (#2076)
-- *(oauth2cc)* Add authorization request parameters (#2053)
-- *(logs)* Add more context data (#2034)
 
 ### Changed
 
@@ -32,16 +65,6 @@ All notable changes to this project will be documented in this file.
 - Hn demo (#2041)
 - *(logs)* Implem v2 logging (#1945)
 - *(integrations)* Add support for klipfolio api (#2038)
-- *(pkg)* Dirty release commit (#2056)
-- *(integrations)* Add support for pingboard api (#2052)
-- Types package (#2055)
-- Return new upsert result + retry upsert (#2079)
-- Script to migrate records (#1934)
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
 
 ### Fixed
 
@@ -69,14 +92,6 @@ All notable changes to this project will be documented in this file.
 - *(logs)* Missing contextGetter in syncCommand (#2049)
 - *(envs)* Allow empty string (#2050)
 - *(logs)* Only require envs for cloud (#2060)
-- *(sync)* Maximum call stack for large dataset (#2064)
-- *(eslint)* Pass #11 (#2058)
-- *(persist)* Truncate big logs (#2074)
-- *(api)* Handle 404 as json (#2085)
-- *(db)* Slow query getSyncs (#2088)
-- *(api)* Setup for e2e tests (#2090)
-- *(Provider)* Proxy is optional (#2096)
-- *(workflow)* Update publish.yaml
 
 ### Removed
 
@@ -992,7 +1007,11 @@ All notable changes to this project will be documented in this file.
 - Remove Bearer's callback URL (#46)
 - Remove project link + version (#149)
 
-[0.39.24]: https://github.com/NangoHQ/nango/compare/v0.39.18..v0.39.24
+[0.39.23]: https://github.com/NangoHQ/nango/compare/v0.39.22..v0.39.23
+[0.39.22]: https://github.com/NangoHQ/nango/compare/v0.39.21..v0.39.22
+[0.39.21]: https://github.com/NangoHQ/nango/compare/v0.39.20..v0.39.21
+[0.39.20]: https://github.com/NangoHQ/nango/compare/v0.39.19..v0.39.20
+[0.39.19]: https://github.com/NangoHQ/nango/compare/v0.39.18..v0.39.19
 [0.39.18]: https://github.com/NangoHQ/nango/compare/v0.39.17..v0.39.18
 [0.39.17]: https://github.com/NangoHQ/nango/compare/v0.39.16..v0.39.17
 [0.39.16]: https://github.com/NangoHQ/nango/compare/v0.39.15..v0.39.16
