@@ -234,7 +234,6 @@ class FlowController {
                 return;
             }
 
-            console.log(account);
             if (account.is_capped && flow?.providerConfigKey) {
                 const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: flow?.providerConfigKey, environmentId: environment.id });
 

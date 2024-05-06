@@ -2,6 +2,7 @@ import { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import environmentService from '../../environment.service.js';
+import accountService from '../../account.service.js';
 import { updateSyncScheduleFrequency } from '../schedule.service.js';
 import {
     createActivityLog,
@@ -759,10 +760,15 @@ async function compileDeployInfo({
             await logCtx.debug('Marking old sync configs as inactive', { count: ids.length, syncName, activeVersion: version });
         }
     }
-    //
-    // if there are too many connections for this sync then we need to also
-    // mark it as disabled
-    const isCapped = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id });
+
+    const account = await accountService.getAccountById(accountId);
+    let shouldCap = false;
+
+    if (account && account.is_capped) {
+        // if there are too many connections for this sync then we need to also
+        // mark it as disabled
+        shouldCap = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id });
+    }
 
     insertData.push({
         environment_id,
@@ -782,7 +788,7 @@ async function compileDeployInfo({
         input: flow.input || '',
         sync_type: flow.sync_type,
         webhook_subscriptions: flow.webhookSubscriptions || [],
-        enabled: lastSyncWasEnabled && !isCapped
+        enabled: lastSyncWasEnabled && !shouldCap
     });
 
     flowReturnData.push({
