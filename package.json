@@ -1,6 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
+    "version": "0.39.23",
     "workspaces": [
         "packages/cli",
         "packages/shared",
@@ -91,6 +92,5 @@
     },
     "engines": {
         "node": ">=18.0.0 || >=20.0.0"
-    },
-    "version": "0.39.24"
+    }
 }
