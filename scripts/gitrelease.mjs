@@ -25,15 +25,18 @@ await $`git push --tags`;
 
 echo`Commit pushed, publishing release...`;
 // Push GitHub release
-const releaseNotes = $`npx git-cliff --latest`;
+const releaseNotes = await $`npx git-cliff --latest`;
 const releaseData = JSON.stringify({
     name: nextTag,
     tag_name: nextTag,
     body: releaseNotes.stdout
 });
 
-const res =
-    await $`curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/NangoHQ/nango/releases -d ${releaseData}`;
-console.log(res);
+try {
+    await $`curl --silent --fail --show-error -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/NangoHQ/nango/releases -d ${releaseData}`;
+} catch (err) {
+    console.log(err, releaseData);
+    process.exit(1);
+}
 
 echo`✅ Done`;
