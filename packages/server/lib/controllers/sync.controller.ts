@@ -62,6 +62,7 @@ class SyncController {
                 singleDeployMode
             }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
+
             let reconcileSuccess = true;
 
             const {

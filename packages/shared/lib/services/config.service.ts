@@ -45,11 +45,11 @@ class ConfigService {
             }
 
             for (const key in fileEntries) {
-                const entry = fileEntries[key] as ProviderTemplateAlias;
+                const entry = fileEntries[key] as ProviderTemplateAlias | undefined;
 
                 if (entry?.alias) {
                     let hasOverrides = false;
-                    let templateOverrides;
+                    let templateOverrides: ProviderTemplateAlias;
                     if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
                         const { alias, ...overrides } = entry;
                         hasOverrides = true;
@@ -57,7 +57,7 @@ class ConfigService {
                     }
                     const aliasData = fileEntries[entry.alias] as ProviderTemplate;
                     if (hasOverrides) {
-                        fileEntries[key] = { ...aliasData, ...templateOverrides };
+                        fileEntries[key] = { ...aliasData, ...templateOverrides! };
                     }
                 }
             }
