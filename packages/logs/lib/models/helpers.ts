@@ -23,16 +23,16 @@ export function getFormattedMessage(data: Partial<MessageRow>, { account, user, 
         code: data.code || null,
         state: data.state || 'waiting',
 
-        accountId: account?.id || data.accountId || null,
+        accountId: account?.id ?? data.accountId ?? null,
         accountName: account?.name || data.accountName || null,
 
-        environmentId: environment?.id || data.environmentId || null,
+        environmentId: environment?.id ?? data.environmentId ?? null,
         environmentName: environment?.name || data.environmentName || null,
 
-        configId: config?.id || data.configId || null,
+        configId: config?.id ?? data.configId ?? null,
         configName: config?.name || data.configName || null,
 
-        connectionId: connection?.id || data.connectionId || null,
+        connectionId: connection?.id ?? data.connectionId ?? null,
         connectionName: connection?.name || data.connectionName || null,
 
         syncId: sync?.id || data.syncId || null,

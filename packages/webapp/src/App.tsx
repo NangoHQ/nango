@@ -30,6 +30,7 @@ import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
+import { LogsSearch } from './pages/Logs/Search';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -103,6 +104,7 @@ const App = () => {
                         <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
                         <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
                         <Route path="/:env/activity" element={<Activity />} />
+                        <Route path="/:env/logs" element={<LogsSearch />} />
                         <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
                         <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
                         {AUTH_ENABLED && (
