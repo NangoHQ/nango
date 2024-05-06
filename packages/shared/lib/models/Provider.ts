@@ -24,7 +24,7 @@ export type TokenUrlObject = {
 
 export interface Template {
     auth_mode: AuthModes;
-    proxy: {
+    proxy?: {
         base_url: string;
         headers?: Record<string, string>;
         query?: {

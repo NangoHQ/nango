@@ -14,7 +14,10 @@ export enum Types {
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
-    LOGS_LOG = 'nango.logs.log'
+    LOGS_LOG = 'nango.logs.log',
+    REFRESH_TOKENS = 'nango.jobs.cron.refreshTokens',
+    REFRESH_TOKENS_SUCCESS = 'nango.jobs.cron.refreshTokens.success',
+    REFRESH_TOKENS_FAILED = 'nango.jobs.cron.refreshTokens.failed'
 }
 
 export function increment(metricName: Types, value?: number): void {

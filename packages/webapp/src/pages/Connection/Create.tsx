@@ -6,6 +6,7 @@ import Nango, { AuthError } from '@nangohq/frontend';
 import { Prism } from '@mantine/prism';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
+import type { Integration } from '@nangohq/server';
 
 import useSet from '../../hooks/useSet';
 import { isHosted, isStaging, baseUrl } from '../../utils/utils';
@@ -19,15 +20,6 @@ import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
 import { AuthModes } from '../../types';
 import { useEnvironment } from '../../hooks/useEnvironment';
-
-interface Integration {
-    authMode: AuthModes;
-    uniqueKey: string;
-    provider: string;
-    connection_count: number;
-    creationDate: string;
-    connectionConfigParams: string[];
-}
 
 export default function IntegrationCreate() {
     const { mutate } = useSWRConfig();
@@ -594,7 +586,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {integration?.connectionConfigParams.map((paramName: string) => (
+                            {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
                                         <label htmlFor="extra_configuration" className="text-text-light-gray block text-sm font-semibold">

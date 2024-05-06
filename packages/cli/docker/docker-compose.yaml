@@ -17,6 +17,7 @@ services:
     nango-server:
         image: nangohq/nango-server:hosted
         container_name: nango-server
+        platform: linux/amd64
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
@@ -54,6 +55,7 @@ services:
     nango-jobs:
         image: nangohq/nango-jobs:production
         container_name: nango-jobs
+        platform: linux/amd64
         restart: always
         ports:
             - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
@@ -81,6 +83,7 @@ services:
     nango-persist:
         image: nangohq/nango-persist:production
         container_name: nango-persist
+        platform: linux/amd64
         restart: always
         ports:
             - '${PERSIST_PORT:-3007}:${PERSIST_PORT:-3007}'

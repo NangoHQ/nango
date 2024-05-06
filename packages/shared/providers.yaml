@@ -1321,6 +1321,19 @@ microsoft-tenant-specific:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
+microsoft-ads:
+    alias: microsoft-teams
+    categories:
+        - marketing
+    default_scopes:
+        - https://ads.microsoft.com/msads.manage
+        - offline_access
+    proxy:
+        base_url: https://clientcenter.api.bingads.microsoft.com/Api
+    refresh_params:
+        grant_type: refresh_token
+        scope: https://ads.microsoft.com/msads.manage
+    docs: https://docs.nango.dev/integrations/all/microsoft-ads
 mixpanel:
     categories:
         - analytics
