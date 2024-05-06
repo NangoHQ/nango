@@ -1,5 +1,5 @@
 import { client } from '../es/client.js';
-import type { MessageRow, OperationRow } from '@nangohq/types';
+import type { MessageRow, OperationRow, SearchLogsState } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
 
@@ -27,7 +27,7 @@ export async function createMessage(row: MessageRow): Promise<void> {
 /**
  * List operations
  */
-export async function listOperations(opts: { accountId: number; environmentId?: number; limit: number }): Promise<ListOperations> {
+export async function listOperations(opts: { accountId: number; environmentId?: number; limit: number; states: SearchLogsState[] }): Promise<ListOperations> {
     const q: opensearchtypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }],
@@ -35,8 +35,17 @@ export async function listOperations(opts: { accountId: number; environmentId?: 
             should: []
         }
     };
-    if (opts.environmentId && Array.isArray(q.bool?.must)) {
-        q.bool.must.push({ term: { environmentId: opts.environmentId } });
+    if (opts.environmentId) {
+        (q.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
+    }
+    if (opts.states.length > 1 || opts.states[0] !== 'all') {
+        (q.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.states.map((state) => {
+                    return { term: { state } };
+                })
+            }
+        });
     }
 
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({

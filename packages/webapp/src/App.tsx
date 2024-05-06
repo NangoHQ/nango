@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { SWRConfig } from 'swr';
 import { Routes, Route, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes, Navigate } from 'react-router-dom';
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, createTheme } from '@mantine/core';
 import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
@@ -42,6 +42,10 @@ Sentry.init({
     tracesSampleRate: 0.1
 });
 
+const theme = createTheme({
+    fontFamily: 'Inter'
+});
+
 const App = () => {
     const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
     const env = useStore((state) => state.env);
@@ -54,25 +58,7 @@ const App = () => {
     }, [env, setShowInteractiveDemo]);
 
     return (
-        <MantineProvider
-            theme={{
-                globalStyles: () => ({
-                    '.transparent-code .language-json': {
-                        backgroundColor: 'transparent !important'
-                    },
-                    '.transparent-code .language-typescript': {
-                        backgroundColor: 'transparent !important'
-                    },
-                    '.break-all-words .token.string': {
-                        wordBreak: 'break-all',
-                        whiteSpace: 'normal'
-                    },
-                    '.mantine-Prism-code': {
-                        fontFamily: 'Roboto Mono'
-                    }
-                })
-            }}
-        >
+        <MantineProvider theme={theme}>
             <SWRConfig
                 value={{
                     refreshInterval: 15 * 60000,

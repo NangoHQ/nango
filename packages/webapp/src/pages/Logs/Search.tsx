@@ -9,15 +9,17 @@ import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './MultiSelect';
-import { columns, statusOptions } from './constants';
-import { useState } from 'react';
+import { columns, statusDefaultOptions, statusOptions } from './constants';
+import { useEffect, useState } from 'react';
 import type { SearchLogsState } from '@nangohq/types';
+import Spinner from '../../components/ui/Spinner';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
 
     // Data fetch
-    const [states, setStates] = useState<SearchLogsState[]>(['all']);
+    const [states, setStates] = useState<SearchLogsState[]>(statusDefaultOptions);
+    const [hasLogs, setHasLogs] = useState<boolean>(false);
     const { data, error, loading } = useSearchLogs(env, { limit: 20, states });
 
     const table = useReactTable({
@@ -25,6 +27,14 @@ export const LogsSearch: React.FC = () => {
         columns,
         getCoreRowModel: getCoreRowModel()
     });
+
+    useEffect(() => {
+        if (!loading) {
+            // We set this so it does not flicker when we go from a state of "filtered no records" to "default with records"...
+            // ...to not redisplay the empty state
+            setHasLogs(true);
+        }
+    }, [loading]);
 
     if (error) {
         return (
@@ -36,7 +46,7 @@ export const LogsSearch: React.FC = () => {
         );
     }
 
-    if (loading || !data) {
+    if ((loading && !data) || !data) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
                 <Loading spaceRatio={2.5} className="-top-36" />
@@ -44,7 +54,7 @@ export const LogsSearch: React.FC = () => {
         );
     }
 
-    if (data.pagination.total <= 0) {
+    if (data.pagination.total <= 0 && !hasLogs) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
                 <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
@@ -59,11 +69,11 @@ export const LogsSearch: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
-            <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
+            <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
 
             <div className="flex gap-2">
                 <Input placeholder="Search logs..." />
-                <MultiSelect label="Status" options={statusOptions} selected={states} />
+                <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
             </div>
 
             <Table.Table className="mt-6">

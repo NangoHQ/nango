@@ -9,7 +9,11 @@ export function useSearchLogs(env: string, body: SearchLogs['Body']) {
     async function fetchData() {
         setLoading(true);
         try {
-            const res = await fetch(`/api/v1/logs/search?env=${env}`, { method: 'POST', body: JSON.stringify(body) });
+            const res = await fetch(`/api/v1/logs/search?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: { 'Content-Type': 'application/json' }
+            });
             if (res.status !== 200) {
                 setData(undefined);
                 setError((await res.json()) as SearchLogs['Errors']);
@@ -31,9 +35,7 @@ export function useSearchLogs(env: string, body: SearchLogs['Body']) {
         if (!loading) {
             void fetchData();
         }
-
-        console.log('what changed', body, env);
-    }, [env, body.limit]);
+    }, [env, body.limit, body.states]);
 
     return { data, error, loading };
 }

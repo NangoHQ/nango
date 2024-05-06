@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import type { SearchLogsData } from '@nangohq/types';
+import type { SearchLogsData, SearchLogsState } from '@nangohq/types';
 import { formatDateToIntFormat } from '../../utils/utils';
 import { StatusTag } from './StatusTag';
 import { OperationTag } from './OperationTag';
@@ -39,7 +39,7 @@ export const columns: ColumnDef<SearchLogsData>[] = [
         }
     },
     {
-        accessorKey: 'configId',
+        accessorKey: 'syncId',
         header: 'Script',
         size: 200,
         cell: ({ row }) => {
@@ -56,6 +56,7 @@ export const columns: ColumnDef<SearchLogsData>[] = [
     }
 ];
 
+export const statusDefaultOptions: SearchLogsState[] = ['all'];
 export const statusOptions: MultiSelectArgs['options'] = [
     {
         name: 'All',
