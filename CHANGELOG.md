@@ -2,31 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.39.24] - 2024-05-06
-
-### Added
-
-- *(oauth2cc)* Add authorization request parameters (#2053)
-- *(logs)* Add more context data (#2034)
-
-### Changed
-
-- Script to migrate records (#1934)
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
-- *(release)* 0.39.24 [skip ci]
-
-### Fixed
-
-- *(persist)* Truncate big logs (#2074)
-- *(api)* Handle 404 as json (#2085)
-- *(db)* Slow query getSyncs (#2088)
-- *(api)* Setup for e2e tests (#2090)
-- *(Provider)* Proxy is optional (#2096)
-- *(workflow)* Update publish.yaml
-
 ## [0.39.23] - 2024-05-01
 
 ### Added
@@ -1032,7 +1007,6 @@ All notable changes to this project will be documented in this file.
 - Remove Bearer's callback URL (#46)
 - Remove project link + version (#149)
 
-[0.39.24]: https://github.com/NangoHQ/nango/compare/v0.39.23..0.39.24
 [0.39.23]: https://github.com/NangoHQ/nango/compare/v0.39.22..v0.39.23
 [0.39.22]: https://github.com/NangoHQ/nango/compare/v0.39.21..v0.39.22
 [0.39.21]: https://github.com/NangoHQ/nango/compare/v0.39.20..v0.39.21
