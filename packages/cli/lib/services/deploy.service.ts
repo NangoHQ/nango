@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
-import compileService from './compile.service.js';
+import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
 import type { DeployOptions } from '../types.js';
@@ -35,7 +35,7 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        await compileService.run({ debug });
+        await compileAllFiles({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -108,7 +108,7 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        await compileService.run({ debug });
+        await compileAllFiles({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -160,7 +160,11 @@ class DeployService {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
                 }
-            } catch (err) {
+            } catch (err: any) {
+                if (err?.response?.data?.error) {
+                    console.log(chalk.red(err.response.data.error));
+                    process.exit(1);
+                }
                 let errorMessage;
                 if (err instanceof AxiosError) {
                     const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };

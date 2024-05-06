@@ -14,7 +14,7 @@ import * as dotenv from 'dotenv';
 import { nangoConfigFile } from '@nangohq/shared';
 import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
 import deployService from './services/deploy.service.js';
-import compileService from './services/compile.service.js';
+import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
 import dryrunService from './services/dryrun.service.js';
 import configService from './services/config.service.js';
@@ -205,7 +205,7 @@ program
         const { autoConfirm, debug } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
         await verificationService.filesMatchConfig();
-        const success = await compileService.run({ debug });
+        const success = await compileAllFiles({ debug });
         if (!success) {
             process.exitCode = 1;
         }

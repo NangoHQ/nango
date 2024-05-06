@@ -8,7 +8,6 @@ import {
     SyncConfigType,
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncOrchestrator,
-    syncDataService,
     getOnboardingProvider,
     createOnboardingProvider,
     DEMO_GITHUB_CONFIG_KEY,
@@ -26,13 +25,12 @@ import {
     createActivityLog,
     LogActionEnum,
     analytics,
-    AnalyticsTypes,
-    featureFlags
+    AnalyticsTypes
 } from '@nangohq/shared';
-import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger, isErr, isOk, resultErr, resultOk } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
+import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
+import { getLogger, isErr } from '@nangohq/utils';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import type { GetOnboardingStatus } from '@nangohq/types';
@@ -156,26 +154,15 @@ class OnboardingController {
                 payload.progress = 3;
             }
 
-            let getRecords: Result<CustomerFacingDataRecord[]>;
-            const shouldReturnNewRecords = await featureFlags.isEnabled('new-records-return', 'global', false);
-            if (shouldReturnNewRecords) {
-                const newGetRecords = await recordsService.getRecords({
-                    connectionId: connectionExists.id,
-                    model: DEMO_MODEL
-                });
-                getRecords = isOk(newGetRecords) ? resultOk(newGetRecords.res.records) : newGetRecords;
-            } else {
-                const legacyGetRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
-                getRecords = legacyGetRecords.success
-                    ? resultOk(legacyGetRecords.response?.records || [])
-                    : resultErr(legacyGetRecords.error || 'failed_to_get_records');
-            }
-
+            const getRecords = await recordsService.getRecords({
+                connectionId: connectionExists.id,
+                model: DEMO_MODEL
+            });
             if (isErr(getRecords)) {
                 res.status(400).json({ error: { code: 'failed_to_get_records' } });
                 return;
             } else {
-                payload.records = getRecords.res;
+                payload.records = getRecords.res.records;
             }
             if (payload.records.length > 0) {
                 payload.progress = status.progress > 4 ? status.progress : 4;
@@ -395,6 +382,7 @@ class OnboardingController {
      * Trigger an action to write a test GitHub issue
      */
     async writeGithubIssue(req: Request<unknown, unknown, { connectionId?: string; title?: string } | undefined>, res: Response, next: NextFunction) {
+        let logCtx: LogContext | undefined;
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -454,10 +442,9 @@ class OnboardingController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
-            // TODO: move that outside try/catch
-            const logCtx = await logContextGetter.create(
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account, environment, user }
+                { account, environment, user, config: { id: connection.config_id! }, connection: { id: connection.id! } }
             );
             const actionResponse = await syncClient.triggerAction({
                 connection,
@@ -471,6 +458,7 @@ class OnboardingController {
             if (isErr(actionResponse)) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.error('Failed to trigger action', { error: actionResponse.err });
                 await logCtx.failed();
                 return;
             }
@@ -479,6 +467,10 @@ class OnboardingController {
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {
+            if (logCtx) {
+                await logCtx.error('Failed to trigger action', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

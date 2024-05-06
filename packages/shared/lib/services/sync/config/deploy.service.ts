@@ -12,6 +12,7 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
+import connectionService from '../../connection.service.js';
 import type { LogLevel } from '../../../models/Activity.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
@@ -252,7 +253,7 @@ export async function deployPreBuilt(
         end: Date.now(),
         timestamp: Date.now(),
         connection_id: null,
-        provider: configs.length === 1 && firstConfig?.provider ? firstConfig?.provider : null,
+        provider: configs.length === 1 && firstConfig?.provider ? firstConfig.provider : null,
         provider_config_key: '',
         environment_id: environment_id,
         operation_name: LogActionEnum.SYNC_DEPLOY
@@ -288,7 +289,7 @@ export async function deployPreBuilt(
 
     for (const config of configs) {
         if (!config.providerConfigKey) {
-            const providerLookup = await configService.getConfigIdByProvider(config?.provider, environment_id);
+            const providerLookup = await configService.getConfigIdByProvider(config.provider, environment_id);
             if (!providerLookup) {
                 const error = new NangoError('provider_not_on_account');
 
@@ -309,7 +310,8 @@ export async function deployPreBuilt(
 
         providerConfigKeys.push(provider_config_key);
 
-        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {}, input } = config;
+        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {} } = config;
+        let { input } = config;
         const sync_name = config.name || config.syncName;
 
         if (type === SyncConfigType.SYNC && !runs) {
@@ -335,7 +337,7 @@ export async function deployPreBuilt(
                 for (const syncConfig of syncsConfig) {
                     const { success, error } = await updateSyncScheduleFrequency(
                         syncConfig.id,
-                        syncConfig?.frequency || runs,
+                        syncConfig.frequency || runs,
                         sync_name,
                         environment_id,
                         activityLogId as number,
@@ -355,8 +357,8 @@ export async function deployPreBuilt(
         let file_location = '';
         if (is_public) {
             file_location = (await remoteFileService.copy(
-                `${config?.public_route}/dist`,
-                `${sync_name}.js`,
+                `${config.public_route}/dist`,
+                `${sync_name}-${config.provider}.js`,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
                 environment_id
             )) as string;
@@ -384,13 +386,13 @@ export async function deployPreBuilt(
 
         if (is_public) {
             await remoteFileService.copy(
-                config?.public_route as string,
-                `${sync_name}.ts`,
+                config.public_route as string,
+                `${type}s/${sync_name}.ts`,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
                 environment_id
             );
         } else {
-            if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
+            if (typeof config.fileBody === 'object' && config.fileBody.ts) {
                 await remoteFileService.upload(
                     config.fileBody.ts,
                     `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
@@ -410,7 +412,11 @@ export async function deployPreBuilt(
 
         const model_schema = JSON.parse(model_schema_string);
 
-        if (typeof input !== 'string' && input?.name) {
+        if (input && Object.keys(input).length === 0) {
+            input = undefined;
+        }
+
+        if (input && typeof input !== 'string' && input.name) {
             model_schema.push(input);
         }
 
@@ -423,7 +429,7 @@ export async function deployPreBuilt(
             models,
             active: true,
             runs,
-            input: typeof input !== 'string' ? String(input?.name) : input,
+            input: input && typeof input !== 'string' ? String(input.name) : input,
             model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id,
             deleted: false,
@@ -674,7 +680,7 @@ async function compileDeployInfo({
             for (const syncConfig of syncsConfig) {
                 const { success, error } = await updateSyncScheduleFrequency(
                     syncConfig.id,
-                    syncConfig?.frequency || runs,
+                    syncConfig.frequency || runs,
                     syncName,
                     environment_id,
                     activityLogId,
@@ -690,14 +696,14 @@ async function compileDeployInfo({
 
     const version = optionalVersion || bumpedVersion || '1';
 
-    const jsFile = typeof fileBody === 'string' ? fileBody : fileBody?.js;
+    const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
     const file_location = (await remoteFileService.upload(
         jsFile,
         `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
         environment_id
     )) as string;
 
-    if (typeof fileBody === 'object' && fileBody?.ts) {
+    if (typeof fileBody === 'object' && fileBody.ts) {
         await remoteFileService.upload(
             fileBody.ts,
             `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
@@ -753,10 +759,14 @@ async function compileDeployInfo({
             await logCtx.debug('Marking old sync configs as inactive', { count: ids.length, syncName, activeVersion: version });
         }
     }
+    //
+    // if there are too many connections for this sync then we need to also
+    // mark it as disabled
+    const isCapped = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id });
 
     insertData.push({
         environment_id,
-        nango_config_id: config?.id as number,
+        nango_config_id: config.id as number,
         sync_name: syncName,
         type,
         models,
@@ -772,7 +782,7 @@ async function compileDeployInfo({
         input: flow.input || '',
         sync_type: flow.sync_type,
         webhook_subscriptions: flow.webhookSubscriptions || [],
-        enabled: lastSyncWasEnabled
+        enabled: lastSyncWasEnabled && !isCapped
     });
 
     flowReturnData.push({

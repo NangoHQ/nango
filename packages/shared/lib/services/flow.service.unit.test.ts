@@ -5,30 +5,30 @@ import FlowService from './flow.service.js';
 const flows = {
     integrations: {
         github: {
-            'github-issues': {
+            issues: {
                 runs: 'every half hour',
                 returns: ['GithubIssue'],
                 description:
                     "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\nScope(s): repo or public_repo\n"
             },
-            'github-issues-lite': {
+            'issues-lite': {
                 runs: 'every day',
                 auto_start: false,
                 returns: ['GithubIssue'],
                 description:
                     "Fetches the Github issues but up to a maximum of 15 for demo\npurposes.\nDetails: limited sync, doesn't track deletes, metadata is not required.\nScope(s): repo or public_repo\n"
             },
-            'github-list-files-sync': {
+            'list-files-sync': {
                 type: 'sync',
                 runs: 'every hour',
                 auto_start: false,
                 returns: ['GithubRepoFile']
             },
-            'github-list-repos-action': {
+            'list-repos-action': {
                 type: 'action',
                 returns: ['GithubRepo']
             },
-            'github-write-file-action': {
+            'write-file-action': {
                 type: 'action'
             },
             models: {
@@ -64,7 +64,7 @@ const flows = {
             }
         },
         gmail: {
-            'gmail-emails': {
+            emails: {
                 runs: 'every hour',
                 returns: ['GmailEmail']
             },
@@ -81,16 +81,16 @@ const flows = {
             }
         },
         google: {
-            'google-workspace-org-unit': {
+            'workspace-org-units': {
                 runs: 'every 6 hours',
                 track_deletes: true,
                 returns: ['OrganizationalUnit']
             },
-            'google-workspace-users': {
+            'workspace-users': {
                 runs: 'every hour',
                 returns: ['User']
             },
-            'google-workspace-user-access-tokens': {
+            'workspace-user-access-tokens': {
                 runs: 'every hour',
                 returns: ['GoogleWorkspaceUserToken']
             },
@@ -147,7 +147,7 @@ describe('Flow service tests', () => {
             return flows as unknown as Config;
         });
 
-        const flow = FlowService.getFlow('github-issues-lite');
+        const flow = FlowService.getFlow('issues-lite');
         expect(flow).not.toBeNull();
         expect(flow?.models).not.toBeUndefined();
     });
@@ -169,7 +169,7 @@ describe('Flow service tests', () => {
                 }
             },
             syncs: {
-                'asana-tasks': {
+                tasks: {
                     description: `Fetches a list of tasks from Asana, retrieving tasks from only the first project of the first workspace
 `,
                     endpoint: '/asana/tasks',

@@ -75,7 +75,7 @@ export const curlSnippet = (
     }
 
     let formattedInput = '';
-    if (typeof input === 'string') {
+    if (typeof input === 'string' && input !== 'undefined') {
         formattedInput = input;
     } else if (input && typeof input === 'object') {
         formattedInput = `{
