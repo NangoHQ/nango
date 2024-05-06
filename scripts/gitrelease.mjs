@@ -15,7 +15,7 @@ if (tagExists.stdout !== '') {
 
 const releaseMessage = `chore(release): ${nextVersion} [skip ci]`;
 await $`git add -A package.json package-lock.json packages/**/package.json `;
-await $`git commit -am ${releaseMessage}`;
+await $`git commit -am ${releaseMessage} --allow-empty`;
 await $`git tag -a ${nextTag} HEAD -m ${releaseMessage}`;
 await $`npx git-cliff -o CHANGELOG.md`;
 await $`git add CHANGELOG.md`;
