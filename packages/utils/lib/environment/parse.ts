@@ -85,6 +85,9 @@ export const ENVS = z.object({
     RECORDS_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
 
+    // Schduler
+    SCHEDULER_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'),
+
     // Redis
     NANGO_REDIS_URL: z.string().url().optional(),
 
