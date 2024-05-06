@@ -446,6 +446,27 @@ class ConnectionService {
         return result;
     }
 
+    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<NangoConnection[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - days);
+
+        const result = await db
+            .knex('_nango_connections')
+            .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
+            .select('connection_id', '_nango_connections.environment_id', 'unique_key as provider_config_key', 'account_id')
+            .where('last_fetched_at', '<', dateThreshold)
+            .orWhere('last_fetched_at', null)
+            .andWhere('_nango_connections.deleted', false)
+            .limit(limit);
+
+        if (!result || result.length === 0) {
+            return [];
+        }
+
+        return result;
+    }
+
     public async replaceMetadata(connection: Connection, metadata: Metadata) {
         await db.knex
             .from<StoredConnection>(`_nango_connections`)
