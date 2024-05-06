@@ -767,7 +767,7 @@ async function compileDeployInfo({
     if (account && account.is_capped) {
         // if there are too many connections for this sync then we need to also
         // mark it as disabled
-        shouldCap = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id });
+        shouldCap = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id, type: 'deploy' });
     }
 
     insertData.push({
