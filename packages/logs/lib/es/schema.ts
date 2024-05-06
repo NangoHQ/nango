@@ -1,7 +1,8 @@
-import type { estypes } from '@elastic/elasticsearch';
+import type { opensearchtypes } from '@opensearch-project/opensearch';
 import type { MessageRow } from '../types/messages';
+import { envs } from '../env.js';
 
-const props: Record<keyof MessageRow, estypes.MappingProperty> = {
+const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     id: { type: 'keyword' },
 
     parentId: { type: 'keyword' },
@@ -25,6 +26,13 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 
     userId: { type: 'keyword' },
 
+    operation: {
+        properties: {
+            type: { type: 'keyword' },
+            action: { type: 'keyword' }
+        }
+    },
+
     type: { type: 'keyword' },
     title: { type: 'keyword' },
     level: { type: 'keyword' },
@@ -39,7 +47,7 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 
     request: {
         properties: {
-            url: { type: 'match_only_text' },
+            url: { type: 'keyword' },
             method: { type: 'keyword' },
             headers: { type: 'object', enabled: false }
         }
@@ -58,24 +66,26 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     endedAt: { type: 'date' }
 };
 
-export const indexMessages: estypes.IndicesCreateRequest = {
-    index: 'messages',
-    settings: {
-        analysis: {
-            analyzer: {
-                default: {
-                    type: 'standard'
-                },
-                default_search: {
-                    type: 'standard'
+export const indexMessages: opensearchtypes.IndicesCreateRequest = {
+    index: envs.NANGO_LOGS_OS_INDEX ?? 'messages',
+    body: {
+        settings: {
+            analysis: {
+                analyzer: {
+                    default: {
+                        type: 'standard'
+                    },
+                    default_search: {
+                        type: 'standard'
+                    }
                 }
             }
+        },
+        mappings: {
+            dynamic: false,
+            properties: props
         }
-    },
-    mappings: {
-        dynamic: false,
-        properties: props
     }
 };
 
-export const indices: estypes.IndicesCreateRequest[] = [indexMessages];
+export const indices: opensearchtypes.IndicesCreateRequest[] = [indexMessages];

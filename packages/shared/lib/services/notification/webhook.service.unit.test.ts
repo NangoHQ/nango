@@ -7,6 +7,8 @@ import type { RecentlyCreatedConnection, NangoConnection } from '../../models/Co
 import WebhookService from './webhook.service.js';
 import type { Environment } from '../../models/Environment.js';
 import { mockCreateActivityLog } from '../activity/mocks.js';
+import { LogContext, logContextGetter } from '@nangohq/logs';
+import type { Account, Config } from '../../models/index.js';
 
 vi.mock('axios', () => ({
     default: {
@@ -14,6 +16,9 @@ vi.mock('axios', () => ({
     },
     __esModule: true
 }));
+
+const integration: Config = { id: 1, unique_key: 'providerKey', provider: 'provider', environment_id: 1, oauth_client_id: '', oauth_client_secret: '' };
+const account: Account = { id: 1, name: 'account', secret_key: '' };
 
 describe('Webhook notification tests', () => {
     beforeEach(() => {
@@ -27,8 +32,9 @@ describe('Webhook notification tests', () => {
                 webhook_url: null
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
-        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', true, 1);
+        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', true, 1, logCtx);
         expect(axios.post).not.toHaveBeenCalled();
     });
 
@@ -40,8 +46,9 @@ describe('Webhook notification tests', () => {
                 send_auth_webhook: true
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
-        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', false, 1);
+        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', false, 1, logCtx);
         expect(axios.post).not.toHaveBeenCalled();
     });
 
@@ -58,8 +65,9 @@ describe('Webhook notification tests', () => {
         vi.spyOn(environmentService, 'getEnvironmentName').mockImplementation(() => {
             return Promise.resolve('dev');
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
-        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', true, 1);
+        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', true, 1, logCtx);
         expect(axios.post).toHaveBeenCalled();
     });
 
@@ -76,8 +84,9 @@ describe('Webhook notification tests', () => {
         vi.spyOn(environmentService, 'getEnvironmentName').mockImplementation(() => {
             return Promise.resolve('dev');
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
-        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', true, 1);
+        await WebhookService.sendAuthUpdate({ connection_id: 'foo' } as RecentlyCreatedConnection, 'hubspot', true, 1, logCtx);
         expect(axios.post).not.toHaveBeenCalled();
     });
 
@@ -89,7 +98,7 @@ describe('Webhook notification tests', () => {
             } as Environment);
         });
 
-        await WebhookService.forward(1, 'providerKey', ['connection_1'], 'provider', {}, {});
+        await WebhookService.forward({ integration, account, connectionIds: ['connection_1'], payload: {}, webhookOriginalHeaders: {}, logContextGetter });
         expect(axios.post).not.toHaveBeenCalled();
     });
 
@@ -101,7 +110,7 @@ describe('Webhook notification tests', () => {
                 secret_key: 'secret'
             } as Environment);
         });
-        await WebhookService.forward(1, 'providerKey', ['connection_1'], 'provider', {}, {});
+        await WebhookService.forward({ integration, account, connectionIds: ['connection_1'], payload: {}, webhookOriginalHeaders: {}, logContextGetter });
         expect(axios.post).toHaveBeenCalled();
     });
 
@@ -112,6 +121,7 @@ describe('Webhook notification tests', () => {
                 webhook_url: null
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -122,6 +132,7 @@ describe('Webhook notification tests', () => {
             SyncType.INCREMENTAL,
             new Date(),
             1,
+            logCtx,
             1
         );
         expect(axios.post).not.toHaveBeenCalled();
@@ -135,6 +146,7 @@ describe('Webhook notification tests', () => {
                 always_send_webhook: true
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -145,6 +157,7 @@ describe('Webhook notification tests', () => {
             SyncType.INCREMENTAL,
             new Date(),
             1,
+            logCtx,
             1
         );
         expect(axios.post).not.toHaveBeenCalled();
@@ -159,6 +172,7 @@ describe('Webhook notification tests', () => {
                 secret_key: 'secret'
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
         const responseResults = { added: 0, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -169,6 +183,7 @@ describe('Webhook notification tests', () => {
             SyncType.INCREMENTAL,
             new Date(),
             1,
+            logCtx,
             1
         );
         expect(axios.post).not.toHaveBeenCalled();
@@ -183,6 +198,7 @@ describe('Webhook notification tests', () => {
                 secret_key: 'secret'
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -193,6 +209,7 @@ describe('Webhook notification tests', () => {
             SyncType.INCREMENTAL,
             new Date(),
             1,
+            logCtx,
             1
         );
         expect(axios.post).toHaveBeenCalled();
@@ -207,6 +224,7 @@ describe('Webhook notification tests', () => {
                 secret_key: 'secret'
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -217,6 +235,7 @@ describe('Webhook notification tests', () => {
             SyncType.INCREMENTAL,
             new Date(),
             1,
+            logCtx,
             1
         );
         expect(axios.post).toHaveBeenCalled();
@@ -231,6 +250,8 @@ describe('Webhook notification tests', () => {
                 secret_key: 'secret'
             } as Environment);
         });
+        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+
         const responseResults = { added: 0, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
             { environment_id: 1 } as NangoConnection,
@@ -240,6 +261,7 @@ describe('Webhook notification tests', () => {
             SyncType.INCREMENTAL,
             new Date(),
             1,
+            logCtx,
             1
         );
         expect(axios.post).toHaveBeenCalled();

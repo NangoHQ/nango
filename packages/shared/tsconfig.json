@@ -6,10 +6,19 @@
     },
     "references": [
         {
+            "path": "../logs"
+        },
+        {
             "path": "../node-client"
         },
         {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
+        },
+        {
+            "path": "../records"
         }
     ],
     "include": ["lib/**/*"]

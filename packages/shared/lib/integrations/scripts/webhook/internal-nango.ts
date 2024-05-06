@@ -8,6 +8,7 @@ import connectionService from '../../../services/connection.service.js';
 import { getSyncConfigsByConfigIdForWebhook } from '../../../services/sync/config/config.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
+import type { LogContextGetter } from '@nangohq/logs';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
@@ -16,6 +17,7 @@ export interface InternalNango {
         body: any,
         webhookType: string,
         connectionIdentifier: string,
+        logContextGetter: LogContextGetter,
         propName?: string
     ): Promise<{ connectionIds: string[] }>;
 }
@@ -24,7 +26,14 @@ export const internalNango: InternalNango = {
     getWebhooks: async (environment_id, nango_config_id) => {
         return await getSyncConfigsByConfigIdForWebhook(environment_id, nango_config_id);
     },
-    executeScriptForWebhooks: async (integration, body, webhookType, connectionIdentifier, propName): Promise<{ connectionIds: string[] }> => {
+    executeScriptForWebhooks: async (
+        integration,
+        body,
+        webhookType,
+        connectionIdentifier,
+        logContextGetter,
+        propName
+    ): Promise<{ connectionIds: string[] }> => {
         if (!get(body, connectionIdentifier)) {
             await telemetry.log(
                 LogTypes.INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER,
@@ -108,7 +117,7 @@ export const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (type === webhook) {
                     for (const connection of connections) {
-                        await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
+                        await syncClient?.triggerWebhook(integration, connection, webhook, syncConfig.sync_name, body, logContextGetter);
                     }
                 }
             }

@@ -3,7 +3,7 @@ import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models/Ac
 import { LogActionEnum } from '../../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 
-import { getLogger } from '../../utils/temp/logger.js';
+import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('Activity');
 
@@ -82,12 +82,6 @@ export async function updateProviderConfigAndConnectionId(id: number, provider_c
     await updateConnectionId(id, connection_id);
     await db.knex.from<ActivityLog>(activityLogTableName).where({ id }).update({
         provider_config_key
-    });
-}
-
-export async function updateSessionId(id: number, session_id: string): Promise<void> {
-    await db.knex.from<ActivityLog>(activityLogTableName).where({ id }).update({
-        session_id
     });
 }
 
@@ -181,16 +175,6 @@ export async function createActivityLogMessageAndEnd(logMessage: ActivityLogMess
     if (logMessage.activity_log_id !== undefined) {
         await addEndTime(logMessage.activity_log_id);
     }
-}
-
-export async function findActivityLogBySession(session_id: string): Promise<number | null> {
-    const result = await db.knex.from<ActivityLog>(activityLogTableName).select('id').where({ session_id });
-
-    if (!result || result.length == 0 || !result[0]) {
-        return null;
-    }
-
-    return result[0].id;
 }
 
 export async function getTopLevelLogByEnvironment(

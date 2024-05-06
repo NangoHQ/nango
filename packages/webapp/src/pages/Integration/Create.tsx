@@ -22,14 +22,15 @@ interface Provider {
 
 export default function Create() {
     const { mutate } = useSWRConfig();
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [initialProviders, setInitialProviders] = useState<Provider[] | null>(null);
     const [providers, setProviders] = useState<Provider[] | null>(null);
-    const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
-    const getProvidersAPI = useGetProvidersAPI();
-    const createIntegrationAPI = useCreateEmptyIntegrationAPI();
+    const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI(env);
+    const getProvidersAPI = useGetProvidersAPI(env);
+    const createIntegrationAPI = useCreateEmptyIntegrationAPI(env);
     const navigate = useNavigate();
-    const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
         const getProviders = async () => {
@@ -59,7 +60,7 @@ export default function Create() {
         }
     };
 
-    const showDocs = (e: React.MouseEvent<SVGSVGElement, MouseEvent>, provider: Provider) => {
+    const showDocs = (e: React.MouseEvent<SVGSVGElement>, provider: Provider) => {
         e.stopPropagation();
         const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}`;
         window.open(documentationUrl, '_blank');

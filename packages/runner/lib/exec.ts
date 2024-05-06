@@ -7,6 +7,7 @@ import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
 import tracer from 'dd-trace';
+import { stringifyError } from '@nangohq/utils';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -80,7 +81,11 @@ export async function exec(
                     throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
                 }
                 if (isAction) {
-                    return await scriptExports.default(nango, codeParams);
+                    let inputParams = codeParams;
+                    if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
+                        inputParams = undefined;
+                    }
+                    return await scriptExports.default(nango, inputParams);
                 } else {
                     return await scriptExports.default(nango);
                 }
@@ -98,7 +103,7 @@ export async function exec(
                     response: null
                 };
             } else {
-                throw new Error(`Error executing code '${JSON.stringify(error)}'`);
+                throw new Error(`Error executing code '${stringifyError(error)}'`);
             }
         } finally {
             span.finish();

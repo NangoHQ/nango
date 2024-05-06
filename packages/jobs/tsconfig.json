@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../logs"
+        },
+        {
             "path": "../shared"
         },
         {
@@ -13,6 +16,9 @@
         },
         {
             "path": "../utils"
+        },
+        {
+            "path": "../records"
         },
         {
             "path": "../data-ingestion"

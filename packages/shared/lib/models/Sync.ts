@@ -102,12 +102,13 @@ export interface SyncConfig extends TimestampsAndDeleted {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     version?: string;
-    pre_built?: boolean;
-    is_public?: boolean;
+    pre_built?: boolean | null;
+    is_public?: boolean | null;
     endpoints?: NangoSyncEndpoint[];
-    input?: string | SyncModelSchema;
+    input?: string | SyncModelSchema | undefined;
     sync_type?: SyncType | undefined;
     webhook_subscriptions?: string[];
+    enabled: boolean;
 }
 
 export interface SyncEndpoint extends Timestamps {
@@ -125,6 +126,7 @@ export interface SlimSync {
     sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
+    enabled?: boolean;
 }
 
 export interface SlimAction {
@@ -214,61 +216,6 @@ export interface Schedule extends TimestampsAndDeleted {
     sync_job_id: number;
     frequency: string;
     offset: number;
-}
-
-export type CustomerFacingDataRecord = {
-    _nango_metadata: RecordMetadata;
-} & Record<string, any> & { id: string | number };
-
-export interface EncryptedRawRecord {
-    iv: string;
-    authTag: string;
-    encryptedValue: string;
-}
-
-export type UnencryptedRawRecord = Record<string, any> & { id: string | number };
-
-export type RawDataRecordResult = {
-    id: string | number;
-    record: UnencryptedRawRecord | EncryptedRawRecord;
-} & RecordMetadata;
-
-export type GetRecordsResponse = { records: CustomerFacingDataRecord[]; next_cursor?: string | null } | null;
-
-// TO DEPRECATE
-export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
-
-export interface DataRecord extends Timestamps {
-    [index: string]: number | string | Date | object | undefined | boolean | null;
-    id?: string;
-    external_id: string;
-    json: object;
-    record?: object;
-    data_hash: string;
-    nango_connection_id: number;
-    model: string;
-    sync_id: string;
-    sync_config_id?: number | undefined;
-    external_is_deleted?: boolean;
-    external_deleted_at?: Date | null;
-    json_iv?: string | null;
-    json_tag?: string | null;
-    pending_delete?: boolean;
-}
-
-export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
-
-interface RecordMetadata {
-    first_seen_at: string;
-    last_modified_at: string;
-    last_action: LastAction;
-    deleted_at: string | null;
-    cursor: string;
-}
-
-// DEPRECATED
-export interface DataRecordWithMetadata extends RecordMetadata {
-    record: object;
 }
 
 export type SyncWithSchedule = Sync & Schedule;

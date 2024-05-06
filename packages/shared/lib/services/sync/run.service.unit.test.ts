@@ -1,4 +1,5 @@
 import { expect, describe, it, vi } from 'vitest';
+import type { SyncRunConfig } from './run.service.js';
 import SyncRun from './run.service.js';
 import environmentService from '../environment.service.js';
 import accountService from '../account.service.js';
@@ -8,6 +9,7 @@ import * as configService from './config/config.service.js';
 import type { IntegrationServiceInterface } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 import type { Account } from '../../models/Admin.js';
+import { logContextGetter } from '@nangohq/logs';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -21,10 +23,27 @@ class integrationServiceMock implements IntegrationServiceInterface {
 }
 
 const integrationService = new integrationServiceMock();
+const recordsService = {
+    markNonCurrentGenerationRecordsAsDeleted: ({
+        connectionId: _connectionId,
+        model: _model,
+        syncId: _syncId,
+        generation: _generation
+    }: {
+        connectionId: number;
+        model: string;
+        syncId: string;
+        generation: number;
+    }): Promise<string[]> => {
+        return Promise.resolve([]);
+    }
+};
 
 describe('SyncRun', () => {
-    const dryRunConfig = {
+    const dryRunConfig: SyncRunConfig = {
         integrationService: integrationService as unknown as IntegrationServiceInterface,
+        recordsService,
+        logContextGetter: logContextGetter,
         writeToDb: false,
         nangoConnection: {
             id: 1,
@@ -40,8 +59,10 @@ describe('SyncRun', () => {
         debug: true
     };
     it('should initialize correctly', () => {
-        const config = {
+        const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
+            recordsService,
+            logContextGetter: logContextGetter,
             writeToDb: true,
             nangoConnection: {
                 id: 1,

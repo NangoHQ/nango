@@ -10,23 +10,24 @@ import type { Template as ProviderTemplate } from '../models/Provider.js';
 import integrationPostConnectionScript from '../integrations/scripts/connection/connection.manager.js';
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
-import { isCloud, isLocal, isEnterprise } from '../utils/temp/environment/detection.js';
 import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
-import type { Result } from '../utils/result.js';
-import { resultOk, resultErr } from '../utils/result.js';
+import { isCloud, isLocal, isEnterprise, getLogger, resultOk, resultErr } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
-import { getLogger } from '../utils/temp/logger.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
+import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 
 const logger = getLogger('hooks');
 
-const CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT = 3;
-
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
-    environmentId
+    environmentId,
+    creationType
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
+    creationType: 'create' | 'import';
 }): Promise<boolean> => {
     if (!providerConfigKey) {
         return false;
@@ -34,45 +35,52 @@ export const connectionCreationStartCapCheck = async ({
 
     const scriptConfigs = await getSyncConfigsWithConnections(providerConfigKey, environmentId);
 
-    const reachedCap = false;
-
     if (scriptConfigs.length > 0) {
         for (const script of scriptConfigs) {
             const { connections } = script;
 
-            if (connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
-                //reachedCap = true;
+            if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
                 logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-                break;
+                const analyticsType =
+                    creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
+                void analytics.trackByEnvironmentId(analyticsType, environmentId);
+                return true;
             }
         }
     }
 
-    return reachedCap;
+    return false;
 };
 
 export const connectionCreated = async (
     connection: RecentlyCreatedConnection,
     provider: string,
+    logContextGetter: LogContextGetter,
     activityLogId: number | null,
-    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
+    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
+    logCtx?: LogContext
 ): Promise<void> => {
     const hosted = !isCloud && !isLocal && !isEnterprise;
 
     if (options.initiateSync === true && !hosted) {
         const syncClient = await SyncClient.getInstance();
-        syncClient?.initiate(connection.id as number);
+        await syncClient?.initiate(connection.id as number, logContextGetter);
     }
 
     if (options.runPostConnectionScript === true) {
-        integrationPostConnectionScript(connection, provider);
+        await integrationPostConnectionScript(connection, provider, logContextGetter);
     }
 
-    await webhookService.sendAuthUpdate(connection, provider, true, activityLogId);
+    await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);
 };
 
-export const connectionCreationFailed = async (connection: RecentlyCreatedConnection, provider: string, activityLogId: number | null): Promise<void> => {
-    await webhookService.sendAuthUpdate(connection, provider, false, activityLogId);
+export const connectionCreationFailed = async (
+    connection: RecentlyCreatedConnection,
+    provider: string,
+    activityLogId: number | null,
+    logCtx: LogContext
+): Promise<void> => {
+    await webhookService.sendAuthUpdate(connection, provider, false, activityLogId, logCtx);
 };
 
 export const connectionTest = async (

@@ -122,7 +122,7 @@ export enum AuthModes {
 
 export interface Connection {
     id: number;
-    connectionId: string;
+    connection_id: string;
     provider: string;
     providerConfigKey: string;
     creationDate: string;
@@ -221,6 +221,7 @@ export interface Flow {
     attributes: Record<string, unknown>;
     endpoints: NangoSyncEndpoint[];
     scopes: string[];
+    enabled: boolean;
     sync_type?: 'FULL' | 'INCREMENTAL';
     is_public: boolean;
     pre_built: boolean;
@@ -289,13 +290,4 @@ export interface IntegrationConfig {
     connection_count: number;
     connections: Connection[];
     docs: string;
-}
-
-export interface OnboardingStatus {
-    id: number;
-    progress: number;
-    records: Record<string, unknown>[] | null;
-    provider: boolean;
-    connection: boolean;
-    sync: boolean;
 }

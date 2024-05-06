@@ -1,5 +1,5 @@
-import type { Result } from '@nangohq/shared';
-import { resultOk, resultErr } from '@nangohq/shared';
+import { resultOk, resultErr } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 import { syncAbortControllers } from './state.js';
 
 export const cancel = (syncId: string): Result<string> => {

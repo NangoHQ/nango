@@ -3,6 +3,8 @@ import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils';
 import { getEnvironmentAndAccountId, accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import type { LogContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
 export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
@@ -103,6 +105,7 @@ class AccountController {
             return;
         }
 
+        let logCtx: LogContext | undefined;
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -112,7 +115,7 @@ class AccountController {
 
             const { account } = response;
 
-            if (account?.uuid !== NANGO_ADMIN_UUID) {
+            if (account.uuid !== NANGO_ADMIN_UUID) {
                 res.status(401).send({ message: 'Unauthorized' });
                 return;
             }
@@ -161,12 +164,18 @@ class AccountController {
                 environment_id: response.environment.id
             };
 
-            await createActivityLogAndLogMessage(log, {
+            const activityLogId = await createActivityLogAndLogMessage(log, {
                 level: 'info',
                 environment_id: response.environment.id,
                 timestamp: Date.now(),
                 content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
             });
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
+                { account: response.account, environment: response.environment }
+            );
+            await logCtx.info('A Nango admin logged into another account for the following reason', { loginReason: login_reason });
+            await logCtx.success();
 
             req.login(user, (err) => {
                 if (err) {
@@ -188,6 +197,10 @@ class AccountController {
                 });
             });
         } catch (err) {
+            if (logCtx) {
+                await logCtx.error('uncaught error', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

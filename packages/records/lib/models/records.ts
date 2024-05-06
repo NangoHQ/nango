@@ -10,12 +10,13 @@ import type {
     UnencryptedRecord,
     UpsertSummary
 } from '../types.js';
-import { decryptRecordData, decryptRecords, encryptDataRecords } from '../utils/encryption.js';
+import { decryptRecord, decryptRecords, encryptRecords } from '../utils/encryption.js';
 import { RECORDS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
-import { resultErr, resultOk } from '@nangohq/shared';
-import type { Result } from '@nangohq/shared';
+import { resultErr, resultOk, retry } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 dayjs.extend(utc);
 
@@ -147,7 +148,7 @@ export async function getRecords({
         }
 
         const results = rawResults.map((item) => {
-            const decryptedData = decryptRecordData(item);
+            const decryptedData = decryptRecord(item);
             const encodedCursor = Buffer.from(`${item.last_modified_at}||${item.id}`).toString('base64');
             return {
                 ...decryptedData,
@@ -173,20 +174,22 @@ export async function getRecords({
         }
         return resultOk({ records: results, next_cursor: null });
     } catch (_error) {
-        // TODO: telemetry doesn't belong in models
-        // await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
-        //     environmentId: String(environmentId),
-        //     connectionId: String(connectionId),
-        //     modifiedAfter: String(modifiedAfter),
-        //     model,
-        //     error: JSON.stringify(e)
-        // });
         const e = new Error(`List records error for model ${model}`);
         return resultErr(e);
     }
 }
 
-export async function upsert(records: FormattedRecord[], connectionId: number, model: string, softDelete = false): Promise<Result<UpsertSummary>> {
+export async function upsert({
+    records,
+    connectionId,
+    model,
+    softDelete = false
+}: {
+    records: FormattedRecord[];
+    connectionId: number;
+    model: string;
+    softDelete?: boolean;
+}): Promise<Result<UpsertSummary>> {
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
@@ -195,41 +198,39 @@ export async function upsert(records: FormattedRecord[], connectionId: number, m
         );
     }
 
-    const addedKeys: string[] = [];
-    const updatedKeys: string[] = [];
+    let summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
     try {
-        const externalIds: { external_id: string }[] = [];
         await db.transaction(async (trx) => {
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
-                addedKeys.push(...(await getAddedKeys(chunk, connectionId, model)));
-                updatedKeys.push(...(await getUpdatedKeys(chunk, connectionId, model)));
-                const encryptedRecords = encryptDataRecords(chunk);
-                const insertedIds = await trx
-                    .from<FormattedRecord>(RECORDS_TABLE)
-                    .insert(encryptedRecords)
-                    .onConflict(['connection_id', 'external_id', 'model'])
-                    .merge()
-                    .returning('external_id');
-                externalIds.push(...insertedIds);
+                const chunkSummary = await getUpsertSummary({ records: chunk, connectionId, model, nonUniqueKeys, softDelete, trx });
+                summary = {
+                    addedKeys: [...summary.addedKeys, ...chunkSummary.addedKeys],
+                    updatedKeys: [...summary.updatedKeys, ...chunkSummary.updatedKeys],
+                    deletedKeys: [...(summary.deletedKeys || []), ...(chunkSummary.deletedKeys || [])],
+                    nonUniqueKeys: nonUniqueKeys
+                };
+                const encryptedRecords = encryptRecords(chunk);
+
+                // Retry upserting if deadlock detected
+                // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
+                const upserting = () =>
+                    trx.from<FormattedRecord>(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
+                await retry(upserting, {
+                    maxAttempts: 3,
+                    delayMs: 500,
+                    retryIf: (error: Error) => {
+                        if ('code' in error) {
+                            const errorCode = (error as { code: string }).code;
+                            return errorCode === '40P01'; // deadlock_detected
+                        }
+                        return false;
+                    }
+                });
             }
         });
 
-        if (softDelete) {
-            return resultOk({
-                deletedKeys: externalIds.map(({ external_id }) => external_id),
-                addedKeys: [],
-                updatedKeys: [],
-                nonUniqueKeys
-            });
-        }
-
-        return resultOk({
-            addedKeys,
-            updatedKeys,
-            deletedKeys: [],
-            nonUniqueKeys
-        });
+        return resultOk(summary);
     } catch (error: any) {
         let errorMessage = `Failed to upsert records to table ${RECORDS_TABLE}.\n`;
         errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
@@ -254,7 +255,15 @@ export async function upsert(records: FormattedRecord[], connectionId: number, m
     }
 }
 
-export async function update(records: FormattedRecord[], connectionId: number, model: string): Promise<Result<UpsertSummary>> {
+export async function update({
+    records,
+    connectionId,
+    model
+}: {
+    records: FormattedRecord[];
+    connectionId: number;
+    model: string;
+}): Promise<Result<UpsertSummary>> {
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
@@ -269,10 +278,10 @@ export async function update(records: FormattedRecord[], connectionId: number, m
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
 
-                updatedKeys.push(...(await getUpdatedKeys(chunk, connectionId, model)));
+                updatedKeys.push(...(await getUpdatedKeys({ records: chunk, connectionId, model, trx })));
 
                 const recordsToUpdate: FormattedRecord[] = [];
-                const rawOldRecords = await getRecordsByExternalIds(updatedKeys, connectionId, model);
+                const rawOldRecords = await getRecordsByExternalIds({ externalIds: updatedKeys, connectionId, model, trx });
                 for (const rawOldRecord of rawOldRecords) {
                     if (!rawOldRecord) {
                         continue;
@@ -292,7 +301,7 @@ export async function update(records: FormattedRecord[], connectionId: number, m
                     };
                     recordsToUpdate.push(newRecord);
                 }
-                const encryptedRecords = encryptDataRecords(recordsToUpdate);
+                const encryptedRecords = encryptRecords(recordsToUpdate);
                 await trx.from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
             }
         });
@@ -334,7 +343,17 @@ export async function deleteRecordsBySyncId({ syncId, limit = 5000 }: { syncId: 
 
 // Mark all non-deleted records that don't belong to currentGeneration as deleted
 // returns the ids of records being deleted
-export async function markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, syncId: string, generation: number): Promise<string[]> {
+export async function markNonCurrentGenerationRecordsAsDeleted({
+    connectionId,
+    model,
+    syncId,
+    generation
+}: {
+    connectionId: number;
+    model: string;
+    syncId: string;
+    generation: number;
+}): Promise<string[]> {
     const now = db.fn.now(6);
     return (await db
         .from<FormattedRecord>(RECORDS_TABLE)
@@ -356,39 +375,24 @@ export async function markNonCurrentGenerationRecordsAsDeleted(connectionId: num
 }
 
 /**
- * Compute Added Keys
- * @desc for any incoming payload use the provided unique to check against the rows
- * in the database and return the keys that are not in the database
- *
+ * getUpdatedKeys
+ * @desc returns a list of the keys that exist in the records tables but have a different data_hash
  */
-async function getAddedKeys(response: FormattedRecord[], connectionId: number, model: string): Promise<string[]> {
-    const keys: string[] = response.map((record: FormattedRecord) => getUniqueId(record));
+async function getUpdatedKeys({
+    records,
+    connectionId,
+    model,
+    trx
+}: {
+    records: FormattedRecord[];
+    connectionId: number;
+    model: string;
+    trx: Knex.Transaction;
+}): Promise<string[]> {
+    const keys: string[] = records.map((record: FormattedRecord) => getUniqueId(record));
+    const keysWithHash: [string, string][] = records.map((record: FormattedRecord) => [getUniqueId(record), record.data_hash]);
 
-    const knownKeys: string[] = (await db
-        .from(RECORDS_TABLE)
-        .where({
-            connection_id: connectionId,
-            model,
-            deleted_at: null
-        })
-        .whereIn('external_id', keys)
-        .pluck('external_id')) as unknown as string[];
-
-    return keys?.filter((key: string) => !knownKeys.includes(key));
-}
-
-/**
- * Get Updated Keys
- * @desc generate an array of the keys that exist in the database and also in
- * the incoming payload that will be used to update the database.
- * Compare using the data_hash key
- *
- */
-async function getUpdatedKeys(response: FormattedRecord[], connectionId: number, model: string): Promise<string[]> {
-    const keys: string[] = response.map((record: FormattedRecord) => getUniqueId(record));
-    const keysWithHash: [string, string][] = response.map((record: FormattedRecord) => [getUniqueId(record), record.data_hash]);
-
-    const rowsToUpdate = (await db
+    const rowsToUpdate = (await trx
         .from(RECORDS_TABLE)
         .pluck('external_id')
         .where({
@@ -401,14 +405,69 @@ async function getUpdatedKeys(response: FormattedRecord[], connectionId: number,
     return rowsToUpdate;
 }
 
-async function getRecordsByExternalIds(external_ids: string[], connection_id: number, model: string): Promise<UnencryptedRecord[]> {
-    const encryptedRecords = await db
+async function getUpsertSummary({
+    records,
+    connectionId,
+    model,
+    nonUniqueKeys,
+    softDelete,
+    trx
+}: {
+    records: FormattedRecord[];
+    connectionId: number;
+    model: string;
+    nonUniqueKeys: string[];
+    softDelete: boolean;
+    trx: Knex.Transaction;
+}): Promise<UpsertSummary> {
+    const keys: string[] = records.map((record: FormattedRecord) => getUniqueId(record));
+    const nonDeletedKeys: string[] = await trx
+        .from(RECORDS_TABLE)
+        .where({
+            connection_id: connectionId,
+            model,
+            deleted_at: null
+        })
+        .whereIn('external_id', keys)
+        .pluck('external_id');
+
+    if (softDelete) {
+        return {
+            addedKeys: [],
+            updatedKeys: [],
+            deletedKeys: nonDeletedKeys,
+            nonUniqueKeys: nonUniqueKeys
+        };
+    } else {
+        const addedKeys = keys.filter((key: string) => !nonDeletedKeys.includes(key));
+        const updatedKeys = await getUpdatedKeys({ records, connectionId, model, trx });
+        return {
+            addedKeys,
+            updatedKeys,
+            deletedKeys: [],
+            nonUniqueKeys: nonUniqueKeys
+        };
+    }
+}
+
+async function getRecordsByExternalIds({
+    externalIds,
+    connectionId,
+    model,
+    trx
+}: {
+    externalIds: string[];
+    connectionId: number;
+    model: string;
+    trx: Knex.Transaction;
+}): Promise<UnencryptedRecord[]> {
+    const encryptedRecords = await trx
         .from<FormattedRecord>(RECORDS_TABLE)
         .where({
-            connection_id,
+            connection_id: connectionId,
             model
         })
-        .whereIn('external_id', external_ids);
+        .whereIn('external_id', externalIds);
 
     if (!encryptedRecords) {
         return [];

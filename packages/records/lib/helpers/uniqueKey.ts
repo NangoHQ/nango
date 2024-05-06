@@ -21,17 +21,6 @@ export function verifyUniqueKeysAreUnique(records: FormattedRecord[]): { nonUniq
 }
 
 export function removeDuplicateKey(records: FormattedRecord[]): { records: FormattedRecord[]; nonUniqueKeys: string[] } {
-    // TODO:
-    // for (const nonUniqueKey of nonUniqueKeys) {
-    //     await createActivityLogMessage({
-    //         level: 'error',
-    //         environment_id,
-    //         activity_log_id: activityLogId,
-    //         content: `There was a duplicate key found: ${nonUniqueKey}. This record will be ignore in relation to the model ${model}.`,
-    //         timestamp: Date.now()
-    //     });
-    // }
-
     const { nonUniqueKeys } = verifyUniqueKeysAreUnique(records);
     const seen = new Set();
     const recordsWithoutDuplicates = records.filter((record) => {

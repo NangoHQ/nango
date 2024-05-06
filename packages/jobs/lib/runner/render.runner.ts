@@ -2,7 +2,7 @@ import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import { env } from '@nangohq/utils';
+import { env, stringifyError } from '@nangohq/utils';
 import { NodeEnv, getPersistAPIUrl } from '@nangohq/shared';
 import { RenderAPI } from './render.api.js';
 import tracer from 'dd-trace';
@@ -73,7 +73,7 @@ export class RenderRunner implements Runner {
                         { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] || 'true' },
                         { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
                         { key: 'RUNNER_ID', value: runnerId },
-                        { key: 'JOBS_SERVICE_URL', value: `${jobsServiceUrl}` },
+                        { key: 'JOBS_SERVICE_URL', value: jobsServiceUrl },
                         { key: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
                         { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
                         { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
@@ -98,7 +98,7 @@ export class RenderRunner implements Runner {
             }
             return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);
         } catch (err) {
-            throw new Error(`Unable to get runner ${runnerId}: ${JSON.stringify(err)}`);
+            throw new Error(`Unable to get runner ${runnerId}: ${stringifyError(err)}`);
         }
     }
 }

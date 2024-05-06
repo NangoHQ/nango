@@ -15,6 +15,7 @@ import {
     useEditAlwaysSendWebhookAPI,
     useEditSendAuthWebhookAPI
 } from '../utils/api';
+import IntegrationLogo from '../components/ui/IntegrationLogo';
 import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
@@ -24,6 +25,8 @@ import Button from '../components/ui/button/Button';
 import { useEnvironment } from '../hooks/useEnvironment';
 
 export const EnvironmentSettings: React.FC = () => {
+    const env = useStore((state) => state.env);
+
     const [secretKey, setSecretKey] = useState('');
     const [secretKeyRotatable, setSecretKeyRotatable] = useState(true);
     const [hasPendingSecretKey, setHasPendingSecretKey] = useState(false);
@@ -48,19 +51,18 @@ export const EnvironmentSettings: React.FC = () => {
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
-    const editCallbackUrlAPI = useEditCallbackUrlAPI();
-    const editWebhookUrlAPI = useEditWebhookUrlAPI();
-    const editHmacEnabled = useEditHmacEnabledAPI();
-    const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI();
-    const editSendAuthWebhook = useEditSendAuthWebhookAPI();
-    const editHmacKey = useEditHmacKeyAPI();
-    const editEnvVariables = useEditEnvVariablesAPI();
+    const editCallbackUrlAPI = useEditCallbackUrlAPI(env);
+    const editWebhookUrlAPI = useEditWebhookUrlAPI(env);
+    const editHmacEnabled = useEditHmacEnabledAPI(env);
+    const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI(env);
+    const editSendAuthWebhook = useEditSendAuthWebhookAPI(env);
+    const editHmacKey = useEditHmacKeyAPI(env);
+    const editEnvVariables = useEditEnvVariablesAPI(env);
 
     const { setVisible, bindings } = useModal();
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
-    const env = useStore((state) => state.cookieValue);
-    const { environment, mutate } = useEnvironment();
+    const { environment, mutate } = useEnvironment(env);
 
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id));
@@ -73,7 +75,7 @@ export const EnvironmentSettings: React.FC = () => {
         }
 
         setSecretKey(environment.pending_secret_key || environment.secret_key);
-        setSecretKeyRotatable(environment.secret_key_rotatable !== false);
+        setSecretKeyRotatable(environment.secret_key_rotatable);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
 
         setPublicKey(environment.pending_public_key || environment.public_key);
@@ -187,30 +189,27 @@ export const EnvironmentSettings: React.FC = () => {
         const formData = new FormData(e.target as HTMLFormElement);
         const entries = Array.from(formData.entries());
 
-        const envVariablesArray = entries.reduce(
-            (acc, [key, value]) => {
-                // we use the index to match on the name and value
-                // but strip everything before the dash to remove the dynamic aspect
-                // to the name. The dynamic aspect is needed to make sure the values
-                // show correctly when reloading environments
-                const strippedKey = key.split('-')[1];
-                const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
-                if (match) {
-                    const type = match[1];
-                    const index = parseInt(match[2], 10);
-                    if (!acc[index]) {
-                        acc[index] = {} as { name: string; value: string };
-                    }
-                    if (type === 'name') {
-                        acc[index].name = value as string;
-                    } else if (type === 'value') {
-                        acc[index].value = value as string;
-                    }
+        const envVariablesArray = entries.reduce<{ name: string; value: string }[]>((acc, [key, value]) => {
+            // we use the index to match on the name and value
+            // but strip everything before the dash to remove the dynamic aspect
+            // to the name. The dynamic aspect is needed to make sure the values
+            // show correctly when reloading environments
+            const strippedKey = key.split('-')[1];
+            const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
+            if (match) {
+                const type = match[1];
+                const index = parseInt(match[2], 10);
+                if (!acc[index]) {
+                    acc[index] = {} as { name: string; value: string };
                 }
-                return acc;
-            },
-            [] as { name: string; value: string }[]
-        );
+                if (type === 'name') {
+                    acc[index].name = value as string;
+                } else if (type === 'value') {
+                    acc[index].value = value as string;
+                }
+            }
+            return acc;
+        }, []);
 
         const res = await editEnvVariables(envVariablesArray);
 
@@ -245,7 +244,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRotateKey = async (publicKey = true) => {
-        const res = await fetch('/api/v1/environment/rotate-key', {
+        const res = await fetch(`/api/v1/environment/rotate-key?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -255,7 +254,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             const key = (await res.json())['key'];
             if (publicKey) {
                 setPublicKey(key);
@@ -271,7 +270,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRevertKey = async (publicKey = true) => {
-        const res = await fetch('/api/v1/environment/revert-key', {
+        const res = await fetch(`/api/v1/environment/?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -281,7 +280,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             const key = (await res.json())['key'];
             if (publicKey) {
                 setPublicKey(key);
@@ -297,7 +296,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onActivateKey = async (publicKey = true) => {
-        const res = await fetch('/api/v1/environment/activate-key', {
+        const res = await fetch(`/api/v1/environment/activate-key?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -307,7 +306,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             if (publicKey) {
                 toast.success('New public key activated', { position: toast.POSITION.BOTTOM_CENTER });
                 setVisible(false);
@@ -322,7 +321,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const updateSlackNotifications = async (enabled: boolean) => {
-        await fetch('/api/v1/environment/slack-notifications-enabled', {
+        await fetch(`/api/v1/environment/slack-notifications-enabled?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -336,11 +335,11 @@ export const EnvironmentSettings: React.FC = () => {
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
 
-        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}`, {
+        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}?env=${env}`, {
             method: 'DELETE'
         });
 
-        if (res?.status !== 204) {
+        if (res.status !== 204) {
             toast.error('There was a problem when disconnecting Slack', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
             toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
@@ -352,14 +351,14 @@ export const EnvironmentSettings: React.FC = () => {
     const connectSlack = async () => {
         const connectionId = `account-${accountUUID}`;
 
-        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}`, {
+        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
-        if (res?.status !== 200) {
+        if (res.status !== 200) {
             toast.error('Something went wrong during the lookup for the Slack connect', { position: toast.POSITION.BOTTOM_CENTER });
             return;
         }
@@ -380,7 +379,7 @@ export const EnvironmentSettings: React.FC = () => {
                 toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 void mutate();
             })
-            .catch((err: { message: string; type: string }) => {
+            .catch((err: unknown) => {
                 console.log(err);
             });
     };
@@ -596,7 +595,7 @@ export const EnvironmentSettings: React.FC = () => {
                                 </div>
                                 <div className="">
                                     <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
-                                        <img src={`images/template-logos/slack.svg`} alt="" className="flex h-7 pb-0.5" />
+                                        <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
                                         {slackIsConnected ? 'Disconnect' : 'Connect'}
                                     </Button>
                                 </div>

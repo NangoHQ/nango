@@ -1,16 +1,7 @@
 import * as cron from 'node-cron';
-import {
-    errorManager,
-    ErrorSourceEnum,
-    MetricTypes,
-    softDeleteSchedules,
-    telemetry,
-    softDeleteJobs,
-    syncDataService,
-    db,
-    findRecentlyDeletedSync
-} from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { errorManager, ErrorSourceEnum, softDeleteSchedules, softDeleteJobs, db, findRecentlyDeletedSync } from '@nangohq/shared';
+import { records } from '@nangohq/records';
+import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
 
 const logger = getLogger('Jobs');
@@ -32,7 +23,7 @@ export function deleteSyncsData(): void {
             const e = new Error('failed_to_hard_delete_syncs_data', { cause: err instanceof Error ? err.message : err });
             errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
         }
-        telemetry.duration(MetricTypes.JOBS_DELETE_SYNCS_DATA, Date.now() - start);
+        metrics.duration(metrics.Types.JOBS_DELETE_SYNCS_DATA, Date.now() - start);
     });
 }
 
@@ -43,7 +34,7 @@ export async function exec(): Promise<void> {
         // Because it's slow and create deadlocks
         // we need to acquire a Lock that prevents any other duplicate cron to execute the same thing
         const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [123456789]);
-        if (!rows || rows.length <= 0 || rows[0]!.pg_try_advisory_xact_lock === false) {
+        if (!rows || rows.length <= 0 || !rows[0]!.pg_try_advisory_xact_lock) {
             logger.info(`[deleteSyncs] could not acquire lock, skipping`);
             return;
         }
@@ -58,7 +49,7 @@ export async function exec(): Promise<void> {
             do {
                 countJobs = await softDeleteJobs({ syncId: sync.id, limit: limitJobs });
                 logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
-                telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_JOBS, countJobs);
+                metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_JOBS, countJobs);
             } while (countJobs >= limitJobs);
 
             // -----
@@ -67,13 +58,13 @@ export async function exec(): Promise<void> {
             do {
                 countSchedules = await softDeleteSchedules({ syncId: sync.id, limit: limitSchedules });
                 logger.info(`[deleteSyncs] soft deleted ${countSchedules} schedules`);
-                telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_SCHEDULES, countSchedules);
+                metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_SCHEDULES, countSchedules);
             } while (countSchedules >= limitSchedules);
 
             // ----
             // hard delete records
-            const res = await syncDataService.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
-            telemetry.increment(MetricTypes.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalDeletedRecords);
+            const res = await records.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
+            metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalDeletedRecords);
         }
     });
 

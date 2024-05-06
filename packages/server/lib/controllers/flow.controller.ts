@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import type { IncomingPreBuiltFlowConfig, FlowDownloadBody, StandardNangoConfig } from '@nangohq/shared';
+import type { IncomingPreBuiltFlowConfig, FlowDownloadBody } from '@nangohq/shared';
 import {
     flowService,
     accountService,
+    connectionService,
     getEnvironmentAndAccountId,
     errorManager,
     configService,
@@ -12,10 +13,12 @@ import {
     remoteFileService,
     getAllSyncsAndActions,
     getNangoConfigIdAndLocationFromId,
-    getConfigWithEndpointsByProviderConfigKey,
     getConfigWithEndpointsByProviderConfigKeyAndName,
-    getSyncsByConnectionIdsAndEnvironmentIdAndSyncName
+    getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
+    enableScriptConfig as enableConfig,
+    disableScriptConfig as disableConfig
 } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
 
 class FlowController {
     public async getFlows(req: Request, res: Response, next: NextFunction) {
@@ -59,14 +62,14 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environmentId, config, req.body.nangoYamlBody || '');
+            } = await deployPreBuiltSyncConfig(environmentId, config, req.body.nangoYamlBody || '', logContextGetter);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter);
 
             res.sendStatus(200);
         } catch (e) {
@@ -95,7 +98,7 @@ class FlowController {
                 return;
             }
 
-            const { environmentId } = response;
+            const { environmentId, accountId } = response;
 
             // config is an array for compatibility purposes, it will only ever have one item
             const [firstConfig] = config;
@@ -111,14 +114,34 @@ class FlowController {
                 return;
             }
 
-            const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await deployPreBuiltSyncConfig(environmentId, config, '');
+            const account = await accountService.getAccountById(accountId);
+
+            if (!account) {
+                errorManager.errRes(res, 'unknown_account');
+                return;
+            }
+
+            if (account.is_capped && firstConfig?.providerConfigKey) {
+                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: firstConfig?.providerConfigKey, environmentId });
+
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
+                    return;
+                }
+            }
+
+            const {
+                success: preBuiltSuccess,
+                error: preBuiltError,
+                response: preBuiltResponse
+            } = await deployPreBuiltSyncConfig(environmentId, config, '', logContextGetter);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter);
 
             res.status(201).send(preBuiltResponse.result);
         } catch (e) {
@@ -144,7 +167,7 @@ class FlowController {
                 return;
             }
 
-            const { id, name, provider, is_public } = body;
+            const { id, name, provider, is_public, providerConfigKey, flowType } = body;
 
             if (!name || !provider || typeof is_public === 'undefined') {
                 res.status(400).send('Missing required fields');
@@ -152,7 +175,7 @@ class FlowController {
             }
 
             if (!id && is_public) {
-                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, body.public_route as string);
+                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, body.public_route as string, flowType);
                 return;
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
@@ -165,7 +188,7 @@ class FlowController {
                 }
 
                 const { nango_config_id, file_location } = configLookupResult;
-                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location);
+                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location, providerConfigKey, flowType);
                 return;
             }
         } catch (e) {
@@ -192,7 +215,45 @@ class FlowController {
         }
     }
 
-    public async deleteFlow(req: Request, res: Response, next: NextFunction) {
+    public async enableFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { account, environment } = response;
+
+            const id = req.params['id'];
+            const flow = req.body;
+
+            if (!id) {
+                res.status(400).send('Missing id');
+                return;
+            }
+
+            if (account.is_capped && flow?.providerConfigKey) {
+                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: flow?.providerConfigKey, environmentId: environment.id });
+
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
+                    return;
+                }
+            }
+
+            await enableConfig(Number(id));
+
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter);
+
+            res.status(200).send([{ ...flow, enabled: true }]);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async disableFlow(req: Request, res: Response, next: NextFunction) {
         try {
             const { success, error, response } = await getEnvironmentAndAccountId(res, req);
 
@@ -206,6 +267,7 @@ class FlowController {
             const id = req.params['id'];
             const connectionIds = req.query['connectionIds'] as string;
             const syncName = req.query['sync_name'] as string;
+            const flow = req.body;
 
             if (!id) {
                 res.status(400).send('Missing id');
@@ -227,51 +289,9 @@ class FlowController {
                 }
             }
 
-            await syncOrchestrator.deleteConfig(Number(id), environmentId);
+            await disableConfig(Number(id));
 
-            res.sendStatus(204);
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async getEndpoints(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { environmentId } = response;
-            const providerConfigKey = req.params['providerConfigKey'];
-            const provider = req.query['provider'];
-
-            if (!providerConfigKey) {
-                res.status(400).send('Missing providerConfigKey');
-                return;
-            }
-
-            const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-            const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === provider);
-
-            const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
-            const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
-
-            if (availableFlows && enabledFlows && unEnabledFlows) {
-                const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
-
-                const { syncs, actions } = unEnabledFlows;
-
-                const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
-                const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
-
-                unEnabledFlows.syncs = filteredSyncs;
-                unEnabledFlows.actions = filteredActions;
-            }
-
-            res.send({ unEnabledFlows, enabledFlows });
+            res.send({ ...flow, enabled: false });
         } catch (e) {
             next(e);
         }

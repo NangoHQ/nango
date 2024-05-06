@@ -1,8 +1,8 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { retry } from '../utils/retry.js';
+import { retry } from '@nangohq/utils';
 
-export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<any> {
+export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
     return {
         client: process.env['NANGO_DB_CLIENT'] || 'pg',
         connection: process.env['NANGO_DATABASE_URL'] || {
@@ -18,7 +18,8 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config<a
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '20')
         },
-        searchPath: 'nango'
+        // SearchPath needs the current db and public because extension can only be installed once per DB
+        searchPath: ['nango', 'public']
     };
 }
 
@@ -33,7 +34,8 @@ export class KnexDatabase {
     async migrate(directory: string): Promise<any> {
         return retry(async () => await this.knex.migrate.latest({ directory: directory, tableName: '_nango_auth_migrations', schemaName: this.schema() }), {
             maxAttempts: 4,
-            delayMs: (attempt) => 500 * attempt
+            delayMs: (attempt) => 500 * attempt,
+            retryIf: () => true
         });
     }
 

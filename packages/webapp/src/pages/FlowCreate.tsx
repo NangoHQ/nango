@@ -29,6 +29,8 @@ interface Flow {
 type Integration = Record<string, Flow>;
 
 export default function FlowCreate() {
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [integration, setIntegration] = useState<string>('');
@@ -44,9 +46,8 @@ export default function FlowCreate() {
     const [frequencyValue, setFrequencyValue] = useState<number>();
     const [frequencyUnit, setFrequencyUnit] = useState<string>();
     const [showFrequencyError, setShowFrequencyError] = useState(false);
-    const getFlows = useGetFlows();
-    const createFlow = useCreateFlow();
-    const env = useStore((state) => state.cookieValue);
+    const getFlows = useGetFlows(env);
+    const createFlow = useCreateFlow(env);
 
     const navigate = useNavigate();
 
@@ -106,14 +107,14 @@ export default function FlowCreate() {
 
         const flowObject = flows[data['integration'] as string];
 
-        const models = Array.isArray(flow?.returns) ? (showModels(flow.returns) as any) : flow?.returns;
+        const models = Array.isArray(flow.returns) ? (showModels(flow.returns) as any) : flow.returns;
         const flowPayload = {
             provider: data['integration'].toString(),
-            type: flow?.type || 'sync',
+            type: flow.type || 'sync',
             name: data['flow-name'].toString(),
-            runs: flow?.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
-            auto_start: flow?.auto_start !== false,
-            models: Array.isArray(flow?.returns) ? flow?.returns : [flow?.returns],
+            runs: flow.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
+            auto_start: flow.auto_start !== false,
+            models: Array.isArray(flow.returns) ? flow.returns : [flow.returns],
             model_schema: JSON.stringify(
                 Object.keys(models).map((model) => ({
                     name: model,
@@ -247,7 +248,7 @@ export default function FlowCreate() {
             public_route: flowObject.rawName || integration
         };
 
-        const response = await fetch('/api/v1/flow/download', {
+        const response = await fetch(`/api/v1/flow/download?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -361,7 +362,7 @@ export default function FlowCreate() {
                                         </label>
                                     </div>
                                     <div className="mt-1">
-                                        <span className="text-text-light-gray">{flow?.description}</span>
+                                        <span className="text-text-light-gray">{flow.description}</span>
                                     </div>
                                 </div>
                             )}
@@ -419,7 +420,7 @@ export default function FlowCreate() {
                                     <div>
                                         <div className="flex">
                                             <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
-                                                Model{flow?.returns?.length > 1 ? 's' : ''}
+                                                Model{flow.returns.length > 1 ? 's' : ''}
                                             </label>
                                         </div>
                                         <Prism language="json" colorScheme="dark">
@@ -430,7 +431,7 @@ export default function FlowCreate() {
                             )}
                             <div className="flex flex-col">
                                 <div className="flex flex-row items-center">
-                                    {canAdd !== false && (
+                                    {canAdd && (
                                         <button type="submit" className="bg-white h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black mr-4">
                                             Add {flow?.type === 'action' ? 'Action' : 'Sync'}
                                         </button>

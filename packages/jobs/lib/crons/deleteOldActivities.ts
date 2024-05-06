@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
-import { deleteLog, deleteLogsMessages, errorManager, ErrorSourceEnum, findOldActivities, MetricTypes, telemetry } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { deleteLog, deleteLogsMessages, errorManager, ErrorSourceEnum, findOldActivities } from '@nangohq/shared';
+import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { setTimeout } from 'node:timers/promises';
 
@@ -24,7 +24,7 @@ export function deleteOldActivityLogs(): void {
             const e = new Error('failed_to_clean_activity_logs_table', { cause: err instanceof Error ? err.message : err });
             errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
         }
-        telemetry.duration(MetricTypes.JOBS_CLEAN_ACTIVITY_LOGS, Date.now() - start);
+        metrics.duration(metrics.Types.JOBS_CLEAN_ACTIVITY_LOGS, Date.now() - start);
     });
 }
 

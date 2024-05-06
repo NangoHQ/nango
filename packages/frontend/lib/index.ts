@@ -78,6 +78,13 @@ export default class Nango {
         }
     }
 
+    /**
+     * Creates a new unauthenticated connection using the specified provider configuration key and connection ID
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId -  The ID of the connection
+     * @param connectionConfig - Optional. Additional configuration for the connection
+     * @returns A promise that resolves with the authentication result
+     */
     public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult> {
         const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
@@ -96,6 +103,13 @@ export default class Nango {
         return res.json();
     }
 
+    /**
+     * Initiates the authorization process for a connection
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to authorize
+     * @param options - Optional. Additional options for authorization
+     * @returns A promise that resolves with the authorization result
+     */
     public auth(
         providerConfigKey: string,
         connectionId: string,
@@ -167,7 +181,7 @@ export default class Nango {
             );
             if (options?.detectClosedAuthWindow || false) {
                 this.tm = setInterval(() => {
-                    if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
+                    if (!this.win?.modal.window || this.win.modal.window.closed) {
                         if (this.win?.isProcessingMessage === true) {
                             // Modal is still processing a web socket message from the server
                             // We ignore the window being closed for now
@@ -184,6 +198,11 @@ export default class Nango {
         });
     }
 
+    /**
+     * Converts the provided credentials to a Connection configuration object
+     * @param credentials - The credentials to convert
+     * @returns The connection configuration object
+     */
     private convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials): ConnectionConfig {
         const params: Record<string, string> = {};
 
@@ -224,6 +243,14 @@ export default class Nango {
         return { params };
     }
 
+    /**
+     * Performs authorization based on the provided credentials i.e api, basic, appstore and oauth2
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to create the custom Authorization
+     * @param connectionConfigWithCredentials - The connection configuration containing the credentials
+     * @param connectionConfig - Optional. Additional connection configuration
+     * @returns A promise that resolves with the authorization result
+     */
     private async customAuth(
         providerConfigKey: string,
         connectionId: string,
@@ -319,9 +346,15 @@ export default class Nango {
             return res.json();
         }
 
-        return Promise.reject('Something went wrong with the authorization');
+        return Promise.reject(new Error('Something went wrong with the authorization'));
     }
 
+    /**
+     * Converts the connection ID and configuration parameters into a query string
+     * @param connectionId - The ID of the connection for which to generate a query string
+     * @param connectionConfig - Optional. Additional configuration for the connection
+     * @returns The generated query string
+     */
     private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
         const query: string[] = [];
 
@@ -350,10 +383,10 @@ export default class Nango {
             if (connectionConfig.credentials) {
                 const credentials = connectionConfig.credentials;
                 if ('oauth_client_id_override' in credentials) {
-                    query.push(`credentials[oauth_client_id_override]=${credentials.oauth_client_id_override}`);
+                    query.push(`credentials[oauth_client_id_override]=${encodeURIComponent(credentials.oauth_client_id_override)}`);
                 }
                 if ('oauth_client_secret_override' in credentials) {
-                    query.push(`credentials[oauth_client_secret_override]=${credentials.oauth_client_secret_override}`);
+                    query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
                 }
             }
 
@@ -459,7 +492,7 @@ class AuthorizationModal {
 
         this.swClient = new WebSocket(webSocketUrl);
 
-        this.swClient.onmessage = (message: MessageEvent<any>) => {
+        this.swClient.onmessage = (message: MessageEvent) => {
             this.isProcessingMessage = true;
             this.handleMessage(message, successHandler, errorHandler);
             this.isProcessingMessage = false;
@@ -467,10 +500,13 @@ class AuthorizationModal {
     }
 
     /**
-     * Handles the messages received from the Nango server via WebSocket.
+     * Handles the messages received from the Nango server via WebSocket
+     * @param message - The message event containing data from the server
+     * @param successHandler - The success handler function to be called when a success message is received
+     * @param errorHandler - The error handler function to be called when an error message is received
      */
     handleMessage(
-        message: MessageEvent<any>,
+        message: MessageEvent,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any
     ) {
@@ -511,7 +547,10 @@ class AuthorizationModal {
     }
 
     /**
-     * The modal is expected to be in the center of the screen.
+     * Calculates the layout dimensions for a modal window based on the expected width and height
+     * @param expectedWidth - The expected width of the modal window
+     * @param expectedHeight - The expected height of the modal window
+     * @returns The layout details including left and top positions, as well as computed width and height
      */
     layout(expectedWidth: number, expectedHeight: number) {
         const screenWidth = window.screen.width;
@@ -526,7 +565,9 @@ class AuthorizationModal {
     }
 
     /**
-     * Open the modal
+     * Opens a modal window with the specified WebSocket client ID
+     * @param wsClientId - The WebSocket client ID to include in the URL
+     * @returns The modal object
      */
     open(wsClientId: string) {
         this.modal.location = this.url + '&ws_client_id=' + wsClientId;
@@ -534,9 +575,8 @@ class AuthorizationModal {
     }
 
     /**
-     * Helper to convert the features object of this class
-     * to the comma-separated list of window features required
-     * by the window.open() function.
+     * Converts the features object of this class to a string
+     * @returns The string representation of features
      */
     featuresToString(): string {
         const features = this.features;

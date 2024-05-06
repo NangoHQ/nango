@@ -43,17 +43,17 @@ export default function EndpointReference(props: EndpointReferenceProps) {
     useEffect(() => {
         if (activeFlow) {
             setSyncSnippet(
-                activeFlow?.type === 'sync'
-                    ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
-                    : nodeActionSnippet(activeFlow?.name, account?.secret_key, connectionId, integration?.unique_key, parseInput(activeFlow))
+                activeFlow.type === 'sync'
+                    ? nodeSnippet(activeFlow.models, account.secret_key, connectionId, integration.unique_key)
+                    : nodeActionSnippet(activeFlow.name, account.secret_key, connectionId, integration.unique_key, parseInput(activeFlow))
             );
 
             const jsonModel = generateResponseModel(
-                activeFlow?.models,
-                Array.isArray(activeFlow?.returns) ? activeFlow?.returns[0] : activeFlow.returns,
-                activeFlow?.type === 'sync'
+                activeFlow.models,
+                Array.isArray(activeFlow.returns) ? activeFlow.returns[0] : activeFlow.returns,
+                activeFlow.type === 'sync'
             );
-            if (activeFlow?.type === 'sync') {
+            if (activeFlow.type === 'sync') {
                 setJsonResponseSnippet(
                     JSON.stringify({ records: [{ ...jsonModel }], next_cursor: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...' }, null, 2)
                 );
@@ -61,7 +61,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                 setJsonResponseSnippet(JSON.stringify(jsonModel, null, 2));
             }
         }
-    }, [activeFlow, account, integration?.unique_key]);
+    }, [activeFlow, account, integration.unique_key]);
 
     const routeToFlow = () => {
         setActiveTab(Tabs.Scripts);
@@ -75,7 +75,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                     <EndpointLabel endpoint={activeFlow?.endpoints[0] as string | FlowEndpoint} type={activeFlow?.type as string} />
                     <AdjustmentsHorizontalIcon onClick={routeToFlow} className="flex h-5 w-5 ml-2 cursor-pointer" />
                 </span>
-                {activeFlow?.description && <span className="mt-2">{activeFlow?.description}</span>}
+                {activeFlow?.description && <span className="mt-2">{activeFlow.description}</span>}
             </div>
             {!activeFlow?.version && activeFlow?.version === null && (
                 <Info size={18} classNames="mt-10 mb-10 z-10" padding="px-4 py-1.5" color="orange">
@@ -94,18 +94,18 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                         <div className="flex items-center space-x-4">
                             <Button
                                 type="button"
-                                variant={`${language === Language.Node ? 'active' : 'hover'}`}
+                                variant={language === Language.Node ? 'active' : 'hover'}
                                 className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
                                 onClick={() => {
                                     if (language !== Language.Node) {
                                         setSyncSnippet(
                                             activeFlow?.type === 'sync'
-                                                ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
+                                                ? nodeSnippet(activeFlow.models, account.secret_key, connectionId, integration.unique_key)
                                                 : nodeActionSnippet(
                                                       activeFlow?.name as string,
-                                                      account?.secret_key,
+                                                      account.secret_key,
                                                       connectionId,
-                                                      integration?.unique_key,
+                                                      integration.unique_key,
                                                       parseInput(activeFlow as Flow)
                                                   )
                                         );
@@ -117,7 +117,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                             </Button>
                             <Button
                                 type="button"
-                                variant={`${language === Language.cURL ? 'active' : 'hover'}`}
+                                variant={language === Language.cURL ? 'active' : 'hover'}
                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                 onClick={() => {
                                     if (language !== Language.cURL) {
@@ -125,9 +125,9 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                             curlSnippet(
                                                 baseUrl,
                                                 activeFlow?.endpoints[0] as NangoSyncEndpoint,
-                                                account?.secret_key,
+                                                account.secret_key,
                                                 connectionId,
-                                                integration?.unique_key,
+                                                integration.unique_key,
                                                 parseInput(activeFlow as Flow)
                                             )
                                         );
@@ -221,12 +221,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                         if (language !== Language.Node) {
                                             setSyncSnippet(
                                                 activeFlow?.type === 'sync'
-                                                    ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
+                                                    ? nodeSnippet(activeFlow.models, account.secret_key, connectionId, integration.unique_key)
                                                     : nodeActionSnippet(
                                                           activeFlow?.name as string,
-                                                          account?.secret_key,
+                                                          account.secret_key,
                                                           connectionId,
-                                                          integration?.unique_key,
+                                                          integration.unique_key,
                                                           parseInput(activeFlow as Flow)
                                                       )
                                             );

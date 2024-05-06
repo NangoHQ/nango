@@ -7,7 +7,7 @@ import type { Account } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 import accountService from './account.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { isCloud } from '../utils/temp/environment/detection.js';
+import { isCloud } from '@nangohq/utils';
 
 const TABLE = '_nango_environments';
 
@@ -136,7 +136,7 @@ class EnvironmentService {
             .select<Account>('_nango_accounts.*')
             .from(TABLE)
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
-            .where({ id: environment_id })
+            .where('_nango_environments.id', environment_id)
             .first();
 
         return result || null;

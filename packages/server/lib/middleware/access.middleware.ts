@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, isBasicAuthEnabled, getLogger } from '@nangohq/utils';
+import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError } from '@nangohq/utils';
 import {
     LogActionEnum,
     ErrorSourceEnum,
@@ -9,10 +9,7 @@ import {
     setAccount,
     setEnvironmentId,
     errorManager,
-    userService,
-    stringifyError,
-    telemetry,
-    MetricTypes
+    userService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
@@ -48,7 +45,7 @@ export class AccessMiddleware {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             return errorManager.errRes(res, 'malformed_auth_header');
         } finally {
-            telemetry.duration(MetricTypes.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start);
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start);
         }
 
         if (accountId == null) {

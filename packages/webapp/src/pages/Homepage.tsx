@@ -8,7 +8,7 @@ export const Homepage: React.FC = () => {
     const navigate = useNavigate();
 
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
     const { meta } = useMeta();
 
     useEffect(() => {

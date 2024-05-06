@@ -1,14 +1,14 @@
 name: Upload integration templates to S3
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-    types:
-      - closed
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+        types:
+            - closed
 
 concurrency:
     group: templates-${{ github.event.pull_request.number || github.ref }}
@@ -21,44 +21,47 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Install nango CLI
               run: |
-                npm install -g nango
-                npm install @tsconfig/node18-strictest-esm --save-dev
+                  npm install -g nango
 
             - name: Get specific changed files
               id: changed-files-specific
               uses: tj-actions/changed-files@v41
               with:
-                files: |
-                  integration-templates/*
-                  integration-templates/**/*
+                  files: |
+                      integration-templates/*
+                      integration-templates/**/*
 
             - name: Process and Upload changed directories to S3
               if: steps.changed-files-specific.outputs.any_changed == 'true'
               run: |
-                wd=$(pwd)
-                for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
-                  dir=$(dirname $file)
+                  wd=$(pwd)
+                  for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
+                    dir=$(dirname $file)
 
-                  mkdir -p /tmp/nango-temp/nango-integrations
+                    dir=${dir//\/syncs/}
+                    dir=${dir//\/actions/}
+                    integration=$(basename $dir)
 
-                  cp -r $dir/* /tmp/nango-temp/nango-integrations/
+                    mkdir -p /tmp/nango-temp/nango-integrations
 
-                  cd /tmp/nango-temp/nango-integrations
-                  nango compile
+                    cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
+                    cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/
 
-                  cp -r dist/ $wd/$dir/
+                    cd /tmp/nango-temp/nango-integrations
+                    nango compile
 
-                  cd -
-                  rm -rf /tmp/nango-temp
+                    cp -r dist/ $wd/$dir/
 
-                  aws s3 sync $dir s3://${{ secrets.AWS_BUCKET_NAME }}/$dir/
-                done
+                    cd -
+                    rm -rf /tmp/nango-temp
+
+                    aws s3 sync $dir s3://${{ secrets.AWS_BUCKET_NAME }}/$dir/
+                  done
               env:
-                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}

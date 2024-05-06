@@ -1,4 +1,4 @@
-import { serializeError } from 'serialize-error';
+import { stringifyError } from '@nangohq/utils';
 
 export class NangoError extends Error {
     public readonly status: number = 500;
@@ -125,6 +125,11 @@ export class NangoError extends Error {
             case 'invalid_oauth_scopes':
                 this.status = 400;
                 this.message = 'The requested OAuth scopes are invalid. OAuth scopes should be comma separated and not an array';
+                break;
+
+            case 'invalid_env':
+                this.status = 400;
+                this.message = "Invalid param 'env'";
                 break;
 
             case 'missing_environment_id':
@@ -563,7 +568,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 // TODO docs link
                 this.message =
-                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/relevant-link).';
+                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
                 break;
 
             default:
@@ -590,7 +595,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
     } else if (err.message) {
         errorMessage = err.message;
     } else if (typeof err === 'object' && Object.keys(err as object).length > 0) {
-        errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+        errorMessage = stringifyError(err, { pretty: true, stack: true });
     } else {
         errorMessage = String(err);
     }
@@ -602,7 +607,3 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
 
     return { success: false, error, response: null };
 };
-
-export function stringifyError(err: unknown) {
-    return JSON.stringify(serializeError(err));
-}

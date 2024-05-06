@@ -10,8 +10,11 @@ import { useEditAccountNameAPI, useGetAccountAPI } from '../utils/api';
 import type { User, InvitedUser } from '../types';
 import { formatDateToUSFormat } from '../utils/utils';
 import { Admin } from './AccountSettings/Admin';
+import { useStore } from '../store';
 
 export default function AccountSettings() {
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [accountName, setAccountName] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
@@ -21,8 +24,8 @@ export default function AccountSettings() {
 
     const [accountEditMode, setAccountEditMode] = useState(false);
 
-    const getAccountInfo = useGetAccountAPI();
-    const editAccountNameAPI = useEditAccountNameAPI();
+    const getAccountInfo = useGetAccountAPI(env);
+    const editAccountNameAPI = useEditAccountNameAPI(env);
 
     const formRef = useRef<HTMLFormElement>(null);
     const { setVisible, bindings } = useModal();
@@ -92,7 +95,7 @@ export default function AccountSettings() {
 
         setVisible(false);
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             toast.success('Member suspended!', { position: toast.POSITION.BOTTOM_CENTER });
             setMembers(members.filter((m) => m.id !== pendingSuspendMember.id));
         }
@@ -106,7 +109,7 @@ export default function AccountSettings() {
             email: { value: string };
         };
 
-        const res = await fetch('/api/v1/users/invite', {
+        const res = await fetch(`/api/v1/users/invite?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -117,7 +120,7 @@ export default function AccountSettings() {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             toast.success('Member invited!', { position: toast.POSITION.BOTTOM_CENTER });
             setInvitedMembers([...invitedMembers, await res.json()]);
             setInviteVisible(false);
@@ -129,7 +132,7 @@ export default function AccountSettings() {
 
     const handleSubmit = () => {
         if (formRef.current) {
-            const submitButton = formRef.current?.querySelector('button[type="submit"]');
+            const submitButton = formRef.current.querySelector('button[type="submit"]');
             if (submitButton) {
                 (submitButton as HTMLElement).click();
             }

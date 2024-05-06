@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
-import compileService from './compile.service.js';
+import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
 import type { DeployOptions } from '../types.js';
@@ -35,7 +35,7 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        await compileService.run(debug);
+        await compileAllFiles({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -71,8 +71,8 @@ class DeployService {
                 .then(() => {
                     console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
                 })
-                .catch((err: any) => {
-                    const errorMessage = JSON.stringify(err.response.data, null, 2);
+                .catch((err: unknown) => {
+                    const errorMessage = JSON.stringify(err instanceof AxiosError ? err.response?.data : err, null, 2);
                     console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                     process.exit(1);
                 });
@@ -108,7 +108,7 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        await compileService.run(debug);
+        await compileAllFiles({ debug });
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -160,7 +160,11 @@ class DeployService {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
                 }
-            } catch (err) {
+            } catch (err: any) {
+                if (err?.response?.data?.error) {
+                    console.log(chalk.red(err.response.data.error));
+                    process.exit(1);
+                }
                 let errorMessage;
                 if (err instanceof AxiosError) {
                     const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
@@ -194,8 +198,9 @@ class DeployService {
                     console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
                 }
             })
-            .catch((err) => {
-                const errorMessage = JSON.stringify(err instanceof AxiosError ? err.response?.data : err, null, 2);
+            .catch((err: unknown) => {
+                const errorMessage =
+                    err instanceof AxiosError ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
                 console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                 process.exit(1);
             });
@@ -227,7 +232,11 @@ class DeployService {
             for (const flow of flows) {
                 const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = flow;
 
-                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
+                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
+                    syncName,
+                    providerConfigKey,
+                    './'
+                );
 
                 const metadata = {} as NangoConfigMetadata;
 
@@ -270,7 +279,7 @@ class DeployService {
                     printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
                 }
 
-                if (flow?.input?.fields) {
+                if (flow.input?.fields) {
                     model_schema.push(flow.input);
                 }
 
@@ -284,12 +293,12 @@ class DeployService {
                     auto_start: flow.auto_start === false ? false : true,
                     attributes: flow.attributes || {},
                     metadata: metadata || {},
-                    input: flow?.input?.name || '',
+                    input: flow.input?.name || '',
                     sync_type: flow.sync_type as SyncType,
                     type,
                     fileBody: {
-                        js: localFileService.getIntegrationFile(syncName, './') as string,
-                        ts: localFileService.getIntegrationTsFile(syncName, './') as string
+                        js: localFileService.getIntegrationFile(syncName, providerConfigKey, './') as string,
+                        ts: localFileService.getIntegrationTsFile(syncName, providerConfigKey, type) as string
                     },
                     model_schema: JSON.stringify(model_schema),
                     endpoints: flow.endpoints,

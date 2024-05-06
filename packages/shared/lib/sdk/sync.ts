@@ -6,8 +6,7 @@ import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import { getLogger } from '../utils/temp/logger.js';
-import telemetry, { MetricTypes } from '../utils/telemetry.js';
+import { getLogger, metrics } from '@nangohq/utils';
 
 const logger = getLogger('SDK');
 
@@ -220,14 +219,29 @@ export class ActionError<T = Record<string, unknown>> extends Error {
     }
 }
 
+interface RunArgs {
+    sync: string;
+    connectionId: string;
+    lastSyncDate?: string;
+    useServerLastSyncDate?: boolean;
+    input?: object;
+    metadata?: Metadata;
+    autoConfirm: boolean;
+    debug: boolean;
+}
+
+export interface DryRunServiceInterface {
+    run: (options: RunArgs, environment?: string, debug?: boolean) => Promise<string | void>;
+}
+
 export interface NangoProps {
     host?: string;
     secretKey: string;
     accountId?: number;
-    connectionId?: string;
+    connectionId: string;
     environmentId?: number;
     activityLogId?: number;
-    providerConfigKey?: string;
+    providerConfigKey: string;
     provider?: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
@@ -239,6 +253,7 @@ export interface NangoProps {
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
 }
 
 interface EnvironmentVariable {
@@ -249,7 +264,7 @@ interface EnvironmentVariable {
 const MEMOIZED_CONNECTION_TTL = 60000;
 
 export class NangoAction {
-    private nango: Nango;
+    protected nango: Nango;
     private attributes = {};
     activityLogId?: number;
     syncId?: string;
@@ -258,9 +273,10 @@ export class NangoAction {
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
 
-    public connectionId?: string;
-    public providerConfigKey?: string;
+    public connectionId: string;
+    public providerConfigKey: string;
     public provider?: string;
 
     public ActionError = ActionError;
@@ -271,6 +287,9 @@ export class NangoAction {
     >();
 
     constructor(config: NangoProps) {
+        this.connectionId = config.connectionId;
+        this.providerConfigKey = config.providerConfigKey;
+
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
@@ -296,14 +315,6 @@ export class NangoAction {
             this.dryRun = config.dryRun;
         }
 
-        if (config.connectionId) {
-            this.connectionId = config.connectionId;
-        }
-
-        if (config.providerConfigKey) {
-            this.providerConfigKey = config.providerConfigKey;
-        }
-
         if (config.environmentId) {
             this.environmentId = config.environmentId;
         }
@@ -318,6 +329,10 @@ export class NangoAction {
 
         if (config.abortSignal) {
             this.abortSignal = config.abortSignal;
+        }
+
+        if (config.dryRunService) {
+            this.dryRunService = config.dryRunService;
         }
     }
 
@@ -439,7 +454,7 @@ export class NangoAction {
 
     public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials> {
         this.exitSyncIfAborted();
-        return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
+        return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
@@ -452,7 +467,7 @@ export class NangoAction {
         const cachedConnection = this.memoizedConnections.get(credentialsPair);
 
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
+            const connection = await this.nango.getConnection(providerConfigKey, connectionId);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
@@ -462,27 +477,27 @@ export class NangoAction {
 
     public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         this.exitSyncIfAborted();
-        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+        return this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
     }
 
     public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         this.exitSyncIfAborted();
-        return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+        return this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
     }
 
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
         logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
-        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
+        return this.nango.setMetadata(this.providerConfigKey, this.connectionId, fieldMapping);
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
         this.exitSyncIfAborted();
-        return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        return this.nango.getMetadata(this.providerConfigKey, this.connectionId);
     }
 
     public async getWebhookURL(): Promise<string | undefined> {
         this.exitSyncIfAborted();
-        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey!, true);
+        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey, true);
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
@@ -491,7 +506,7 @@ export class NangoAction {
 
     public async getFieldMapping(): Promise<Metadata> {
         logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
-        const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        const metadata = await this.nango.getMetadata(this.providerConfigKey, this.connectionId);
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 
@@ -539,6 +554,9 @@ export class NangoAction {
         const response = await persistApi({
             method: 'POST',
             url: `/environment/${this.environmentId}/log`,
+            headers: {
+                Authorization: `Bearer ${this.nango.secretKey}`
+            },
             data: {
                 activityLogId: this.activityLogId,
                 level: userDefinedLevel?.level ?? 'info',
@@ -548,7 +566,7 @@ export class NangoAction {
 
         if (response.status > 299) {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
+            throw new Error(`Failed to log: ${'error' in response.data ? response.data.error : JSON.stringify(response.data)}`);
         }
 
         return;
@@ -572,7 +590,7 @@ export class NangoAction {
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         const template = configService.getTemplate(this.provider as string);
-        const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
+        const templatePaginationConfig: Pagination | undefined = template.proxy.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
             throw Error('There was no pagination configuration for this integration or configuration passed in.');
@@ -624,6 +642,19 @@ export class NangoAction {
 
     public async triggerAction<T = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<T> {
         return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input) as T;
+    }
+
+    public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {
+        if (this.dryRun && this.dryRunService) {
+            return this.dryRunService.run({
+                sync: syncName,
+                connectionId,
+                autoConfirm: true,
+                debug: false
+            });
+        } else {
+            return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
+        }
     }
 }
 
@@ -689,9 +720,11 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.added = Number(this.logMessages?.counts.added) + results.length;
+                this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
             }
             return null;
         }
@@ -701,6 +734,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'POST',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -735,9 +771,11 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.deleted = Number(this.logMessages?.counts.deleted) + results.length;
+                this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
             }
             return null;
         }
@@ -747,6 +785,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'DELETE',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -781,9 +822,11 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.updated = Number(this.logMessages?.counts.updated) + results.length;
+                this.logMessages.counts.updated = Number(this.logMessages.counts.updated) + results.length;
             }
             return null;
         }
@@ -793,6 +836,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'PUT',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -837,7 +883,9 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
     'getEnvironmentVariables',
     'getMetadata',
     'proxy',
-    'log'
+    'log',
+    'triggerAction',
+    'triggerSync'
 ];
 
 /* eslint-disable no-inner-declarations */
@@ -853,7 +901,7 @@ export function instrumentSDK(rawNango: NangoAction | NangoSync) {
                 return target[propKey];
             }
 
-            return telemetry.time(`${MetricTypes.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
+            return metrics.time(`${metrics.Types.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
         }
     });
 }

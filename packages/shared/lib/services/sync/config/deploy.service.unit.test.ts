@@ -5,9 +5,11 @@ import environmentService from '../../environment.service.js';
 import * as SyncConfigService from './config.service.js';
 import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
+import connectionService from '../../connection.service.js';
 import configService from '../../config.service.js';
 import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../../activity/mocks.js';
 import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
+import { logContextGetter } from '@nangohq/logs';
 
 describe('Sync config create', () => {
     const environment_id = 1;
@@ -27,7 +29,7 @@ describe('Sync config create', () => {
         mockAddEndTime();
 
         // empty sync config should return back an empty array
-        const emptyConfig = await DeployConfigService.deploy(environment_id, syncs, '', debug);
+        const emptyConfig = await DeployConfigService.deploy(environment_id, syncs, '', logContextGetter, debug);
 
         expect(emptyConfig).not.toBe([]);
     });
@@ -53,8 +55,8 @@ describe('Sync config create', () => {
             return Promise.resolve(null);
         });
 
-        const { error } = await DeployConfigService.deploy(environment_id, syncs, '', debug);
-        await expect(error?.message).toBe(
+        const { error } = await DeployConfigService.deploy(environment_id, syncs, '', logContextGetter, debug);
+        expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
   "providerConfigKey": "google-wrong"
 }`
@@ -106,7 +108,8 @@ describe('Sync config create', () => {
                     runs: 'every 6h',
                     auto_start: true,
                     track_deletes: false,
-                    version: '1'
+                    version: '1',
+                    enabled: true
                 }
             ]);
         });
@@ -125,7 +128,8 @@ describe('Sync config create', () => {
                 runs: 'every 6h',
                 auto_start: true,
                 track_deletes: false,
-                version: '1'
+                version: '1',
+                enabled: true
             });
         });
 
@@ -143,15 +147,20 @@ describe('Sync config create', () => {
                 runs: 'every 6h',
                 auto_start: true,
                 track_deletes: false,
-                version: '1'
+                version: '1',
+                enabled: true
             });
+        });
+
+        vi.spyOn(connectionService, 'shouldCapUsage').mockImplementation(() => {
+            return Promise.resolve(false);
         });
 
         vi.spyOn(SyncService, 'getSyncsByProviderConfigAndSyncName').mockImplementation(() => {
             return Promise.resolve([]);
         });
 
-        await expect(DeployConfigService.deploy(environment_id, syncs, '', debug)).rejects.toThrowError(
+        await expect(DeployConfigService.deploy(environment_id, syncs, '', logContextGetter, debug)).rejects.toThrowError(
             'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
         );
     });

@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import providerClientManager from '../clients/provider.client.js';
 import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
     Template as ProviderTemplate,
@@ -24,10 +23,10 @@ import configService from '../services/config.service.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
-import { NangoError, stringifyError } from '../utils/error.js';
+import { NangoError } from '../utils/error.js';
 
 import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
-import { getLogger } from '../utils/temp/logger.js';
+import { getLogger, stringifyError } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
@@ -48,6 +47,8 @@ import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 
 const logger = getLogger('Connection');
 
@@ -187,7 +188,8 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: {},
                 connection_config: {},
-                environment_id
+                environment_id,
+                config_id: config_id!
             },
             ['id']
         );
@@ -203,7 +205,8 @@ class ConnectionService {
         provider: string,
         environmentId: number,
         accountId: number,
-        parsedRawCredentials: ImportedCredentials
+        parsedRawCredentials: ImportedCredentials,
+        logContextGetter: LogContextGetter
     ) {
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
@@ -219,16 +222,17 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            await connectionCreatedHook(
+            void connectionCreatedHook(
                 {
                     id: importedConnection?.id,
                     connection_id,
                     provider_config_key,
                     environment_id: environmentId,
                     auth_mode: ProviderAuthModes.OAuth2,
-                    operation: importedConnection?.operation as AuthOperation
+                    operation: importedConnection?.operation
                 },
                 provider,
+                logContextGetter,
                 null
             );
         }
@@ -242,7 +246,8 @@ class ConnectionService {
         provider: string,
         environmentId: number,
         accountId: number,
-        credentials: BasicApiCredentials | ApiKeyCredentials
+        credentials: BasicApiCredentials | ApiKeyCredentials,
+        logContextGetter: LogContextGetter
     ) {
         const connection = await this.checkIfConnectionExists(connection_id, provider_config_key, environmentId);
 
@@ -253,7 +258,7 @@ class ConnectionService {
         const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            await connectionCreatedHook(
+            void connectionCreatedHook(
                 {
                     id: importedConnection.id,
                     connection_id,
@@ -263,6 +268,7 @@ class ConnectionService {
                     operation: importedConnection.operation
                 },
                 provider,
+                logContextGetter,
                 null
             );
         }
@@ -440,6 +446,27 @@ class ConnectionService {
         return result;
     }
 
+    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<NangoConnection[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - days);
+
+        const result = await db
+            .knex('_nango_connections')
+            .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
+            .select('connection_id', '_nango_connections.environment_id', 'unique_key as provider_config_key', 'account_id')
+            .where('last_fetched_at', '<', dateThreshold)
+            .orWhere('last_fetched_at', null)
+            .andWhere('_nango_connections.deleted', false)
+            .limit(limit);
+
+        if (!result || result.length === 0) {
+            return [];
+        }
+
+        return result;
+    }
+
     public async replaceMetadata(connection: Connection, metadata: Metadata) {
         await db.knex
             .from<StoredConnection>(`_nango_connections`)
@@ -540,7 +567,9 @@ class ConnectionService {
         environmentId: number,
         connectionId: string,
         providerConfigKey: string,
+        logContextGetter: LogContextGetter,
         activityLogId?: number | null | undefined,
+        logCtx?: LogContext,
         action?: LogAction,
         instantRefresh = false
     ): Promise<ServiceResponse<Connection>> {
@@ -580,8 +609,9 @@ class ConnectionService {
 
         const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key, environmentId);
 
-        if (activityLogId) {
-            await updateProviderActivityLog(activityLogId, config?.provider as string);
+        if (activityLogId && config) {
+            await updateProviderActivityLog(activityLogId, config.provider);
+            await logCtx?.enrichOperation({ configId: config.id!, configName: config.unique_key });
         }
 
         if (config === null) {
@@ -593,6 +623,9 @@ class ConnectionService {
                     content: `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`,
                     timestamp: Date.now()
                 });
+                await logCtx?.error(
+                    `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`
+                );
             }
 
             const error = new NangoError('unknown_provider_config');
@@ -617,7 +650,8 @@ class ConnectionService {
                 activityLogId,
                 environment_id: environmentId,
                 instantRefresh,
-                logAction: action
+                logAction: action,
+                logContextGetter
             });
 
             if (!success) {
@@ -716,7 +750,8 @@ class ConnectionService {
         activityLogId = null,
         environment_id,
         instantRefresh = false,
-        logAction = 'token'
+        logAction = 'token',
+        logContextGetter
     }: {
         connection: Connection;
         providerConfig: ProviderConfig;
@@ -725,6 +760,7 @@ class ConnectionService {
         environment_id: number;
         instantRefresh?: boolean;
         logAction?: LogAction | undefined;
+        logContextGetter: LogContextGetter;
     }): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
@@ -775,7 +811,7 @@ class ConnectionService {
                 return { success: true, error: null, response: newCredentials };
             } catch (e: any) {
                 if (activityLogId && logAction === 'token') {
-                    await this.logErrorActivity(activityLogId, environment_id, `Refresh oauth2 token call failed`);
+                    await this.logErrorActivity(activityLogId, environment_id, `Refresh oauth2 token call failed`, logContextGetter);
                 }
 
                 const errorMessage = e.message || 'Unknown error';
@@ -862,7 +898,9 @@ class ConnectionService {
         integration: ProviderConfig,
         template: ProviderTemplate,
         connectionConfig: ConnectionConfig,
-        activityLogId: number
+        activityLogId: number,
+        logCtx: LogContext,
+        logContextGetter: LogContextGetter
     ): Promise<void> {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
@@ -884,7 +922,7 @@ class ConnectionService {
         );
 
         if (updatedConnection) {
-            await connectionCreatedHook(
+            void connectionCreatedHook(
                 {
                     id: updatedConnection.id,
                     connection_id: connectionId,
@@ -894,10 +932,12 @@ class ConnectionService {
                     operation: updatedConnection.operation
                 },
                 integration.provider,
+                logContextGetter,
                 activityLogId,
                 // the connection is complete so we want to initiate syncs
                 // the post connection script has run already because we needed to get the github handle
-                { initiateSync: true, runPostConnectionScript: false }
+                { initiateSync: true, runPostConnectionScript: false },
+                logCtx
             );
         }
 
@@ -908,6 +948,7 @@ class ConnectionService {
             content: 'App connection was approved and credentials were saved',
             timestamp: Date.now()
         });
+        await logCtx.info('App connection was approved and credentials were saved');
 
         await updateSuccessActivityLog(Number(activityLogId), true);
     }
@@ -959,11 +1000,22 @@ class ConnectionService {
         client_secret: string
     ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
         const url = template.authorization_url;
+        let authorizationParams = '';
+
+        if (template.authorization_params && Object.keys(template.authorization_params).length > 0) {
+            authorizationParams = new URLSearchParams(template.authorization_params).toString();
+        }
         try {
             const params = new URLSearchParams();
             params.append('client_id', client_id);
             params.append('client_secret', client_secret);
 
+            if (authorizationParams) {
+                const authorizationParamsEntries = new URLSearchParams(authorizationParams).entries();
+                for (const [key, value] of authorizationParamsEntries) {
+                    params.append(key, value);
+                }
+            }
             const fullUrl = `${url}?${params}`;
             const response = await axios.post(fullUrl);
 
@@ -990,14 +1042,30 @@ class ConnectionService {
         }
     }
 
+    public async shouldCapUsage({ providerConfigKey, environmentId }: { providerConfigKey: string; environmentId: number }): Promise<boolean> {
+        const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+
+        if (!connections) {
+            return false;
+        }
+
+        if (connections.length > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+            logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+            void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_ACTIVATE, environmentId);
+            return true;
+        }
+
+        return false;
+    }
+
     private async getJWTCredentials(
         privateKey: string,
         url: string,
         payload: Record<string, string | number>,
         additionalApiHeaders: Record<string, string> | null,
         options: object
-    ): Promise<ServiceResponse<any>> {
-        const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+    ): Promise<ServiceResponse> {
+        const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
 
         if (!hasLineBreak) {
             privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
@@ -1060,8 +1128,8 @@ class ConnectionService {
         providerConfig: ProviderConfig,
         template: ProviderTemplate
     ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials>> {
-        if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-            const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
+        if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
+            const rawCreds = await providerClient.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
@@ -1101,7 +1169,7 @@ class ConnectionService {
         }
     }
 
-    private async logErrorActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
+    private async logErrorActivity(activityLogId: number, environment_id: number, message: string, logContextGetter: LogContextGetter): Promise<void> {
         await updateActivityLogAction(activityLogId, 'token');
         await createActivityLogMessage({
             level: 'error',
@@ -1110,6 +1178,8 @@ class ConnectionService {
             content: message,
             timestamp: Date.now()
         });
+        const logCtx = logContextGetter.get({ id: String(activityLogId) });
+        await logCtx.error(message);
     }
 }
 

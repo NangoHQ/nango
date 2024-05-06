@@ -11,18 +11,17 @@ import {
     createSchedule,
     ScheduleStatus,
     SyncClient,
-    resultOk,
     DEMO_GITHUB_CONFIG_KEY,
     DEMO_SYNC_NAME
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
-import { nanoid } from 'nanoid';
+import { nanoid, resultOk } from '@nangohq/utils';
 
 describe('Auto Idle Demo', async () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
-        env = await seeders.createEnvironmentSeed('dev');
+        env = await seeders.createEnvironmentSeed(0, 'dev');
         await seeders.createConfigSeeds(env);
     });
 

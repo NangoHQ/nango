@@ -6,10 +6,16 @@
     },
     "references": [
         {
+            "path": "../logs"
+        },
+        {
             "path": "../shared"
         },
         {
             "path": "../node-client"
+        },
+        {
+            "path": "../types"
         },
         {
             "path": "../utils"

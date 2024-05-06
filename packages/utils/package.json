@@ -5,9 +5,8 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
-    "scripts": {
-        "build": "rimraf ./dist && tsc"
-    },
+    "private": true,
+    "scripts": {},
     "keywords": [],
     "repository": {
         "type": "git",
@@ -16,11 +15,17 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "winston": "3.8.2",
+        "dd-trace": "5.2.0",
+        "nanoid": "5.0.7",
         "serialize-error": "11.0.3",
+        "winston": "3.8.2",
         "zod": "3.22.4"
     },
     "devDependencies": {
-        "vitest": "1.4.0"
-    }
+        "rimraf": "3.0.2",
+        "vitest": "0.33.0"
+    },
+    "files": [
+        "dist/**/*"
+    ]
 }

@@ -3,26 +3,34 @@ import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import type { FormattedRecord, UnencryptedRecordData } from '../types.js';
-import { NangoError, resultErr, resultOk } from '@nangohq/shared';
-import type { Result } from '@nangohq/shared';
+import { resultErr, resultOk } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
-export const formatRecords = (
-    data: UnencryptedRecordData[],
-    connection_id: number,
-    model: string,
-    syncId: string,
-    sync_job_id: number,
+export const formatRecords = ({
+    data,
+    connectionId,
+    model,
+    syncId,
+    syncJobId,
     softDelete = false
-): Result<FormattedRecord[]> => {
+}: {
+    data: UnencryptedRecordData[];
+    connectionId: number;
+    model: string;
+    syncId: string;
+    syncJobId: number;
+    softDelete?: boolean;
+}): Result<FormattedRecord[]> => {
     // hashing unique composite key (connection, model, external_id)
     // to generate stable record ids across script executions
     const stableId = (unencryptedData: UnencryptedRecordData): string => {
-        const namespace = uuid.v5(`${connection_id}${model}`, uuid.NIL);
-        return uuid.v5(`${connection_id}${model}${unencryptedData.id}`, namespace);
+        const namespace = uuid.v5(`${connectionId}${model}`, uuid.NIL);
+        return uuid.v5(`${connectionId}${model}${unencryptedData.id}`, namespace);
     };
     const formattedRecords: FormattedRecord[] = [];
+    const now = new Date();
     for (const datum of data) {
         const data_hash = md5(JSON.stringify(datum));
 
@@ -31,25 +39,25 @@ export const formatRecords = (
         }
 
         if (!datum['id']) {
-            const error = new NangoError('missing_id_field', model);
+            const error = new Error(`Missing id field in record: ${JSON.stringify(datum)}. Model: ${model}`);
             return resultErr(error);
         }
 
         const formattedRecord: FormattedRecord = {
             id: stableId(datum),
             json: datum,
-            external_id: datum['id'],
+            external_id: String(datum['id']),
             data_hash,
             model,
-            connection_id,
+            connection_id: connectionId,
             sync_id: syncId,
-            sync_job_id
+            sync_job_id: syncJobId
         };
 
         if (softDelete) {
             const deletedAt = datum['deletedAt'];
-            formattedRecord.updated_at = new Date();
-            formattedRecord.deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : new Date();
+            formattedRecord.updated_at = now;
+            formattedRecord.deleted_at = deletedAt ? dayjs(deletedAt as string).toDate() : now;
         } else {
             formattedRecord.deleted_at = null;
         }

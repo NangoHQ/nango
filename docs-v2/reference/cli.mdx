@@ -13,7 +13,19 @@ npm install nango -g
 
 In the folder where you want your integration folder (e.g. root of your project), run:
 ```bash
-nango init # Creates `./nango-integrations` with initial config
+nango init
+```
+
+This creates the `./nango-integrations` folder with some initial configuration and an example
+sync script. The `nango-integrations` directory looks like this:
+```
+nango-integrations/
+├── .env
+├── nango.yaml
+├── models.ts
+└── demo-github-integration # this is the integration unique ID and must match the nango.yaml entry and the integration ID in the UI
+    └── syncs/
+        └── github-issue-example.ts
 ```
 
 ### CLI Authentication
@@ -42,13 +54,14 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
-| Command | Description | Details |
-| - | - | - |
-| `nango init` | Creates the `nango-integrations` directory with a demo Github integration. | Generates `models.ts`, but not the compiled `.js` files. |
-| `nango dev` | Necessary to edit integration configurations and scripts. | Watches the `nango.yaml` and integration scripts, re-generates `models.ts` and compiled `.js` files. |
-| `nango generate` | Generates an integration script `.ts` file with initial scaffold when new syncs appear in your `nango.yaml`. | Re-generates `models.ts`, not the compiled `.js` files. |
-| `nango dryrun <params>` | Lets you test integration scripts locally. | |
-| `nango deploy <env>` | Lets you deploy your sync to your `dev` or `prod environment` | Generates the compiled `.js` files. |
+| Command                        | Description                                                                                                                                       | Details                                                                                              |
+| -                              | -                                                                                                                                                 | -                                                                                                    |
+| `nango init`                   | Creates the `nango-integrations` directory with a demo Github integration.                                                                        | Generates `models.ts`, but not the compiled `.js` files.                                             |
+| `nango dev`                    | Necessary to edit integration configurations and scripts.                                                                                         | Watches the `nango.yaml` and integration scripts, re-generates `models.ts` and compiled `.js` files. |
+| `nango generate`               | Generates an integration script `.ts` file with initial scaffold when new syncs appear in your `nango.yaml`.                                      | Re-generates `models.ts`, not the compiled `.js` files.                                              |
+| `nango dryrun <params>`        | Lets you test integration scripts locally.                                                                                                        |                                                                                                      |
+| `nango deploy <env>`           | Lets you deploy your sync to your `dev` or `prod` environment                                                                                     | Generates the compiled `.js` files.                                                                  |
+| `nango migrate-to-directories` | For earlier iterations of the nango-integrations directory all script files were located at the root level of the `nango-integrations directory`. | Moves the script files to `syncs` and `actions` directory within the integration name.               |
 
 
 ## Flags & environment variables

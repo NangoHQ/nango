@@ -6,13 +6,15 @@ import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
 import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Connection.js';
-import type { Environment, SyncResult } from '../../models/index.js';
+import type { Account, Config, Environment, SyncResult } from '../../models/index.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import { WebhookType } from '../../models/Webhook.js';
 import environmentService from '../environment.service.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { stringifyError } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -37,7 +39,13 @@ const NON_FORWARDABLE_HEADERS = [
 ];
 
 class WebhookService {
-    private retry = async (activityLogId: number | null, environment_id: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+    private retry = async (
+        activityLogId: number | null,
+        environment_id: number,
+        logCtx?: LogContext | null | undefined,
+        error?: AxiosError,
+        attemptNumber?: number
+    ): Promise<boolean> => {
         if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
             const content = `Webhook response received an ${
                 error?.response?.status || error?.code
@@ -54,6 +62,7 @@ class WebhookService {
                     },
                     false
                 );
+                await logCtx?.error(content);
             }
 
             return true;
@@ -114,6 +123,7 @@ class WebhookService {
         syncType: SyncType,
         now: Date | undefined,
         activityLogId: number,
+        logCtx: LogContext,
         environment_id: number
     ) {
         const { environmentInfo } = await this.shouldSendWebhook(nangoConnection.environment_id);
@@ -135,6 +145,7 @@ class WebhookService {
                 content: `There were no added, updated, or deleted results. No webhook sent, as per your environment settings.`,
                 timestamp: Date.now()
             });
+            await logCtx.info('There were no added, updated, or deleted results. No webhook sent, as per your environment settings');
 
             return;
         }
@@ -175,7 +186,7 @@ class WebhookService {
                 () => {
                     return axios.post(webhookUrl, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id, logCtx) }
             );
 
             if (response.status >= 200 && response.status < 300) {
@@ -186,6 +197,7 @@ class WebhookService {
                     content: `Sync webhook sent successfully and received with a ${response.status} response code to ${webhookUrl} ${endingMessage}`,
                     timestamp: Date.now()
                 });
+                await logCtx.info(`Sync webhook sent successfully and received with a ${response.status} response code to ${webhookUrl} ${endingMessage}`);
             } else {
                 await createActivityLogMessage({
                     level: 'error',
@@ -194,9 +206,12 @@ class WebhookService {
                     content: `Sync webhook sent successfully to ${webhookUrl} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
                     timestamp: Date.now()
                 });
+                await logCtx.error(
+                    `Sync webhook sent successfully to ${webhookUrl} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
+                );
             }
         } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(e, { pretty: true });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -205,10 +220,17 @@ class WebhookService {
                 content: `Sync webhook failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                 timestamp: Date.now()
             });
+            await logCtx.error(`Sync webhook failed to send to ${webhookUrl}`, { error: e });
         }
     }
 
-    async sendAuthUpdate(connection: RecentlyCreatedConnection, provider: string, success: boolean, activityLogId: number | null): Promise<void> {
+    async sendAuthUpdate(
+        connection: RecentlyCreatedConnection,
+        provider: string,
+        success: boolean,
+        activityLogId: number | null,
+        logCtx?: LogContext | null
+    ): Promise<void> {
         const { send, environmentInfo } = await this.shouldSendWebhook(connection.environment_id, { auth: true });
 
         if (!send || !environmentInfo) {
@@ -243,7 +265,7 @@ class WebhookService {
                 () => {
                     return axios.post(webhookUrl as string, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id, logCtx) }
             );
 
             if (activityLogId) {
@@ -255,6 +277,7 @@ class WebhookService {
                         content: `Auth webhook sent successfully and received with a ${response.status} response code to ${webhookUrl}`,
                         timestamp: Date.now()
                     });
+                    await logCtx?.info(`Auth webhook sent successfully and received with a ${response.status} response code to ${webhookUrl}`);
                 } else {
                     await createActivityLogMessage({
                         level: 'error',
@@ -263,11 +286,14 @@ class WebhookService {
                         content: `Auth Webhook sent successfully to ${webhookUrl} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
                         timestamp: Date.now()
                     });
+                    await logCtx?.error(
+                        `Auth Webhook sent successfully to ${webhookUrl} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
+                    );
                 }
             }
-        } catch (e) {
+        } catch (err) {
             if (activityLogId) {
-                const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+                const errorMessage = stringifyError(err, { pretty: true });
 
                 await createActivityLogMessage({
                     level: 'error',
@@ -276,42 +302,58 @@ class WebhookService {
                     content: `Auth Webhook failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                     timestamp: Date.now()
                 });
+                await logCtx?.error(`Auth Webhook failed to send to ${webhookUrl}`, { error: err });
             }
         }
     }
-    async forward(
-        environment_id: number,
-        providerConfigKey: string,
-        connectionIds: string[],
-        provider: string,
-        payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, string>
-    ) {
-        const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
+
+    async forward({
+        integration,
+        account,
+        connectionIds,
+        payload,
+        webhookOriginalHeaders,
+        logContextGetter
+    }: {
+        integration: Config;
+        account: Account;
+        connectionIds: string[];
+        payload: Record<string, any> | null;
+        webhookOriginalHeaders: Record<string, string>;
+        logContextGetter: LogContextGetter;
+    }) {
+        const { send, environmentInfo } = await this.shouldSendWebhook(integration.environment_id, { forward: true });
 
         if (!send || !environmentInfo) {
             return;
         }
 
         if (!connectionIds || connectionIds.length === 0) {
-            await this.forwardHandler(environment_id, providerConfigKey, '', provider, payload, webhookOriginalHeaders);
+            await this.forwardHandler({ integration, account, connectionId: '', payload, webhookOriginalHeaders, logContextGetter });
             return;
         }
 
         for (const connectionId of connectionIds) {
-            await this.forwardHandler(environment_id, providerConfigKey, connectionId, provider, payload, webhookOriginalHeaders);
+            await this.forwardHandler({ integration, account, connectionId, payload, webhookOriginalHeaders, logContextGetter });
         }
     }
 
-    async forwardHandler(
-        environment_id: number,
-        providerConfigKey: string,
-        connectionId: string,
-        provider: string,
-        payload: Record<string, any> | null,
-        webhookOriginalHeaders: Record<string, string>
-    ) {
-        const { send, environmentInfo } = await this.shouldSendWebhook(environment_id, { forward: true });
+    async forwardHandler({
+        integration,
+        account,
+        connectionId,
+        payload,
+        webhookOriginalHeaders,
+        logContextGetter
+    }: {
+        integration: Config;
+        account: Account;
+        connectionId: string;
+        payload: Record<string, any> | null;
+        webhookOriginalHeaders: Record<string, string>;
+        logContextGetter: LogContextGetter;
+    }) {
+        const { send, environmentInfo } = await this.shouldSendWebhook(integration.environment_id, { forward: true });
 
         if (!send || !environmentInfo) {
             return;
@@ -327,17 +369,21 @@ class WebhookService {
             end: Date.now(),
             timestamp: Date.now(),
             connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            provider: provider,
-            environment_id: environment_id
+            provider_config_key: integration.unique_key,
+            provider: integration.provider,
+            environment_id: integration.environment_id
         };
 
         const activityLogId = await createActivityLog(log);
+        const logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
+            { account: { id: account.id }, environment: { id: integration.environment_id }, config: { id: integration.id! } }
+        );
 
         const body: NangoForwardWebhookBody = {
-            from: provider,
+            from: integration.provider,
             connectionId,
-            providerConfigKey,
+            providerConfigKey: integration.unique_key,
             type: WebhookType.FORWARD,
             payload: payload
         };
@@ -355,40 +401,50 @@ class WebhookService {
                 () => {
                     return axios.post(environmentInfo.webhook_url as string, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId as number, environment_id) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId as number, integration.environment_id, logCtx) }
             );
 
             if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessageAndEnd({
                     level: 'info',
-                    environment_id,
+                    environment_id: integration.environment_id,
                     activity_log_id: activityLogId as number,
                     content: `Webhook forward was sent successfully and received with a ${
                         response.status
                     } response code to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
                     timestamp: Date.now()
                 });
+                await logCtx.info('Webhook forward was sent successfully', { status: response.status, body: body, webhookUrl });
+                await logCtx.success();
             } else {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id,
+                    environment_id: integration.environment_id,
                     activity_log_id: activityLogId as number,
                     content: `Webhook forward was sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)} but received a ${
                         response.status
                     } response code. Please send a 200 on successful receipt.`,
                     timestamp: Date.now()
                 });
+                await logCtx.error('Webhook forward was sent successfully but received a wrong status code', {
+                    status: response.status,
+                    body: body,
+                    webhookUrl
+                });
+                await logCtx.failed();
             }
         } catch (e) {
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(e, { pretty: true });
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
-                environment_id,
+                environment_id: integration.environment_id,
                 activity_log_id: activityLogId as number,
                 content: `Webhook forward failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                 timestamp: Date.now()
             });
+            await logCtx.error('Webhook forward failed', { error: e, webhookUrl });
+            await logCtx.failed();
         }
     }
 }

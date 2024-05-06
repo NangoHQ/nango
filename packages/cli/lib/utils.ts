@@ -1,5 +1,5 @@
 import https from 'https';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import fs from 'fs';
 import * as os from 'os';
 import npa from 'npm-package-arg';
@@ -224,8 +224,8 @@ export async function getConnection(providerConfigKey: string, connectionId: str
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -240,8 +240,8 @@ export async function getConfig(providerConfigKey: string, debug = false) {
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -265,7 +265,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
         let hasNull = false;
         let hasUndefined = false;
         let tsType = '';
-        if (field.indexOf('null') !== -1) {
+        if (field.includes('null')) {
             field = field.replace(/\s*\|\s*null\s*/g, '');
             hasNull = true;
         }
@@ -277,7 +277,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
             return 'undefined';
         }
 
-        if (field.indexOf('undefined') !== -1) {
+        if (field.includes('undefined')) {
             field = field.replace(/\s*\|\s*undefined\s*/g, '');
             hasUndefined = true;
         }
@@ -327,7 +327,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
 }
 
 export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
-    const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
+    const returnedModels = Object.keys(integrations).reduce<string[]>((acc, providerConfigKey) => {
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
         for (const syncName of syncNames) {
@@ -342,7 +342,7 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
             }
         }
         return acc;
-    }, [] as string[]);
+    }, []);
 
     if (!models) {
         return null;

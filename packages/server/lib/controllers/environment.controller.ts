@@ -80,7 +80,7 @@ class EnvironmentController {
             }
 
             environment.callback_url = await getOauthCallbackUrl(environment.id);
-            const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
+            const webhookBaseUrl = getGlobalWebhookReceiveUrl();
             environment.webhook_receive_url = `${webhookBaseUrl}/${environment.uuid}`;
 
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);

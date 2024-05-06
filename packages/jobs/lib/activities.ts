@@ -22,10 +22,13 @@ import {
     getSyncByIdAndName,
     getLastSyncDate
 } from '@nangohq/shared';
-import { getLogger, env } from '@nangohq/utils';
+import { records as recordsService } from '@nangohq/records';
+import { getLogger, env, stringifyError } from '@nangohq/utils';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
+import type { LogContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Jobs');
 
@@ -61,6 +64,8 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const syncRun = new syncRunService({
         bigQueryClient,
         integrationService,
+        recordsService,
+        logContextGetter,
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
@@ -140,7 +145,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             debug
         );
     } catch (err) {
-        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+        const prettyError = stringifyError(err, { pretty: true });
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -156,12 +161,23 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             operation_name: syncName
         };
         const content = `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`;
-        await createActivityLogAndLogMessage(log, {
+        const activityLogId = await createActivityLogAndLogMessage(log, {
             level: 'error',
             environment_id: environmentId,
             timestamp: Date.now(),
             content
         });
+        const logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
+        );
+        await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', { error: err, syncName });
+        await logCtx.failed();
 
         await telemetry.log(LogTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
@@ -204,6 +220,8 @@ export async function syncProvider(
     debug = false
 ): Promise<boolean | object | null> {
     const action = syncType === SyncType.INITIAL ? LogActionEnum.FULL_SYNC : LogActionEnum.SYNC;
+    let logCtx: LogContext | undefined;
+
     try {
         const log = {
             level: 'info' as LogLevel,
@@ -221,6 +239,16 @@ export async function syncProvider(
         };
         const activityLogId = (await createActivityLog(log)) as number;
 
+        logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
+        );
+
         if (debug) {
             await createActivityLogMessage({
                 level: 'info',
@@ -229,11 +257,21 @@ export async function syncProvider(
                 timestamp: Date.now(),
                 content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
             });
+            await logCtx.info('Starting sync', {
+                syncType,
+                syncName,
+                syncId,
+                syncJobId,
+                attempt: temporalContext.info.attempt,
+                workflowId: temporalContext.info.workflowExecution.workflowId
+            });
         }
 
         const syncRun = new syncRunService({
             bigQueryClient,
             integrationService,
+            recordsService,
+            logContextGetter,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -250,7 +288,7 @@ export async function syncProvider(
 
         return result.response;
     } catch (err) {
-        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+        const prettyError = stringifyError(err, { pretty: true });
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -273,6 +311,10 @@ export async function syncProvider(
             timestamp: Date.now(),
             content
         });
+        if (logCtx) {
+            await logCtx.error('Failed to create the job', { error: err });
+            await logCtx.failed();
+        }
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {
             environmentId: String(nangoConnection?.environment_id),
@@ -322,6 +364,8 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     const syncRun = new syncRunService({
         bigQueryClient,
         integrationService,
+        recordsService,
+        logContextGetter,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,
@@ -384,7 +428,7 @@ export async function reportFailure(
         name,
         connectionId: nangoConnection?.connection_id,
         providerConfigKey: nangoConnection?.provider_config_key,
-        error: JSON.stringify(error),
+        error: stringifyError(error),
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
         runId: context.info.workflowExecution.runId
@@ -415,6 +459,8 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
         const syncRun = new syncRunService({
             bigQueryClient,
             integrationService,
+            recordsService,
+            logContextGetter,
             writeToDb: true,
             syncId,
             nangoConnection,
@@ -434,7 +480,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
 
         await syncRun.cancel();
     } catch (e) {
-        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : JSON.stringify(e)}`;
+        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : stringifyError(e)}`;
         errorManager.report(content, {
             environmentId: workflowArguments.nangoConnection?.environment_id,
             source: ErrorSourceEnum.PLATFORM,

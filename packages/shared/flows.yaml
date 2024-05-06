@@ -1,7 +1,7 @@
 integrations:
     algolia:
         actions:
-            algolia-create-contacts:
+            create-contacts:
                 description: |
                     Action to add a single record contact to an index
                 output: AlgoliaContact
@@ -18,7 +18,7 @@ integrations:
                 email: string
     asana:
         syncs:
-            asana-tasks:
+            tasks:
                 runs: every 30min
                 description: >
                     Fetches a list of tasks from Asana, retrieving tasks from only the
@@ -38,7 +38,7 @@ integrations:
                 modified_at: date
     ashby:
         syncs:
-            ashby-candidates:
+            candidates:
                 runs: every hour
                 output: AshbyCandidate
                 description: |
@@ -50,7 +50,7 @@ integrations:
                     scopes: candidatelastsyncToken
                 sync_type: incremental
                 endpoint: /ashby/candidates
-            ashby-jobs:
+            jobs:
                 runs: every hour
                 output: AshbyJob
                 description: |
@@ -63,13 +63,13 @@ integrations:
                 sync_type: incremental
                 endpoint: /ashby/jobs
         actions:
-            ashby-create-application:
+            create-application:
                 output: AshbyCreateApplicationResponse
                 input: AshbyCreateCandidateInput
                 description: |
                     Action to consider a candidate for a job
                 endpoint: POST /ashby/create-application
-            ashby-create-note:
+            create-note:
                 output: AshbyCreateNoteResponse
                 input: AshbyCreateNoteInput
                 description: |
@@ -221,7 +221,7 @@ integrations:
                 type: string
     bamboohr-basic:
         syncs:
-            bamboohr-employees:
+            employees:
                 runs: every 6 hours
                 description: |
                     Fetches a list of current employees from bamboohr
@@ -229,7 +229,7 @@ integrations:
                 sync_type: incremental
                 endpoint: /bamboohr/employees
         actions:
-            bamboohr-create-employee:
+            create-employee:
                 description: |
                     Action to create a new employee
                 output: BamboohrCreateEmployeeResponse
@@ -270,7 +270,7 @@ integrations:
                 status: string
     clari-copilot:
         syncs:
-            clari-copilot-call:
+            calls:
                 runs: every hour
                 output: ClariCopilotCall
                 description: >
@@ -329,19 +329,21 @@ integrations:
                 competitor_sentiments: []
     confluence:
         syncs:
-            confluence-spaces:
+            spaces:
                 runs: every 4 hours
                 output: ConfluenceSpace
                 description: |
                     Fetches a list of spaces from confluence
                 sync_type: full
+                scopes: read:space:confluence
                 endpoint: /confluence/spaces
-            confluence-pages:
+            pages:
                 runs: every 4 hours
                 output: ConfluencePage
                 description: |
                     Fetches a list of pages from confluence
                 sync_type: full
+                scopes: read:page:confluence
                 endpoint: /confluence/pages
         models:
             ConfluenceSpace:
@@ -376,21 +378,21 @@ integrations:
                     atlas_doc_format: object
     evaluagent:
         syncs:
-            evaluagent-users:
+            users:
                 runs: every day
                 output: EvaluAgentUser
                 description: |
                     Fetches a list of users from evaluagent
                 sync_type: full
                 endpoint: /evaluagent/users
-            evaluagent-groups:
+            groups:
                 runs: every day
                 output: EvaluAgentGroup
                 description: |
                     Fetches a list of groups from evaluagent
                 sync_type: full
                 endpoint: /evaluagent/groups
-            evaluagent-roles:
+            roles:
                 runs: every day
                 output: EvaluAgentRole
                 description: |
@@ -419,9 +421,28 @@ integrations:
                 id: string
                 title: string
                 name: string
+    expensify:
+        actions:
+            list-policies:
+                description: >
+                    Action to fetch a list of policies with some relevant information
+                    about them
+                endpoint: POST /expensify/list-policy
+                input: ExpensifyListPolicyInput
+                output: ExpensifyListPolicyOutput
+        models:
+            ExpensifyListPolicyInput:
+                requestJobDescription: RequestJobDescription
+                inputSettings: InputSettings
+            RequestJobDescription:
+                type: string
+            InputSettings:
+                type: string
+            ExpensifyListPolicyOutput:
+                policyList: array
     github:
         syncs:
-            github-issues:
+            issues:
                 runs: every half hour
                 output: GithubIssue
                 sync_type: full
@@ -429,7 +450,7 @@ integrations:
                 description: |
                     Fetches Github issues from all a user's repositories
                 endpoint: /github/issues
-            github-issues-lite:
+            issues-lite:
                 runs: every day
                 auto_start: false
                 sync_type: full
@@ -438,7 +459,7 @@ integrations:
                 description: |
                     Fetches Github issues but up to a maximum of 15
                 endpoint: /github/issues-lite
-            github-list-files:
+            list-files:
                 runs: every hour
                 description: |
                     Lists all the files of a Github repo given a specific branch
@@ -448,7 +469,7 @@ integrations:
                 output: GithubRepoFile
                 endpoint: /github/list-files
                 scopes: repo
-            github-issues-demo:
+            issues-demo:
                 runs: every 5 minutes
                 auto_start: false
                 sync_type: full
@@ -458,7 +479,7 @@ integrations:
                     Fetches GitHub issues from our showcase repository.
                 endpoint: GET /github/demo-issues
         actions:
-            github-write-file:
+            write-file:
                 scopes: repo
                 input: GithubWriteFileInput
                 output: GithubWriteFileActionResult
@@ -466,13 +487,13 @@ integrations:
                 description: |
                     Write content to a particular github file within a repo. If
                     the file doesn't exist it creates and then writes to it
-            github-list-repos:
+            list-repos:
                 scopes: read:org
                 endpoint: GET /github/list-repos
                 output: GithubRepo
                 description: |
                     List github repos from an organization.
-            github-create-demo-issue:
+            create-demo-issue:
                 endpoint: POST /github/create-demo-issue
                 input: GithubCreateIssueInput
                 output: GithubCreateIssueResult
@@ -541,9 +562,66 @@ integrations:
             GithubCreateIssueResult:
                 url: string | undefined
                 status: number
+    google:
+        syncs:
+            workspace-org-units:
+                runs: every 6 hours
+                track_deletes: true
+                output: OrganizationalUnit
+                sync_type: full
+                endpoint: /google/workspace-org-unit
+                scopes:
+                    - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
+                    - https://www.googleapis.com/auth/admin.directory.user.readonly
+            workspace-users:
+                runs: every hour
+                output: User
+                sync_type: full
+                endpoint: /google/workspace-users
+            workspace-user-access-tokens:
+                runs: every hour
+                output: GoogleWorkspaceUserToken
+                sync_type: full
+                endpoint: /google/workspace-user-access-tokens
+                scopes:
+                    - https://www.googleapis.com/auth/admin.directory.user.readonly
+                    - https://www.googleapis.com/auth/admin.directory.user.security
+        models:
+            OrganizationalUnit:
+                id: string
+                name: string
+                createdAt: string | null
+                deletedAt: string | null
+                description: string | null
+                path: string | null
+                parentPath: string | null
+                parentId: string | null
+            User:
+                id: string
+                email: string
+                displayName: string | null
+                givenName: string | null
+                familyName: string | null
+                picture: string | null | undefined
+                type: string
+                createdAt: string | null
+                deletedAt: string | null
+                phone:
+                    value: string | null | undefined
+                    type: string | null | undefined
+                organizationId: string | null | undefined
+                organizationPath: string | null | undefined
+                isAdmin: boolean | null
+                department: string | null
+            GoogleWorkspaceUserToken:
+                id: string
+                user_id: string
+                app_name: string
+                anonymous_app: boolean
+                scopes: string
     google-calendar:
         syncs:
-            google-calendar-events:
+            events:
                 description: |
                     Sync calendar events on the primary calendar going back one month and
                     save the entire object as specified by the Google API
@@ -552,7 +630,7 @@ integrations:
                 sync_type: incremental
                 endpoint: /google-calendar/events
                 scopes: https://www.googleapis.com/auth/calendar.readonly
-            google-calendars:
+            calendars:
                 description: |
                     Sync the calendars list of the user
                 track_deletes: true
@@ -717,7 +795,7 @@ integrations:
                 eventType: string
     google-drive:
         syncs:
-            google-drive-documents:
+            documents:
                 runs: every day
                 track_deletes: true
                 description: |
@@ -738,7 +816,7 @@ integrations:
                 endpoint: /google-drive/documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
-            google-drive-fetch-pdf:
+            fetch-pdf:
                 input: string
                 description: |
                     Fetch PDF data given an ID using a responseStream, chunk the data
@@ -758,7 +836,7 @@ integrations:
                 title: string
     google-mail:
         syncs:
-            gmail-emails:
+            emails:
                 runs: every hour
                 description: |
                     Fetches a list of emails from gmail
@@ -774,81 +852,23 @@ integrations:
                 subject: string
                 body: string
                 threadId: string
-    google:
-        syncs:
-            google-workspace-org-unit:
-                runs: every 6 hours
-                track_deletes: true
-                output: OrganizationalUnit
-                sync_type: full
-                endpoint: /google/workspace-org-unit
-                scopes:
-                    - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
-                    - https://www.googleapis.com/auth/admin.directory.user.readonly
-            google-workspace-users:
-                runs: every hour
-                output: User
-                sync_type: full
-                endpoint: /google/workspace-users
-            google-workspace-user-access-tokens:
-                runs: every hour
-                output: GoogleWorkspaceUserToken
-                sync_type: full
-                endpoint: /google/workspace-user-access-tokens
-                scopes:
-                    - https://www.googleapis.com/auth/admin.directory.user.readonly
-                    - https://www.googleapis.com/auth/admin.directory.user.security
-        models:
-            OrganizationalUnit:
-                id: string
-                name: string
-                createdAt: string | null
-                deletedAt: string | null
-                description: string | null
-                path: string | null
-                parentPath: string | null
-                parentId: string | null
-            User:
-                id: string
-                email: string
-                displayName: string | null
-                givenName: string | null
-                familyName: string | null
-                picture: string | null | undefined
-                type: string
-                createdAt: string | null
-                deletedAt: string | null
-                phone:
-                    value: string | null | undefined
-                    type: string | null | undefined
-                organizationId: string | null | undefined
-                organizationPath: string | null | undefined
-                isAdmin: boolean | null
-                department: string | null
-            GoogleWorkspaceUserToken:
-                id: string
-                user_id: string
-                app_name: string
-                anonymous_app: boolean
-                scopes: string
-        rawName: google-workspace
     greenhouse-basic:
         syncs:
-            greenhouse-applications:
+            applications:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all organization's applications from greenhouse
                 output: GreenhouseApplication
                 sync_type: incremental
                 endpoint: /greenhouse-basic/applications
-            greenhouse-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all organization's candidates from greenhouse
                 output: GreenhouseCandidate
                 sync_type: incremental
                 endpoint: /greenhouse-basic/candidates
-            greenhouse-jobs:
+            jobs:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all organization's jobs from greenhouse
@@ -981,28 +1001,28 @@ integrations:
                 openings: []
     hackerrank-work:
         syncs:
-            hackerrank-work-interviews:
+            interviews:
                 runs: every 6 hours
                 description: |
                     Fetches a list of interviews from hackerrank work
                 output: HackerRankWorkInterview
                 sync_type: incremental
                 endpoint: /hackerrank-work/interviews
-            hackerrank-work-teams:
+            teams:
                 runs: every 6 hours
                 description: |
                     Fetches a list of teams from hackerrank work
                 output: HackerRankWorkTeam
                 sync_type: incremental
                 endpoint: /hackerrank-work/teams
-            hackerrank-work-tests:
+            tests:
                 runs: every 6 hours
                 description: |
                     Fetches a list of tests from hackerrank work
                 output: HackerRankWorkTest
                 sync_type: incremental
                 endpoint: /hackerrank-work/tests
-            hackerrank-work-users:
+            users:
                 runs: every 6 hours
                 description: |
                     Fetches a list of users from hackerrank work
@@ -1010,13 +1030,13 @@ integrations:
                 sync_type: incremental
                 endpoint: /hackerrank-work/users
         actions:
-            hackerrank-work-create-test:
+            create-test:
                 description: |
                     Action to create a test on hackerrank work
                 input: HackerRankWorkCreateTestInput
                 output: HackerRankWorkTest
                 endpoint: POST /hackerrank-work/create-test
-            hackerrank-work-create-interview:
+            create-interview:
                 description: |
                     Action to create an interview on hackerrank work
                 input: HackerRankWorkCreateInterviewInput
@@ -1164,7 +1184,7 @@ integrations:
                 ide_config: string
     hibob-service-user:
         syncs:
-            hibob-employees:
+            employees:
                 runs: every hour
                 description: |
                     Fetches a list of all active employees
@@ -1197,35 +1217,35 @@ integrations:
                     startDate: date
     hubspot:
         syncs:
-            hubspot-service-tickets:
+            service-tickets:
                 runs: every half hour
                 description: |
                     Fetches a list of service tickets from Hubspot
                 output: HubspotServiceTicket
                 sync_type: incremental
                 endpoint: /hubspot/service-tickets
-            hubspot-contacts:
+            contacts:
                 runs: every day
                 description: |
                     Fetches a list of contacts from Hubspot
                 output: HubspotContact
                 sync_type: full
                 endpoint: /hubspot/contacts
-            hubspot-owners:
+            owners:
                 runs: every day
                 description: |
                     Fetches a list of owners from Hubspot
                 output: HubspotOwner
                 sync_type: full
                 endpoint: /hubspot/owner
-            hubspot-users:
+            users:
                 runs: every day
                 description: |
                     Fetches a list of users from Hubspot
                 output: HubspotUser
                 sync_type: full
                 endpoint: /hubspot/user
-            hubspot-knowledge-base:
+            knowledge-base:
                 runs: every day
                 description: |
                     Fetches a list of knowledge base from Hubspot
@@ -1277,7 +1297,7 @@ integrations:
                 email: string
     intercom:
         syncs:
-            intercom-conversations:
+            conversations:
                 runs: every 6 hours
                 description: |
                     Fetches a list of conversations from Intercom
@@ -1288,7 +1308,7 @@ integrations:
                 endpoint:
                     - /intercom/conversations
                     - /intercom/conversations-message
-            intercom-contacts:
+            contacts:
                 runs: every 6 hours
                 description: |
                     Fetches a list of contacts from Intercom
@@ -1334,7 +1354,7 @@ integrations:
                     id: string
     jira:
         syncs:
-            jira-issues:
+            issues:
                 runs: every 5mins
                 description: |
                     Fetches a list of issues from Jira
@@ -1353,7 +1373,127 @@ integrations:
                 projectName: string
                 createdAt: date
                 updatedAt: date
-    lever:
+    kustomer:
+        syncs:
+            conversations:
+                runs: every 6 hours
+                description: |
+                    Retrieves a paginated list of conversations for the organization
+                output: KustomerConversation
+                sync_type: full
+                endpoint: /kustomer/conversations
+                scopes:
+                    - org.user.conversation.read
+                    - org.permission.conversation.read
+        models:
+            KustomerConversation:
+                type: string
+                id: string
+                attributes: object
+                relationships: object
+                links: object
+    lever-basic:
+        actions:
+            create-note:
+                description: |
+                    Action to create a note and add it to a candidate profile in Lever
+                output: LeverOpportunityNote
+                input: LeverCreateNoteInput
+                endpoint: POST /lever/create-note
+                scopes:
+                    - notes:write:admin
+            create-opportunity:
+                description: |
+                    Action to create candidates and opportunities in Lever
+                output: LeverOpportunity
+                input: LeverCreateOpportunityInput
+                endpoint: POST /lever/create-opportunity
+                scopes:
+                    - opportunities:write:admin
+        syncs:
+            opportunities:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all pipeline opportunities for contacts in Lever
+                output: LeverOpportunity
+                sync_type: incremental
+                endpoint: /lever/opportunities
+                scopes:
+                    - opportunities:read:admin
+            opportunities-applications:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all applications for a candidate in Lever
+                output: LeverOpportunityApplication
+                sync_type: full
+                endpoint: /lever/opportunities-applications
+                scopes:
+                    - applications:read:admin
+            opportunities-feedbacks:
+                runs: every 6 hours
+                description: >
+                    Fetches a list of all feedback forms for a candidate for a specific
+                    Opportunity in lever
+                output: LeverOpportunityFeedback
+                sync_type: full
+                endpoint: /lever/opportunities-feedbacks
+                scopes:
+                    - feedback:read:admin
+            opportunities-interviews:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all interviewers for a specific Opportunity in lever
+                output: LeverOpportunityInterview
+                sync_type: full
+                endpoint: /lever/opportunities-interviews
+                scopes:
+                    - interviews:read:admin
+            opportunities-notes:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all notes for a specific candidate in lever
+                output: LeverOpportunityNote
+                sync_type: full
+                endpoint: /lever/opportunities-notes
+                scopes:
+                    - notes:read:admin
+            opportunities-offers:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all offers for a specific candidate in lever.
+                output: LeverOpportunityOffer
+                sync_type: full
+                endpoint: /lever/opportunities-offers
+                scopes:
+                    - offers:write:admin
+            postings:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all postings in Lever
+                output: LeverPosting
+                sync_type: full
+                endpoint: /lever/postings
+                scopes:
+                    - postings:read:admin
+            postings-apply:
+                runs: every 6 hours
+                description: >
+                    Fetches a list of all questions included in a posting’s application
+                    form in Lever
+                output: LeverPostingApply
+                sync_type: full
+                endpoint: /lever/postings-apply
+                scopes:
+                    - postings:read:admin
+            stage:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all pipeline stages in Lever
+                output: LeverStage
+                sync_type: full
+                endpoint: /lever/stage
+                scopes:
+                    - stages:read:admin
         models:
             LeverOpportunity:
                 id: string
@@ -1563,28 +1703,28 @@ integrations:
                 contact: string[] | undefined
     linear:
         syncs:
-            linear-issues:
+            issues:
                 runs: every 5min
                 description: |
                     Fetches a list of issues from Linear
                 output: LinearIssue
                 sync_type: incremental
                 endpoint: /linear/issues
-            linear-projects:
+            projects:
                 runs: every 5min
                 description: |
                     Fetches a list of projects from Linear
                 output: LinearProject
                 sync_type: incremental
                 endpoint: /linear/projects
-            linear-teams:
+            teams:
                 runs: every 5min
                 description: |
                     Fetches a list of teams from Linear
                 output: LinearTeam
                 sync_type: incremental
                 endpoint: /linear/teams
-            linear-roadmaps:
+            roadmaps:
                 runs: every 5min
                 description: |
                     Fetches a list of roadmaps from Linear
@@ -1627,7 +1767,7 @@ integrations:
                 projectIds: string
     microsoft-teams:
         syncs:
-            microsoft-org-unit:
+            org-units:
                 runs: every 6 hours
                 description: |
                     Continuously fetches groups from either Microsoft 365 or Azure Active
@@ -1639,7 +1779,7 @@ integrations:
                 endpoint: /microsoft-teams/microsoft-org-unit
                 scopes:
                     - GroupMember.Read.All
-            microsoft-users:
+            users:
                 runs: every hour
                 description: |
                     Continuously fetches users from either Microsoft 365 or Azure Active
@@ -1680,10 +1820,9 @@ integrations:
                 organizationPath: string | null | undefined
                 isAdmin: boolean | null
                 department: string | null
-        rawName: microsoft-active-directory
     next-cloud-ocs:
         syncs:
-            next-cloud-users:
+            users:
                 runs: every hour
                 description: |
                     Fetches a list of all users' details from NextCloud account
@@ -1741,7 +1880,7 @@ integrations:
                     setPassword: boolean
     notion:
         syncs:
-            notion-pages:
+            pages:
                 runs: every 6 hours
                 description: |
                     Sync pages, subpages, database entries, entries of
@@ -1751,7 +1890,7 @@ integrations:
                 output: NotionPage
                 sync_type: incremental
                 endpoint: /notion/pages
-            notion-rich-pages:
+            rich-pages:
                 runs: every 6 hours
                 track_deletes: true
                 description: |
@@ -1777,7 +1916,7 @@ integrations:
                 last_modified: string
     pipedrive:
         syncs:
-            pipedrive-activities:
+            activities:
                 runs: every hour
                 description: |
                     Fetches a list of activities from pipedrive
@@ -1786,7 +1925,7 @@ integrations:
                 endpoint: /pipedrive/activities
                 scopes:
                     - activities:read
-            pipedrive-deals:
+            deals:
                 runs: every hour
                 description: |
                     Fetches a list of deals from pipedrive
@@ -1795,7 +1934,7 @@ integrations:
                 endpoint: /pipedrive/deals
                 scopes:
                     - deals:read
-            pipedrive-organizations:
+            organizations:
                 runs: every hour
                 description: |
                     Fetches a list of organizations from pipedrive
@@ -1804,7 +1943,7 @@ integrations:
                 endpoint: /pipedrive/organizations
                 scopes:
                     - contacts:read
-            pipedrive-persons:
+            persons:
                 runs: every half hour
                 description: |
                     Fetches persons from pipedrive
@@ -1912,35 +2051,35 @@ integrations:
                 cc_email: string
     salesforce:
         syncs:
-            salesforce-accounts:
+            accounts:
                 runs: every hour
                 description: |
                     Fetches a list of accounts from salesforce
                 output: SalesforceAccount
                 sync_type: incremental
                 endpoint: /salesforce/accounts
-            salesforce-contacts:
+            contacts:
                 runs: every hour
                 description: |
                     Fetches a list of contacts from salesforce
                 output: SalesforceContact
                 sync_type: incremental
                 endpoint: /salesforce/contacts
-            salesforce-deals:
+            deals:
                 runs: every hour
                 description: |
                     Fetches a list of deals from salesforce
                 output: SalesforceDeal
                 sync_type: incremental
                 endpoint: /salesforce/deals
-            salesforce-articles:
+            articles:
                 runs: every day
                 description: |
                     Fetches a list of articles from salesforce
                 output: SalesforceArticle
                 sync_type: incremental
                 endpoint: /salesforce/articles
-            salesforce-tickets:
+            tickets:
                 runs: every day
                 description: |
                     Fetches a list of tickets from salesforce
@@ -2001,7 +2140,7 @@ integrations:
                 last_modified_date: string
     slack:
         syncs:
-            slack-users:
+            users:
                 runs: every hour
                 description: |
                     Syncs information about all Users on the Slack workspace
@@ -2010,7 +2149,7 @@ integrations:
                 endpoint: /slack/users
                 scopes:
                     - users:read
-            slack-channels:
+            channels:
                 runs: every hour
                 description: |
                     Syncs information about all Slack channels. Which channels get synced
@@ -2025,7 +2164,7 @@ integrations:
                 scopes:
                     - channels:read
                     - channels:join
-            slack-messages:
+            messages:
                 runs: every hour
                 description: |
                     Syncs Slack messages, thread replies and reactions from messages &
@@ -2136,7 +2275,7 @@ integrations:
                 reaction_name: string
     teamtailor:
         syncs:
-            teamtailor-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all candidates from your teamtailor account.
@@ -2223,7 +2362,7 @@ integrations:
                             related: string
     wildix-pbx:
         syncs:
-            wildix-pbx-colleagues:
+            colleagues:
                 runs: every 1 hour
                 description: |
                     Fetches a list of users from PBX
@@ -2241,7 +2380,7 @@ integrations:
                 language: string
     workable:
         syncs:
-            workable-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of candidates from workable
@@ -2250,7 +2389,7 @@ integrations:
                 endpoint: /workable/candidates
                 scopes:
                     - r_candidates
-            workable-candidates-activities:
+            candidates-activities:
                 runs: every 6 hours
                 description: |
                     Fetches a list of activity streams of the given candidate
@@ -2259,7 +2398,7 @@ integrations:
                 endpoint: /workable/candidates-activities
                 scopes:
                     - r_candidates
-            workable-candidates-offer:
+            candidates-offer:
                 runs: every 6 hours
                 description: |
                     Fetches candidate's latest offer from workable
@@ -2268,7 +2407,7 @@ integrations:
                 endpoint: /workable/candidates-offer
                 scopes:
                     - r_candidates
-            workable-jobs:
+            jobs:
                 runs: every 6 hours
                 description: |
                     Fetches a list of jobs from workable
@@ -2277,7 +2416,7 @@ integrations:
                 endpoint: /workable/jobs
                 scopes:
                     - r_jobs
-            workable-jobs-candidates:
+            jobs-candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of candidates for the specified job from workable
@@ -2286,7 +2425,7 @@ integrations:
                 endpoint: /workable/jobs-candidates
                 scopes:
                     - r_jobs
-            workable-jobs-questions:
+            jobs-questions:
                 runs: every 6 hours
                 description: |
                     Fetches a list of questions for the specified job from workable
@@ -2295,7 +2434,7 @@ integrations:
                 endpoint: /workable/jobs-questions
                 scopes:
                     - r_jobs
-            workable-members:
+            members:
                 runs: every 6 hours
                 description: |
                     Fetches a list of account members from workable
@@ -2305,7 +2444,7 @@ integrations:
                 scopes:
                     - r_jobs
         actions:
-            workable-create-candidate:
+            create-candidate:
                 description: |
                     Action to create a candidate at the specified job
                 scopes:
@@ -2313,7 +2452,7 @@ integrations:
                 output: WorkableCreateCandidateResponse
                 input: WorkableCreateCandidateInput
                 endpoint: POST /workable/create-candidate
-            workable-create-comment:
+            create-comment:
                 description: |
                     Action to create a comment on the applicant's timeline
                 scopes:
@@ -2519,14 +2658,14 @@ integrations:
                 data: string
     zendesk:
         syncs:
-            zendesk-tickets:
+            tickets:
                 runs: every 1 hour
                 description: |
                     Fetches a list of tickets from zendesk
                 output: ZendeskTicket
                 sync_type: full
                 endpoint: /zendesk/tickets
-            zendesk-articles:
+            articles:
                 runs: every 6 hours
                 description: |
                     Fetches a list of articles in Help center from zendesk
@@ -2619,7 +2758,7 @@ integrations:
                 voice_comment: object
     zoho-crm:
         syncs:
-            zoho-crm-accounts:
+            accounts:
                 runs: every half hour
                 auto_start: false
                 description: |
@@ -2629,7 +2768,7 @@ integrations:
                 endpoint: /zoho-crm/accounts
                 scopes:
                     - ZohoCRM.modules.accounts.READ
-            zoho-crm-contacts:
+            contacts:
                 runs: every half hour
                 auto_start: false
                 description: |
@@ -2639,7 +2778,7 @@ integrations:
                 endpoint: /zoho-crm/contacts
                 scopes:
                     - ZohoCRM.modules.contacts.READ
-            zoho-crm-deals:
+            deals:
                 runs: every half hour
                 auto_start: false
                 description: |
@@ -2867,7 +3006,7 @@ integrations:
                 $approval_state: string
     zoho-mail:
         syncs:
-            zoho-mail-tasks:
+            tasks:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all your personal tasks in Zoho mail
@@ -2876,7 +3015,7 @@ integrations:
                 endpoint: /zoho-mail/tasks
                 scopes:
                     - ZohoMail.tasks.READ
-            zoho-mail-emails:
+            emails:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all your account's emails in Zoho mail
@@ -2886,7 +3025,7 @@ integrations:
                 scopes:
                     - ZohoMail.messages.READ
         actions:
-            zoho-mail-send-email:
+            send-email:
                 description: |
                     An action to send an email in zoho mail
                 output: ZohoMailSendEmailOutput
@@ -2894,7 +3033,7 @@ integrations:
                 endpoint: POST /zoho-mail/send-email
                 scopes:
                     - ZohoMail.messages.CREATE
-            zoho-mail-add-user:
+            add-user:
                 description: |
                     An action to add a user to the organization in zoho mail
                 output: ZohoMailAddUserOutput

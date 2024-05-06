@@ -11,10 +11,10 @@ import { Steps, providerConfigKey } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
-import type { OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
 import Spinner from '../../components/ui/Spinner';
 import { useEnvironment } from '../../hooks/useEnvironment';
+import type { GetOnboardingStatus } from '@nangohq/types';
 
 export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
@@ -25,8 +25,8 @@ export const InteractiveDemo: React.FC = () => {
     const [records, setRecords] = useState<Record<string, unknown>[]>([]);
     const analyticsTrack = useAnalyticsTrack();
 
-    const env = useStore((state) => state.cookieValue);
-    const { environment } = useEnvironment();
+    const env = useStore((state) => state.env);
+    const { environment } = useEnvironment(env);
 
     useEffect(() => {
         if (env !== 'dev') {
@@ -49,6 +49,7 @@ export const InteractiveDemo: React.FC = () => {
     useEffect(() => {
         const getProgress = async () => {
             const params = {
+                env,
                 connection_id: connectionId
             };
 
@@ -63,22 +64,26 @@ export const InteractiveDemo: React.FC = () => {
                 return;
             }
 
-            const { progress, id, records: fetchedRecords } = (await res.json()) as OnboardingStatus;
-            setStep(progress || 0);
-            setOnboardingId(id);
+            const json = (await res.json()) as GetOnboardingStatus['Reply'];
+            if ('error' in json) {
+                return;
+            }
 
-            if (fetchedRecords) {
-                setRecords(fetchedRecords);
+            setStep(json.progress || 0);
+            setOnboardingId(json.id);
+
+            if (json.records) {
+                setRecords(json.records);
             }
         };
 
         if (connectionId) {
             void getProgress();
         }
-    }, [setInitialLoad, connectionId]);
+    }, [setInitialLoad, connectionId, env]);
 
     const updateProgress = async (args: { progress: number }) => {
-        const res = await fetch(`/api/v1/onboarding`, {
+        const res = await fetch(`/api/v1/onboarding?env=${env}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ progress: args.progress })
@@ -95,7 +100,7 @@ export const InteractiveDemo: React.FC = () => {
         }
 
         void updateProgress({ progress: step });
-    }, [onboardingId, step]);
+    }, [onboardingId, step, env]);
 
     const onAuthorize = (id: number) => {
         setOnboardingId(id);

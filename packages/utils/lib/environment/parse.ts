@@ -1,8 +1,13 @@
 import { z } from 'zod';
 
+const bool = z
+    .enum(['true', 'false', ''])
+    .optional()
+    .default('false')
+    .transform((value) => value === 'true');
 export const ENVS = z.object({
     // Node ecosystem
-    NODE_ENV: z.enum(['production', 'development', 'test']).default('development'),
+    NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
     CI: z.coerce.boolean().default(false),
     VITEST: z.coerce.boolean().default(false),
     TZ: z.string().default('UTC'),
@@ -19,7 +24,7 @@ export const ENVS = z.object({
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.string().url().optional(),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional(),
-    NANGO_CACHE_ENV_KEYS: z.coerce.boolean().default(true),
+    NANGO_CACHE_ENV_KEYS: bool,
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
 
@@ -34,7 +39,7 @@ export const ENVS = z.object({
     // Runner
     RUNNER_SERVICE_URL: z.string().url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
-    RUNNER_OWNER_ID: z.coerce.number().optional(),
+    RUNNER_OWNER_ID: z.string().optional(),
     RUNNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
 
@@ -54,9 +59,11 @@ export const ENVS = z.object({
     DD_TRACE_AGENT_URL: z.string().optional(),
 
     // Elasticsearch
-    NANGO_LOGS_ES_URL: z.string().url().optional(),
-    NANGO_LOGS_ES_USER: z.string().optional(),
-    NANGO_LOGS_ES_PWD: z.string().optional(),
+    NANGO_LOGS_OS_URL: z.string().url().optional(),
+    NANGO_LOGS_OS_USER: z.string().optional(),
+    NANGO_LOGS_OS_PWD: z.string().optional(),
+    NANGO_LOGS_ENABLED: bool,
+    NANGO_LOGS_OS_INDEX: z.string().optional(),
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
@@ -68,7 +75,7 @@ export const ENVS = z.object({
     NANGO_DB_USER: z.string().optional().default('nango'),
     NANGO_DB_NAME: z.string().optional().default('nango'),
     NANGO_DB_PASSWORD: z.string().optional().default('nango'),
-    NANGO_DB_SSL: z.coerce.boolean().default(false),
+    NANGO_DB_SSL: bool,
     NANGO_DB_CLIENT: z.string().optional(),
     NANGO_ENCRYPTION_KEY: z.string().optional(),
     NANGO_DB_MIGRATION_FOLDER: z.string().optional(),
@@ -81,7 +88,7 @@ export const ENVS = z.object({
 
     // Render
     RENDER_API_KEY: z.string().optional(),
-    IS_RENDER: z.coerce.boolean().default(false),
+    IS_RENDER: bool,
 
     // Slack
     NANGO_ADMIN_CONNECTION_ID: z.string().optional(),
@@ -98,12 +105,12 @@ export const ENVS = z.object({
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
-    NANGO_CLOUD: z.coerce.boolean().optional().default(false),
-    NANGO_ENTERPRISE: z.coerce.boolean().optional().default(false),
-    NANGO_TELEMETRY_SDK: z.coerce.boolean().default(false).optional(),
+    NANGO_CLOUD: bool,
+    NANGO_ENTERPRISE: bool,
+    NANGO_TELEMETRY_SDK: bool,
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
-    TELEMETRY: z.coerce.boolean().default(true),
+    TELEMETRY: bool,
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 

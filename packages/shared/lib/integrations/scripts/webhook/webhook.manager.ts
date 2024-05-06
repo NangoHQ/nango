@@ -4,42 +4,52 @@ import webhookService from '../../../services/notification/webhook.service.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { internalNango } from './internal-nango.js';
-import { getLogger } from '../../../utils/temp/logger.js';
-
-const logger = getLogger('Webhook.Manager');
+import { getLogger } from '@nangohq/utils';
 
 import * as webhookHandlers from './index.js';
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
+import type { LogContextGetter } from '@nangohq/logs';
+
+const logger = getLogger('Webhook.Manager');
 
 const handlers: WebhookHandlersMap = webhookHandlers as unknown as WebhookHandlersMap;
 
-async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any, rawBody: string): Promise<any> {
+async function execute(
+    environmentUuid: string,
+    providerConfigKey: string,
+    headers: Record<string, any>,
+    body: any,
+    rawBody: string,
+    logContextGetter: LogContextGetter
+): Promise<unknown> {
     if (!body) {
         return;
     }
 
-    const provider = await configService.getProviderName(providerConfigKey);
     const integration = await configService.getProviderConfigByUuid(providerConfigKey, environmentUuid);
 
-    if (!provider || !integration) {
+    if (!integration) {
         return;
     }
 
-    const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
+    const account = await environmentService.getAccountFromEnvironment(integration.environment_id);
+    if (!account) {
+        return;
+    }
 
-    const handler = handlers[`${provider.replace(/-/g, '')}Webhook`];
+    const handler = handlers[`${integration.provider.replace(/-/g, '')}Webhook`];
+    if (!handler) {
+        return;
+    }
 
     let res: WebhookResponse = undefined;
-
     try {
-        if (handler) {
-            res = await handler(internalNango, integration, headers, body, rawBody);
-        }
+        res = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
     } catch (e) {
         logger.error(`error processing incoming webhook for ${providerConfigKey} - `, e);
 
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
-            accountId: String(accountId),
+            accountId: String(account.id),
             environmentId: String(integration.environment_id),
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
@@ -51,19 +61,17 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
     const webhookBodyToForward = res?.parsedBody || body;
     const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward(integration.environment_id, providerConfigKey, connectionIds, provider, webhookBodyToForward, headers);
+    await webhookService.forward({ integration, account, connectionIds, payload: webhookBodyToForward, webhookOriginalHeaders: headers, logContextGetter });
 
     await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
-        accountId: String(accountId),
+        accountId: String(account.id),
         environmentId: String(integration.environment_id),
         provider: integration.provider,
         providerConfigKey: integration.unique_key,
         payload: JSON.stringify(webhookBodyToForward)
     });
 
-    if (res) {
-        return res.acknowledgementResponse;
-    }
+    return res ? res.acknowledgementResponse : null;
 }
 
 export default execute;
