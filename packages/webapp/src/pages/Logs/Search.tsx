@@ -13,6 +13,7 @@ import { columns, statusDefaultOptions, statusOptions } from './constants';
 import { useEffect, useState } from 'react';
 import type { SearchLogsState } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
+import { Search } from '@geist-ui/icons';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -39,8 +40,10 @@ export const LogsSearch: React.FC = () => {
     if (error) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
-                <Info color="red" classNames="text-xs" size={20}>
-                    An error occured, refresh your page or reach out to the support.
+                <Info color={error.error.code === 'feature_disabled' ? 'orange' : 'red'} classNames="text-xs" size={20}>
+                    {error.error.code === 'feature_disabled'
+                        ? 'This feature is disabled. Install OpenSearch and set "NANGO_LOGS_ENABLED" flag to `true`'
+                        : 'An error occured, refresh your page or reach out to the support.'}
                 </Info>
             </DashboardLayout>
         );
@@ -72,7 +75,7 @@ export const LogsSearch: React.FC = () => {
             <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
 
             <div className="flex gap-2">
-                <Input placeholder="Search logs..." />
+                <Input before={<Search size={16} />} placeholder="Search logs..." />
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
             </div>
 
@@ -98,7 +101,7 @@ export const LogsSearch: React.FC = () => {
                 <Table.Body>
                     {table.getRowModel().rows?.length ? (
                         table.getRowModel().rows.map((row) => (
-                            <Table.Row key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                            <Table.Row key={row.id} data-state={row.getIsSelected() && 'selected'} className="hover:cursor-pointer">
                                 {row.getVisibleCells().map((cell) => (
                                     <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
                                 ))}

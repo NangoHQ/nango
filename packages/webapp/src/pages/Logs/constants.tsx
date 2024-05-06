@@ -9,7 +9,7 @@ export const columns: ColumnDef<SearchLogsData>[] = [
     {
         accessorKey: 'createdAt',
         header: 'Timestamp',
-        size: 200,
+        size: 150,
         cell: ({ row }) => {
             return formatDateToIntFormat(row.original.createdAt);
         }
@@ -17,7 +17,7 @@ export const columns: ColumnDef<SearchLogsData>[] = [
     {
         accessorKey: 'state',
         header: 'Status',
-        size: 140,
+        size: 100,
         cell: ({ row }) => {
             return <StatusTag state={row.original.state} />;
         }

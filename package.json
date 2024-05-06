@@ -58,7 +58,6 @@
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d"
     },
     "devDependencies": {
-        "@radix-ui/react-dropdown-menu": "2.0.6",
         "@tsconfig/node18-strictest-esm": "^1.0.1",
         "@types/node": "20.12.2",
         "@typescript-eslint/eslint-plugin": "7.7.1",

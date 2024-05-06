@@ -5,17 +5,32 @@ import { cn } from '../../../utils/utils';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
-const Input = forwardRef<HTMLInputElement, InputProps>(({ className, type, ...props }, ref) => {
+const Input = forwardRef<
+    HTMLInputElement,
+    InputProps & {
+        before?: React.ReactNode;
+        after?: React.ReactNode;
+    }
+>(({ className, type, before, after, ...props }, ref) => {
     return (
-        <input
-            type={type}
+        <div
             className={cn(
-                'flex h-10 bg-pure-black w-full rounded-md border border-zinc-900 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                'relative flex items-center bg-pure-black w-full rounded border border-zinc-900 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 className
             )}
-            ref={ref}
-            {...props}
-        />
+        >
+            {before && <div className="absolute text-text-light-gray px-2">{before}</div>}
+            <input
+                type={type}
+                ref={ref}
+                className={cn(
+                    'bg-transparent h-full px-3 py-1.5 w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium',
+                    before && 'pl-8'
+                )}
+                {...props}
+            />
+            {after && <div>{after}</div>}
+        </div>
     );
 });
 Input.displayName = 'Input';

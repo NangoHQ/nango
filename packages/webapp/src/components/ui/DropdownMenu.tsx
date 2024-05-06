@@ -60,7 +60,7 @@ const DropdownMenuContent = React.forwardRef<
             ref={ref}
             sideOffset={sideOffset}
             className={cn(
-                'text-white bg-zinc-900 z-50 min-w-[8rem] overflow-hidden rounded-md border border-black p-2.5 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+                'text-white bg-active-gray z-50 min-w-[8rem] overflow-hidden rounded-md border border-black p-2.5 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
                 className
             )}
             {...props}
@@ -94,13 +94,15 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     <DropdownMenuPrimitive.CheckboxItem
         ref={ref}
         className={cn(
-            'text-gray-400 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-zinc-800 focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+            'text-gray-400 relative flex cursor-pointer rounded select-none items-center py-1.5 pl-8 pr-2 text-xs outline-none transition-colors focus:bg-pure-black focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50 aria-checked:text-white',
             className
         )}
         checked={checked}
         {...props}
     >
-        <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <span
+            className={cn('absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-sm', checked && 'border-transparent')}
+        >
             <DropdownMenuPrimitive.ItemIndicator>
                 <CheckIcon className="h-4 w-4" />
             </DropdownMenuPrimitive.ItemIndicator>

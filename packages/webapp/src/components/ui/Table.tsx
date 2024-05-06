@@ -24,21 +24,31 @@ const Footer = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTabl
 Footer.displayName = 'Footer';
 
 const Row = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(({ className, ...props }, ref) => (
-    <tr ref={ref} className={cn(' text-xs transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted', className)} {...props} />
+    <tr
+        ref={ref}
+        className={cn(
+            'text-xs transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-hover-gray hover:text-white',
+            className
+        )}
+        {...props}
+    />
 ));
 Row.displayName = 'Row';
 
 const Head = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(({ className, ...props }, ref) => (
     <th
         ref={ref}
-        className={cn('bg-zinc-900 h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0', className)}
+        className={cn(
+            'bg-active-gray first-of-type:rounded-l last-of-type:rounded-r px-3 py-2.5 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+            className
+        )}
         {...props}
     />
 ));
 Head.displayName = 'Head';
 
 const Cell = forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement>>(({ className, ...props }, ref) => (
-    <td ref={ref} className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0', className)} {...props} />
+    <td ref={ref} className={cn('px-3 py-2.5 align-middle [&:has([role=checkbox])]:pr-0', className)} {...props} />
 ));
 Cell.displayName = 'Cell';
 

@@ -30,7 +30,7 @@ export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selecte
     return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
-                <Button variant="zinc">{label}</Button>
+                <Button variant="zombieGray">{label}</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
                 {options.map((option) => {
