@@ -4,7 +4,7 @@ import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 
-const logger = getLogger('Jobs');
+const logger = getLogger('Server');
 
 export function refreshTokens(): void {
     cron.schedule('0 6 * * *', () => {

@@ -4,7 +4,6 @@ import { server } from './server.js';
 import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { refreshTokens } from './crons/refreshTokens.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { JOBS_PORT } from './constants.js';
 
@@ -23,7 +22,6 @@ try {
     cronAutoIdleDemo();
     deleteOldActivityLogs();
     deleteSyncsData();
-    refreshTokens();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {

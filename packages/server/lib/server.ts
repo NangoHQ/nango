@@ -13,6 +13,7 @@ import { start as migrateLogs } from '@nangohq/logs';
 
 import publisher from './clients/publisher.client.js';
 import { app } from './routes.js';
+import { refreshTokens } from './refreshTokens.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
@@ -41,6 +42,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 
 await environmentService.cacheSecrets();
 await oAuthSessionService.clearStaleSessions();
+refreshTokens();
 
 const port = getPort();
 server.listen(port, () => {
