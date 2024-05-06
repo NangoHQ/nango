@@ -41,6 +41,7 @@ All notable changes to this project will be documented in this file.
 - *(release)* 0.39.24 [skip ci]
 - *(release)* 0.39.24 [skip ci]
 - *(release)* 0.39.24 [skip ci]
+- *(release)* 0.39.24 [skip ci]
 
 ### Fixed
 

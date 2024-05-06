@@ -23,6 +23,7 @@ await $`git commit --amend`;
 await $`git push --follow-tags origin HEAD:refs/heads/${branch}`;
 await $`git push --tags`;
 
+echo`Commit pushed, publishing release...`;
 // Push GitHub release
 const releaseNotes = $`npx git-cliff --latest`;
 const releaseData = JSON.stringify({
@@ -31,4 +32,8 @@ const releaseData = JSON.stringify({
     body: releaseNotes.stdout
 });
 
-await $`curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/NangoHQ/nango/releases -d ${releaseData}`;
+const res =
+    await $`curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/NangoHQ/nango/releases -d ${releaseData}`;
+console.log(res);
+
+echo`✅ Done`;
