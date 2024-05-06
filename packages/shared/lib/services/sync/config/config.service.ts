@@ -615,6 +615,7 @@ export async function getSyncConfigsWithConnections(
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.unique_key': providerConfigKey,
             active: true,
+            enabled: true,
             '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
         });

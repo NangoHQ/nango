@@ -12,6 +12,7 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
+import connectionService from '../../connection.service.js';
 import type { LogLevel } from '../../../models/Activity.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
@@ -309,7 +310,8 @@ export async function deployPreBuilt(
 
         providerConfigKeys.push(provider_config_key);
 
-        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {}, input } = config;
+        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {} } = config;
+        let { input } = config;
         const sync_name = config.name || config.syncName;
 
         if (type === SyncConfigType.SYNC && !runs) {
@@ -410,7 +412,11 @@ export async function deployPreBuilt(
 
         const model_schema = JSON.parse(model_schema_string);
 
-        if (typeof input !== 'string' && input?.name) {
+        if (input && Object.keys(input).length === 0) {
+            input = undefined;
+        }
+
+        if (input && typeof input !== 'string' && input.name) {
             model_schema.push(input);
         }
 
@@ -423,7 +429,7 @@ export async function deployPreBuilt(
             models,
             active: true,
             runs,
-            input: typeof input !== 'string' ? String(input?.name) : input,
+            input: input && typeof input !== 'string' ? String(input.name) : input,
             model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id,
             deleted: false,
@@ -753,6 +759,10 @@ async function compileDeployInfo({
             await logCtx.debug('Marking old sync configs as inactive', { count: ids.length, syncName, activeVersion: version });
         }
     }
+    //
+    // if there are too many connections for this sync then we need to also
+    // mark it as disabled
+    const isCapped = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id });
 
     insertData.push({
         environment_id,
@@ -772,7 +782,7 @@ async function compileDeployInfo({
         input: flow.input || '',
         sync_type: flow.sync_type,
         webhook_subscriptions: flow.webhookSubscriptions || [],
-        enabled: lastSyncWasEnabled
+        enabled: lastSyncWasEnabled && !isCapped
     });
 
     flowReturnData.push({

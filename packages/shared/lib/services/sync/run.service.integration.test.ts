@@ -344,7 +344,7 @@ async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
         end: Date.now(),
         timestamp: Date.now(),
         connection_id: connection.connection_id,
-        provider: connection?.provider_config_key,
+        provider: connection.provider_config_key,
         provider_config_key: connection.provider_config_key
     });
     if (!activityLogId) {
@@ -368,7 +368,7 @@ async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
 
 async function mockRecords(records: UnencryptedRecordData[]) {
     const envName = Math.random().toString(36).substring(7);
-    const env = await createEnvironmentSeed(envName);
+    const env = await createEnvironmentSeed(0, envName);
 
     const connections = await createConnectionSeeds(env);
 
