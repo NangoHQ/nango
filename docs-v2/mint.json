@@ -320,6 +320,7 @@
                         "integrations/all/aws",
                         "integrations/all/bamboohr",
                         "integrations/all/battlenet",
+                        "integrations/all/blandai",
                         "integrations/all/bitbucket",
                         "integrations/all/bitdefender",
                         "integrations/all/blackbaud",
