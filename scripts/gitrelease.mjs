@@ -21,6 +21,7 @@ await $`npx git-cliff -o CHANGELOG.md`;
 await $`git add CHANGELOG.md`;
 await $`git commit --amend`;
 await $`git push --follow-tags origin HEAD:refs/heads/${branch}`;
+await $`git push --tags`;
 
 // Push GitHub release
 const releaseNotes = $`npx git-cliff --latest`;

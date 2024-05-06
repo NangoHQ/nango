@@ -40,6 +40,7 @@ All notable changes to this project will be documented in this file.
 - *(release)* 0.39.24 [skip ci]
 - *(release)* 0.39.24 [skip ci]
 - *(release)* 0.39.24 [skip ci]
+- *(release)* 0.39.24 [skip ci]
 
 ### Fixed
 
@@ -74,6 +75,7 @@ All notable changes to this project will be documented in this file.
 - *(db)* Slow query getSyncs (#2088)
 - *(api)* Setup for e2e tests (#2090)
 - *(Provider)* Proxy is optional (#2096)
+- *(workflow)* Update publish.yaml
 
 ### Removed
 
@@ -989,58 +991,58 @@ All notable changes to this project will be documented in this file.
 - Remove Bearer's callback URL (#46)
 - Remove project link + version (#149)
 
-[0.39.24]: https://github.com///compare/v0.39.18..v0.39.24
-[0.39.18]: https://github.com///compare/v0.39.17..v0.39.18
-[0.39.17]: https://github.com///compare/v0.39.16..v0.39.17
-[0.39.16]: https://github.com///compare/v0.39.15..v0.39.16
-[0.39.14]: https://github.com///compare/v0.39.13..v0.39.14
-[0.39.13]: https://github.com///compare/v0.37.0..v0.39.13
-[0.37.0]: https://github.com///compare/v0.39.8..v0.37.0
-[0.39.8]: https://github.com///compare/v0.39.7..v0.39.8
-[0.39.7]: https://github.com///compare/v0.39.6..v0.39.7
-[0.39.6]: https://github.com///compare/v0.39.5..v0.39.6
-[0.39.5]: https://github.com///compare/v0.39.4..v0.39.5
-[0.39.4]: https://github.com///compare/v0.39.3..v0.39.4
-[0.39.3]: https://github.com///compare/v0.39.2..v0.39.3
-[0.39.2]: https://github.com///compare/v0.39.1..v0.39.2
-[0.39.1]: https://github.com///compare/v0.39.0..v0.39.1
-[0.39.0]: https://github.com///compare/v0.38.5..v0.39.0
-[0.38.5]: https://github.com///compare/v0.38.4..v0.38.5
-[0.38.4]: https://github.com///compare/v0.38.3..v0.38.4
-[0.38.3]: https://github.com///compare/v0.38.2..v0.38.3
-[0.38.2]: https://github.com///compare/v0.38.1..v0.38.2
-[0.38.1]: https://github.com///compare/v0.38.0..v0.38.1
-[0.38.0]: https://github.com///compare/v0.37.26..v0.38.0
-[0.37.26]: https://github.com///compare/v0.37.25..v0.37.26
-[0.37.25]: https://github.com///compare/v0.37.24..v0.37.25
-[0.37.24]: https://github.com///compare/v0.37.23..v0.37.24
-[0.37.23]: https://github.com///compare/v0.37.22..v0.37.23
-[0.37.22]: https://github.com///compare/v0.37.21..v0.37.22
-[0.37.21]: https://github.com///compare/v0.37.20..v0.37.21
-[0.37.20]: https://github.com///compare/v0.37.19..v0.37.20
-[0.37.19]: https://github.com///compare/v0.37.18..v0.37.19
-[0.37.17]: https://github.com///compare/v0.37.16..v0.37.17
-[0.37.13]: https://github.com///compare/v0.37.12..v0.37.13
-[0.37.9]: https://github.com///compare/v0.37.8..v0.37.9
-[0.37.8]: https://github.com///compare/v0.37.7..v0.37.8
-[0.37.7]: https://github.com///compare/v0.37.6..v0.37.7
-[0.37.5]: https://github.com///compare/v0.37.4..v0.37.5
-[0.37.4]: https://github.com///compare/v0.37.3..v0.37.4
-[0.37.2]: https://github.com///compare/v0.37.1..v0.37.2
-[0.37.1]: https://github.com///compare/v0.36.14..v0.37.1
-[0.36.14]: https://github.com///compare/v0.35.5..v0.36.14
-[0.24.4]: https://github.com///compare/v0.16.0..v0.24.4
-[0.16.0]: https://github.com///compare/v0.15.1..v0.16.0
-[0.15.1]: https://github.com///compare/v0.14.0..v0.15.1
-[0.14.0]: https://github.com///compare/v0.13.5..v0.14.0
-[0.13.4]: https://github.com///compare/v0.12.7..v0.13.4
-[0.12.7]: https://github.com///compare/v0.12.6..v0.12.7
-[0.12.1]: https://github.com///compare/v0.11.3..v0.12.1
-[0.11.2]: https://github.com///compare/v0.10.7..v0.11.2
-[0.8.5]: https://github.com///compare/v0.8.0..v0.8.5
-[0.8.0]: https://github.com///compare/v0.7.2..v0.8.0
-[0.5.1]: https://github.com///compare/v0.5.0..v0.5.1
-[0.3.6]: https://github.com///compare/v0.2.2..v0.3.6
-[0.2.2]: https://github.com///compare/v0.2.1..v0.2.2
+[0.39.24]: https://github.com/NangoHQ/nango/compare/v0.39.18..v0.39.24
+[0.39.18]: https://github.com/NangoHQ/nango/compare/v0.39.17..v0.39.18
+[0.39.17]: https://github.com/NangoHQ/nango/compare/v0.39.16..v0.39.17
+[0.39.16]: https://github.com/NangoHQ/nango/compare/v0.39.15..v0.39.16
+[0.39.14]: https://github.com/NangoHQ/nango/compare/v0.39.13..v0.39.14
+[0.39.13]: https://github.com/NangoHQ/nango/compare/v0.37.0..v0.39.13
+[0.37.0]: https://github.com/NangoHQ/nango/compare/v0.39.8..v0.37.0
+[0.39.8]: https://github.com/NangoHQ/nango/compare/v0.39.7..v0.39.8
+[0.39.7]: https://github.com/NangoHQ/nango/compare/v0.39.6..v0.39.7
+[0.39.6]: https://github.com/NangoHQ/nango/compare/v0.39.5..v0.39.6
+[0.39.5]: https://github.com/NangoHQ/nango/compare/v0.39.4..v0.39.5
+[0.39.4]: https://github.com/NangoHQ/nango/compare/v0.39.3..v0.39.4
+[0.39.3]: https://github.com/NangoHQ/nango/compare/v0.39.2..v0.39.3
+[0.39.2]: https://github.com/NangoHQ/nango/compare/v0.39.1..v0.39.2
+[0.39.1]: https://github.com/NangoHQ/nango/compare/v0.39.0..v0.39.1
+[0.39.0]: https://github.com/NangoHQ/nango/compare/v0.38.5..v0.39.0
+[0.38.5]: https://github.com/NangoHQ/nango/compare/v0.38.4..v0.38.5
+[0.38.4]: https://github.com/NangoHQ/nango/compare/v0.38.3..v0.38.4
+[0.38.3]: https://github.com/NangoHQ/nango/compare/v0.38.2..v0.38.3
+[0.38.2]: https://github.com/NangoHQ/nango/compare/v0.38.1..v0.38.2
+[0.38.1]: https://github.com/NangoHQ/nango/compare/v0.38.0..v0.38.1
+[0.38.0]: https://github.com/NangoHQ/nango/compare/v0.37.26..v0.38.0
+[0.37.26]: https://github.com/NangoHQ/nango/compare/v0.37.25..v0.37.26
+[0.37.25]: https://github.com/NangoHQ/nango/compare/v0.37.24..v0.37.25
+[0.37.24]: https://github.com/NangoHQ/nango/compare/v0.37.23..v0.37.24
+[0.37.23]: https://github.com/NangoHQ/nango/compare/v0.37.22..v0.37.23
+[0.37.22]: https://github.com/NangoHQ/nango/compare/v0.37.21..v0.37.22
+[0.37.21]: https://github.com/NangoHQ/nango/compare/v0.37.20..v0.37.21
+[0.37.20]: https://github.com/NangoHQ/nango/compare/v0.37.19..v0.37.20
+[0.37.19]: https://github.com/NangoHQ/nango/compare/v0.37.18..v0.37.19
+[0.37.17]: https://github.com/NangoHQ/nango/compare/v0.37.16..v0.37.17
+[0.37.13]: https://github.com/NangoHQ/nango/compare/v0.37.12..v0.37.13
+[0.37.9]: https://github.com/NangoHQ/nango/compare/v0.37.8..v0.37.9
+[0.37.8]: https://github.com/NangoHQ/nango/compare/v0.37.7..v0.37.8
+[0.37.7]: https://github.com/NangoHQ/nango/compare/v0.37.6..v0.37.7
+[0.37.5]: https://github.com/NangoHQ/nango/compare/v0.37.4..v0.37.5
+[0.37.4]: https://github.com/NangoHQ/nango/compare/v0.37.3..v0.37.4
+[0.37.2]: https://github.com/NangoHQ/nango/compare/v0.37.1..v0.37.2
+[0.37.1]: https://github.com/NangoHQ/nango/compare/v0.36.14..v0.37.1
+[0.36.14]: https://github.com/NangoHQ/nango/compare/v0.35.5..v0.36.14
+[0.24.4]: https://github.com/NangoHQ/nango/compare/v0.16.0..v0.24.4
+[0.16.0]: https://github.com/NangoHQ/nango/compare/v0.15.1..v0.16.0
+[0.15.1]: https://github.com/NangoHQ/nango/compare/v0.14.0..v0.15.1
+[0.14.0]: https://github.com/NangoHQ/nango/compare/v0.13.5..v0.14.0
+[0.13.4]: https://github.com/NangoHQ/nango/compare/v0.12.7..v0.13.4
+[0.12.7]: https://github.com/NangoHQ/nango/compare/v0.12.6..v0.12.7
+[0.12.1]: https://github.com/NangoHQ/nango/compare/v0.11.3..v0.12.1
+[0.11.2]: https://github.com/NangoHQ/nango/compare/v0.10.7..v0.11.2
+[0.8.5]: https://github.com/NangoHQ/nango/compare/v0.8.0..v0.8.5
+[0.8.0]: https://github.com/NangoHQ/nango/compare/v0.7.2..v0.8.0
+[0.5.1]: https://github.com/NangoHQ/nango/compare/v0.5.0..v0.5.1
+[0.3.6]: https://github.com/NangoHQ/nango/compare/v0.2.2..v0.3.6
+[0.2.2]: https://github.com/NangoHQ/nango/compare/v0.2.1..v0.2.2
 
 <!-- generated by git-cliff -->
