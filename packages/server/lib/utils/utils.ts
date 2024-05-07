@@ -1,11 +1,11 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
-import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
+import type { User, Template as ProviderTemplate } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
-import { getLogger, resultErr, resultOk, isErr } from '@nangohq/utils';
+import { getLogger, resultErr, resultOk } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
-import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
+import { NangoError, userService, interpolateString } from '@nangohq/shared';
 
 const logger = getLogger('Server.Utils');
 
@@ -25,30 +25,6 @@ export async function getUserFromSession(req: Request<any>): Promise<Result<User
     }
 
     return resultOk(user);
-}
-
-export async function getUserAccountAndEnvironmentFromSession(
-    req: Request<any>
-): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
-    const getUser = await getUserFromSession(req);
-    if (isErr(getUser)) {
-        return { error: getUser.err, response: null, success: false };
-    }
-
-    const user = getUser.res;
-    const currentEnvironment = req.query['env'];
-    if (typeof currentEnvironment !== 'string') {
-        return { success: false, error: new NangoError('invalid_env'), response: null };
-    }
-
-    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
-    if (!environmentAndAccount) {
-        const error = new NangoError('account_not_found');
-        return { success: false, error, response: null };
-    }
-
-    const response = { user, ...environmentAndAccount };
-    return { success: true, error: null, response };
 }
 
 export function dirname() {
@@ -136,11 +112,11 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers || template?.proxy?.verification) {
+    if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers || template.proxy?.verification) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
-        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
-        const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
-        const proxyBaseUrlMatches = template.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
+        const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const proxyBaseUrlMatches = template.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyHeaderMatches = template.proxy?.headers
             ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
             : [];
@@ -157,7 +133,7 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
                 ].includes(cleanParamName(param))
         );
         const proxyVerificationMatches =
-            template.proxy?.verification?.endpoint?.match(/\${connectionConfig\.([^{}]*)}/g) ||
+            template.proxy?.verification?.endpoint.match(/\${connectionConfig\.([^{}]*)}/g) ||
             template.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
             [];
         return [...tokenUrlMatches, ...authorizationUrlMatches, ...proxyMatches, ...proxyVerificationMatches]

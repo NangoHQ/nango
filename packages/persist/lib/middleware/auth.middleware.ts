@@ -20,10 +20,11 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         res.status(401).json({ error: 'Missing environmentId' });
         return;
     }
+
     environmentService
-        .getAccountIdAndEnvironmentIdBySecretKey(secret)
+        .getAccountAndEnvironmentBySecretKey(secret)
         .then((result) => {
-            if (!result || result.environmentId !== environmentId) {
+            if (!result || result.environment.id !== environmentId) {
                 throw new Error('Unauthorized');
             }
             next();

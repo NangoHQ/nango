@@ -1,11 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { IncomingPreBuiltFlowConfig, FlowDownloadBody } from '@nangohq/shared';
 import {
     flowService,
     accountService,
     connectionService,
-    getEnvironmentAndAccountId,
     errorManager,
     configService,
     deployPreBuilt as deployPreBuiltSyncConfig,
@@ -19,18 +17,13 @@ import {
     disableScriptConfig as disableConfig
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
+import type { RequestLocals } from '../utils/express.js';
 
 class FlowController {
-    public async getFlows(req: Request, res: Response, next: NextFunction) {
+    public async getFlows(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
             const availableFlows = flowService.getAllAvailableFlows();
-            const addedFlows = await flowService.getAddedPublicFlows(response.environment.id);
+            const addedFlows = await flowService.getAddedPublicFlows(res.locals['environment'].id);
 
             res.send({ addedFlows, availableFlows });
         } catch (e) {
@@ -38,15 +31,8 @@ class FlowController {
         }
     }
 
-    public async adminDeployPrivateFlow(req: Request, res: Response, next: NextFunction) {
+    public async adminDeployPrivateFlow(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
             const { targetAccountUUID, targetEnvironment, config } = req.body;
 
             const result = await accountService.getAccountAndEnvironmentIdByUUID(targetAccountUUID, targetEnvironment);
@@ -77,15 +63,8 @@ class FlowController {
         }
     }
 
-    public async deployPreBuiltFlow(req: Request, res: Response, next: NextFunction) {
+    public async deployPreBuiltFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
             const config: IncomingPreBuiltFlowConfig[] = req.body;
 
             if (!config) {
@@ -98,13 +77,14 @@ class FlowController {
                 return;
             }
 
-            const { environmentId, accountId } = response;
+            const environmentId = res.locals['environment'].id;
+            const accountId = res.locals['account'].id;
 
             // config is an array for compatibility purposes, it will only ever have one item
             const [firstConfig] = config;
             let providerLookup;
             if (firstConfig?.providerConfigKey) {
-                providerLookup = await configService.getConfigIdByProviderConfigKey(firstConfig?.providerConfigKey, environmentId);
+                providerLookup = await configService.getConfigIdByProviderConfigKey(firstConfig.providerConfigKey, environmentId);
             } else {
                 providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
             }
@@ -122,7 +102,7 @@ class FlowController {
             }
 
             if (account.is_capped && firstConfig?.providerConfigKey) {
-                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: firstConfig?.providerConfigKey, environmentId, type: 'activate' });
+                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: firstConfig.providerConfigKey, environmentId, type: 'activate' });
 
                 if (isCapped) {
                     errorManager.errRes(res, 'resource_capped');
@@ -149,16 +129,10 @@ class FlowController {
         }
     }
 
-    public async downloadFlow(req: Request, res: Response, next: NextFunction) {
+    public async downloadFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { environmentId, accountId } = response;
+            const environmentId = res.locals['environment'].id;
+            const accountId = res.locals['account'].id;
 
             const body: FlowDownloadBody = req.body as FlowDownloadBody;
 
@@ -196,16 +170,9 @@ class FlowController {
         }
     }
 
-    public async getFlowConfig(req: Request, res: Response, next: NextFunction) {
+    public async getFlowConfig(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { environmentId } = response;
+            const environmentId = res.locals['environment'].id;
 
             const nangoConfigs = await getAllSyncsAndActions(environmentId);
 
@@ -215,16 +182,9 @@ class FlowController {
         }
     }
 
-    public async enableFlow(req: Request, res: Response, next: NextFunction) {
+    public async enableFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { account, environment } = response;
+            const { account, environment } = res.locals;
 
             const id = req.params['id'];
             const flow = req.body;
@@ -257,16 +217,9 @@ class FlowController {
         }
     }
 
-    public async disableFlow(req: Request, res: Response, next: NextFunction) {
+    public async disableFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
-
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { environmentId } = response;
+            const environmentId = res.locals['environment'].id;
 
             const id = req.params['id'];
             const connectionIds = req.query['connectionIds'] as string;
@@ -301,15 +254,9 @@ class FlowController {
         }
     }
 
-    public async getFlow(req: Request, res: Response, next: NextFunction) {
+    public async getFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { environment } = response;
+            const environment = res.locals['environment'];
             const providerConfigKey = req.query['provider_config_key'] as string;
             const { flowName } = req.params;
 
