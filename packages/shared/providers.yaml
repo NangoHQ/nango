@@ -581,6 +581,22 @@ entrata:
     proxy:
         base_url: https://${connectionConfig.subdomain}.entrata.com
     docs: https://docs.nango.dev/integrations/all/entrata
+envoy:
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.envoy.com/a/auth/v0/authorize
+    token_url: https://app.envoy.com/a/auth/v0/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.envoy.com
+    docs: https://docs.nango.dev/integrations/all/envoy
 epic-games:
     categories:
         - gaming
