@@ -13,6 +13,8 @@ const TABLE = '_nango_environments';
 
 export const defaultEnvironments = ['prod', 'dev'];
 
+const hashLocalCache = new Map<string, string>();
+
 class EnvironmentService {
     async getEnvironmentsByAccountId(account_id: number): Promise<Pick<Environment, 'name'>[]> {
         try {
@@ -133,9 +135,12 @@ class EnvironmentService {
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
             .first();
 
+        let hash: string | undefined;
         if ('secretKey' in opts) {
-            const hashed = await hashSecretKey(opts.secretKey);
-            q.where('secret_key_hashed', hashed);
+            // Hashing is slow by design so it's very slow to recompute this hash all the time
+            // We keep the hash in-memory to not compromise on security if the db leak
+            hash = hashLocalCache.get(opts.secretKey) || (await hashSecretKey(opts.secretKey));
+            q.where('secret_key_hashed', hash);
         } else if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
         } else if (opts.accountId !== undefined) {
@@ -145,7 +150,15 @@ class EnvironmentService {
         }
 
         const res = await q;
-        return res ? { account: res.account, environment: encryptionManager.decryptEnvironment(res.environment)! } : null;
+        if (!res) {
+            return null;
+        }
+
+        if (hash && 'secretKey' in opts) {
+            // Store only successful attempt to not pollute the memory
+            hashLocalCache.set(opts.secretKey, hash);
+        }
+        return { account: res.account, environment: encryptionManager.decryptEnvironment(res.environment)! };
     }
 
     async getIdByUuid(uuid: string): Promise<number | null> {

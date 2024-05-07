@@ -12,24 +12,29 @@ const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/a
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-        const authorizationHeader = req.get('authorization');
-
-        if (!authorizationHeader) {
-            return errorManager.errRes(res, 'missing_auth_header');
-        }
-
-        const secret = authorizationHeader.split('Bearer ').pop();
-
-        if (!secret) {
-            return errorManager.errRes(res, 'malformed_auth_header');
-        }
-
-        if (!keyRegex.test(secret)) {
-            return errorManager.errRes(res, 'invalid_secret_key_format');
-        }
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('secretKeyAuth', {
+            childOf: active!
+        });
 
         const start = Date.now();
         try {
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                return errorManager.errRes(res, 'missing_auth_header');
+            }
+
+            const secret = authorizationHeader.split('Bearer ').pop();
+
+            if (!secret) {
+                return errorManager.errRes(res, 'malformed_auth_header');
+            }
+
+            if (!keyRegex.test(secret)) {
+                return errorManager.errRes(res, 'invalid_secret_key_format');
+            }
+
             const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
             if (!result) {
                 res.status(401).send({ error: { code: 'unknown_user_account' } });
@@ -46,6 +51,7 @@ export class AccessMiddleware {
             return errorManager.errRes(res, 'malformed_auth_header');
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start);
+            span.finish();
         }
     }
 
@@ -63,17 +69,23 @@ export class AccessMiddleware {
     }
 
     async publicKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-        const publicKey = req.query['public_key'] as string;
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('publicKeyAuth', {
+            childOf: active!
+        });
 
-        if (!publicKey) {
-            return errorManager.errRes(res, 'missing_public_key');
-        }
-
-        if (!keyRegex.test(publicKey)) {
-            return errorManager.errRes(res, 'invalid_public_key');
-        }
-
+        const start = Date.now();
         try {
+            const publicKey = req.query['public_key'] as string;
+
+            if (!publicKey) {
+                return errorManager.errRes(res, 'missing_public_key');
+            }
+
+            if (!keyRegex.test(publicKey)) {
+                return errorManager.errRes(res, 'invalid_public_key');
+            }
+
             const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
             if (!result) {
                 res.status(401).send({ error: { code: 'unknown_user_account' } });
@@ -88,22 +100,36 @@ export class AccessMiddleware {
         } catch (e) {
             errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.INTERNAL_AUTHORIZATION });
             return errorManager.errRes(res, 'unknown_account');
+        } finally {
+            metrics.duration(metrics.Types.AUTH_PUBLIC_KEY, Date.now() - start);
+            span.finish();
         }
     }
 
     async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-        if (!req.isAuthenticated()) {
-            res.status(401).send({ error: { code: 'unauthorized' } });
-            return;
-        }
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('sessionAuth', {
+            childOf: active!
+        });
 
-        if (ignoreEnvPaths.includes(req.route.path)) {
-            next();
-            return;
-        }
+        const start = Date.now();
+        try {
+            if (!req.isAuthenticated()) {
+                res.status(401).send({ error: { code: 'unauthorized' } });
+                return;
+            }
 
-        res.locals['authType'] = 'session';
-        await fillLocalsFromSession(req, res, next);
+            if (ignoreEnvPaths.includes(req.route.path)) {
+                next();
+                return;
+            }
+
+            res.locals['authType'] = 'session';
+            await fillLocalsFromSession(req, res, next);
+        } finally {
+            metrics.duration(metrics.Types.AUTH_SESSION, Date.now() - start);
+            span.finish();
+        }
     }
 
     async noAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
