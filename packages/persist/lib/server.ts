@@ -8,9 +8,10 @@ import { logLevelValues } from '@nangohq/shared';
 import { authMiddleware } from './middleware/auth.middleware.js';
 
 const logger = getLogger('Persist');
+const maxSizeJsonLog = '100kb';
+const maxSizeJsonRecords = '100mb';
 
 export const server = express();
-server.use(express.json({ limit: '100mb' }));
 
 server.use((req: Request, res: Response, next: NextFunction) => {
     const originalSend = res.send;
@@ -35,6 +36,7 @@ server.get('/health', (_req: Request, res: Response) => {
 
 server.post(
     '/environment/:environmentId/log',
+    express.json({ limit: maxSizeJsonLog }),
     validateRequest({
         params: z.object({
             environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
@@ -64,18 +66,24 @@ const validateRecordsRequest = validateRequest({
     })
 });
 const recordPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
-server.post(recordPath, validateRecordsRequest, persistController.saveRecords.bind(persistController));
-server.delete(recordPath, validateRecordsRequest, persistController.deleteRecords.bind(persistController));
-server.put(recordPath, validateRecordsRequest, persistController.updateRecords.bind(persistController));
+server.post(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.saveRecords.bind(persistController));
+server.delete(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.deleteRecords.bind(persistController));
+server.put(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.updateRecords.bind(persistController));
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);
     next();
 });
 
-server.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
-    if (err) {
+server.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof Error) {
+        if (err.message === 'request entity too large') {
+            res.status(400).json({ error: 'Entity too large' });
+            return;
+        }
         res.status(500).json({ error: err.message });
+    } else if (err) {
+        res.status(500).json({ error: 'uncaught error' });
     } else {
         next();
     }

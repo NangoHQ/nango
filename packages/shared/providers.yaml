@@ -581,6 +581,22 @@ entrata:
     proxy:
         base_url: https://${connectionConfig.subdomain}.entrata.com
     docs: https://docs.nango.dev/integrations/all/entrata
+envoy:
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.envoy.com/a/auth/v0/authorize
+    token_url: https://app.envoy.com/a/auth/v0/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.envoy.com
+    docs: https://docs.nango.dev/integrations/all/envoy
 epic-games:
     categories:
         - gaming
@@ -1202,6 +1218,13 @@ kustomer:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/kustomer
+lessonly:
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lessonly.com/api
+    docs: https://docs.nango.dev/integrations/all/lessonly
 lever:
     categories:
         - ats
@@ -1321,6 +1344,19 @@ microsoft-tenant-specific:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
+microsoft-ads:
+    alias: microsoft-teams
+    categories:
+        - marketing
+    default_scopes:
+        - https://ads.microsoft.com/msads.manage
+        - offline_access
+    proxy:
+        base_url: https://clientcenter.api.bingads.microsoft.com/Api
+    refresh_params:
+        grant_type: refresh_token
+        scope: https://ads.microsoft.com/msads.manage
+    docs: https://docs.nango.dev/integrations/all/microsoft-ads
 mixpanel:
     categories:
         - analytics
@@ -1655,6 +1691,18 @@ pivotaltracker:
             method: GET
             endpoint: /accounts
     docs: https://docs.nango.dev/integrations/all/pivotaltracker
+posthog:
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://${connectionConfig.subdomain}.posthog.com
+        verification:
+            method: GET
+            endpoint: /api/users/@me
+    docs: https://docs.nango.dev/integrations/all/posthog
 qualtrics:
     categories:
         - surveys
@@ -2109,8 +2157,10 @@ teamwork:
     auth_mode: OAUTH2
     authorization_url: https://www.teamwork.com/launchpad/login
     token_url: https://www.teamwork.com/launchpad/v1/token.json
+    token_response_metadata:
+        - installation.apiEndPoint
     proxy:
-        base_url: https://${connectionConfig.subdomain}${connectionConfig.extension}.teamwork.com
+        base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
 tiktok-accounts:
     categories:
@@ -2308,6 +2358,21 @@ wave-accounting:
     proxy:
         base_url: https://gql.waveapps.com
     docs: https://docs.nango.dev/integrations/all/wave-accounting
+wealthbox:
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.crmworkspace.com/oauth/authorize
+    token_url: https://app.crmworkspace.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.crmworkspace.com
+    docs: https://docs.nango.dev/integrations/all/wealthbox
 whoop:
     categories:
         - sports

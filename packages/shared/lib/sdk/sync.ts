@@ -566,7 +566,7 @@ export class NangoAction {
 
         if (response.status > 299) {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
+            throw new Error(`Failed to log: ${'error' in response.data ? response.data.error : JSON.stringify(response.data)}`);
         }
 
         return;
@@ -724,7 +724,7 @@ export class NangoSync extends NangoAction {
                 this.logMessages?.messages.push(msg);
             }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.added = Number(this.logMessages?.counts.added) + results.length;
+                this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
             }
             return null;
         }
@@ -775,7 +775,7 @@ export class NangoSync extends NangoAction {
                 this.logMessages?.messages.push(msg);
             }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.deleted = Number(this.logMessages?.counts.deleted) + results.length;
+                this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
             }
             return null;
         }
@@ -826,7 +826,7 @@ export class NangoSync extends NangoAction {
                 this.logMessages?.messages.push(msg);
             }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.updated = Number(this.logMessages?.counts.updated) + results.length;
+                this.logMessages.counts.updated = Number(this.logMessages.counts.updated) + results.length;
             }
             return null;
         }

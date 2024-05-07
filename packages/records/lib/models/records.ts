@@ -174,14 +174,6 @@ export async function getRecords({
         }
         return resultOk({ records: results, next_cursor: null });
     } catch (_error) {
-        // TODO: telemetry doesn't belong in models
-        // await telemetry.log(LogTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
-        //     environmentId: String(environmentId),
-        //     connectionId: String(connectionId),
-        //     modifiedAfter: String(modifiedAfter),
-        //     model,
-        //     error: stringifyError(e)
-        // });
         const e = new Error(`List records error for model ${model}`);
         return resultErr(e);
     }
@@ -447,7 +439,7 @@ async function getUpsertSummary({
             nonUniqueKeys: nonUniqueKeys
         };
     } else {
-        const addedKeys = keys?.filter((key: string) => !nonDeletedKeys.includes(key));
+        const addedKeys = keys.filter((key: string) => !nonDeletedKeys.includes(key));
         const updatedKeys = await getUpdatedKeys({ records, connectionId, model, trx });
         return {
             addedKeys,

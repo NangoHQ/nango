@@ -45,11 +45,11 @@ class ConfigService {
             }
 
             for (const key in fileEntries) {
-                const entry = fileEntries[key] as ProviderTemplateAlias;
+                const entry = fileEntries[key] as ProviderTemplateAlias | undefined;
 
                 if (entry?.alias) {
                     let hasOverrides = false;
-                    let templateOverrides;
+                    let templateOverrides: ProviderTemplateAlias;
                     if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
                         const { alias, ...overrides } = entry;
                         hasOverrides = true;
@@ -57,7 +57,7 @@ class ConfigService {
                     }
                     const aliasData = fileEntries[entry.alias] as ProviderTemplate;
                     if (hasOverrides) {
-                        fileEntries[key] = { ...aliasData, ...templateOverrides };
+                        fileEntries[key] = { ...aliasData, ...templateOverrides! };
                     }
                 }
             }
@@ -109,23 +109,17 @@ class ConfigService {
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
-        if (!providerConfigKey) {
-            throw new NangoError('missing_provider_config');
-        }
-        if (environment_id === null || environment_id === undefined) {
-            throw new NangoError('missing_environment_id');
-        }
-
         const result = await db.knex
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, environment_id, deleted: false });
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
+        if (!result) {
             return null;
         }
 
-        return encryptionManager.decryptProviderConfig(result[0]);
+        return encryptionManager.decryptProviderConfig(result);
     }
 
     async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {

@@ -188,13 +188,24 @@ class RemoteFileService {
         await client?.send(deleteObjectsCommand);
     }
 
-    async zipAndSendPublicFiles(res: Response, integrationName: string, accountId: number, environmentId: number, providerPath: string): Promise<void> {
+    async zipAndSendPublicFiles(
+        res: Response,
+        integrationName: string,
+        accountId: number,
+        environmentId: number,
+        providerPath: string,
+        flowType: string
+    ): Promise<void> {
         const { success, error, response: nangoYaml } = await this.getStream(`${this.publicRoute}/${providerPath}/${nangoConfigFile}`);
         if (!success || nangoYaml === null) {
             errorManager.errResFromNangoErr(res, error);
             return;
         }
-        const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${this.publicRoute}/${providerPath}/${integrationName}.ts`);
+        const {
+            success: tsSuccess,
+            error: tsError,
+            response: tsFile
+        } = await this.getStream(`${this.publicRoute}/${providerPath}/${flowType}s/${integrationName}.ts`);
         if (!tsSuccess || tsFile === null) {
             errorManager.errResFromNangoErr(res, tsError);
             return;

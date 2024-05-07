@@ -201,7 +201,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         return [];
     }
 
-    const scheduleResponse = await syncClient?.listSchedules();
+    const scheduleResponse = await syncClient.listSchedules();
     if (scheduleResponse?.schedules.length === 0) {
         await markAllAsStopped();
     }
@@ -219,7 +219,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         ) as thirty_day_timestamps`
     );
 
-    const result = await db.knex
+    const q = db.knex
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
@@ -255,11 +255,10 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                         'activity_log_id', ${ACTIVITY_LOG_TABLE}.id
                     )
                     FROM ${SYNC_JOB_TABLE}
-                    JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id
+                    JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
                     LEFT JOIN ${ACTIVITY_LOG_TABLE} ON ${ACTIVITY_LOG_TABLE}.session_id = ${SYNC_JOB_TABLE}.id::text
                     WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
-                    AND ${SYNC_JOB_TABLE}.deleted = false
-                    AND ${SYNC_CONFIG_TABLE}.deleted = false
+                        AND ${SYNC_JOB_TABLE}.deleted = false
                     ORDER BY ${SYNC_JOB_TABLE}.updated_at DESC
                     LIMIT 1
                 ) as latest_sync
@@ -267,12 +266,11 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             ),
             syncJobTimestampsSubQuery
         )
-        .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
-        .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
+        .join(SYNC_SCHEDULE_TABLE, function () {
+            this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
+        })
         .where({
             nango_connection_id: nangoConnection.id,
-            [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
-            [`${SYNC_JOB_TABLE}.deleted`]: false,
             [`${TABLE}.deleted`]: false
         })
         .orderBy(`${TABLE}.name`, 'asc')
@@ -285,6 +283,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             'models'
         );
 
+    // console.log(q.toQuery());
+    const result = await q;
     const syncsWithSchedule = result.map(async (sync) => {
         const { schedule_id } = sync;
         const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
@@ -302,7 +302,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             };
             await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
         }
-        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber()) || [];
+        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long.seconds?.toNumber()) || [];
 
         return {
             ...sync,
@@ -647,7 +647,7 @@ export const getAndReconcileDifferences = async ({
                     deletedSyncs.push({
                         name: existingSync.sync_name,
                         providerConfigKey: existingSync.unique_key,
-                        connections: connections?.length
+                        connections: connections.length
                     });
                 } else {
                     deletedActions.push({
@@ -722,6 +722,7 @@ export interface PausableSyncs {
     environment_id: number;
     provider: string;
     account_id: number;
+    connection_unique_id: number;
     connection_id: string;
     unique_key: string;
     schedule_id: string;
@@ -737,6 +738,7 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
             '_nango_connections.environment_id',
             '_nango_configs.provider',
             '_nango_configs.unique_key',
+            '_nango_connections.id as connection_unique_id',
             '_nango_connections.connection_id',
             '_nango_sync_schedules.schedule_id'
         )

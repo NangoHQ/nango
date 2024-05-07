@@ -4,7 +4,6 @@ import {
     environmentService,
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
-    findActivityLogBySession,
     errorManager,
     analytics,
     AnalyticsTypes,
@@ -27,7 +26,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 
 class AppAuthController {
-    async connect(req: Request, res: Response, _next: NextFunction) {
+    async connect(req: Request, res: Response<any, never>, _next: NextFunction) {
         const installation_id = req.query['installation_id'] as string | undefined;
         const state = req.query['state'] as string;
         const action = req.query['setup_action'] as string;
@@ -52,14 +51,14 @@ class AppAuthController {
         } else {
             await oAuthSessionService.delete(session.id);
         }
+
         const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
 
         void analytics.track(AnalyticsTypes.PRE_APP_AUTH, accountId);
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
-        const activityLogId = await findActivityLogBySession(session.id);
-        // TODO: fix this
-        const logCtx = logContextGetter.get({ id: String(activityLogId) });
+        const activityLogId = Number(session.activityLogId);
+        const logCtx = logContextGetter.get({ id: session.activityLogId });
 
         try {
             if (!providerConfigKey) {
@@ -80,14 +79,14 @@ class AppAuthController {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
                 });
                 await logCtx.error('Error during API Key auth: config not found');
                 await logCtx.failed();
 
-                await updateSuccessActivityLog(activityLogId as number, false);
+                await updateSuccessActivityLog(activityLogId, false);
 
                 errorManager.errRes(res, 'unknown_provider_config');
 
@@ -95,13 +94,13 @@ class AppAuthController {
             }
 
             const template = configService.getTemplate(config.provider);
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[AuthModes.App] as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.[AuthModes.App] as string);
 
             if (template.auth_mode !== AuthModes.App) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Provider ${config.provider} does not support app creation`
                 });
@@ -110,7 +109,7 @@ class AppAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
-                await updateSuccessActivityLog(activityLogId as number, false);
+                await updateSuccessActivityLog(activityLogId, false);
 
                 return;
             }
@@ -119,7 +118,7 @@ class AppAuthController {
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     content: 'App types do not support the request flow. Please use the github-app-oauth provider for the request flow.',
                     timestamp: Date.now(),
                     auth_mode: AuthModes.App,
@@ -131,7 +130,7 @@ class AppAuthController {
                 });
                 await logCtx.failed();
 
-                await updateSuccessActivityLog(activityLogId as number, false);
+                await updateSuccessActivityLog(activityLogId, false);
 
                 errorManager.errRes(res, 'wrong_auth_mode');
 
@@ -148,7 +147,7 @@ class AppAuthController {
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     content: error.message,
                     timestamp: Date.now(),
                     auth_mode: template.auth_mode,
@@ -175,7 +174,7 @@ class AppAuthController {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     content: `Error during app token retrieval call: ${error?.message}`,
                     timestamp: Date.now()
                 });
@@ -212,7 +211,7 @@ class AppAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
 
-            await updateSuccessActivityLog(activityLogId as number, true);
+            await updateSuccessActivityLog(activityLogId, true);
 
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
@@ -245,7 +244,7 @@ class AppAuthController {
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id: environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 content: 'App connection was successful and credentials were saved',
                 timestamp: Date.now()
             });
@@ -270,7 +269,7 @@ class AppAuthController {
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 content,
                 timestamp: Date.now(),
                 auth_mode: AuthModes.App,

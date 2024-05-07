@@ -1,24 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { LogLevel, DataResponse, DataRecord } from '@nangohq/shared';
+import type { LogLevel } from '@nangohq/shared';
 import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import {
-    createActivityLogMessage,
-    errorManager,
-    ErrorSourceEnum,
-    LogActionEnum,
-    updateSyncJobResult,
-    dataService,
-    syncDataService,
-    getSyncConfigByJobId
-} from '@nangohq/shared';
+import { createActivityLogMessage, errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
-import { getLogger, resultErr, resultOk, isOk, isErr, metrics, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-
-const logger = getLogger('PersistController');
+import { resultErr, resultOk, isOk, isErr, metrics, stringifyError } from '@nangohq/utils';
 
 type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
@@ -39,6 +28,8 @@ type RecordRequest = Request<
     void
 >;
 
+const MAX_LOG_CHAR = 10000;
+
 class PersistController {
     public async saveActivityLog(
         req: Request<{ environmentId: number }, void, { activityLogId: number; level: LogLevel; msg: string }, void>,
@@ -49,19 +40,20 @@ class PersistController {
             params: { environmentId },
             body: { activityLogId, level, msg }
         } = req;
+        const truncatedMsg = msg.length > MAX_LOG_CHAR ? `${msg.substring(0, MAX_LOG_CHAR)}... (truncated)` : msg;
         const result = await createActivityLogMessage(
             {
                 level,
                 environment_id: environmentId,
                 activity_log_id: activityLogId,
-                content: msg,
+                content: truncatedMsg,
                 timestamp: Date.now()
             },
             false
         );
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
         logCtx.logToConsole = false;
-        await logCtx.log({ type: 'log', message: msg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
+        await logCtx.log({ type: 'log', message: truncatedMsg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
 
         if (result) {
             res.status(201).send();
@@ -75,12 +67,8 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
-        const logCtx = logContextGetter.get({ id: String(activityLogId) });
-        const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            const newUpsert = recordsService.upsert({ records, connectionId: nangoConnectionId, model, softDelete: false });
-            const legacyUpsert = dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, false, logCtx);
-            const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
-            return newRes;
+        const persist = async (records: FormattedRecord[]) => {
+            return recordsService.upsert({ records, connectionId: nangoConnectionId, model, softDelete: false });
         };
         const result = await PersistController.persistRecords({
             persistType: 'save',
@@ -108,12 +96,8 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
-        const logCtx = logContextGetter.get({ id: String(activityLogId) });
-        const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            const newUpsert = recordsService.upsert({ records, connectionId: nangoConnectionId, model, softDelete: true });
-            const legacyUpsert = dataService.upsert(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, true, logCtx);
-            const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
-            return newRes;
+        const persist = async (records: FormattedRecord[]) => {
+            return recordsService.upsert({ records, connectionId: nangoConnectionId, model, softDelete: true });
         };
         const result = await PersistController.persistRecords({
             persistType: 'delete',
@@ -141,12 +125,8 @@ class PersistController {
             params: { environmentId, nangoConnectionId, syncId, syncJobId },
             body: { model, records, providerConfigKey, connectionId, activityLogId }
         } = req;
-        const logCtx = logContextGetter.get({ id: String(activityLogId) });
-        const persist = async (records: FormattedRecord[], legacyRecords: DataRecord[]) => {
-            const newUpsert = recordsService.update({ records, connectionId: nangoConnectionId, model });
-            const legacyUpsert = dataService.update(legacyRecords, nangoConnectionId, model, activityLogId, environmentId, logCtx);
-            const [newRes] = await Promise.all([newUpsert, legacyUpsert]);
-            return newRes;
+        const persist = async (records: FormattedRecord[]) => {
+            return recordsService.update({ records, connectionId: nangoConnectionId, model });
         };
         const result = await PersistController.persistRecords({
             persistType: 'update',
@@ -194,7 +174,7 @@ class PersistController {
         records: Record<string, any>[];
         activityLogId: number;
         softDelete: boolean;
-        persistFunction: (records: FormattedRecord[], legacyRecords: DataRecord[]) => Promise<Result<UpsertSummary>>;
+        persistFunction: (records: FormattedRecord[]) => Promise<Result<UpsertSummary>>;
     }): Promise<Result<void>> {
         const active = tracer.scope().active();
         const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
@@ -215,7 +195,6 @@ class PersistController {
             }
         });
 
-        let formattedRecords: FormattedRecord[] = [];
         const formatting = recordsFormatter.formatRecords({
             data: records as UnencryptedRecordData[],
             connectionId: nangoConnectionId,
@@ -224,36 +203,24 @@ class PersistController {
             syncJobId,
             softDelete
         });
-        if (isErr(formatting)) {
-            logger.error('Failed to format records: ' + formatting.err.message);
-        } else {
-            formattedRecords = formatting.res;
-        }
-
-        const {
-            success,
-            error,
-            response: legacyFormattedRecords
-        } = syncDataService.formatDataRecords(records as unknown as DataResponse[], nangoConnectionId, model, syncId, syncJobId, softDelete);
-
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
-        if (!success || legacyFormattedRecords === null) {
+        if (isErr(formatting)) {
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
                 activity_log_id: activityLogId,
-                content: `There was an issue with the batch ${persistType}. ${error?.message}`,
+                content: `There was an issue with the batch ${persistType}. ${formatting.err.message}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('There was an issue with the batch', { error, persistType });
+            await logCtx.error('There was an issue with the batch', { error: formatting.err, persistType });
             const res = resultErr(`Failed to ${persistType} records ${activityLogId}`);
 
             span.setTag('error', res.err).finish();
             return res;
         }
-        const syncConfig = await getSyncConfigByJobId(syncJobId);
 
-        if (syncConfig && !syncConfig.models.includes(model)) {
+        const syncConfig = await getSyncConfigByJobId(syncJobId);
+        if (syncConfig && !syncConfig?.models.includes(model)) {
             const res = resultErr(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
             await logCtx.error('The model is not included in the declared sync models', { model });
 
@@ -261,29 +228,25 @@ class PersistController {
             return res;
         }
 
-        const persistResult = await persistFunction(formattedRecords, legacyFormattedRecords);
-        // TODO after migrating records
-        // add activityLog if persistResult.nonUniqueKeys is not empty
-        //
-        // for (const nonUniqueKey of persistResult.summary.nonUniqueKeys) {
-        //     await createActivityLogMessage({
-        //         level: 'error',
-        //         environment_id,
-        //         activity_log_id: activityLogId,
-        //         content: `Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`,
-        //         timestamp: Date.now()
-        //     });
-        // }
-
+        const persistResult = await persistFunction(formatting.res);
         if (isOk(persistResult)) {
             const summary = persistResult.res;
             const updatedResults = {
                 [model]: {
                     added: summary.addedKeys.length,
                     updated: summary.updatedKeys.length,
-                    deleted: summary.deletedKeys?.length as number
+                    deleted: summary.deletedKeys?.length || 0
                 }
             };
+            for (const nonUniqueKey of summary.nonUniqueKeys) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId,
+                    content: `Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`,
+                    timestamp: Date.now()
+                });
+            }
 
             await createActivityLogMessage({
                 level: 'info',
@@ -325,9 +288,8 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            const res = resultErr(persistResult.err);
-            span.setTag('error', res.err).finish();
-            return res;
+            span.setTag('error', persistResult.err).finish();
+            return persistResult;
         }
     }
 }

@@ -1,7 +1,7 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment } from '@nangohq/shared';
+import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment, Account } from '@nangohq/shared';
 import {
     multipleMigrations,
     createActivityLog,
@@ -11,7 +11,8 @@ import {
     createSyncJob,
     SyncType,
     SyncStatus,
-    db
+    db,
+    accountService
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
@@ -22,6 +23,7 @@ describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
     let seed: {
+        account: Account;
         env: Environment;
         activityLogId: number;
         connection: Connection;
@@ -35,9 +37,9 @@ describe('Persist API', () => {
         seed = await initDb();
         server.listen(port);
 
-        vi.spyOn(environmentService, 'getAccountIdAndEnvironmentIdBySecretKey').mockImplementation((secretKey) => {
+        vi.spyOn(environmentService, 'getAccountAndEnvironmentBySecretKey').mockImplementation((secretKey) => {
             if (secretKey === mockSecretKey) {
-                return Promise.resolve({ accountId: seed.env.account_id, environmentId: seed.env.id });
+                return Promise.resolve({ account: seed.account, environment: seed.env });
             }
             return Promise.resolve(null);
         });
@@ -63,6 +65,24 @@ describe('Persist API', () => {
             }
         });
         expect(response.status).toEqual(201);
+    });
+
+    it('should refuse huge log', async () => {
+        const msg: number[] = [];
+
+        for (let index = 0; index < 150_000; index++) {
+            msg.push(index);
+        }
+        const response = await fetch(`${serverUrl}/environment/${seed.env.id}/log`, {
+            method: 'POST',
+            body: JSON.stringify({ activityLogId: seed.activityLogId, level: 'info', msg: msg.join(',') }),
+            headers: {
+                Authorization: `Bearer ${mockSecretKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        expect(response.status).toEqual(400);
+        expect(await response.json()).toStrictEqual({ error: 'Entity too large' });
     });
 
     describe('save records', () => {
@@ -249,6 +269,7 @@ const initDb = async () => {
     if (!syncJob) throw new Error('Sync job not created');
 
     return {
+        account: (await accountService.getAccountById(0))!,
         env,
         activityLogId,
         connection,

@@ -1,50 +1,50 @@
 integrations:
-  bamboohr-basic:
-    syncs:
-      bamboohr-employees:
-        runs: every 6 hours
-        description: |
-          Fetches a list of current employees from bamboohr
-        output: BamboohrEmployee
-        sync_type: incremental
-        endpoint: /bamboohr/employees
-    actions:
-      bamboohr-create-employee:
-        description: |
-          Action to create a new employee
-        output: BamboohrCreateEmployeeResponse
-        input: BamboohrEmployee
-        endpoint: POST /bamboohr/create-employee
+    bamboohr-basic:
+        syncs:
+            employees:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of current employees from bamboohr
+                output: BamboohrEmployee
+                sync_type: incremental
+                endpoint: /bamboohr/employees
+        actions:
+            create-employee:
+                description: |
+                    Action to create a new employee
+                output: BamboohrCreateEmployeeResponse
+                input: BamboohrEmployee
+                endpoint: POST /bamboohr/create-employee
 models:
-  BamboohrEmployee:
-    id: string
-    employeeNumber: string
-    firstName: string
-    lastName: string
-    dateOfBirth: date
-    address1: string
-    bestEmail: string
-    workEmail: string
-    jobTitle: string
-    hireDate: date
-    supervisorId: string
-    supervisor: string
-    createdByUserId: string
-    department: string
-    division: string
-    employmentHistoryStatus: string
-    gender: string
-    country: string
-    city: string
-    location: string
-    state: string
-    maritalStatus: string
-    exempt: string
-    payRate: string
-    payType: string
-    payPer: string
-    ssn: string
-    workPhone: string
-    homePhone: string
-  BamboohrCreateEmployeeResponse:
-    status: string
+    BamboohrEmployee:
+        id: string
+        employeeNumber: string
+        firstName: string
+        lastName: string
+        dateOfBirth: date
+        address1: string
+        bestEmail: string
+        workEmail: string
+        jobTitle: string
+        hireDate: date
+        supervisorId: string
+        supervisor: string
+        createdByUserId: string
+        department: string
+        division: string
+        employmentHistoryStatus: string
+        gender: string
+        country: string
+        city: string
+        location: string
+        state: string
+        maritalStatus: string
+        exempt: string
+        payRate: string
+        payType: string
+        payPer: string
+        ssn: string
+        workPhone: string
+        homePhone: string
+    BamboohrCreateEmployeeResponse:
+        status: string
