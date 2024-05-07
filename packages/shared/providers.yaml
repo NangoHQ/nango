@@ -65,6 +65,10 @@ blandai:
     categories:
         - support
     auth_mode: API_KEY
+    proxy:
+        base_url: https://api.bland.ai
+        headers:
+            Authorization: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/blandai
 algolia:
     categories:
