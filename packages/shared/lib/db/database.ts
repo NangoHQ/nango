@@ -30,8 +30,16 @@ export class KnexDatabase {
     constructor({ timeoutMs } = { timeoutMs: 60000 }) {
         const dbConfig = getDbConfig({ timeoutMs });
         this.knex = knex(dbConfig);
+    }
 
-        // Metrics
+    /**
+     * Not enabled by default because shared is imported by everything
+     */
+    enableMetrics() {
+        if (process.env['CI']) {
+            return;
+        }
+
         const pool = this.knex.client.pool as Pool<any>;
         const acquisitionMap = new Map<number, number>();
 
