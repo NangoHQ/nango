@@ -1202,6 +1202,13 @@ kustomer:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/kustomer
+lessonly:
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lessonly.com/api
+    docs: https://docs.nango.dev/integrations/all/lessonly
 lever:
     categories:
         - ats
