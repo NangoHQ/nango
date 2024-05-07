@@ -94,7 +94,7 @@ export type NangoModel = NangoModelV1;
 export type NangoIntegrationData = NangoIntegrationDataV1 | NangoIntegrationDataV2;
 export type NangoIntegration = NangoIntegrationV1 | NangoV2Integration;
 
-interface NangoSyncModelField {
+export interface NangoSyncModelField {
     name: string;
     type: string;
 }
