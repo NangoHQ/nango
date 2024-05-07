@@ -137,7 +137,7 @@ export interface NangoSyncConfig {
     webhookSubscriptions?: string[];
     enabled?: boolean;
 
-    layout_mode: 'root' | 'nested';
+    layout_mode: LayoutMode;
 }
 
 export interface StandardNangoConfig {
