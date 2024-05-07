@@ -1,24 +1,16 @@
-import type { Request, Response } from 'express';
 import path, { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import { NangoError } from './error.js';
-import type { User, Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
-import userService from '../services/user.service.js';
 import type { Connection } from '../models/Connection.js';
-import type { ServiceResponse } from '../models/Generic.js';
 
 interface PackageJson {
     version: string;
 }
 
 export { cloudHost, stagingHost };
-
-const accountIdLocalsKey = 'nangoAccountId';
-const environmentIdLocalsKey = 'nangoEnvironmentId';
 
 export enum UserType {
     Local = 'localhost',
@@ -255,104 +247,6 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
     } else {
         return str;
     }
-}
-
-export function setAccount(accountId: number, res: Response) {
-    res.locals[accountIdLocalsKey] = accountId;
-}
-
-export function setEnvironmentId(environmentId: number, res: Response) {
-    res.locals[environmentIdLocalsKey] = environmentId;
-}
-
-export function getAccount(res: Response): number {
-    if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
-        throw new NangoError('account_not_set_in_locals');
-    }
-
-    const accountId = res.locals[accountIdLocalsKey];
-
-    if (Number.isInteger(accountId)) {
-        return accountId as number;
-    } else {
-        throw new NangoError('account_malformed_in_locals');
-    }
-}
-
-export function getEnvironmentId(res: Response): number {
-    if (res.locals === null || !(environmentIdLocalsKey in res.locals)) {
-        throw new NangoError('environment_not_set_in_locals');
-    }
-
-    const environmentId = res.locals[environmentIdLocalsKey];
-
-    if (Number.isInteger(environmentId)) {
-        return environmentId as number;
-    } else {
-        throw new NangoError('environment_malformed_in_locals');
-    }
-}
-
-export async function getEnvironmentAndAccountId(
-    res: Response,
-    req: Request
-): Promise<ServiceResponse<{ accountId: number; environmentId: number; isWeb: boolean }>> {
-    if (req.user) {
-        const { response: accountInfo, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
-        if (!success || accountInfo == null) {
-            return { response: null, error, success: false };
-        }
-        const response = { ...accountInfo, isWeb: true };
-
-        return { response, error: null, success: true };
-    } else {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
-        const response = { accountId, environmentId, isWeb: false };
-        return { response, error: null, success: true };
-    }
-}
-
-export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<ServiceResponse<{ accountId: number; environmentId: number }>> {
-    const sessionUser = req.user as User;
-    const currentEnvironment = req.query['env'];
-    if (typeof currentEnvironment !== 'string') {
-        return { success: false, error: new NangoError('invalid_env'), response: null };
-    }
-
-    if (sessionUser == null) {
-        const error = new NangoError('user_not_found');
-        return { response: null, error, success: false };
-    }
-
-    const user = await userService.getUserById(sessionUser.id);
-
-    if (user == null) {
-        const error = new NangoError('user_not_found');
-        return { response: null, error, success: false };
-    }
-
-    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
-
-    if (!environmentAndAccount) {
-        const error = new NangoError('account_not_found');
-        return { response: null, error, success: false };
-    }
-
-    const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
-
-    const response = { accountId: account.id, environmentId: environment.id };
-
-    return { response, error: null, success: true };
-}
-
-export function isApiAuthenticated(res: Response): boolean {
-    return res.locals != null && accountIdLocalsKey in res.locals && Number.isInteger(res.locals[accountIdLocalsKey]);
-}
-
-export function isUserAuthenticated(req: Request): boolean {
-    const user = req.user as User;
-    return typeof req.isAuthenticated === 'function' && req.isAuthenticated() && user != null && user.id != null;
 }
 
 export function getConnectionConfig(queryParams: any): Record<string, string> {

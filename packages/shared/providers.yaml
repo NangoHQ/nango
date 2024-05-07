@@ -1656,6 +1656,18 @@ pipedrive:
             response_path: data
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/pipedrive
+posthog:
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://${connectionConfig.subdomain}.posthog.com
+        verification:
+            method: GET
+            endpoint: /api/users/@me
+    docs: https://docs.nango.dev/integrations/all/posthog
 qualtrics:
     categories:
         - surveys
