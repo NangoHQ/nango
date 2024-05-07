@@ -17,11 +17,19 @@ export enum Types {
     LOGS_LOG = 'nango.logs.log',
     REFRESH_TOKENS = 'nango.jobs.cron.refreshTokens',
     REFRESH_TOKENS_SUCCESS = 'nango.jobs.cron.refreshTokens.success',
-    REFRESH_TOKENS_FAILED = 'nango.jobs.cron.refreshTokens.failed'
+    REFRESH_TOKENS_FAILED = 'nango.jobs.cron.refreshTokens.failed',
+    DB_POOL_USED = 'nango.db.pool.used',
+    DB_POOL_FREE = 'nango.db.pool.free',
+    DB_POOL_WAITING = 'nango.db.pool.waiting',
+    DB_POOL_ACQUISITION_DURATION = 'nango.db.pool.acquisition'
 }
 
 export function increment(metricName: Types, value?: number): void {
     tracer.dogstatsd.increment(metricName, value ?? 1);
+}
+
+export function gauge(metricName: Types, value?: number): void {
+    tracer.dogstatsd.gauge(metricName, value ?? 1);
 }
 
 export function decrement(metricName: Types, value?: number): void {

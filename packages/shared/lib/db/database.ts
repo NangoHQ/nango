@@ -1,6 +1,7 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { retry } from '@nangohq/utils';
+import { metrics, retry } from '@nangohq/utils';
+import type { Pool } from 'tarn';
 
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
     return {
@@ -16,7 +17,7 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
         },
         pool: {
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
-            max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '20')
+            max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '50')
         },
         // SearchPath needs the current db and public because extension can only be installed once per DB
         searchPath: ['nango', 'public']
@@ -29,6 +30,33 @@ export class KnexDatabase {
     constructor({ timeoutMs } = { timeoutMs: 60000 }) {
         const dbConfig = getDbConfig({ timeoutMs });
         this.knex = knex(dbConfig);
+
+        // Metrics
+        const pool = this.knex.client.pool as Pool<any>;
+        const acquisitionMap = new Map<number, number>();
+
+        setInterval(() => {
+            metrics.gauge(metrics.Types.DB_POOL_USED, pool.numUsed());
+            metrics.gauge(metrics.Types.DB_POOL_FREE, pool.numFree());
+            metrics.gauge(metrics.Types.DB_POOL_WAITING, pool.numPendingAcquires());
+        }, 1000);
+        setInterval(() => {
+            // We want to avoid storing orphan too long, it's alright if we loose some metrics
+            acquisitionMap.clear();
+        }, 60000);
+
+        pool.on('acquireRequest', (evtId) => {
+            acquisitionMap.set(evtId, Date.now());
+        });
+        pool.on('acquireSuccess', (evtId) => {
+            const evt = acquisitionMap.get(evtId);
+            if (!evt) {
+                return;
+            }
+
+            metrics.duration(metrics.Types.DB_POOL_ACQUISITION_DURATION, Date.now() - evt);
+            acquisitionMap.delete(evtId);
+        });
     }
 
     async migrate(directory: string): Promise<any> {

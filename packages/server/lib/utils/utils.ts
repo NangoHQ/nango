@@ -115,7 +115,7 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
     if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers || template.proxy?.verification) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
         const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
-        const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyBaseUrlMatches = template.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyHeaderMatches = template.proxy?.headers
             ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
