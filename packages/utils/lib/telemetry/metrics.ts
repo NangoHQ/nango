@@ -14,6 +14,8 @@ export enum Types {
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
+    AUTH_PUBLIC_KEY = 'nango.auth.publicKey',
+    AUTH_SESSION = 'nango.auth.session',
     LOGS_LOG = 'nango.logs.log',
     REFRESH_TOKENS = 'nango.jobs.cron.refreshTokens',
     REFRESH_TOKENS_SUCCESS = 'nango.jobs.cron.refreshTokens.success',
