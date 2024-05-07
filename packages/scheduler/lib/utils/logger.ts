@@ -1,3 +1,3 @@
 import { getLogger } from '@nangohq/utils';
 
-export const logger = getLogger('records');
+export const logger = getLogger('scheduler');
