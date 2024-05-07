@@ -70,7 +70,7 @@ export class AccessMiddleware {
 
     async publicKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         const active = tracer.scope().active();
-        const span = tracer.startSpan('secretKeyAuth', {
+        const span = tracer.startSpan('publicKeyAuth', {
             childOf: active!
         });
 
@@ -108,7 +108,7 @@ export class AccessMiddleware {
 
     async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         const active = tracer.scope().active();
-        const span = tracer.startSpan('secretKeyAuth', {
+        const span = tracer.startSpan('sessionAuth', {
             childOf: active!
         });
 
