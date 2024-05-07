@@ -102,7 +102,7 @@ class FlowController {
             }
 
             if (account.is_capped && firstConfig?.providerConfigKey) {
-                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: firstConfig.providerConfigKey, environmentId });
+                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: firstConfig.providerConfigKey, environmentId, type: 'activate' });
 
                 if (isCapped) {
                     errorManager.errRes(res, 'resource_capped');
@@ -194,9 +194,12 @@ class FlowController {
                 return;
             }
 
-            console.log(account);
             if (account.is_capped && flow?.providerConfigKey) {
-                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: flow?.providerConfigKey, environmentId: environment.id });
+                const isCapped = await connectionService.shouldCapUsage({
+                    providerConfigKey: flow?.providerConfigKey,
+                    environmentId: environment.id,
+                    type: 'activate'
+                });
 
                 if (isCapped) {
                     errorManager.errRes(res, 'resource_capped');

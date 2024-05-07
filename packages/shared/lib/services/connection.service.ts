@@ -1042,7 +1042,15 @@ class ConnectionService {
         }
     }
 
-    public async shouldCapUsage({ providerConfigKey, environmentId }: { providerConfigKey: string; environmentId: number }): Promise<boolean> {
+    public async shouldCapUsage({
+        providerConfigKey,
+        environmentId,
+        type
+    }: {
+        providerConfigKey: string;
+        environmentId: number;
+        type: 'activate' | 'deploy';
+    }): Promise<boolean> {
         const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
 
         if (!connections) {
@@ -1051,7 +1059,11 @@ class ConnectionService {
 
         if (connections.length > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_ACTIVATE, environmentId);
+            if (type === 'deploy') {
+                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);
+            } else {
+                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_ACTIVATE, environmentId);
+            }
             return true;
         }
 
