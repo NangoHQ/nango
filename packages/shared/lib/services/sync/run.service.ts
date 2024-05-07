@@ -19,12 +19,11 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
-import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import * as legacyRecordsService from './data/records.service.js';
 import type { NangoProps } from '../../sdk/sync.js';
+import type { UpsertSummary } from '@nangohq/records';
 
 const logger = getLogger('run.service');
 
@@ -425,7 +424,7 @@ export default class SyncRun {
 
                     const runTime = (Date.now() - startTime) / 1000;
                     if (error.type === 'script_cancelled') {
-                        await this.reportFailureForResults({ content: error.message, runTime });
+                        await this.reportFailureForResults({ content: error.message, runTime, isCancel: true });
                     } else {
                         await this.reportFailureForResults({ content: message, runTime });
                     }
@@ -501,30 +500,23 @@ export default class SyncRun {
         for (const model of models) {
             let deletedKeys: string[] = [];
             if (!this.isWebhook && trackDeletes) {
-                deletedKeys = await legacyRecordsService.markNonCurrentGenerationRecordsAsDeleted(
-                    this.nangoConnection.id as number,
+                deletedKeys = await this.recordsService.markNonCurrentGenerationRecordsAsDeleted({
+                    connectionId: this.nangoConnection.id as number,
                     model,
-                    this.syncId as string,
-                    this.syncJobId as number
-                );
-                this.recordsService
-                    .markNonCurrentGenerationRecordsAsDeleted({
-                        connectionId: this.nangoConnection.id as number,
-                        model,
-                        syncId: this.syncId as string,
-                        generation: this.syncJobId as number
-                    })
-                    .catch((err: unknown) => {
-                        logger.error(`Error marking non current generation records as deleted:`, err, {
-                            connectionId: this.nangoConnection.id,
-                            model,
-                            syncId: this.syncId,
-                            syncJobId: this.syncJobId
-                        });
-                    });
+                    syncId: this.syncId as string,
+                    generation: this.syncJobId as number
+                });
             }
 
-            await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);
+            await this.reportResults(
+                model,
+                { addedKeys: [], updatedKeys: [], deletedKeys, nonUniqueKeys: [] },
+                i,
+                models.length,
+                syncStartDate,
+                version,
+                totalRunTime
+            );
             i++;
         }
 
@@ -698,7 +690,7 @@ export default class SyncRun {
         );
     }
 
-    async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
+    async reportFailureForResults({ content, runTime, isCancel }: { content: string; runTime: number; isCancel?: true }) {
         if (!this.writeToDb) {
             return;
         }
@@ -767,8 +759,7 @@ export default class SyncRun {
             content
         });
         await this.logCtx?.error(content);
-        // TODO: fix this
-        if (content === 'The script was cancelled successfully') {
+        if (isCancel) {
             await this.logCtx?.cancel();
         } else {
             await this.logCtx?.failed();

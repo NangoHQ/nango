@@ -100,11 +100,11 @@ class ProxyService {
         let endpoint = passedEndpoint;
 
         let token;
-        switch (connection.credentials?.type) {
+        switch (connection.credentials.type) {
             case AuthModes.OAuth2:
                 {
                     const credentials = connection.credentials;
-                    token = credentials?.access_token;
+                    token = credentials.access_token;
                 }
                 break;
             case AuthModes.OAuth1: {
@@ -121,13 +121,13 @@ class ProxyService {
             case AuthModes.App:
                 {
                     const credentials = connection.credentials;
-                    token = credentials?.access_token;
+                    token = credentials.access_token;
                 }
                 break;
             case AuthModes.OAuth2CC:
                 {
                     const credentials = connection.credentials;
-                    token = credentials?.token;
+                    token = credentials.token;
                 }
                 break;
         }
@@ -164,10 +164,10 @@ class ProxyService {
             environment_id: connection.environment_id,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
-            content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
+            content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy?.base_url}`
         });
 
-        if (!baseUrlOverride && template.proxy.base_url && endpoint.includes(template.proxy.base_url)) {
+        if (!baseUrlOverride && template.proxy?.base_url && endpoint.includes(template.proxy.base_url)) {
             endpoint = endpoint.replace(template.proxy.base_url, '');
         }
 
@@ -225,7 +225,7 @@ class ProxyService {
         const activityLogs: ActivityLogMessage[] = [];
 
         if (type === 'at') {
-            const resetTimeEpoch = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
+            const resetTimeEpoch = error.response?.headers[retryHeader] || error.response?.headers[retryHeader.toLowerCase()];
 
             if (resetTimeEpoch) {
                 const currentEpochTime = Math.floor(Date.now() / 1000);
@@ -252,7 +252,7 @@ class ProxyService {
         }
 
         if (type === 'after') {
-            const retryHeaderVal = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
+            const retryHeaderVal = error.response?.headers[retryHeader] || error.response?.headers[retryHeader.toLowerCase()];
 
             if (retryHeaderVal) {
                 const retryAfter = Number(retryHeaderVal);
@@ -291,14 +291,12 @@ class ProxyService {
         attemptNumber: number
     ): Promise<boolean> => {
         if (
-            error?.response?.status.toString().startsWith('5') ||
+            error.response?.status.toString().startsWith('5') ||
             // Note that Github issues a 403 for both rate limits and improper scopes
-            (error?.response?.status === 403 &&
-                error?.response?.headers['x-ratelimit-remaining'] &&
-                error?.response?.headers['x-ratelimit-remaining'] === '0') ||
-            error?.response?.status === 429 ||
-            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string) ||
-            config.retryOn?.includes(Number(error?.response?.status))
+            (error.response?.status === 403 && error.response.headers['x-ratelimit-remaining'] && error.response.headers['x-ratelimit-remaining'] === '0') ||
+            error.response?.status === 429 ||
+            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error.code as string) ||
+            config.retryOn?.includes(Number(error.response?.status))
         ) {
             if (config.retryHeader) {
                 const type = config.retryHeader.at ? 'at' : 'after';
@@ -315,7 +313,7 @@ class ProxyService {
                 return shouldRetry;
             }
 
-            if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
+            if (config.template.proxy && config.template.proxy.retry && (config.template.proxy.retry.at || config.template.proxy.retry.after)) {
                 const type = config.template.proxy.retry.at ? 'at' : 'after';
                 const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
 
@@ -330,7 +328,7 @@ class ProxyService {
                 return shouldRetry;
             }
 
-            const content = `API received an ${error?.response?.status || error?.code} error, ${
+            const content = `API received an ${error.response?.status || error.code} error, ${
                 config.retries && config.retries > 0
                     ? `retrying with exponential backoffs for a total of ${attemptNumber} out of ${config.retries} times`
                     : 'but no retries will occur because retries defaults to 0 or were set to 0'
@@ -455,7 +453,7 @@ class ProxyService {
         const apiBase = config.baseUrlOverride || templateApiBase;
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
-        let endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
+        let endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
         if (config.template.auth_mode === AuthModes.ApiKey && 'proxy' in config.template && 'query' in config.template.proxy) {
             const apiKeyProp = Object.keys(config.template.proxy.query)[0];
@@ -581,16 +579,16 @@ class ProxyService {
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: JSON.stringify({
-                    nangoComment: `The provider responded back with a ${error?.response?.status} to the url: ${url}`,
+                    nangoComment: `The provider responded back with a ${error.response?.status} to the url: ${url}`,
                     providerResponse: errorMessage.toString()
                 }),
                 params: {
                     requestHeaders: JSON.stringify(safeHeaders, null, 2),
-                    responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
+                    responseHeaders: JSON.stringify(error.response?.headers, null, 2)
                 }
             });
         } else {
-            const content = `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
+            const content = `The provider responded back with a ${error.response?.status} and the message ${errorMessage} to the url: ${url}.${
                 config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
             }`;
             console.error(content);
@@ -606,14 +604,14 @@ class ProxyService {
         environment_id: number
     ): Promise<RouteResponse & Activities> {
         const activityLogs: ActivityLogMessage[] = [];
-        if (!error?.response?.data) {
+        if (!error.response?.data) {
             const {
                 message,
                 stack,
                 config: { method },
                 code,
                 status
-            } = error?.toJSON() as any;
+            } = error.toJSON() as any;
 
             const errorObject = { message, stack, code, status, url, method };
 
@@ -635,8 +633,8 @@ class ProxyService {
             const {
                 message,
                 config: { method }
-            } = error?.toJSON() as any;
-            const errorData = error?.response?.data;
+            } = error.toJSON() as any;
+            const errorData = error.response.data;
 
             if (activityLogId) {
                 activityLogs.push({

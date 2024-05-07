@@ -1,10 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import { activityFilter, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
+import { activityFilter, getAllSyncAndActionNames, getTopLevelLogByEnvironment, getLogMessagesForLogs } from '@nangohq/shared';
+import type { RequestLocals } from '../utils/express.js';
 
 class ActivityController {
-    public async retrieve(req: Request, res: Response, next: NextFunction) {
+    public async retrieve(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 20;
             const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;
@@ -13,12 +13,8 @@ class ActivityController {
             const connection = req.query['connection']?.toString();
             const integration = req.query['integration']?.toString();
             const date = req.query['date']?.toString();
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+
+            const { environment } = res.locals;
 
             const logs = await getTopLevelLogByEnvironment(environment.id, limit, offset, { status, script, connection, integration, date });
             res.send(logs);
@@ -27,7 +23,7 @@ class ActivityController {
         }
     }
 
-    public async getMessages(req: Request, res: Response, next: NextFunction) {
+    public async getMessages(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const rawLogIds = req.query['logIds'];
             if (typeof rawLogIds !== 'string') {
@@ -48,13 +44,7 @@ class ActivityController {
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { environment } = response;
+            const { environment } = res.locals;
             const logs = await getLogMessagesForLogs(Array.from(logIds.values()), environment.id);
             res.send(logs);
         } catch (error) {
@@ -62,14 +52,9 @@ class ActivityController {
         }
     }
 
-    public async getPossibleFilters(req: Request, res: Response, next: NextFunction) {
+    public async getPossibleFilters(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             const scripts = await getAllSyncAndActionNames(environment.id);
             const integrations = await activityFilter(environment.id, 'provider_config_key');
