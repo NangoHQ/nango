@@ -610,11 +610,11 @@ class OAuthController {
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
-        const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
+        const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.[ProviderAuthModes.OAuth2] as string);
 
         try {
-            if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig));
+            if (missesInterpolationParam(template.authorization_url!, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url!, JSON.stringify(connectionConfig));
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id,
@@ -827,8 +827,8 @@ class OAuthController {
         session.connectionConfig = connectionConfig as Record<string, string>;
 
         try {
-            if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig));
+            if (missesInterpolationParam(template.authorization_url!, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url!, JSON.stringify(connectionConfig));
                 await createActivityLogMessage({
                     level: 'error',
                     environment_id,
@@ -849,7 +849,7 @@ class OAuthController {
 
             await oAuthSessionService.create(session);
 
-            const appUrl = interpolateStringFromObject(template.authorization_url, {
+            const appUrl = interpolateStringFromObject(template.authorization_url!, {
                 connectionConfig
             });
 
@@ -1270,7 +1270,7 @@ class OAuthController {
                 tokenParams: template.token_params
             });
 
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.[ProviderAuthModes.OAuth2] as string);
 
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl, session.codeVerifier);
