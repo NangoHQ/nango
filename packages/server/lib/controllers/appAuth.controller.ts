@@ -26,7 +26,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 
 class AppAuthController {
-    async connect(req: Request, res: Response, _next: NextFunction) {
+    async connect(req: Request, res: Response<any, never>, _next: NextFunction) {
         const installation_id = req.query['installation_id'] as string | undefined;
         const state = req.query['state'] as string;
         const action = req.query['setup_action'] as string;

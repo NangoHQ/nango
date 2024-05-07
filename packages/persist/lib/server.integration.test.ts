@@ -1,7 +1,7 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment } from '@nangohq/shared';
+import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment, Account } from '@nangohq/shared';
 import {
     multipleMigrations,
     createActivityLog,
@@ -11,7 +11,8 @@ import {
     createSyncJob,
     SyncType,
     SyncStatus,
-    db
+    db,
+    accountService
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
@@ -22,6 +23,7 @@ describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
     let seed: {
+        account: Account;
         env: Environment;
         activityLogId: number;
         connection: Connection;
@@ -35,9 +37,9 @@ describe('Persist API', () => {
         seed = await initDb();
         server.listen(port);
 
-        vi.spyOn(environmentService, 'getAccountIdAndEnvironmentIdBySecretKey').mockImplementation((secretKey) => {
+        vi.spyOn(environmentService, 'getAccountAndEnvironmentBySecretKey').mockImplementation((secretKey) => {
             if (secretKey === mockSecretKey) {
-                return Promise.resolve({ accountId: seed.env.account_id, environmentId: seed.env.id });
+                return Promise.resolve({ account: seed.account, environment: seed.env });
             }
             return Promise.resolve(null);
         });
@@ -267,6 +269,7 @@ const initDb = async () => {
     if (!syncJob) throw new Error('Sync job not created');
 
     return {
+        account: (await accountService.getAccountById(0))!,
         env,
         activityLogId,
         connection,
