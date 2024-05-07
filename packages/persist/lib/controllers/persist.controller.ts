@@ -7,7 +7,7 @@ import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
-import { resultErr, resultOk, isOk, isErr, metrics, stringifyError } from '@nangohq/utils';
+import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
@@ -84,10 +84,10 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        if (isOk(result)) {
+        if (result.isOk()) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to save records': ${result.err.message}`));
+            next(new Error(`'Failed to save records': ${result.error.message}`));
         }
     }
 
@@ -113,10 +113,10 @@ class PersistController {
             softDelete: true,
             persistFunction: persist
         });
-        if (isOk(result)) {
+        if (result.isOk()) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to delete records': ${result.err.message}`));
+            next(new Error(`'Failed to delete records': ${result.error.message}`));
         }
     }
 
@@ -142,10 +142,10 @@ class PersistController {
             softDelete: false,
             persistFunction: persist
         });
-        if (isOk(result)) {
+        if (result.isOk()) {
             res.status(201).send();
         } else {
-            next(new Error(`'Failed to update records': ${result.err.message}`));
+            next(new Error(`'Failed to update records': ${result.error.message}`));
         }
     }
 
@@ -204,33 +204,33 @@ class PersistController {
             softDelete
         });
         const logCtx = logContextGetter.get({ id: String(activityLogId) });
-        if (isErr(formatting)) {
+        if (formatting.isErr()) {
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
                 activity_log_id: activityLogId,
-                content: `There was an issue with the batch ${persistType}. ${formatting.err.message}`,
+                content: `There was an issue with the batch ${persistType}. ${formatting.error.message}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('There was an issue with the batch', { error: formatting.err, persistType });
-            const res = resultErr(`Failed to ${persistType} records ${activityLogId}`);
+            await logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
+            const err = Error(`Failed to ${persistType} records ${activityLogId}`);
 
-            span.setTag('error', res.err).finish();
-            return res;
+            span.setTag('error', err).finish();
+            return Err(err);
         }
 
         const syncConfig = await getSyncConfigByJobId(syncJobId);
         if (syncConfig && !syncConfig?.models.includes(model)) {
-            const res = resultErr(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            const err = Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
             await logCtx.error('The model is not included in the declared sync models', { model });
 
-            span.setTag('error', res.err).finish();
-            return res;
+            span.setTag('error', err).finish();
+            return Err(err);
         }
 
-        const persistResult = await persistFunction(formatting.res);
-        if (isOk(persistResult)) {
-            const summary = persistResult.res;
+        const persistResult = await persistFunction(formatting.value);
+        if (persistResult.isOk()) {
+            const summary = persistResult.value;
             const updatedResults = {
                 [model]: {
                     added: summary.addedKeys.length,
@@ -263,9 +263,9 @@ class PersistController {
             metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
 
             span.finish();
-            return resultOk(void 0);
+            return Ok(void 0);
         } else {
-            const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.err)}`;
+            const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.error)}`;
 
             await createActivityLogMessage({
                 level: 'error',
@@ -274,7 +274,7 @@ class PersistController {
                 content,
                 timestamp: Date.now()
             });
-            await logCtx.error('There was an issue with the batch', { error: persistResult.err, persistType });
+            await logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
 
             errorManager.report(content, {
                 environmentId: environmentId,
@@ -288,8 +288,8 @@ class PersistController {
                     syncJobId: syncJobId
                 }
             });
-            span.setTag('error', persistResult.err).finish();
-            return persistResult;
+            span.setTag('error', persistResult.error).finish();
+            return Err(persistResult.error);
         }
     }
 }

@@ -44,7 +44,6 @@ import {
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
-import { isErr, isOk } from '@nangohq/utils';
 import type { LastAction } from '@nangohq/records';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
@@ -172,12 +171,12 @@ class SyncController {
                 cursor: cursor as string
             });
 
-            if (isErr(result)) {
-                errorManager.errResFromNangoErr(res, new NangoError('pass_through_error', result.err));
+            if (result.isErr()) {
+                errorManager.errResFromNangoErr(res, new NangoError('pass_through_error', result.error));
                 return;
             }
             await trackFetch(connection.id as number);
-            res.send(result.res);
+            res.send(result.value);
         } catch (e) {
             next(e);
         }
@@ -413,16 +412,16 @@ class SyncController {
                 logCtx
             });
 
-            if (isOk(actionResponse)) {
+            if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
-                res.send(actionResponse.res);
+                res.send(actionResponse.value);
 
                 return;
             } else {
-                span.setTag('nango.error', actionResponse.err);
-                errorManager.errResFromNangoErr(res, actionResponse.err);
-                await logCtx.error('Failed to trigger action', { err: actionResponse.err });
+                span.setTag('nango.error', actionResponse.error);
+                errorManager.errResFromNangoErr(res, actionResponse.error);
+                await logCtx.error('Failed to trigger action', { err: actionResponse.error });
                 await logCtx.failed();
                 span.finish();
 
@@ -676,8 +675,8 @@ class SyncController {
                 initiator: 'UI'
             });
 
-            if (isErr(result)) {
-                errorManager.handleGenericError(result.err, req, res, tracer);
+            if (result.isErr()) {
+                errorManager.handleGenericError(result.error, req, res, tracer);
                 await logCtx.failed();
                 return;
             }

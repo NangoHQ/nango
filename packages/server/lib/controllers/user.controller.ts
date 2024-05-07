@@ -1,7 +1,7 @@
 import { getUserFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { isCloud, isEnterprise, basePublicUrl, isErr } from '@nangohq/utils';
+import { isCloud, isEnterprise, basePublicUrl } from '@nangohq/utils';
 import { errorManager, userService } from '@nangohq/shared';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -18,12 +18,12 @@ class UserController {
     async getUser(req: Request, res: Response<GetUser, never>, next: NextFunction) {
         try {
             const getUser = await getUserFromSession(req);
-            if (isErr(getUser)) {
-                errorManager.errResFromNangoErr(res, getUser.err);
+            if (getUser.isErr()) {
+                errorManager.errResFromNangoErr(res, getUser.error);
                 return;
             }
 
-            const user = getUser.res;
+            const user = getUser.value;
             res.status(200).send({
                 user: {
                     id: user.id,
@@ -40,12 +40,12 @@ class UserController {
     async editName(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const getUser = await getUserFromSession(req);
-            if (isErr(getUser)) {
-                errorManager.errResFromNangoErr(res, getUser.err);
+            if (getUser.isErr()) {
+                errorManager.errResFromNangoErr(res, getUser.error);
                 return;
             }
 
-            const user = getUser.res;
+            const user = getUser.value;
             const name = req.body['name'];
 
             if (!name) {
@@ -63,12 +63,12 @@ class UserController {
     async editPassword(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const getUser = await getUserFromSession(req);
-            if (isErr(getUser)) {
-                errorManager.errResFromNangoErr(res, getUser.err);
+            if (getUser.isErr()) {
+                errorManager.errResFromNangoErr(res, getUser.error);
                 return;
             }
 
-            const user = getUser.res;
+            const user = getUser.value;
             const oldPassword = req.body['old_password'];
             const newPassword = req.body['new_password'];
 
