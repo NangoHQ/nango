@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
-import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
+import { SyncConfigType, SyncStatus, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
-import { updateScheduleStatus, markAllAsStopped } from './schedule.service.js';
+import { markAllAsStopped } from './schedule.service.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -252,7 +252,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                         'sync_config_id', ${SYNC_JOB_TABLE}.sync_config_id,
                         'version', ${SYNC_CONFIG_TABLE}.version,
                         'models', ${SYNC_CONFIG_TABLE}.models,
-                        'activity_log_id', ${ACTIVITY_LOG_TABLE}.id
+                        'activity_log_id', ${ACTIVITY_LOG_TABLE}.id,
+                        'sync_type', ${SYNC_CONFIG_TABLE}.sync_type
                     )
                     FROM ${SYNC_JOB_TABLE}
                     JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
@@ -283,26 +284,14 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             'models'
         );
 
-    // console.log(q.toQuery());
     const result = await q;
     const syncsWithSchedule = result.map(async (sync) => {
         const { schedule_id } = sync;
-        const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
-        // if a disagreement trust temporal
-        if (schedule?.info?.paused && sync.schedule_status !== SyncStatus.PAUSED) {
-            sync = {
-                ...sync,
-                schedule_status: SyncStatus.PAUSED
-            };
-            await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
-        } else if (!schedule?.info?.paused && sync.schedule_status === SyncStatus.PAUSED) {
-            sync = {
-                ...sync,
-                schedule_status: SyncStatus.RUNNING
-            };
-            await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
+        const schedule = await syncClient?.describeSchedule(schedule_id);
+        let futureActionTimes: number[] = [];
+        if (schedule) {
+            futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long.seconds?.toNumber()) as number[];
         }
-        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long.seconds?.toNumber()) || [];
 
         return {
             ...sync,

@@ -87,7 +87,8 @@ export async function exec(): Promise<void> {
             connectionId: sync.connection_id,
             syncName: sync.name,
             logCtx,
-            recordsService
+            recordsService,
+            initiator: 'auto_idle_demo'
         });
         if (isErr(resTemporal)) {
             await logCtx.failed();

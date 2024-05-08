@@ -267,7 +267,8 @@ class SyncController {
                 syncNames: syncNames as string[],
                 command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
                 logContextGetter,
-                connectionId: connection_id!
+                connectionId: connection_id!,
+                initiator: 'API call'
             });
 
             if (!success) {
@@ -489,7 +490,8 @@ class SyncController {
                 syncNames: syncNames as string[],
                 command: SyncCommand.PAUSE,
                 logContextGetter,
-                connectionId: connection_id
+                connectionId: connection_id,
+                initiator: 'API call'
             });
 
             res.sendStatus(200);
@@ -529,7 +531,8 @@ class SyncController {
                 syncNames: syncNames as string[],
                 command: SyncCommand.UNPAUSE,
                 logContextGetter,
-                connectionId: connection_id
+                connectionId: connection_id,
+                initiator: 'API call'
             });
 
             res.sendStatus(200);
@@ -669,7 +672,8 @@ class SyncController {
                 syncName: sync_name,
                 nangoConnectionId: connection?.id,
                 logCtx,
-                recordsService
+                recordsService,
+                initiator: 'UI'
             });
 
             if (isErr(result)) {

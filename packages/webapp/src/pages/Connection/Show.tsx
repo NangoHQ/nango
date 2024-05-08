@@ -51,7 +51,7 @@ export default function ShowIntegration() {
         error: syncLoadError,
         mutate: reload
     } = useSWR<SyncResponse[]>(`/api/v1/sync?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, swrFetcher, {
-        refreshInterval: 30000,
+        refreshInterval: 10000,
         keepPreviousData: false
     });
 
