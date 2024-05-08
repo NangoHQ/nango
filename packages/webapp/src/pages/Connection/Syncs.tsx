@@ -304,7 +304,7 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
                                                                     className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
                                                                 />
                                                                 <span className={`pl-2 ${syncCommandButtonsDisabled ? 'text-gray-800' : ''} mr-2`}>
-                                                                    Start schedule - {sync.schedule_status}
+                                                                    Start schedule
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -313,7 +313,7 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
                                                                     className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
                                                                 />
                                                                 <span className={`pl-2 ${syncCommandButtonsDisabled ? 'text-gray-800' : ''} mr-2`}>
-                                                                    Pause schedule - {sync.schedule_status}
+                                                                    Pause schedule
                                                                 </span>
                                                             </>
                                                         )}
