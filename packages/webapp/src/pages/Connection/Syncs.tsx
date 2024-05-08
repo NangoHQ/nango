@@ -338,78 +338,70 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
                                                     )}
                                                     {sync?.status !== 'RUNNING' && (
                                                         <>
-                                                            {(sync.latest_sync?.sync_type === null || sync.latest_sync?.sync_type === 'INCREMENTAL') && (
-                                                                <div
-                                                                    className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
-                                                                    onClick={() => {
-                                                                        setShowTriggerIncrementalLoader(true);
-                                                                        syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
-                                                                    }}
-                                                                >
-                                                                    <ArrowPathRoundedSquareIcon
-                                                                        className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
-                                                                    />
-                                                                    <span
-                                                                        className={`pl-2 flex items-center ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}
+                                                            <div
+                                                                className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
+                                                                onClick={() => {
+                                                                    setShowTriggerIncrementalLoader(true);
+                                                                    syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
+                                                                }}
+                                                            >
+                                                                <ArrowPathRoundedSquareIcon
+                                                                    className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
+                                                                />
+                                                                <span className={`pl-2 flex items-center ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}>
+                                                                    Trigger execution (incremental)
+                                                                    <Tooltip
+                                                                        type="dark"
+                                                                        text={
+                                                                            <>
+                                                                                <div className="flex text-white text-sm">
+                                                                                    <p>
+                                                                                        Incremental: the existing cache and the last sync date will be
+                                                                                        preserved, only new/updated data will be synced.
+                                                                                    </p>
+                                                                                </div>
+                                                                            </>
+                                                                        }
                                                                     >
-                                                                        Trigger execution (incremental)
-                                                                        <Tooltip
-                                                                            type="dark"
-                                                                            text={
-                                                                                <>
-                                                                                    <div className="flex text-white text-sm">
-                                                                                        <p>
-                                                                                            Incremental: the existing cache and the last sync date will be
-                                                                                            preserved, only new/updated data will be synced.
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </>
-                                                                            }
-                                                                        >
-                                                                            {!syncCommandButtonsDisabled && (
-                                                                                <HelpCircle color="gray" className="h-4 ml-1"></HelpCircle>
-                                                                            )}
-                                                                        </Tooltip>
-                                                                        {showTriggerIncrementalLoader && <Spinner size={1} />}
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                            {(sync.latest_sync?.sync_type === null || sync.latest_sync?.sync_type === 'FULL') && (
-                                                                <div
-                                                                    className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
-                                                                    onClick={() => {
-                                                                        setSync(sync);
-                                                                        setVisible(true);
-                                                                    }}
-                                                                >
-                                                                    <ArrowPathRoundedSquareIcon
-                                                                        className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
-                                                                    />
-                                                                    <span
-                                                                        className={`pl-2 flex items-center ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}
+                                                                        {!syncCommandButtonsDisabled && (
+                                                                            <HelpCircle color="gray" className="h-4 ml-1"></HelpCircle>
+                                                                        )}
+                                                                    </Tooltip>
+                                                                    {showTriggerIncrementalLoader && <Spinner size={1} />}
+                                                                </span>
+                                                            </div>
+                                                            <div
+                                                                className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
+                                                                onClick={() => {
+                                                                    setSync(sync);
+                                                                    setVisible(true);
+                                                                }}
+                                                            >
+                                                                <ArrowPathRoundedSquareIcon
+                                                                    className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
+                                                                />
+                                                                <span className={`pl-2 flex items-center ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}>
+                                                                    Trigger execution (full refresh)
+                                                                    <Tooltip
+                                                                        type="dark"
+                                                                        text={
+                                                                            <>
+                                                                                <div className="flex text-white text-sm">
+                                                                                    <p>
+                                                                                        Full refresh: the existing cache and last sync date will be deleted, all
+                                                                                        historical data will be resynced.
+                                                                                    </p>
+                                                                                </div>
+                                                                            </>
+                                                                        }
                                                                     >
-                                                                        Trigger execution (full refresh)
-                                                                        <Tooltip
-                                                                            type="dark"
-                                                                            text={
-                                                                                <>
-                                                                                    <div className="flex text-white text-sm">
-                                                                                        <p>
-                                                                                            Full refresh: the existing cache and last sync date will be deleted,
-                                                                                            all historical data will be resynced.
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </>
-                                                                            }
-                                                                        >
-                                                                            {!syncCommandButtonsDisabled && (
-                                                                                <HelpCircle color="gray" className="h-4 ml-1"></HelpCircle>
-                                                                            )}
-                                                                        </Tooltip>
-                                                                        {showTriggerFullLoader && <Spinner size={1} />}
-                                                                    </span>
-                                                                </div>
-                                                            )}
+                                                                        {!syncCommandButtonsDisabled && (
+                                                                            <HelpCircle color="gray" className="h-4 ml-1"></HelpCircle>
+                                                                        )}
+                                                                    </Tooltip>
+                                                                    {showTriggerFullLoader && <Spinner size={1} />}
+                                                                </span>
+                                                            </div>
                                                         </>
                                                     )}
                                                 </div>
