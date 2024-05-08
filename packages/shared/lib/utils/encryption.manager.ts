@@ -7,6 +7,7 @@ import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
 import db from '../db/database.js';
+import { hashSecretKey } from '../services/environment.service.js';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -20,14 +21,15 @@ class EncryptionManager extends Encryption {
         return Boolean(this?.key && this.key.length > 0);
     }
 
-    public encryptEnvironment(environment: Environment) {
+    public async encryptEnvironment(environment: Environment) {
         if (!this.shouldEncrypt()) {
             return environment;
         }
 
         const encryptedEnvironment: Environment = Object.assign({}, environment);
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(encryptedEnvironment.secret_key);
+        const [encryptedClientSecret, iv, authTag] = this.encrypt(environment.secret_key);
+        encryptedEnvironment.secret_key_hashed = await hashSecretKey(environment.secret_key);
         encryptedEnvironment.secret_key = encryptedClientSecret;
         encryptedEnvironment.secret_key_iv = iv;
         encryptedEnvironment.secret_key_tag = authTag;
@@ -236,7 +238,7 @@ class EncryptionManager extends Encryption {
                 continue;
             }
 
-            environment = this.encryptEnvironment(environment);
+            environment = await this.encryptEnvironment(environment);
             await db.knex.from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
