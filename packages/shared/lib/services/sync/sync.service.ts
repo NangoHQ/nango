@@ -289,8 +289,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         const { schedule_id } = sync;
         const schedule = await syncClient?.describeSchedule(schedule_id);
         let futureActionTimes: number[] = [];
-        if (schedule) {
-            futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long.seconds?.toNumber()) as number[];
+        if (schedule && schedule.info?.futureActionTimes) {
+            futureActionTimes = schedule.info.futureActionTimes.map((long) => long.seconds?.toNumber()) as number[];
         }
 
         return {
