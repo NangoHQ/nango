@@ -4,6 +4,7 @@ import { metrics, retry } from '@nangohq/utils';
 import type { Pool } from 'tarn';
 
 const defaultSchema = process.env['NANGO_DB_SCHEMA'] || 'nango';
+
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
     return {
         client: process.env['NANGO_DB_CLIENT'] || 'pg',
