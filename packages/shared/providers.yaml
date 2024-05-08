@@ -2072,6 +2072,24 @@ strava:
     proxy:
         base_url: https://www.strava.com
     docs: https://docs.nango.dev/integrations/all/strava
+strava-web:
+    categories:
+        - social
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://www.strava.com/oauth/authorize
+    token_url: https://www.strava.com/api/v3/oauth/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+        approval_prompt: force
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://www.strava.com
+    docs: https://docs.nango.dev/integrations/all/strava-web
 stripe:
     categories:
         - payment
