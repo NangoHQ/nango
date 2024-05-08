@@ -91,7 +91,6 @@ export interface SyncResponse {
         sync_config_id: number;
         version: string;
         models: string[];
-        sync_type: 'FULL' | 'INCREMENTAL';
     };
     thirty_day_timestamps: {
         created_at: string;

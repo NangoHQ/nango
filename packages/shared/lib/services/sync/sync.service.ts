@@ -252,8 +252,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                         'sync_config_id', ${SYNC_JOB_TABLE}.sync_config_id,
                         'version', ${SYNC_CONFIG_TABLE}.version,
                         'models', ${SYNC_CONFIG_TABLE}.models,
-                        'activity_log_id', ${ACTIVITY_LOG_TABLE}.id,
-                        'sync_type', ${SYNC_CONFIG_TABLE}.sync_type
+                        'activity_log_id', ${ACTIVITY_LOG_TABLE}.id
                     )
                     FROM ${SYNC_JOB_TABLE}
                     JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
