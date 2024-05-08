@@ -154,7 +154,9 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 const syncReturns = Array.isArray(sync.returns) ? sync.returns : [sync.returns];
                 syncReturns.forEach((model) => {
                     const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
-                    models.push({ name: model, fields: modelFields });
+                    if (modelFields) {
+                        models.push({ name: model, fields: modelFields });
+                    }
                 });
             }
 
@@ -250,14 +252,16 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
 
     const modelFields = getFieldsForModel(modelName as string, config) as { name: string; type: string }[];
 
-    const identifierModelFields = modelFields.filter((field) => field.name === identifier);
+    if (modelFields) {
+        const identifierModelFields = modelFields.filter((field) => field.name === identifier);
 
-    if (identifierModelFields.length === 0) {
-        return { success: false, error: new NangoError('missing_model_identifier', identifier), response: null };
+        if (identifierModelFields.length === 0) {
+            return { success: false, error: new NangoError('missing_model_identifier', identifier), response: null };
+        }
+
+        inputModel.name = modelNameWithIdentifier as string;
+        inputModel.fields = identifierModelFields;
     }
-
-    inputModel.name = modelNameWithIdentifier as string;
-    inputModel.fields = identifierModelFields;
 
     return { success: true, error: null, response: inputModel };
 };
@@ -302,7 +306,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             response: builtSyncs
         } = buildSyncs({ syncs, allModelNames, config, providerConfigKey, showMessages, isPublic, allModels, allEndpoints });
 
-        if (!builtSyncSuccess || !builtSyncSuccess) {
+        if (!builtSyncSuccess || !builtSyncs) {
             return { success: builtSyncSuccess, error: builtSyncError, response: null };
         }
 
@@ -312,7 +316,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             response: builtActions
         } = buildActions({ actions, allModelNames, config, providerConfigKey, showMessages, isPublic, allModels, allEndpoints });
 
-        if (!builtActionSuccess || !builtActionSuccess) {
+        if (!builtActionSuccess || !builtActions) {
             return { success: builtActionSuccess, error: builtActionError, response: null };
         }
 
@@ -351,25 +355,24 @@ function formModelOutput({
     if (integrationData.output) {
         const integrationDataReturns = Array.isArray(integrationData.output) ? integrationData.output : [integrationData.output];
         for (const model of integrationDataReturns) {
-            if (!allModels.includes(model)) {
-                if (!isJsOrTsType(model)) {
-                    allModels.push(model);
-                }
-            } else {
-                if (type === 'sync') {
-                    const error = new NangoError('duplicate_model', { model, name, type: 'sync' });
-                    return { success: false, error, response: null };
-                }
+            if (allModels.includes(model) && type === 'sync') {
+                const error = new NangoError('duplicate_model', { model, name, type: 'sync' });
+                return { success: false, error, response: null };
             }
+
+            if (!allModels.includes(model) && !isJsOrTsType(model)) {
+                allModels.push(model);
+            }
+
             const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
-            models.push({ name: model, fields: modelFields });
 
             if (modelFields) {
-                const subModels = modelFields.filter((field) => allModelNames.some((m) => m.includes(field.type.replace(/\[\]/g, ''))));
+                models.push({ name: model, fields: modelFields });
+                const subModels = modelFields.filter((field) => allModelNames.some((m) => m.includes(field.type?.replace(/\[\]/g, ''))));
 
-                if (subModels.length > 0) {
-                    for (const subModel of subModels) {
-                        const subModelFields = getFieldsForModel(subModel.type, config) as { name: string; type: string }[];
+                for (const subModel of subModels) {
+                    const subModelFields = getFieldsForModel(subModel.type, config) as { name: string; type: string }[];
+                    if (subModelFields) {
                         const subModelName = subModel.type.replace(/\[\]/g, '');
                         models.push({ name: subModelName, fields: subModelFields });
                     }
@@ -418,8 +421,10 @@ function buildSyncs({
 
         if (sync.input) {
             const modelFields = getFieldsForModel(sync.input, config) as { name: string; type: string }[];
-            inputModel.name = sync.input;
-            inputModel.fields = modelFields;
+            if (modelFields) {
+                inputModel.name = sync.input;
+                inputModel.fields = modelFields;
+            }
         }
 
         let endpoints: NangoSyncEndpoint[] = [];
@@ -563,8 +568,10 @@ function buildActions({
                 }
             }
             const modelFields = getFieldsForModel(action.input, config) as { name: string; type: string }[];
-            inputModel.name = action.input;
-            inputModel.fields = modelFields;
+            if (modelFields) {
+                inputModel.name = action.input;
+                inputModel.fields = modelFields;
+            }
         }
 
         let endpoints: NangoSyncEndpoint[] = [];
