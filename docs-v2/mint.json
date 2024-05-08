@@ -449,6 +449,7 @@
                         "integrations/all/squarespace",
                         "integrations/all/stackexchange",
                         "integrations/all/strava",
+                        "integrations/all/strava-web",
                         "integrations/all/stripe",
                         "integrations/all/stripe-app",
                         "integrations/all/stripe-express",
