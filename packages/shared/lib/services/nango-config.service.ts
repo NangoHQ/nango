@@ -368,7 +368,7 @@ function formModelOutput({
 
             if (modelFields) {
                 models.push({ name: model, fields: modelFields });
-                const subModels = modelFields.filter((field) => allModelNames.some((m) => m.includes(field.type?.replace(/\[\]/g, ''))));
+                const subModels = modelFields.filter((field) => allModelNames.some((m) => m.includes(field?.type?.replace(/\[\]/g, ''))));
 
                 for (const subModel of subModels) {
                     const subModelFields = getFieldsForModel(subModel.type, config) as { name: string; type: string }[];
