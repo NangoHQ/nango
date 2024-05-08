@@ -77,7 +77,7 @@ export interface SyncResponse {
     futureActionTimes: number[];
     offset: number;
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
-    models: string[];
+    models: string | string[];
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
     latest_sync: {
@@ -91,6 +91,7 @@ export interface SyncResponse {
         sync_config_id: number;
         version: string;
         models: string[];
+        sync_type: 'FULL' | 'INCREMENTAL';
     };
     thirty_day_timestamps: {
         created_at: string;

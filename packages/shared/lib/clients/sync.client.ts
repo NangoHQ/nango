@@ -393,7 +393,8 @@ class SyncClient {
         syncName,
         nangoConnectionId,
         logCtx,
-        recordsService
+        recordsService,
+        initiator
     }: {
         scheduleId: string;
         syncId: string;
@@ -406,6 +407,7 @@ class SyncClient {
         nangoConnectionId?: number | undefined;
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
+        initiator: string;
     }): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
@@ -422,12 +424,12 @@ class SyncClient {
                     break;
                 case SyncCommand.PAUSE:
                     {
-                        await scheduleHandle?.pause();
+                        await scheduleHandle?.pause(`${initiator} paused the sync schedule`);
                     }
                     break;
                 case SyncCommand.UNPAUSE:
                     {
-                        await scheduleHandle?.unpause();
+                        await scheduleHandle?.unpause(`${initiator} unpaused the sync schedule`);
                         await scheduleHandle?.trigger(OVERLAP_POLICY);
                         const schedule = await getScheduleById(scheduleId);
                         if (schedule) {
