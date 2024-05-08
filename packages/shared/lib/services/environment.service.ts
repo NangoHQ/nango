@@ -11,56 +11,11 @@ import { isCloud } from '@nangohq/utils';
 
 const TABLE = '_nango_environments';
 
-interface EnvironmentAccount {
-    accountId: number;
-    environmentId: number;
-    environment: string;
-}
-
-type EnvironmentAccountSecrets = Record<string, EnvironmentAccount>;
-
 export const defaultEnvironments = ['prod', 'dev'];
-const CACHE_ENABLED = !(process.env['NANGO_CACHE_ENV_KEYS'] === 'false');
+
+const hashLocalCache = new Map<string, string>();
 
 class EnvironmentService {
-    private environmentAccountSecrets: EnvironmentAccountSecrets = {} as EnvironmentAccountSecrets;
-
-    async cacheSecrets(): Promise<void> {
-        if (!CACHE_ENABLED) {
-            return;
-        }
-
-        const environmentAccounts = await db.knex.select('*').from<Environment>(TABLE);
-
-        const environmentAccountSecrets: EnvironmentAccountSecrets = {};
-
-        for (const environmentAccount of environmentAccounts) {
-            const decryptedEnvironmentAccount = encryptionManager.decryptEnvironment(environmentAccount);
-
-            if (decryptedEnvironmentAccount != null) {
-                environmentAccountSecrets[decryptedEnvironmentAccount.secret_key] = {
-                    accountId: decryptedEnvironmentAccount.account_id,
-                    environmentId: decryptedEnvironmentAccount.id,
-                    environment: decryptedEnvironmentAccount.name
-                };
-            }
-        }
-
-        this.environmentAccountSecrets = environmentAccountSecrets;
-    }
-
-    private addToEnvironmentSecretCache(accountEnvironment: Environment) {
-        if (!CACHE_ENABLED) {
-            return;
-        }
-
-        this.environmentAccountSecrets[accountEnvironment.secret_key] = {
-            accountId: accountEnvironment.account_id,
-            environmentId: accountEnvironment.id,
-            environment: accountEnvironment.name
-        };
-    }
-
     async getEnvironmentsByAccountId(account_id: number): Promise<Pick<Environment, 'name'>[]> {
         try {
             const result = await db.knex.select<Pick<Environment, 'name'>[]>('name').from<Environment>(TABLE).where({ account_id });
@@ -81,44 +36,31 @@ class EnvironmentService {
         }
     }
 
-    async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
+    async getAccountAndEnvironmentBySecretKey(secretKey: string): Promise<{ account: Account; environment: Environment } | null> {
         if (!isCloud) {
-            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_')) || [];
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
             if (environmentVariables.length > 0) {
                 for (const environmentVariable of environmentVariables) {
                     const envSecretKey = process.env[environmentVariable] as string;
 
-                    if (envSecretKey === secretKey) {
-                        const env = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
-                        // This key is set dynamically and does not exists in database
-                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ name: env }).first();
-
-                        if (!environment) {
-                            return null;
-                        }
-
-                        return { accountId: environment.account_id, environmentId: environment.id };
+                    if (envSecretKey !== secretKey) {
+                        continue;
                     }
+
+                    const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
+                    // This key is set dynamically and does not exists in database
+                    const env = await db.knex.select<Pick<Environment, 'account_id'>>('account_id').from<Environment>(TABLE).where({ name: envName }).first();
+
+                    if (!env) {
+                        return null;
+                    }
+
+                    return this.getAccountAndEnvironment({ accountId: env.account_id, envName });
                 }
             }
         }
 
-        if (!this.environmentAccountSecrets[secretKey]) {
-            // If the secret key is not in the cache, try to get it from the database
-            const hashed = await hashSecretKey(secretKey);
-            const fromDb = await db.knex.select('*').from<Environment>(TABLE).where({ secret_key_hashed: hashed }).first();
-            if (!fromDb) {
-                return null;
-            }
-            if (!CACHE_ENABLED) {
-                return { accountId: fromDb.account_id, environmentId: fromDb.id };
-            }
-            this.addToEnvironmentSecretCache(encryptionManager.decryptEnvironment(fromDb)!);
-        }
-
-        const { accountId, environmentId } = this.environmentAccountSecrets[secretKey] as EnvironmentAccount;
-
-        return accountId != null && environmentId != null ? { accountId, environmentId } : null;
+        return this.getAccountAndEnvironment({ secretKey });
     }
 
     async getAccountIdFromEnvironment(environment_id: number): Promise<number | null> {
@@ -156,51 +98,67 @@ class EnvironmentService {
         return uuid;
     }
 
-    async getAccountIdAndEnvironmentIdByPublicKey(publicKey: string): Promise<{ accountId: number; environmentId: number } | null> {
+    async getAccountAndEnvironmentByPublicKey(publicKey: string): Promise<{ account: Account; environment: Environment } | null> {
         if (!isCloud) {
-            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_')) || [];
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
             if (environmentVariables.length > 0) {
                 for (const environmentVariable of environmentVariables) {
                     const envPublicKey = process.env[environmentVariable] as string;
 
-                    if (envPublicKey === publicKey) {
-                        const env = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
-                        // This key is set dynamically and does not exists in database
-                        const environment = await db.knex.select('*').from<Environment>(TABLE).where({ name: env }).first();
-
-                        if (!environment) {
-                            return null;
-                        }
-
-                        return { accountId: environment.account_id, environmentId: environment.id };
+                    if (envPublicKey !== publicKey) {
+                        continue;
                     }
+                    const envName = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
+                    // This key is set dynamically and does not exists in database
+                    const env = await db.knex.select<Pick<Environment, 'account_id'>>('account_id').from<Environment>(TABLE).where({ name: envName }).first();
+                    if (!env) {
+                        return null;
+                    }
+
+                    return this.getAccountAndEnvironment({ accountId: env.account_id, envName });
                 }
             }
         }
 
-        const result = await db.knex.select('*').from<Environment>(TABLE).where({ public_key: publicKey }).first();
-
-        if (!result) {
-            return null;
-        }
-
-        return { accountId: result.account_id, environmentId: result.id };
+        return this.getAccountAndEnvironment({ publicKey });
     }
 
-    async getAccountAndEnvironmentById(account_id: number, environment: string): Promise<{ account: Account; environment: Environment } | null> {
-        const account = await db.knex.select('*').from<Account>(`_nango_accounts`).where({ id: account_id }).first();
+    async getAccountAndEnvironment(
+        opts: { publicKey: string } | { secretKey: string } | { accountId: number; envName: string }
+    ): Promise<{ account: Account; environment: Environment } | null> {
+        const q = db.knex
+            .select<{
+                account: Account;
+                environment: Environment;
+            }>(db.knex.raw('row_to_json(_nango_environments.*) as environment'), db.knex.raw('row_to_json(_nango_accounts.*) as account'))
+            .from<Environment>(TABLE)
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .first();
 
-        if (!account) {
+        let hash: string | undefined;
+        if ('secretKey' in opts) {
+            // Hashing is slow by design so it's very slow to recompute this hash all the time
+            // We keep the hash in-memory to not compromise on security if the db leak
+            hash = hashLocalCache.get(opts.secretKey) || (await hashSecretKey(opts.secretKey));
+            q.where('secret_key_hashed', hash);
+        } else if ('publicKey' in opts) {
+            q.where('_nango_environments.public_key', opts.publicKey);
+        } else if (opts.accountId !== undefined) {
+            q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
+        } else {
             return null;
         }
 
-        const environmentResult = await db.knex.select('*').from<Environment>(TABLE).where({ account_id, name: environment }).first();
-
-        if (!environmentResult) {
+        const res = await q;
+        if (!res) {
             return null;
         }
 
-        return { account, environment: encryptionManager.decryptEnvironment(environmentResult)! };
+        if (hash && 'secretKey' in opts) {
+            // Store only successful attempt to not pollute the memory
+            hashLocalCache.set(opts.secretKey, hash);
+        }
+        return { account: res.account, environment: encryptionManager.decryptEnvironment(res.environment)! };
     }
 
     async getIdByUuid(uuid: string): Promise<number | null> {
@@ -277,14 +235,10 @@ class EnvironmentService {
                 return null;
             }
 
-            const encryptedEnvironment = encryptionManager.encryptEnvironment({
-                ...environment,
-                secret_key_hashed: await hashSecretKey(environment.secret_key)
-            });
+            const encryptedEnvironment = await encryptionManager.encryptEnvironment(environment);
             await db.knex.from<Environment>(TABLE).where({ id: environmentId }).update(encryptedEnvironment);
 
             const env = encryptionManager.decryptEnvironment(encryptedEnvironment)!;
-            this.addToEnvironmentSecretCache(env);
             return env;
         }
 
@@ -444,7 +398,7 @@ class EnvironmentService {
 
         environment.pending_secret_key = pending_secret_key;
 
-        const encryptedEnvironment = encryptionManager.encryptEnvironment(environment);
+        const encryptedEnvironment = await encryptionManager.encryptEnvironment(environment);
         await db.knex.from<Environment>(TABLE).where({ id }).update(encryptedEnvironment);
 
         return pending_secret_key;
@@ -507,18 +461,11 @@ class EnvironmentService {
                 pending_secret_key_tag: null
             });
 
-        if (this.environmentAccountSecrets[decrypted.secret_key]) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete this.environmentAccountSecrets[decrypted.secret_key];
-        }
-
         const updatedEnvironment = await this.getById(id);
 
         if (!updatedEnvironment) {
             return false;
         }
-
-        this.addToEnvironmentSecretCache(updatedEnvironment);
 
         return true;
     }

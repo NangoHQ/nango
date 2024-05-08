@@ -5,7 +5,7 @@ import { getLogger } from '@nangohq/utils';
 const logger = getLogger('Server.EmailClient');
 
 class EmailClient {
-    private static instance: EmailClient;
+    private static instance: EmailClient | undefined;
     private client: any;
 
     private constructor(config: { username: string; key: string }) {
