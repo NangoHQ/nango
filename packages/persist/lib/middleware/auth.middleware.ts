@@ -25,8 +25,11 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     environmentService
         .getAccountAndEnvironmentBySecretKey(secret)
         .then((result) => {
-            if (!result || result.environment.id !== environmentId) {
-                throw new Error('Cannot find matching environment');
+            if (!result) {
+                throw new Error('Cannot find environment');
+            }
+            if (result.environment.id !== environmentId) {
+                throw new Error(`Environment is not matching (expected: ${environmentId}, actual: ${result.environment.id})`);
             }
             next();
         })
