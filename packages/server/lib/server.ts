@@ -4,7 +4,7 @@ import './utils/config.js';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'http';
-import { getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath, packageJsonFile, environmentService } from '@nangohq/shared';
+import { db, getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
@@ -28,6 +28,8 @@ wss.on('connection', async (ws: WebSocket) => {
     await publisher.subscribe(ws);
 });
 
+db.enableMetrics();
+
 // Set to 'false' to disable migration at startup. Appropriate when you
 // have multiple replicas of the service running and you do not want them
 // all trying to migrate the database at the same time. In this case, the
@@ -40,7 +42,6 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     logger.info('Not migrating database');
 }
 
-await environmentService.cacheSecrets();
 await oAuthSessionService.clearStaleSessions();
 refreshTokens();
 

@@ -1,8 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
 import {
-    getAccount,
-    getEnvironmentId,
     createActivityLog,
     errorManager,
     analytics,
@@ -24,11 +22,12 @@ import {
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
+import type { RequestLocals } from '../utils/express.js';
 
 class UnAuthController {
-    async create(req: Request, res: Response, next: NextFunction) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
+    async create(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const accountId = res.locals['account'].id;
+        const environmentId = res.locals['environment'].id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
 
@@ -120,7 +119,7 @@ class UnAuthController {
                 return;
             }
 
-            const template = configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.None) {
                 await createActivityLogMessageAndEnd({
@@ -128,7 +127,7 @@ class UnAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Provider ${config?.provider} does not support unauth creation`
+                    content: `Provider ${config.provider} does not support unauth creation`
                 });
                 await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
                 await logCtx.failed();
@@ -156,7 +155,7 @@ class UnAuthController {
             const [updatedConnection] = await connectionService.upsertUnauthConnection(
                 connectionId,
                 providerConfigKey,
-                config?.provider,
+                config.provider,
                 environmentId,
                 accountId
             );
@@ -171,7 +170,7 @@ class UnAuthController {
                         auth_mode: AuthModes.None,
                         operation: updatedConnection.operation
                     },
-                    config?.provider,
+                    config.provider,
                     logContextGetter,
                     activityLogId,
                     undefined,

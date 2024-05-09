@@ -279,6 +279,7 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
             environment_id,
             nango_config_id,
             active: true,
+            enabled: true,
             type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
             deleted: false
         });
@@ -471,6 +472,7 @@ export async function getSyncConfigByParams(
                 sync_name,
                 nango_config_id: config.id as number,
                 active: true,
+                enabled: true,
                 type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
                 deleted: false
             })
