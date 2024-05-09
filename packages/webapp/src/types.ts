@@ -111,6 +111,7 @@ export const UserFacingSyncCommand = {
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
+    OAuth2CC = 'OAUTH2_CC',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
@@ -121,7 +122,7 @@ export enum AuthModes {
 
 export interface Connection {
     id: number;
-    connectionId: string;
+    connection_id: string;
     provider: string;
     providerConfigKey: string;
     creationDate: string;
@@ -134,18 +135,31 @@ export interface Connection {
     oauthToken: string | null;
     oauthTokenSecret: string | null;
     rawCredentials: object;
-    credentials: BasicApiCredentials | ApiKeyCredentials | null;
+    credentials: BasicApiCredentials | ApiKeyCredentials | OAuthOverride | OAuth2ClientCredentials | null;
 }
 
 export interface BasicApiCredentials {
-    [key: string]: string;
     username: string;
     password: string;
 }
 
 export interface ApiKeyCredentials {
-    [key: string]: string;
     apiKey: string;
+}
+
+export interface OAuthOverride {
+    config_override: {
+        client_id: string;
+        client_secret: string;
+    };
+}
+
+export interface OAuth2ClientCredentials {
+    token: string;
+    access_token: string;
+    expires_at: string;
+    client_id: string;
+    client_secret: string;
 }
 
 export interface User {
@@ -207,6 +221,7 @@ export interface Flow {
     attributes: Record<string, unknown>;
     endpoints: NangoSyncEndpoint[];
     scopes: string[];
+    enabled: boolean;
     sync_type?: 'FULL' | 'INCREMENTAL';
     is_public: boolean;
     pre_built: boolean;
@@ -250,10 +265,13 @@ export interface Account {
     slack_notifications: boolean;
     websockets_path: string;
     secret_key_rotatable: boolean;
-    env_variables: string[];
+    env_variables: { id?: number; name: string; value: string }[];
     host: string;
     uuid: string;
     email: string;
+    send_auth_webhook: boolean;
+    public_key_rotatable?: boolean;
+    hmac_digest?: string | null;
 }
 
 export interface IntegrationConfig {

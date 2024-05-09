@@ -1,48 +1,66 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { Environment } from '@nangohq/shared';
+import { isCloud, baseUrl } from '@nangohq/utils';
 import {
     accountService,
     hmacService,
     environmentService,
     errorManager,
-    getBaseUrl,
-    isCloud,
     getWebsocketsPath,
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
     packageJsonFile,
-    getEnvironmentId
+    getOnboardingProgress,
+    userService
 } from '@nangohq/shared';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { NANGO_ADMIN_UUID } from './account.controller.js';
+import type { RequestLocals } from '../utils/express.js';
+
+export interface GetMeta {
+    environments: Pick<Environment, 'name'>[];
+    email: string;
+    version: string;
+    baseUrl: string;
+    debugMode: boolean;
+    onboardingComplete: boolean;
+}
 
 class EnvironmentController {
-    async meta(req: Request, res: Response, next: NextFunction) {
+    async meta(req: Request, res: Response<GetMeta, never>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
+            const sessionUser = req.user;
+            if (!sessionUser) {
+                errorManager.errRes(res, 'user_not_found');
                 return;
             }
-            const { account, user } = response;
 
-            const environments = await environmentService.getEnvironmentsByAccountId(account.id);
+            const user = await userService.getUserById(sessionUser.id);
+            if (!user) {
+                errorManager.errRes(res, 'user_not_found');
+                return;
+            }
+
+            const environments = await environmentService.getEnvironmentsByAccountId(user.account_id);
             const version = packageJsonFile().version;
-            const baseUrl = getBaseUrl();
-            res.status(200).send({ environments, version, email: user.email, baseUrl });
+            const onboarding = await getOnboardingProgress(sessionUser.id);
+            res.status(200).send({
+                environments,
+                version,
+                email: sessionUser.email,
+                baseUrl,
+                debugMode: req.session.debugMode === true,
+                onboardingComplete: onboarding?.complete || false
+            });
         } catch (err) {
             next(err);
         }
     }
 
-    async getEnvironment(req: Request, res: Response, next: NextFunction) {
+    async getEnvironment(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment, account, user } = response;
+            const { environment, account, user } = res.locals;
 
-            if (!isCloud()) {
+            if (!isCloud) {
                 environment.websockets_path = getWebsocketsPath();
                 if (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`]) {
                     environment.secret_key = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
@@ -56,27 +74,22 @@ class EnvironmentController {
             }
 
             environment.callback_url = await getOauthCallbackUrl(environment.id);
-            const webhookBaseUrl = await getGlobalWebhookReceiveUrl();
+            const webhookBaseUrl = getGlobalWebhookReceiveUrl();
             environment.webhook_receive_url = `${webhookBaseUrl}/${environment.uuid}`;
 
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
             res.status(200).send({
-                account: { ...environment, env_variables: environmentVariables, host: getBaseUrl(), uuid: account.uuid, email: user.email }
+                account: { ...environment, env_variables: environmentVariables, host: baseUrl, uuid: account.uuid, email: user.email }
             });
         } catch (err) {
             next(err);
         }
     }
 
-    async getHmacDigest(req: Request, res: Response, next: NextFunction) {
+    async getHmacDigest(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
             const { provider_config_key: providerConfigKey, connection_id: connectionId } = req.query;
 
             if (!providerConfigKey) {
@@ -100,7 +113,7 @@ class EnvironmentController {
         }
     }
 
-    async getAdminAuthInfo(req: Request, res: Response, next: NextFunction) {
+    async getAdminAuthInfo(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { connection_id: connectionId } = req.query;
 
@@ -110,19 +123,18 @@ class EnvironmentController {
             }
 
             const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
-            const nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
+            const nangoAdminUUID = NANGO_ADMIN_UUID;
             const env = 'prod';
             const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
             const digest = await hmacService.digest(info?.environmentId as number, integration_key, connectionId as string);
-            const { environment } = await environmentService.getAccountAndEnvironmentById(info?.accountId as number, env);
 
-            res.status(200).send({ hmac_digest: digest, public_key: environment?.public_key, integration_key });
+            res.status(200).send({ hmac_digest: digest, public_key: res.locals['environment'].public_key, integration_key });
         } catch (err) {
             next(err);
         }
     }
 
-    async updateCallback(req: Request, res: Response, next: NextFunction) {
+    async updateCallback(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -134,12 +146,7 @@ class EnvironmentController {
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editCallbackUrl(req.body['callback_url'], environment.id);
             res.status(200).send();
@@ -148,19 +155,14 @@ class EnvironmentController {
         }
     }
 
-    async updateWebhookURL(req: Request, res: Response, next: NextFunction) {
+    async updateWebhookURL(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body) {
                 errorManager.errRes(res, 'missing_body');
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
             res.status(200).send();
@@ -169,19 +171,14 @@ class EnvironmentController {
         }
     }
 
-    async updateAlwaysSendWebhook(req: Request, res: Response, next: NextFunction) {
+    async updateAlwaysSendWebhook(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body) {
                 errorManager.errRes(res, 'missing_body');
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editAlwaysSendWebhook(req.body['always_send_webhook'], environment.id);
             res.status(200).send();
@@ -190,20 +187,14 @@ class EnvironmentController {
         }
     }
 
-    async updateSendAuthWebhook(req: Request, res: Response, next: NextFunction) {
+    async updateSendAuthWebhook(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body) {
                 errorManager.errRes(res, 'missing_body');
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editSendAuthWebhook(req.body['send_auth_webhook'], environment.id);
             res.status(200).send();
@@ -212,19 +203,14 @@ class EnvironmentController {
         }
     }
 
-    async updateHmacEnabled(req: Request, res: Response, next: NextFunction) {
+    async updateHmacEnabled(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body) {
                 errorManager.errRes(res, 'missing_body');
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editHmacEnabled(req.body['hmac_enabled'], environment.id);
             res.status(200).send();
@@ -233,19 +219,14 @@ class EnvironmentController {
         }
     }
 
-    async updateSlackNotificationsEnabled(req: Request, res: Response, next: NextFunction) {
+    async updateSlackNotificationsEnabled(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body) {
                 errorManager.errRes(res, 'missing_body');
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editSlackNotifications(req.body['slack_notifications'], environment.id);
             res.status(200).send();
@@ -254,19 +235,14 @@ class EnvironmentController {
         }
     }
 
-    async updateHmacKey(req: Request, res: Response, next: NextFunction) {
+    async updateHmacKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body) {
                 errorManager.errRes(res, 'missing_body');
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editHmacKey(req.body['hmac_key'], environment.id);
             res.status(200).send();
@@ -275,9 +251,9 @@ class EnvironmentController {
         }
     }
 
-    async getEnvironmentVariables(_req: Request, res: Response, next: NextFunction) {
+    async getEnvironmentVariables(_req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
             const environmentVariables = await environmentService.getEnvironmentVariables(environmentId);
 
             if (!environmentVariables) {
@@ -298,19 +274,14 @@ class EnvironmentController {
         }
     }
 
-    async updateEnvironmentVariables(req: Request, res: Response, next: NextFunction) {
+    async updateEnvironmentVariables(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body) {
                 errorManager.errRes(res, 'missing_body');
                 return;
             }
 
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.editEnvironmentVariable(environment.id, req.body);
             res.status(200).send();
@@ -319,19 +290,14 @@ class EnvironmentController {
         }
     }
 
-    async rotateKey(req: Request, res: Response, next: NextFunction) {
+    async rotateKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
             if (!req.body.type) {
                 res.status(400).send({ error: 'The type of key to rotate is required' });
                 return;
             }
-            const { environment } = response;
+
+            const { environment } = res.locals;
 
             const newKey = await environmentService.rotateKey(environment.id, req.body.type);
             res.status(200).send({ key: newKey });
@@ -340,19 +306,14 @@ class EnvironmentController {
         }
     }
 
-    async revertKey(req: Request, res: Response, next: NextFunction) {
+    async revertKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
             if (!req.body.type) {
                 res.status(400).send({ error: 'The type of key to rotate is required' });
                 return;
             }
-            const { environment } = response;
+
+            const { environment } = res.locals;
 
             const newKey = await environmentService.revertKey(environment.id, req.body.type);
             res.status(200).send({ key: newKey });
@@ -361,19 +322,13 @@ class EnvironmentController {
         }
     }
 
-    async activateKey(req: Request, res: Response, next: NextFunction) {
+    async activateKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
             if (!req.body.type) {
                 res.status(400).send({ error: 'The type of key to activate is required' });
                 return;
             }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             await environmentService.activateKey(environment.id, req.body.type);
             res.status(200).send();

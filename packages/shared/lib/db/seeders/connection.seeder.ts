@@ -1,48 +1,19 @@
-import db, { schema } from '../database.js';
+import db from '../database.js';
 import connectionService from '../../services/connection.service.js';
-import environmentService from '../../services/environment.service.js';
 import type { AuthCredentials } from '../../models/Auth.js';
+import type { Environment } from '../../models/Environment.js';
 
-export const createConnectionSeeds = async (environmentName = ''): Promise<number[]> => {
-    let result;
-    if (environmentName) {
-        result = [await environmentService.createEnvironment(0, environmentName)];
-    } else {
-        result = await schema().select('*').from('_nango_environments');
+export const createConnectionSeeds = async (env: Environment): Promise<number[]> => {
+    const connectionIds = [];
+
+    for (let i = 0; i < 4; i++) {
+        const name = Math.random().toString(36).substring(7);
+        const result = await connectionService.upsertConnection(`conn-${name}`, `provider-${name}`, 'google', {} as AuthCredentials, {}, env.id, 0);
+        connectionIds.push(...result.map((res) => res.id));
     }
-
-    const connections = [];
-
-    for (const { id: environment_id } of result) {
-        const connectionParams = [
-            [Math.random().toString(36).substring(7)],
-            [Math.random().toString(36).substring(7)],
-            [Math.random().toString(36).substring(7)],
-            [Math.random().toString(36).substring(7)]
-        ];
-
-        const connectionIds = [];
-
-        for (const [name] of connectionParams) {
-            const [result] = (await connectionService.upsertConnection(
-                name as string,
-                name as string,
-                'google',
-                {} as AuthCredentials,
-                {},
-                environment_id,
-                0
-            )) as { id: number }[];
-            const { id: connection_id } = result as { id: number };
-            connectionIds.push(connection_id);
-        }
-
-        connections.push(...connectionIds);
-    }
-
-    return connections;
+    return connectionIds;
 };
 
 export const deleteAllConnectionSeeds = async (): Promise<void> => {
-    await db.knex.raw('TRUNCATE TABLE nango._nango_connections CASCADE');
+    await db.knex.raw('TRUNCATE TABLE _nango_connections CASCADE');
 };

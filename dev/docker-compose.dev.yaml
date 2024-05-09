@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres
+        image: postgres:15.5-alpine
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
@@ -30,13 +30,51 @@ services:
         networks:
             - nango
 
-    nango-redis:
-        image: "redis:latest"
-        container_name: nango-redis
+    temporal-ui:
+        image: temporalio/ui:2.26.0
+        depends_on:
+            - temporal
+        environment:
+            - TEMPORAL_ADDRESS=temporal:7233
+            - TEMPORAL_CORS_ORIGINS=http://localhost:3000
         ports:
-            - "6379:6379"
+            - 8081:8080
         networks:
             - nango
 
+    nango-redis:
+        image: redis:7.2.4
+        container_name: nango-redis
+        ports:
+            - '6379:6379'
+        networks:
+            - nango
+
+    opensearch:
+        container_name: opensearch
+        image: opensearchproject/opensearch:2.13.0
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - opensearch-data1:/usr/share/opensearch/data
+        ports:
+            - 9500:9200
+            - 9600:9300
+        environment:
+            - discovery.type=single-node
+            - DISABLE_SECURITY_PLUGIN=true
+        networks:
+            - nango
+        deploy:
+            resources:
+                limits:
+                    memory: 2GB
+
 networks:
     nango:
+
+volumes:
+    opensearch-data1:
+        driver: local

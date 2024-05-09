@@ -1,6 +1,5 @@
 import { v2, client } from '@datadog/datadog-api-client';
-import { isCloud } from './utils.js';
-import tracer from 'dd-trace';
+import { isCloud } from '@nangohq/utils';
 
 export enum LogTypes {
     AUTH_TOKEN_REFRESH_START = 'auth_token_refresh_start',
@@ -25,7 +24,6 @@ export enum LogTypes {
     SYNC_GET_RECORDS_ORDER_USED = 'sync_get_records_order_used',
     SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used',
     SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used',
-    SYNC_GET_RECORDS_QUERY_TIMEOUT = 'sync_get_records_query_timeout',
     FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure',
     POST_CONNECTION_SCRIPT_FAILURE = 'post_connection_script_failure',
     INCOMING_WEBHOOK_RECEIVED = 'incoming_webhook_received',
@@ -34,16 +32,6 @@ export enum LogTypes {
     INCOMING_WEBHOOK_ISSUE_WEBHOOK_SUBSCRIPTION_NOT_FOUND_REGISTERED = 'incoming_webhook_issue_webhook_subscription_not_found_registered',
     INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY = 'incoming_webhook_processed_successfully',
     INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing'
-}
-
-export enum MetricTypes {
-    ACTION_TRACK_RUNTIME = 'action_track_runtime',
-    SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
-    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
-    RUNNER_SDK = 'nango.runner.sdk',
-    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
-    PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
-    PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes'
 }
 
 export enum SpanTypes {
@@ -56,7 +44,7 @@ class Telemetry {
     private logInstance: v2.LogsApi | undefined;
     constructor() {
         try {
-            if (isCloud() && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
+            if (isCloud && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
                 const configuration = client.createConfiguration();
                 configuration.setServerVariables({
                     site: 'us3.datadoghq.com'
@@ -82,60 +70,6 @@ class Telemetry {
         };
 
         await this.logInstance?.submitLog(params);
-    }
-
-    public async increment(metricName: MetricTypes, value?: number) {
-        tracer.dogstatsd.increment(metricName, value || 1);
-    }
-
-    public async decrement(metricName: MetricTypes, value?: number) {
-        tracer.dogstatsd.decrement(metricName, value || 1);
-    }
-
-    public async duration(metricName: MetricTypes, value: number) {
-        tracer.dogstatsd.distribution(metricName, value);
-    }
-
-    public time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: MetricTypes, func: F): F {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const that = this;
-
-        const duration = (start: [number, number]) => {
-            const durationComponents = process.hrtime(start);
-            const seconds = durationComponents[0];
-            const nanoseconds = durationComponents[1];
-            const duration = seconds * 1000 + nanoseconds / 1e6;
-
-            that.duration(metricName, duration);
-        };
-
-        // This function should handle both async/sync function
-        // So it's try/catch regular execution and use .then() for async
-        // @ts-expect-error can't fix this
-        return function wrapped(...args: any) {
-            const start = process.hrtime();
-
-            try {
-                const res = func(...args);
-                if (res[Symbol.toStringTag] === 'Promise') {
-                    return res.then(
-                        (v) => {
-                            duration(start);
-                            return v;
-                        },
-                        (err) => {
-                            duration(start);
-                            throw err;
-                        }
-                    );
-                }
-
-                return res;
-            } catch (err) {
-                duration(start);
-                throw err;
-            }
-        };
     }
 }
 

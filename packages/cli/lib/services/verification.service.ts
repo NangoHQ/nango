@@ -1,14 +1,11 @@
 import fs from 'fs';
-import glob from 'glob';
 import chalk from 'chalk';
-import path from 'path';
 import promptly from 'promptly';
-import { exec } from 'child_process';
 
-import { nangoConfigFile, loadLocalNangoConfig, determineVersion } from '@nangohq/shared';
+import { nangoConfigFile } from '@nangohq/shared';
 import configService from './config.service.js';
-import compileService from './compile.service.js';
-import { printDebug, getNangoRootPath } from '../utils.js';
+import { compileAllFiles, listFilesToCompile } from './compile.service.js';
+import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
 
@@ -18,7 +15,7 @@ class VerificationService {
         if (debug) {
             printDebug(`Current full working directory is read as: ${cwd}`);
         }
-        const currentDirectorySplit = cwd.split(/[\/\\]/);
+        const currentDirectorySplit = cwd.split(/[/\\]/);
         const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
         if (debug) {
@@ -41,7 +38,7 @@ class VerificationService {
                 }
                 init(debug);
                 await generate(debug);
-                await compileService.run(debug);
+                await compileAllFiles({ debug });
             } else {
                 console.log(chalk.red(`Exiting...`));
                 process.exit(1);
@@ -72,7 +69,7 @@ class VerificationService {
                 }
                 fs.mkdirSync(distDir);
                 await generate(debug);
-                await compileService.run(debug);
+                await compileAllFiles({ debug });
             }
         } else {
             const files = fs.readdirSync(distDir);
@@ -88,35 +85,9 @@ class VerificationService {
                     if (debug) {
                         printDebug(`Generating the default integration files.`);
                     }
-                    await compileService.run(debug);
+                    await compileAllFiles({ debug });
                 }
             }
-        }
-    }
-
-    public async runMigration(loadLocation: string): Promise<void> {
-        if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
-            return;
-        }
-        const localConfig = await loadLocalNangoConfig(loadLocation);
-
-        if (!localConfig) {
-            return;
-        }
-
-        const version = determineVersion(localConfig);
-        if (version === 'v2') {
-            console.log(chalk.blue(`nango.yaml is already at v2.`));
-        }
-        if (version === 'v1' && localConfig.integrations) {
-            exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error) => {
-                if (error) {
-                    console.log(chalk.red(`There was an issue migrating your nango.yaml to v2.`));
-                    console.error(error);
-                    return;
-                }
-                console.log(chalk.blue(`Migrated to v2 of nango.yaml!`));
-            });
         }
     }
 
@@ -132,11 +103,11 @@ class VerificationService {
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = glob.sync(`./*.ts`);
+        const tsFiles = listFilesToCompile({ config });
 
-        const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
+        const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 
-        const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName as string));
+        const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName));
 
         if (missingSyncsAndActions.length > 0) {
             console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncsAndActions.join(', ')}`));

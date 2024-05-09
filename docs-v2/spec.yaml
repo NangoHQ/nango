@@ -360,6 +360,15 @@ paths:
                                 expires_in:
                                     type: integer
                                     description: (OAuth 2, optional) In seconds.
+                                no_expiration:
+                                    type: boolean
+                                    description: (OAuth2, optional) If the provider gives access tokens that don't expire, pass in `true` to avoid an import validation error.
+                                oauth_client_id_override:
+                                    type: string
+                                    description: (OAuth2, optional) Override the integration's OAuth client id
+                                oauth_client_secret_override:
+                                    type: string
+                                    description: (OAuth2, optional) Override the integration's OAuth client secret
                                 oauth_token:
                                     type: string
                                     description: (OAuth 1, required) The client token to be attached to the connection.
@@ -551,6 +560,173 @@ paths:
                                     message:
                                         type: string
 
+    /scripts/config:
+        get:
+            description: Return the configuration for all integration scripts
+            responses:
+                '200':
+                    description: Successfully returned integration scripts config
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    providerConfigKey:
+                                        type: string
+                                    syncs:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                    example: "github-issues"
+                                                type:
+                                                    type: string
+                                                    example: "sync"
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            name:
+                                                                type: string
+                                                                example: "GithubIssue"
+                                                            fields:
+                                                                type: array
+                                                                items:
+                                                                    type: object
+                                                                    properties:
+                                                                        name:
+                                                                            type: string
+                                                                            example: "title"
+                                                                        type:
+                                                                            type: string
+                                                                            example: "string"
+                                                sync_type:
+                                                    type: string
+                                                    example: "INCREMENTAL"
+                                                runs:
+                                                    type: string
+                                                    example: "every 30 minutes"
+                                                track_deletes:
+                                                    type: boolean
+                                                auto_start:
+                                                    type: boolean
+                                                last_deployed:
+                                                    type: string
+                                                    example: "2024-02-01T09:09:03.502Z"
+                                                is_public:
+                                                    type: boolean
+                                                pre_built:
+                                                    type: boolean
+                                                version:
+                                                    type: string
+                                                    example: "0.0.3"
+                                                attributes:
+                                                    type: object
+                                                input:
+                                                    type: object
+                                                returns:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                        example: "GithubIssue"
+                                                description:
+                                                    type: string
+                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
+                                                scopes:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                        example: "public_repo"
+                                                endpoints:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                nango_yaml_version:
+                                                    type: string
+                                                    example: "v2"
+                                                webhookSubscriptions:
+                                                    type: array
+                                    actions:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                    example: "github-issues"
+                                                type:
+                                                    type: string
+                                                    example: "sync"
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            name:
+                                                                type: string
+                                                                example: "GithubIssue"
+                                                            fields:
+                                                                type: array
+                                                                items:
+                                                                    type: object
+                                                                    properties:
+                                                                        name:
+                                                                            type: string
+                                                                            example: "id"
+                                                                        type:
+                                                                            type: string
+                                                                            example: "integer"
+                                                last_deployed:
+                                                    type: string
+                                                    example: "2024-02-28T20:16:38.052Z"
+                                                is_public:
+                                                    type: boolean
+                                                    example: false
+                                                pre_built:
+                                                    type: boolean
+                                                    example: false
+                                                version:
+                                                    type: string
+                                                    example: "4"
+                                                attributes:
+                                                    type: object
+                                                input:
+                                                    type: object
+                                                returns:
+                                                    type: object
+                                                description:
+                                                    type: string
+                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
+                                                scopes:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                        example: "public_repo"
+                                                endpoints:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                nango_yaml_version:
+                                                    type: string
+                                                    example: "v2"
+                                    postConnectionScripts:
+                                        type: array
+                                    provider:
+                                        type: string
+                                        example: "github"
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /records:
         get:
             description: Returns data synced with Nango Sync
@@ -561,32 +737,38 @@ paths:
                   schema:
                       type: string
                   description: The data model to fetch
-                - name: delta
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                  description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
-                - name: limit
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                  description: The maximum number of records to return. Defaults to 100.
                 - name: cursor
                   in: query
                   required: false
                   schema:
                       type: string
                   description: |
-                    Base 64 encoded value that can be used to fetch the next page of results. The cursor will be included until there are no more results to paginate through.
+                    Each record from this method comes with a synchronization cursor in `_nango_metadata.cursor`. Save the last fetched record's cursor to track how far you've synced. By providing the cursor to this endpoint, you'll continue syncing from where you left off, receiving only post-cursor changes. This same cursor is used to paginate through the results of this endpoint.
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: The maximum number of records to return. Defaults to 100.
                 - name: filter
                   in: query
                   required: false
                   schema:
                       type: string
                       enum: [added, updated, deleted]
-                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the delta parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
+                  description: Filter to only show results that have been added or updated or deleted.
+                - name: modified_after
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records modified after this timestamp are returned, otherwise all records are returned.
+                - name: delta (deprecated)
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: DEPRECATED (use modified_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
                 - name: Connection-Id
                   in: header
                   required: true
@@ -636,6 +818,10 @@ paths:
                                                             type: string
                                                             description: The timestamp at which Nango last detected a change to this record
                                                             example: "2023-09-18T15:20:35.941305+00:00"
+                                                        cursor:
+                                                            type: string
+                                                            description: The current cursor of the record. Use this to fetch records updated after this record
+                                                            example: "MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=="
                                     next_cursor:
                                         type: string
                                         description: The base64-encoded cursor for pagination

@@ -1,17 +1,14 @@
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { useLogoutAPI } from '../utils/api';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
+import { useSWRConfig } from 'swr';
 
 export interface User {
     id: number;
     accountId: number;
     email: string;
     name: string;
-}
-
-export function isSignedIn() {
-    return getUser() !== null;
 }
 
 export function useSignin() {
@@ -30,12 +27,15 @@ export function useSignin() {
 export function useSignout() {
     const analyticsReset = useAnalyticsReset();
     const nav = useNavigate();
+    const { mutate } = useSWRConfig();
     const logoutAPI = useLogoutAPI();
 
-    return () => {
+    return async () => {
         storage.clear();
         analyticsReset();
-        logoutAPI(); // Destroy server session.
+        await logoutAPI(); // Destroy server session.
+
+        await mutate(() => true, undefined, { revalidate: false }); // clean all cache
         nav('/signin', { replace: true });
     };
 }

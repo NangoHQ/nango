@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres
+        image: postgres:16.0-alpine
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
@@ -17,6 +17,7 @@ services:
     nango-server:
         image: nangohq/nango-server:hosted
         container_name: nango-server
+        platform: linux/amd64
         environment:
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
@@ -27,6 +28,7 @@ services:
             - NANGO_DB_SSL=${NANGO_DB_SSL}
             - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
             - SERVER_PORT=${SERVER_PORT}
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
             - NANGO_DASHBOARD_USERNAME=${NANGO_DASHBOARD_USERNAME}
@@ -34,6 +36,9 @@ services:
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
+            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-opensearch:9200}
+            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
+            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
         volumes:
             - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         restart: always
@@ -41,16 +46,39 @@ services:
             - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
         depends_on:
             - nango-db
+            - nanog-opensearch
         networks:
             - nango
 
     nango-redis:
-        image: "redis:latest"
+        image: redis:7.2.4
         container_name: nango-redis
         ports:
-            - "6379:6379"
+            - '6379:6379'
+        networks:
+            - nango
+
+    nanog-opensearch:
+        image: opensearchproject/opensearch:2.13.0
+        container_name: nango-opensearch
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - opensearch-data1:/usr/share/opensearch/data
+        ports:
+            - 9500:9200
+            - 9600:9300
+        environment:
+            - discovery.type=single-node
+            - DISABLE_SECURITY_PLUGIN=true
         networks:
             - nango
 
 networks:
     nango:
+
+volumes:
+    opensearch-data1:
+        driver: local

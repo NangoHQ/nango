@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Tooltip } from '@geist-ui/core';
-import { Clipboard, Link } from '@geist-ui/icons';
+import { Link } from '@geist-ui/icons';
+import { CopyIcon } from '@radix-ui/react-icons';
 
 interface ClipboardButtonProps {
     text: string;
@@ -35,11 +36,11 @@ export default function ClipboardButton({ text, icontype = 'clipboard', textProm
     }, [tooltipText, textPrompt]);
 
     return (
-        <Tooltip className="text-xs" text={tooltipText} type={`${dark ? 'dark': 'default'}`}>
+        <Tooltip className="text-xs" text={tooltipText} type={dark ? 'dark' : 'default'}>
             {icontype === 'link' ? (
-                <Link color="gray" className={`h-4 ml-1 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
+                <Link color="gray" className={`h-4 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
             ) : (
-                <Clipboard color="gray" className={`h-4 ml-1 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
+                <CopyIcon color="gray" className={`h-4 w-4 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
             )}
         </Tooltip>
     );

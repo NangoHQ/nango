@@ -1,7 +1,11 @@
 import crypto from 'node:crypto';
 
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import { getLogger } from '@nangohq/utils';
 import type { WebhookHandler } from './types.js';
+import type { LogContextGetter } from '@nangohq/logs';
+
+const logger = getLogger('Webhook.Linear');
 
 interface LinearBody {
     action: string;
@@ -19,22 +23,22 @@ function validate(integration: ProviderConfig, headerSignature: string, rawBody:
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
 }
 
-const route: WebhookHandler = async (nango, integration, headers, body, rawBody) => {
+const route: WebhookHandler = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
     const signature = headers['linear-signature'];
 
-    console.log('[webhook/linear] received', { configId: integration.id });
+    logger.info('received', { configId: integration.id });
 
     if (!validate(integration, signature, rawBody)) {
-        console.log('[webhook/linear] invalid signature', { configId: integration.id });
+        logger.error('invalid signature', { configId: integration.id });
         return;
     }
 
     const parsedBody = body as LinearBody;
-    console.log(`[webhook/linear] valid ${parsedBody.type}`, { configId: integration.id });
+    logger.info(`valid ${parsedBody.type}`, { configId: integration.id });
 
-    await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'organizationId', 'organizationId');
+    const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'organizationId', logContextGetter, 'organizationId');
 
-    return { parsedBody };
+    return { parsedBody, connectionIds: response?.connectionIds || [] };
 };
 
 export default route;

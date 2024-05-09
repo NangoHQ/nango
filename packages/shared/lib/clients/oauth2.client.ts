@@ -1,14 +1,13 @@
-import {
+import type {
     Config as ProviderConfig,
     TemplateOAuth2 as ProviderTemplateOAuth2,
-    AuthModes as ProviderAuthModes,
     Template as ProviderTemplate,
     OAuth2Credentials,
-    OAuthAuthorizationMethod,
-    OAuthBodyFormat,
     Connection
 } from '../models/index.js';
-import { AuthorizationCode, AccessToken } from 'simple-oauth2';
+import { AuthModes as ProviderAuthModes, OAuthAuthorizationMethod, OAuthBodyFormat } from '../models/index.js';
+import type { AccessToken } from 'simple-oauth2';
+import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import { LogActionEnum } from '../models/Activity.js';
@@ -18,10 +17,10 @@ import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, template: ProviderTemplate, connectionConfig: Record<string, string>) {
-    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.OAuth2] as string);
+    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.OAuth2] as string);
     const strippedTokenUrl = templateTokenUrl.replace(/connectionConfig\./g, '');
     const tokenUrl = new URL(interpolateString(strippedTokenUrl, connectionConfig));
-    const strippedAuthorizeUrl = template.authorization_url.replace(/connectionConfig\./g, '');
+    const strippedAuthorizeUrl = template.authorization_url!.replace(/connectionConfig\./g, '');
     const authorizeUrl = new URL(interpolateString(strippedAuthorizeUrl, connectionConfig));
     const headers = { 'User-Agent': 'Nango' };
 
@@ -29,8 +28,8 @@ export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, temp
 
     return {
         client: {
-            id: providerConfig.oauth_client_id!,
-            secret: providerConfig.oauth_client_secret!
+            id: providerConfig.oauth_client_id,
+            secret: providerConfig.oauth_client_secret
         },
         auth: {
             tokenHost: tokenUrl.origin,
@@ -93,8 +92,8 @@ export async function getFreshOAuth2Credentials(
             nangoErr = new NangoError(`refresh_token_external_error`, { message: errorPayload });
         }
 
-        await errorManager.report(nangoErr.message, {
-            environmentId: connection.environment_id as number,
+        errorManager.report(nangoErr.message, {
+            environmentId: connection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {
@@ -116,10 +115,10 @@ export async function getFreshOAuth2Credentials(
         }
 
         return { success: true, error: null, response: newCredentials };
-    } catch (e) {
-        const error = new NangoError(`refresh_token_parsing_error`);
-        await errorManager.report(error.message, {
-            environmentId: connection.environment_id as number,
+    } catch (err) {
+        const error = new NangoError(`refresh_token_parsing_error`, { cause: err });
+        errorManager.report(error.message, {
+            environmentId: connection.environment_id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {

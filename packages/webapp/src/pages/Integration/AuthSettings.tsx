@@ -3,20 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
 import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
-import { Tooltip } from '@geist-ui/core';
-import { useModal } from '@geist-ui/core';
-import { AuthModes, IntegrationConfig, Account } from '../../types';
+import { Tooltip, useModal } from '@geist-ui/core';
+import type { IntegrationConfig, Account } from '../../types';
+import { AuthModes } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
 import Info from '../../components/ui/Info';
 import ActionModal from '../../components/ui/ActionModal';
 import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
-import { formatDateToShortUSFormat } from '../../utils/utils';
+import { formatDateToShortUSFormat, defaultCallback } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
-import { defaultCallback } from '../../utils/utils';
 
 import { useStore } from '../../store';
+import { useSWRConfig } from 'swr';
 
 interface AuthSettingsProps {
     integration: IntegrationConfig | null;
@@ -24,9 +24,11 @@ interface AuthSettingsProps {
 }
 
 export default function AuthSettings(props: AuthSettingsProps) {
+    const { mutate } = useSWRConfig();
     const { integration, account } = props;
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
 
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
@@ -39,22 +41,23 @@ export default function AuthSettings(props: AuthSettingsProps) {
     const [integrationId, setIntegrationId] = useState(integration?.unique_key || '');
 
     const navigate = useNavigate();
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.env);
 
     const { setVisible, bindings } = useModal();
-    const editIntegrationAPI = useEditIntegrationAPI();
-    const editIntegrationNameAPI = useEditIntegrationNameAPI();
-    const createIntegrationAPI = useCreateIntegrationAPI();
-    const deleteIntegrationAPI = useDeleteIntegrationAPI();
+    const editIntegrationAPI = useEditIntegrationAPI(env);
+    const editIntegrationNameAPI = useEditIntegrationNameAPI(env);
+    const createIntegrationAPI = useCreateIntegrationAPI(env);
+    const deleteIntegrationAPI = useDeleteIntegrationAPI(env);
 
     const onDelete = async () => {
         if (!integration) return;
 
         setModalShowSpinner(true);
-        let res = await deleteIntegrationAPI(integrationId);
+        const res = await deleteIntegrationAPI(integrationId);
 
         if (res?.status === 204) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
+            clearCache();
             navigate(`/${env}/integrations`, { replace: true });
         }
         setModalShowSpinner(false);
@@ -67,6 +70,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
         setModalContent('Are you sure you want to delete this integration?');
         setModalAction(() => () => onDelete());
         setVisible(true);
+    };
+
+    const clearCache = () => {
+        void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integration'), undefined);
     };
 
     const handleSave = async (e: React.SyntheticEvent) => {
@@ -113,12 +120,13 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
             if (res?.status === 200) {
                 toast.success('Integration updated!', { position: toast.POSITION.BOTTOM_CENTER });
+                clearCache();
             }
         } else {
             const target = e.target as typeof e.target & {
                 provider: { value: string };
                 unique_key: { value: string };
-                app_id: { value: string }
+                app_id: { value: string };
                 private_key: { value: string };
                 client_id: { value: string };
                 client_secret: { value: string };
@@ -136,13 +144,23 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
             const custom = integration?.auth_mode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
 
-            const res = await createIntegrationAPI(provider, integration?.auth_mode as AuthModes, target.unique_key?.value, client_id, client_secret, target.scopes?.value, target.app_link?.value, custom);
+            const res = await createIntegrationAPI(
+                provider,
+                integration?.auth_mode as AuthModes,
+                target.unique_key?.value,
+                client_id,
+                client_secret,
+                target.scopes?.value,
+                target.app_link?.value,
+                custom
+            );
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
+                clearCache();
                 navigate(`/${env}/integrations`, { replace: true });
             } else if (res != null) {
-                let payload = await res.json();
+                const payload = await res.json();
                 toast.error(payload.type === 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
                     position: toast.POSITION.BOTTOM_CENTER
                 });
@@ -152,11 +170,14 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
     const editIntegrationID = () => {
         setShowEditIntegrationIdMenu(true);
+        setIntegrationIdEdit(integrationId);
+        setIsTyping(false);
     };
 
     const onSaveIntegrationID = async () => {
         setShowEditIntegrationIdMenu(false);
         setIntegrationIdEdit('');
+        setIsTyping(false);
 
         if (!integration) {
             return;
@@ -168,18 +189,20 @@ export default function AuthSettings(props: AuthSettingsProps) {
             toast.success('Integration ID updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setIntegrationId(integrationIdEdit);
             navigate(`/${env}/integration/${integrationIdEdit}`, { replace: true });
+            clearCache();
         } else if (res != null) {
-            let payload = await res.json();
+            const payload = await res.json();
             toast.error(payload.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
         }
-    }
+    };
 
     const onCancelEditIntegrationID = () => {
         setShowEditIntegrationIdMenu(false);
         setIntegrationIdEdit('');
-    }
+        setIsTyping(false);
+    };
 
     return (
         <form className="mx-auto space-y-12 text-sm w-[976px]" onSubmit={handleSave} autoComplete="one-time-code">
@@ -193,7 +216,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 setVisible={setVisible}
             />
             <input type="text" className="hidden" name="username" autoComplete="username" />
-            <input type="password" className="hidden" name="password" autoComplete="password"/>
+            <input type="password" className="hidden" name="password" autoComplete="password" />
             <div className="flex">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">API Provider</span>
@@ -202,17 +225,24 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 <div className="flex flex-col w-1/2 relative">
                     <span className="text-gray-400 text-xs uppercase mb-1">Integration ID</span>
                     {showEditIntegrationIdMenu ? (
-                        <div className="flex">
-                            <input value={integrationIdEdit}
-                                onChange={(e) => setIntegrationIdEdit(e.target.value)}
+                        <div className="flex items-center">
+                            <input
+                                value={integrationIdEdit}
+                                onChange={(e) => {
+                                    setIntegrationIdEdit(e.target.value);
+                                    setIsTyping(true);
+                                }}
                                 className="bg-active-gray w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
-                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         onSaveIntegrationID();
                                     }
                                 }}
                             />
-                            <XCircleIcon className="flex h-5 w-5 text-red-400 cursor-pointer hover:text-red-700" onClick={() => onCancelEditIntegrationID()} />
+                            <XCircleIcon
+                                className="flex ml-1 h-5 w-5 text-red-400 cursor-pointer hover:text-red-700"
+                                onClick={() => onCancelEditIntegrationID()}
+                            />
                         </div>
                     ) : (
                         <div className="flex text-white">
@@ -222,10 +252,12 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             )}
                         </div>
                     )}
-                    {showEditIntegrationIdMenu && integrationIdEdit && (
+                    {isTyping && integrationIdEdit && (
                         <div className="flex items-center border border-border-gray bg-active-gray text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
-                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editIntegrationID()} />
-                            <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveIntegrationID()}>Change the integration ID to: {integrationIdEdit}</span>
+                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => onSaveIntegrationID()} />
+                            <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveIntegrationID()}>
+                                Change the integration ID to: {integrationIdEdit}
+                            </span>
                         </div>
                     )}
                 </div>
@@ -246,8 +278,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         <div className="flex items-center mb-1">
                             <span className="text-gray-400 text-xs uppercase">Callback Url</span>
                         </div>
-                        <span className="flex items-center">
-                            <span className="text-white mr-3">{account.callback_url || defaultCallback()}</span>
+                        <span className="flex items-center gap-2">
+                            <span className="text-white">{account.callback_url || defaultCallback()}</span>
                             <CopyButton text={account.callback_url || defaultCallback()} dark classNames="" />
                         </span>
                     </div>
@@ -271,8 +303,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
                             </Tooltip>
                         </div>
-                        <span className="flex items-center">
-                            <span className="text-white mr-3">{account.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
+                        <span className="flex items-center gap-2">
+                            <span className="text-white">{account.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
                             <CopyButton text={account.callback_url.replace('oauth/callback', 'app-auth/connect')} dark classNames="" />
                         </span>
                     </div>
@@ -296,8 +328,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
                             </Tooltip>
                         </div>
-                        <div className="flex text-white items-center">
-                            <span className="text-white mr-3">{`${account.webhook_receive_url}/${integrationId}`}</span>
+                        <div className="flex text-white items-center gap-2">
+                            <span className="text-white">{`${account.webhook_receive_url}/${integrationId}`}</span>
                             <CopyButton text={`${account.webhook_receive_url}/${integrationId}`} dark classNames="" />
                         </div>
                     </div>
@@ -318,8 +350,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
                                 </Tooltip>
                             </div>
-                            <div className="flex text-white items-center">
-                                <span className="text-white mr-3">{integration?.webhook_secret}</span>
+                            <div className="flex text-white items-center gap-2">
+                                <span className="text-white">{integration?.webhook_secret}</span>
                                 <CopyButton text={integration?.webhook_secret} dark classNames="" />
                             </div>
                         </div>
@@ -358,7 +390,17 @@ export default function AuthSettings(props: AuthSettingsProps) {
             )}
             {(integration?.auth_mode === AuthModes.Basic || integration?.auth_mode === AuthModes.ApiKey) && (
                 <Info size={20} color="blue">
-                    The "{integration?.provider}" integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev/integrate/guides/authorize-an-api" className="text-white underline hover:text-text-light-blue" rel="noreferrer" target="_blank">docs</a>).
+                    The &quot;{integration?.provider}&quot; integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'}{' '}
+                    for authentication (
+                    <a
+                        href="https://docs.nango.dev/integrate/guides/authorize-an-api"
+                        className="text-white underline hover:text-text-light-blue"
+                        rel="noreferrer"
+                        target="_blank"
+                    >
+                        docs
+                    </a>
+                    ).
                 </Info>
             )}
             {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && (
@@ -371,7 +413,9 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     id="app_id"
                                     name="app_id"
                                     type="text"
-                                    defaultValue={integration ? integration?.auth_mode === AuthModes.Custom ? integration.custom?.app_id : integration.client_id : ''}
+                                    defaultValue={
+                                        integration ? (integration?.auth_mode === AuthModes.Custom ? integration.custom?.app_id : integration.client_id) : ''
+                                    }
                                     placeholder="Obtain the app id from the app page."
                                     autoComplete="new-password"
                                     required
@@ -419,7 +463,13 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     copy={true}
                                     id="private_key"
                                     name="private_key"
-                                    defaultValue={integration ? integration?.auth_mode === AuthModes.Custom ? integration.custom?.private_key : integration.client_secret : ''}
+                                    defaultValue={
+                                        integration
+                                            ? integration?.auth_mode === AuthModes.Custom
+                                                ? integration.custom?.private_key
+                                                : integration.client_secret
+                                            : ''
+                                    }
                                     additionalclass={`w-full`}
                                     required
                                 />
@@ -448,7 +498,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
                                 <span className="absolute right-0.5 top-1 flex items-center">
-                                    <CopyButton text={integration?.client_id as string} dark classNames="relative -ml-6" />
+                                    <CopyButton text={integration?.client_id} dark classNames="relative -ml-6" />
                                 </span>
                             </div>
                         </div>
@@ -475,13 +525,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 <span className="text-gray-400 text-xs">Scopes</span>
                             </div>
                             <div className="mt-1">
-                                <TagsInput
-                                    id="scopes"
-                                    name="scopes"
-                                    type="text"
-                                    defaultValue={integration ? integration?.scopes as string : ''}
-                                    minLength={1}
-                                />
+                                <TagsInput id="scopes" name="scopes" type="text" defaultValue={integration ? integration?.scopes : ''} minLength={1} />
                             </div>
                         </div>
                     )}
@@ -489,7 +533,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
             )}
             <div className="pb-4">
                 <div className="flex justify-between">
-                    {((!integration) || (integration?.auth_mode !== AuthModes.Basic && integration?.auth_mode !== AuthModes.ApiKey)) && (
+                    {(!integration || (integration?.auth_mode !== AuthModes.Basic && integration?.auth_mode !== AuthModes.ApiKey)) && (
                         <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
                             Save
                         </button>

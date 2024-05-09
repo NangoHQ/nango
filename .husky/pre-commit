@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npm run prettier-format
+node ./scripts/flows.js
+git add ./packages/shared/flows.yaml
+npx lint-staged --allow-empty

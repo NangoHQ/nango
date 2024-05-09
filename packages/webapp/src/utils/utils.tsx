@@ -1,4 +1,7 @@
 import parser from 'cron-parser';
+import { clsx } from 'clsx';
+import type { ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
@@ -6,6 +9,9 @@ export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
 export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
+
+export const AUTH_ENABLED = isCloud() || isEnterprise() || isLocal();
+export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
 
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
@@ -109,7 +115,7 @@ export function formatDateToShortUSFormat(dateString: string): string {
         second: '2-digit',
         month: 'short',
         day: '2-digit',
-        hour12: false,
+        hour12: false
     };
 
     const formattedDate = date.toLocaleString('en-US', options);
@@ -122,15 +128,14 @@ export function formatDateToShortUSFormat(dateString: string): string {
     return `${parts[1]}, ${parts[0]}`;
 }
 
-
 export function formatDateToUSFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
     };
 
     const formattedDate = date.toLocaleString('en-US', options);
@@ -144,7 +149,7 @@ export function formatDateToUSFormat(dateString: string): string {
 export function parseCron(frequency: string): string {
     const interval = parser.parseExpression(frequency);
     return formatDateToUSFormat(interval.next().toISOString());
-};
+}
 
 function formatFutureRun(nextRun: number): Date | undefined {
     if (!nextRun) {
@@ -180,7 +185,7 @@ export function interpretNextRun(futureRuns: number[], previousRun?: string): st
 
     const nextDate = formatFutureRun(nextNextRun);
 
-    const nextRuns = [date, nextDate].map(d => d && formatDateToUSFormat(d.toISOString()));
+    const nextRuns = [date, nextDate].map((d) => d && formatDateToUSFormat(d.toISOString()));
 
     if (previousRun) {
         const previousRunTime = new Date(previousRun);
@@ -238,10 +243,10 @@ export function getRunTime(created_at: string, updated_at: string): string {
  * @desc iterate over each timestamp and calculate the total runtime
  * to get the total runtime for the total of array timestamps
  */
-export function calculateTotalRuntime(timestamps: { created_at: string; updated_at: string}[]): string {
+export function calculateTotalRuntime(timestamps: { created_at: string; updated_at: string }[]): string {
     let totalRuntime = 0;
 
-    timestamps.forEach(timestamp => {
+    timestamps.forEach((timestamp) => {
         const createdAt = new Date(timestamp.created_at);
         const updatedAt = new Date(timestamp.updated_at);
 
@@ -263,41 +268,22 @@ export function calculateTotalRuntime(timestamps: { created_at: string; updated_
 
     const result = runtime.trim();
 
-    return  result === '' ? '-' : result;
-};
+    return result === '' ? '-' : result;
+}
 
 export function createExampleForType(type: string): any {
     if (typeof type !== 'string') {
         return {};
     }
 
-    const rawType = type.replace('|', '').replace('null', '').replace('undefined', '').trim();
-
-    switch (rawType) {
-        case 'string':
-            return '<string>'
-        case 'integer':
-            return '<number>';
-        case 'boolean':
-            return '<boolean>';
-        case 'number':
-            return '<number>';
-        case 'object':
-            return '<object>';
-        case 'array':
-            return '<array>';
-        case 'date':
-            return '<date>';
-        default:
-            return '';
-    }
+    return `<${type}>`;
 }
 
-export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean|string|number> {
+export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean | string | number> {
     if (!Array.isArray(model.fields)) {
         return createExampleForType(model.name);
     }
-    const example = {} as Record<string, boolean|string|number>;
+    const example = {} as Record<string, boolean | string | number>;
     for (const field of model.fields) {
         example[field.name] = createExampleForType(field.type);
     }
@@ -310,7 +296,7 @@ export const parseInput = (flow: Flow) => {
     if (flow?.input && Object.keys(flow?.input).length > 0 && !flow.input.fields) {
         input = flow.input.name;
     } else if (flow?.input && Object.keys(flow?.input).length > 0) {
-        const rawInput = {} as Record<string, boolean|string|number>;
+        const rawInput = {} as Record<string, boolean | string | number>;
         for (const field of flow.input.fields) {
             rawInput[field.name] = field.type;
         }
@@ -322,21 +308,25 @@ export const parseInput = (flow: Flow) => {
     return input;
 };
 
-export function generateResponseModel(models: NangoSyncModel[], output: string, isSync: boolean): Record<string, any> {
+export function generateResponseModel(models: NangoSyncModel[], output: string | undefined, isSync: boolean): Record<string, any> {
+    if (!output) {
+        return {};
+    }
     const model = models.find((model) => model.name === output);
     const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
     if (!isSync) {
-        return jsonResponse;
+        return model?.name?.includes('[]') ? [jsonResponse] : jsonResponse;
     }
     const metadata = {
         _nango_metadata: {
             deleted_at: '<date| null>',
             last_action: 'ADDED|UPDATED|DELETED',
             first_seen_at: '<date>',
+            cursor: '<string>',
             last_modified_at: '<date>'
         }
     };
-    return {...jsonResponse, ...metadata};
+    return { ...jsonResponse, ...metadata };
 }
 
 export function getSimpleDate(dateString: string | undefined): string {
@@ -356,4 +346,8 @@ export function parseEndpoint(endpoint: string | FlowEndpoint): string {
     }
 
     return Object.values(endpoint)[0];
+}
+
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
 }

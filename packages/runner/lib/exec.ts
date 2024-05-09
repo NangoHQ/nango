@@ -6,7 +6,8 @@ import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
-import { tracer } from './tracer.js';
+import tracer from 'dd-trace';
+import { stringifyError } from '@nangohq/utils';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -38,7 +39,7 @@ export async function exec(
         })();
     `;
 
-    return tracer.trace(SpanTypes.RUNNER_EXEC, async (span) => {
+    return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.accountId)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
@@ -80,12 +81,16 @@ export async function exec(
                     throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
                 }
                 if (isAction) {
-                    return await scriptExports.default(nango, codeParams);
+                    let inputParams = codeParams;
+                    if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
+                        inputParams = undefined;
+                    }
+                    return await scriptExports.default(nango, inputParams);
                 } else {
                     return await scriptExports.default(nango);
                 }
             }
-        } catch (error: any) {
+        } catch (error) {
             if (error instanceof ActionError) {
                 const { type, payload } = error;
                 return {
@@ -98,7 +103,7 @@ export async function exec(
                     response: null
                 };
             } else {
-                throw new Error(`Error executing code '${error}'`);
+                throw new Error(`Error executing code '${stringifyError(error)}'`);
             }
         } finally {
             span.finish();

@@ -139,6 +139,14 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
           <ResponseField name="password" type="string">
             For Basic authorization, pass in the user's password.
           </ResponseField>
+
+          <ResponseField name="oauth_client_id_override" type="string">
+            For OAuth 2, override the integration's client ID with a connection-level client ID. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite).
+          </ResponseField>
+
+          <ResponseField name="oauth_client_secret_override" type="string">
+            For OAuth 2, override the integration's client secret with a connection-level client secret. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite).
+          </ResponseField>
         </Expandable>
       </ResponseField>
     </Expandable>
@@ -171,3 +179,7 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
     </Expandable>
   </ResponseField>
 </Expandable>
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

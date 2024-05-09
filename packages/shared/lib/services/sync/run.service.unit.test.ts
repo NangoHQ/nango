@@ -1,10 +1,15 @@
 import { expect, describe, it, vi } from 'vitest';
+import type { SyncRunConfig } from './run.service.js';
 import SyncRun from './run.service.js';
-import * as ConfigService from './config/config.service.js';
 import environmentService from '../environment.service.js';
+import accountService from '../account.service.js';
 import LocalFileService from '../file/local.service.js';
-import { IntegrationServiceInterface, SyncType } from '../../models/Sync.js';
+import { SyncType } from '../../models/Sync.js';
+import * as configService from './config/config.service.js';
+import type { IntegrationServiceInterface } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
+import type { Account } from '../../models/Admin.js';
+import { logContextGetter } from '@nangohq/logs';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -18,29 +23,49 @@ class integrationServiceMock implements IntegrationServiceInterface {
 }
 
 const integrationService = new integrationServiceMock();
-
-const dryRunConfig = {
-    integrationService: integrationService as unknown as IntegrationServiceInterface,
-    writeToDb: false,
-    nangoConnection: {
-        connection_id: '1234',
-        provider_config_key: 'test_key',
-        environment_id: 1
-    },
-    syncName: 'test_sync',
-    syncType: SyncType.INCREMENTAL,
-    syncId: 'some-sync',
-    syncJobId: 123,
-    activityLogId: 123,
-    debug: true
+const recordsService = {
+    markNonCurrentGenerationRecordsAsDeleted: ({
+        connectionId: _connectionId,
+        model: _model,
+        syncId: _syncId,
+        generation: _generation
+    }: {
+        connectionId: number;
+        model: string;
+        syncId: string;
+        generation: number;
+    }): Promise<string[]> => {
+        return Promise.resolve([]);
+    }
 };
 
 describe('SyncRun', () => {
+    const dryRunConfig: SyncRunConfig = {
+        integrationService: integrationService as unknown as IntegrationServiceInterface,
+        recordsService,
+        logContextGetter: logContextGetter,
+        writeToDb: false,
+        nangoConnection: {
+            id: 1,
+            connection_id: '1234',
+            provider_config_key: 'test_key',
+            environment_id: 1
+        },
+        syncName: 'test_sync',
+        syncType: SyncType.INCREMENTAL,
+        syncId: 'some-sync',
+        syncJobId: 123,
+        activityLogId: 123,
+        debug: true
+    };
     it('should initialize correctly', () => {
-        const config = {
+        const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
+            recordsService,
+            logContextGetter: logContextGetter,
             writeToDb: true,
             nangoConnection: {
+                id: 1,
                 connection_id: '1234',
                 provider_config_key: 'test_key',
                 environment_id: 1
@@ -80,7 +105,20 @@ describe('SyncRun', () => {
             } as Environment);
         });
 
-        vi.spyOn(ConfigService, 'getSyncConfig').mockImplementation(() => {
+        vi.spyOn(environmentService, 'getEnvironmentName').mockImplementation(() => {
+            return Promise.resolve('test');
+        });
+
+        vi.spyOn(accountService, 'getAccountById').mockImplementation(() => {
+            return Promise.resolve({
+                id: 1,
+                name: 'test',
+                secret_key: '',
+                host: ''
+            } as Account);
+        });
+
+        vi.spyOn(configService, 'getSyncConfig').mockImplementation(() => {
             return Promise.resolve({
                 integrations: {
                     test_key: {
@@ -128,8 +166,7 @@ describe('SyncRun', () => {
 
         expect(failRun.response).toEqual(false);
 
-        // if run script returns null then fail
-        // @ts-expect-error
+        // @ts-expect-error - if run script returns null then fail
         vi.spyOn(integrationService, 'runScript').mockImplementation(() => {
             return Promise.resolve(null);
         });

@@ -1,14 +1,5 @@
-import {
-    ActionError,
-    NangoError,
-    formatScriptError,
-    IntegrationServiceInterface,
-    NangoIntegrationData,
-    NangoSync,
-    NangoProps,
-    localFileService,
-    RunnerOutput
-} from '@nangohq/shared';
+import type { IntegrationServiceInterface, RunScriptOptions, RunnerOutput } from '@nangohq/shared';
+import { ActionError, NangoError, formatScriptError, NangoSync, localFileService } from '@nangohq/shared';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
@@ -20,22 +11,10 @@ class IntegrationService implements IntegrationServiceInterface {
         return;
     }
 
-    async runScript(
-        syncName: string,
-        _syncId: string,
-        _activityLogId: number | undefined,
-        nangoProps: NangoProps,
-        _integrationData: NangoIntegrationData,
-        _environmentId: number,
-        _writeToDb: boolean,
-        isInvokedImmediately: boolean,
-        isWebhook: boolean,
-        optionalLoadLocation?: string,
-        input?: object
-    ): Promise<RunnerOutput> {
+    async runScript({ syncName, nangoProps, isInvokedImmediately, isWebhook, optionalLoadLocation, input }: RunScriptOptions): Promise<RunnerOutput> {
         try {
             const nango = new NangoSync(nangoProps);
-            const script: string | null = localFileService.getIntegrationFile(syncName, optionalLoadLocation);
+            const script: string | null = localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
 
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;

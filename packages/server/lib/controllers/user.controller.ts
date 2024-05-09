@@ -1,18 +1,29 @@
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { getUserFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { errorManager, userService, getBaseUrl, isCloud, isEnterprise } from '@nangohq/shared';
+import { isCloud, isEnterprise, basePublicUrl, isErr } from '@nangohq/utils';
+import { errorManager, userService } from '@nangohq/shared';
+import type { RequestLocals } from '../utils/express.js';
+
+export interface GetUser {
+    user: {
+        id: number;
+        accountId: number;
+        email: string;
+        name: string;
+    };
+}
 
 class UserController {
-    async getUser(req: Request, res: Response, next: NextFunction) {
+    async getUser(req: Request, res: Response<GetUser, never>, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
+            const getUser = await getUserFromSession(req);
+            if (isErr(getUser)) {
+                errorManager.errResFromNangoErr(res, getUser.err);
                 return;
             }
-            const { user } = response;
 
+            const user = getUser.res;
             res.status(200).send({
                 user: {
                     id: user.id,
@@ -26,14 +37,15 @@ class UserController {
         }
     }
 
-    async editName(req: Request, res: Response, next: NextFunction) {
+    async editName(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
+            const getUser = await getUserFromSession(req);
+            if (isErr(getUser)) {
+                errorManager.errResFromNangoErr(res, getUser.err);
                 return;
             }
-            const { user } = response;
+
+            const user = getUser.res;
             const name = req.body['name'];
 
             if (!name) {
@@ -48,14 +60,15 @@ class UserController {
         }
     }
 
-    async editPassword(req: Request, res: Response, next: NextFunction) {
+    async editPassword(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
+            const getUser = await getUserFromSession(req);
+            if (isErr(getUser)) {
+                errorManager.errResFromNangoErr(res, getUser.err);
                 return;
             }
-            const { user } = response;
+
+            const user = getUser.res;
             const oldPassword = req.body['old_password'];
             const newPassword = req.body['new_password'];
 
@@ -71,14 +84,9 @@ class UserController {
         }
     }
 
-    async invite(req: Request, res: Response, next: NextFunction) {
+    async invite(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!success || response === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-            const { account, user } = response;
+            const { account, user } = res.locals;
 
             const email = req.body['email'];
             const name = req.body['name'];
@@ -99,7 +107,7 @@ class UserController {
             if (!invited) {
                 throw new Error('Failed to invite user.');
             }
-            if (isCloud() || isEnterprise()) {
+            if (isCloud || isEnterprise) {
                 const emailClient = EmailClient.getInstance();
                 emailClient.send(
                     invited.email,
@@ -109,7 +117,7 @@ class UserController {
 
 <p>You are invited to join the ${account.name} account on Nango.</p>
 
-<p>Join this account by clicking <a href="${getBaseUrl()}/signup/${invited?.token}">here</a> and completing your signup.</p>
+<p>Join this account by clicking <a href="${basePublicUrl}/signup/${invited.token}">here</a> and completing your signup.</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
@@ -124,7 +132,7 @@ Team Nango</p>
         }
     }
 
-    async suspend(req: Request, res: Response, next: NextFunction) {
+    async suspend(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const userId = req.params['userId'];
 

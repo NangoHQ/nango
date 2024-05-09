@@ -1,52 +1,23 @@
-import crypto, { CipherGCMTypes } from 'crypto';
-import logger from '../logger/console.js';
+import utils from 'node:util';
+import crypto from 'crypto';
+import { getLogger, Encryption } from '@nangohq/utils';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import type { DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord } from '../models/Sync.js';
 import db from '../db/database.js';
-import util from 'util';
 
-interface DataRecordJson {
-    encryptedValue: string;
-    [key: string]: any;
-}
+const logger = getLogger('Encryption.Manager');
 
-class EncryptionManager {
-    private key: string | undefined;
-    private algo: CipherGCMTypes = 'aes-256-gcm';
-    private encoding: BufferEncoding = 'base64';
-    private encryptionKeyByteLength = 32;
+export const pbkdf2 = utils.promisify(crypto.pbkdf2);
+export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'] || '';
+
+class EncryptionManager extends Encryption {
     private keySalt = 'X89FHEGqR3yNK0+v7rPWxQ==';
 
-    constructor(key: string | undefined) {
-        this.key = key;
-
-        if (key && Buffer.from(key, this.encoding).byteLength != this.encryptionKeyByteLength) {
-            throw new Error('Encryption key must be base64-encoded and 256-bit long.');
-        }
-    }
-
-    private shouldEncrypt(): boolean {
-        return Boolean((this?.key as string) && (this.key as string).length > 0);
-    }
-
-    private encrypt(str: string): [string, string | null, string | null] {
-        const iv = crypto.randomBytes(12);
-        const cipher = crypto.createCipheriv(this.algo, Buffer.from(this.key!, this.encoding), iv);
-        let enc = cipher.update(str, 'utf8', this.encoding);
-        enc += cipher.final(this.encoding);
-        return [enc, iv.toString(this.encoding), cipher.getAuthTag().toString(this.encoding)];
-    }
-
-    private decrypt(enc: string, iv: string, authTag: string): string {
-        const decipher = crypto.createDecipheriv(this.algo, Buffer.from(this.key!, this.encoding), Buffer.from(iv, this.encoding));
-        decipher.setAuthTag(Buffer.from(authTag, this.encoding));
-        let str = decipher.update(enc, this.encoding, 'utf8');
-        str += decipher.final('utf8');
-        return str;
+    public shouldEncrypt(): boolean {
+        return Boolean(this?.key && this.key.length > 0);
     }
 
     public encryptEnvironment(environment: Environment) {
@@ -194,7 +165,7 @@ class EncryptionManager {
 
         if (config.custom) {
             const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(config.custom));
-            encryptedConfig.custom = { encryptedValue, iv: iv as string, authTag: authTag as string };
+            encryptedConfig.custom = { encryptedValue, iv: iv, authTag: authTag };
         }
 
         return encryptedConfig;
@@ -218,118 +189,23 @@ class EncryptionManager {
         return decryptedConfig;
     }
 
-    public encryptDataRecords(dataRecords: DataRecord[]): DataRecord[] {
-        if (!this.shouldEncrypt()) {
-            return dataRecords;
-        }
-
-        const encryptedDataRecords: DataRecord[] = Object.assign([], dataRecords);
-
-        for (const dataRecord of encryptedDataRecords) {
-            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-            dataRecord.json = { encryptedValue, iv, authTag };
-        }
-
-        return encryptedDataRecords;
-    }
-
-    public decryptDataRecords(dataRecords: DataRecord[] | null, field = 'json'): DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord | null {
-        if (dataRecords === null) {
-            return dataRecords;
-        }
-
-        const decryptedDataRecords: DataRecord[] = [];
-
-        for (const dataRecord of dataRecords) {
-            const record = dataRecord[field] as DataRecordJson;
-
-            if (!record.encryptedValue) {
-                decryptedDataRecords.push(dataRecord);
-                continue;
-            }
-
-            const { encryptedValue, iv, authTag } = record;
-
-            const decryptedString = this.decrypt(encryptedValue, iv, authTag);
-
-            let updatedRecord = {
-                ...JSON.parse(decryptedString)
-            };
-
-            if (record['_nango_metadata']) {
-                updatedRecord['_nango_metadata'] = record['_nango_metadata'];
-                decryptedDataRecords.push({ [field]: updatedRecord } as DataRecord);
-            } else {
-                const { record: _record, ...rest } = dataRecord;
-                updatedRecord = {
-                    ...rest,
-                    record: updatedRecord
-                };
-                decryptedDataRecords.push(updatedRecord as DataRecord);
-            }
-        }
-
-        return decryptedDataRecords as unknown as DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord;
-    }
-
-    public async encryptAllDataRecords(): Promise<void> {
-        const chunkSize = 1000;
-        const concurrencyLimit = 5;
-
-        const encryptAndSave = async (tableName: string, offset: number) => {
-            const dataRecords: DataRecord[] = await db.knex.withSchema(db.schema()).select('*').from<DataRecord>(tableName).limit(chunkSize).offset(offset);
-
-            if (dataRecords.length === 0) {
-                return false;
-            }
-
-            const updatePromises = dataRecords.map((dataRecord) =>
-                db.knex.transaction(async (trx) => {
-                    if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
-                        return;
-                    }
-
-                    const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-                    dataRecord.json = { encryptedValue, iv, authTag };
-
-                    await db.knex.withSchema(db.schema()).from<DataRecord>(tableName).where('id', dataRecord.id).update(dataRecord).transacting(trx);
-
-                    await trx.commit();
-                })
-            );
-
-            await Promise.all(updatePromises.slice(0, concurrencyLimit));
-            return true;
-        };
-
-        let offset = 0;
-        while (await encryptAndSave('_nango_sync_data_records', offset)) {
-            offset += chunkSize;
-        }
-
-        offset = 0;
-        while (await encryptAndSave('_nango_sync_data_records_deletes', offset)) {
-            offset += chunkSize;
-        }
-    }
-
     private async saveDbConfig(dbConfig: DBConfig) {
-        await db.knex.withSchema(db.schema()).from<DBConfig>(`_nango_db_config`).del();
-        await db.knex.withSchema(db.schema()).from<DBConfig>(`_nango_db_config`).insert(dbConfig);
+        await db.knex.from<DBConfig>(`_nango_db_config`).del();
+        await db.knex.from<DBConfig>(`_nango_db_config`).insert(dbConfig);
     }
 
     private async hashEncryptionKey(key: string, salt: string): Promise<string> {
-        const keyBuffer = await util.promisify(crypto.pbkdf2)(key, salt, 310000, 32, 'sha256');
+        const keyBuffer = await pbkdf2(key, salt, 310000, 32, 'sha256');
         return keyBuffer.toString(this.encoding);
     }
 
     public async encryptDatabaseIfNeeded() {
-        const dbConfig: DBConfig | null = await db.knex.withSchema(db.schema()).first().from<DBConfig>('_nango_db_config');
+        const dbConfig: DBConfig | null = await db.knex.first().from<DBConfig>('_nango_db_config');
         const previousEncryptionKeyHash = dbConfig?.encryption_key_hash;
         const encryptionKeyHash = this.key ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
         const isEncryptionKeyNew = dbConfig == null && this.key;
-        const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && dbConfig.encryption_complete == false;
+        const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && !dbConfig.encryption_complete;
 
         if (isEncryptionKeyNew || isEncryptionIncomplete) {
             if (isEncryptionKeyNew) {
@@ -353,7 +229,7 @@ class EncryptionManager {
     private async encryptDatabase() {
         logger.info('🔐⚙️ Starting encryption of database...');
 
-        const environments: Environment[] = await db.knex.withSchema(db.schema()).select('*').from<Environment>(`_nango_environments`);
+        const environments: Environment[] = await db.knex.select('*').from<Environment>(`_nango_environments`);
 
         for (let environment of environments) {
             if (environment.secret_key_iv && environment.secret_key_tag) {
@@ -361,10 +237,10 @@ class EncryptionManager {
             }
 
             environment = this.encryptEnvironment(environment);
-            await db.knex.withSchema(db.schema()).from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
+            await db.knex.from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
-        const connections: Connection[] = await db.knex.withSchema(db.schema()).select('*').from<Connection>(`_nango_connections`);
+        const connections: Connection[] = await db.knex.select('*').from<Connection>(`_nango_connections`);
 
         for (const connection of connections) {
             if (connection.credentials_iv && connection.credentials_tag) {
@@ -372,10 +248,10 @@ class EncryptionManager {
             }
 
             const storedConnection = this.encryptConnection(connection);
-            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id! }).update(storedConnection);
+            await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id! }).update(storedConnection);
         }
 
-        const providerConfigs: ProviderConfig[] = await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`);
+        const providerConfigs: ProviderConfig[] = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`);
 
         for (let providerConfig of providerConfigs) {
             if (providerConfig.oauth_client_secret_iv && providerConfig.oauth_client_secret_tag) {
@@ -383,13 +259,10 @@ class EncryptionManager {
             }
 
             providerConfig = this.encryptProviderConfig(providerConfig);
-            await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ id: providerConfig.id! }).update(providerConfig);
+            await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id: providerConfig.id! }).update(providerConfig);
         }
 
-        const environmentVariables: EnvironmentVariable[] = await db.knex
-            .withSchema(db.schema())
-            .select('*')
-            .from<EnvironmentVariable>(`_nango_environment_variables`);
+        const environmentVariables: EnvironmentVariable[] = await db.knex.select('*').from<EnvironmentVariable>(`_nango_environment_variables`);
 
         for (const environmentVariable of environmentVariables) {
             if (environmentVariable.value_iv && environmentVariable.value_tag) {
@@ -402,16 +275,13 @@ class EncryptionManager {
             environmentVariable.value_tag = authTag;
 
             await db.knex
-                .withSchema(db.schema())
                 .from<EnvironmentVariable>(`_nango_environment_variables`)
                 .where({ id: environmentVariable.id as number })
                 .update(environmentVariable);
         }
 
-        await this.encryptAllDataRecords();
-
         logger.info('🔐✅ Encryption of database complete!');
     }
 }
 
-export default new EncryptionManager(process.env['NANGO_ENCRYPTION_KEY']);
+export default new EncryptionManager(ENCRYPTION_KEY);

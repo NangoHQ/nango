@@ -47,7 +47,7 @@ class PaginationService {
         passPaginationParamsInBody: boolean,
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
-        const cursorPagination: CursorPagination = paginationConfig as CursorPagination;
+        const cursorPagination: CursorPagination = paginationConfig;
 
         let nextCursor: string | undefined;
 
@@ -83,7 +83,7 @@ class PaginationService {
         passPaginationParamsInBody: boolean,
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
-        const linkPagination: LinkPagination = paginationConfig as LinkPagination;
+        const linkPagination: LinkPagination = paginationConfig;
 
         this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
@@ -122,7 +122,7 @@ class PaginationService {
         passPaginationParamsInBody: boolean,
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
-        const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
+        const offsetPagination: OffsetPagination = paginationConfig;
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
         let offset = 0;
 
@@ -157,7 +157,7 @@ class PaginationService {
         passPaginationParamsInBody ? (config.data = updatedBodyOrParams) : (config.params = updatedBodyOrParams);
     }
 
-    private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
+    private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse, paginationConfig: Pagination) {
         if (linkPagination.link_rel_in_response_header) {
             const linkHeader = parseLinksHeader(response.headers['link']);
             return linkHeader?.[linkPagination.link_rel_in_response_header]?.url;

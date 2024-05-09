@@ -1,15 +1,18 @@
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
+import type { Schedule as SyncSchedule, SyncCommand } from '../../models/Sync.js';
+import { ScheduleStatus, SyncCommandToScheduleStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
-import { resultOk, type Result, resultErr } from '../../utils/result.js';
+import type { LogContext } from '@nangohq/logs';
+import { resultOk, resultErr } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
 export const createSchedule = async (sync_id: string, frequency: string, offset: number, status: ScheduleStatus, schedule_id: string): Promise<void> => {
-    await db.knex.withSchema(db.schema()).from<SyncSchedule>(TABLE).insert({
+    await db.knex.from<SyncSchedule>(TABLE).insert({
         sync_id,
         status,
         schedule_id,
@@ -50,7 +53,7 @@ export const deleteScheduleForSync = async (sync_id: string, environmentId: numb
     const schedule = await getSchedule(sync_id);
 
     if (schedule && syncClient) {
-        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string, environmentId);
+        await syncClient.deleteSyncSchedule(schedule?.schedule_id, environmentId);
     }
 };
 
@@ -62,7 +65,8 @@ export const updateScheduleStatus = async (
     schedule_id: string,
     status: SyncCommand,
     activityLogId: number | null,
-    environment_id: number
+    environment_id: number,
+    logCtx?: LogContext
 ): Promise<Result<boolean>> => {
     try {
         await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
@@ -75,6 +79,7 @@ export const updateScheduleStatus = async (
                 activityLogId,
                 environment_id
             );
+            await logCtx?.error(`Failed to update schedule status to ${status} for schedule_id: ${schedule_id}`, { error });
         }
 
         return resultErr(error as Error);
@@ -86,7 +91,8 @@ export const updateSyncScheduleFrequency = async (
     interval: string,
     syncName: string,
     environmentId: number,
-    activityLogId?: number
+    activityLogId?: number,
+    logCtx?: LogContext
 ): Promise<ServiceResponse<boolean>> => {
     const existingSchedule = await getSchedule(sync_id);
 
@@ -105,7 +111,7 @@ export const updateSyncScheduleFrequency = async (
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, environmentId, syncName, activityLogId);
+        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, environmentId, syncName, activityLogId, logCtx);
 
         return { success: true, error: null, response: true };
     }
@@ -117,6 +123,14 @@ export const updateOffset = async (schedule_id: string, offset: number): Promise
     await schema().update({ offset }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
 };
 
-export const deleteSchedulesBySyncId = async (sync_id: string): Promise<void> => {
-    await schema().from<SyncSchedule>(TABLE).where({ sync_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-};
+export async function softDeleteSchedules({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
+    return db
+        .knex('_nango_sync_schedules')
+        .update({
+            deleted: true,
+            deleted_at: db.knex.fn.now()
+        })
+        .whereIn('id', function (sub) {
+            sub.select('id').from('_nango_sync_schedules').where({ deleted: false, sync_id: syncId }).limit(limit);
+        });
+}

@@ -4,7 +4,8 @@ import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import { isCloud, dirname } from '../utils/utils.js';
+import { isCloud, nanoid } from '@nangohq/utils';
+import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
@@ -17,8 +18,6 @@ class ConfigService {
     constructor() {
         this.templates = this.getTemplatesFromFile();
     }
-
-    public DEMO_GITHUB_CONFIG_KEY = 'demo-github-integration';
 
     private getTemplatesFromFile() {
         const templatesPath = () => {
@@ -46,19 +45,19 @@ class ConfigService {
             }
 
             for (const key in fileEntries) {
-                const entry = fileEntries[key] as ProviderTemplateAlias;
+                const entry = fileEntries[key] as ProviderTemplateAlias | undefined;
 
                 if (entry?.alias) {
                     let hasOverrides = false;
-                    let templateOverrides;
+                    let templateOverrides: ProviderTemplateAlias;
                     if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
-                        const { alias, ...overrides } = entry as ProviderTemplateAlias;
+                        const { alias, ...overrides } = entry;
                         hasOverrides = true;
                         templateOverrides = overrides;
                     }
                     const aliasData = fileEntries[entry.alias] as ProviderTemplate;
                     if (hasOverrides) {
-                        fileEntries[key] = { ...aliasData, ...templateOverrides };
+                        fileEntries[key] = { ...aliasData, ...templateOverrides! };
                     }
                 }
             }
@@ -70,11 +69,7 @@ class ConfigService {
     }
 
     async getProviderName(providerConfigKey: string): Promise<string | null> {
-        const result = await db.knex
-            .withSchema(db.schema())
-            .select('provider')
-            .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, deleted: false });
+        const result = await db.knex.select('provider').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -85,7 +80,6 @@ class ConfigService {
 
     async getIdByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<number | null> {
         const result = await db.knex
-            .withSchema(db.schema())
             .select('id')
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: providerConfigKey, environment_id, deleted: false });
@@ -115,34 +109,27 @@ class ConfigService {
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
-        if (!providerConfigKey) {
-            throw new NangoError('missing_provider_config');
-        }
-        if (environment_id === null || environment_id === undefined) {
-            throw new NangoError('missing_environment_id');
-        }
-
         const result = await db.knex
-            .withSchema(db.schema())
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, environment_id, deleted: false });
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
+        if (!result) {
             return null;
         }
 
-        return encryptionManager.decryptProviderConfig(result[0]);
+        return encryptionManager.decryptProviderConfig(result);
     }
 
     async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
-        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, deleted: false }))
+        return (await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, deleted: false }))
             .map((config) => encryptionManager.decryptProviderConfig(config))
             .filter((config) => config != null) as ProviderConfig[];
     }
 
     async listProviderConfigsByProvider(environment_id: number, provider: string): Promise<ProviderConfig[]> {
-        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, provider, deleted: false }))
+        return (await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, provider, deleted: false }))
             .map((config) => encryptionManager.decryptProviderConfig(config))
             .filter((config) => config != null) as ProviderConfig[];
     }
@@ -154,19 +141,19 @@ class ConfigService {
 
     async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
-        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(configToInsert, ['id']);
+        return db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert, ['id']);
     }
 
     async createEmptyProviderConfig(provider: string, environment_id: number): Promise<Pick<ProviderConfig, 'id' | 'unique_key'>> {
-        const existingProviders = await db.knex
-            .withSchema(db.schema())
-            .select('*')
+        const exists = await db.knex
+            .count<{ count: string }>('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ provider, environment_id, deleted: false });
+            .where({ provider, environment_id, deleted: false })
+            .first();
 
         const config = {
             environment_id,
-            unique_key: existingProviders.length === 0 ? provider : `${provider}-${existingProviders.length + 1}`,
+            unique_key: exists?.count === '0' ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
             provider
         };
 
@@ -179,44 +166,9 @@ class ConfigService {
         return { id: id[0]?.id, unique_key: config.unique_key } as Pick<ProviderConfig, 'id' | 'unique_key'>;
     }
 
-    /**
-     * Create Default Provider Config
-     * @desc create a default Github config only for the dev environment
-     */
-    async createDefaultProviderConfig(accountId: number) {
-        const environments = await db.knex.withSchema(db.schema()).select('*').from(`_nango_environments`).where({ account_id: accountId, name: 'dev' });
-        const devEnvironment = environments[0];
-
-        const config: ProviderConfig = {
-            environment_id: devEnvironment.id,
-            unique_key: this.DEMO_GITHUB_CONFIG_KEY,
-            provider: 'github',
-            oauth_client_id: process.env['DEFAULT_GITHUB_CLIENT_ID'] || '',
-            oauth_client_secret: process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '',
-            oauth_scopes: 'public_repo'
-        };
-
-        await this.createProviderConfig(config);
-    }
-
-    async createDefaultProviderConfigIfNotExisting(accountId: number) {
-        const environments = await db.knex.withSchema(db.schema()).select('*').from(`_nango_environments`).where({ account_id: accountId, name: 'dev' });
-        const devEnvironment = environments[0];
-
-        const existingConfig = await this.getProviderConfig(this.DEMO_GITHUB_CONFIG_KEY, devEnvironment.id);
-
-        if (existingConfig == null) {
-            await this.createDefaultProviderConfig(accountId);
-        }
-    }
-
     async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
         const idResult = (
-            await db.knex
-                .withSchema(db.schema())
-                .select('id')
-                .from<ProviderConfig>(`_nango_configs`)
-                .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            await db.knex.select('id').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id, deleted: false })
         )[0];
 
         if (!idResult) {
@@ -227,21 +179,16 @@ class ConfigService {
 
         await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey);
 
-        if (isCloud()) {
+        if (isCloud) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);
             await deleteSyncFilesForConfig(config?.id as number, environment_id);
         }
 
         await deleteSyncConfigByConfigId(id);
 
-        await db.knex
-            .withSchema(db.schema())
-            .from<ProviderConfig>(`_nango_configs`)
-            .where({ id, deleted: false })
-            .update({ deleted: true, deleted_at: new Date() });
+        await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 
         return db.knex
-            .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .where({ provider_config_key: providerConfigKey, environment_id, deleted: false })
             .update({ deleted: true, deleted_at: new Date() });
@@ -249,7 +196,6 @@ class ConfigService {
 
     async editProviderConfig(config: ProviderConfig) {
         return db.knex
-            .withSchema(db.schema())
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: config.unique_key, environment_id: config.environment_id, deleted: false })
             .update(encryptionManager.encryptProviderConfig(config));
@@ -257,7 +203,6 @@ class ConfigService {
 
     async editProviderConfigName(providerConfigKey: string, newUniqueKey: string, environment_id: number) {
         return db.knex
-            .withSchema(db.schema())
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })
             .update({ unique_key: newUniqueKey });
@@ -292,7 +237,6 @@ class ConfigService {
 
     async getConfigIdByProvider(provider: string, environment_id: number): Promise<{ id: number; unique_key: string } | null> {
         const result = await db.knex
-            .withSchema(db.schema())
             .select('id', 'unique_key')
             .from<ProviderConfig>(`_nango_configs`)
             .where({ provider, environment_id, deleted: false })
@@ -307,7 +251,6 @@ class ConfigService {
 
     async getConfigIdByProviderConfigKey(providerConfigKey: string, environment_id: number): Promise<number | null> {
         const result = await db.knex
-            .withSchema(db.schema())
             .select('id')
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })

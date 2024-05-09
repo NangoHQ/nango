@@ -4,20 +4,18 @@ import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import * as tsNode from 'ts-node';
-import glob from 'glob';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
 import type { NangoConfig } from '@nangohq/shared';
-import { nangoConfigFile, SyncConfigType } from '@nangohq/shared';
+import { localFileService, nangoConfigFile, SyncConfigType } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
 import configService from './services/config.service.js';
 import modelService from './services/model.service.js';
-import parserService from './services/parser.service.js';
 import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,7 +39,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
-    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
     const { models, integrations } = configData;
 
     const interfaceDefinitions = modelService.build(models, integrations, debug);
@@ -75,7 +73,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const allSyncNames: Record<string, boolean> = {};
 
     for (const standardConfig of config) {
-        const { syncs, actions, postConnectionScripts } = standardConfig;
+        const { syncs, actions, postConnectionScripts, providerConfigKey } = standardConfig;
 
         if (postConnectionScripts) {
             for (const name of postConnectionScripts) {
@@ -98,13 +96,15 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models } = flow;
+            const { name, type, returns: models, layout_mode } = flow;
             let { input } = flow;
+            const uniqueName = layout_mode === 'root' ? name : `${providerConfigKey}-${name}`;
 
-            if (allSyncNames[name] === undefined) {
-                allSyncNames[name] = true;
+            if (allSyncNames[uniqueName] === undefined) {
+                // a sync and an action within the same provider cannot have the same name
+                allSyncNames[uniqueName] = true;
             } else {
-                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync and action names must be unique.`));
                 process.exit(1);
             }
 
@@ -151,6 +151,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
             const rendered = ejs.render(ejsTemplateContents, {
                 syncName: flowNameCamel,
+                interfacePath: layout_mode === 'root' ? './' : '../../',
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames,
                 mappings,
@@ -160,8 +161,13 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
             const stripped = rendered.replace(/^\s+/, '');
 
-            if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
-                fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
+            if (!fs.existsSync(`${dirPrefix}/${name}.ts`) && !fs.existsSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`)) {
+                if (layout_mode === 'root') {
+                    fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
+                } else {
+                    fs.mkdirSync(`${dirPrefix}/${providerConfigKey}/${type}s`, { recursive: true });
+                    fs.writeFileSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
+                }
                 if (debug) {
                     printDebug(`Created ${name}.ts file`);
                 }
@@ -230,7 +236,7 @@ export const init = async (debug = false) => {
         }
         fs.writeFileSync(
             envFileLocation,
-            `# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
 #NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 #NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 
@@ -265,7 +271,7 @@ export const tscWatch = async (debug = false) => {
 
     const modelNames = configService.getModelNames(config);
 
-    const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
+    const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
 
     if (debug) {
         printDebug(`Watching ${watchPath.join(', ')}`);
@@ -298,62 +304,32 @@ export const tscWatch = async (debug = false) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        compileFile(filePath);
+        compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames });
     });
 
     watcher.on('unlink', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        const jsFilePath = `./dist/${path.basename(filePath.replace('.ts', '.js'))}`;
+        const providerConfiguration = localFileService.getProviderConfigurationFromPath(filePath, config);
+        const baseName = path.basename(filePath, '.ts');
+        const fileName = providerConfiguration ? `${baseName}-${providerConfiguration.providerConfigKey}.js` : `${baseName}.js`;
+        const jsFilePath = `./dist/${fileName}`;
 
-        fs.unlinkSync(jsFilePath);
+        try {
+            fs.unlinkSync(jsFilePath);
+        } catch {
+            console.log(chalk.red(`Error deleting ${jsFilePath}`));
+        }
     });
 
     watcher.on('change', (filePath: string) => {
         if (filePath === nangoConfigFile) {
-            // config file changed, re-compile each ts file
-            const integrationFiles = glob.sync(`./*.ts`);
-            for (const file of integrationFiles) {
-                // strip the file to just the last part
-                const strippedFile = file.replace(/^.*[\\\/]/, '');
-                compileFile(strippedFile);
-            }
+            compileAllFiles({ debug });
             return;
         }
-        compileFile(filePath);
+        compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames });
     });
-
-    function compileFile(filePath: string) {
-        const compiler = tsNode.create({
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
-        });
-
-        try {
-            const providerConfiguration = config?.find((config) =>
-                [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
-            );
-            if (!providerConfiguration) {
-                return;
-            }
-            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
-
-            const type = syncConfig?.type || SyncConfigType.SYNC;
-
-            if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
-                return;
-            }
-            const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-            const jsFilePath = `./dist/${path.basename(filePath.replace('.ts', '.js'))}`;
-
-            fs.writeFileSync(jsFilePath, result);
-            console.log(chalk.green(`Compiled ${filePath} successfully`));
-        } catch (error) {
-            console.error(`Error compiling ${filePath}:`);
-            console.error(error);
-            return;
-        }
-    }
 };
 
 export const configWatch = (debug = false) => {

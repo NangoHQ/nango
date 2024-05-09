@@ -1,17 +1,14 @@
 import { Context, CancelledFailure } from '@temporalio/activity';
 import { TimeoutFailure, TerminatedFailure } from '@temporalio/client';
+import type { Config as ProviderConfig, LogLevel, ServiceResponse, NangoConnection } from '@nangohq/shared';
 import {
     createSyncJob,
     SyncStatus,
     SyncType,
-    Config as ProviderConfig,
     configService,
     createActivityLog,
-    LogLevel,
     LogActionEnum,
     syncRunService,
-    ServiceResponse,
-    NangoConnection,
     environmentService,
     createActivityLogMessage,
     createActivityLogAndLogMessage,
@@ -23,11 +20,22 @@ import {
     LogTypes,
     isInitialSyncStillRunning,
     getSyncByIdAndName,
-    logger,
     getLastSyncDate
 } from '@nangohq/shared';
+import { records as recordsService } from '@nangohq/records';
+import { getLogger, env, stringifyError } from '@nangohq/utils';
+import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
+import type { LogContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
+
+const logger = getLogger('Jobs');
+
+const bigQueryClient = await BigQueryClient.createInstance({
+    datasetName: 'raw',
+    tableName: `${env}_script_runs`
+});
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
@@ -38,7 +46,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
     if (!nangoConnection?.environment_id) {
         environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
     }
-    const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key, environmentId)) as ProviderConfig;
 
     return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, { ...nangoConnection, environment_id: environmentId }, context, debug);
 }
@@ -47,14 +55,17 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const { input, nangoConnection, actionName, activityLogId } = args;
 
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-        nangoConnection?.provider_config_key as string,
-        nangoConnection?.environment_id as number
+        nangoConnection?.provider_config_key,
+        nangoConnection?.environment_id
     )) as ProviderConfig;
 
     const context: Context = Context.current();
 
     const syncRun = new syncRunService({
+        bigQueryClient,
         integrationService,
+        recordsService,
+        logContextGetter,
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
@@ -77,7 +88,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
 
-    const initialSyncStillRunning = await isInitialSyncStillRunning(syncId as string);
+    const initialSyncStillRunning = await isInitialSyncStillRunning(syncId);
 
     if (initialSyncStillRunning) {
         const content = `The continuous sync "${syncName}" with sync id ${syncId} did not run because the initial sync is still running. It will attempt to run at the next scheduled time.`;
@@ -86,8 +97,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
             environmentId: String(nangoConnection?.environment_id),
-            connectionId: nangoConnection?.connection_id as string,
-            providerConfigKey: nangoConnection?.provider_config_key as string,
+            connectionId: nangoConnection?.connection_id,
+            providerConfigKey: nangoConnection?.provider_config_key,
             syncName,
             syncId
         });
@@ -103,7 +114,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         if (!nangoConnection?.environment_id) {
             environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
             syncJobId = await createSyncJob(
-                syncId as string,
+                syncId,
                 syncType,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
@@ -112,7 +123,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             );
         } else {
             syncJobId = await createSyncJob(
-                syncId as string,
+                syncId,
                 syncType,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
@@ -121,10 +132,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             );
         }
 
-        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-            nangoConnection?.provider_config_key as string,
-            environmentId
-        )) as ProviderConfig;
+        const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key, environmentId)) as ProviderConfig;
 
         return syncProvider(
             syncConfig,
@@ -136,8 +144,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             context,
             debug
         );
-    } catch (err: any) {
-        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+    } catch (err) {
+        const prettyError = stringifyError(err, { pretty: true });
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -145,25 +153,36 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id as string,
-            provider_config_key: nangoConnection?.provider_config_key as string,
+            connection_id: nangoConnection?.connection_id,
+            provider_config_key: nangoConnection?.provider_config_key,
             provider: '',
             session_id: '',
             environment_id: environmentId,
             operation_name: syncName
         };
         const content = `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`;
-        await createActivityLogAndLogMessage(log, {
+        const activityLogId = await createActivityLogAndLogMessage(log, {
             level: 'error',
             environment_id: environmentId,
             timestamp: Date.now(),
             content
         });
+        const logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
+        );
+        await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', { error: err, syncName });
+        await logCtx.failed();
 
         await telemetry.log(LogTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
-            connectionId: nangoConnection?.connection_id as string,
-            providerConfigKey: nangoConnection?.provider_config_key as string,
+            connectionId: nangoConnection?.connection_id,
+            providerConfigKey: nangoConnection?.provider_config_key,
             syncId,
             syncName
         });
@@ -174,8 +193,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             operation: LogActionEnum.SYNC,
             metadata: {
                 syncType,
-                connectionId: nangoConnection?.connection_id as string,
-                providerConfigKey: nangoConnection?.provider_config_key as string,
+                connectionId: nangoConnection?.connection_id,
+                providerConfigKey: nangoConnection?.provider_config_key,
                 syncName
             }
         });
@@ -201,6 +220,8 @@ export async function syncProvider(
     debug = false
 ): Promise<boolean | object | null> {
     const action = syncType === SyncType.INITIAL ? LogActionEnum.FULL_SYNC : LogActionEnum.SYNC;
+    let logCtx: LogContext | undefined;
+
     try {
         const log = {
             level: 'info' as LogLevel,
@@ -209,27 +230,48 @@ export async function syncProvider(
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id as string,
-            provider_config_key: nangoConnection?.provider_config_key as string,
+            connection_id: nangoConnection?.connection_id,
+            provider_config_key: nangoConnection?.provider_config_key,
             provider: syncConfig.provider,
             session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection?.environment_id as number,
+            environment_id: nangoConnection?.environment_id,
             operation_name: syncName
         };
         const activityLogId = (await createActivityLog(log)) as number;
 
+        logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
+        );
+
         if (debug) {
             await createActivityLogMessage({
                 level: 'info',
-                environment_id: nangoConnection?.environment_id as number,
+                environment_id: nangoConnection?.environment_id,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
             });
+            await logCtx.info('Starting sync', {
+                syncType,
+                syncName,
+                syncId,
+                syncJobId,
+                attempt: temporalContext.info.attempt,
+                workflowId: temporalContext.info.workflowExecution.workflowId
+            });
         }
 
         const syncRun = new syncRunService({
+            bigQueryClient,
             integrationService,
+            recordsService,
+            logContextGetter,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -245,8 +287,8 @@ export async function syncProvider(
         const result = await syncRun.run();
 
         return result.response;
-    } catch (err: any) {
-        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+    } catch (err) {
+        const prettyError = stringifyError(err, { pretty: true });
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -254,37 +296,41 @@ export async function syncProvider(
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id as string,
-            provider_config_key: nangoConnection?.provider_config_key as string,
+            connection_id: nangoConnection?.connection_id,
+            provider_config_key: nangoConnection?.provider_config_key,
             provider: syncConfig.provider,
             session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection?.environment_id as number,
+            environment_id: nangoConnection?.environment_id,
             operation_name: syncName
         };
         const content = `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`;
 
         await createActivityLogAndLogMessage(log, {
             level: 'error',
-            environment_id: nangoConnection?.environment_id as number,
+            environment_id: nangoConnection?.environment_id,
             timestamp: Date.now(),
             content
         });
+        if (logCtx) {
+            await logCtx.error('Failed to create the job', { error: err });
+            await logCtx.failed();
+        }
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {
             environmentId: String(nangoConnection?.environment_id),
             syncId,
-            connectionId: nangoConnection?.connection_id as string,
-            providerConfigKey: nangoConnection?.provider_config_key as string,
+            connectionId: nangoConnection?.connection_id,
+            providerConfigKey: nangoConnection?.provider_config_key,
             syncName
         });
 
         errorManager.report(content, {
-            environmentId: nangoConnection?.environment_id as number,
+            environmentId: nangoConnection?.environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: action,
             metadata: {
-                connectionId: nangoConnection?.connection_id as string,
-                providerConfigKey: nangoConnection?.provider_config_key as string,
+                connectionId: nangoConnection?.connection_id,
+                providerConfigKey: nangoConnection?.provider_config_key,
                 syncType,
                 syncName
             }
@@ -298,8 +344,8 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     const { input, nangoConnection, activityLogId, parentSyncName } = args;
 
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-        nangoConnection?.provider_config_key as string,
-        nangoConnection?.environment_id as number
+        nangoConnection?.provider_config_key,
+        nangoConnection?.environment_id
     )) as ProviderConfig;
 
     const sync = await getSyncByIdAndName(nangoConnection.id as number, parentSyncName);
@@ -316,7 +362,10 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     );
 
     const syncRun = new syncRunService({
+        bigQueryClient,
         integrationService,
+        recordsService,
+        logContextGetter,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,
@@ -377,9 +426,9 @@ export async function reportFailure(
     await telemetry.log(LogTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
         environmentId: String(nangoConnection?.environment_id),
         name,
-        connectionId: nangoConnection?.connection_id as string,
-        providerConfigKey: nangoConnection?.provider_config_key as string,
-        error: JSON.stringify(error),
+        connectionId: nangoConnection?.connection_id,
+        providerConfigKey: nangoConnection?.provider_config_key,
+        error: stringifyError(error),
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
         runId: context.info.workflowExecution.runId
@@ -402,16 +451,16 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
 
         const environmentId = nangoConnection?.environment_id;
 
-        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-            nangoConnection?.provider_config_key as string,
-            environmentId
-        )) as ProviderConfig;
+        const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key, environmentId)) as ProviderConfig;
 
         const lastSyncDate = await getLastSyncDate(syncId);
         const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.INITIAL;
 
         const syncRun = new syncRunService({
+            bigQueryClient,
             integrationService,
+            recordsService,
+            logContextGetter,
             writeToDb: true,
             syncId,
             nangoConnection,
@@ -430,15 +479,15 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
         }
 
         await syncRun.cancel();
-    } catch (e: any) {
-        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e.message || e}`;
-        await errorManager.report(content, {
-            environmentId: workflowArguments.nangoConnection?.environment_id as number,
+    } catch (e) {
+        const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : stringifyError(e)}`;
+        errorManager.report(content, {
+            environmentId: workflowArguments.nangoConnection?.environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.SYNC,
             metadata: {
-                connectionId: workflowArguments.nangoConnection?.connection_id as string,
-                providerConfigKey: workflowArguments.nangoConnection?.provider_config_key as string,
+                connectionId: workflowArguments.nangoConnection?.connection_id,
+                providerConfigKey: workflowArguments.nangoConnection?.provider_config_key,
                 syncName: workflowArguments.syncName,
                 syncId: workflowArguments.syncId
             }

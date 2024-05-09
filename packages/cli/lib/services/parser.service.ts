@@ -1,6 +1,7 @@
 import fs from 'fs';
 import chalk from 'chalk';
-import traverse, { NodePath } from '@babel/traverse';
+import type { NodePath } from '@babel/traverse';
+import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import parser from '@babel/parser';
 import { SyncConfigType } from '@nangohq/shared';
@@ -56,7 +57,7 @@ class ParserService {
                 const lineNumber = path.node.loc?.start.line as number;
                 const callee = path.node.callee as t.MemberExpression;
                 if (callee.object?.type === 'Identifier' && callee.object.name === 'nango' && callee.property?.type === 'Identifier') {
-                    if (deprecatedCalls[callee.property.name as string]) {
+                    if (deprecatedCalls[callee.property.name]) {
                         console.warn(
                             chalk.yellow(
                                 `nango.${callee.property.name}() used at line ${lineNumber} is deprecated. Use nango.${

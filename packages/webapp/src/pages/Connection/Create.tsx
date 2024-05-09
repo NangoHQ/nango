@@ -1,14 +1,16 @@
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
-import Nango from '@nangohq/frontend';
+import { useSWRConfig } from 'swr';
+import Nango, { AuthError } from '@nangohq/frontend';
 import { Prism } from '@mantine/prism';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
+import type { Integration } from '@nangohq/server';
 
 import useSet from '../../hooks/useSet';
 import { isHosted, isStaging, baseUrl } from '../../utils/utils';
-import { useGetIntegrationListAPI, useGetProjectInfoAPI, useGetHmacAPI } from '../../utils/api';
+import { useGetIntegrationListAPI, useGetHmacAPI } from '../../utils/api';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import DashboardLayout from '../../layout/DashboardLayout';
 import TagsInput from '../../components/ui/input/TagsInput';
@@ -17,17 +19,12 @@ import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
 import { AuthModes } from '../../types';
-
-interface Integration {
-    authMode: AuthModes;
-    uniqueKey: string;
-    provider: string;
-    connection_count: number;
-    creationDate: string;
-    connectionConfigParams: string[];
-}
+import { useEnvironment } from '../../hooks/useEnvironment';
 
 export default function IntegrationCreate() {
+    const { mutate } = useSWRConfig();
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
@@ -39,23 +36,25 @@ export default function IntegrationCreate() {
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
+    const [oauthSelectedScopes, oauthAddToScopesSet, oauthRemoveFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState('');
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
-    const getIntegrationListAPI = useGetIntegrationListAPI();
-    const getProjectInfoAPI = useGetProjectInfoAPI()
+    const getIntegrationListAPI = useGetIntegrationListAPI(env);
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
+    const [oAuthClientId, setOAuthClientId] = useState('');
+    const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [issuerId, setIssuerId] = useState('');
     const analyticsTrack = useAnalyticsTrack();
-    const getHmacAPI = useGetHmacAPI();
+    const getHmacAPI = useGetHmacAPI(env);
     const { providerConfigKey } = useParams();
-    const env = useStore(state => state.cookieValue);
+    const { environment } = useEnvironment(env);
 
     useEffect(() => {
         setLoaded(false);
@@ -63,28 +62,28 @@ export default function IntegrationCreate() {
 
     useEffect(() => {
         const getHmac = async () => {
-            let res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
+            const res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
 
             if (res?.status === 200) {
                 const hmacDigest = (await res.json())['hmac_digest'];
                 setHmacDigest(hmacDigest);
             }
-        }
+        };
         if (isHmacEnabled && integration?.uniqueKey && connectionId) {
-            getHmac();
+            void getHmac();
         }
-    }, [isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI]);
+    }, [isHmacEnabled, integration?.uniqueKey, connectionId]);
 
     useEffect(() => {
         const getIntegrations = async () => {
-            let res = await getIntegrationListAPI();
+            const res = await getIntegrationListAPI();
 
             if (res?.status === 200) {
-                let data = await res.json();
+                const data = await res.json();
                 setIntegrations(data['integrations']);
 
                 if (data['integrations'] && data['integrations'].length > 0) {
-                    let defaultIntegration = providerConfigKey
+                    const defaultIntegration = providerConfigKey
                         ? data['integrations'].find((i: Integration) => i.uniqueKey === providerConfigKey)
                         : data['integrations'][0];
 
@@ -95,25 +94,18 @@ export default function IntegrationCreate() {
             }
         };
 
-        const getAccount = async () => {
-            let res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setPublicKey(account.public_key);
-                setHostUrl(account.host || baseUrl());
-                setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
-                setHmacDigest(account.hmac_digest ?? '');
-                setIsHmacEnabled(Boolean(account.hmac_key))
-            }
-        };
+        if (environment) {
+            setPublicKey(environment.public_key);
+            setHostUrl(environment.host || baseUrl());
+            setWebsocketsPath(environment.websockets_path);
+            setIsHmacEnabled(Boolean(environment.hmac_key));
+        }
 
         if (!loaded) {
             setLoaded(true);
-            getIntegrations();
-            getAccount();
+            void getIntegrations();
         }
-    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, getProjectInfoAPI, setPublicKey, providerConfigKey]);
+    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environment, setPublicKey, providerConfigKey]);
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -130,13 +122,17 @@ export default function IntegrationCreate() {
         const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
         let credentials = {};
+        let params = connectionConfigParams || {};
+
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        Object.keys(params).forEach((key) => params[key] === '' && delete params[key]);
 
         if (authMode === AuthModes.Basic) {
             credentials = {
                 username: apiAuthUsername,
                 password: apiAuthPassword
             };
-        };
+        }
 
         if (authMode === AuthModes.ApiKey) {
             credentials = {
@@ -152,21 +148,42 @@ export default function IntegrationCreate() {
             };
         }
 
-        nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
-                user_scope: selectedScopes || [],
-                params: connectionConfigParams || {},
-                authorization_params: authorizationParams || {},
-                hmac: hmacDigest || '',
-                credentials
+        if (authMode === AuthModes.OAuth2) {
+            credentials = {
+                oauth_client_id_override: oAuthClientId,
+                oauth_client_secret_override: oAuthClientSecret
+            };
 
-            })
+            if (oauthSelectedScopes.length > 0) {
+                params = {
+                    ...params,
+                    oauth_scopes_override: oauthSelectedScopes.join(',')
+                };
+            }
+        }
+
+        if (authMode === AuthModes.OAuth2CC) {
+            credentials = {
+                client_id: oAuthClientId,
+                client_secret: oAuthClientSecret
+            };
+        }
+
+        nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
+            user_scope: selectedScopes || [],
+            params,
+            authorization_params: authorizationParams || {},
+            hmac: hmacDigest || '',
+            credentials
+        })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
+                void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })
-            .catch((err: { message: string; type: string }) => {
-                setServerErrorMessage(`${err.type} error: ${err.message}`);
+            .catch((err: unknown) => {
+                setServerErrorMessage(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'unknown error');
             });
     };
 
@@ -180,15 +197,15 @@ export default function IntegrationCreate() {
             return;
         }
 
-        let params: Record<string, string> = {};
-        for (let i in integration.connectionConfigParams) {
-            params[integration.connectionConfigParams[i]] = '';
+        const params: Record<string, string> = {};
+        for (const key of Object.keys(integration.connectionConfigParams)) {
+            params[key] = '';
         }
         setConnectionConfigParams(params);
     };
 
     const handleIntegrationUniqueKeyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        let integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
+        const integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
 
         if (integration != null) {
             setIntegration(integration);
@@ -202,7 +219,7 @@ export default function IntegrationCreate() {
     };
 
     const handleConnectionConfigParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
+        const params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
         params[e.target.name.replace('connection-config-', '')] = e.target.value;
         setConnectionConfigParams(params);
     };
@@ -211,14 +228,14 @@ export default function IntegrationCreate() {
         try {
             setAuthorizationParams(JSON.parse(e.target.value));
             setAuthorizationParamsError(false);
-        } catch (e) {
+        } catch {
             setAuthorizationParams(null);
             setAuthorizationParamsError(true);
         }
     };
 
     const snippet = () => {
-        let args = [];
+        const args = [];
 
         if (isStaging() || isHosted()) {
             args.push(`host: '${hostUrl}'`);
@@ -231,16 +248,34 @@ export default function IntegrationCreate() {
             args.push(`publicKey: '${publicKey}'`);
         }
 
-        let argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
+        const argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
 
         let connectionConfigParamsStr = '';
 
         // Iterate of connection config params and create a string.
         if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
             connectionConfigParamsStr = 'params: { ';
+            let hasAnyValue = false;
             for (const [key, value] of Object.entries(connectionConfigParams)) {
-                connectionConfigParamsStr += `${key}: '${value}', `;
+                if (value !== '') {
+                    connectionConfigParamsStr += `${key}: '${value}', `;
+                    hasAnyValue = true;
+                }
             }
+            connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
+            connectionConfigParamsStr += ' }';
+            if (!hasAnyValue) {
+                connectionConfigParamsStr = '';
+            }
+        }
+
+        if (authMode === AuthModes.OAuth2 && oauthSelectedScopes.length > 0) {
+            if (connectionConfigParamsStr) {
+                connectionConfigParamsStr += ', ';
+            } else {
+                connectionConfigParamsStr = 'params: { ';
+            }
+            connectionConfigParamsStr += `oauth_scopes_override: '${oauthSelectedScopes.join(',')}', `;
             connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
             connectionConfigParamsStr += ' }';
         }
@@ -279,7 +314,8 @@ export default function IntegrationCreate() {
             apiAuthString = `
     credentials: {
       apiKey: '${apiKey}'
-}`;
+    }
+  `;
         }
 
         if (integration?.authMode === AuthModes.Basic) {
@@ -287,7 +323,8 @@ export default function IntegrationCreate() {
     credentials: {
       username: '${apiAuthUsername}',
       password: '${apiAuthPassword}'
-}`;
+    }
+  `;
         }
 
         let appStoreAuthString = '';
@@ -298,24 +335,85 @@ export default function IntegrationCreate() {
         privateKeyId: '${privateKeyId}',
         issuerId: '${issuerId}',
         privateKey: '${privateKey}'
-}`;
+    }
+  `;
         }
 
+        let oauthCredentialsString = '';
+
+        if (integration?.authMode === AuthModes.OAuth2 && oAuthClientId && oAuthClientSecret) {
+            oauthCredentialsString = `
+    credentials: {
+        oauth_client_id_override: '${oAuthClientId}',
+        oauth_client_secret_override: '${oAuthClientSecret}'
+    }
+  `;
+        }
+
+        let oauth2ClientCredentialsString = '';
+
+        if (integration?.authMode === AuthModes.OAuth2CC) {
+            if (oAuthClientId && oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_id: '${oAuthClientId}',
+        client_secret: '${oAuthClientSecret}'
+    }
+  `;
+            }
+
+            if (oAuthClientId && !oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_id: '${oAuthClientId}'
+    }
+  `;
+            }
+
+            if (!oAuthClientId && oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_secret: '${oAuthClientSecret}'
+    }
+  `;
+            }
+        }
 
         const connectionConfigStr =
-            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr && !apiAuthString && !appStoreAuthString
+            !connectionConfigParamsStr &&
+            !authorizationParamsStr &&
+            !userScopesStr &&
+            !hmacKeyStr &&
+            !apiAuthString &&
+            !appStoreAuthString &&
+            !oauthCredentialsString &&
+            !oauth2ClientCredentialsString
                 ? ''
-                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') + ' }';
+                : ', { ' +
+                  [
+                      connectionConfigParamsStr,
+                      authorizationParamsStr,
+                      hmacKeyStr,
+                      userScopesStr,
+                      apiAuthString,
+                      appStoreAuthString,
+                      oauthCredentialsString,
+                      oauth2ClientCredentialsString
+                  ]
+                      .filter(Boolean)
+                      .join(', ') +
+                  '}';
 
         return `import Nango from '@nangohq/frontend';
 
 const nango = new Nango(${argsStr});
 
-nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
+  .then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
-}).catch((err: { message: string; type: string }) => {
+  }).catch((err: { message: string; type: string }) => {
     // handle error
-});`;
+  });`;
     };
 
     return (
@@ -401,6 +499,93 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
+                            {authMode === AuthModes.OAuth2CC && (
+                                <>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client ID</span>
+                                        </div>
+                                        <div className="flex text-white mt-1 items-center">
+                                            <div className="w-full relative">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id="oauth_client_id"
+                                                    name="oauth_client_id"
+                                                    placeholder="Find the Client ID on the developer portal of the external API provider."
+                                                    optionalvalue={oAuthClientId}
+                                                    setoptionalvalue={setOAuthClientId}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client Secret</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_secret"
+                                                name="client_secret"
+                                                autoComplete="one-time-code"
+                                                placeholder="Find the Client Secret on the developer portal of the external API provider."
+                                                required
+                                                optionalvalue={oAuthClientSecret}
+                                                setoptionalvalue={setOAuthClientSecret}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {integration?.provider === 'netsuite' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            OAuth Credentials Override
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="oauth_client_id"
+                                            name="oauth_client_id"
+                                            placeholder="OAuth Client ID Override"
+                                            optionalvalue={oAuthClientId}
+                                            setoptionalvalue={setOAuthClientId}
+                                        />
+                                    </div>
+                                    <div className="mt-8">
+                                        <SecretInput
+                                            copy={true}
+                                            id="oauth_client_secret"
+                                            name="oauth_client_secret"
+                                            placeholder="OAuth Client Secret Override"
+                                            optionalvalue={oAuthClientSecret}
+                                            setoptionalvalue={setOAuthClientSecret}
+                                        />
+                                    </div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="oauth_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            OAuth Scope Override
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <TagsInput
+                                            id="scopes"
+                                            name="oauth_scopes"
+                                            type="text"
+                                            defaultValue={''}
+                                            onChange={() => null}
+                                            selectedScopes={oauthSelectedScopes}
+                                            addToScopesSet={oauthAddToScopesSet}
+                                            removeFromSelectedSet={oauthRemoveFromSelectedSet}
+                                            minLength={1}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
@@ -449,7 +634,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                             Auth Type
                                         </label>
-                                        <p className="mt-3 mb-5">{`${authMode}`}</p>
+                                        <p className="mt-3 mb-5">{authMode}</p>
                                     </div>
 
                                     {authMode === AuthModes.Basic && (
@@ -686,11 +871,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
                                 <div className="flex">
                                     <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) ? (
-                                            <>Start OAuth Flow</>
-                                        ): (
-                                            <>Create Connection</>
-                                        )}
+                                        {authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 ? <>Start OAuth Flow</> : <>Create Connection</>}
                                     </button>
                                     <label htmlFor="email" className="text-text-light-gray block text-sm pt-5 ml-4">
                                         or from your frontend:
@@ -708,7 +889,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                     </div>
                 </div>
             )}
-            {integrations && !!!integrations.length && (
+            {integrations && !integrations.length && (
                 <div className="mx-auto">
                     <div className="mx-16">
                         <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>

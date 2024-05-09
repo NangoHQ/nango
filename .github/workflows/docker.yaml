@@ -16,10 +16,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Build the docker-compose stack
-              run: docker-compose -f ./packages/cli/docker/docker-compose.yaml --project-directory . up -d
+              run: docker compose -f ./packages/cli/docker/docker-compose.yaml --project-directory . up -d
 
             - name: Sleep
               uses: jakejarvis/wait-action@master

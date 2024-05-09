@@ -1,2 +1,6 @@
 node_modules
-dist
+dist/
+build/
+coverage/
+bin/
+packages/server/nango-integrations/

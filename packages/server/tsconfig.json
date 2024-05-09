@@ -4,6 +4,25 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
-    "references": [{ "path": "../shared" }, { "path": "../node-client" }],
+    "references": [
+        {
+            "path": "../logs"
+        },
+        {
+            "path": "../shared"
+        },
+        {
+            "path": "../node-client"
+        },
+        {
+            "path": "../types"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../records"
+        }
+    ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts"]
 }

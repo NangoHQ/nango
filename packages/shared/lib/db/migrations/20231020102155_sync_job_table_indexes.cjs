@@ -1,7 +1,7 @@
 const tableName = '_nango_sync_jobs';
 
 exports.up = function (knex, _) {
-    return knex.schema.withSchema('nango').alterTable(tableName, function (table) {
+    return knex.schema.alterTable(tableName, function (table) {
         table.index(['sync_id', 'deleted']);
         table.index('deleted');
         table.index('created_at');
@@ -11,7 +11,7 @@ exports.up = function (knex, _) {
 };
 
 exports.down = function (knex, _) {
-    return knex.schema.withSchema('nango').table(tableName, function (table) {
+    return knex.schema.table(tableName, function (table) {
         table.dropIndex(['sync_id', 'deleted']);
         table.dropIndex('deleted');
         table.dropIndex('created_at');

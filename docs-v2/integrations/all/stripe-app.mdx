@@ -27,10 +27,16 @@ API configuration: [`stripe-app`](https://nango.dev/providers.yaml)
 
 ## Connection configuration in Nango for external test apps
 
-If you are using the "External Test" version of your app, Stripe requires you to use a temporary id to identify your application. See the [docs](https://stripe.com/docs/stripe-apps/api-authentication/oauth#install-app) for more information.
+- If you are using the "External Test" version of your app, Stripe requires you to use a temporary id to identify your application. See the [docs](https://stripe.com/docs/stripe-apps/api-authentication/oauth#install-app) for more information.
 
-In this case, you must use the `stripe-app-sandbox` integration in Nango, and add the temporary ID to the `appDomain` field in the connection params.
+- In this case, you must use the `stripe-app-sandbox` integration in Nango, and add the temporary ID to the `appDomain` field in the connection params.
 
 ```js
 nango.auth('stripe-app-sandbox', '<CONNECTION-ID>', {params: {appDomain: '<stripe-app-domain>'}});
 ```
+
+## API gotchas
+
+- Stripe app does not return an `expire_at` or `expire_in` value during the exchange of a code for an access token. However, according to the [docs](https://docs.stripe.com/stripe-apps/api-authentication/oauth#refresh-access-token), access tokens expire in one hour, while refresh tokens expire in one year
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>

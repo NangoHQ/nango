@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Publisher, WebSocketClientId } from './publisher.client';
+import type { WebSocketClientId } from './publisher.client';
+import { Publisher } from './publisher.client';
 import type { WebSocket } from 'ws';
 import * as uuid from 'uuid';
 
@@ -14,7 +16,7 @@ const mockRes = ({ status }: { status: number }) => {
     mock.status = () => status;
     mock.set = vi.fn();
     mock.send = vi.fn();
-    return mock as any;
+    return mock;
 };
 
 class MockRedis {

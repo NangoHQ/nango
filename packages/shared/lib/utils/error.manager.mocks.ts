@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
-import environmentService from '../services/environment.service';
-import userService from '../services/user.service';
+import environmentService from '../services/environment.service.js';
+import userService from '../services/user.service.js';
 
 export function mockErrorManagerReport() {
     vi.spyOn(environmentService, 'getEnvironmentName').mockImplementation(() => {

@@ -1,14 +1,15 @@
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
-import { ProxyAppRouter, getRunnerClient } from '@nangohq/nango-runner';
-import { getEnv, getPersistAPIUrl } from '@nangohq/shared';
-import api from 'api';
-import tracer from '../tracer.js';
-
-const render = api('@render-api/v1.0#aiie8wizhlp1is9bu');
-render.auth(process.env['RENDER_API_KEY']);
+import type { ProxyAppRouter } from '@nangohq/nango-runner';
+import { getRunnerClient } from '@nangohq/nango-runner';
+import { env, stringifyError } from '@nangohq/utils';
+import { NodeEnv, getPersistAPIUrl } from '@nangohq/shared';
+import { RenderAPI } from './render.api.js';
+import tracer from 'dd-trace';
 
 const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
+
+const render: RenderAPI = new RenderAPI(process.env['RENDER_API_KEY'] || '');
 
 export class RenderRunner implements Runner {
     public client: ProxyAppRouter;
@@ -56,7 +57,7 @@ export class RenderRunner implements Runner {
             if (res.data.length > 0) {
                 svc = res.data[0].service;
             } else {
-                const imageTag = getEnv();
+                const imageTag = env;
                 const ownerId = process.env['RUNNER_OWNER_ID'];
                 if (!ownerId) {
                     throw new Error('RUNNER_OWNER_ID is not set');
@@ -68,14 +69,17 @@ export class RenderRunner implements Runner {
                     image: { ownerId: ownerId, imagePath: `nangohq/nango-runner:${imageTag}` },
                     serviceDetails: { env: 'image' },
                     envVars: [
-                        { key: 'NODE_ENV', value: process.env['NODE_ENV'] },
-                        { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] },
+                        { key: 'NODE_ENV', value: process.env['NODE_ENV'] || NodeEnv.Dev },
+                        { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] || 'true' },
                         { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
                         { key: 'RUNNER_ID', value: runnerId },
-                        { key: 'NOTIFY_IDLE_ENDPOINT', value: `${jobsServiceUrl}/idle` },
+                        { key: 'JOBS_SERVICE_URL', value: jobsServiceUrl },
                         { key: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
                         { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
-                        { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] }
+                        { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
+                        { key: 'DD_ENV', value: process.env['DD_ENV'] || '' },
+                        { key: 'DD_SITE', value: process.env['DD_SITE'] || '' },
+                        { key: 'DD_TRACE_AGENT_URL', value: process.env['DD_TRACE_AGENT_URL'] || '' }
                     ]
                 });
                 svc = res.data.service;
@@ -94,7 +98,7 @@ export class RenderRunner implements Runner {
             }
             return new RenderRunner(runnerId, `http://${runnerId}`, svc.id);
         } catch (err) {
-            throw new Error(`Unable to get runner ${runnerId}: ${err}`);
+            throw new Error(`Unable to get runner ${runnerId}: ${stringifyError(err)}`);
         }
     }
 }

@@ -29,15 +29,16 @@ export interface SyncResult {
 export type SyncResultByModel = Record<string, SyncResult>;
 
 export interface Sync extends TimestampsAndDeleted {
-    id?: string;
+    id: string;
     nango_connection_id: number;
     name: string;
-    last_sync_date?: Date | null;
+    last_sync_date: Date | null;
     futureActionTimes?: {
         seconds?: number;
         nanos?: number;
     };
     frequency: string | null;
+    last_fetched_at: Date | null;
 }
 
 export interface Action extends TimestampsAndDeleted {
@@ -45,7 +46,7 @@ export interface Action extends TimestampsAndDeleted {
 }
 
 export interface Job extends TimestampsAndDeleted {
-    id?: number;
+    id: number;
     status: SyncStatus;
     type: SyncType;
     sync_id: string;
@@ -57,11 +58,14 @@ export interface Job extends TimestampsAndDeleted {
 
 export interface ReportedSyncJobStatus {
     id?: string;
+    type: SyncType;
     name?: string;
     status: SyncStatus;
     latestResult?: SyncResultByModel;
     jobStatus?: SyncStatus;
     frequency: string;
+    finishedAt: Date;
+    nextScheduledSyncAt: Date | null;
 }
 
 export interface SyncModelSchema {
@@ -98,12 +102,13 @@ export interface SyncConfig extends TimestampsAndDeleted {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     version?: string;
-    pre_built?: boolean;
-    is_public?: boolean;
+    pre_built?: boolean | null;
+    is_public?: boolean | null;
     endpoints?: NangoSyncEndpoint[];
-    input?: string;
+    input?: string | SyncModelSchema | undefined;
     sync_type?: SyncType | undefined;
     webhook_subscriptions?: string[];
+    enabled: boolean;
 }
 
 export interface SyncEndpoint extends Timestamps {
@@ -121,6 +126,7 @@ export interface SlimSync {
     sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
+    enabled?: boolean;
 }
 
 export interface SlimAction {
@@ -131,10 +137,11 @@ export interface SlimAction {
 
 export interface SyncDeploymentResult {
     name: string;
-    version: string;
+    version?: string;
     providerConfigKey: string;
     type: SyncConfigType;
     last_deployed?: Date;
+    input?: string | SyncModelSchema;
     models: string | string[];
     id?: number | undefined;
 
@@ -163,6 +170,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     model_schema: string;
+    input?: string | SyncModelSchema;
     endpoints?: NangoSyncEndpoint[];
 }
 
@@ -190,7 +198,6 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     };
     version?: string;
     track_deletes?: boolean;
-    input?: string;
     sync_type?: SyncType;
     webhookSubscriptions?: string[];
 }
@@ -209,45 +216,6 @@ export interface Schedule extends TimestampsAndDeleted {
     sync_job_id: number;
     frequency: string;
     offset: number;
-}
-
-export type CustomerFacingDataRecord = {
-    _nango_metadata: RecordMetadata;
-} & Record<string, any> & { id: string | number };
-
-export type GetRecordsResponse = { records: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; next_cursor?: string | null } | null;
-
-export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
-
-export interface DataRecord extends Timestamps {
-    [index: string]: number | string | Date | object | undefined | boolean | null;
-    id?: string;
-    external_id: string;
-    json: object;
-    record?: object;
-    data_hash: string;
-    nango_connection_id: number;
-    model: string;
-    sync_id: string;
-    sync_config_id?: number | undefined;
-    external_is_deleted?: boolean;
-    external_deleted_at?: Date | null;
-    json_iv?: string | null;
-    json_tag?: string | null;
-    pending_delete?: boolean;
-}
-
-export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
-
-interface RecordMetadata {
-    first_seen_at: Date;
-    last_modified_at: Date;
-    last_action: LastAction;
-    deleted_at: Date | null;
-}
-
-export interface DataRecordWithMetadata extends RecordMetadata {
-    record: object;
 }
 
 export type SyncWithSchedule = Sync & Schedule;
@@ -287,20 +255,21 @@ export interface SyncConfigWithProvider {
     type: SyncConfigType;
 }
 
+export interface RunScriptOptions {
+    syncName: string;
+    syncId: string;
+    activityLogId: number | undefined;
+    nangoProps: NangoProps;
+    integrationData: NangoIntegrationData;
+    environmentId: number;
+    writeToDb: boolean;
+    isInvokedImmediately: boolean;
+    isWebhook: boolean;
+    optionalLoadLocation?: string | undefined;
+    input?: object | undefined;
+    temporalContext?: Context | undefined;
+}
 export interface IntegrationServiceInterface {
-    runScript(
-        syncName: string,
-        syncId: string,
-        activityLogId: number | undefined,
-        nangoProps: NangoProps,
-        integrationData: NangoIntegrationData,
-        environmentId: number,
-        writeToDb: boolean,
-        isInvokedImmediately: boolean,
-        isWebhook: boolean,
-        optionalLoadLocation?: string,
-        input?: object,
-        temporalContext?: Context
-    ): Promise<any>;
+    runScript(options: RunScriptOptions): Promise<any>;
     cancelScript(syncId: string, environmentId: number): Promise<void>;
 }

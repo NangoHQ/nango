@@ -1,5 +1,8 @@
+import { getLogger } from '@nangohq/utils';
 import { RedisKVStore } from './kvstore/RedisStore.js';
 import { getRedisUrl } from './utils.js';
+
+const logger = getLogger('FeatureFlags');
 
 class FeatureFlags {
     redis: RedisKVStore | undefined;
@@ -7,8 +10,8 @@ class FeatureFlags {
     constructor(redis: RedisKVStore | undefined) {
         try {
             this.redis = redis;
-        } catch (e) {
-            console.log('Feature flags not enabled');
+        } catch {
+            logger.error('Feature flags not enabled');
         }
     }
 

@@ -1,18 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import {
-    SyncConfigType,
-    IncomingFlowConfig,
-    SyncAndActionDifferences,
-    Sync,
-    Job as SyncJob,
-    SyncStatus,
-    SyncWithSchedule,
-    SlimSync,
-    SlimAction,
-    SyncCommand,
-    ScheduleStatus
-} from '../../models/Sync.js';
+import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
+import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
@@ -24,6 +13,8 @@ import {
 } from './config/config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
+import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -47,7 +38,7 @@ const ACTIVITY_LOG_TABLE = dbNamespace + 'activity_logs';
  */
 
 export const getById = async (id: string): Promise<Sync | null> => {
-    const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ id, deleted: false });
+    const result = await db.knex.select('*').from<Sync>(TABLE).where({ id, deleted: false });
 
     if (!result || result.length == 0 || !result[0]) {
         return null;
@@ -67,7 +58,9 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
         name,
-        frequency: null
+        frequency: null,
+        last_sync_date: null,
+        last_fetched_at: null
     };
 
     const result = await schema().from<Sync>(TABLE).insert(sync).returning('*');
@@ -146,7 +139,7 @@ export const getJobLastSyncDate = async (sync_id: string): Promise<Date | null> 
 };
 
 export const getSyncByIdAndName = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
-    const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({
+    const result = await db.knex.select('*').from<Sync>(TABLE).where({
         nango_connection_id: nangoConnectionId,
         name,
         deleted: false
@@ -208,7 +201,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         return [];
     }
 
-    const scheduleResponse = await syncClient?.listSchedules();
+    const scheduleResponse = await syncClient.listSchedules();
     if (scheduleResponse?.schedules.length === 0) {
         await markAllAsStopped();
     }
@@ -216,17 +209,17 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
     const syncJobTimestampsSubQuery = db.knex.raw(
         `(
             SELECT json_agg(json_build_object(
-                'created_at', nango.${SYNC_JOB_TABLE}.created_at,
-                'updated_at', nango.${SYNC_JOB_TABLE}.updated_at
+                'created_at', ${SYNC_JOB_TABLE}.created_at,
+                'updated_at', ${SYNC_JOB_TABLE}.updated_at
             ))
-            FROM nango.${SYNC_JOB_TABLE}
-            WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
-                AND nango.${SYNC_JOB_TABLE}.created_at >= CURRENT_DATE - INTERVAL '30 days'
-                AND nango.${SYNC_JOB_TABLE}.deleted = false
+            FROM ${SYNC_JOB_TABLE}
+            WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
+                AND ${SYNC_JOB_TABLE}.created_at >= CURRENT_DATE - INTERVAL '30 days'
+                AND ${SYNC_JOB_TABLE}.deleted = false
         ) as thirty_day_timestamps`
     );
 
-    const result = await schema()
+    const q = db.knex
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
@@ -235,44 +228,50 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
-            `${SYNC_CONFIG_TABLE}.models`,
+            db.knex.raw(
+                `(
+                    SELECT models
+                    FROM
+                        _nango_connections
+                        JOIN _nango_configs ON _nango_configs.id = _nango_connections.config_id
+                        JOIN _nango_sync_configs ON _nango_sync_configs.nango_config_id = _nango_configs.id
+                            AND _nango_sync_configs.deleted = FALSE
+                            AND _nango_sync_configs.active = TRUE
+                    WHERE _nango_connections.id = _nango_syncs.nango_connection_id AND _nango_sync_configs.sync_name = _nango_syncs.name
+                ) as models`
+            ),
             db.knex.raw(
                 `(
                     SELECT json_build_object(
-                        'job_id', nango.${SYNC_JOB_TABLE}.id,
-                        'created_at', nango.${SYNC_JOB_TABLE}.created_at,
-                        'updated_at', nango.${SYNC_JOB_TABLE}.updated_at,
-                        'type', nango.${SYNC_JOB_TABLE}.type,
-                        'result', nango.${SYNC_JOB_TABLE}.result,
-                        'status', nango.${SYNC_JOB_TABLE}.status,
-                        'sync_config_id', nango.${SYNC_JOB_TABLE}.sync_config_id,
-                        'version', nango.${SYNC_CONFIG_TABLE}.version,
-                        'models', nango.${SYNC_CONFIG_TABLE}.models,
-                        'activity_log_id', nango.${ACTIVITY_LOG_TABLE}.id
+                        'job_id', ${SYNC_JOB_TABLE}.id,
+                        'created_at', ${SYNC_JOB_TABLE}.created_at,
+                        'updated_at', ${SYNC_JOB_TABLE}.updated_at,
+                        'type', ${SYNC_JOB_TABLE}.type,
+                        'result', ${SYNC_JOB_TABLE}.result,
+                        'status', ${SYNC_JOB_TABLE}.status,
+                        'sync_config_id', ${SYNC_JOB_TABLE}.sync_config_id,
+                        'version', ${SYNC_CONFIG_TABLE}.version,
+                        'models', ${SYNC_CONFIG_TABLE}.models,
+                        'activity_log_id', ${ACTIVITY_LOG_TABLE}.id
                     )
-                    FROM nango.${SYNC_JOB_TABLE}
-                    JOIN nango.${SYNC_CONFIG_TABLE} ON nango.${SYNC_CONFIG_TABLE}.id = nango.${SYNC_JOB_TABLE}.sync_config_id
-                    LEFT JOIN nango.${ACTIVITY_LOG_TABLE} ON nango.${ACTIVITY_LOG_TABLE}.session_id = nango.${SYNC_JOB_TABLE}.id::text
-                    WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
-                    AND nango.${SYNC_JOB_TABLE}.deleted = false
-                    AND nango.${SYNC_CONFIG_TABLE}.deleted = false
-                    ORDER BY nango.${SYNC_JOB_TABLE}.updated_at DESC
+                    FROM ${SYNC_JOB_TABLE}
+                    JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
+                    LEFT JOIN ${ACTIVITY_LOG_TABLE} ON ${ACTIVITY_LOG_TABLE}.session_id = ${SYNC_JOB_TABLE}.id::text
+                    WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
+                        AND ${SYNC_JOB_TABLE}.deleted = false
+                    ORDER BY ${SYNC_JOB_TABLE}.updated_at DESC
                     LIMIT 1
                 ) as latest_sync
                 `
             ),
             syncJobTimestampsSubQuery
         )
-        .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
-        .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
-        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
+        .join(SYNC_SCHEDULE_TABLE, function () {
+            this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
+        })
         .where({
             nango_connection_id: nangoConnection.id,
-            [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
-            [`${SYNC_JOB_TABLE}.deleted`]: false,
-            [`${TABLE}.deleted`]: false,
-            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
-            [`${SYNC_CONFIG_TABLE}.active`]: true
+            [`${TABLE}.deleted`]: false
         })
         .orderBy(`${TABLE}.name`, 'asc')
         .groupBy(
@@ -281,9 +280,11 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
-            `${SYNC_CONFIG_TABLE}.models`
+            'models'
         );
 
+    // console.log(q.toQuery());
+    const result = await q;
     const syncsWithSchedule = result.map(async (sync) => {
         const { schedule_id } = sync;
         const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
@@ -301,7 +302,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             };
             await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
         }
-        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber()) || [];
+        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long.seconds?.toNumber()) || [];
 
         return {
             ...sync,
@@ -318,7 +319,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
 };
 
 export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise<Sync[] | null> => {
-    const results = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
+    const results = await db.knex.select('*').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
 
     if (Array.isArray(results) && results.length > 0) {
         return results;
@@ -327,10 +328,11 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
     return null;
 };
 
-export const getSyncsByProviderConfigKey = async (environment_id: number, providerConfigKey: string): Promise<Sync[]> => {
+type SyncWithConnectionId = Sync & { connection_id: string };
+
+export const getSyncsByProviderConfigKey = async (environment_id: number, providerConfigKey: string): Promise<SyncWithConnectionId[]> => {
     const results = await db.knex
-        .withSchema(db.schema())
-        .select(`${TABLE}.id`, `${TABLE}.name`, `_nango_connections.connection_id`, `${TABLE}.created_at`, `${TABLE}.updated_at`, `${TABLE}.last_sync_date`)
+        .select(`${TABLE}.*`, `${TABLE}.name`, `_nango_connections.connection_id`, `${TABLE}.created_at`, `${TABLE}.updated_at`, `${TABLE}.last_sync_date`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
@@ -345,7 +347,6 @@ export const getSyncsByProviderConfigKey = async (environment_id: number, provid
 
 export const getSyncsByProviderConfigAndSyncName = async (environment_id: number, providerConfigKey: string, syncName: string): Promise<Sync[]> => {
     const results = await db.knex
-        .withSchema(db.schema())
         .select(`${TABLE}.*`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
@@ -361,7 +362,7 @@ export const getSyncsByProviderConfigAndSyncName = async (environment_id: number
 };
 
 export const getSyncNamesByConnectionId = async (nangoConnectionId: number): Promise<string[]> => {
-    const results = await db.knex.withSchema(db.schema()).select('name').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
+    const results = await db.knex.select('name').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
 
     if (Array.isArray(results) && results.length > 0) {
         return results.map((sync) => sync.name);
@@ -372,7 +373,6 @@ export const getSyncNamesByConnectionId = async (nangoConnectionId: number): Pro
 
 export const getSyncsByProviderConfigAndSyncNames = async (environment_id: number, providerConfigKey: string, syncNames: string[]): Promise<Sync[]> => {
     const results = await db.knex
-        .withSchema(db.schema())
         .select(`${TABLE}.*`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
@@ -432,11 +432,8 @@ export const isSyncValid = async (connection_id: string, provider_config_key: st
     return true;
 };
 
-export const deleteSync = async (syncId: string): Promise<string> => {
+export const softDeleteSync = async (syncId: string): Promise<string> => {
     await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-
-    await syncOrchestrator.deleteSyncRelatedObjects(syncId);
-
     return syncId;
 };
 
@@ -495,14 +492,25 @@ export const getSyncsByConnectionIdsAndEnvironmentIdAndSyncName = async (connect
     return [];
 };
 
-export const getAndReconcileDifferences = async (
-    environmentId: number,
-    syncs: IncomingFlowConfig[],
-    performAction: boolean,
-    activityLogId: number | null,
+export const getAndReconcileDifferences = async ({
+    environmentId,
+    syncs,
+    performAction,
+    activityLogId,
     debug = false,
-    singleDeployMode = false
-): Promise<SyncAndActionDifferences | null> => {
+    singleDeployMode = false,
+    logCtx,
+    logContextGetter
+}: {
+    environmentId: number;
+    syncs: IncomingFlowConfig[];
+    performAction: boolean;
+    activityLogId: number | null;
+    debug?: boolean | undefined;
+    singleDeployMode?: boolean | undefined;
+    logCtx?: LogContext;
+    logContextGetter: LogContextGetter;
+}): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
     const syncsToCreate = [];
@@ -546,7 +554,7 @@ export const getAndReconcileDifferences = async (
          * the sync if there are connections
          */
         let syncsByConnection: Sync[] = [];
-        if (exists && connections.length > 0) {
+        if (exists && exists.enabled && connections.length > 0) {
             syncsByConnection = await findSyncByConnections(
                 connections.map((connection) => connection.id as number),
                 syncName
@@ -566,17 +574,18 @@ export const getAndReconcileDifferences = async (
                     await createActivityLogMessage({
                         level: 'debug',
                         environment_id: environmentId,
-                        activity_log_id: activityLogId as number,
+                        activity_log_id: activityLogId,
                         timestamp: Date.now(),
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`
                     });
+                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
                 syncsToCreate.push({ connections, syncName, sync, providerConfigKey, environmentId });
             }
         }
 
         // in some cases syncs are missing so let's also create them if missing
-        if (performAction && syncsByConnection.length !== 0 && syncsByConnection.length !== connections.length) {
+        if (performAction && !exists?.enabled && syncsByConnection.length !== 0 && syncsByConnection.length !== connections.length) {
             const missingConnections = connections.filter((connection) => {
                 return !syncsByConnection.find((sync) => sync.nango_connection_id === connection.id);
             });
@@ -586,10 +595,11 @@ export const getAndReconcileDifferences = async (
                     await createActivityLogMessage({
                         level: 'debug',
                         environment_id: environmentId,
-                        activity_log_id: activityLogId as number,
+                        activity_log_id: activityLogId,
                         timestamp: Date.now(),
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`
                     });
+                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
                 syncsToCreate.push({ connections: missingConnections, syncName, sync, providerConfigKey, environmentId });
             }
@@ -602,17 +612,19 @@ export const getAndReconcileDifferences = async (
             await createActivityLogMessage({
                 level: 'debug',
                 environment_id: environmentId,
-                activity_log_id: activityLogId as number,
+                activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
             });
+            await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        const result = await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId as number);
+        const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, debug, activityLogId!, logCtx);
 
         if (!result) {
             if (activityLogId) {
-                await updateSuccessActivityLog(activityLogId as number, false);
+                await updateSuccessActivityLog(activityLogId, false);
+                await logCtx?.failed();
             }
             return null;
         }
@@ -635,7 +647,7 @@ export const getAndReconcileDifferences = async (
                     deletedSyncs.push({
                         name: existingSync.sync_name,
                         providerConfigKey: existingSync.unique_key,
-                        connections: connections?.length as number
+                        connections: connections.length
                     });
                 } else {
                     deletedActions.push({
@@ -649,18 +661,19 @@ export const getAndReconcileDifferences = async (
                         await createActivityLogMessage({
                             level: 'debug',
                             environment_id: environmentId,
-                            activity_log_id: activityLogId as number,
+                            activity_log_id: activityLogId,
                             timestamp: Date.now(),
                             content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
                         });
+                        await logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
                     }
-                    await syncOrchestrator.deleteConfig(existingSync.id as number, environmentId);
+                    await syncOrchestrator.deleteConfig(existingSync.id, environmentId);
 
                     if (existingSync.type === SyncConfigType.SYNC) {
                         for (const connection of connections) {
                             const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                             if (syncId) {
-                                await syncOrchestrator.deleteSync(syncId.id as string, environmentId);
+                                await syncOrchestrator.softDeleteSync(syncId.id, environmentId);
                             }
                         }
                     }
@@ -673,10 +686,11 @@ export const getAndReconcileDifferences = async (
                         await createActivityLogMessage({
                             level: 'debug',
                             environment_id: environmentId,
-                            activity_log_id: activityLogId as number,
+                            activity_log_id: activityLogId,
                             timestamp: Date.now(),
                             content
                         });
+                        await logCtx?.debug(content);
                     }
                 }
             }
@@ -687,10 +701,11 @@ export const getAndReconcileDifferences = async (
         await createActivityLogMessageAndEnd({
             level: 'debug',
             environment_id: environmentId,
-            activity_log_id: activityLogId as number,
+            activity_log_id: activityLogId,
             timestamp: Date.now(),
             content: 'Sync deploy diff in debug mode process complete successfully.'
         });
+        await logCtx?.debug('Sync deploy diff in debug mode process complete successfully.');
     }
 
     return {
@@ -706,6 +721,8 @@ export interface PausableSyncs {
     name: string;
     environment_id: number;
     provider: string;
+    account_id: number;
+    connection_unique_id: number;
     connection_id: string;
     unique_key: string;
     schedule_id: string;
@@ -713,14 +730,15 @@ export interface PausableSyncs {
 export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
     const q = db.knex
         .queryBuilder()
-        .withSchema(db.schema())
         .from('_nango_syncs')
         .select(
             '_nango_syncs.id',
             '_nango_syncs.name',
+            '_nango_environments.account_id',
             '_nango_connections.environment_id',
             '_nango_configs.provider',
             '_nango_configs.unique_key',
+            '_nango_connections.id as connection_unique_id',
             '_nango_connections.connection_id',
             '_nango_sync_schedules.schedule_id'
         )
@@ -734,9 +752,9 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         })
         .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
         .where({
-            '_nango_syncs.name': 'github-issues-lite',
+            '_nango_syncs.name': DEMO_SYNC_NAME,
             '_nango_environments.name': 'dev',
-            '_nango_configs.unique_key': 'demo-github-integration',
+            '_nango_configs.unique_key': DEMO_GITHUB_CONFIG_KEY,
             '_nango_configs.provider': 'github',
             '_nango_syncs.deleted': false,
             '_nango_sync_schedules.status': ScheduleStatus.RUNNING
@@ -745,4 +763,13 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
     const syncs: PausableSyncs[] = await q;
 
     return syncs;
+}
+
+export async function findRecentlyDeletedSync(): Promise<{ id: string }[]> {
+    const q = db.knex.from('_nango_syncs').select<{ id: string }[]>('_nango_syncs.id').where(db.knex.raw("_nango_syncs.deleted_at >  NOW() - INTERVAL '6h'"));
+    return await q;
+}
+
+export async function trackFetch(nango_connection_id: number): Promise<void> {
+    await db.knex.from<Sync>(`_nango_syncs`).where({ nango_connection_id, deleted: false }).update({ last_fetched_at: new Date() });
 }

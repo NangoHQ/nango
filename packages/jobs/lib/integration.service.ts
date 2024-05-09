@@ -1,20 +1,13 @@
 import type { Context } from '@temporalio/activity';
-import {
-    IntegrationServiceInterface,
-    createActivityLogMessage,
-    NangoIntegrationData,
-    NangoProps,
-    localFileService,
-    remoteFileService,
-    isCloud,
-    isProd,
-    ServiceResponse,
-    NangoError,
-    formatScriptError,
-    isOk
-} from '@nangohq/shared';
-import { Runner, getOrStartRunner, getRunnerId } from './runner/runner.js';
-import tracer from './tracer.js';
+import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
+import { integrationFilesAreRemote, isCloud, isProd, getLogger, isOk, stringifyError } from '@nangohq/utils';
+import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
+import type { Runner } from './runner/runner.js';
+import { getOrStartRunner, getRunnerId } from './runner/runner.js';
+import tracer from 'dd-trace';
+import { logContextGetter } from '@nangohq/logs';
+
+const logger = getLogger('integration.service');
 
 interface ScriptObject {
     context: Context | null;
@@ -55,24 +48,26 @@ class IntegrationService implements IntegrationServiceInterface {
                     content: `Failed to cancel script`,
                     timestamp: Date.now()
                 });
+                const logCtx = logContextGetter.get({ id: String(activityLogId) });
+                await logCtx.error('Failed to cancel script');
             }
         }
     }
 
-    async runScript(
-        syncName: string,
-        syncId: string,
-        activityLogId: number | undefined,
-        nangoProps: NangoProps,
-        integrationData: NangoIntegrationData,
-        environmentId: number,
-        writeToDb: boolean,
-        isInvokedImmediately: boolean,
-        isWebhook: boolean,
-        optionalLoadLocation?: string,
-        input?: object,
-        temporalContext?: Context
-    ): Promise<ServiceResponse<any>> {
+    async runScript({
+        syncName,
+        syncId,
+        activityLogId,
+        nangoProps,
+        integrationData,
+        environmentId,
+        writeToDb,
+        isInvokedImmediately,
+        isWebhook,
+        optionalLoadLocation,
+        input,
+        temporalContext
+    }: RunScriptOptions): Promise<ServiceResponse> {
         const span = tracer
             .startSpan('runScript')
             .setTag('accountId', nangoProps.accountId)
@@ -81,11 +76,13 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('providerConfigKey', nangoProps.providerConfigKey)
             .setTag('syncId', nangoProps.syncId)
             .setTag('syncName', syncName);
+
+        const logCtx = activityLogId ? logContextGetter.get({ id: String(activityLogId) }) : null;
         try {
             const script: string | null =
-                isCloud() && !optionalLoadLocation
+                (isCloud || integrationFilesAreRemote) && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
-                    : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
+                    : localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
 
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;
@@ -98,6 +95,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         content,
                         timestamp: Date.now()
                     });
+                    await logCtx?.error(content);
                 }
             }
 
@@ -109,6 +107,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     content: `Unable to find integration file for ${syncName}`,
                     timestamp: Date.now()
                 });
+                await logCtx?.error(`Unable to find integration file for ${syncName}`);
 
                 const error = new NangoError('Unable to find integration file', 404);
 
@@ -121,7 +120,7 @@ class IntegrationService implements IntegrationServiceInterface {
 
             const accountId = nangoProps.accountId;
             // a runner per account in prod only
-            const runnerId = isProd() ? getRunnerId(`${accountId}`) : getRunnerId('default');
+            const runnerId = isProd ? getRunnerId(`${accountId}`) : getRunnerId('default');
             // fallback to default runner if account runner isn't ready yet
             const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
 
@@ -147,6 +146,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (res && res.response && res.response.cancelled) {
                     const error = new NangoError('script_cancelled');
                     runSpan.setTag('error', error);
+
                     return { success: false, error, response: null };
                 }
 
@@ -161,7 +161,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 }
 
                 return { success: true, error: null, response: res };
-            } catch (err: any) {
+            } catch (err) {
                 runSpan.setTag('error', err);
 
                 const scriptObject = this.runningScripts.get(syncId);
@@ -191,6 +191,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         content: error.message,
                         timestamp: Date.now()
                     });
+                    await logCtx?.error(`Failed`, { error });
                 }
                 return { success, error, response };
             } finally {
@@ -198,7 +199,7 @@ class IntegrationService implements IntegrationServiceInterface {
             }
         } catch (err) {
             span.setTag('error', err);
-            const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+            const errorMessage = stringifyError(err, { pretty: true });
             const content = `There was an error running integration '${syncName}': ${errorMessage}`;
 
             if (activityLogId && writeToDb) {
@@ -209,6 +210,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     content,
                     timestamp: Date.now()
                 });
+                await logCtx?.error(content, { error: err });
             }
 
             return { success: false, error: new NangoError(content, 500), response: null };
@@ -220,16 +222,17 @@ class IntegrationService implements IntegrationServiceInterface {
 
     private sendHeartbeat() {
         setInterval(() => {
-            Object.keys(this.runningScripts).forEach((syncId) => {
-                const scriptObject = this.runningScripts.get(syncId);
-
-                if (!scriptObject) {
-                    return;
+            this.runningScripts.forEach((script, syncId) => {
+                const { context } = script;
+                if (context) {
+                    try {
+                        context.heartbeat();
+                    } catch (error) {
+                        logger.error(`Error sending heartbeat for syncId: ${syncId}`, error);
+                    }
+                } else {
+                    logger.error(`Error sending heartbeat for syncId ${syncId}: context not found`);
                 }
-
-                const { context } = scriptObject;
-
-                context?.heartbeat();
             });
         }, 300000);
     }

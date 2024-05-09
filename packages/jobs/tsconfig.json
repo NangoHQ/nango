@@ -4,6 +4,25 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
-    "references": [{ "path": "../shared" }],
+    "references": [
+        {
+            "path": "../logs"
+        },
+        {
+            "path": "../shared"
+        },
+        {
+            "path": "../runner"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../records"
+        },
+        {
+            "path": "../data-ingestion"
+        }
+    ],
     "include": ["lib/**/*"]
 }

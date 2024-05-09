@@ -1,8 +1,36 @@
 import type { ParamsSerializerOptions } from 'axios';
 
+export interface NangoProps {
+    host?: string;
+    secretKey: string;
+    connectionId?: string;
+    providerConfigKey?: string;
+    isSync?: boolean;
+    dryRun?: boolean;
+    activityLogId?: number;
+}
+
+export interface CreateConnectionOAuth1 extends OAuth1Credentials {
+    connection_id: string;
+    provider_config_key: string;
+    type: AuthModes.OAuth1;
+}
+
+export interface OAuth1Token {
+    oAuthToken: string;
+    oAuthTokenSecret: string;
+}
+
+export interface CreateConnectionOAuth2 extends OAuth2Credentials {
+    connection_id: string;
+    provider_config_key: string;
+    type: AuthModes.OAuth2;
+}
+
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
+    OAuth2CC = 'OAUTH2_CC',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
     AppStore = 'APP_STORE',
@@ -54,8 +82,8 @@ export interface ProxyConfiguration {
     retryOn?: number[] | null;
 }
 
-type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
-type CombinedFilterAction = `${FilterAction},${FilterAction}`;
+export type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
+export type CombinedFilterAction = `${FilterAction},${FilterAction}`;
 
 export interface GetRecordsRequestConfig {
     providerConfigKey: string;
@@ -74,7 +102,11 @@ export interface ListRecordsRequestConfig {
     providerConfigKey: string;
     connectionId: string;
     model: string;
+    /**
+     * @deprecated
+     */
     delta?: string;
+    modifiedAfter?: string;
     limit?: number;
     filter?: FilterAction | CombinedFilterAction;
     cursor?: string | null;
@@ -127,7 +159,7 @@ export interface IntegrationWithCreds extends Integration {
     webhook_url?: string;
 }
 
-interface Timestamps {
+export interface Timestamps {
     created_at: string;
     updated_at: string;
 }
@@ -148,7 +180,7 @@ export interface Action extends Timestamps {
     name: string;
 }
 
-type SyncType = 'INCREMENTAL' | 'INITIAL';
+export type SyncType = 'INCREMENTAL' | 'INITIAL';
 
 export interface Integration {
     unique_key: string;
@@ -181,3 +213,113 @@ export interface SyncStatusResponse {
 export interface UpdateSyncFrequencyResponse {
     frequency: string;
 }
+
+export interface StandardNangoConfig {
+    providerConfigKey: string;
+    rawName?: string;
+    provider?: string;
+    syncs: NangoSyncConfig[];
+    actions: NangoSyncConfig[];
+    postConnectionScripts?: string[];
+}
+
+export enum SyncConfigType {
+    SYNC = 'sync',
+    ACTION = 'action'
+}
+
+interface NangoSyncModelField {
+    name: string;
+    type: string;
+}
+
+export interface NangoSyncModel {
+    name: string;
+    description?: string;
+    fields: NangoSyncModelField[];
+}
+
+export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+
+export type NangoSyncEndpoint = {
+    [key in HTTP_VERB]?: string;
+};
+
+export interface NangoSyncConfig {
+    name: string;
+    type?: SyncConfigType;
+    runs: string;
+    auto_start?: boolean;
+    attributes?: object;
+    description?: string;
+    scopes?: string[];
+    track_deletes?: boolean;
+    returns: string[];
+    models: NangoSyncModel[];
+    endpoints: NangoSyncEndpoint[];
+    is_public?: boolean;
+    pre_built?: boolean;
+    version?: string | null;
+    last_deployed?: string | null;
+
+    input?: NangoSyncModel;
+    sync_type?: SyncType;
+    nango_yaml_version?: string;
+    webhookSubscriptions?: string[];
+}
+
+export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
+
+export interface RecordMetadata {
+    first_seen_at: string;
+    last_seen_at: string;
+    last_action: LastAction;
+    deleted_at: string | null;
+    cursor: string;
+}
+
+export interface SyncResult {
+    added: number;
+    updated: number;
+    deleted: number;
+}
+
+export enum WebhookType {
+    SYNC = 'sync',
+    AUTH = 'auth',
+    FORWARD = 'forward'
+}
+
+export interface NangoSyncWebhookBody {
+    from: 'nango';
+    type: WebhookType.SYNC;
+    connectionId: string;
+    providerConfigKey: string;
+    syncName: string;
+    model: string;
+    responseResults: SyncResult;
+    syncType: SyncType;
+    queryTimeStamp: string | null;
+    modifiedAfter: string;
+}
+
+export enum AuthOperation {
+    CREATION = 'creation',
+    OVERRIDE = 'override',
+    UNKNOWN = 'unknown'
+}
+
+export interface WebhookAuthBody {
+    from: 'nango';
+    type: WebhookType.AUTH;
+    connectionId: string;
+    authMode: AuthModes;
+    providerConfigKey: string;
+    provider: string;
+    environment: string;
+    success: boolean;
+    operation: AuthOperation;
+    error?: string;
+}
+
+export type WebhooksBody = NangoSyncWebhookBody | WebhookAuthBody;

@@ -1,27 +1,22 @@
-import type { Request, Response } from 'express';
-import type { NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { Span } from 'dd-trace';
-import type { LogLevel, Connection, NangoConnection, HTTP_VERB } from '@nangohq/shared';
-import tracer from '../tracer.js';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import type { LogLevel, NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig } from '@nangohq/shared';
+import tracer from 'dd-trace';
 import {
-    getEnvironmentId,
     deploy as deploySyncConfig,
-    syncDataService,
     connectionService,
     getSyncs,
     verifyOwnership,
     isSyncValid,
+    getSyncNamesByConnectionId,
     getSyncsByProviderConfigKey,
     SyncClient,
     updateScheduleStatus,
     updateSuccess as updateSuccessActivityLog,
-    createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
     createActivityLog,
     getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
-    IncomingFlowConfig,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
     CommandToActivityLog,
@@ -31,7 +26,6 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
-    LastAction,
     configService,
     syncOrchestrator,
     getAttributes,
@@ -43,14 +37,20 @@ import {
     getInterval,
     findSyncByConnections,
     setFrequency,
-    getEnvironmentAndAccountId,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    isOk,
-    isErr
+    createActivityLogMessage,
+    trackFetch,
+    syncCommandToOperation
 } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
+import { isErr, isOk } from '@nangohq/utils';
+import type { LastAction } from '@nangohq/records';
+import { records as recordsService } from '@nangohq/records';
+import type { RequestLocals } from '../utils/express.js';
 
 class SyncController {
-    public async deploySync(req: Request, res: Response, next: NextFunction) {
+    public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const {
                 syncs,
@@ -58,10 +58,14 @@ class SyncController {
                 debug,
                 singleDeployMode
             }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
             let reconcileSuccess = true;
 
-            const { success, error, response: syncConfigDeployResult } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', debug);
+            const {
+                success,
+                error,
+                response: syncConfigDeployResult
+            } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', logContextGetter, debug);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -70,14 +74,17 @@ class SyncController {
             }
 
             if (reconcile) {
-                const success = await getAndReconcileDifferences(
+                const logCtx = logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
+                const success = await getAndReconcileDifferences({
                     environmentId,
                     syncs,
-                    reconcile,
-                    syncConfigDeployResult?.activityLogId as number,
+                    performAction: reconcile,
+                    activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
-                    singleDeployMode
-                );
+                    singleDeployMode,
+                    logCtx,
+                    logContextGetter
+                });
                 if (!success) {
                     reconcileSuccess = false;
                 }
@@ -89,13 +96,13 @@ class SyncController {
                 return;
             }
 
-            analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
+            void analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
 
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
 
-            await errorManager.report(e, {
+            errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.SYNC_DEPLOY
@@ -105,13 +112,21 @@ class SyncController {
         }
     }
 
-    public async confirmation(req: Request, res: Response, next: NextFunction) {
+    public async confirmation(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { syncs, debug, singleDeployMode }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } =
                 req.body;
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
 
-            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug, singleDeployMode);
+            const result = await getAndReconcileDifferences({
+                environmentId,
+                syncs,
+                performAction: false,
+                activityLogId: null,
+                debug,
+                singleDeployMode,
+                logContextGetter
+            });
 
             res.send(result);
         } catch (e) {
@@ -119,83 +134,58 @@ class SyncController {
         }
     }
 
-    // to deprecate
-    public async getRecords(req: Request, res: Response, next: NextFunction) {
+    public async getAllRecords(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
-            const environmentId = getEnvironmentId(res);
+            const { model, delta, modified_after, modifiedAfter, limit, filter, cursor, next_cursor } = req.query;
+            const environmentId = res.locals['environment'].id;
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const {
-                success,
-                error,
-                response: records
-            } = await syncDataService.getDataRecords(
-                connectionId,
-                providerConfigKey,
-                environmentId,
-                model as string,
-                delta as string,
-                offset as string,
-                limit as string,
-                sort_by as string,
-                order as 'asc' | 'desc',
-                filter as LastAction,
-                include_nango_metadata === 'true'
-            );
+            if (modifiedAfter) {
+                const error = new NangoError('incorrect_param', { incorrect: 'modifiedAfter', correct: 'modified_after' });
 
-            if (!success) {
                 errorManager.errResFromNangoErr(res, error);
-
                 return;
             }
 
-            res.send(records);
+            if (next_cursor) {
+                const error = new NangoError('incorrect_param', { incorrect: 'next_cursor', correct: 'cursor' });
+
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+
+            if (error || !connection) {
+                const nangoError = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentId });
+                errorManager.errResFromNangoErr(res, nangoError);
+                return;
+            }
+
+            const result = await recordsService.getRecords({
+                connectionId: connection.id as number,
+                model: model as string,
+                modifiedAfter: (delta || modified_after) as string,
+                limit: limit as string,
+                filter: filter as LastAction,
+                cursor: cursor as string
+            });
+
+            if (isErr(result)) {
+                errorManager.errResFromNangoErr(res, new NangoError('pass_through_error', result.err));
+                return;
+            }
+            await trackFetch(connection.id as number);
+            res.send(result.res);
         } catch (e) {
             next(e);
         }
     }
 
-    public async getAllRecords(req: Request, res: Response, next: NextFunction) {
+    public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { model, delta, limit, filter, cursor } = req.query;
-            const environmentId = getEnvironmentId(res);
-            const connectionId = req.get('Connection-Id') as string;
-            const providerConfigKey = req.get('Provider-Config-Key') as string;
-
-            const { success, error, response } = await syncDataService.getAllDataRecords(
-                connectionId,
-                providerConfigKey,
-                environmentId,
-                model as string,
-                delta as string,
-                limit as string,
-                filter as LastAction,
-                cursor as string
-            );
-
-            if (!success || !response) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            res.send(response);
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async getSyncsByParams(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
-
+            const { environment } = res.locals;
             const { connection_id, provider_config_key } = req.query;
 
             const {
@@ -217,7 +207,7 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncs(connection as Connection);
+            const syncs = await getSyncs(connection);
 
             res.send(syncs);
         } catch (e) {
@@ -225,14 +215,9 @@ class SyncController {
         }
     }
 
-    public async getSyncs(req: Request, res: Response, next: NextFunction) {
+    public async getSyncs(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
             const flows = flowService.getAllAvailableFlows();
@@ -243,7 +228,7 @@ class SyncController {
         }
     }
 
-    public async trigger(req: Request, res: Response, next: NextFunction) {
+    public async trigger(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { syncs: syncNames, full_resync } = req.body;
 
@@ -273,15 +258,17 @@ class SyncController {
                 return;
             }
 
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
 
-            const { success, error } = await syncOrchestrator.runSyncCommand(
+            const { success, error } = await syncOrchestrator.runSyncCommand({
+                recordsService,
                 environmentId,
-                provider_config_key,
-                syncNames as string[],
-                full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
-                connection_id
-            );
+                providerConfigKey: provider_config_key,
+                syncNames: syncNames as string[],
+                command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
+                logContextGetter,
+                connectionId: connection_id!
+            });
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -294,9 +281,9 @@ class SyncController {
         }
     }
 
-    public async actionOrModel(req: Request, res: Response, next: NextFunction) {
+    public async actionOrModel(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const connectionId = req.get('Connection-Id') as string;
             const path = '/' + req.params['0'];
@@ -311,11 +298,7 @@ class SyncController {
 
                 return;
             }
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -331,7 +314,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                await this.getRecords(req, res, next);
+                await this.getAllRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
@@ -340,16 +323,18 @@ class SyncController {
         }
     }
 
-    public async triggerAction(req: Request, res: Response, next: NextFunction) {
+    public async triggerAction(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('server.sync.triggerAction', {
             childOf: active as Span
         });
 
         const { input, action_name } = req.body;
-        const environmentId = getEnvironmentId(res);
+        const accountId = res.locals['account'].id;
+        const environmentId = res.locals['environment'].id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
+        let logCtx: LogContext | undefined;
         try {
             if (!action_name || typeof action_name !== 'string') {
                 res.status(400).send({ error: 'Missing action name' });
@@ -381,7 +366,7 @@ class SyncController {
                 return;
             }
 
-            const provider = await configService.getProviderName(providerConfigKey);
+            const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             const log = {
                 level: 'info' as LogLevel,
@@ -391,7 +376,7 @@ class SyncController {
                 end: Date.now(),
                 timestamp: Date.now(),
                 connection_id: connection.connection_id,
-                provider,
+                provider: provider!.provider,
                 provider_config_key: connection.provider_config_key,
                 environment_id: environmentId,
                 operation_name: action_name
@@ -407,37 +392,56 @@ class SyncController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                { account: { id: accountId }, environment: { id: environmentId }, config: { id: provider!.id! }, connection: { id: connection.id! } }
+            );
+
             const syncClient = await SyncClient.getInstance();
 
             if (!syncClient) {
                 throw new NangoError('failed_to_get_sync_client');
             }
 
-            const actionResponse = await syncClient.triggerAction(connection, action_name, input, activityLogId, environmentId);
+            const actionResponse = await syncClient.triggerAction({
+                connection,
+                actionName: action_name,
+                input,
+                activityLogId,
+                environment_id: environmentId,
+                logCtx
+            });
 
             if (isOk(actionResponse)) {
-                res.send(actionResponse.res);
                 span.finish();
+                await logCtx.success();
+                res.send(actionResponse.res);
 
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.err);
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.error('Failed to trigger action', { err: actionResponse.err });
+                await logCtx.failed();
                 span.finish();
 
                 return;
             }
-        } catch (e) {
-            span.setTag('nango.error', e);
+        } catch (err) {
+            span.setTag('nango.error', err);
             span.finish();
+            if (logCtx) {
+                await logCtx.error('Failed to trigger action', { error: err });
+                await logCtx.failed();
+            }
 
-            next(e);
+            next(err);
         }
     }
 
-    public async getSyncProvider(req: Request, res: Response, next: NextFunction) {
+    public async getSyncProvider(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
             const { syncName } = req.query;
 
             if (!syncName) {
@@ -446,7 +450,7 @@ class SyncController {
                 return;
             }
 
-            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId as number);
+            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId);
 
             res.send(providerConfigKey);
         } catch (e) {
@@ -454,7 +458,7 @@ class SyncController {
         }
     }
 
-    public async pause(req: Request, res: Response, next: NextFunction) {
+    public async pause(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { syncs: syncNames, provider_config_key, connection_id } = req.body;
 
@@ -476,9 +480,17 @@ class SyncController {
                 return;
             }
 
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
 
-            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.PAUSE, connection_id);
+            await syncOrchestrator.runSyncCommand({
+                recordsService,
+                environmentId,
+                providerConfigKey: provider_config_key as string,
+                syncNames: syncNames as string[],
+                command: SyncCommand.PAUSE,
+                logContextGetter,
+                connectionId: connection_id
+            });
 
             res.sendStatus(200);
         } catch (e) {
@@ -486,7 +498,7 @@ class SyncController {
         }
     }
 
-    public async start(req: Request, res: Response, next: NextFunction) {
+    public async start(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { syncs: syncNames, provider_config_key, connection_id } = req.body;
 
@@ -508,9 +520,17 @@ class SyncController {
                 return;
             }
 
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
 
-            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.UNPAUSE, connection_id);
+            await syncOrchestrator.runSyncCommand({
+                recordsService,
+                environmentId,
+                providerConfigKey: provider_config_key as string,
+                syncNames: syncNames as string[],
+                command: SyncCommand.UNPAUSE,
+                logContextGetter,
+                connectionId: connection_id
+            });
 
             res.sendStatus(200);
         } catch (e) {
@@ -518,7 +538,7 @@ class SyncController {
         }
     }
 
-    public async getSyncStatus(req: Request, res: Response, next: NextFunction) {
+    public async getSyncStatus(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { syncs: passedSyncNames, provider_config_key, connection_id } = req.query;
 
@@ -536,10 +556,28 @@ class SyncController {
                 return;
             }
 
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
+
+            let connection: Connection | null = null;
+
+            if (connection_id) {
+                const connectionResult = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
+                const { success: connectionSuccess, error: connectionError } = connectionResult;
+                if (!connectionSuccess || !connectionResult.response) {
+                    errorManager.errResFromNangoErr(res, connectionError);
+                    return;
+                }
+
+                connection = connectionResult.response;
+            }
 
             if (syncNames === '*') {
-                syncNames = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string).then((syncs) => syncs.map((sync) => sync.name));
+                if (connection && connection.id) {
+                    syncNames = await getSyncNamesByConnectionId(connection.id);
+                } else {
+                    const syncs = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string);
+                    syncNames = syncs.map((sync) => sync.name);
+                }
             } else {
                 syncNames = (syncNames as string).split(',');
             }
@@ -548,7 +586,7 @@ class SyncController {
                 success,
                 error,
                 response: syncsWithStatus
-            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames as string[], connection_id as string);
+            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames, connection_id as string, false, connection);
 
             if (!success || !syncsWithStatus) {
                 errorManager.errResFromNangoErr(res, error);
@@ -561,14 +599,11 @@ class SyncController {
         }
     }
 
-    public async syncCommand(req: Request, res: Response, next: NextFunction) {
+    public async syncCommand(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        let logCtx: LogContext | undefined;
+
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { environment } = response;
+            const { environment } = res.locals;
 
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
@@ -588,48 +623,63 @@ class SyncController {
                 environment_id: environment.id,
                 operation_name: sync_name
             };
+            const activityLogId = await createActivityLog(log);
+            logCtx = await logContextGetter.create(
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] },
+                    message: `Trigger ${command}`
+                },
+                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name }, connection: { id: connection!.id! } }
+            );
 
-            if (!verifyOwnership(nango_connection_id, environment.id, sync_id)) {
-                await createActivityLogAndLogMessage(log, {
+            if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
+                await createActivityLogMessage({
                     level: 'error',
+                    activity_log_id: activityLogId!,
                     environment_id: environment.id,
                     timestamp: Date.now(),
                     content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
+                await logCtx.error('Unauthorized access to run the command');
+                await logCtx.failed();
 
                 res.sendStatus(401);
+                return;
             }
-
-            const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
 
             if (!syncClient) {
                 const error = new NangoError('failed_to_get_sync_client');
                 errorManager.errResFromNangoErr(res, error);
+                await logCtx.failed();
 
                 return;
             }
 
-            const result = await syncClient.runSyncCommand(
-                schedule_id,
-                sync_id,
+            const result = await syncClient.runSyncCommand({
+                scheduleId: schedule_id,
+                syncId: sync_id,
                 command,
-                activityLogId as number,
-                environment.id,
-                connection?.provider_config_key as string,
-                connection?.connection_id as string,
-                sync_name,
-                connection?.id
-            );
+                activityLogId: activityLogId as number,
+                environmentId: environment.id,
+                providerConfigKey: connection?.provider_config_key as string,
+                connectionId: connection?.connection_id as string,
+                syncName: sync_name,
+                nangoConnectionId: connection?.id,
+                logCtx,
+                recordsService
+            });
 
             if (isErr(result)) {
                 errorManager.handleGenericError(result.err, req, res, tracer);
+                await logCtx.failed();
                 return;
             }
 
             if (command !== SyncCommand.RUN) {
-                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
+                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id, logCtx);
             }
 
             await createActivityLogMessageAndEnd({
@@ -640,6 +690,8 @@ class SyncController {
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
             });
             await updateSuccessActivityLog(activityLogId as number, true);
+            await logCtx.info('Sync command run successfully', { action, syncId: sync_id });
+            await logCtx.success();
 
             let event = AnalyticsTypes.SYNC_RUN;
 
@@ -658,7 +710,7 @@ class SyncController {
                     break;
             }
 
-            analytics.trackByEnvironmentId(event, environment.id, {
+            void analytics.trackByEnvironmentId(event, environment.id, {
                 sync_id,
                 sync_name,
                 provider,
@@ -668,12 +720,16 @@ class SyncController {
             });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            if (logCtx) {
+                await logCtx.error('Failed to sync command', { error: err });
+                await logCtx.failed();
+            }
+            next(err);
         }
     }
 
-    public async getFlowAttributes(req: Request, res: Response, next: NextFunction) {
+    public async getFlowAttributes(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { sync_name, provider_config_key } = req.query;
 
@@ -697,16 +753,9 @@ class SyncController {
         }
     }
 
-    public async updateFrequency(req: Request, res: Response, next: NextFunction) {
+    public async updateFrequency(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { environment } = response;
+            const { environment } = res.locals;
             const syncConfigId = req.params['syncId'];
             const { frequency } = req.body;
 
@@ -726,7 +775,7 @@ class SyncController {
             const setFrequency = `every ${frequency}`;
             for (const sync of syncs) {
                 const { success: updateScheduleSuccess, error: updateScheduleError } = await updateSyncScheduleFrequency(
-                    sync.id as string,
+                    sync.id,
                     setFrequency,
                     sync.name,
                     environment.id
@@ -745,7 +794,7 @@ class SyncController {
         }
     }
 
-    public async deleteSync(req: Request, res: Response, next: NextFunction) {
+    public async deleteSync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const syncId = req.params['syncId'];
             const { connection_id, provider_config_key } = req.query;
@@ -768,7 +817,7 @@ class SyncController {
                 return;
             }
 
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
 
             const isValid = await isSyncValid(connection_id as string, provider_config_key as string, environmentId, syncId);
 
@@ -778,7 +827,7 @@ class SyncController {
                 return;
             }
 
-            await syncOrchestrator.deleteSync(syncId, environmentId);
+            await syncOrchestrator.softDeleteSync(syncId, environmentId);
 
             res.sendStatus(204);
         } catch (e) {
@@ -792,7 +841,7 @@ class SyncController {
      * Allow users to change the default frequency value of a sync without losing the value.
      * The system will store the value inside `_nango_syncs.frequency` and update the relevant schedules.
      */
-    public async updateFrequencyForConnection(req: Request, res: Response, next: NextFunction) {
+    public async updateFrequencyForConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { sync_name, provider_config_key, connection_id, frequency } = req.body;
 
@@ -823,12 +872,7 @@ class SyncController {
                 newFrequency = response.interval;
             }
 
-            const getEnv = await getEnvironmentAndAccountId(res, req);
-            if (!getEnv.success || getEnv.response === null) {
-                errorManager.errResFromNangoErr(res, getEnv.error);
-                return;
-            }
-            const envId = getEnv.response.environmentId;
+            const envId = res.locals['environment'].id;
 
             const getConnection = await connectionService.getConnection(connection_id, provider_config_key, envId);
             if (!getConnection.response || getConnection.error) {
@@ -842,7 +886,7 @@ class SyncController {
                 res.status(400).send({ message: 'Invalid sync_name' });
                 return;
             }
-            const syncId = syncs[0]!.id!;
+            const syncId = syncs[0]!.id;
 
             // When "frequency === null" we revert the value stored in the sync config
             if (!newFrequency) {

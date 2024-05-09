@@ -1,8 +1,7 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../../db/database.js';
+import db, { multipleMigrations } from '../../db/database.js';
 import * as ActivityService from './activity.service.js';
 import type { ActivityLog } from '../../models/Activity.js';
-import db from '../../db/database.js';
 
 describe('Activity service integration tests', () => {
     beforeAll(async () => {
@@ -17,7 +16,7 @@ describe('Activity service integration tests', () => {
     });
 
     it('Should create an activity log and retrieve its ID', async () => {
-        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        const result = await db.knex.select('*').from('_nango_environments');
 
         const log: ActivityLog = {
             environment_id: result[0].id
@@ -28,7 +27,7 @@ describe('Activity service integration tests', () => {
     });
 
     it('Should update provider for a given activity log ID', async () => {
-        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        const result = await db.knex.select('*').from('_nango_environments');
         const log: ActivityLog = {
             environment_id: result[0].id
         } as ActivityLog;
@@ -37,7 +36,6 @@ describe('Activity service integration tests', () => {
         await ActivityService.updateProvider(createdLog as number, provider);
 
         const updatedLog = await db.knex
-            .withSchema(db.schema())
             .from<ActivityLog>('_nango_activity_logs')
             .where({ id: createdLog as number })
             .first();

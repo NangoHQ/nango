@@ -8,25 +8,32 @@ import connectionService from '../../../services/connection.service.js';
 import { getSyncConfigsByConfigIdForWebhook } from '../../../services/sync/config/config.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
+import type { LogContextGetter } from '@nangohq/logs';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
-    executeScriptForWebhooks(integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string, propName?: string): Promise<void>;
+    executeScriptForWebhooks(
+        integration: ProviderConfig,
+        body: any,
+        webhookType: string,
+        connectionIdentifier: string,
+        logContextGetter: LogContextGetter,
+        propName?: string
+    ): Promise<{ connectionIds: string[] }>;
 }
 
 export const internalNango: InternalNango = {
     getWebhooks: async (environment_id, nango_config_id) => {
         return await getSyncConfigsByConfigIdForWebhook(environment_id, nango_config_id);
     },
-    executeScriptForWebhooks: async (integration, body, webhookType, connectionIdentifier, propName) => {
-        const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
-
-        if (syncConfigsWithWebhooks.length <= 0) {
-            return;
-        }
-
-        const syncClient = await SyncClient.getInstance();
-
+    executeScriptForWebhooks: async (
+        integration,
+        body,
+        webhookType,
+        connectionIdentifier,
+        logContextGetter,
+        propName
+    ): Promise<{ connectionIds: string[] }> => {
         if (!get(body, connectionIdentifier)) {
             await telemetry.log(
                 LogTypes.INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER,
@@ -41,7 +48,7 @@ export const internalNango: InternalNango = {
                 }
             );
 
-            return;
+            return { connectionIds: [] };
         }
 
         let connections: Connection[] | null = null;
@@ -77,7 +84,14 @@ export const internalNango: InternalNango = {
                     payload: JSON.stringify(body)
                 }
             );
-            return;
+
+            return { connectionIds: [] };
+        }
+
+        const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
+
+        if (syncConfigsWithWebhooks.length <= 0) {
+            return { connectionIds: connections?.map((connection) => connection.connection_id) };
         }
 
         const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
@@ -90,7 +104,9 @@ export const internalNango: InternalNango = {
             connectionIds: connections.map((connection) => connection.connection_id).join(',')
         });
 
+        const syncClient = await SyncClient.getInstance();
         const type = get(body, webhookType);
+
         for (const syncConfig of syncConfigsWithWebhooks) {
             const { webhook_subscriptions } = syncConfig;
 
@@ -101,10 +117,12 @@ export const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (type === webhook) {
                     for (const connection of connections) {
-                        await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
+                        await syncClient?.triggerWebhook(integration, connection, webhook, syncConfig.sync_name, body, logContextGetter);
                     }
                 }
             }
         }
+
+        return { connectionIds: connections.map((connection) => connection.connection_id) };
     }
 };

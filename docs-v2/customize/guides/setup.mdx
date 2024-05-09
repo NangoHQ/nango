@@ -4,11 +4,11 @@ sidebarTitle: 'Set up the CLI and folder'
 description: 'Step-by-step guide to setting up the Nango CLI and integrations folder.'
 ---
 
-Set up the [Nango CLI](/understand/concepts/cli) and an [integration folder](/understand/concepts/integrations-folder) to develop custom integrations with Nango.
+Set up the [Nango CLI](/understand/concepts/scripts#the-nango-cli) and an [integration folder](/understand/concepts/scripts#integration-folder) to develop custom integrations with Nango.
 
 # Install the Nango CLI
 
-Install the Nango CLI globally: 
+Install the Nango CLI globally:
 ```bash
 npm install -g nango
 ```
@@ -19,7 +19,19 @@ All your integrations live in a folder called `nango-integrations`. Whether loca
 
 To initialize your integrations folder (e.g. at the root of your repository), run:
 ```bash
-nango init # Creates `./nango-integrations` folder with some initial configuration
+nango init
+```
+
+This creates the `./nango-integrations` folder with some initial configuration and an example
+sync script. The `nango-integrations` directory looks like this:
+```
+nango-integrations/
+├── .env
+├── nango.yaml
+├── models.ts
+└── demo-github-integration # this is the integration unique ID and must match the nango.yaml entry and the integration ID in the UI
+    └── syncs/
+        └── github-issue-example.ts
 ```
 
 # Authenticate the CLI
@@ -32,7 +44,7 @@ NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
 
 Get your secret keys from the _Environment Settings_ tab (toggle between the `Production` and `Development` environment in the left nav bar).
 
-Learn more about the [Nango CLI](/understand/concepts/cli) ([reference](/reference/cli)) and the content of the [integrations folder](/understand/concepts/integrations-folder).
+Learn more about the [Nango CLI](/understand/concepts/scripts#the-nango-cli) ([reference](/reference/cli)) and the content of the [integrations folder](/understand/concepts/scripts#integration-folder).
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

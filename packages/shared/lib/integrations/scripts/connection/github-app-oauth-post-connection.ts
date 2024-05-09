@@ -1,5 +1,6 @@
 import type { InternalNango as Nango } from './connection.manager.js';
-import { AuthModes, OAuth2Credentials } from '../../../models/Auth.js';
+import type { OAuth2Credentials } from '../../../models/Auth.js';
+import { AuthModes } from '../../../models/Auth.js';
 import axios from 'axios';
 
 export default async function execute(nango: Nango) {
@@ -27,5 +28,5 @@ export default async function execute(nango: Nango) {
         };
     }
 
-    await nango.updateConnectionConfig({ handle, userCredentials: connection.credentials });
+    await nango.updateConnectionConfig(updatedConfig);
 }

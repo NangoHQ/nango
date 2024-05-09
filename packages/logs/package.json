@@ -1,0 +1,29 @@
+{
+    "name": "@nangohq/logs",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.js",
+    "private": true,
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/logs"
+    },
+    "dependencies": {
+        "@opensearch-project/opensearch": "2.7.0",
+        "@nangohq/utils": "file:../utils",
+        "zod": "3.22.4"
+    },
+    "devDependencies": {
+        "type-fest": "4.14.0",
+        "vitest": "0.33.0",
+        "winston": "3.8.2"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

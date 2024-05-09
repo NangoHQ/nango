@@ -1,5 +1,5 @@
 import https from 'https';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import fs from 'fs';
 import * as os from 'os';
 import npa from 'npm-package-arg';
@@ -168,9 +168,24 @@ export async function upgradeAction(debug = false) {
 
         console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
 
-        const args = locallyInstalled
-            ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
-            : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+        const packagePath = getPackagePath();
+        const usePnpm = path.resolve(packagePath, '..').includes('.pnpm');
+
+        let args: string[] = [];
+
+        if (usePnpm) {
+            if (locallyInstalled) {
+                args = ['add', `nango@${latestVersion}`];
+            } else {
+                args = ['add', '-g', `nango@${latestVersion}`];
+            }
+        } else {
+            if (locallyInstalled) {
+                args = ['install', '--no-audit', '--save', `nango@${latestVersion}`];
+            } else {
+                args = ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+            }
+        }
 
         if (debug) {
             printDebug(`Running npm ${args.join(' ')}`);
@@ -209,8 +224,8 @@ export async function getConnection(providerConfigKey: string, connectionId: str
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -225,8 +240,8 @@ export async function getConfig(providerConfigKey: string, debug = false) {
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -250,7 +265,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
         let hasNull = false;
         let hasUndefined = false;
         let tsType = '';
-        if (field.indexOf('null') !== -1) {
+        if (field.includes('null')) {
             field = field.replace(/\s*\|\s*null\s*/g, '');
             hasNull = true;
         }
@@ -262,7 +277,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
             return 'undefined';
         }
 
-        if (field.indexOf('undefined') !== -1) {
+        if (field.includes('undefined')) {
             field = field.replace(/\s*\|\s*undefined\s*/g, '');
             hasUndefined = true;
         }
@@ -312,11 +327,10 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
 }
 
 export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
-    const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
+    const returnedModels = Object.keys(integrations).reduce<string[]>((acc, providerConfigKey) => {
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
-        for (let i = 0; i < syncNames.length; i++) {
-            const syncName = syncNames[i] as string;
+        for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
             if (syncData.returns) {
                 const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
@@ -328,7 +342,7 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
             }
         }
         return acc;
-    }, [] as string[]);
+    }, []);
 
     if (!models) {
         return null;
@@ -343,8 +357,7 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
         const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
             const syncNames = Object.keys(syncObject);
-            for (let i = 0; i < syncNames.length; i++) {
-                const syncName = syncNames[i] as string;
+            for (const syncName of syncNames) {
                 const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
                 if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
                     return syncData.returns.includes(modelName);
@@ -415,7 +428,7 @@ function getPackagePath(debug = false) {
         }
 
         return packagePath;
-    } catch (e) {
+    } catch {
         throw new Error(
             'Could not find nango package. Please make sure it is installed in your project or installed globally. Reach out to us in the Slack community if you continue to have issues!'
         );

@@ -1,17 +1,20 @@
 import braintree from 'braintree';
-import {
+import type {
     Config as ProviderConfig,
     Connection,
-    OAuth2Credentials,
-    AuthModes as ProviderAuthModes,
     AuthorizationTokenResponse,
     RefreshTokenResponse,
     TemplateOAuth2 as ProviderTemplateOAuth2
 } from '../models/index.js';
+import { AuthModes as ProviderAuthModes } from '../models/index.js';
 import axios from 'axios';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
+import { getLogger } from '@nangohq/utils';
+
+const stripeAppExpiresIn = 3600;
+const logger = getLogger('Provider.Client');
 
 class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
@@ -23,6 +26,8 @@ class ProviderClient {
             case 'facebook':
             case 'tiktok-ads':
             case 'tiktok-accounts':
+            case 'stripe-app':
+            case 'stripe-app-sandbox':
                 return true;
             default:
                 return false;
@@ -51,6 +56,9 @@ class ProviderClient {
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'tiktok-ads':
                 return this.createTiktokAdsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'stripe-app':
+            case 'stripe-app-sandbox':
+                return this.createStripeAppToken(tokenUrl, code, config.oauth_client_secret, callBackUrl);
             case 'tiktok-accounts':
                 return this.createTiktokAccountsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             default:
@@ -63,7 +71,7 @@ class ProviderClient {
             throw new NangoError('wrong_credentials_type');
         }
 
-        const credentials = connection.credentials as OAuth2Credentials;
+        const credentials = connection.credentials;
 
         if (config.provider !== 'facebook' && !credentials.refresh_token) {
             throw new NangoError('missing_refresh_token');
@@ -87,6 +95,9 @@ class ProviderClient {
                     config.oauth_client_id,
                     config.oauth_client_secret
                 );
+            case 'stripe-app':
+            case 'stripe-app-sandbox':
+                return this.refreshStripeAppToken(template.token_url as string, credentials.refresh_token!, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -97,8 +108,8 @@ class ProviderClient {
             throw new NangoError('wrong_credentials_type');
         }
 
-        const credentials = connection.credentials as OAuth2Credentials;
-        const oauthConnection = connection as Connection;
+        const credentials = connection.credentials;
+        const oauthConnection = connection;
 
         switch (config.provider) {
             case 'salesforce':
@@ -190,6 +201,70 @@ class ProviderClient {
             throw new NangoError('tiktok_token_request_error');
         } catch (e: any) {
             throw new NangoError('tiktok_token_request_error', e.message);
+        }
+    }
+
+    private async createStripeAppToken(tokenUrl: string, code: string, clientSecret: string, callback: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(clientSecret + ':').toString('base64')
+            };
+            const body = {
+                grant_type: 'authorization_code',
+                code: code,
+                redirect_uri: callback
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers: headers });
+            if (response.status === 200 && response.data) {
+                return {
+                    access_token: response.data['access_token'],
+                    livemode: response.data['livemode'],
+                    refresh_token: response.data['refresh_token'],
+                    scope: response.data['scope'],
+                    stripe_publishable_key: response.data['stripe_publishable_key'],
+                    stripe_user_id: response.data['stripe_user_id'],
+                    token_type: response.data['token_type'],
+                    expires_in: stripeAppExpiresIn
+                };
+            }
+
+            throw new NangoError('stripe_app_token_request_error');
+        } catch (e: any) {
+            throw new NangoError('stripe_app_token_request_error', e.message);
+        }
+    }
+
+    private async refreshStripeAppToken(refreshTokenUrl: string, refreshToken: string, clientSecret: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(clientSecret + ':').toString('base64')
+            };
+
+            const body = {
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            };
+
+            const response = await axios.post(refreshTokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    access_token: response.data['access_token'],
+                    livemode: response.data['livemode'],
+                    refresh_token: response.data['refresh_token'],
+                    scope: response.data['scope'],
+                    stripe_publishable_key: response.data['stripe_publishable_key'],
+                    stripe_user_id: response.data['stripe_user_id'],
+                    token_type: response.data['token_type'],
+                    expires_in: stripeAppExpiresIn
+                };
+            }
+            throw new NangoError('stripe_app_token_refresh_request_error');
+        } catch (e: any) {
+            throw new NangoError('stripe_app_token_refresh_request_error', e.message);
         }
     }
 
@@ -356,7 +431,8 @@ class ProviderClient {
             const expireDate = parseTokenExpirationDate(res.data['exp']);
 
             return isTokenExpired(expireDate, 15 * 60);
-        } catch (e) {
+        } catch (err) {
+            logger.error(err);
             // TODO add observability
             return false;
         }

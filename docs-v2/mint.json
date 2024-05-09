@@ -3,7 +3,8 @@
     "name": "Nango Docs",
     "logo": {
         "light": "/logo/light.svg",
-        "dark": "/logo/dark.svg"
+        "dark": "/logo/dark.svg",
+        "href": "https://www.nango.dev"
     },
     "favicon": "/favicon.png",
     "colors": {
@@ -45,16 +46,16 @@
         }
     ],
     "topAnchor": {
-        "name": "Overview & Guides"
+        "name": "Documentation"
     },
     "anchors": [
         {
-            "name": "APIs & Integration Templates",
+            "name": "APIs & Templates",
             "icon": "bars",
             "url": "integrations"
         },
         {
-            "name": "Technical Reference",
+            "name": "Reference",
             "icon": "book",
             "url": "reference"
         },
@@ -87,7 +88,7 @@
         },
         {
             "source": "/guides/webhooks",
-            "destination": "/integrate/guides/receive-webhooks-from-nango"
+            "destination": "/understand/concepts/webhooks"
         },
         {
             "source": "/guides/advanced-auth",
@@ -123,7 +124,8 @@
             "group": "Get Started",
             "pages": [
                 "introduction",
-                "demo"
+                "demo",
+                "sample-app"
             ]
         },
         {
@@ -137,13 +139,14 @@
                         "integrate/guides/sync-data-from-an-api",
                         "integrate/guides/perform-workflows-with-an-api",
                         "integrate/guides/proxy-requests-to-an-api",
-                        "integrate/guides/receive-webhooks-from-nango",
                         "integrate/guides/receive-webhooks-from-an-api",
                         {
                             "group": "Advanced",
                             "pages": [
                                 "integrate/guides/advanced/store-customer-specific-data",
-                                "integrate/guides/advanced/use-custom-field-mappings"
+                                "integrate/guides/advanced/use-custom-field-mappings",
+                                "integrate/guides/advanced/secure-frontend-sdk",
+                                "integrate/guides/advanced/verify-webhooks-from-nango"
                             ]
                         }
                     ]
@@ -161,13 +164,10 @@
                         "customize/guides/create-a-custom-integration",
                         "customize/guides/extend-an-integration-template",
                         "customize/guides/contribute-an-api",
-                        "customize/guides/contribute-an-integration-template",
                         {
                             "group": "Advanced",
                             "pages": [
-                                "customize/guides/advanced/validate-api-responses",
                                 "customize/guides/advanced/handle-rate-limits",
-                                "customize/guides/advanced/sync-data-incrementally",
                                 "customize/guides/advanced/support-custom-field-mappings",
                                 "customize/guides/advanced/detect-deletions",
                                 "customize/guides/advanced/paginate-api-responses",
@@ -185,32 +185,20 @@
         {
             "group": "Understand Nango",
             "pages": [
+                "understand/core-concepts",
                 "understand/architecture",
                 {
-                    "group": "Concepts",
+                    "group": "All concepts",
                     "pages": [
                         "understand/concepts/integrations",
                         "understand/concepts/connections",
+                        "understand/concepts/scripts",
+                        "understand/concepts/templates",
                         "understand/concepts/syncs",
                         "understand/concepts/actions",
-                        "understand/concepts/proxy",
                         "understand/concepts/webhooks",
-                        "understand/concepts/environments",
-                        "understand/concepts/ui",
-                        "understand/concepts/templates",
-                        "understand/concepts/cli",
-                        "understand/concepts/integrations-folder",
-                        "understand/concepts/scripts",
-                        "understand/concepts/api-configuration",
-                        "understand/concepts/integration-configuration",
-                        "understand/concepts/api-unification"
-                    ]
-                },
-                {
-                    "group": "Best practices",
-                    "pages": [
-                        "understand/best-practices/define-an-integration-strategy",
-                        "understand/best-practices/when-to-unify-external-apis"
+                        "understand/concepts/proxy",
+                        "understand/concepts/environments"
                     ]
                 }
             ]
@@ -235,7 +223,7 @@
             ]
         },
         {
-            "group": "APIs & Integration Templates",
+            "group": "APIs & Templates",
             "pages": [
                 "integrations/overview",
                 {
@@ -261,6 +249,7 @@
                         "integrations/marketing",
                         "integrations/payment",
                         "integrations/productivity",
+                        "integrations/search",
                         "integrations/social",
                         "integrations/sports",
                         "integrations/storage",
@@ -275,11 +264,13 @@
                     "group": "Integration Templates",
                     "icon": "sheet-plastic",
                     "pages": [
+                        "integrations/integration-templates/algolia",
                         "integrations/integration-templates/asana",
                         "integrations/integration-templates/ashby",
                         "integrations/integration-templates/bamboohr",
                         "integrations/integration-templates/confluence",
                         "integrations/integration-templates/clari-copilot",
+                        "integrations/integration-templates/expensify",
                         "integrations/integration-templates/github",
                         "integrations/integration-templates/gmail",
                         "integrations/integration-templates/google-workspace",
@@ -289,6 +280,7 @@
                         "integrations/integration-templates/hubspot",
                         "integrations/integration-templates/intercom",
                         "integrations/integration-templates/jira",
+                        "integrations/integration-templates/kustomer",
                         "integrations/integration-templates/lever",
                         "integrations/integration-templates/linear",
                         "integrations/integration-templates/microsoft-active-directory",
@@ -297,22 +289,26 @@
                         "integrations/integration-templates/pipedrive",
                         "integrations/integration-templates/salesforce",
                         "integrations/integration-templates/slack",
+                        "integrations/integration-templates/teamtailor",
                         "integrations/integration-templates/workable",
                         "integrations/integration-templates/zendesk",
-                        "integrations/integration-templates/zoho-crm"
+                        "integrations/integration-templates/zoho-crm",
+                        "integrations/integration-templates/zoho-mail"
                     ]
                 }
             ]
         },
         {
-            "group": "All Pre-Configured APIs",
+            "group": "Pre-Configured APIs",
             "pages": [
                 "integrations/all/accelo",
                         "integrations/all/adobe",
                         "integrations/all/affinity",
                         "integrations/all/aircall",
                         "integrations/all/airtable",
+                        "integrations/all/algolia",
                         "integrations/all/amazon",
+                        "integrations/all/anrok",
                         "integrations/all/amplitude",
                         "integrations/all/apollo",
                         "integrations/all/apple-app-store",
@@ -325,6 +321,7 @@
                         "integrations/all/bamboohr",
                         "integrations/all/battlenet",
                         "integrations/all/bitbucket",
+                        "integrations/all/bitdefender",
                         "integrations/all/blackbaud",
                         "integrations/all/boldsign",
                         "integrations/all/box",
@@ -342,11 +339,16 @@
                         "integrations/all/discord",
                         "integrations/all/dropbox",
                         "integrations/all/docusign",
+                        "integrations/all/egnyte",
                         "integrations/all/entrata",
+                        "integrations/all/envoy",
                         "integrations/all/epic-games",
                         "integrations/all/evaluagent",
                         "integrations/all/eventbrite",
                         "integrations/all/exact-online",
+                        "integrations/all/exa",
+                        "integrations/all/expensify",
+                        "integrations/all/jotform",
                         "integrations/all/exist",
                         "integrations/all/facebook",
                         "integrations/all/factorial",
@@ -355,6 +357,7 @@
                         "integrations/all/fitbit",
                         "integrations/all/freshbooks",
                         "integrations/all/freshdesk",
+                        "integrations/all/freshsales",
                         "integrations/all/freshservice",
                         "integrations/all/front",
                         "integrations/all/guru",
@@ -364,6 +367,7 @@
                         "integrations/all/google",
                         "integrations/all/google-ads",
                         "integrations/all/google-calendar",
+                        "integrations/all/google-docs",
                         "integrations/all/google-drive",
                         "integrations/all/google-mail",
                         "integrations/all/google-sheet",
@@ -372,21 +376,27 @@
                         "integrations/all/gumroad",
                         "integrations/all/gusto",
                         "integrations/all/hackerrank-work",
+                        "integrations/all/harvest",
                         "integrations/all/healthgorilla",
                         "integrations/all/helpscout",
                         "integrations/all/hibob",
                         "integrations/all/highlevel",
                         "integrations/all/hubspot",
+                        "integrations/all/insightly",
                         "integrations/all/instagram",
                         "integrations/all/intercom",
                         "integrations/all/intuit",
                         "integrations/all/jira",
                         "integrations/all/keap",
                         "integrations/all/klaviyo",
+                        "integrations/all/klipfolio",
+                        "integrations/all/kustomer",
+                        "integrations/all/lessonly",
                         "integrations/all/lever",
                         "integrations/all/linear",
                         "integrations/all/linkedin",
                         "integrations/all/mailchimp",
+                        "integrations/all/microsoft-ads",
                         "integrations/all/microsoft-teams",
                         "integrations/all/microsoft-tenant-specific",
                         "integrations/all/miro",
@@ -407,11 +417,17 @@
                         "integrations/all/paypal",
                         "integrations/all/pendo",
                         "integrations/all/pennylane",
+                        "integrations/all/personio",
+                        "integrations/all/peopledatalabs",
+                        "integrations/all/pingboard",
+                        "integrations/all/pinterest",
                         "integrations/all/pipedrive",
+                        "integrations/all/posthog",
                         "integrations/all/qualtrics",
                         "integrations/all/quickbooks",
                         "integrations/all/ramp",
                         "integrations/all/reddit",
+                        "integrations/all/refiner",
                         "integrations/all/ring-central",
                         "integrations/all/sage",
                         "integrations/all/salesforce",
@@ -426,15 +442,18 @@
                         "integrations/all/smartrecruiters",
                         "integrations/all/smartsheet",
                         "integrations/all/smugmug",
+                        "integrations/all/snowflake",
                         "integrations/all/splitwise",
                         "integrations/all/spotify",
                         "integrations/all/squareup",
+                        "integrations/all/squarespace",
                         "integrations/all/stackexchange",
                         "integrations/all/strava",
                         "integrations/all/stripe",
                         "integrations/all/stripe-app",
                         "integrations/all/stripe-express",
                         "integrations/all/survey-monkey",
+                        "integrations/all/teamtailor",
                         "integrations/all/teamwork",
                         "integrations/all/tiktok-accounts",
                         "integrations/all/tiktok-ads",
@@ -448,6 +467,7 @@
                         "integrations/all/uber",
                         "integrations/all/wakatime",
                         "integrations/all/wave-accounting",
+                        "integrations/all/wealthbox",
                         "integrations/all/whoop",
                         "integrations/all/wildix-pbx",
                         "integrations/all/workable",
@@ -464,23 +484,26 @@
                         "integrations/all/zoho-desk",
                         "integrations/all/zoho-inventory",
                         "integrations/all/zoho-invoice",
+                        "integrations/all/zoho-mail",
                         "integrations/all/zoom"
             ]
         },
         {
-            "group": "Technical Reference",
+            "group": "Reference",
             "pages": [
                 "reference/overview"
             ]
         },
         {
-            "group": "Use Integrations",
+            "group": "Use Integrations - Reference",
             "pages": [
+                "reference/sdks/frontend",
                 {
                     "group": "HTTP API",
                     "icon": "cloud",
                     "pages": [
                         "reference/api/authentication",
+                        "reference/api/rate-limits",
                         {
                             "group": "Integrations",
                             "pages": [
@@ -500,6 +523,12 @@
                                 "reference/api/connection/set-metadata",
                                 "reference/api/connection/update-metadata",
                                 "reference/api/connection/delete"
+                            ]
+                        },
+                        {
+                            "group": "Scripts",
+                            "pages": [
+                                "reference/api/scripts/config"
                             ]
                         },
                         {
@@ -546,17 +575,16 @@
                     ],
                     "icon": "cubes"
                 },
-                "reference/sdks/frontend",
-                "reference/webhooks"
+                "reference/limits"
             ]
         },
         {
-            "group": "Build Integrations",
+            "group": "Build Integrations - Reference",
             "pages": [
                 "reference/cli",
                 "reference/api-configuration",
-                "reference/integration-configuration",
-                "reference/scripts"
+                "reference/scripts",
+                "reference/integration-configuration"
             ]
         }
     ],

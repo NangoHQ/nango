@@ -1,16 +1,15 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.service.js';
 import connectionService from '../connection.service.js';
-import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
-import { deleteJobsBySyncId as deleteSyncJobsBySyncId, getLatestSyncJob } from './job.service.js';
-import { deleteRecordsBySyncId } from './data/records.service.js';
+import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
+import { getLatestSyncJob } from './job.service.js';
 import {
     createSync,
-    deleteSync,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
     getSyncByIdAndName,
-    getSyncNamesByConnectionId
+    getSyncNamesByConnectionId,
+    softDeleteSync
 } from './sync.service.js';
 import {
     createActivityLogMessageAndEnd,
@@ -22,22 +21,32 @@ import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
-import type { Job as SyncJob, Schedule as SyncSchedule } from '../../models/Sync.js';
-import { NangoError } from '../../utils/error.js';
-import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { ServiceResponse } from '../../models/Generic';
-import {
-    SyncStatus,
-    ScheduleStatus,
-    SyncConfigType,
+import type {
+    Job as SyncJob,
+    Schedule as SyncSchedule,
     SyncDeploymentResult,
     IncomingFlowConfig,
     Sync,
     SyncType,
-    SyncCommand,
-    CommandToActivityLog,
     ReportedSyncJobStatus
 } from '../../models/Sync.js';
+import { NangoError } from '../../utils/error.js';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
+import type { ServiceResponse } from '../../models/Generic.js';
+import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { RecordsServiceInterface } from '../../clients/sync.client.js';
+import { stringifyError } from '@nangohq/utils';
+import environmentService from '../environment.service.js';
+
+// Should be in "logs" package but impossible thanks to CLI
+export const syncCommandToOperation = {
+    PAUSE: 'pause',
+    UNPAUSE: 'unpause',
+    RUN: 'run',
+    RUN_FULL: 'run_full',
+    CANCEL: 'cancel'
+} as const;
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -54,8 +63,10 @@ export class Orchestrator {
         providerConfigKey: string,
         environmentId: number,
         sync: IncomingFlowConfig,
+        logContextGetter: LogContextGetter,
         debug = false,
-        activityLogId?: number
+        activityLogId?: number,
+        logCtx?: LogContext
     ): Promise<boolean> {
         try {
             const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
@@ -63,10 +74,11 @@ export class Orchestrator {
                 await createActivityLogMessage({
                     level: 'debug',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
+                await logCtx?.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
             for (const connection of connections) {
                 const syncExists = await getSyncByIdAndName(connection.id as number, syncName);
@@ -82,7 +94,8 @@ export class Orchestrator {
                     createdSync as Sync,
                     syncConfig as ProviderConfig,
                     syncName,
-                    { ...sync, returns: sync.models },
+                    { ...sync, returns: sync.models, input: '' },
+                    logContextGetter,
                     debug
                 );
             }
@@ -90,15 +103,16 @@ export class Orchestrator {
                 await createActivityLogMessage({
                     level: 'debug',
                     environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
+                    activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
                 });
+                await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
 
             return true;
         } catch (e) {
-            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
+            const prettyError = stringifyError(e, { pretty: true });
             await createActivityLogMessage({
                 level: 'error',
                 environment_id: environmentId,
@@ -106,16 +120,23 @@ export class Orchestrator {
                 timestamp: Date.now(),
                 content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
             });
+            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: e });
 
             return false;
         }
     }
 
-    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number): Promise<boolean> {
+    public async createSyncs(
+        syncArgs: CreateSyncArgs[],
+        logContextGetter: LogContextGetter,
+        debug = false,
+        activityLogId?: number,
+        logCtx?: LogContext
+    ): Promise<boolean> {
         let success = true;
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId);
+            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, logContextGetter, debug, activityLogId, logCtx);
             if (!result) {
                 success = false;
             }
@@ -135,25 +156,20 @@ export class Orchestrator {
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async deleteSync(syncId: string, environmentId: number) {
-        await deleteScheduleForSync(syncId as string, environmentId);
-        await deleteSync(syncId as string);
+    public async softDeleteSync(syncId: string, environmentId: number) {
+        await deleteScheduleForSync(syncId, environmentId);
+        await softDeleteSync(syncId);
     }
 
-    public async deleteSyncRelatedObjects(syncId: string) {
-        await deleteSyncJobsBySyncId(syncId);
-        await deleteSyncSchedulesBySyncId(syncId);
-        await deleteRecordsBySyncId(syncId);
-    }
-
-    public async deleteSyncsByConnection(connection: Connection) {
-        const syncs = await getSyncsByConnectionId(connection.id as number);
+    public async softDeleteSyncsByConnection(connection: Connection) {
+        const syncs = await getSyncsByConnectionId(connection.id!);
 
         if (!syncs) {
             return;
         }
+
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string, connection.environment_id as number);
+            await this.softDeleteSync(sync.id, connection.environment_id);
         }
     }
 
@@ -165,19 +181,30 @@ export class Orchestrator {
         }
 
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string, environmentId);
+            await this.softDeleteSync(sync.id, environmentId);
         }
     }
 
-    public async runSyncCommand(
-        environmentId: number,
-        providerConfigKey: string,
-        syncNames: string[],
-        command: SyncCommand,
-        connectionId?: string
-    ): Promise<ServiceResponse<boolean>> {
+    public async runSyncCommand({
+        recordsService,
+        environmentId,
+        providerConfigKey,
+        syncNames,
+        command,
+        logContextGetter,
+        connectionId
+    }: {
+        recordsService: RecordsServiceInterface;
+        environmentId: number;
+        providerConfigKey: string;
+        syncNames: string[];
+        command: SyncCommand;
+        logContextGetter: LogContextGetter;
+        connectionId?: string;
+    }): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
-        const provider = await configService.getProviderName(providerConfigKey as string);
+        const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
+        const account = await environmentService.getAccountFromEnvironment(environmentId);
 
         const log = {
             level: 'info' as LogLevel,
@@ -187,8 +214,8 @@ export class Orchestrator {
             end: Date.now(),
             timestamp: Date.now(),
             connection_id: connectionId || '',
-            provider,
-            provider_config_key: providerConfigKey as string,
+            provider: provider!.provider,
+            provider_config_key: providerConfigKey,
             environment_id: environmentId
         };
         const activityLogId = await createActivityLog(log);
@@ -196,17 +223,18 @@ export class Orchestrator {
             return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
         }
 
+        const logCtx = await logContextGetter.create(
+            { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
+            { account: { id: account!.id }, environment: { id: environmentId }, config: { id: provider!.id! } }
+        );
+
         const syncClient = await SyncClient.getInstance();
         if (!syncClient) {
             return { success: false, error: new NangoError('failed_to_get_sync_client'), response: false };
         }
 
         if (connectionId) {
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success || !connection) {
                 return { success: false, error, response: false };
@@ -221,27 +249,29 @@ export class Orchestrator {
             for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection.id as number, syncName);
                 if (!sync) {
-                    throw new Error(`Sync "${syncName}" doest not exists.`);
+                    throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
-                const schedule = await getSchedule(sync.id as string);
+                const schedule = await getSchedule(sync.id);
                 if (!schedule) {
                     continue;
                 }
 
-                await syncClient.runSyncCommand(
-                    schedule.schedule_id,
-                    sync?.id as string,
+                await syncClient.runSyncCommand({
+                    scheduleId: schedule.schedule_id,
+                    syncId: sync?.id,
                     command,
                     activityLogId,
                     environmentId,
-                    providerConfigKey as string,
-                    connectionId as string,
+                    providerConfigKey,
+                    connectionId,
                     syncName,
-                    connection.id
-                );
+                    nangoConnectionId: connection.id,
+                    logCtx,
+                    recordsService
+                });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
                 }
             }
         } else {
@@ -257,7 +287,7 @@ export class Orchestrator {
             }
 
             for (const sync of syncs) {
-                const schedule = await getSchedule(sync.id as string);
+                const schedule = await getSchedule(sync.id);
                 if (!schedule) {
                     continue;
                 }
@@ -267,19 +297,21 @@ export class Orchestrator {
                     continue;
                 }
 
-                await syncClient.runSyncCommand(
-                    schedule.schedule_id,
-                    sync.id as string,
+                await syncClient.runSyncCommand({
+                    scheduleId: schedule.schedule_id,
+                    syncId: sync.id,
                     command,
                     activityLogId,
                     environmentId,
                     providerConfigKey,
-                    connection.connection_id as string,
-                    sync.name,
-                    connection.id
-                );
+                    connectionId: connection.connection_id,
+                    syncName: sync.name,
+                    nangoConnectionId: connection.id,
+                    logCtx,
+                    recordsService
+                });
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
                 }
             }
         }
@@ -294,6 +326,9 @@ export class Orchestrator {
 
         await updateSuccessActivityLog(activityLogId, true);
 
+        await logCtx.info('Sync was successfully updated', { action, syncNames });
+        await logCtx.success();
+
         return { success: true, error: null, response: true };
     }
 
@@ -302,25 +337,29 @@ export class Orchestrator {
         providerConfigKey: string,
         syncNames: string[],
         connectionId?: string,
-        includeJobStatus = false
+        includeJobStatus = false,
+        optionalConnection?: Connection | null
     ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
-        if (connectionId) {
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
-
-            if (!success) {
-                return { success: false, error, response: null };
+        let connection = optionalConnection;
+        if (connectionId && !connection) {
+            const connectionResult = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+            if (!connectionResult.success || !connectionResult.response) {
+                return { success: false, error: connectionResult.error, response: null };
             }
+            connection = connectionResult.response;
+        }
 
+        if (connection) {
             for (const syncName of syncNames) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
                     continue;
                 }
 
-                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id as string, environmentId);
-                const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
+                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -335,8 +374,8 @@ export class Orchestrator {
             }
 
             for (const sync of syncs) {
-                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id as string, environmentId);
-                const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
+                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -375,7 +414,7 @@ export class Orchestrator {
      * Trigger If Connections Exist
      * @desc for the recently deploy flows, create the sync and trigger it if there are connections
      */
-    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number) {
+    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number, logContextGetter: LogContextGetter) {
         for (const flow of flows) {
             if (flow.type === SyncConfigType.ACTION) {
                 continue;
@@ -396,6 +435,7 @@ export class Orchestrator {
                 providerConfigKey,
                 environmentId,
                 flow as unknown as IncomingFlowConfig,
+                logContextGetter,
                 false
             );
         }
@@ -410,7 +450,9 @@ export class Orchestrator {
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && status !== SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
-                status = SyncStatus.PAUSED;
+                if (status !== SyncStatus.RUNNING) {
+                    status = SyncStatus.PAUSED;
+                }
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
                 status = SyncStatus.STOPPED;
@@ -428,7 +470,7 @@ export class Orchestrator {
         return { schedule, latestJob, status, nextScheduledSyncAt };
     }
 
-    private async reportedStatus(
+    private reportedStatus(
         sync: Sync,
         latestJob: SyncJob | null,
         schedule: SyncSchedule | null,

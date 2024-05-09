@@ -3,11 +3,11 @@ import crypto from 'crypto';
 import * as HubspotWebhookRouting from './hubspot-webhook-routing.js';
 import type { InternalNango as Nango } from './internal-nango.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import { logContextGetter } from '@nangohq/logs';
 
 vi.mock('crypto', async () => {
-    const actualCrypto = await vi.importActual('crypto');
+    const actualCrypto = (await vi.importActual('crypto')) as any;
     return {
-        // @ts-expect-error
         ...actualCrypto,
         timingSafeEqual: () => true
     };
@@ -96,7 +96,7 @@ describe('Webhook route unit tests', () => {
         const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
         const headers = { 'x-hubspot-signature': createdHash };
 
-        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body);
+        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body, logContextGetter);
 
         expect(nangoMock.executeScriptForWebhooks).toHaveBeenCalledTimes(body.length);
 
@@ -149,7 +149,7 @@ describe('Webhook route unit tests', () => {
         const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
         const headers = { 'x-hubspot-signature': createdHash };
 
-        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body);
+        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body, logContextGetter);
 
         expect(nangoMock.executeScriptForWebhooks).toHaveBeenCalledTimes(body.length);
 

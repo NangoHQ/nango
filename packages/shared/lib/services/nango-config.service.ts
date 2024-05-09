@@ -3,7 +3,8 @@ import chalk from 'chalk';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-import ms, { StringValue } from 'ms';
+import type { StringValue } from 'ms';
+import ms from 'ms';
 import type {
     NangoConfig,
     NangoConfigV1,
@@ -13,12 +14,14 @@ import type {
     NangoSyncModel,
     NangoV2Integration,
     NangoSyncEndpoint,
-    NangoIntegrationDataV2
+    NangoIntegrationDataV2,
+    LayoutMode
 } from '../models/NangoConfig.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
+import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
-import { JAVASCRIPT_PRIMITIVES } from '../utils/utils.js';
+import { isJsOrTsType } from '../utils/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -45,10 +48,10 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
     try {
         const yamlConfig = fs.readFileSync(location, 'utf8');
 
-        const configData: NangoConfig = yaml.load(yamlConfig) as unknown as NangoConfig;
+        const configData: NangoConfig = yaml.load(yamlConfig) as NangoConfig;
 
         return Promise.resolve(configData);
-    } catch (error) {
+    } catch {
         console.log(`no nango.yaml config found at ${location}`);
     }
 
@@ -93,7 +96,7 @@ export function loadStandardConfig(configData: NangoConfig, showMessages = false
 function getFieldsForModel(modelName: string, config: NangoConfig): { name: string; type: string }[] | null {
     const modelFields = [];
 
-    if (JAVASCRIPT_PRIMITIVES.includes(modelName)) {
+    if (isJsOrTsType(modelName)) {
         return null;
     }
 
@@ -101,7 +104,10 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
         return null;
     }
 
-    const modelData = config.models[modelName] || config.models[`${modelName.slice(0, -1)}`];
+    // if it is an array of models, we still need to be able to recognize it
+    const strippedModelName = modelName.replace(/\[\]/g, '');
+
+    const modelData = config.models[strippedModelName];
 
     for (const fieldName in modelData) {
         const fieldType = modelData[fieldName];
@@ -154,6 +160,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
 
             const scopes = sync?.scopes || sync?.metadata?.scopes || [];
 
+            const layout_mode: LayoutMode = 'root';
+
             const flowObject = {
                 name: syncName,
                 runs: sync.runs || '',
@@ -166,7 +174,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints: sync?.endpoints || [],
-                nango_yaml_version: 'v1'
+                nango_yaml_version: 'v1',
+                layout_mode
             };
 
             if (sync.type === SyncConfigType.ACTION) {
@@ -193,7 +202,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
 
 const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAllowedMethod = false, showMessages = false) => {
     let endpoints: NangoSyncEndpoint[] = [];
-    const endpoint = rawEndpoint.split(' ') as string[];
+    const endpoint = rawEndpoint.split(' ');
 
     if (endpoint.length > 1) {
         const method = singleAllowedMethod ? defaultMethod : (endpoint[0]?.toUpperCase() as HTTP_VERB);
@@ -253,6 +262,18 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
     return { success: true, error: null, response: inputModel };
 };
 
+const isEnabled = (script: NangoIntegrationDataV2, isPublic: boolean | null, preBuilt: boolean | null): boolean => {
+    if (script.enabled !== undefined) {
+        return script.enabled;
+    }
+
+    if ((isPublic || preBuilt) && !script.version) {
+        return false;
+    }
+
+    return true;
+};
+
 export function convertV2ConfigObject(config: NangoConfigV2, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[]> {
     const output: StandardNangoConfig[] = [];
     const allModelNames = config.models ? Object.keys(config.models) : [];
@@ -264,10 +285,10 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
         const integration: NangoV2Integration = config.integrations[providerConfigKey] as NangoV2Integration;
         let provider;
 
-        if (integration!['provider']) {
-            provider = integration!['provider'];
+        if (integration['provider']) {
+            provider = integration['provider'];
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete integration!['provider'];
+            delete integration['provider'];
         }
 
         // check that every endpoint is unique across syncs and actions
@@ -287,7 +308,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 const syncReturns = Array.isArray(sync.output) ? sync.output : [sync.output];
                 for (const model of syncReturns) {
                     if (!allModels.includes(model)) {
-                        if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
+                        if (!isJsOrTsType(model)) {
                             allModels.push(model);
                         }
                     } else {
@@ -300,19 +321,19 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             }
 
             if (sync.input) {
-                const modelFields = getFieldsForModel(sync.input as string, config) as { name: string; type: string }[];
-                inputModel.name = sync.input as string;
+                const modelFields = getFieldsForModel(sync.input, config) as { name: string; type: string }[];
+                inputModel.name = sync.input;
                 inputModel.fields = modelFields;
             }
 
             let endpoints: NangoSyncEndpoint[] = [];
             if (sync?.endpoint) {
-                if (Array.isArray(sync?.endpoint)) {
-                    if (sync?.endpoint?.length !== sync?.output?.length) {
+                if (Array.isArray(sync.endpoint)) {
+                    if (sync.endpoint?.length !== sync.output?.length) {
                         const error = new NangoError('endpoint_output_mismatch', syncName);
                         return { success: false, error, response: null };
                     }
-                    for (const endpoint of sync?.endpoint as string[]) {
+                    for (const endpoint of sync.endpoint) {
                         endpoints.push(...assignEndpoints(endpoint, 'GET', true, showMessages));
 
                         if (!allEndpoints.includes(endpoint)) {
@@ -323,17 +344,17 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         }
                     }
                 } else {
-                    endpoints = assignEndpoints(sync?.endpoint as string, 'GET', true, showMessages);
+                    endpoints = assignEndpoints(sync.endpoint, 'GET', true, showMessages);
 
-                    if (sync?.output && Array.isArray(sync?.output) && sync?.output?.length > 1) {
+                    if (sync.output && Array.isArray(sync.output) && sync.output?.length > 1) {
                         const error = new NangoError('endpoint_output_mismatch', syncName);
                         return { success: false, error, response: null };
                     }
 
-                    if (!allEndpoints.includes(sync?.endpoint)) {
-                        allEndpoints.push(sync?.endpoint);
+                    if (!allEndpoints.includes(sync.endpoint)) {
+                        allEndpoints.push(sync.endpoint);
                     } else {
-                        const error = new NangoError('duplicate_endpoint', sync?.endpoint);
+                        const error = new NangoError('duplicate_endpoint', sync.endpoint);
                         return { success: false, error, response: null };
                     }
                 }
@@ -357,12 +378,15 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
             if (sync['webhook-subscriptions']) {
                 if (Array.isArray(sync['webhook-subscriptions'])) {
-                    webhookSubscriptions = sync['webhook-subscriptions'] as string[];
+                    webhookSubscriptions = sync['webhook-subscriptions'];
                 } else {
                     webhookSubscriptions = [sync['webhook-subscriptions'] as string];
                 }
             }
+            const is_public = isPublic !== undefined ? isPublic : sync.is_public === true;
+            const pre_built = isPublic !== undefined ? isPublic : sync.pre_built === true;
 
+            const enabled = isEnabled(sync, is_public, pre_built);
             const syncObject: NangoSyncConfig = {
                 name: syncName,
                 type: SyncConfigType.SYNC,
@@ -372,18 +396,20 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
                 last_deployed: sync.updated_at || null,
-                is_public: (isPublic !== undefined ? isPublic : sync.is_public === true) as boolean,
-                pre_built: (isPublic !== undefined ? isPublic : sync.pre_built === true) as boolean,
+                is_public,
+                pre_built,
                 version: sync.version || null,
                 attributes: sync.attributes || {},
                 input: inputModel,
                 // a sync always returns an array
-                returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
+                returns: Array.isArray(sync.output) ? sync?.output : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints,
                 nango_yaml_version: sync.nango_yaml_version || 'v2',
-                webhookSubscriptions
+                webhookSubscriptions,
+                enabled,
+                layout_mode: localFileService.getLayoutMode(syncName, providerConfigKey, 'sync')
             };
 
             if (sync.id) {
@@ -401,8 +427,11 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             if (action.output) {
                 const actionReturns = Array.isArray(action.output) ? action.output : [action.output];
                 for (const model of actionReturns) {
+                    if (!model) {
+                        continue;
+                    }
                     if (!allModels.includes(model)) {
-                        if (!JAVASCRIPT_PRIMITIVES.includes(model)) {
+                        if (!isJsOrTsType(model)) {
                             allModels.push(model);
                         }
                     }
@@ -420,8 +449,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                         throw new Error(`Model ${modelName} not found included in models definition`);
                     }
                 }
-                const modelFields = getFieldsForModel(action.input as string, config) as { name: string; type: string }[];
-                inputModel.name = action.input as string;
+                const modelFields = getFieldsForModel(action.input, config) as { name: string; type: string }[];
+                inputModel.name = action.input;
                 inputModel.fields = modelFields;
             }
 
@@ -437,7 +466,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                     }
                     actionEndpoint = action?.endpoint[0] as string;
                 } else {
-                    actionEndpoint = action?.endpoint as string;
+                    actionEndpoint = action?.endpoint;
                 }
 
                 endpoints = assignEndpoints(actionEndpoint, 'POST', false, showMessages);
@@ -458,14 +487,18 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             }
 
             const scopes = action?.scopes || action?.metadata?.scopes || [];
+            const is_public = isPublic !== undefined ? isPublic : action.is_public === true;
+            const pre_built = isPublic !== undefined ? isPublic : action.pre_built === true;
+
+            const enabled = isEnabled(action, is_public, pre_built);
 
             const actionObject: NangoSyncConfig = {
                 name: actionName,
                 type: SyncConfigType.ACTION,
                 models: models || [],
                 runs: '',
-                is_public: (isPublic !== undefined ? isPublic : action.is_public === true) as boolean,
-                pre_built: (isPublic !== undefined ? isPublic : action.pre_built === true) as boolean,
+                is_public,
+                pre_built,
                 version: action.version || null,
                 last_deployed: action.updated_at || null,
                 attributes: action.attributes || {},
@@ -474,7 +507,9 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
                 endpoints,
-                nango_yaml_version: action.nango_yaml_version || 'v2'
+                nango_yaml_version: action.nango_yaml_version || 'v2',
+                enabled,
+                layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action')
             };
 
             if (action.id) {

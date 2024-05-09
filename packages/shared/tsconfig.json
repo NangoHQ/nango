@@ -1,9 +1,25 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "rootDir": ".",
+        "rootDir": "lib",
         "outDir": "dist"
     },
-    "references": [{ "path": "../node-client" }],
+    "references": [
+        {
+            "path": "../logs"
+        },
+        {
+            "path": "../node-client"
+        },
+        {
+            "path": "../types"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../records"
+        }
+    ],
     "include": ["lib/**/*"]
 }

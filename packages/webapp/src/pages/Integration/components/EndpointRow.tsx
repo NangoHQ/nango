@@ -1,5 +1,5 @@
 import EndpointLabel from './EndpointLabel';
-import { Flow, FlowEndpoint, IntegrationConfig } from '../../../types';
+import type { Flow, FlowEndpoint, IntegrationConfig } from '../../../types';
 import FlowCard from './FlowCard';
 import { SubTabs } from '../Show';
 
@@ -12,9 +12,8 @@ export interface EndpointRowProps {
 }
 
 export default function EndpointRow({ flow, endpoint, setSubTab, setFlow }: EndpointRowProps) {
-
     const routeToReference = () => {
-        setFlow(flow)
+        setFlow(flow);
         setSubTab(SubTabs.Reference);
     };
 
@@ -27,7 +26,7 @@ export default function EndpointRow({ flow, endpoint, setSubTab, setFlow }: Endp
                 <div className="text-gray-400 ml-12 w-[36rem] truncate">{flow.description}</div>
             </div>
             <div className="flex flex-end relative group hover:bg-neutral-800 rounded p-2 ml-12">
-                {Boolean('version' in flow && flow.version !== null) ? (
+                {flow.enabled ? (
                     <div className="w-2 h-2 bg-green-500 rounded-full cursor-pointer"></div>
                 ) : (
                     <div className="w-2 h-2 bg-pink-600 rounded-full cursor-pointer"></div>

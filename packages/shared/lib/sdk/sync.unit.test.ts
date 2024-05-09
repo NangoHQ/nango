@@ -1,15 +1,50 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import { AuthModes, Template } from '../models/index.js';
+import type { Config, Template } from '../models/index.js';
+import { AuthModes } from '../models/index.js';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
 import { NangoAction } from './sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
+import proxyService from '../services/proxy.service.js';
+import type { AxiosResponse } from 'axios';
 
 vi.mock('@nangohq/node', () => {
     const Nango = vi.fn();
     return { Nango };
+});
+
+describe('Proxy', () => {
+    let nangoAction: NangoAction;
+    let nango: Nango;
+    beforeEach(async () => {
+        nangoAction = new NangoAction({
+            secretKey: '***',
+            providerConfigKey: 'github',
+            connectionId: 'connection-1'
+        });
+        nango = new Nango({ secretKey: '***' });
+        (await import('@nangohq/node')).Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, activityLogs: [] }));
+    });
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('memoizes connection', async () => {
+        await nangoAction.proxy({ endpoint: '/issues' });
+        await nangoAction.proxy({ endpoint: '/issues' });
+        expect(nango.getConnection).toHaveBeenCalledTimes(1);
+    });
+    it('get connection if memoized connection is too old', async () => {
+        await nangoAction.proxy({ endpoint: '/issues' });
+        const later = Date.now() + 61000;
+        vi.spyOn(Date, 'now').mockReturnValue(later);
+        await nangoAction.proxy({ endpoint: '/issues' });
+        expect(nango.getConnection).toHaveBeenCalledTimes(2);
+    });
 });
 
 describe('Pagination', () => {
@@ -75,9 +110,8 @@ describe('Pagination', () => {
         stubProviderTemplate(cursorPagination);
         mockErrorManagerReport();
 
-        // @ts-expect-error
-        vi.spyOn(configService, 'getProviderConfig').mockImplementation((config: any) => {
-            return Promise.resolve('{}');
+        vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
+            return Promise.resolve({} as Config);
         });
 
         // TODO: mock to return at least one more page to check that cursor is passed in body too

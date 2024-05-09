@@ -1,8 +1,11 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
+import { getLogger } from '@nangohq/utils';
+
+const logger = getLogger('Server.EmailClient');
 
 class EmailClient {
-    private static instance: EmailClient;
+    private static instance: EmailClient | undefined;
     private client: any;
 
     private constructor(config: { username: string; key: string }) {
@@ -22,9 +25,9 @@ class EmailClient {
 
     send(email: string, subject: string, html: string) {
         if (process.env['MAILGUN_API_KEY'] === undefined || process.env['MAILGUN_API_KEY'] === 'EMPTY' || !this.client) {
-            console.log('Email client not configured');
-            console.log('The following email would have been sent:');
-            console.log(email, subject, html);
+            logger.info('Email client not configured');
+            logger.info('The following email would have been sent:');
+            logger.info(email, subject, html);
             return;
         }
         return this.client.messages.create('email.nango.dev', {

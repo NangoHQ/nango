@@ -10,7 +10,7 @@ Connections link your customers and the APIs they've authorized access to, assoc
 # Credential management
 The type of credentials stored within a connection depends on the integration's authorization method (OAuth, API Key, Basic Auth, Custom). For OAuth, for instance, the connection will hold the access token, refresh token, access token expiration date, among other details, enabling API requests on behalf of the customer.
 
-Connections also maintain the raw credentials as returned by the external API, which may include additional API-specific information. These raw credentials can be viewed or fetched through the [Nango UI](/understand/concepts/ui) and [API](/reference/overview).
+Connections also maintain the raw credentials as returned by the external API, which may include additional API-specific information. These raw credentials can be viewed or fetched through the Nango UI and [API](/reference/overview).
 
 # Connection identifier
 When setting up a connection, you'll specify an identifier (often the customer ID) to later retrieve the connection. This ID is unique within an integration context but can be reused across different integrations.
@@ -27,5 +27,10 @@ Connection metadata is heavily used in [syncs](/understand/concepts/syncs). Exec
 
 Besides metadata, connections also include configuration details—set either by Nango during the authorization process or supplied by you ([step-by-step guide](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization)). This includes critical information for the authorization flow, like customer-specific domains required by some external APIs. This configuration ensures smooth authorization and subsequent API interactions, tailored to each customer's specifics.
 
-# Conclusion
-Connections in Nango are not just links between customers and external APIs; they are the foundation of personalized, secure, and efficient API integration. By enabling dynamic metadata editing and distinguishing between the roles of sync and action scripts, Nango offers a flexible framework for building and managing integrations that respond adeptly to both scheduled tasks and real-time user interactions.
+# Getting started with using Connections
+
+Check out the authorization [step-by-step guide](/integrate/guides/authorize-an-api) or refer to the reference ([API](/reference/api/connection/list) / [SDK](/reference/sdks/node#connections)).
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

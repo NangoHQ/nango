@@ -4,7 +4,11 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { Connection, ConnectionConfig } from '../../../models/Connection.js';
 import connectionService from '../../../services/connection.service.js';
 import configService from '../../../services/config.service.js';
+import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
+import type { LogContextGetter } from '@nangohq/logs';
+
+const logger = getLogger('Webhook.GithubAppOauth');
 
 function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
     const custom = integration.custom as Record<string, string>;
@@ -20,26 +24,26 @@ function validate(integration: ProviderConfig, headerSignature: string, body: an
     return crypto.timingSafeEqual(trusted, untrusted);
 }
 
-export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any) {
+export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any, logContextGetter: LogContextGetter) {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
         const valid = validate(integration, signature, body);
 
         if (!valid) {
-            console.log('Github App webhook signature invalid. Exiting');
+            logger.error('Github App webhook signature invalid. Exiting');
             return;
         }
     }
 
     if (get(body, 'action') === 'created') {
-        await handleCreateWebhook(integration, body);
+        await handleCreateWebhook(integration, body, logContextGetter);
     }
 
-    await nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id');
+    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id', logContextGetter);
 }
 
-async function handleCreateWebhook(integration: ProviderConfig, body: any) {
+async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter) {
     if (!get(body, 'requester.login')) {
         return;
     }
@@ -50,7 +54,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
     );
 
     if (connections?.length === 0) {
-        console.log('No connections found for app_id', get(body, 'installation.app_id'));
+        logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return;
     } else {
         const installationId = get(body, 'installation.id');
@@ -58,11 +62,11 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
 
         // if there is no matching connection or if the connection config already has an installation_id, exit
         if (!connection || connection.connection_config['installation_id']) {
-            console.log('no connection or existing installation_id');
+            logger.info('no connection or existing installation_id');
             return;
         }
 
-        const template = configService.getTemplate(integration?.provider as string);
+        const template = configService.getTemplate(integration?.provider);
 
         const activityLogId = connection.connection_config['pendingLog'];
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -75,12 +79,16 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any) {
             installation_id: installationId
         };
 
+        const logCtx = logContextGetter.get({ id: activityLogId });
+
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
             template,
             connectionConfig as ConnectionConfig,
-            activityLogId
+            activityLogId,
+            logCtx,
+            logContextGetter
         );
     }
 }

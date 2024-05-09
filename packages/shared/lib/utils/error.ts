@@ -1,3 +1,5 @@
+import { stringifyError } from '@nangohq/utils';
+
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
@@ -125,6 +127,11 @@ export class NangoError extends Error {
                 this.message = 'The requested OAuth scopes are invalid. OAuth scopes should be comma separated and not an array';
                 break;
 
+            case 'invalid_env':
+                this.status = 400;
+                this.message = "Invalid param 'env'";
+                break;
+
             case 'missing_environment_id':
                 this.status = 400;
                 this.message = `Missing param 'environment_id'.`;
@@ -198,6 +205,16 @@ export class NangoError extends Error {
             case 'missing_access_token':
                 this.status = 400;
                 this.message = `Missing param 'access_token'.`;
+                break;
+
+            case 'missing_expires_at':
+                this.status = 400;
+                this.message = `Importing an OAuth2 token requires the 'expires_at' parameter. If the token doesn't expire pass in the 'no_expiration' parameter`;
+                break;
+
+            case 'invalid_expires_at':
+                this.status = 400;
+                this.message = `The provided 'expires_at' parameter is invalid. It should be a valid date`;
                 break;
 
             case 'missing_hmac':
@@ -297,7 +314,7 @@ export class NangoError extends Error {
                 break;
 
             case 'unknown_connection':
-                this.status = 400;
+                this.status = 404;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
                     this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
@@ -517,6 +534,43 @@ export class NangoError extends Error {
                 this.message = 'The sync is not currently running so cannot be cancelled';
                 break;
 
+            case 'incorrect_param':
+                this.status = 400;
+                this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
+                break;
+
+            case 'invalid_provider':
+                this.status = 400;
+                this.message = `The provider is not allowed. Please try again with a valid provider`;
+                break;
+
+            case 'workos_not_configured':
+                this.status = 400;
+                this.message = `WorkOS is not configured. Please reach out to support to obtain valid WorkOS credentials.`;
+                break;
+
+            case 'missing_managed_login_callback_code':
+                this.status = 400;
+                this.message = `Missing param 'code' for the managed login callback.`;
+                break;
+
+            case 'missing_name_for_account_creation':
+                this.status = 400;
+                this.message = `Missing an account name for account login/signup.`;
+                break;
+
+            case 'account_not_found':
+                this.status = 404;
+                this.message = `Missing an account name for account login/signup.`;
+                break;
+
+            case 'resource_capped':
+                this.status = 400;
+                // TODO docs link
+                this.message =
+                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
@@ -541,7 +595,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
     } else if (err.message) {
         errorMessage = err.message;
     } else if (typeof err === 'object' && Object.keys(err as object).length > 0) {
-        errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+        errorMessage = stringifyError(err, { pretty: true, stack: true });
     } else {
         errorMessage = String(err);
     }

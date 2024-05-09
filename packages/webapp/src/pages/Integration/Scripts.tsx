@@ -1,7 +1,8 @@
 import { Tooltip } from '@geist-ui/core';
 import { BoltIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
-import { SubTabs, EndpointResponse, FlowConfiguration } from './Show';
-import { IntegrationConfig, Flow } from '../../types';
+import type { EndpointResponse, FlowConfiguration } from './Show';
+import { SubTabs } from './Show';
+import type { IntegrationConfig, Flow } from '../../types';
 import EnableDisableSync from './components/EnableDisableSync';
 import HelpFooter from './components/HelpFooter';
 
@@ -16,17 +17,17 @@ interface ScriptProps {
 
 export default function Scripts(props: ScriptProps) {
     const { integration, endpoints, reload, setFlow, setSubTab, setFlowConfig } = props;
-    const syncs = [...endpoints?.enabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.syncs || []];
-    const actions = [...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.actions || []];
+    const syncs = [...(endpoints?.allFlows?.syncs || []), ...(endpoints?.disabledFlows?.syncs || [])];
+    const actions = [...(endpoints?.allFlows?.actions || []), ...(endpoints?.disabledFlows?.actions || [])];
     const hasScripts = syncs.length || actions.length;
 
     const routeToScript = (flow: Flow) => {
-        setFlow(flow)
+        setFlow(flow);
         setSubTab(SubTabs.Flow);
         if (flow.is_public) {
-            setFlowConfig(endpoints.unEnabledFlows as FlowConfiguration);
+            setFlowConfig(endpoints.disabledFlows as FlowConfiguration);
         } else {
-            setFlowConfig(endpoints.enabledFlows as FlowConfiguration);
+            setFlowConfig(endpoints.allFlows as FlowConfiguration);
         }
     };
 
@@ -34,8 +35,19 @@ export default function Scripts(props: ScriptProps) {
         <div className="h-fit rounded-md text-white text-sm">
             {!hasScripts ? (
                 <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
-                    <h2 className="text-xl text-center w-full">Sync models from <span className="capitalize">{integration?.provider}</span></h2>
-                    <div className="mt-4 text-gray-400"><span className="capitalize">{integration?.provider}</span> does not yet have publicly available models to sync. Create your own or request some from Nango.</div>
+                    <h2 className="text-xl text-center w-full">No available script</h2>
+                    <div className="mt-4 text-gray-400">
+                        There is no{' '}
+                        <a
+                            className="text-text-blue hover:text-text-light-blue"
+                            href="https://docs.nango.dev/understand/concepts/templates"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            integration template
+                        </a>{' '}
+                        available for this API yet.
+                    </div>
                     <HelpFooter />
                 </div>
             ) : (
@@ -68,23 +80,22 @@ export default function Scripts(props: ScriptProps) {
                                                 </div>
                                                 <div className="flex items-center w-36 -ml-8">
                                                     <Tooltip text={Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns} type="dark">
-                                                        <div className="w-36 max-w-3xl truncate">{Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}</div>
+                                                        <div className="w-36 max-w-3xl truncate">
+                                                            {Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}
+                                                        </div>
                                                     </Tooltip>
                                                 </div>
                                                 <div className="flex items-center w-[22rem] -ml-8">
                                                     <div className="w-72 max-w-3xl truncate">{flow.description}</div>
                                                 </div>
-                                                <div className="flex items-center w-32">
-                                                    {flow.is_public ? 'Template' : 'Custom'
-                                                    }
-                                                </div>
+                                                <div className="flex items-center w-32">{flow.is_public ? 'Template' : 'Custom'}</div>
                                                 <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
                                                     <EnableDisableSync
                                                         flow={flow}
                                                         provider={integration.provider}
                                                         providerConfigKey={integration.unique_key}
                                                         reload={reload}
-                                                        rawName={endpoints?.unEnabledFlows?.rawName}
+                                                        rawName={endpoints?.disabledFlows?.rawName}
                                                         connections={integration?.connections}
                                                     />
                                                 </div>
@@ -107,39 +118,36 @@ export default function Scripts(props: ScriptProps) {
                                 </td>
                             </tr>
                             <tr>
-                            {actions.length > 0 && (
-                                <>
-                                    {actions.map((flow) => (
-                                        <td
-                                            key={flow.name}
-                                            className="flex items-center cursor-pointer p-3 py-6 hover:bg-hover-gray justify-between border-b border-border-gray"
-                                            onClick={() => routeToScript(flow)}
-                                        >
-                                            <div className="flex items-center w-36">
-                                                <span className="w-48">{flow.name}</span>
-                                            </div>
-                                            <div className="flex items-center w-[36rem]">
-                                                <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
-                                            </div>
-                                            <div className="flex items-center w-16">
-                                                {flow.is_public ? 'Template' : 'Custom'
-                                                }
-                                            </div>
-                                            <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
-                                                <EnableDisableSync
-                                                    flow={flow}
-                                                    provider={integration.provider}
-                                                    providerConfigKey={integration.unique_key}
-                                                    reload={reload}
-                                                    rawName={endpoints?.unEnabledFlows?.rawName}
-                                                    connections={integration?.connections}
-                                                    showSpinner={true}
-                                                />
-                                            </div>
-                                        </td>
-                                    ))}
-                                </>
-                            )}
+                                {actions.length > 0 && (
+                                    <>
+                                        {actions.map((flow) => (
+                                            <td
+                                                key={flow.name}
+                                                className="flex items-center cursor-pointer p-3 py-6 hover:bg-hover-gray justify-between border-b border-border-gray"
+                                                onClick={() => routeToScript(flow)}
+                                            >
+                                                <div className="flex items-center w-36">
+                                                    <span className="w-48">{flow.name}</span>
+                                                </div>
+                                                <div className="flex items-center w-[36rem]">
+                                                    <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
+                                                </div>
+                                                <div className="flex items-center w-16">{flow.is_public ? 'Template' : 'Custom'}</div>
+                                                <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                                                    <EnableDisableSync
+                                                        flow={flow}
+                                                        provider={integration.provider}
+                                                        providerConfigKey={integration.unique_key}
+                                                        reload={reload}
+                                                        rawName={endpoints?.disabledFlows?.rawName}
+                                                        connections={integration?.connections}
+                                                        showSpinner={true}
+                                                    />
+                                                </div>
+                                            </td>
+                                        ))}
+                                    </>
+                                )}
                             </tr>
                         </tbody>
                     </table>

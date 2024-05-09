@@ -1,22 +1,20 @@
 integrations:
-  asana:
-    syncs:
-      asana-tasks:
-        runs: every 30min
-        description: |
-          Continuously fetches Asana tasks. This is just a trivial example:
-          it will only get tasks from the first project of the first workspace.
-          Details: full refresh, doesn't support deletes, sync goes to all time,
-          metadata is not required.
-        scopes: default
-        output: AsanaTask
-        sync_type: full
-        endpoint: /asana/asana-tasks
+    asana:
+        syncs:
+            tasks:
+                runs: every 30min
+                description: |
+                    Fetches a list of tasks from Asana, retrieving tasks from only the first project of the first workspace
+                scopes:
+                    - default
+                output: AsanaTask
+                sync_type: full
+                endpoint: /asana/tasks
 models:
-  AsanaTask:
-    id: string
-    project_id: string
-    name: string
-    completed: boolean
-    created_at: date
-    modified_at: date
+    AsanaTask:
+        id: string
+        project_id: string
+        name: string
+        completed: boolean
+        created_at: date
+        modified_at: date
