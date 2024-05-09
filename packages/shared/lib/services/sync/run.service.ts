@@ -270,7 +270,17 @@ export default class SyncRun {
                 return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
 
-            const secretKey = optionalSecretKey || (environment ? environment.secret_key : '');
+            let secretKey = optionalSecretKey || (environment ? environment.secret_key : '');
+
+            if (!isCloud) {
+                if (process.env['NANGO_SECRET_KEY_DEV'] && environment?.name === 'dev') {
+                    secretKey = process.env['NANGO_SECRET_KEY_DEV'];
+                }
+
+                if (process.env['NANGO_SECRET_KEY_PROD'] && environment?.name === 'prod') {
+                    secretKey = process.env['NANGO_SECRET_KEY_PROD'];
+                }
+            }
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
