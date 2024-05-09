@@ -75,7 +75,7 @@ export const EnvironmentSettings: React.FC = () => {
         }
 
         setSecretKey(environment.pending_secret_key || environment.secret_key);
-        setSecretKeyRotatable(environment.secret_key_rotatable);
+        setSecretKeyRotatable(!environment.secret_key_rotatable);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
 
         setPublicKey(environment.pending_public_key || environment.public_key);
@@ -270,7 +270,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRevertKey = async (publicKey = true) => {
-        const res = await fetch(`/api/v1/environment/?env=${env}`, {
+        const res = await fetch(`/api/v1/environment/revert-key?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
