@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import db from '../db/database.js';
-import encryptionManager, { ENCRYPTION_KEY, pbkdf2 } from '../utils/encryption.manager.js';
+import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Account } from '../models/Admin.js';
@@ -493,11 +493,11 @@ class EnvironmentService {
 }
 
 export async function hashSecretKey(key: string) {
-    if (!ENCRYPTION_KEY) {
+    if (!encryptionManager.getKey()) {
         return key;
     }
 
-    return (await pbkdf2(key, ENCRYPTION_KEY, 310000, 32, 'sha256')).toString('base64');
+    return (await pbkdf2(key, encryptionManager.getKey(), 310000, 32, 'sha256')).toString('base64');
 }
 
 export default new EnvironmentService();
