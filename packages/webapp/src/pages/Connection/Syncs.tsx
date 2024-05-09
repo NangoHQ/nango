@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { Loading, Tooltip } from '@geist-ui/core';
+import { HelpCircle } from '@geist-ui/icons';
+import { Loading, Tooltip, useModal, Modal } from '@geist-ui/core';
+import ActionModal from '../../components/ui/ActionModal';
+import Spinner from '../../components/ui/Spinner';
 import { Link } from 'react-router-dom';
 import {
     AdjustmentsHorizontalIcon,
@@ -14,19 +17,29 @@ import {
 import type { SyncResponse, RunSyncCommand, Connection } from '../../types';
 import { UserFacingSyncCommand } from '../../types';
 import { calculateTotalRuntime, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun, getSimpleDate } from '../../utils/utils';
+import Button from '../../components/ui/button/Button';
 import { useRunSyncAPI } from '../../utils/api';
 
 interface SyncsProps {
-    syncs: SyncResponse[] | null;
+    syncs: SyncResponse[] | undefined;
     connection: Connection | null;
     loaded: boolean;
     syncLoaded: boolean;
-    setSyncLoaded: (loaded: boolean) => void;
+    reload: () => void;
     env: string;
 }
 
-export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLoaded, env }: SyncsProps) {
+export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, env }: SyncsProps) {
+    const [sync, setSync] = useState<SyncResponse | null>(null);
+    const [modalShowSpinner, setModalShowSpinner] = useState(false);
+    const [showPauseStartLoader, setShowPauseStartLoader] = useState(false);
+    const [showInterruptLoader, setShowInterruptLoader] = useState(false);
+    const [showTriggerIncrementalLoader, setShowTriggerIncrementalLoader] = useState(false);
+    const [showTriggerFullLoader, setShowTriggerFullLoader] = useState(false);
+    const [syncCommandButtonsDisabled, setSyncCommandButtonsDisabled] = useState(false);
     const [openDropdownHash, setOpenDropdownHash] = useState<string | null>(null);
+    const { setVisible, bindings } = useModal();
+    const { setVisible: setErrorVisible, bindings: errorBindings } = useModal();
     const runCommandSyncAPI = useRunSyncAPI(env);
 
     const toggleDropdown = (hash: string) => {
@@ -35,6 +48,13 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
         } else {
             setOpenDropdownHash(hash);
         }
+    };
+
+    const resetLoaders = () => {
+        setShowPauseStartLoader(false);
+        setShowInterruptLoader(false);
+        setShowTriggerIncrementalLoader(false);
+        setShowTriggerFullLoader(false);
     };
 
     const hashSync = (sync: SyncResponse) => {
@@ -56,16 +76,44 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
     }, []);
 
     const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: string, syncName: string) => {
+        if (syncCommandButtonsDisabled) {
+            return;
+        }
+        setSyncCommandButtonsDisabled(true);
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
 
         if (res?.status === 200) {
-            setSyncLoaded(false);
+            reload();
             const niceCommand = UserFacingSyncCommand[command];
             toast.success(`The sync was successfully ${niceCommand}`, { position: toast.POSITION.BOTTOM_CENTER });
         } else {
             const data = await res?.json();
             toast.error(data.error, { position: toast.POSITION.BOTTOM_CENTER });
         }
+        setSyncCommandButtonsDisabled(false);
+        resetLoaders();
+    };
+
+    const fullResync = async () => {
+        if (!sync || syncCommandButtonsDisabled) {
+            return;
+        }
+        setShowTriggerFullLoader(true);
+        setSyncCommandButtonsDisabled(true);
+        setModalShowSpinner(true);
+        const res = await runCommandSyncAPI('RUN_FULL', sync.schedule_id, sync.nango_connection_id, sync.id, sync.name, connection?.provider);
+
+        if (res?.status === 200) {
+            reload();
+            toast.success('The full resync was successfully triggered', { position: toast.POSITION.BOTTOM_CENTER });
+        } else {
+            const data = await res?.json();
+            toast.error(data.error, { position: toast.POSITION.BOTTOM_CENTER });
+        }
+        setModalShowSpinner(false);
+        setVisible(false);
+        setSyncCommandButtonsDisabled(false);
+        setShowTriggerFullLoader(false);
     };
 
     const ErrorBubble = () => (
@@ -106,6 +154,27 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
 
     return (
         <div className="h-fit rounded-md text-white">
+            <ActionModal
+                bindings={bindings}
+                modalTitle="Full Refresh?"
+                modalContent="Triggering a full refresh in Nango will clear all existing records and reset the last sync date used for incremental syncs. This means every record will be fetched again from the start of your sync window and treated as new."
+                modalShowSpinner={modalShowSpinner}
+                modalAction={() => fullResync()}
+                modalTitleColor="text-red-500"
+                setVisible={setVisible}
+            />
+            <Modal {...errorBindings} wrapClassName="!h-[600px] !w-[550px] !max-w-[550px] !bg-[#0E1014] no-border-modal">
+                <Modal.Action
+                    placeholder={null}
+                    passive
+                    className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]"
+                    onClick={() => setErrorVisible(false)}
+                >
+                    <Button className="!text-text-light-gray" variant="zombieGray">
+                        Close
+                    </Button>
+                </Modal.Action>
+            </Modal>
             {!syncs || syncs.length === 0 ? (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-xl text-center w-full">
@@ -143,7 +212,7 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
                             {syncs.map((sync) => (
                                 <td
                                     key={sync.name}
-                                    className="flex items-center px-2 py-3 text-[13px] cursor-pointer justify-between border-b border-border-gray"
+                                    className={`flex items-center px-2 py-3 text-[13px] ${syncCommandButtonsDisabled ? '' : 'cursor-pointer'} justify-between border-b border-border-gray`}
                                 >
                                     <div className="flex items-center w-52">
                                         <div className="w-36 max-w-3xl ml-1 truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
@@ -217,50 +286,124 @@ export default function Syncs({ syncs, connection, setSyncLoaded, loaded, syncLo
                                             <div className="text-gray-400 absolute z-10 -top-15 right-1 bg-black rounded border border-neutral-700 items-center">
                                                 <div className="flex flex-col w-full">
                                                     <div
-                                                        className="flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-4"
-                                                        onClick={() =>
-                                                            syncCommand(
+                                                        className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
+                                                        onClick={async () => {
+                                                            setShowPauseStartLoader(true);
+                                                            await syncCommand(
                                                                 sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
                                                                 sync.nango_connection_id,
                                                                 sync.schedule_id,
                                                                 sync.id,
                                                                 sync.name
-                                                            )
-                                                        }
+                                                            );
+                                                        }}
                                                     >
                                                         {sync.schedule_status !== 'RUNNING' ? (
                                                             <>
-                                                                <PlayCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                                <span className="pl-2">Start Schedule</span>
+                                                                <PlayCircleIcon
+                                                                    className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
+                                                                />
+                                                                <span className={`pl-2 ${syncCommandButtonsDisabled ? 'text-gray-800' : ''} mr-2`}>
+                                                                    Start schedule
+                                                                </span>
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <PauseCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                                <span className="pl-2">Pause Schedule</span>
+                                                                <PauseCircleIcon
+                                                                    className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
+                                                                />
+                                                                <span className={`pl-2 ${syncCommandButtonsDisabled ? 'text-gray-800' : ''} mr-2`}>
+                                                                    Pause schedule
+                                                                </span>
                                                             </>
                                                         )}
+                                                        {showPauseStartLoader && <Spinner size={1} />}
                                                     </div>
-                                                    <div
-                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
-                                                        onClick={() => syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
-                                                    >
-                                                        <StopCircleIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                        <span className="pl-2">Interrupt Running Job</span>
-                                                    </div>
-                                                    <div
-                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
-                                                        onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
-                                                    >
-                                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                        <span className="pl-2">Trigger Job (Incremental)</span>
-                                                    </div>
-                                                    <div
-                                                        className="flex items-center hover:bg-neutral-800 px-4 py-4"
-                                                        onClick={() => syncCommand('RUN_FULL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
-                                                    >
-                                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                                        <span className="pl-2">Trigger Job (Full Refresh)</span>
-                                                    </div>
+                                                    {sync?.status === 'RUNNING' && (
+                                                        <div
+                                                            className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
+                                                            onClick={() => {
+                                                                setShowInterruptLoader(true);
+                                                                syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
+                                                            }}
+                                                        >
+                                                            <StopCircleIcon
+                                                                className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
+                                                            />
+                                                            <span className={`pl-2 ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}>
+                                                                Interrupt execution
+                                                                {showInterruptLoader && <Spinner size={1} />}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {sync?.status !== 'RUNNING' && (
+                                                        <>
+                                                            <div
+                                                                className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
+                                                                onClick={() => {
+                                                                    setShowTriggerIncrementalLoader(true);
+                                                                    syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
+                                                                }}
+                                                            >
+                                                                <ArrowPathRoundedSquareIcon
+                                                                    className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
+                                                                />
+                                                                <span className={`pl-2 flex items-center ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}>
+                                                                    Trigger execution (incremental)
+                                                                    <Tooltip
+                                                                        type="dark"
+                                                                        text={
+                                                                            <>
+                                                                                <div className="flex text-white text-sm">
+                                                                                    <p>
+                                                                                        Incremental: the existing cache and the last sync date will be
+                                                                                        preserved, only new/updated data will be synced.
+                                                                                    </p>
+                                                                                </div>
+                                                                            </>
+                                                                        }
+                                                                    >
+                                                                        {!syncCommandButtonsDisabled && (
+                                                                            <HelpCircle color="gray" className="h-4 ml-1"></HelpCircle>
+                                                                        )}
+                                                                    </Tooltip>
+                                                                    {showTriggerIncrementalLoader && <Spinner size={1} />}
+                                                                </span>
+                                                            </div>
+                                                            <div
+                                                                className={`flex items-center w-full whitespace-nowrap ${!syncCommandButtonsDisabled ? 'hover:bg-neutral-800 ' : ''} px-4 py-4`}
+                                                                onClick={() => {
+                                                                    setSync(sync);
+                                                                    setVisible(true);
+                                                                }}
+                                                            >
+                                                                <ArrowPathRoundedSquareIcon
+                                                                    className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
+                                                                />
+                                                                <span className={`pl-2 flex items-center ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}>
+                                                                    Trigger execution (full refresh)
+                                                                    <Tooltip
+                                                                        type="dark"
+                                                                        text={
+                                                                            <>
+                                                                                <div className="flex text-white text-sm">
+                                                                                    <p>
+                                                                                        Full refresh: the existing cache and last sync date will be deleted, all
+                                                                                        historical data will be resynced.
+                                                                                    </p>
+                                                                                </div>
+                                                                            </>
+                                                                        }
+                                                                    >
+                                                                        {!syncCommandButtonsDisabled && (
+                                                                            <HelpCircle color="gray" className="h-4 ml-1"></HelpCircle>
+                                                                        )}
+                                                                    </Tooltip>
+                                                                    {showTriggerFullLoader && <Spinner size={1} />}
+                                                                </span>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}

@@ -7,7 +7,7 @@ import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
 import db from '../db/database.js';
-import { hashSecretKey } from '../services/environment.service';
+import { hashSecretKey } from '../services/environment.service.js';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -21,14 +21,15 @@ export class EncryptionManager extends Encryption {
         return Boolean(this?.key && this.key.length > 0);
     }
 
-    public encryptEnvironment(environment: Environment) {
+    public async encryptEnvironment(environment: Environment) {
         if (!this.shouldEncrypt()) {
             return environment;
         }
 
         const encryptedEnvironment: Environment = Object.assign({}, environment);
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(encryptedEnvironment.secret_key);
+        const [encryptedClientSecret, iv, authTag] = this.encrypt(environment.secret_key);
+        encryptedEnvironment.secret_key_hashed = await hashSecretKey(environment.secret_key);
         encryptedEnvironment.secret_key = encryptedClientSecret;
         encryptedEnvironment.secret_key_iv = iv;
         encryptedEnvironment.secret_key_tag = authTag;
@@ -258,14 +259,13 @@ export class EncryptionManager extends Encryption {
 
         const environments: Environment[] = await db.knex.select('*').from<Environment>(`_nango_environments`);
 
-        for (const environment of environments) {
+        for (let environment of environments) {
             if (environment.secret_key_iv && environment.secret_key_tag) {
                 continue;
             }
 
-            const encrypted = this.encryptEnvironment(environment);
-            encrypted.secret_key_hashed = await hashSecretKey(environment.secret_key);
-            await db.knex.from<Environment>(`_nango_environments`).where({ id: environment.id }).update(encrypted);
+            environment = await this.encryptEnvironment(environment);
+            await db.knex.from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
         const connections: Connection[] = await db.knex.select('*').from<Connection>(`_nango_connections`);

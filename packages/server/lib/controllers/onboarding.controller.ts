@@ -263,7 +263,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
@@ -272,7 +273,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.UNPAUSE,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
 
                 res.status(200).json({ retry: true });
@@ -295,7 +297,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
             }
 
