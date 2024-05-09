@@ -495,6 +495,7 @@ class ProxyService {
                     // allows oauth2 acessToken key to be interpolated and injected
                     // into the header in addition to api key values
                     let tokenPair;
+                    let header = key;
                     switch (config.template.auth_mode) {
                         case AuthModes.OAuth2:
                             tokenPair = { accessToken: config.token };
@@ -506,12 +507,21 @@ class ProxyService {
                             } else {
                                 tokenPair = config.token;
                             }
+                            // allows for dynamic headers to be interpolated through config
+                            if (key.includes('${connectionConfig')) {
+                                key = key.replace(/connectionConfig\./g, '');
+                                header = interpolateIfNeeded(key, config.connection.connection_config as unknown as Record<string, string>);
+                                if (header === key || !header || header === '') {
+                                    // if not in config then skip it otherwise throws error
+                                    return acc;
+                                }
+                            }
                             break;
                         default:
                             tokenPair = config.token;
                             break;
                     }
-                    acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
+                    acc[header] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
                     return acc;
                 },
                 { ...headers }

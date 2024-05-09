@@ -592,7 +592,7 @@ class ConnectionController {
                     updatedConnection = imported;
                 }
             } else if (template.auth_mode === ProviderAuthModes.Basic) {
-                const { username, password } = req.body;
+                const { username, password, connection_config } = req.body;
 
                 if (!username) {
                     errorManager.errRes(res, 'missing_basic_username');
@@ -611,14 +611,15 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    credentials
+                    credentials,
+                    connection_config
                 );
 
                 if (imported) {
                     updatedConnection = imported;
                 }
             } else if (template.auth_mode === ProviderAuthModes.ApiKey) {
-                const { api_key: apiKey } = req.body;
+                const { api_key: apiKey, connection_config } = req.body;
 
                 if (!apiKey) {
                     errorManager.errRes(res, 'missing_api_key');
@@ -636,7 +637,8 @@ class ConnectionController {
                     provider,
                     environmentId,
                     accountId,
-                    credentials
+                    credentials,
+                    connection_config
                 );
 
                 if (imported) {
@@ -687,6 +689,23 @@ class ConnectionController {
                 if (imported) {
                     updatedConnection = imported;
                     runHook = true;
+                }
+            } else if (template.auth_mode === ProviderAuthModes.None) {
+                const { connection_config } = req.body;
+
+                const [imported] = await connectionService.upsertConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    {} as any,
+                    connection_config,
+                    environmentId,
+                    accountId
+                );
+
+                if (!imported) {
+                    errorManager.errRes(res, 'failed_to_import');
+                    return;
                 }
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');

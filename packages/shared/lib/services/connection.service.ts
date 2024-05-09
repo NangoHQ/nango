@@ -255,7 +255,8 @@ class ConnectionService {
         provider: string,
         environmentId: number,
         accountId: number,
-        credentials: BasicApiCredentials | ApiKeyCredentials
+        credentials: BasicApiCredentials | ApiKeyCredentials,
+        connection_config: Record<string, string>
     ) {
         const connection = await this.checkIfConnectionExists(connection_id, provider_config_key, environmentId);
 
@@ -263,7 +264,15 @@ class ConnectionService {
             throw new NangoError('connection_already_exists');
         }
 
-        const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
+        const [importedConnection] = await this.upsertApiConnection(
+            connection_id,
+            provider_config_key,
+            provider,
+            credentials,
+            connection_config,
+            environmentId,
+            accountId
+        );
 
         if (importedConnection) {
             await connectionCreatedHook(

@@ -2188,3 +2188,20 @@ zoom:
     proxy:
         base_url: https://developer.zoom.us
     docs: https://docs.nango.dev/integrations/all/zoom
+unauthenticated-proxy-only:
+    auth_mode: NONE
+    proxy:
+        base_url: ${connectionConfig.base_url}
+    docs: https://docs.nango.dev/integrations/overview
+basic-proxy-only:
+    auth_mode: BASIC
+    proxy:
+        base_url: ${connectionConfig.base_url}
+    docs: https://docs.nango.dev/integrations/overview
+api-key-proxy-only:
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            ${connectionConfig.api_key_header}: ${apiKey}
+        base_url: ${connectionConfig.base_url}
+    docs: https://docs.nango.dev/integrations/overview
