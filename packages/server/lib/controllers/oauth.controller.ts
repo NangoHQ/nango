@@ -780,7 +780,7 @@ class OAuthController {
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
                 connectionId: String(connectionId),
-                isError: 'true'
+                level: 'error'
             });
 
             await createActivityLogMessage({
@@ -1162,7 +1162,7 @@ class OAuthController {
                 provider: String(config.provider),
                 connectionId: String(connectionId),
                 authMode: String(template.auth_mode),
-                isError: 'true'
+                level: 'error'
             });
 
             void connectionCreationFailedHook(
@@ -1325,7 +1325,7 @@ class OAuthController {
                         provider: String(config.provider),
                         connectionId: String(connectionId),
                         authMode: String(template.auth_mode),
-                        isError: 'true'
+                        level: 'error'
                     }
                 );
 
@@ -1518,7 +1518,7 @@ class OAuthController {
                 provider: String(config.provider),
                 connectionId: String(connectionId),
                 authMode: String(template.auth_mode),
-                isError: 'true'
+                level: 'error'
             });
 
             const error = WSErrBuilder.UnknownError();
@@ -1681,7 +1681,7 @@ class OAuthController {
                     provider: String(config.provider),
                     connectionId: String(connectionId),
                     authMode: String(template.auth_mode),
-                    isError: 'true'
+                    level: 'error'
                 });
 
                 const error = WSErrBuilder.UnknownError();

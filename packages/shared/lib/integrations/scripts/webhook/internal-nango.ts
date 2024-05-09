@@ -45,7 +45,7 @@ export const internalNango: InternalNango = {
                     providerConfigKey: integration.unique_key,
                     connectionIdentifier,
                     payload: JSON.stringify(body),
-                    isError: 'true'
+                    level: 'error'
                 }
             );
 
@@ -83,7 +83,7 @@ export const internalNango: InternalNango = {
                     propName: String(propName),
                     connectionIdentifier,
                     payload: JSON.stringify(body),
-                    isError: 'true'
+                    level: 'error'
                 }
             );
 

@@ -126,7 +126,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     connectionId: connection_id,
                     providerConfigKey: provider_config_key,
                     provider: provider,
-                    isError: 'true'
+                    level: 'error'
                 });
             }
         }
@@ -136,7 +136,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             connectionId: connection_id,
             providerConfigKey: provider_config_key,
             provider: provider,
-            isError: 'true'
+            level: 'error'
         });
     }
 }
