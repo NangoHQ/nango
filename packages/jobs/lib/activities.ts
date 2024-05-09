@@ -184,7 +184,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             connectionId: nangoConnection?.connection_id,
             providerConfigKey: nangoConnection?.provider_config_key,
             syncId,
-            syncName
+            syncName,
+            isError: 'true'
         });
 
         errorManager.report(content, {
@@ -431,7 +432,8 @@ export async function reportFailure(
         error: stringifyError(error),
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
-        runId: context.info.workflowExecution.runId
+        runId: context.info.workflowExecution.runId,
+        isError: 'true'
     });
 
     if (type === 'sync' && 'syncId' in workflowArguments) {

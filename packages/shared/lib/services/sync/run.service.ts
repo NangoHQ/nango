@@ -792,7 +792,8 @@ export default class SyncRun {
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
-                debug: String(this.debug)
+                debug: String(this.debug),
+                isError: 'true'
             },
             `syncId:${this.syncId}`
         );

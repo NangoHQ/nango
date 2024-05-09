@@ -125,7 +125,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     environmentId: String(environment_id),
                     connectionId: connection_id,
                     providerConfigKey: provider_config_key,
-                    provider: provider
+                    provider: provider,
+                    isError: 'true'
                 });
             }
         }
@@ -134,7 +135,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             environmentId: String(environment_id),
             connectionId: connection_id,
             providerConfigKey: provider_config_key,
-            provider: provider
+            provider: provider,
+            isError: 'true'
         });
     }
 }

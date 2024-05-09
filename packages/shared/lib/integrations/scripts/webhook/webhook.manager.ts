@@ -54,7 +54,8 @@ async function execute(
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
             payload: JSON.stringify(body),
-            error: String(e)
+            error: String(e),
+            isError: 'true'
         });
     }
 

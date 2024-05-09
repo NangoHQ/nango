@@ -779,7 +779,8 @@ class OAuthController {
                 callbackUrl,
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
-                connectionId: String(connectionId)
+                connectionId: String(connectionId),
+                isError: 'true'
             });
 
             await createActivityLogMessage({
@@ -1160,7 +1161,8 @@ class OAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode)
+                authMode: String(template.auth_mode),
+                isError: 'true'
             });
 
             void connectionCreationFailedHook(
@@ -1322,7 +1324,8 @@ class OAuthController {
                         providerConfigKey: String(providerConfigKey),
                         provider: String(config.provider),
                         connectionId: String(connectionId),
-                        authMode: String(template.auth_mode)
+                        authMode: String(template.auth_mode),
+                        isError: 'true'
                     }
                 );
 
@@ -1514,7 +1517,8 @@ class OAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode)
+                authMode: String(template.auth_mode),
+                isError: 'true'
             });
 
             const error = WSErrBuilder.UnknownError();
@@ -1676,7 +1680,8 @@ class OAuthController {
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),
                     connectionId: String(connectionId),
-                    authMode: String(template.auth_mode)
+                    authMode: String(template.auth_mode),
+                    isError: 'true'
                 });
 
                 const error = WSErrBuilder.UnknownError();

@@ -229,7 +229,8 @@ export async function deploy(
                 environmentId: String(environment_id),
                 syncName: flowsWithVersions.map((flow) => flow.syncName).join(', '),
                 accountId: String(accountId),
-                providers: providers.join(', ')
+                providers: providers.join(', '),
+                isError: 'true'
             },
             'deploy_type:custom'
         );
@@ -567,7 +568,8 @@ export async function deployPreBuilt(
                 accountId: String(accountId),
                 integration: configs.map((config) => config.provider).join(', '),
                 preBuilt: 'true',
-                is_public: isPublic ? 'true' : 'false'
+                is_public: isPublic ? 'true' : 'false',
+                isError: 'true'
             },
             `deploy_type:${isPublic ? 'public.' : 'private.'}template`
         );
