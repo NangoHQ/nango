@@ -1,11 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
-import { SyncConfigType, SyncStatus, ScheduleStatus } from '../../models/Sync.js';
+import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
-import { markAllAsStopped } from './schedule.service.js';
+import { updateScheduleStatus, markAllAsStopped } from './schedule.service.js';
+import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -15,6 +16,7 @@ import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { LogActionEnum } from '../../models/Activity.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -286,10 +288,55 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
     const result = await q;
     const syncsWithSchedule = result.map(async (sync) => {
         const { schedule_id } = sync;
-        const schedule = await syncClient?.describeSchedule(schedule_id);
+        const syncSchedule = await syncClient?.describeSchedule(schedule_id);
+
+        if (syncSchedule) {
+            if (syncSchedule.schedule?.state?.paused && sync.schedule_status !== SyncStatus.PAUSED) {
+                sync = {
+                    ...sync,
+                    schedule_status: SyncStatus.PAUSED
+                };
+                await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
+                await telemetry.log(
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
+                    'Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(nangoConnection.environment_id),
+                        syncName: sync.name,
+                        connectionId: nangoConnection.connection_id,
+                        providerConfigKey: nangoConnection.provider_config_key,
+                        syncId: sync.id,
+                        syncJobId: String(sync.latest_sync?.job_id)
+                    },
+                    `syncId:${sync.id}`
+                );
+            } else if (!syncSchedule.schedule?.state?.paused && sync.schedule_status === SyncStatus.PAUSED) {
+                sync = {
+                    ...sync,
+                    schedule_status: SyncStatus.RUNNING
+                };
+                await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
+                await telemetry.log(
+                    LogTypes.SYNC_FAILURE,
+                    'Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(nangoConnection.environment_id),
+                        syncName: sync.name,
+                        connectionId: nangoConnection.connection_id,
+                        providerConfigKey: nangoConnection.provider_config_key,
+                        syncId: sync.id,
+                        syncJobId: String(sync.latest_sync?.job_id)
+                    },
+                    `syncId:${sync.id}`
+                );
+            }
+        }
+
         let futureActionTimes: number[] = [];
-        if (schedule && schedule.info?.futureActionTimes) {
-            futureActionTimes = schedule.info.futureActionTimes.map((long) => long.seconds?.toNumber()) as number[];
+        if (sync.schedule_status !== SyncStatus.PAUSED && syncSchedule && syncSchedule.info?.futureActionTimes) {
+            futureActionTimes = syncSchedule.info.futureActionTimes.map((long) => long.seconds?.toNumber()) as number[];
         }
 
         return {
