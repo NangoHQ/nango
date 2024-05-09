@@ -690,4 +690,67 @@ describe('Proxy service configure', () => {
         expect(error).toBeNull();
         expect(activityLogs.length).toBe(4);
     });
+
+    it('Should correctly construct a header using header connection config', () => {
+        const config = {
+            endpoint: '/test-endpoint',
+            provider: 'test',
+            providerConfigKey: 'test',
+            connectionId: 'test',
+            token: { apiKey: 'sweet-secret-token' },
+            method: 'GET' as HTTP_VERB,
+            template: {
+                auth_mode: AuthModes.ApiKey,
+                proxy: {
+                    base_url: 'https://api.nangostarter.com',
+                    headers: {
+                        '${connectionConfig.api_key_header}': '${apiKey}',
+                    }
+                }
+            },
+            connection: {
+                connection_config: {
+                    api_key_header: 'Authorization'
+                }
+            }
+        };
+
+        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+
+        expect(headers).toEqual({
+            'Authorization': 'sweet-secret-token'
+        });
+    });
+
+    it('Should not include a header missing matching header connection config', () => {
+        const config = {
+            endpoint: '/test-endpoint',
+            provider: 'test',
+            providerConfigKey: 'test',
+            connectionId: 'test',
+            token: { apiKey: 'sweet-secret-token' },
+            method: 'GET' as HTTP_VERB,
+            template: {
+                auth_mode: AuthModes.ApiKey,
+                proxy: {
+                    base_url: 'https://api.nangostarter.com',
+                    headers: {
+                        '${connectionConfig.api_key_header}': '${apiKey}',
+                        'X-Test': 'test'
+                    }
+                }
+            },
+            connection: {
+                connection_config: {
+                    // not including api_key_header to test
+                }
+            }
+        };
+
+        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+
+        expect(headers).toEqual({
+            'X-Test': 'test'
+        });
+    });
 });
