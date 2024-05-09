@@ -6,7 +6,7 @@ import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 
 class WebhookController {
-    async receive(req: Request, res: Response, next: NextFunction) {
+    async receive(req: Request, res: Response<any, never>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('server.sync.receiveWebhook', {
             childOf: active as Span

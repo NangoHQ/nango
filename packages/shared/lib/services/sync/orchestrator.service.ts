@@ -192,7 +192,8 @@ export class Orchestrator {
         syncNames,
         command,
         logContextGetter,
-        connectionId
+        connectionId,
+        initiator
     }: {
         recordsService: RecordsServiceInterface;
         environmentId: number;
@@ -201,6 +202,7 @@ export class Orchestrator {
         command: SyncCommand;
         logContextGetter: LogContextGetter;
         connectionId?: string;
+        initiator: string;
     }): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
@@ -267,7 +269,8 @@ export class Orchestrator {
                     syncName,
                     nangoConnectionId: connection.id,
                     logCtx,
-                    recordsService
+                    recordsService,
+                    initiator
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
@@ -308,7 +311,8 @@ export class Orchestrator {
                     syncName: sync.name,
                     nangoConnectionId: connection.id,
                     logCtx,
-                    recordsService
+                    recordsService,
+                    initiator
                 });
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
