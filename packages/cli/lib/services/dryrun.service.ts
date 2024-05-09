@@ -17,6 +17,8 @@ interface RunArgs extends GlobalOptions {
     useServerLastSyncDate?: boolean;
     input?: object;
     metadata?: Metadata;
+    optionalEnvironment?: string;
+    optionalProviderConfigKey?: string;
 }
 
 class DryRunService {
@@ -30,11 +32,11 @@ class DryRunService {
 
         this.returnOutput = returnOutput;
     }
-    public async run(options: RunArgs, optionalEnvironment?: string, optionalProviderConfigKey?: string, debug = false): Promise<string | void> {
+    public async run(options: RunArgs, debug = false): Promise<string | void> {
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata;
 
-        const environment = optionalEnvironment || this.environment;
+        const environment = options.optionalEnvironment || this.environment;
 
         if (!environment) {
             console.log(chalk.red('Environment is required'));
@@ -75,13 +77,17 @@ class DryRunService {
             return;
         }
 
-        let providerConfigKey = optionalProviderConfigKey;
+        let providerConfigKey = options.optionalProviderConfigKey;
 
         if (!providerConfigKey) {
             providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
 
             if (!providerConfigKey) {
-                console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
+                console.log(
+                    chalk.red(
+                        `Provider config key not found, please check that the provider exists for this sync name: ${syncName} by going to the Nango dashboard.`
+                    )
+                );
                 return;
             }
         }

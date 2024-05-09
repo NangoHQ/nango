@@ -123,7 +123,7 @@ program
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment, integrationId } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
-        dryrunService.run({ ...this.opts(), sync, connectionId }, environment, integrationId, debug);
+        dryrunService.run({ ...this.opts(), sync, connectionId, optionalEnvironment: environment, optionalProviderConfigKey: integrationId }, debug);
     });
 
 program

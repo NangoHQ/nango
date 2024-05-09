@@ -228,10 +228,12 @@ interface RunArgs {
     metadata?: Metadata;
     autoConfirm: boolean;
     debug: boolean;
+    optionalEnvironment?: string;
+    optionalProviderConfigKey?: string;
 }
 
 export interface DryRunServiceInterface {
-    run: (options: RunArgs, environment?: string, optionalLoadLocation?: string, debug?: boolean) => Promise<string | void>;
+    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
 }
 
 export interface NangoProps {
