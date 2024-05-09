@@ -264,7 +264,7 @@ export interface Account {
     always_send_webhook: boolean;
     slack_notifications: boolean;
     websockets_path: string;
-    secret_key_rotatable: boolean;
+    secret_key_rotatable?: boolean;
     env_variables: { id?: number; name: string; value: string }[];
     host: string;
     uuid: string;

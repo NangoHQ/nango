@@ -75,7 +75,7 @@ export const EnvironmentSettings: React.FC = () => {
         }
 
         setSecretKey(environment.pending_secret_key || environment.secret_key);
-        setSecretKeyRotatable(!environment.secret_key_rotatable);
+        setSecretKeyRotatable(environment.secret_key_rotatable !== false);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
 
         setPublicKey(environment.pending_public_key || environment.public_key);
