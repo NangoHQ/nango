@@ -163,7 +163,7 @@ class ConnectionService {
         provider: string,
         connectionConfig: Record<string, string>,
         environment_id: number,
-        accountId: number,
+        accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
         const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
@@ -177,7 +177,7 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     connection_config: connectionConfig,
                     config_id: config_id as number,
-                    updated_at: new Date(),
+                    updated_at: new Date()
                 });
 
             void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
@@ -191,7 +191,7 @@ class ConnectionService {
                 credentials: {},
                 connection_config: connectionConfig,
                 environment_id,
-                config_id: config_id!,
+                config_id: config_id!
             },
             ['id']
         );

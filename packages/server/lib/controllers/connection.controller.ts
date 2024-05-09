@@ -756,11 +756,11 @@ class ConnectionController {
             } else if (template.auth_mode === ProviderAuthModes.None) {
                 const { connection_config } = req.body;
                 const [imported] = await connectionService.upsertUnauthConnection(
-                    connection_id, 
-                    provider_config_key, 
-                    provider, 
+                    connection_id,
+                    provider_config_key,
+                    provider,
                     connection_config,
-                    environment.id, 
+                    environment.id,
                     account.id
                 );
 

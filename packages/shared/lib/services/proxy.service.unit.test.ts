@@ -705,7 +705,7 @@ describe('Proxy service configure', () => {
                 proxy: {
                     base_url: 'https://api.nangostarter.com',
                     headers: {
-                        '${connectionConfig.api_key_header}': '${apiKey}',
+                        '${connectionConfig.api_key_header}': '${apiKey}'
                     }
                 }
             },
@@ -719,7 +719,7 @@ describe('Proxy service configure', () => {
         const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
 
         expect(headers).toEqual({
-            'Authorization': 'sweet-secret-token'
+            Authorization: 'sweet-secret-token'
         });
     });
 
