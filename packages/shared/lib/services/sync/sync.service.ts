@@ -299,7 +299,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                 await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
                 await telemetry.log(
                     LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
-                    'Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
+                    'UI: Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(nangoConnection.environment_id),
@@ -318,8 +318,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                 };
                 await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
                 await telemetry.log(
-                    LogTypes.SYNC_FAILURE,
-                    'Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,
+                    'UI: Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(nangoConnection.environment_id),
