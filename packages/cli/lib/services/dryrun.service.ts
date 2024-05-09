@@ -30,7 +30,7 @@ class DryRunService {
 
         this.returnOutput = returnOutput;
     }
-    public async run(options: RunArgs, optionalEnvironment?: string, debug = false): Promise<string | void> {
+    public async run(options: RunArgs, optionalEnvironment?: string, optionalProviderConfigKey?: string, debug = false): Promise<string | void> {
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata;
 
@@ -75,11 +75,15 @@ class DryRunService {
             return;
         }
 
-        const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
+        let providerConfigKey = optionalProviderConfigKey;
 
         if (!providerConfigKey) {
-            console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
-            return;
+            providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
+
+            if (!providerConfigKey) {
+                console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
+                return;
+            }
         }
 
         const foundConfig = config.find((configItem) => {

@@ -116,10 +116,14 @@ program
         '-m, --metadata [metadata]',
         'Optional (for syncs only): metadata to stub for the sync script supplied in JSON format, for example --metadata \'{"foo": "bar"}\''
     )
+    .option(
+        '--integration-id [integrationId]',
+        'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script name are repeated'
+    )
     .action(async function (this: Command, sync: string, connectionId: string) {
-        const { autoConfirm, debug, e: environment } = this.opts();
+        const { autoConfirm, debug, e: environment, integrationId } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
-        dryrunService.run({ ...this.opts(), sync, connectionId }, environment, debug);
+        dryrunService.run({ ...this.opts(), sync, connectionId }, environment, integrationId, debug);
     });
 
 program

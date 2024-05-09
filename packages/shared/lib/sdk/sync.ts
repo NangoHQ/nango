@@ -231,7 +231,7 @@ interface RunArgs {
 }
 
 export interface DryRunServiceInterface {
-    run: (options: RunArgs, environment?: string, debug?: boolean) => Promise<string | void>;
+    run: (options: RunArgs, environment?: string, optionalLoadLocation?: string, debug?: boolean) => Promise<string | void>;
 }
 
 export interface NangoProps {
