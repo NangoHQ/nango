@@ -263,10 +263,7 @@ class OAuthController {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
-            if (
-                template.auth_mode !== ProviderAuthModes.App &&
-                (config.oauth_client_id == null || config.oauth_client_secret == null || config.oauth_scopes == null)
-            ) {
+            if (template.auth_mode !== ProviderAuthModes.App && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 await createActivityLogMessageAndEnd({
                     level: 'error',
