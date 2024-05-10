@@ -98,6 +98,7 @@ export const connectionTest = async (
     if (!providerVerification) {
         return Ok(true);
     }
+
     const active = tracer.scope().active();
     const span = tracer.startSpan(SpanTypes.CONNECTION_TEST, {
         childOf: active as Span,

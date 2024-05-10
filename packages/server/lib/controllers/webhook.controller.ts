@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { Span } from 'dd-trace';
 import tracer from 'dd-trace';
+import type { Span } from 'dd-trace';
 import { routeWebhook, featureFlags, environmentService } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
