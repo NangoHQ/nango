@@ -302,7 +302,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                         connectionId: nangoConnection.connection_id,
                         providerConfigKey: nangoConnection.provider_config_key,
                         syncId: sync.id,
-                        syncJobId: String(sync.latest_sync?.job_id)
+                        syncJobId: String(sync.latest_sync?.job_id),
+                        scheduleId: schedule_id
                     },
                     `syncId:${sync.id}`
                 );
@@ -322,7 +323,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                         connectionId: nangoConnection.connection_id,
                         providerConfigKey: nangoConnection.provider_config_key,
                         syncId: sync.id,
-                        syncJobId: String(sync.latest_sync?.job_id)
+                        syncJobId: String(sync.latest_sync?.job_id),
+                        scheduleId: schedule_id
                     },
                     `syncId:${sync.id}`
                 );
