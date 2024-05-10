@@ -1,6 +1,6 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
-import { integrationFilesAreRemote, isCloud, isProd, getLogger, isOk, stringifyError } from '@nangohq/utils';
+import { integrationFilesAreRemote, isCloud, isProd, getLogger, stringifyError } from '@nangohq/utils';
 import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
@@ -37,7 +37,7 @@ class IntegrationService implements IntegrationServiceInterface {
             syncId
         });
 
-        if (isOk(res)) {
+        if (res.isOk()) {
             this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
         } else {
             if (activityLogId && environmentId) {

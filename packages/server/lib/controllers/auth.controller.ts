@@ -6,7 +6,7 @@ import { resetPasswordSecret, getUserFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, isErr } from '@nangohq/utils';
+import { isCloud, baseUrl, basePublicUrl, getLogger, Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import {
     userService,
@@ -50,10 +50,10 @@ const allowedProviders = ['GoogleOAuth'];
 const parseState = (state: string): Result<InviteAccountState> => {
     try {
         const parsed = JSON.parse(Buffer.from(state, 'base64').toString('ascii')) as InviteAccountState;
-        return resultOk(parsed);
+        return Ok(parsed);
     } catch {
         const error = new Error('Invalid state');
-        return resultErr(error);
+        return Err(error);
     }
 };
 
@@ -68,8 +68,8 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 
     const parsedState: Result<InviteAccountState> = parseState(state);
 
-    if (isOk(parsedState)) {
-        const { accountId, token } = parsedState.res;
+    if (parsedState.isOk()) {
+        const { accountId, token } = parsedState.value;
         const validToken = await userService.getInvitedUserByToken(token);
         if (validToken) {
             await userService.markAcceptedInvite(token);
@@ -84,12 +84,12 @@ class AuthController {
     async signin(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const getUser = await getUserFromSession(req);
-            if (isErr(getUser)) {
-                errorManager.errResFromNangoErr(res, getUser.err);
+            if (getUser.isErr()) {
+                errorManager.errResFromNangoErr(res, getUser.error);
                 return;
             }
 
-            const user = getUser.res;
+            const user = getUser.value;
             const webUser: WebUser = {
                 id: user.id,
                 accountId: user.account_id,

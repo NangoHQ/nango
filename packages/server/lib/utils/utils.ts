@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { Request } from 'express';
 import type { User, Template as ProviderTemplate } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
-import { getLogger, resultErr, resultOk } from '@nangohq/utils';
+import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, interpolateString } from '@nangohq/shared';
 
@@ -14,17 +14,17 @@ export async function getUserFromSession(req: Request<any>): Promise<Result<User
     if (!sessionUser) {
         const error = new NangoError('user_not_found');
 
-        return resultErr(error);
+        return Err(error);
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
     if (!user) {
         const error = new NangoError('user_not_found');
-        return resultErr(error);
+        return Err(error);
     }
 
-    return resultOk(user);
+    return Ok(user);
 }
 
 export function dirname() {

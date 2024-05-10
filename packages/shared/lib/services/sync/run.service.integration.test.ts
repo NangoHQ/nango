@@ -10,7 +10,6 @@ import type { Connection } from '../../models/Connection.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
-import { isErr, isOk } from '@nangohq/utils';
 import { createEnvironmentSeed } from '../../db/seeders/environment.seeder.js';
 import { createConnectionSeeds } from '../../db/seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../db/seeders/sync.seeder.js';
@@ -265,14 +264,14 @@ const runJob = async (
         syncJobId: syncJob.id,
         softDelete
     });
-    if (isErr(formatting)) {
+    if (formatting.isErr()) {
         throw new Error(`failed to format records`);
     }
-    const upserting = await recordsService.upsert({ records: formatting.res, connectionId: connection.id as number, model, softDelete });
-    if (isErr(upserting)) {
-        throw new Error(`failed to upsert records: ${upserting.err.message}`);
+    const upserting = await recordsService.upsert({ records: formatting.value, connectionId: connection.id as number, model, softDelete });
+    if (upserting.isErr()) {
+        throw new Error(`failed to upsert records: ${upserting.error.message}`);
     }
-    const summary = upserting.res;
+    const summary = upserting.value;
     const updatedResults = {
         [model]: {
             added: summary.addedKeys.length,
@@ -313,8 +312,8 @@ const verifySyncRun = async (
 
 const getRecords = async (connection: Connection, model: string) => {
     const res = await recordsService.getRecords({ connectionId: connection.id!, model });
-    if (isOk(res)) {
-        return res.res.records;
+    if (res.isOk()) {
+        return res.value.records;
     }
     throw new Error('cannot fetch records');
 };
@@ -353,8 +352,8 @@ async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
     const chunkSize = 1000;
     for (let i = 0; i < records.length; i += chunkSize) {
         const res = await recordsService.upsert({ records: records.slice(i, i + chunkSize), connectionId, model });
-        if (isErr(res)) {
-            throw new Error(`Failed to upsert records: ${res.err.message}`);
+        if (res.isErr()) {
+            throw new Error(`Failed to upsert records: ${res.error.message}`);
         }
     }
     return {
@@ -387,8 +386,8 @@ async function mockRecords(records: UnencryptedRecordData[]) {
     const model = Math.random().toString(36).substring(7);
     const formattedRecords = recordsFormatter.formatRecords({ data: records, connectionId, model, syncId: sync.id, syncJobId: job.id });
 
-    if (isErr(formattedRecords)) {
-        throw new Error(`Failed to format records: ${formattedRecords.err.message}`);
+    if (formattedRecords.isErr()) {
+        throw new Error(`Failed to format records: ${formattedRecords.error.message}`);
     }
 
     return {
@@ -399,6 +398,6 @@ async function mockRecords(records: UnencryptedRecordData[]) {
             sync,
             syncJob: job
         },
-        records: formattedRecords.res
+        records: formattedRecords.value
     };
 }

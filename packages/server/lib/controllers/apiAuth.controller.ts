@@ -24,7 +24,7 @@ import {
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
-import { isErr, stringifyError } from '@nangohq/utils';
+import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 
 class ApiAuthController {
@@ -168,7 +168,7 @@ class ApiAuthController {
                 tracer
             );
 
-            if (isErr(connectionResponse)) {
+            if (connectionResponse.isErr()) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
@@ -179,7 +179,7 @@ class ApiAuthController {
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errResFromNangoErr(res, connectionResponse.err);
+                errorManager.errResFromNangoErr(res, connectionResponse.error);
 
                 return;
             }
@@ -399,7 +399,7 @@ class ApiAuthController {
                 tracer
             );
 
-            if (isErr(connectionResponse)) {
+            if (connectionResponse.isErr()) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
@@ -410,7 +410,7 @@ class ApiAuthController {
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errResFromNangoErr(res, connectionResponse.err);
+                errorManager.errResFromNangoErr(res, connectionResponse.error);
 
                 return;
             }
