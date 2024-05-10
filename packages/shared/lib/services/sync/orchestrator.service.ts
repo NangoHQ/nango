@@ -2,6 +2,7 @@ import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.serv
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { getLatestSyncJob } from './job.service.js';
+import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     createSync,
     getSyncsByConnectionId,
@@ -36,6 +37,7 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
+import { LogActionEnum } from '../../models/Activity.js';
 import { stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 
@@ -457,9 +459,29 @@ export class Orchestrator {
                 if (status !== SyncStatus.RUNNING) {
                     status = SyncStatus.PAUSED;
                 }
+                await telemetry.log(
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
+                    'API: Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(environmentId),
+                        syncId
+                    },
+                    `syncId:${syncId}`
+                );
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
                 status = SyncStatus.STOPPED;
+                await telemetry.log(
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,
+                    'API: Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(environmentId),
+                        syncId
+                    },
+                    `syncId:${syncId}`
+                );
             }
         }
 
