@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { Span } from 'dd-trace';
 import type { LogLevel, NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig } from '@nangohq/shared';
 import tracer from 'dd-trace';
+import type { Span } from 'dd-trace';
 import {
     deploy as deploySyncConfig,
     connectionService,
