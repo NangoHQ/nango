@@ -122,7 +122,7 @@ export class OAuth1Client {
             ...additionalAuthParams
         };
 
-        const url = new URL(this.authConfig.authorization_url);
+        const url = new URL(this.authConfig.authorization_url!);
         const params = new URLSearchParams(queryParams);
         return `${url.href}?${params.toString()}`;
     }
