@@ -2,7 +2,7 @@
 import { $, echo } from 'zx';
 
 const { GITHUB_TOKEN } = process.env;
-const nextVersion = process.argv[3] || '0.39.25';
+const nextVersion = process.argv[3];
 const branch = process.argv[4] || 'master';
 const nextTag = `v${nextVersion}`;
 
