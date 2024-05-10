@@ -16,7 +16,7 @@ vi.mock('@nangohq/node', () => {
     return { Nango };
 });
 
-describe('Proxy', () => {
+describe('cache', () => {
     let nangoAction: NangoAction;
     let nango: Nango;
     beforeEach(async () => {
@@ -26,24 +26,54 @@ describe('Proxy', () => {
             connectionId: 'connection-1'
         });
         nango = new Nango({ secretKey: '***' });
-        (await import('@nangohq/node')).Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        const nodeClient = (await import('@nangohq/node')).Nango;
+        nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
+        nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
         vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, activityLogs: [] }));
     });
     afterEach(() => {
         vi.clearAllMocks();
     });
 
-    it('memoizes connection', async () => {
-        await nangoAction.proxy({ endpoint: '/issues' });
-        await nangoAction.proxy({ endpoint: '/issues' });
-        expect(nango.getConnection).toHaveBeenCalledTimes(1);
+    describe('Proxy', () => {
+        it('memoizes connection', async () => {
+            await nangoAction.proxy({ endpoint: '/issues' });
+            await nangoAction.proxy({ endpoint: '/issues' });
+            expect(nango.getConnection).toHaveBeenCalledTimes(1);
+        });
+
+        it('get connection if memoized connection is too old', async () => {
+            await nangoAction.proxy({ endpoint: '/issues' });
+            const later = Date.now() + 61000;
+            vi.spyOn(Date, 'now').mockReturnValue(later);
+            await nangoAction.proxy({ endpoint: '/issues' });
+            expect(nango.getConnection).toHaveBeenCalledTimes(2);
+        });
     });
-    it('get connection if memoized connection is too old', async () => {
-        await nangoAction.proxy({ endpoint: '/issues' });
-        const later = Date.now() + 61000;
-        vi.spyOn(Date, 'now').mockReturnValue(later);
-        await nangoAction.proxy({ endpoint: '/issues' });
-        expect(nango.getConnection).toHaveBeenCalledTimes(2);
+
+    describe('Metadata', () => {
+        it('getMetadata should reuse connection', async () => {
+            await nangoAction.getConnection();
+            await nangoAction.getMetadata();
+            expect(nango.getConnection).toHaveBeenCalledTimes(1);
+        });
+
+        it('setMetadata should invalidate connection', async () => {
+            await nangoAction.getConnection();
+            await nangoAction.setMetadata({});
+            await nangoAction.getConnection();
+            await nangoAction.getMetadata();
+            expect(nango.getConnection).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    describe('Integration', () => {
+        it('getWebhookURL should reuse integration', async () => {
+            await nangoAction.getWebhookURL();
+            await nangoAction.getWebhookURL();
+            expect(nango.getIntegration).toHaveBeenCalledTimes(1);
+        });
     });
 });
 
