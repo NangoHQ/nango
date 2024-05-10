@@ -323,7 +323,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -335,7 +336,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -356,7 +358,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -446,7 +449,7 @@ class ConnectionService {
         return result;
     }
 
-    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<NangoConnection[]> {
+    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<(NangoConnection & { account_id: number })[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 
@@ -793,7 +796,8 @@ class ConnectionService {
                         environmentId: String(environment_id),
                         connectionId,
                         providerConfigKey,
-                        provider: providerConfig.provider
+                        provider: providerConfig.provider,
+                        level: 'error'
                     });
 
                     return { success, error, response: null };
@@ -827,7 +831,8 @@ class ConnectionService {
                     environmentId: String(environment_id),
                     connectionId,
                     providerConfigKey,
-                    provider: providerConfig.provider
+                    provider: providerConfig.provider,
+                    level: 'error'
                 });
 
                 const error = new NangoError('refresh_token_external_error', e as Error);
