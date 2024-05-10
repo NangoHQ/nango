@@ -28,7 +28,7 @@ import {
     AnalyticsTypes
 } from '@nangohq/shared';
 import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger, isErr } from '@nangohq/utils';
+import { getLogger } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -146,11 +146,11 @@ class OnboardingController {
                 connectionId: connectionExists.id,
                 model: DEMO_MODEL
             });
-            if (isErr(getRecords)) {
+            if (getRecords.isErr()) {
                 res.status(400).json({ error: { code: 'failed_to_get_records' } });
                 return;
             } else {
-                payload.records = getRecords.res.records;
+                payload.records = getRecords.value.records;
             }
             if (payload.records.length > 0) {
                 payload.progress = status.progress > 4 ? status.progress : 4;
@@ -263,7 +263,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
@@ -272,7 +273,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.UNPAUSE,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
 
                 res.status(200).json({ retry: true });
@@ -295,7 +297,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
             }
 
@@ -426,17 +429,17 @@ class OnboardingController {
                 logCtx
             });
 
-            if (isErr(actionResponse)) {
+            if (actionResponse.isErr()) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
-                errorManager.errResFromNangoErr(res, actionResponse.err);
-                await logCtx.error('Failed to trigger action', { error: actionResponse.err });
+                errorManager.errResFromNangoErr(res, actionResponse.error);
+                await logCtx.error('Failed to trigger action', { error: actionResponse.error });
                 await logCtx.failed();
                 return;
             }
 
             await logCtx.success();
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
-            res.status(200).json({ action: actionResponse.res });
+            res.status(200).json({ action: actionResponse.value });
         } catch (err) {
             if (logCtx) {
                 await logCtx.error('Failed to trigger action', { error: err });

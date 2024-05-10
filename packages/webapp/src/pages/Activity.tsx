@@ -124,6 +124,7 @@ export default function Activity() {
             keepPreviousData: false
         }
     );
+
     useEffect(() => {
         if (activities) {
             setLogIds(activities.map((activity: ActivityResponse) => activity.id));

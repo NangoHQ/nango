@@ -189,7 +189,8 @@ class AppAuthController {
                         environmentId: String(environmentId),
                         providerConfigKey: String(providerConfigKey),
                         connectionId: String(connectionId),
-                        authMode: String(template.auth_mode)
+                        authMode: String(template.auth_mode),
+                        level: 'error'
                     }
                 );
 
