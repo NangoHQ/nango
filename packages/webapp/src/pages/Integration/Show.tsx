@@ -51,7 +51,7 @@ export default function ShowIntegration() {
         `/api/v1/integration/${providerConfigKey}?include_creds=true&include_flows=true&env=${env}`
     );
 
-    const { environment, error: accountError } = useEnvironment(env);
+    const { environment, error: environmentError } = useEnvironment(env);
 
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
     const [subTab, setSubTab] = useState<SubTabs | null>(null);
@@ -76,7 +76,7 @@ export default function ShowIntegration() {
         return <PageNotFound />;
     }
 
-    if (error || accountError) {
+    if (error || environmentError) {
         requestErrorToast();
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
@@ -161,7 +161,7 @@ export default function ShowIntegration() {
                     <>
                         {subTab === SubTabs.Reference ? (
                             <EndpointReference
-                                account={environment}
+                                environment={environment}
                                 integration={integration}
                                 activeFlow={currentFlow}
                                 setActiveTab={setActiveTab}
@@ -172,7 +172,7 @@ export default function ShowIntegration() {
                                 integration={integration}
                                 setActiveTab={setActiveTab}
                                 endpoints={endpoints}
-                                account={environment}
+                                environment={environment}
                                 setSubTab={setSubTab}
                                 setFlow={setCurrentFlow}
                             />
@@ -184,7 +184,7 @@ export default function ShowIntegration() {
                         {subTab === SubTabs.Flow ? (
                             <FlowPage
                                 integration={integration}
-                                account={environment}
+                                environment={environment}
                                 flow={currentFlow}
                                 flowConfig={flowConfig}
                                 reload={() => mutate()}
@@ -205,7 +205,7 @@ export default function ShowIntegration() {
                         )}
                     </>
                 )}
-                {activeTab === Tabs.Auth && integration && <AuthSettings integration={integration} account={environment} />}
+                {activeTab === Tabs.Auth && integration && <AuthSettings integration={integration} environment={environment} />}
             </section>
         </DashboardLayout>
     );
