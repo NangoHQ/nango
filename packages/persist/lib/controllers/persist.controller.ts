@@ -213,7 +213,7 @@ class PersistController {
                 timestamp: Date.now()
             });
             await logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
-            const err = Error(`Failed to ${persistType} records ${activityLogId}`);
+            const err = new Error(`Failed to ${persistType} records ${activityLogId}`);
 
             span.setTag('error', err).finish();
             return Err(err);
