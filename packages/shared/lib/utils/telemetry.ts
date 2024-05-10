@@ -57,7 +57,18 @@ class Telemetry {
         }
     }
 
-    public async log(eventId: string, message: string, operation: string, context: Record<string, string> = {}, additionalTags = '') {
+    public async log(
+        eventId: string,
+        message: string,
+        operation: string,
+        context: Record<string, string> & { level?: 'info' | 'error' | 'warn' } = {},
+        additionalTags = ''
+    ) {
+        const additionalProperties = {
+            ...context,
+            level: context.level || 'info'
+        };
+
         const params: v2.LogsApiSubmitLogRequest = {
             body: [
                 {
@@ -65,7 +76,7 @@ class Telemetry {
                     ddtags: `${eventId}, environment:${process.env['NODE_ENV']}, ${additionalTags}`,
                     message,
                     service: operation,
-                    additionalProperties: context
+                    additionalProperties
                 }
             ]
         };
