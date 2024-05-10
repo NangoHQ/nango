@@ -16,7 +16,7 @@ if (tagExists.stdout !== '') {
 const releaseMessage = `chore(release): ${nextVersion} [skip ci]`;
 
 echo`Checkout out branch`;
-await $`git fetch`;
+await $`git fetch origin ${branch}`;
 await $`git switch ${branch}`;
 
 echo`Generating changelog`;
