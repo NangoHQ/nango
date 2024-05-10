@@ -6,6 +6,7 @@ import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { JOBS_PORT } from './constants.js';
+import { db } from '@nangohq/shared';
 
 const logger = getLogger('Jobs');
 
@@ -17,6 +18,8 @@ try {
 
     // This promise never resolve
     void temporal.start();
+
+    db.enableMetrics();
 
     // Register recurring tasks
     cronAutoIdleDemo();

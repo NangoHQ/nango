@@ -323,7 +323,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -335,7 +336,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -356,7 +358,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -446,7 +449,7 @@ class ConnectionService {
         return result;
     }
 
-    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<NangoConnection[]> {
+    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<(NangoConnection & { account_id: number })[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 
@@ -793,7 +796,8 @@ class ConnectionService {
                         environmentId: String(environment_id),
                         connectionId,
                         providerConfigKey,
-                        provider: providerConfig.provider
+                        provider: providerConfig.provider,
+                        level: 'error'
                     });
 
                     return { success, error, response: null };
@@ -827,7 +831,8 @@ class ConnectionService {
                     environmentId: String(environment_id),
                     connectionId,
                     providerConfigKey,
-                    provider: providerConfig.provider
+                    provider: providerConfig.provider,
+                    level: 'error'
                 });
 
                 const error = new NangoError('refresh_token_external_error', e as Error);
@@ -846,7 +851,7 @@ class ConnectionService {
         connectionConfig: Connection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.AppStore] as string);
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.AppStore] as string);
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
 
         const now = Math.floor(Date.now() / 1000);
@@ -958,7 +963,7 @@ class ConnectionService {
         config: ProviderConfig,
         connectionConfig: Connection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.App] as string);
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.App] as string);
 
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
         const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
@@ -1042,7 +1047,15 @@ class ConnectionService {
         }
     }
 
-    public async shouldCapUsage({ providerConfigKey, environmentId }: { providerConfigKey: string; environmentId: number }): Promise<boolean> {
+    public async shouldCapUsage({
+        providerConfigKey,
+        environmentId,
+        type
+    }: {
+        providerConfigKey: string;
+        environmentId: number;
+        type: 'activate' | 'deploy';
+    }): Promise<boolean> {
         const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
 
         if (!connections) {
@@ -1051,7 +1064,11 @@ class ConnectionService {
 
         if (connections.length > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_ACTIVATE, environmentId);
+            if (type === 'deploy') {
+                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);
+            } else {
+                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_ACTIVATE, environmentId);
+            }
             return true;
         }
 
