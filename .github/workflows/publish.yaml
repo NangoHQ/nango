@@ -1,17 +1,14 @@
 name: '[Release] NPM publish'
 
 on:
-    workflow_dispatch:
-        inputs:
-            version:
-                type: string
-                description: 'Version to publish'
-                required: true
-                default: '0.0.0'
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
 
 jobs:
     npm-publish:
-        if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -35,4 +32,5 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
+                  npm ci
                   npx zx ./scripts/gitrelease.mjs ${{ inputs.version }} ${{ github.head_ref || github.ref_name }}
