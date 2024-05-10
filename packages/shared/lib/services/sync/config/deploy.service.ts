@@ -230,7 +230,7 @@ export async function deploy(
                 syncName: flowsWithVersions.map((flow) => flow.syncName).join(', '),
                 accountId: String(accountId),
                 providers: providers.join(', '),
-                isError: 'true'
+                level: 'error'
             },
             'deploy_type:custom'
         );
@@ -569,7 +569,7 @@ export async function deployPreBuilt(
                 integration: configs.map((config) => config.provider).join(', '),
                 preBuilt: 'true',
                 is_public: isPublic ? 'true' : 'false',
-                isError: 'true'
+                level: 'error'
             },
             `deploy_type:${isPublic ? 'public.' : 'private.'}template`
         );

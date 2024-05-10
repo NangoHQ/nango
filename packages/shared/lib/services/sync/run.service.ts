@@ -803,7 +803,7 @@ export default class SyncRun {
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
                 debug: String(this.debug),
-                isError: 'true'
+                level: 'error'
             },
             `syncId:${this.syncId}`
         );

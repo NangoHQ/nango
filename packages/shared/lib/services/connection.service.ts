@@ -324,7 +324,7 @@ class ConnectionService {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey,
-                isError: 'true'
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -337,7 +337,7 @@ class ConnectionService {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey,
-                isError: 'true'
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -359,7 +359,7 @@ class ConnectionService {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey,
-                isError: 'true'
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -797,7 +797,7 @@ class ConnectionService {
                         connectionId,
                         providerConfigKey,
                         provider: providerConfig.provider,
-                        isError: 'true'
+                        level: 'error'
                     });
 
                     return { success, error, response: null };
@@ -832,7 +832,7 @@ class ConnectionService {
                     connectionId,
                     providerConfigKey,
                     provider: providerConfig.provider,
-                    isError: 'true'
+                    level: 'error'
                 });
 
                 const error = new NangoError('refresh_token_external_error', e as Error);

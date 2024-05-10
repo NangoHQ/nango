@@ -679,7 +679,7 @@ class SyncClient {
                     input: JSON.stringify(input, null, 2),
                     connection: JSON.stringify(connection),
                     actionName,
-                    isError: 'true'
+                    level: 'error'
                 },
                 `actionName:${actionName}`
             );

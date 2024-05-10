@@ -190,7 +190,7 @@ class AppAuthController {
                         providerConfigKey: String(providerConfigKey),
                         connectionId: String(connectionId),
                         authMode: String(template.auth_mode),
-                        isError: 'true'
+                        level: 'error'
                     }
                 );
 
