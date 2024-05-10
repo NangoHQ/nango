@@ -28,15 +28,15 @@ export async function createMessage(row: MessageRow): Promise<void> {
  * List operations
  */
 export async function listOperations(opts: { accountId: number; environmentId?: number; limit: number }): Promise<ListOperations> {
-    const q: opensearchtypes.QueryDslQueryContainer = {
+    const query: opensearchtypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }],
             must_not: { exists: { field: 'parentId' } },
             should: []
         }
     };
-    if (opts.environmentId && Array.isArray(q.bool?.must)) {
-        q.bool.must.push({ term: { environmentId: opts.environmentId } });
+    if (opts.environmentId && Array.isArray(query.bool?.must)) {
+        query.bool.must.push({ term: { environmentId: opts.environmentId } });
     }
 
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
@@ -44,7 +44,7 @@ export async function listOperations(opts: { accountId: number; environmentId?: 
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
-        body: { query: q }
+        body: { query }
     });
     const hits = res.body.hits;
 
