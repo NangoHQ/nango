@@ -1,14 +1,17 @@
 name: '[Release] NPM publish'
 
 on:
-    push:
-        branches:
-            - master
-            - staging/**
-    pull_request:
+    workflow_dispatch:
+        inputs:
+            version:
+                type: string
+                description: 'Version to publish'
+                required: true
+                default: '0.0.0'
 
 jobs:
     npm-publish:
+        if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -21,16 +24,15 @@ jobs:
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
-            # - name: Publish npm packages
-            #   env:
-            #       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-            #   shell: bash
-            #   run: |
-            #       bash ./scripts/publish.sh ${{ inputs.version }}
+            - name: Publish npm packages
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              shell: bash
+              run: |
+                  bash ./scripts/publish.sh ${{ inputs.version }}
 
             - name: Publish release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  npm ci
                   npx zx ./scripts/gitrelease.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"
