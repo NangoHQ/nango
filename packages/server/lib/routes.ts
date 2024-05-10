@@ -28,7 +28,7 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { searchLogs } from './controllers/v1/logs/searchLogs.js';
@@ -38,11 +38,15 @@ export const app = express();
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
-const webAuth = AUTH_ENABLED
+let webAuth = AUTH_ENABLED
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
       ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
       : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
+
+if (isTest) {
+    webAuth = apiAuth;
+}
 
 app.use(
     express.json({
