@@ -47,11 +47,6 @@ export async function exec(): Promise<void> {
         for (const staleConnection of staleConnections) {
             const { connection_id, environment_id, provider_config_key, account_id } = staleConnection;
 
-            if (typeof account_id !== 'number') {
-                logger.error(`[refreshTokens] connectionId: ${connection_id} is missing account_id`);
-                continue;
-            }
-
             logger.info(`[refreshTokens] refreshing token for connectionId: ${connection_id}, accountId: ${account_id}`);
 
             try {
