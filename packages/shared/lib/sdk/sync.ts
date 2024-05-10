@@ -566,7 +566,7 @@ export class NangoAction {
 
         if (response.status > 299) {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Failed to log: ${'error' in response.data ? response.data.error : JSON.stringify(response.data)}`);
+            throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
         }
 
         return;
@@ -590,7 +590,7 @@ export class NangoAction {
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         const template = configService.getTemplate(this.provider as string);
-        const templatePaginationConfig: Pagination | undefined = template.proxy.paginate;
+        const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
             throw Error('There was no pagination configuration for this integration or configuration passed in.');
@@ -750,7 +750,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot save records for sync '${this.syncId}'`);
+                throw new Error(`cannot save records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -801,7 +801,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot delete records for sync '${this.syncId}'`);
+                throw new Error(`cannot delete records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -852,7 +852,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot update records for sync '${this.syncId}'`);
+                throw new Error(`cannot update records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;

@@ -28,8 +28,6 @@ import {
     updateSuccess as updateSuccessActivityLog,
     LogActionEnum,
     errorManager,
-    getAccount,
-    getEnvironmentId,
     ErrorSourceEnum,
     proxyService,
     connectionService,
@@ -38,6 +36,7 @@ import {
 import { metrics } from '@nangohq/utils';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
+import type { RequestLocals } from '../utils/express.js';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -50,7 +49,7 @@ class ProxyController {
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      */
-    public async routeCall(req: Request, res: Response, next: NextFunction) {
+    public async routeCall(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         let logCtx: LogContext | undefined;
         try {
             const connectionId = req.get('Connection-Id') as string;
@@ -62,8 +61,8 @@ class ProxyController {
             const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
-            const environment_id = getEnvironmentId(res);
-            const accountId = getAccount(res);
+            const environment_id = res.locals['environment'].id;
+            const accountId = res.locals['account'].id;
 
             const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
 
@@ -197,7 +196,7 @@ class ProxyController {
                 logCtx
             });
         } catch (err) {
-            const environmentId = getEnvironmentId(res);
+            const environmentId = res.locals['environment'].id;
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
@@ -243,7 +242,7 @@ class ProxyController {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
 
-        if (configBody.decompress === true || configBody.template?.proxy?.decompress === true) {
+        if (configBody.decompress === true || configBody.template.proxy?.decompress === true) {
             decompress = true;
         }
 
@@ -305,7 +304,7 @@ class ProxyController {
         responseStream.data.pipe(passThroughStream);
         passThroughStream.pipe(res);
 
-        res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+        res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
     }
 
     private async handleErrorResponse(
@@ -319,14 +318,14 @@ class ProxyController {
     ) {
         const error = e as AxiosError;
 
-        if (!error?.response?.data && error?.toJSON) {
+        if (!error.response?.data && error.toJSON) {
             const {
                 message,
                 stack,
                 config: { method },
                 code,
                 status
-            } = error?.toJSON() as any;
+            } = error.toJSON() as any;
 
             const errorObject = { message, stack, code, status, url, method };
 
@@ -339,7 +338,7 @@ class ProxyController {
                     content: `${method.toUpperCase()} request to ${url} failed`,
                     params: errorObject
                 });
-                await logCtx?.error(`${method.toUpperCase()} request to ${url} failed`, errorObject);
+                await logCtx.error(`${method.toUpperCase()} request to ${url} failed`, errorObject);
             } else {
                 console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorObject)}`);
             }
@@ -358,14 +357,14 @@ class ProxyController {
             return;
         }
 
-        const errorData = error?.response?.data as stream.Readable;
+        const errorData = error.response?.data as stream.Readable;
         const stringify = new Transform({
             transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
                 callback(null, chunk);
             }
         });
-        if (error?.response?.status) {
-            res.writeHead(error?.response?.status, error?.response?.headers as OutgoingHttpHeaders);
+        if (error.response?.status) {
+            res.writeHead(error.response.status, error.response.headers as OutgoingHttpHeaders);
         }
         if (errorData) {
             errorData.pipe(stringify).pipe(res);
@@ -454,23 +453,23 @@ class ProxyController {
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: JSON.stringify({
-                    nangoComment: `The provider responded back with a ${error?.response?.status} to the url: ${url}`,
+                    nangoComment: `The provider responded back with a ${error.response?.status} to the url: ${url}`,
                     providerResponse: errorMessage.toString()
                 }),
                 params: {
                     requestHeaders: JSON.stringify(safeHeaders, null, 2),
-                    responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
+                    responseHeaders: JSON.stringify(error.response?.headers, null, 2)
                 }
             });
             await logCtx?.error('he provider responded back with an error code', {
-                code: error?.response?.status,
+                code: error.response?.status,
                 url,
                 error: errorMessage,
                 requestHeaders: JSON.stringify(safeHeaders, null, 2),
-                responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
+                responseHeaders: JSON.stringify(error.response?.headers, null, 2)
             });
         } else {
-            const content = `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
+            const content = `The provider responded back with a ${error.response?.status} and the message ${errorMessage} to the url: ${url}.${
                 config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
             }`;
             console.error(content);
