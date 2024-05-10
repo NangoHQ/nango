@@ -2,7 +2,7 @@
 import { $, echo } from 'zx';
 
 const { GITHUB_TOKEN } = process.env;
-const nextVersion = process.argv[3];
+const nextVersion = process.argv[3] || '0.39.25';
 const branch = process.argv[4] || 'master';
 const nextTag = `v${nextVersion}`;
 
@@ -16,7 +16,7 @@ if (tagExists.stdout !== '') {
 const releaseMessage = `chore(release): ${nextVersion} [skip ci]`;
 await $`npx git-cliff -o CHANGELOG.md -t ${nextVersion}`;
 await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md`;
-await $`git commit -am ${releaseMessage} --allow-empty`;
+await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" commit -am ${releaseMessage} --allow-empty --author="Release Botg <actions@contact@nango.dev>"`;
 await $`git tag -a ${nextTag} HEAD -m ${releaseMessage}`;
 await $`git push --follow-tags origin HEAD:refs/heads/${branch}`;
 await $`git push --tags`;
