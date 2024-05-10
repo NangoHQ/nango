@@ -9,7 +9,16 @@ import { SyncConfigType } from '../../../models/Sync.js';
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfig, NangoConfigV1, NangoV2Integration, StandardNangoConfig, NangoIntegrationDataV2 } from '../../../models/NangoConfig.js';
+import type {
+    NangoModelV1,
+    NangoSyncModelField,
+    NangoSyncModel,
+    NangoConfig,
+    NangoConfigV1,
+    NangoV2Integration,
+    StandardNangoConfig,
+    NangoIntegrationDataV2
+} from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const logger = getLogger('Sync.Config');
@@ -190,6 +199,19 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             };
 
             nangoConfig.integrations[key] = providerConfig;
+
+            const models: NangoModelV1 = {};
+
+            syncConfig.model_schema.forEach((model: NangoSyncModel) => {
+                if (!models[model.name]) {
+                    models[model.name] = {};
+                }
+                model.fields.forEach((field: NangoSyncModelField) => {
+                    models[model.name]![field.name] = field.type;
+                });
+            });
+
+            nangoConfig.models = models;
         }
     }
 
@@ -257,6 +279,7 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
             environment_id,
             nango_config_id,
             active: true,
+            enabled: true,
             type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
             deleted: false
         });
@@ -449,6 +472,7 @@ export async function getSyncConfigByParams(
                 sync_name,
                 nango_config_id: config.id as number,
                 active: true,
+                enabled: true,
                 type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
                 deleted: false
             })

@@ -222,6 +222,6 @@ app.use(staticSite);
 
 // -------
 // Error handling.
-app.use(async (e: any, req: Request, res: Response, _: any) => {
-    await errorManager.handleGenericError(e, req, res, tracer);
+app.use((e: any, req: Request, res: Response, _: any) => {
+    errorManager.handleGenericError(e, req, res, tracer);
 });
