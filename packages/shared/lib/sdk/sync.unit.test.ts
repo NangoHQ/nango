@@ -395,3 +395,27 @@ describe('Pagination', () => {
         };
     };
 });
+
+describe('Log', () => {
+    it('should not log if no activityLogId', async () => {
+        const nangoAction = new NangoAction({
+            secretKey: '***',
+            providerConfigKey: 'github',
+            connectionId: 'connection-1'
+        });
+        await expect(async () => {
+            await nangoAction.log('top');
+        }).rejects.toThrowError(new Error('There is no current activity log stream to log to'));
+    });
+
+    it('should not fail on null', async () => {
+        const nangoAction = new NangoAction({
+            secretKey: '***',
+            providerConfigKey: 'github',
+            connectionId: 'connection-1',
+            dryRun: true,
+            activityLogId: 1
+        });
+        await nangoAction.log(null);
+    });
+});
