@@ -4,14 +4,11 @@ import type { SearchLogsData } from '@nangohq/types';
 
 import { Drawer, DrawerContent, DrawerTrigger } from '../../../components/ui/Drawer';
 import * as Table from '../../../components/ui/Table';
-import { useState } from 'react';
 import { Show } from '../Show';
 
 export const OperationRow: React.FC<{ row: Row<SearchLogsData> }> = ({ row }) => {
-    const [open, setOpen] = useState<boolean>(false);
-
     return (
-        <Drawer direction="right" snapPoints={[0.5]} onOpenChange={setOpen}>
+        <Drawer direction="right" snapPoints={['1034px']} handleOnly={true} noBodyStyles={true}>
             <DrawerTrigger asChild type={null as unknown as 'button'}>
                 <Table.Row data-state={row.getIsSelected() && 'selected'} className="hover:cursor-pointer">
                     {row.getVisibleCells().map((cell) => (
@@ -19,7 +16,11 @@ export const OperationRow: React.FC<{ row: Row<SearchLogsData> }> = ({ row }) =>
                     ))}
                 </Table.Row>
             </DrawerTrigger>
-            <DrawerContent>{open && <Show />}</DrawerContent>
+            <DrawerContent>
+                <div className="w-[1034px]">
+                    <Show />
+                </div>
+            </DrawerContent>
         </Drawer>
     );
 };

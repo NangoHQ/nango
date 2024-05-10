@@ -169,7 +169,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Activity ? 'text-white' : 'text-gray-400'}`} />
                             <p>Activity</p>
                         </Link>
-                        <Link
+                        {/* <Link
                             to={`/${env}/logs`}
                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Logs ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
@@ -179,7 +179,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <p className="flex gap-4 items-center">
                                 Logs <span className="text-xs text-green-400">beta</span>
                             </p>
-                        </Link>
+                        </Link> */}
                         <Link
                             to={`/${env}/environment-settings`}
                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
