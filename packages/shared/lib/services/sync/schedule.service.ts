@@ -6,7 +6,7 @@ import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext } from '@nangohq/logs';
-import { resultOk, resultErr } from '@nangohq/utils';
+import { Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 const TABLE = dbNamespace + 'sync_schedules';
@@ -70,7 +70,7 @@ export const updateScheduleStatus = async (
 ): Promise<Result<boolean>> => {
     try {
         await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
-        return resultOk(true);
+        return Ok(true);
     } catch (error) {
         if (activityLogId) {
             await createActivityLogDatabaseErrorMessageAndEnd(
@@ -82,7 +82,7 @@ export const updateScheduleStatus = async (
             await logCtx?.error(`Failed to update schedule status to ${status} for schedule_id: ${schedule_id}`, { error });
         }
 
-        return resultErr(error as Error);
+        return Err(error as Error);
     }
 };
 

@@ -62,7 +62,7 @@ export function UnknownProviderConfigKey(providerConfigKey: string): WSErr {
 export function InvalidProviderConfig(providerConfigKey: string): WSErr {
     return {
         type: 'provider_config_err',
-        message: `Provider Config "${providerConfigKey}" is missing cliend ID, secret and/or scopes.`
+        message: `Provider Config "${providerConfigKey}" is missing client ID, secret and/or scopes.`
     };
 }
 

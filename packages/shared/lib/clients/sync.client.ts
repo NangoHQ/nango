@@ -30,7 +30,7 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, getLogger, metrics, isErr, resultOk, resultErr, stringifyError } from '@nangohq/utils';
+import { isTest, isProd, getLogger, metrics, Ok, Err, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Client');
@@ -368,20 +368,6 @@ class SyncClient {
         return date;
     }
 
-    async listSchedules() {
-        if (!this.client) {
-            return;
-        }
-
-        const workflowService = this.client?.workflowService;
-
-        const schedules = await workflowService?.listSchedules({
-            namespace: this.namespace
-        });
-
-        return schedules;
-    }
-
     async runSyncCommand({
         scheduleId,
         syncId,
@@ -393,7 +379,8 @@ class SyncClient {
         syncName,
         nangoConnectionId,
         logCtx,
-        recordsService
+        recordsService,
+        initiator
     }: {
         scheduleId: string;
         syncId: string;
@@ -406,6 +393,7 @@ class SyncClient {
         nangoConnectionId?: number | undefined;
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
+        initiator: string;
     }): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
@@ -415,19 +403,19 @@ class SyncClient {
                     {
                         const result = await this.cancelSync(syncId);
 
-                        if (isErr(result)) {
-                            return resultErr(result.err);
+                        if (result.isErr()) {
+                            return result;
                         }
                     }
                     break;
                 case SyncCommand.PAUSE:
                     {
-                        await scheduleHandle?.pause();
+                        await scheduleHandle?.pause(`${initiator} paused the sync schedule`);
                     }
                     break;
                 case SyncCommand.UNPAUSE:
                     {
-                        await scheduleHandle?.unpause();
+                        await scheduleHandle?.unpause(`${initiator} unpaused the sync schedule`);
                         await scheduleHandle?.trigger(OVERLAP_POLICY);
                         const schedule = await getScheduleById(scheduleId);
                         if (schedule) {
@@ -471,7 +459,7 @@ class SyncClient {
                     break;
             }
 
-            return resultOk(true);
+            return Ok(true);
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
 
@@ -484,7 +472,7 @@ class SyncClient {
             });
             await logCtx.error('Sync command failed', { error: err, command });
 
-            return resultErr(err as Error);
+            return Err(err as Error);
         }
     }
 
@@ -494,13 +482,13 @@ class SyncClient {
             const { job_id, run_id } = jobIsRunning;
             if (!run_id) {
                 const error = new NangoError('run_id_not_found');
-                return resultErr(error);
+                return Err(error);
             }
 
             const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
             if (!workflowHandle) {
                 const error = new NangoError('run_id_not_found');
-                return resultErr(error);
+                return Err(error);
             }
 
             try {
@@ -508,14 +496,14 @@ class SyncClient {
                 // We await the results otherwise it might not be cancelled yet
                 await workflowHandle.result();
             } catch (err) {
-                return resultErr(new NangoError('failed_to_cancel_sync', err as any));
+                return Err(new NangoError('failed_to_cancel_sync', err as any));
             }
         } else {
             const error = new NangoError('sync_job_not_running');
-            return resultErr(error);
+            return Err(error);
         }
 
-        return resultOk(true);
+        return Ok(true);
     }
 
     async triggerSyncs(syncs: SyncWithSchedule[], environmentId: number) {
@@ -606,7 +594,7 @@ class SyncClient {
                     await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
                 }
 
-                return resultErr(error!);
+                return Err(error!);
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
@@ -639,7 +627,7 @@ class SyncClient {
                 `actionName:${actionName}`
             );
 
-            return resultOk(response);
+            return Ok(response);
         } catch (e) {
             const errorMessage = stringifyError(e, { pretty: true });
             const error = new NangoError('action_failure', { errorMessage });
@@ -676,12 +664,13 @@ class SyncClient {
                     workflowId,
                     input: JSON.stringify(input, null, 2),
                     connection: JSON.stringify(connection),
-                    actionName
+                    actionName,
+                    level: 'error'
                 },
                 `actionName:${actionName}`
             );
 
-            return resultErr(error);
+            return Err(error);
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;

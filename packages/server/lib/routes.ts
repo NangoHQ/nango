@@ -28,20 +28,26 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
+import { searchLogs } from './controllers/v1/logs/searchLogs.js';
 
 export const app = express();
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
-const webAuth = AUTH_ENABLED
+let webAuth = AUTH_ENABLED
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
       ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
       : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
+
+// For integration test, we want to bypass session auth
+if (isTest) {
+    webAuth = apiAuth;
+}
 
 app.use(
     express.json({
@@ -194,6 +200,8 @@ web.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy
 web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
+web.route('/api/v1/logs/search').post(webAuth, searchLogs);
+
 // Hosted signin
 if (!isCloud && !isEnterprise) {
     web.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
@@ -222,6 +230,6 @@ app.use(staticSite);
 
 // -------
 // Error handling.
-app.use(async (e: any, req: Request, res: Response, _: any) => {
-    await errorManager.handleGenericError(e, req, res, tracer);
+app.use((e: any, req: Request, res: Response, _: any) => {
+    errorManager.handleGenericError(e, req, res, tracer);
 });

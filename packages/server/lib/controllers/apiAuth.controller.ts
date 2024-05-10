@@ -2,8 +2,6 @@ import type { Request, Response, NextFunction } from 'express';
 import tracer from 'dd-trace';
 import type { LogLevel, ApiKeyCredentials, BasicApiCredentials } from '@nangohq/shared';
 import {
-    getAccount,
-    getEnvironmentId,
     createActivityLog,
     errorManager,
     analytics,
@@ -26,12 +24,13 @@ import {
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
-import { isErr, stringifyError } from '@nangohq/utils';
+import { stringifyError } from '@nangohq/utils';
+import type { RequestLocals } from '../utils/express.js';
 
 class ApiAuthController {
-    async apiKey(req: Request, res: Response, next: NextFunction) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
+    async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const accountId = res.locals['account'].id;
+        const environmentId = res.locals['environment'].id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -169,7 +168,7 @@ class ApiAuthController {
                 tracer
             );
 
-            if (isErr(connectionResponse)) {
+            if (connectionResponse.isErr()) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
@@ -180,7 +179,7 @@ class ApiAuthController {
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errResFromNangoErr(res, connectionResponse.err);
+                errorManager.errResFromNangoErr(res, connectionResponse.error);
 
                 return;
             }
@@ -269,9 +268,9 @@ class ApiAuthController {
         }
     }
 
-    async basic(req: Request, res: Response, next: NextFunction) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
+    async basic(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const accountId = res.locals['account'].id;
+        const environmentId = res.locals['environment'].id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -400,7 +399,7 @@ class ApiAuthController {
                 tracer
             );
 
-            if (isErr(connectionResponse)) {
+            if (connectionResponse.isErr()) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environmentId,
@@ -411,7 +410,7 @@ class ApiAuthController {
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errResFromNangoErr(res, connectionResponse.err);
+                errorManager.errResFromNangoErr(res, connectionResponse.error);
 
                 return;
             }
@@ -434,7 +433,7 @@ class ApiAuthController {
             const [updatedConnection] = await connectionService.upsertApiConnection(
                 connectionId,
                 providerConfigKey,
-                config?.provider,
+                config.provider,
                 credentials,
                 connectionConfig,
                 environmentId,
@@ -451,7 +450,7 @@ class ApiAuthController {
                         auth_mode: AuthModes.Basic,
                         operation: updatedConnection.operation
                     },
-                    config?.provider,
+                    config.provider,
                     logContextGetter,
                     activityLogId,
                     undefined,

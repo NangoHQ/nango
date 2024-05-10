@@ -6,7 +6,7 @@ import { resetPasswordSecret, getUserFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, isErr } from '@nangohq/utils';
+import { isCloud, baseUrl, basePublicUrl, getLogger, Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import {
     userService,
@@ -50,10 +50,10 @@ const allowedProviders = ['GoogleOAuth'];
 const parseState = (state: string): Result<InviteAccountState> => {
     try {
         const parsed = JSON.parse(Buffer.from(state, 'base64').toString('ascii')) as InviteAccountState;
-        return resultOk(parsed);
+        return Ok(parsed);
     } catch {
         const error = new Error('Invalid state');
-        return resultErr(error);
+        return Err(error);
     }
 };
 
@@ -68,8 +68,8 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 
     const parsedState: Result<InviteAccountState> = parseState(state);
 
-    if (isOk(parsedState)) {
-        const { accountId, token } = parsedState.res;
+    if (parsedState.isOk()) {
+        const { accountId, token } = parsedState.value;
         const validToken = await userService.getInvitedUserByToken(token);
         if (validToken) {
             await userService.markAcceptedInvite(token);
@@ -81,15 +81,15 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 };
 
 class AuthController {
-    async signin(req: Request, res: Response, next: NextFunction) {
+    async signin(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const getUser = await getUserFromSession(req);
-            if (isErr(getUser)) {
-                errorManager.errResFromNangoErr(res, getUser.err);
+            if (getUser.isErr()) {
+                errorManager.errResFromNangoErr(res, getUser.error);
                 return;
             }
 
-            const user = getUser.res;
+            const user = getUser.value;
             const webUser: WebUser = {
                 id: user.id,
                 accountId: user.account_id,
@@ -102,7 +102,7 @@ class AuthController {
         }
     }
 
-    async logout(req: Request, res: Response, next: NextFunction) {
+    async logout(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             req.session.destroy((err) => {
                 if (err) {
@@ -116,7 +116,7 @@ class AuthController {
         }
     }
 
-    async signup(req: Request, res: Response, next: NextFunction) {
+    async signup(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -207,7 +207,7 @@ class AuthController {
         }
     }
 
-    async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    async forgotPassword(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { email } = req.body;
 
@@ -236,7 +236,7 @@ class AuthController {
         }
     }
 
-    async resetPassword(req: Request, res: Response, next: NextFunction) {
+    async resetPassword(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { password, token } = req.body;
 
@@ -277,7 +277,7 @@ class AuthController {
         try {
             const emailClient = EmailClient.getInstance();
             emailClient
-                ?.send(
+                .send(
                     user.email,
                     'Nango password reset',
                     `<p><b>Reset your password</b></p>
@@ -293,7 +293,7 @@ class AuthController {
         }
     }
 
-    async invitation(req: Request, res: Response, next: NextFunction) {
+    async invitation(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const token = req.query['token'] as string;
 
@@ -315,7 +315,7 @@ class AuthController {
         }
     }
 
-    getManagedLogin(req: Request, res: Response, next: NextFunction) {
+    getManagedLogin(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -329,7 +329,7 @@ class AuthController {
                 return;
             }
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = workos.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${basePublicUrl}/api/v1/login/callback`
@@ -341,7 +341,7 @@ class AuthController {
         }
     }
 
-    getManagedLoginWithInvite(req: Request, res: Response, next: NextFunction) {
+    getManagedLoginWithInvite(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -376,7 +376,7 @@ class AuthController {
                 token
             };
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = workos.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${basePublicUrl}/api/v1/login/callback`,
@@ -389,7 +389,7 @@ class AuthController {
         }
     }
 
-    async loginCallback(req: Request, res: Response, next: NextFunction) {
+    async loginCallback(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { code, state } = req.query;
 

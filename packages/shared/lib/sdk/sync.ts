@@ -228,10 +228,12 @@ interface RunArgs {
     metadata?: Metadata;
     autoConfirm: boolean;
     debug: boolean;
+    optionalEnvironment?: string;
+    optionalProviderConfigKey?: string;
 }
 
 export interface DryRunServiceInterface {
-    run: (options: RunArgs, environment?: string, debug?: boolean) => Promise<string | void>;
+    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
 }
 
 export interface NangoProps {
@@ -586,7 +588,7 @@ export class NangoAction {
 
         if (response.status > 299) {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Failed to log: ${'error' in response.data ? response.data.error : JSON.stringify(response.data)}`);
+            throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
         }
 
         return;
@@ -763,7 +765,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot save records for sync '${this.syncId}'`);
+                throw new Error(`cannot save records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -814,7 +816,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot delete records for sync '${this.syncId}'`);
+                throw new Error(`cannot delete records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -865,7 +867,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot update records for sync '${this.syncId}'`);
+                throw new Error(`cannot update records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
