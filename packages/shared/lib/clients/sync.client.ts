@@ -368,20 +368,6 @@ class SyncClient {
         return date;
     }
 
-    async listSchedules() {
-        if (!this.client) {
-            return;
-        }
-
-        const workflowService = this.client?.workflowService;
-
-        const schedules = await workflowService?.listSchedules({
-            namespace: this.namespace
-        });
-
-        return schedules;
-    }
-
     async runSyncCommand({
         scheduleId,
         syncId,
