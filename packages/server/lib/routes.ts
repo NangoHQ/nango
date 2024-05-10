@@ -44,6 +44,7 @@ let webAuth = AUTH_ENABLED
       ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
       : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
+// For integration test, we want to bypass session auth
 if (isTest) {
     webAuth = apiAuth;
 }
