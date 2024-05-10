@@ -221,7 +221,7 @@ class PersistController {
 
         const syncConfig = await getSyncConfigByJobId(syncJobId);
         if (syncConfig && !syncConfig?.models.includes(model)) {
-            const err = Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+            const err = new Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
             await logCtx.error('The model is not included in the declared sync models', { model });
 
             span.setTag('error', err).finish();
