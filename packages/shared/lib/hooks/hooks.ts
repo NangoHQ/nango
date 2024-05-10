@@ -11,7 +11,7 @@ import integrationPostConnectionScript from '../integrations/scripts/connection/
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
 import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
-import { isCloud, isLocal, isEnterprise, getLogger, resultOk, resultErr } from '@nangohq/utils';
+import { isCloud, isLocal, isEnterprise, getLogger, Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -96,7 +96,7 @@ export const connectionTest = async (
     const providerVerification = template?.proxy?.verification;
 
     if (!providerVerification) {
-        return resultOk(true);
+        return Ok(true);
     }
     const active = tracer.scope().active();
     const span = tracer.startSpan(SpanTypes.CONNECTION_TEST, {
@@ -152,26 +152,26 @@ export const connectionTest = async (
         if (axios.isAxiosError(response)) {
             span.setTag('nango.error', response);
             const error = new NangoError('connection_test_failed', response, response.response?.status);
-            return resultErr(error);
+            return Err(error);
         }
 
         if (!response) {
             const error = new NangoError('connection_test_failed');
             span.setTag('nango.error', response);
-            return resultErr(error);
+            return Err(error);
         }
 
         if (response.status && (response?.status < 200 || response?.status > 300)) {
             const error = new NangoError('connection_test_failed');
             span.setTag('nango.error', response);
-            return resultErr(error);
+            return Err(error);
         }
 
-        return resultOk(true);
+        return Ok(true);
     } catch (e) {
         const error = new NangoError('connection_test_failed');
         span.setTag('nango.error', e);
-        return resultErr(error);
+        return Err(error);
     } finally {
         span.finish();
     }

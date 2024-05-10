@@ -14,7 +14,7 @@ import { decryptRecord, decryptRecords, encryptRecords } from '../utils/encrypti
 import { RECORDS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
-import { resultErr, resultOk, retry } from '@nangohq/utils';
+import { Err, Ok, retry } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -40,7 +40,7 @@ export async function getRecords({
     try {
         if (!model) {
             const error = new Error('missing_model');
-            return resultErr(error);
+            return Err(error);
         }
 
         let query = db
@@ -61,7 +61,7 @@ export async function getRecords({
 
             if (!cursorSort || !cursorId) {
                 const error = new Error('invalid_cursor_value');
-                return resultErr(error);
+                return Err(error);
             }
 
             query = query.where(
@@ -75,7 +75,7 @@ export async function getRecords({
         if (limit) {
             if (isNaN(Number(limit))) {
                 const error = new Error('invalid_limit');
-                return resultErr(error);
+                return Err(error);
             }
             query = query.limit(Number(limit) + 1);
         } else {
@@ -87,7 +87,7 @@ export async function getRecords({
 
             if (!time.isValid()) {
                 const error = new Error('invalid_timestamp');
-                return resultErr(error);
+                return Err(error);
             }
 
             const formattedDelta = time.toISOString();
@@ -144,7 +144,7 @@ export async function getRecords({
         );
 
         if (rawResults.length === 0) {
-            return resultOk({ records: [], next_cursor: null });
+            return Ok({ records: [], next_cursor: null });
         }
 
         const results = rawResults.map((item) => {
@@ -169,13 +169,13 @@ export async function getRecords({
             const cursorRawElement = rawResults[rawResults.length - 1];
             if (cursorRawElement) {
                 const encodedCursorValue = Buffer.from(`${cursorRawElement.last_modified_at}||${cursorRawElement.id}`).toString('base64');
-                return resultOk({ records: results, next_cursor: encodedCursorValue });
+                return Ok({ records: results, next_cursor: encodedCursorValue });
             }
         }
-        return resultOk({ records: results, next_cursor: null });
+        return Ok({ records: results, next_cursor: null });
     } catch (_error) {
         const e = new Error(`List records error for model ${model}`);
-        return resultErr(e);
+        return Err(e);
     }
 }
 
@@ -193,7 +193,7 @@ export async function upsert({
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
-        return resultErr(
+        return Err(
             `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
         );
     }
@@ -230,7 +230,7 @@ export async function upsert({
             }
         });
 
-        return resultOk(summary);
+        return Ok(summary);
     } catch (error: any) {
         let errorMessage = `Failed to upsert records to table ${RECORDS_TABLE}.\n`;
         errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
@@ -251,7 +251,7 @@ export async function upsert({
 
         logger.error(`${errorMessage}${error}`);
 
-        return resultErr(errorMessage);
+        return Err(errorMessage);
     }
 }
 
@@ -267,7 +267,7 @@ export async function update({
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
-        return resultErr(
+        return Err(
             `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
         );
     }
@@ -306,7 +306,7 @@ export async function update({
             }
         });
 
-        return resultOk({
+        return Ok({
             addedKeys: [],
             updatedKeys,
             deletedKeys: [],
@@ -321,7 +321,7 @@ export async function update({
         if ('detail' in error) errorMessage += `Detail: ${(error as { detail: string }).detail}.\n`;
         if ('message' in error) errorMessage += `Error Message: ${(error as { message: string }).message}`;
 
-        return resultErr(errorMessage);
+        return Err(errorMessage);
     }
 }
 
