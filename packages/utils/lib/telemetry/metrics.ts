@@ -7,6 +7,7 @@ export enum Types {
     AUTH_PUBLIC_KEY = 'nango.auth.publicKey',
     AUTH_SESSION = 'nango.auth.session',
     DB_POOL_ACQUISITION_DURATION = 'nango.db.pool.acquisition',
+    DB_POOL_FREE = 'nango.db.pool.free',
     DB_POOL_USED = 'nango.db.pool.used',
     DB_POOL_WAITING = 'nango.db.pool.waiting',
     GET_CONNECTION = 'nango.server.getConnection',
