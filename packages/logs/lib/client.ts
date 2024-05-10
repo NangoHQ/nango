@@ -1,4 +1,4 @@
-import type { MessageRow, MessageRowInsert, MessageMeta } from './types/messages.js';
+import type { MessageRow, MessageRowInsert, MessageMeta } from '@nangohq/types';
 import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
 import { getFormattedMessage } from './models/helpers.js';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
@@ -65,7 +65,7 @@ export class LogContext {
     async error(message: string, meta: (MessageMeta & { error?: unknown }) | null = null): Promise<void> {
         const { error, ...rest } = meta || {};
         const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
-        await this.log({ type: 'log', level: 'error', message, error: err ? { name: err.name, message: err?.message } : null, meta: rest, source: 'internal' });
+        await this.log({ type: 'log', level: 'error', message, error: err ? { name: err.name, message: err.message } : null, meta: rest, source: 'internal' });
     }
 
     /**
