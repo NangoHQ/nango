@@ -1,6 +1,6 @@
 import type { SearchLogsState } from '@nangohq/types';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../components/ui/DropdownMenu';
-import Button from '../../components/ui/button/Button';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../../components/ui/DropdownMenu';
+import Button from '../../../components/ui/button/Button';
 import { useState } from 'react';
 
 export interface MultiSelectArgs {

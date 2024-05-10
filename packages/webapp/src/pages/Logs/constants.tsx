@@ -1,9 +1,10 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { SearchLogsData, SearchLogsState } from '@nangohq/types';
 import { formatDateToIntFormat } from '../../utils/utils';
-import { StatusTag } from './StatusTag';
-import { OperationTag } from './OperationTag';
-import type { MultiSelectArgs } from './MultiSelect';
+import { StatusTag } from './components/StatusTag';
+import { OperationTag } from './components/OperationTag';
+import type { MultiSelectArgs } from './components/MultiSelect';
+import { ChevronRight } from '@geist-ui/icons';
 
 export const columns: ColumnDef<SearchLogsData>[] = [
     {
@@ -52,6 +53,18 @@ export const columns: ColumnDef<SearchLogsData>[] = [
         size: 200,
         cell: ({ row }) => {
             return row.original.connectionName;
+        }
+    },
+    {
+        accessorKey: 'id',
+        header: '',
+        size: 10,
+        cell: () => {
+            return (
+                <div>
+                    <ChevronRight size={15} />
+                </div>
+            );
         }
     }
 ];

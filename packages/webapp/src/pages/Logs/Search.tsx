@@ -4,16 +4,15 @@ import { useStore } from '../../store';
 import Info from '../../components/ui/Info';
 import { Loading } from '@geist-ui/core';
 import { useSearchLogs } from '../../hooks/useLogs';
-import { Input } from '../../components/ui/input/Input';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
-import { MultiSelect } from './MultiSelect';
+import { MultiSelect } from './components/MultiSelect';
 import { columns, statusDefaultOptions, statusOptions } from './constants';
 import { useEffect, useState } from 'react';
 import type { SearchLogsState } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
-import { Search } from '@geist-ui/icons';
+import { OperationRow } from './components/OperationRow';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -74,8 +73,8 @@ export const LogsSearch: React.FC = () => {
         <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
             <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
 
-            <div className="flex gap-2">
-                <Input before={<Search size={16} />} placeholder="Search logs..." />
+            <div className="flex gap-2 justify-between">
+                <div>{/* <Input before={<Search size={16} />} placeholder="Search logs..." /> */}</div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
             </div>
 
@@ -100,13 +99,7 @@ export const LogsSearch: React.FC = () => {
                 </Table.Header>
                 <Table.Body>
                     {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => (
-                            <Table.Row key={row.id} data-state={row.getIsSelected() && 'selected'} className="hover:cursor-pointer">
-                                {row.getVisibleCells().map((cell) => (
-                                    <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
-                                ))}
-                            </Table.Row>
-                        ))
+                        table.getRowModel().rows.map((row) => <OperationRow key={row.id} row={row} />)
                     ) : (
                         <Table.Row>
                             <Table.Cell colSpan={columns.length} className="h-24 text-center">
