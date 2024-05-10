@@ -678,7 +678,8 @@ class SyncClient {
                     workflowId,
                     input: JSON.stringify(input, null, 2),
                     connection: JSON.stringify(connection),
-                    actionName
+                    actionName,
+                    level: 'error'
                 },
                 `actionName:${actionName}`
             );

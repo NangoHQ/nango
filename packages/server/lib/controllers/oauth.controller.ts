@@ -263,10 +263,7 @@ class OAuthController {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
-            if (
-                template.auth_mode !== ProviderAuthModes.App &&
-                (config.oauth_client_id == null || config.oauth_client_secret == null || config.oauth_scopes == null)
-            ) {
+            if (template.auth_mode !== ProviderAuthModes.App && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 await createActivityLogMessageAndEnd({
                     level: 'error',
@@ -782,7 +779,8 @@ class OAuthController {
                 callbackUrl,
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
-                connectionId: String(connectionId)
+                connectionId: String(connectionId),
+                level: 'error'
             });
 
             await createActivityLogMessage({
@@ -1163,7 +1161,8 @@ class OAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode)
+                authMode: String(template.auth_mode),
+                level: 'error'
             });
 
             void connectionCreationFailedHook(
@@ -1325,7 +1324,8 @@ class OAuthController {
                         providerConfigKey: String(providerConfigKey),
                         provider: String(config.provider),
                         connectionId: String(connectionId),
-                        authMode: String(template.auth_mode)
+                        authMode: String(template.auth_mode),
+                        level: 'error'
                     }
                 );
 
@@ -1517,7 +1517,8 @@ class OAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode)
+                authMode: String(template.auth_mode),
+                level: 'error'
             });
 
             const error = WSErrBuilder.UnknownError();
@@ -1679,7 +1680,8 @@ class OAuthController {
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),
                     connectionId: String(connectionId),
-                    authMode: String(template.auth_mode)
+                    authMode: String(template.auth_mode),
+                    level: 'error'
                 });
 
                 const error = WSErrBuilder.UnknownError();

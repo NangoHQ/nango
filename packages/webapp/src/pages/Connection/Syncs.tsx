@@ -330,10 +330,10 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
                                                             <StopCircleIcon
                                                                 className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}
                                                             />
-                                                            <span className={`pl-2 ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}>
+                                                            <span className={`pl-2 mr-2 ${syncCommandButtonsDisabled ? 'text-gray-800' : ''}`}>
                                                                 Interrupt execution
-                                                                {showInterruptLoader && <Spinner size={1} />}
                                                             </span>
+                                                            {showInterruptLoader && <Spinner size={1} />}
                                                         </div>
                                                     )}
                                                     {sync?.status !== 'RUNNING' && (
