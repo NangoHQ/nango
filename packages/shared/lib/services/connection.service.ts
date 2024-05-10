@@ -449,7 +449,7 @@ class ConnectionService {
         return result;
     }
 
-    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<NangoConnection[]> {
+    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<(NangoConnection & { account_id: number })[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 

@@ -17,7 +17,7 @@ export enum Types {
     AUTH_PUBLIC_KEY = 'nango.auth.publicKey',
     AUTH_SESSION = 'nango.auth.session',
     LOGS_LOG = 'nango.logs.log',
-    REFRESH_TOKENS = 'nango.jobs.cron.refreshTokens',
+    REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
     REFRESH_TOKENS_SUCCESS = 'nango.jobs.cron.refreshTokens.success',
     REFRESH_TOKENS_FAILED = 'nango.jobs.cron.refreshTokens.failed',
     DB_POOL_USED = 'nango.db.pool.used',
