@@ -18,7 +18,7 @@ echo`Generating changelog`;
 await $`npx git-cliff -o CHANGELOG.md -t ${nextVersion}`;
 
 echo`Checkout out branch`;
-await $`git fetch --depth=1`;
+await $`git fetch`;
 await $`git switch ${branch}`;
 
 echo`Adding file`;
