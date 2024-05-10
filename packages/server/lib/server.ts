@@ -4,7 +4,7 @@ import './utils/config.js';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'http';
-import { getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
+import { db, getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
@@ -27,6 +27,8 @@ const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 wss.on('connection', async (ws: WebSocket) => {
     await publisher.subscribe(ws);
 });
+
+db.enableMetrics();
 
 // Set to 'false' to disable migration at startup. Appropriate when you
 // have multiple replicas of the service running and you do not want them

@@ -94,7 +94,7 @@ class AppAuthController {
             }
 
             const template = configService.getTemplate(config.provider);
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[AuthModes.App] as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.[AuthModes.App] as string);
 
             if (template.auth_mode !== AuthModes.App) {
                 await createActivityLogMessageAndEnd({
@@ -189,7 +189,8 @@ class AppAuthController {
                         environmentId: String(environmentId),
                         providerConfigKey: String(providerConfigKey),
                         connectionId: String(connectionId),
-                        authMode: String(template.auth_mode)
+                        authMode: String(template.auth_mode),
+                        level: 'error'
                     }
                 );
 

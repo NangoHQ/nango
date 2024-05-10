@@ -16,7 +16,7 @@ const validation = z
 
 export const searchLogs = asyncWrapper<SearchLogs>(async (req, res) => {
     if (!envs.NANGO_LOGS_ENABLED) {
-        res.status(422).send({ error: { code: 'feature_disabled' } });
+        res.status(404).send({ error: { code: 'feature_disabled' } });
         return;
     }
 

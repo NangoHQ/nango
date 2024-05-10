@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { Request } from 'express';
 import type { User, Template as ProviderTemplate } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
-import { getLogger, resultErr, resultOk } from '@nangohq/utils';
+import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, interpolateString } from '@nangohq/shared';
 
@@ -14,17 +14,17 @@ export async function getUserFromSession(req: Request<any>): Promise<Result<User
     if (!sessionUser) {
         const error = new NangoError('user_not_found');
 
-        return resultErr(error);
+        return Err(error);
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
     if (!user) {
         const error = new NangoError('user_not_found');
-        return resultErr(error);
+        return Err(error);
     }
 
-    return resultOk(user);
+    return Ok(user);
 }
 
 export function dirname() {
@@ -115,7 +115,7 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
     if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers || template.proxy?.verification) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
         const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
-        const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyBaseUrlMatches = template.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyHeaderMatches = template.proxy?.headers
             ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))

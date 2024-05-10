@@ -111,7 +111,7 @@ class ErrorManager {
             }
         });
 
-        logger.error(`Exception caught: ${stringifyError(e)}`);
+        logger.error(`Exception caught: ${stringifyError(e, { stack: true })}`);
 
         if (e instanceof Error && tracer) {
             // Log to datadog manually
@@ -155,7 +155,7 @@ class ErrorManager {
             environmentId = res.locals['environment'].id;
         }
 
-        this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: nangoErr.payload }, tracer);
+        this.report(err, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: nangoErr.payload }, tracer);
 
         const supportError = new NangoError('generic_error_support', errorId);
         this.errResFromNangoErr(res, supportError);
