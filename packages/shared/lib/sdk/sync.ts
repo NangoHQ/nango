@@ -533,7 +533,7 @@ export class NangoAction {
         const lastArg = args[args.length - 1];
 
         const isUserDefinedLevel = (object: UserLogParameters): boolean => {
-            return typeof lastArg === 'object' && 'level' in object;
+            return lastArg && typeof lastArg === 'object' && 'level' in object;
         };
 
         const userDefinedLevel: UserLogParameters | undefined = isUserDefinedLevel(lastArg) ? lastArg : undefined;
