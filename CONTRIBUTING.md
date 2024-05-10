@@ -65,3 +65,7 @@ nango deploy dev
 ```
 
 To know more about the CLI, check the [documentation](https://docs.nango.dev/reference/cli).
+
+## Proposing pull requests
+
+Pull Request title should follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
