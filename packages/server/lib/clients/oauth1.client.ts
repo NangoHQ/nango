@@ -28,7 +28,7 @@ export class OAuth1Client {
 
         this.client = new oAuth1.OAuth(
             this.authConfig.request_url,
-            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url[AuthModes.OAuth1] as string),
+            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url?.[AuthModes.OAuth1] as string),
             this.config.oauth_client_id,
             this.config.oauth_client_secret,
             '1.0A',
@@ -54,9 +54,9 @@ export class OAuth1Client {
         const promise = new Promise<OAuth1RequestTokenResult>((resolve, reject) => {
             this.client.getOAuthRequestToken(
                 additionalTokenParams,
-                (error: { statusCode: number; data?: any }, token: string, token_secret: string, parsed_query_string: string) => {
+                (error: { statusCode: number; data?: any } | undefined, token: string, token_secret: string, parsed_query_string: string) => {
                     if (error) {
-                        reject(error);
+                        reject(error as unknown as Error);
                     } else {
                         resolve({
                             request_token: token,
@@ -96,7 +96,7 @@ export class OAuth1Client {
                 undefined,
                 function (error, data, _response) {
                     if (error) {
-                        reject(error);
+                        reject(error as unknown as Error);
                         return;
                     }
 
@@ -122,7 +122,7 @@ export class OAuth1Client {
             ...additionalAuthParams
         };
 
-        const url = new URL(this.authConfig.authorization_url);
+        const url = new URL(this.authConfig.authorization_url!);
         const params = new URLSearchParams(queryParams);
         return `${url.href}?${params.toString()}`;
     }

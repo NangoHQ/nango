@@ -6,7 +6,7 @@ import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import configService from './config.service.js';
-import compileService from './compile.service.js';
+import { compileAllFiles } from './compile.service.js';
 import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
 
@@ -17,12 +17,31 @@ interface RunArgs extends GlobalOptions {
     useServerLastSyncDate?: boolean;
     input?: object;
     metadata?: Metadata;
+    optionalEnvironment?: string;
+    optionalProviderConfigKey?: string;
 }
 
 class DryRunService {
-    public async run(options: RunArgs, environment: string, debug = false) {
+    environment?: string;
+    returnOutput?: boolean;
+
+    constructor(environment?: string, returnOutput = false) {
+        if (environment) {
+            this.environment = environment;
+        }
+
+        this.returnOutput = returnOutput;
+    }
+    public async run(options: RunArgs, debug = false): Promise<string | void> {
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata;
+
+        const environment = options.optionalEnvironment || this.environment;
+
+        if (!environment) {
+            console.log(chalk.red('Environment is required'));
+            return;
+        }
 
         await parseSecretKey(environment, debug);
 
@@ -58,11 +77,19 @@ class DryRunService {
             return;
         }
 
-        const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
+        let providerConfigKey = options.optionalProviderConfigKey;
 
         if (!providerConfigKey) {
-            console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
-            return;
+            providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
+
+            if (!providerConfigKey) {
+                console.log(
+                    chalk.red(
+                        `Provider config key not found, please check that the provider exists for this sync name: ${syncName} by going to the Nango dashboard.`
+                    )
+                );
+                return;
+            }
         }
 
         const foundConfig = config.find((configItem) => {
@@ -125,7 +152,7 @@ class DryRunService {
 
         const type = syncInfo?.type === SyncConfigType.ACTION ? 'action' : 'sync';
 
-        const result = await compileService.run({ debug, scriptName: syncName, providerConfigKey, type });
+        const result = await compileAllFiles({ debug, scriptName: syncName, providerConfigKey, type });
 
         if (!result) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
@@ -154,13 +181,18 @@ class DryRunService {
         // dry-run mode does not read or write to the records database
         // so we can safely mock the records service
         const recordsService: RecordsServiceInterface = {
-            markNonCurrentGenerationRecordsAsDeleted: (
-                _connectionId: number,
-                _model: string,
-                _syncId: string,
-                _generation: number
+            markNonCurrentGenerationRecordsAsDeleted: ({
+                connectionId: _connectionId,
+                model: _model,
+                syncId: _syncId,
+                generation: _generation
+            }: {
+                connectionId: number;
+                model: string;
+                syncId: string;
+                generation: number;
                 // eslint-disable-next-line @typescript-eslint/require-await
-            ): Promise<string[]> => {
+            }): Promise<string[]> => {
                 return Promise.resolve([]);
             }
         };
@@ -176,6 +208,7 @@ class DryRunService {
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
+            dryRunService: new DryRunService(environment, true),
             logContextGetter,
             writeToDb: false,
             nangoConnection,
@@ -197,8 +230,11 @@ class DryRunService {
             const secretKey = process.env['NANGO_SECRET_KEY'];
             const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
 
+            let resultOutput = '';
+
             if (results) {
                 console.log(JSON.stringify(results, null, 2));
+                resultOutput += JSON.stringify(results, null, 2);
             }
 
             if (syncRun.logMessages && syncRun.logMessages.messages.length > 0) {
@@ -210,11 +246,14 @@ class DryRunService {
                     for (let i = 0; i < batchCount && index < logMessages.length; i++, index++) {
                         const logs = logMessages[index];
                         console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
+                        resultOutput += JSON.stringify(logs, null, 2);
                     }
                 };
 
                 console.log(chalk.yellow(`The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`));
+                resultOutput += `The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`;
                 console.log(chalk.yellow('The following log messages were generated:'));
+                resultOutput += 'The following log messages were generated:';
 
                 displayBatch();
 
@@ -229,6 +268,10 @@ class DryRunService {
                         break;
                     }
                 }
+            }
+
+            if (this.returnOutput) {
+                return resultOutput;
             }
 
             process.exit(0);

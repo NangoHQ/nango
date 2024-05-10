@@ -2,8 +2,6 @@ import type { Request, Response, NextFunction } from 'express';
 import tracer from 'dd-trace';
 import type { LogLevel, ApiKeyCredentials, BasicApiCredentials } from '@nangohq/shared';
 import {
-    getAccount,
-    getEnvironmentId,
     createActivityLog,
     errorManager,
     analytics,
@@ -24,13 +22,15 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { isErr, stringifyError } from '@nangohq/utils';
+import type { RequestLocals } from '../utils/express.js';
 
 class ApiAuthController {
-    async apiKey(req: Request, res: Response, next: NextFunction) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
+    async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const accountId = res.locals['account'].id;
+        const environmentId = res.locals['environment'].id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -48,12 +48,13 @@ class ApiAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization API Key' },
-            { account: { id: accountId }, environment: { id: environmentId } }
-        );
 
+        let logCtx: LogContext | undefined;
         try {
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization API Key' },
+                { account: { id: accountId }, environment: { id: environmentId } }
+            );
             void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
@@ -122,7 +123,7 @@ class ApiAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.ApiKey) {
                 await createActivityLogMessageAndEnd({
@@ -140,7 +141,7 @@ class ApiAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             if (!req.body.apiKey) {
@@ -157,7 +158,7 @@ class ApiAuthController {
             };
 
             const connectionResponse = await connectionTestHook(
-                config?.provider,
+                config.provider,
                 template,
                 credentials,
                 connectionId,
@@ -172,7 +173,7 @@ class ApiAuthController {
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: `The credentials provided were not valid for the ${config?.provider} provider`,
+                    content: `The credentials provided were not valid for the ${config.provider} provider`,
                     timestamp: Date.now()
                 });
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
@@ -198,7 +199,7 @@ class ApiAuthController {
             const [updatedConnection] = await connectionService.upsertApiConnection(
                 connectionId,
                 providerConfigKey,
-                config?.provider,
+                config.provider,
                 credentials,
                 connectionConfig,
                 environmentId,
@@ -215,7 +216,7 @@ class ApiAuthController {
                         auth_mode: AuthModes.ApiKey,
                         operation: updatedConnection.operation
                     },
-                    config?.provider,
+                    config.provider,
                     logContextGetter,
                     activityLogId,
                     undefined,
@@ -234,8 +235,24 @@ class ApiAuthController {
                 content: `Error during API key auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during API key auth', { error: err });
-            await logCtx.failed();
+            if (logCtx) {
+                void connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.ApiKey,
+                        error: `Error during API key auth: ${prettyError}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    'unknown',
+                    activityLogId,
+                    logCtx
+                );
+                await logCtx.error('Error during API key auth', { error: err });
+                await logCtx.failed();
+            }
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -247,28 +264,13 @@ class ApiAuthController {
                 }
             });
 
-            void connectionCreationFailedHook(
-                {
-                    id: -1,
-                    connection_id: connectionId as string,
-                    provider_config_key: providerConfigKey as string,
-                    environment_id: environmentId,
-                    auth_mode: AuthModes.ApiKey,
-                    error: `Error during API key auth: ${prettyError}`,
-                    operation: AuthOperation.UNKNOWN
-                },
-                'unknown',
-                activityLogId,
-                logCtx
-            );
-
             next(err);
         }
     }
 
-    async basic(req: Request, res: Response, next: NextFunction) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
+    async basic(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const accountId = res.locals['account'].id;
+        const environmentId = res.locals['environment'].id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -286,12 +288,13 @@ class ApiAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Basic' },
-            { account: { id: accountId }, environment: { id: environmentId } }
-        );
+        let logCtx: LogContext | undefined;
 
         try {
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Basic' },
+                { account: { id: accountId }, environment: { id: environmentId } }
+            );
             void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
@@ -361,7 +364,7 @@ class ApiAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.Basic) {
                 await createActivityLogMessageAndEnd({
@@ -369,7 +372,7 @@ class ApiAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Provider ${config?.provider} does not support Basic API auth`
+                    content: `Provider ${config.provider} does not support Basic API auth`
                 });
                 await logCtx.error('Provider does not support Basic API auth', { provider: config.provider });
                 await logCtx.failed();
@@ -386,7 +389,7 @@ class ApiAuthController {
             };
 
             const connectionResponse = await connectionTestHook(
-                config?.provider,
+                config.provider,
                 template,
                 credentials,
                 connectionId,
@@ -401,7 +404,7 @@ class ApiAuthController {
                     level: 'error',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
-                    content: `The credentials provided were not valid for the ${config?.provider} provider`,
+                    content: `The credentials provided were not valid for the ${config.provider} provider`,
                     timestamp: Date.now()
                 });
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
@@ -412,7 +415,7 @@ class ApiAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             await createActivityLogMessage({
@@ -430,7 +433,7 @@ class ApiAuthController {
             const [updatedConnection] = await connectionService.upsertApiConnection(
                 connectionId,
                 providerConfigKey,
-                config?.provider,
+                config.provider,
                 credentials,
                 connectionConfig,
                 environmentId,
@@ -447,7 +450,7 @@ class ApiAuthController {
                         auth_mode: AuthModes.Basic,
                         operation: updatedConnection.operation
                     },
-                    config?.provider,
+                    config.provider,
                     logContextGetter,
                     activityLogId,
                     undefined,
@@ -466,8 +469,24 @@ class ApiAuthController {
                 content: `Error during basic API auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during API key auth', { error: err });
-            await logCtx.failed();
+            if (logCtx) {
+                void connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.ApiKey,
+                        error: `Error during basic API key auth: ${prettyError}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    'unknown',
+                    activityLogId,
+                    logCtx
+                );
+                await logCtx.error('Error during API key auth', { error: err });
+                await logCtx.failed();
+            }
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -478,21 +497,6 @@ class ApiAuthController {
                     connectionId
                 }
             });
-
-            void connectionCreationFailedHook(
-                {
-                    id: -1,
-                    connection_id: connectionId as string,
-                    provider_config_key: providerConfigKey as string,
-                    environment_id: environmentId,
-                    auth_mode: AuthModes.ApiKey,
-                    error: `Error during basic API key auth: ${prettyError}`,
-                    operation: AuthOperation.UNKNOWN
-                },
-                'unknown',
-                activityLogId,
-                logCtx
-            );
 
             next(err);
         }

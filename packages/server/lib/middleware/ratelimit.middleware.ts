@@ -1,8 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { createClient } from 'redis';
-import type { RateLimiterRes } from 'rate-limiter-flexible';
-import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
-import { getAccount, getRedisUrl } from '@nangohq/shared';
+import { RateLimiterRes, RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
+import { getRedisUrl } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('RateLimiter');
@@ -43,23 +42,26 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
             setXRateLimitHeaders(rateLimiterRes);
             next();
         })
-        .catch((rateLimiterRes) => {
-            res.setHeader('Retry-After', Math.floor(rateLimiterRes.msBeforeNext / 1000));
-            setXRateLimitHeaders(rateLimiterRes);
-            logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
-            res.status(429).send('Too Many Requests');
+        .catch((rateLimiterRes: unknown) => {
+            if (rateLimiterRes instanceof RateLimiterRes) {
+                res.setHeader('Retry-After', Math.floor(rateLimiterRes.msBeforeNext / 1000));
+                setXRateLimitHeaders(rateLimiterRes);
+                logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
+                res.status(429).send('Too Many Requests');
+                return;
+            }
+
+            res.status(500).send('Server error');
         });
 };
 
 function getKey(req: Request, res: Response): string {
-    try {
-        return `account-${getAccount(res)}`;
-    } catch {
-        if (req.user) {
-            return `user-${req.user.id}`;
-        }
-        return `ip-${req.ip}`;
+    if ('account' in res.locals) {
+        return `account-${res.locals['account'].id}`;
+    } else if (req.user) {
+        return `user-${req.user.id}`;
     }
+    return `ip-${req.ip}`;
 }
 
 function getPointsToConsume(req: Request): number {

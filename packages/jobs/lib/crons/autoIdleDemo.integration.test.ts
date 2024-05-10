@@ -21,7 +21,7 @@ describe('Auto Idle Demo', async () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
-        env = await seeders.createEnvironmentSeed('dev');
+        env = await seeders.createEnvironmentSeed(0, 'dev');
         await seeders.createConfigSeeds(env);
     });
 

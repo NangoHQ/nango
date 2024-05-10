@@ -1,23 +1,19 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils';
-import { getEnvironmentAndAccountId, accountService, userService, errorManager, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { accountService, userService, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import type { RequestLocals } from '../utils/express.js';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
 export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
 export const AUTH_ADMIN_SWITCH_MS = 600 * 1000;
 
 class AccountController {
-    async getAccount(req: Request, res: Response, next: NextFunction) {
+    async getAccount(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { account, user } = response;
+            const { account, user } = res.locals;
 
             if (account.uuid === NANGO_ADMIN_UUID) {
                 account.is_admin = true;
@@ -41,14 +37,9 @@ class AccountController {
         }
     }
 
-    async editAccount(req: Request, res: Response, next: NextFunction) {
+    async editAccount(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { account } = response;
+            const { account } = res.locals;
 
             const name = req.body['name'];
 
@@ -64,13 +55,8 @@ class AccountController {
         }
     }
 
-    async editCustomer(req: Request, res: Response, next: NextFunction) {
+    async editCustomer(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
-            const { success, error } = await getEnvironmentAndAccountId(res, req);
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
             const { is_capped, account_uuid: accountUUID } = req.body;
 
             if (!accountUUID) {
@@ -97,23 +83,22 @@ class AccountController {
         }
     }
 
-    async switchAccount(req: Request<unknown, unknown, { account_uuid?: string; login_reason?: string }>, res: Response, next: NextFunction) {
+    async switchAccount(
+        req: Request<unknown, unknown, { account_uuid?: string; login_reason?: string }>,
+        res: Response<any, Required<RequestLocals>>,
+        next: NextFunction
+    ) {
         if (!AUTH_ADMIN_SWITCH_ENABLED) {
             res.status(400).send('Account switching only allowed in cloud');
 
             return;
         }
 
+        let logCtx: LogContext | undefined;
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
+            const { account, environment } = res.locals;
 
-            const { account } = response;
-
-            if (account?.uuid !== NANGO_ADMIN_UUID) {
+            if (account.uuid !== NANGO_ADMIN_UUID) {
                 res.status(401).send({ message: 'Unauthorized' });
                 return;
             }
@@ -135,7 +120,7 @@ class AccountController {
                 return;
             }
 
-            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, response.environment.name);
+            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, environment.name);
 
             if (!result) {
                 res.status(400).send({ message: 'Invalid account_uuid' });
@@ -159,18 +144,18 @@ class AccountController {
                 connection_id: 'n/a',
                 provider: null,
                 provider_config_key: '',
-                environment_id: response.environment.id
+                environment_id: environment.id
             };
 
             const activityLogId = await createActivityLogAndLogMessage(log, {
                 level: 'info',
-                environment_id: response.environment.id,
+                environment_id: environment.id,
                 timestamp: Date.now(),
                 content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
             });
-            const logCtx = await logContextGetter.create(
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
-                { account: response.account, environment: response.environment }
+                { account, environment }
             );
             await logCtx.info('A Nango admin logged into another account for the following reason', { loginReason: login_reason });
             await logCtx.success();
@@ -195,6 +180,10 @@ class AccountController {
                 });
             });
         } catch (err) {
+            if (logCtx) {
+                await logCtx.error('uncaught error', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

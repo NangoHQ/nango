@@ -27,6 +27,7 @@ import { getLogger, env, stringifyError } from '@nangohq/utils';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Jobs');
@@ -168,7 +169,12 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         });
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
         );
         await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', { error: err, syncName });
         await logCtx.failed();
@@ -178,7 +184,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             connectionId: nangoConnection?.connection_id,
             providerConfigKey: nangoConnection?.provider_config_key,
             syncId,
-            syncName
+            syncName,
+            level: 'error'
         });
 
         errorManager.report(content, {
@@ -214,6 +221,8 @@ export async function syncProvider(
     debug = false
 ): Promise<boolean | object | null> {
     const action = syncType === SyncType.INITIAL ? LogActionEnum.FULL_SYNC : LogActionEnum.SYNC;
+    let logCtx: LogContext | undefined;
+
     try {
         const log = {
             level: 'info' as LogLevel,
@@ -230,10 +239,15 @@ export async function syncProvider(
             operation_name: syncName
         };
         const activityLogId = (await createActivityLog(log)) as number;
-        // TODO: move that outside try/catch
-        const logCtx = await logContextGetter.create(
+
+        logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: nangoConnection.environment_id },
+                connection: { id: nangoConnection.id! },
+                sync: { id: syncId }
+            }
         );
 
         if (debug) {
@@ -292,18 +306,16 @@ export async function syncProvider(
         };
         const content = `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`;
 
-        const activityLogId = await createActivityLogAndLogMessage(log, {
+        await createActivityLogAndLogMessage(log, {
             level: 'error',
             environment_id: nangoConnection?.environment_id,
             timestamp: Date.now(),
             content
         });
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id } }
-        );
-        await logCtx.error('Failed to create the job', { error: err });
-        await logCtx.failed();
+        if (logCtx) {
+            await logCtx.error('Failed to create the job', { error: err });
+            await logCtx.failed();
+        }
 
         await telemetry.log(LogTypes.SYNC_OVERLAP, content, action, {
             environmentId: String(nangoConnection?.environment_id),
@@ -420,7 +432,8 @@ export async function reportFailure(
         error: stringifyError(error),
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
-        runId: context.info.workflowExecution.runId
+        runId: context.info.workflowExecution.runId,
+        level: 'error'
     });
 
     if (type === 'sync' && 'syncId' in workflowArguments) {

@@ -44,7 +44,8 @@ export const internalNango: InternalNango = {
                     provider: integration.provider,
                     providerConfigKey: integration.unique_key,
                     connectionIdentifier,
-                    payload: JSON.stringify(body)
+                    payload: JSON.stringify(body),
+                    level: 'error'
                 }
             );
 
@@ -81,7 +82,8 @@ export const internalNango: InternalNango = {
                     providerConfigKey: integration.unique_key,
                     propName: String(propName),
                     connectionIdentifier,
-                    payload: JSON.stringify(body)
+                    payload: JSON.stringify(body),
+                    level: 'error'
                 }
             );
 
@@ -117,15 +119,7 @@ export const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (type === webhook) {
                     for (const connection of connections) {
-                        await syncClient?.triggerWebhook(
-                            connection,
-                            integration.provider,
-                            webhook,
-                            syncConfig.sync_name,
-                            body,
-                            integration.environment_id,
-                            logContextGetter
-                        );
+                        await syncClient?.triggerWebhook(integration, connection, webhook, syncConfig.sync_name, body, logContextGetter);
                     }
                 }
             }

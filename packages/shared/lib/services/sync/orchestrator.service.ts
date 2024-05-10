@@ -2,6 +2,7 @@ import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.serv
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { getLatestSyncJob } from './job.service.js';
+import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     createSync,
     getSyncsByConnectionId,
@@ -36,7 +37,9 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
+import { LogActionEnum } from '../../models/Activity.js';
 import { stringifyError } from '@nangohq/utils';
+import environmentService from '../environment.service.js';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -191,7 +194,8 @@ export class Orchestrator {
         syncNames,
         command,
         logContextGetter,
-        connectionId
+        connectionId,
+        initiator
     }: {
         recordsService: RecordsServiceInterface;
         environmentId: number;
@@ -200,9 +204,11 @@ export class Orchestrator {
         command: SyncCommand;
         logContextGetter: LogContextGetter;
         connectionId?: string;
+        initiator: string;
     }): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
-        const provider = await configService.getProviderName(providerConfigKey);
+        const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
+        const account = await environmentService.getAccountFromEnvironment(environmentId);
 
         const log = {
             level: 'info' as LogLevel,
@@ -212,7 +218,7 @@ export class Orchestrator {
             end: Date.now(),
             timestamp: Date.now(),
             connection_id: connectionId || '',
-            provider,
+            provider: provider!.provider,
             provider_config_key: providerConfigKey,
             environment_id: environmentId
         };
@@ -223,7 +229,7 @@ export class Orchestrator {
 
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
-            { account: { id: -1 }, environment: { id: environmentId } }
+            { account: { id: account!.id }, environment: { id: environmentId }, config: { id: provider!.id! } }
         );
 
         const syncClient = await SyncClient.getInstance();
@@ -265,7 +271,8 @@ export class Orchestrator {
                     syncName,
                     nangoConnectionId: connection.id,
                     logCtx,
-                    recordsService
+                    recordsService,
+                    initiator
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
@@ -306,7 +313,8 @@ export class Orchestrator {
                     syncName: sync.name,
                     nangoConnectionId: connection.id,
                     logCtx,
-                    recordsService
+                    recordsService,
+                    initiator
                 });
                 if (command !== SyncCommand.RUN) {
                     await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
@@ -357,7 +365,7 @@ export class Orchestrator {
                 }
 
                 const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
-                const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -373,7 +381,7 @@ export class Orchestrator {
 
             for (const sync of syncs) {
                 const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
-                const reportedStatus = await this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -451,9 +459,29 @@ export class Orchestrator {
                 if (status !== SyncStatus.RUNNING) {
                     status = SyncStatus.PAUSED;
                 }
+                await telemetry.log(
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
+                    'API: Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(environmentId),
+                        syncId
+                    },
+                    `syncId:${syncId}`
+                );
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
                 status = SyncStatus.STOPPED;
+                await telemetry.log(
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,
+                    'API: Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(environmentId),
+                        syncId
+                    },
+                    `syncId:${syncId}`
+                );
             }
         }
 

@@ -8,7 +8,6 @@ import {
     SyncConfigType,
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncOrchestrator,
-    syncDataService,
     getOnboardingProvider,
     createOnboardingProvider,
     DEMO_GITHUB_CONFIG_KEY,
@@ -26,40 +25,26 @@ import {
     createActivityLog,
     LogActionEnum,
     analytics,
-    AnalyticsTypes,
-    featureFlags
+    AnalyticsTypes
 } from '@nangohq/shared';
-import type { CustomerFacingDataRecord, IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger, isErr, isOk, resultErr, resultOk, type Result } from '@nangohq/utils';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
+import { getLogger, isErr } from '@nangohq/utils';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
+import type { GetOnboardingStatus } from '@nangohq/types';
+import type { RequestLocals } from '../utils/express.js';
 
 const logger = getLogger('Server.Onboarding');
-
-interface OnboardingStatus {
-    id: number;
-    progress: number;
-    records: CustomerFacingDataRecord[] | null;
-    provider: boolean;
-    connection: boolean;
-    sync: boolean;
-}
 
 class OnboardingController {
     /**
      * Start an onboarding process.
      * We create a row in the DB to store the global state and create a GitHub provider so we can launch the oauth process
      */
-    async create(req: Request, res: Response, next: NextFunction) {
+    async create(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { user, environment, account } = response;
+            const { user, environment, account } = res.locals;
 
             if (environment.name !== 'dev') {
                 res.status(400).json({ error: 'onboarding_dev_only' });
@@ -101,27 +86,21 @@ class OnboardingController {
      * So we check if each step has been correctly achieved.
      * This is particularly useful if we retry, if some parts have failed or if the user has deleted part of the state
      */
-    async status(req: Request, res: Response, next: NextFunction) {
+    async status(req: Request, res: Response<GetOnboardingStatus['Reply'], Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { user, environment } = response;
+            const { user, environment } = res.locals;
             if (environment.name !== 'dev') {
-                res.status(400).json({ message: 'onboarding_dev_only' });
+                res.status(400).json({ error: { code: 'onboarding_dev_only' } });
                 return;
             }
 
             const status = await getOnboardingProgress(user.id);
             if (!status) {
-                res.status(404).send({ message: 'no_onboarding' });
+                res.status(404).send({ error: { code: 'no_onboarding' } });
                 return;
             }
 
-            const payload: OnboardingStatus = {
+            const payload: GetOnboardingStatus['Success'] = {
                 id: status.id,
                 progress: status.progress,
                 connection: false,
@@ -131,7 +110,7 @@ class OnboardingController {
             };
             const { connection_id: connectionId } = req.query;
             if (!connectionId || typeof connectionId !== 'string') {
-                res.status(400).json({ message: 'connection_id must be a string' });
+                res.status(400).json({ error: { code: 'invalid_query_params' } });
                 return;
             }
 
@@ -163,26 +142,15 @@ class OnboardingController {
                 payload.progress = 3;
             }
 
-            let getRecords: Result<CustomerFacingDataRecord[], Error>;
-            const shouldReturnNewRecords = await featureFlags.isEnabled('new-records-return', 'global', false);
-            if (shouldReturnNewRecords) {
-                const newGetRecords = await recordsService.getRecords({
-                    connectionId: connectionExists.id,
-                    model: DEMO_MODEL
-                });
-                getRecords = isOk(newGetRecords) ? resultOk(newGetRecords.res.records) : newGetRecords;
-            } else {
-                const legacyGetRecords = await syncDataService.getAllDataRecords(connectionId, DEMO_GITHUB_CONFIG_KEY, environment.id, DEMO_MODEL);
-                getRecords = legacyGetRecords.success
-                    ? resultOk(legacyGetRecords.response?.records || [])
-                    : resultErr(legacyGetRecords.error || 'failed_to_get_records');
-            }
-
+            const getRecords = await recordsService.getRecords({
+                connectionId: connectionExists.id,
+                model: DEMO_MODEL
+            });
             if (isErr(getRecords)) {
-                res.status(400).json({ message: 'failed_to_get_records' });
+                res.status(400).json({ error: { code: 'failed_to_get_records' } });
                 return;
             } else {
-                payload.records = getRecords.res;
+                payload.records = getRecords.res.records;
             }
             if (payload.records.length > 0) {
                 payload.progress = status.progress > 4 ? status.progress : 4;
@@ -198,15 +166,9 @@ class OnboardingController {
      * Create interactive demo Sync and Action
      * The code can be found in nango-integrations/github
      */
-    async deploy(req: Request, res: Response, next: NextFunction) {
+    async deploy(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { environment, account, user } = response;
+            const { environment, account, user } = res.locals;
             void analytics.track(AnalyticsTypes.DEMO_2, account.id, { user_id: user.id });
 
             const githubDemoSync = flowService.getFlow(DEMO_SYNC_NAME);
@@ -226,7 +188,7 @@ class OnboardingController {
                     auto_start: githubDemoSync.auto_start === true,
                     models: githubDemoSync.returns,
                     endpoints: githubDemoSync.endpoints,
-                    model_schema: JSON.stringify(githubDemoSync?.models),
+                    model_schema: JSON.stringify(githubDemoSync.models),
                     is_public: true,
                     public_route: 'github',
                     input: ''
@@ -240,7 +202,7 @@ class OnboardingController {
                     runs: 'every day',
                     endpoints: githubDemoAction.endpoints,
                     models: [githubDemoAction.returns as unknown as string],
-                    model_schema: JSON.stringify(githubDemoAction?.models),
+                    model_schema: JSON.stringify(githubDemoAction.models),
                     public_route: 'github',
                     input: githubDemoAction.input!
                 }
@@ -266,21 +228,18 @@ class OnboardingController {
      * Check the sync completion state.
      * It could be replaced by regular API calls.
      */
-    async checkSyncCompletion(req: Request<unknown, unknown, { connectionId?: string }>, res: Response, next: NextFunction) {
+    async checkSyncCompletion(
+        req: Request<unknown, unknown, { connectionId?: string } | undefined>,
+        res: Response<any, Required<RequestLocals>>,
+        next: NextFunction
+    ) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            if (!req.body || !req.body.connectionId || typeof req.body.connectionId !== 'string') {
+            if (!req.body?.connectionId || typeof req.body.connectionId !== 'string') {
                 res.status(400).json({ message: 'connection_id must be a string' });
                 return;
             }
 
-            const { environment, account, user } = response;
+            const { environment, account, user } = res.locals;
             void analytics.track(AnalyticsTypes.DEMO_4, account.id, { user_id: user.id });
             const {
                 success,
@@ -294,7 +253,7 @@ class OnboardingController {
                 return;
             }
 
-            if (!status || status.length <= 0) {
+            if (status.length <= 0) {
                 // If for any reason we don't have a sync, because of a partial state
                 logger.info(`[demo] no sync were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand({
@@ -304,7 +263,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
@@ -313,7 +273,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.UNPAUSE,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
 
                 res.status(200).json({ retry: true });
@@ -336,7 +297,8 @@ class OnboardingController {
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
                     logContextGetter,
-                    connectionId: req.body.connectionId
+                    connectionId: req.body.connectionId,
+                    initiator: 'demo'
                 });
             }
 
@@ -353,27 +315,21 @@ class OnboardingController {
     /**
      * Log the progress, this is merely informative and for BI.
      */
-    async updateStatus(req: Request<unknown, unknown, { progress?: number }>, res: Response, next: NextFunction) {
+    async updateStatus(req: Request<unknown, unknown, { progress?: number } | undefined>, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            if (response.environment.name !== 'dev') {
+            const { user, account, environment } = res.locals;
+            if (environment.name !== 'dev') {
                 res.status(400).json({ message: 'onboarding_dev_only' });
                 return;
             }
 
-            if (typeof req.body.progress !== 'number' || req.body.progress > 6 || req.body.progress < 0) {
+            if (typeof req.body?.progress !== 'number' || req.body.progress > 6 || req.body.progress < 0) {
                 res.status(400).json({ message: 'Missing progress' });
                 return;
             }
 
             const progress = req.body.progress;
 
-            const { user, account } = response;
             const status = await getOnboardingProgress(user.id);
             if (!status) {
                 res.status(404).send({ message: 'no_onboarding' });
@@ -401,15 +357,15 @@ class OnboardingController {
     /**
      * Trigger an action to write a test GitHub issue
      */
-    async writeGithubIssue(req: Request<unknown, unknown, { connectionId?: string; title?: string }>, res: Response, next: NextFunction) {
+    async writeGithubIssue(
+        req: Request<unknown, unknown, { connectionId?: string; title?: string } | undefined>,
+        res: Response<any, Required<RequestLocals>>,
+        next: NextFunction
+    ) {
+        let logCtx: LogContext | undefined;
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            if (response.environment.name !== 'dev') {
+            const { environment, account, user } = res.locals;
+            if (environment.name !== 'dev') {
                 res.status(400).json({ message: 'onboarding_dev_only' });
                 return;
             }
@@ -418,12 +374,11 @@ class OnboardingController {
                 res.status(400).json({ message: 'connection_id must be a string' });
                 return;
             }
-            if (!req.body?.title || typeof req.body.title !== 'string') {
+            if (!req.body.title || typeof req.body.title !== 'string') {
                 res.status(400).json({ message: 'title must be a string' });
                 return;
             }
 
-            const { environment, account, user } = response;
             void analytics.track(AnalyticsTypes.DEMO_5, account.id, { user_id: user.id });
 
             const syncClient = await SyncClient.getInstance();
@@ -461,10 +416,9 @@ class OnboardingController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
-            // TODO: move that outside try/catch
-            const logCtx = await logContextGetter.create(
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account, environment, user }
+                { account, environment, user, config: { id: connection.config_id! }, connection: { id: connection.id! } }
             );
             const actionResponse = await syncClient.triggerAction({
                 connection,
@@ -478,6 +432,7 @@ class OnboardingController {
             if (isErr(actionResponse)) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, actionResponse.err);
+                await logCtx.error('Failed to trigger action', { error: actionResponse.err });
                 await logCtx.failed();
                 return;
             }
@@ -486,6 +441,10 @@ class OnboardingController {
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ action: actionResponse.res });
         } catch (err) {
+            if (logCtx) {
+                await logCtx.error('Failed to trigger action', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

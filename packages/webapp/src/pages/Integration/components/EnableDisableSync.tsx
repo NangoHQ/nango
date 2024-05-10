@@ -95,10 +95,10 @@ export default function EnableDisableSync({
         }
         const res = await createFlow([flow]);
 
-        await finalizeEnableSync(res, flow.model_schema);
+        return finalizeEnableSync(res, flow.model_schema);
     };
 
-    const reEnableFlow = async (flow: ExtendedFlow) => {
+    const reEnableFlow = async (flow: ExtendedFlow): Promise<boolean> => {
         setModalShowSpinner(true);
         if (setIsEnabling) {
             setIsEnabling(true);
@@ -112,10 +112,10 @@ export default function EnableDisableSync({
             body: JSON.stringify(flow)
         });
 
-        await finalizeEnableSync(res, flow.model_schema);
+        return finalizeEnableSync(res, flow.model_schema);
     };
 
-    const finalizeEnableSync = async (res: Response | undefined, _model_schema: string) => {
+    const finalizeEnableSync = async (res: Response | undefined, _model_schema: string): Promise<boolean> => {
         if (!res) {
             setModalShowSpinner(false);
             if (setIsEnabling) {
@@ -125,7 +125,7 @@ export default function EnableDisableSync({
             toast.error('Something went wrong. Please try again.', {
                 position: toast.POSITION.BOTTOM_CENTER
             });
-            return;
+            return false;
         }
 
         if (res?.status >= 200 && res?.status < 300) {
@@ -146,7 +146,11 @@ export default function EnableDisableSync({
                 setModalCancelButtonLink('https://docs.nango.dev/reference/limits');
                 setVisible(true);
 
-                return;
+                if (setIsEnabling) {
+                    setIsEnabling(false);
+                }
+
+                return false;
             } else {
                 toast.error(payload.error, {
                     position: toast.POSITION.BOTTOM_CENTER
@@ -158,9 +162,11 @@ export default function EnableDisableSync({
             setIsEnabling(false);
         }
         setVisible(false);
+
+        return true;
     };
 
-    const onEnableSync = async (flow: Flow) => {
+    const onEnableSync = async (flow: Flow): Promise<boolean> => {
         const flowPayload: ExtendedFlow = {
             provider,
             providerConfigKey,
@@ -186,11 +192,18 @@ export default function EnableDisableSync({
             public_route: rawName || provider
         };
 
+        let success = false;
         if (flow.id) {
-            await reEnableFlow({ ...flowPayload, id: flow.id });
+            success = await reEnableFlow({ ...flowPayload, id: flow.id });
         } else {
-            await createNewFlow(flowPayload);
+            success = await createNewFlow(flowPayload);
         }
+
+        if (success && flow?.type === 'sync') {
+            setEnabled(true);
+        }
+
+        return success;
     };
 
     const disableSync = (flow: Flow) => {
@@ -230,11 +243,17 @@ export default function EnableDisableSync({
 
     const toggleSync = async (flow: Flow) => {
         if (enabled) {
-            flow?.type === 'sync' ? await disableSync(flow) : await onDisableSync(flow);
+            flow?.type === 'sync' ? disableSync(flow) : await onDisableSync(flow);
             setEnabled(false);
         } else {
-            flow?.type === 'sync' ? await enableSync(flow) : await onEnableSync(flow);
-            setEnabled(true);
+            if (flow?.type === 'sync') {
+                enableSync(flow);
+            } else {
+                const success = await onEnableSync(flow);
+                if (success) {
+                    setEnabled(true);
+                }
+            }
         }
     };
 

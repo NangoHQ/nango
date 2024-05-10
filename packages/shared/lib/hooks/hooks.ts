@@ -11,20 +11,23 @@ import integrationPostConnectionScript from '../integrations/scripts/connection/
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
 import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
-import { isCloud, isLocal, isEnterprise, getLogger } from '@nangohq/utils';
-import { resultOk, resultErr, type Result } from '@nangohq/utils';
+import { isCloud, isLocal, isEnterprise, getLogger, resultOk, resultErr } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
+import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 
 const logger = getLogger('hooks');
 
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
-    environmentId
+    environmentId,
+    creationType
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
+    creationType: 'create' | 'import';
 }): Promise<boolean> => {
     if (!providerConfigKey) {
         return false;
@@ -38,6 +41,9 @@ export const connectionCreationStartCapCheck = async ({
 
             if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
                 logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+                const analyticsType =
+                    creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
+                void analytics.trackByEnvironmentId(analyticsType, environmentId);
                 return true;
             }
         }
@@ -58,11 +64,11 @@ export const connectionCreated = async (
 
     if (options.initiateSync === true && !hosted) {
         const syncClient = await SyncClient.getInstance();
-        syncClient?.initiate(connection.id as number, logContextGetter);
+        await syncClient?.initiate(connection.id as number, logContextGetter);
     }
 
     if (options.runPostConnectionScript === true) {
-        integrationPostConnectionScript(connection, provider, logContextGetter);
+        await integrationPostConnectionScript(connection, provider, logContextGetter);
     }
 
     await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);

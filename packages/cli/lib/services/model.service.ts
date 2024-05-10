@@ -9,7 +9,7 @@ import configService from './config.service.js';
 
 class ModelService {
     public build(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
-        const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
+        const returnedModels = Object.keys(integrations).reduce<string[]>((acc, providerConfigKey) => {
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
             const syncNames = Object.keys(syncObject);
             for (const syncName of syncNames) {
@@ -24,7 +24,7 @@ class ModelService {
                 }
             }
             return acc;
-        }, [] as string[]);
+        }, []);
 
         if (!models) {
             return null;
@@ -91,7 +91,7 @@ class ModelService {
             let hasNull = false;
             let hasUndefined = false;
             let tsType = '';
-            if (field.indexOf('null') !== -1) {
+            if (field.includes('null')) {
                 field = field.replace(/\s*\|\s*null\s*/g, '');
                 hasNull = true;
             }
@@ -103,7 +103,7 @@ class ModelService {
                 return 'undefined';
             }
 
-            if (field.indexOf('undefined') !== -1) {
+            if (field.includes('undefined')) {
                 field = field.replace(/\s*\|\s*undefined\s*/g, '');
                 hasUndefined = true;
             }

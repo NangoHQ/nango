@@ -14,7 +14,8 @@
         "packages/jobs",
         "packages/webapp",
         "packages/utils",
-        "packages/data-ingestion"
+        "packages/data-ingestion",
+        "packages/types"
     ],
     "scripts": {
         "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
@@ -59,8 +60,8 @@
     "devDependencies": {
         "@tsconfig/node18-strictest-esm": "^1.0.1",
         "@types/node": "20.12.2",
-        "@typescript-eslint/eslint-plugin": "6.21.0",
-        "@typescript-eslint/parser": "6.21.0",
+        "@typescript-eslint/eslint-plugin": "7.7.1",
+        "@typescript-eslint/parser": "7.7.1",
         "concurrently": "^8.0.1",
         "eslint": "8.56.0",
         "eslint-config-prettier": "9.1.0",
@@ -76,11 +77,7 @@
         "testcontainers": "^9.12.0",
         "tsx": "^4.6.2",
         "typescript": "^5.3.3",
-        "vitest": "^0.33.0"
-    },
-    "dependencies": {
-        "@babel/parser": "^7.22.5",
-        "@babel/traverse": "^7.22.5"
+        "vitest": "0.33.0"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,ejs,cjs}": [

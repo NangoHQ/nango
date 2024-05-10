@@ -77,7 +77,7 @@ export interface SyncResponse {
     futureActionTimes: number[];
     offset: number;
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
-    models: string[];
+    models: string | string[];
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
     latest_sync: {
@@ -264,7 +264,7 @@ export interface Account {
     always_send_webhook: boolean;
     slack_notifications: boolean;
     websockets_path: string;
-    secret_key_rotatable: boolean;
+    secret_key_rotatable?: boolean;
     env_variables: { id?: number; name: string; value: string }[];
     host: string;
     uuid: string;
@@ -290,13 +290,4 @@ export interface IntegrationConfig {
     connection_count: number;
     connections: Connection[];
     docs: string;
-}
-
-export interface OnboardingStatus {
-    id: number;
-    progress: number;
-    records: Record<string, unknown>[] | null;
-    provider: boolean;
-    connection: boolean;
-    sync: boolean;
 }

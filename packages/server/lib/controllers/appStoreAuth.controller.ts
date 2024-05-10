@@ -1,8 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel, AuthCredentials } from '@nangohq/shared';
 import {
-    getAccount,
-    getEnvironmentId,
     createActivityLog,
     errorManager,
     analytics,
@@ -21,13 +19,15 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
+import type { RequestLocals } from '../utils/express.js';
 
 class AppStoreAuthController {
-    async auth(req: Request, res: Response, next: NextFunction) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
+    async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const accountId = res.locals['account'].id;
+        const environmentId = res.locals['environment'].id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
 
@@ -44,12 +44,13 @@ class AppStoreAuthController {
         };
 
         const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
-            { account: { id: accountId }, environment: { id: environmentId } }
-        );
+        let logCtx: LogContext | undefined;
 
         try {
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
+                { account: { id: accountId }, environment: { id: environmentId } }
+            );
             void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
 
             if (!providerConfigKey) {
@@ -118,7 +119,7 @@ class AppStoreAuthController {
                 return;
             }
 
-            const template = await configService.getTemplate(config?.provider);
+            const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.AppStore) {
                 await createActivityLogMessageAndEnd({
@@ -126,7 +127,7 @@ class AppStoreAuthController {
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Provider ${config?.provider} does not support App store auth`
+                    content: `Provider ${config.provider} does not support App store auth`
                 });
                 await logCtx.error('Provider does not support API key auth', { provider: config.provider });
                 await logCtx.failed();
@@ -136,7 +137,7 @@ class AppStoreAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             if (!req.body.privateKeyId) {
@@ -178,7 +179,7 @@ class AppStoreAuthController {
                         error: `Error during App store credentials auth: ${error?.message}`,
                         operation: AuthOperation.UNKNOWN
                     },
-                    config?.provider,
+                    config.provider,
                     activityLogId,
                     logCtx
                 );
@@ -202,7 +203,7 @@ class AppStoreAuthController {
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
-                config?.provider,
+                config.provider,
                 credentials as unknown as AuthCredentials,
                 connectionConfig,
                 environmentId,
@@ -219,7 +220,7 @@ class AppStoreAuthController {
                         auth_mode: AuthModes.AppStore,
                         operation: updatedConnection.operation
                     },
-                    config?.provider,
+                    config.provider,
                     logContextGetter,
                     activityLogId,
                     undefined,
@@ -238,8 +239,24 @@ class AppStoreAuthController {
                 content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            await logCtx.error('Error during API key auth', { error: err });
-            await logCtx.failed();
+            if (logCtx) {
+                void connectionCreationFailedHook(
+                    {
+                        id: -1,
+                        connection_id: connectionId as string,
+                        provider_config_key: providerConfigKey as string,
+                        environment_id: environmentId,
+                        auth_mode: AuthModes.AppStore,
+                        error: `Error during App store auth: ${prettyError}`,
+                        operation: AuthOperation.UNKNOWN
+                    },
+                    'unknown',
+                    activityLogId,
+                    logCtx
+                );
+                await logCtx.error('Error during API key auth', { error: err });
+                await logCtx.failed();
+            }
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -250,21 +267,6 @@ class AppStoreAuthController {
                     connectionId
                 }
             });
-
-            void connectionCreationFailedHook(
-                {
-                    id: -1,
-                    connection_id: connectionId as string,
-                    provider_config_key: providerConfigKey as string,
-                    environment_id: environmentId,
-                    auth_mode: AuthModes.AppStore,
-                    error: `Error during App store auth: ${prettyError}`,
-                    operation: AuthOperation.UNKNOWN
-                },
-                'unknown',
-                activityLogId,
-                logCtx
-            );
 
             next(err);
         }

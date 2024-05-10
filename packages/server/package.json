@@ -5,6 +5,7 @@
     "type": "module",
     "main": "dist/server.js",
     "typings": "dist/index.d.ts",
+    "private": true,
     "scripts": {
         "start": "tsc && node dist/server.js",
         "dev": "nodemon",
@@ -25,7 +26,8 @@
         "@hapi/boom": "^10.0.1",
         "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
-        "@nangohq/shared": "^0.39.18",
+        "@nangohq/shared": "file:../shared",
+        "@nangohq/types": "^0.39.24",
         "@nangohq/utils": "file:../utils",
         "@workos-inc/node": "^6.2.0",
         "axios": "^1.3.4",
@@ -78,6 +80,6 @@
         "@types/ws": "^8.5.4",
         "nodemon": "^3.0.1",
         "typescript": "^5.3.3",
-        "vitest": "1.4.0"
+        "vitest": "0.33.0"
     }
 }

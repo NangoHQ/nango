@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import providerClientManager from '../clients/provider.client.js';
 import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
     Template as ProviderTemplate,
@@ -230,7 +229,7 @@ class ConnectionService {
                     provider_config_key,
                     environment_id: environmentId,
                     auth_mode: ProviderAuthModes.OAuth2,
-                    operation: importedConnection?.operation as AuthOperation
+                    operation: importedConnection?.operation
                 },
                 provider,
                 logContextGetter,
@@ -324,7 +323,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -336,7 +336,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -357,7 +358,8 @@ class ConnectionService {
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
-                providerConfigKey
+                providerConfigKey,
+                level: 'error'
             });
 
             return { success: false, error, response: null };
@@ -441,6 +443,27 @@ class ConnectionService {
             .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
+            return [];
+        }
+
+        return result;
+    }
+
+    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<(NangoConnection & { account_id: number })[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - days);
+
+        const result = await db
+            .knex('_nango_connections')
+            .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
+            .select('connection_id', '_nango_connections.environment_id', 'unique_key as provider_config_key', 'account_id')
+            .where('last_fetched_at', '<', dateThreshold)
+            .orWhere('last_fetched_at', null)
+            .andWhere('_nango_connections.deleted', false)
+            .limit(limit);
+
+        if (!result || result.length === 0) {
             return [];
         }
 
@@ -773,7 +796,8 @@ class ConnectionService {
                         environmentId: String(environment_id),
                         connectionId,
                         providerConfigKey,
-                        provider: providerConfig.provider
+                        provider: providerConfig.provider,
+                        level: 'error'
                     });
 
                     return { success, error, response: null };
@@ -807,7 +831,8 @@ class ConnectionService {
                     environmentId: String(environment_id),
                     connectionId,
                     providerConfigKey,
-                    provider: providerConfig.provider
+                    provider: providerConfig.provider,
+                    level: 'error'
                 });
 
                 const error = new NangoError('refresh_token_external_error', e as Error);
@@ -826,7 +851,7 @@ class ConnectionService {
         connectionConfig: Connection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.AppStore] as string);
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.AppStore] as string);
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
 
         const now = Math.floor(Date.now() / 1000);
@@ -938,7 +963,7 @@ class ConnectionService {
         config: ProviderConfig,
         connectionConfig: Connection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url[ProviderAuthModes.App] as string);
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.App] as string);
 
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
         const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
@@ -980,11 +1005,22 @@ class ConnectionService {
         client_secret: string
     ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
         const url = template.authorization_url;
+        let authorizationParams = '';
+
+        if (template.authorization_params && Object.keys(template.authorization_params).length > 0) {
+            authorizationParams = new URLSearchParams(template.authorization_params).toString();
+        }
         try {
             const params = new URLSearchParams();
             params.append('client_id', client_id);
             params.append('client_secret', client_secret);
 
+            if (authorizationParams) {
+                const authorizationParamsEntries = new URLSearchParams(authorizationParams).entries();
+                for (const [key, value] of authorizationParamsEntries) {
+                    params.append(key, value);
+                }
+            }
             const fullUrl = `${url}?${params}`;
             const response = await axios.post(fullUrl);
 
@@ -1011,15 +1047,28 @@ class ConnectionService {
         }
     }
 
-    public async shouldCapUsage({ providerConfigKey, environmentId }: { providerConfigKey: string; environmentId: number }): Promise<boolean> {
+    public async shouldCapUsage({
+        providerConfigKey,
+        environmentId,
+        type
+    }: {
+        providerConfigKey: string;
+        environmentId: number;
+        type: 'activate' | 'deploy';
+    }): Promise<boolean> {
         const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
 
         if (!connections) {
             return false;
         }
 
-        if (connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+        if (connections.length > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+            if (type === 'deploy') {
+                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);
+            } else {
+                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_ACTIVATE, environmentId);
+            }
             return true;
         }
 
@@ -1032,8 +1081,8 @@ class ConnectionService {
         payload: Record<string, string | number>,
         additionalApiHeaders: Record<string, string> | null,
         options: object
-    ): Promise<ServiceResponse<any>> {
-        const hasLineBreak = /-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+    ): Promise<ServiceResponse> {
+        const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
 
         if (!hasLineBreak) {
             privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
@@ -1096,8 +1145,8 @@ class ConnectionService {
         providerConfig: ProviderConfig,
         template: ProviderTemplate
     ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials>> {
-        if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-            const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
+        if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
+            const rawCreds = await providerClient.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };

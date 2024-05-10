@@ -1,12 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
 import { configService } from '@nangohq/shared';
+import type { RequestLocals } from '../utils/express.js';
 
 class ProviderController {
     /**
      * Webapp
      */
 
-    async listProviders(req: Request, res: Response, next: NextFunction) {
+    async listProviders(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             let templates = configService.templates ?? {};
             const query = req.query['query'] as string | undefined;
@@ -27,7 +28,7 @@ class ProviderController {
         }
     }
 
-    async getProvider(req: Request, res: Response, next: NextFunction) {
+    async getProvider(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const providerKey = req.params['provider'] as string;
 
