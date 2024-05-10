@@ -14,12 +14,13 @@ if (tagExists.stdout !== '') {
 }
 
 const releaseMessage = `chore(release): ${nextVersion} [skip ci]`;
-echo`Generating changelog`;
-await $`npx git-cliff -o CHANGELOG.md -t ${nextVersion}`;
 
 echo`Checkout out branch`;
 await $`git fetch`;
 await $`git switch ${branch}`;
+
+echo`Generating changelog`;
+await $`npx git-cliff -o CHANGELOG.md -t ${nextVersion}`;
 
 echo`Adding file`;
 await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md`;
