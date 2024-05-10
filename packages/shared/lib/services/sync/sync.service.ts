@@ -5,7 +5,7 @@ import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../m
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
-import { updateScheduleStatus, markAllAsStopped } from './schedule.service.js';
+import { updateScheduleStatus } from './schedule.service.js';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
@@ -201,11 +201,6 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
 
     if (!syncClient || !nangoConnection || !nangoConnection.id) {
         return [];
-    }
-
-    const scheduleResponse = await syncClient.listSchedules();
-    if (scheduleResponse?.schedules.length === 0) {
-        await markAllAsStopped();
     }
 
     const syncJobTimestampsSubQuery = db.knex.raw(
