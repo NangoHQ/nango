@@ -465,7 +465,9 @@ export class Orchestrator {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId
+                        syncId,
+                        scheduleId: String(schedule?.schedule_id),
+                        level: 'warn'
                     },
                     `syncId:${syncId}`
                 );
@@ -478,7 +480,9 @@ export class Orchestrator {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId
+                        syncId,
+                        scheduleId: String(schedule?.schedule_id),
+                        level: 'warn'
                     },
                     `syncId:${syncId}`
                 );
