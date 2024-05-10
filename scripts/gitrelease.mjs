@@ -17,6 +17,9 @@ const releaseMessage = `chore(release): ${nextVersion} [skip ci]`;
 echo`Generating changelog`;
 await $`npx git-cliff -o CHANGELOG.md -t ${nextVersion}`;
 
+echo`Checkout out branch`;
+await $`git checkout ${branch}`;
+
 echo`Adding file`;
 await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md`;
 
@@ -24,7 +27,7 @@ echo`Creating commit`;
 await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" commit --allow-empty --author="Release Bot <actions@contact@nango.dev>" -m ${releaseMessage} `;
 
 echo`Creating tag`;
-await $`git tag -a ${nextTag} HEAD -m ${releaseMessage}`;
+await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" tag -a ${nextTag} HEAD -m ${releaseMessage}`;
 
 echo`Pushing`;
 await $`git push --follow-tags origin HEAD:refs/heads/${branch}`;
