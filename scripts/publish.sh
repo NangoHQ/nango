@@ -90,6 +90,8 @@ jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.js
 popd
 npm i
 
+jq ".version = \"$VERSION\"" package.json >temp.json && mv temp.json package.json
+
 # DEBUG: show changes in CI
 git diff --name-only
 git diff

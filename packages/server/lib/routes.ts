@@ -160,7 +160,7 @@ web.route('/api/v1/integration/new').post(webAuth, configController.createEmptyP
 web.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
 web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 
-web.route('/api/v1/provider').get(webAuth, configController.listProvidersFromYaml.bind(configController));
+web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
 web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 web.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
