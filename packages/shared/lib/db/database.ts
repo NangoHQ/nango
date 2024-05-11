@@ -19,8 +19,8 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '50')
         },
-        // SearchPath needs the current db and public because extension can only be installed once per DB
-        searchPath: ['nango', 'public']
+        // SearchPath needs the current db, public, and extensions because extension can only be installed once per DB
+        searchPath: ['nango', 'public', 'extensions']
     };
 }
 
