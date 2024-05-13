@@ -499,7 +499,7 @@ export class NangoAction {
     /**
      * @deprecated please use setMetadata instead.
      */
-    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
         logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.setMetadata(fieldMapping);
     }
