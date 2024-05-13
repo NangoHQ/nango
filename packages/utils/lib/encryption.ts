@@ -15,6 +15,10 @@ export class Encryption {
         }
     }
 
+    getKey() {
+        return this.key;
+    }
+
     public encrypt(str: string): [string, string, string] {
         const iv = crypto.randomBytes(12);
         const cipher = crypto.createCipheriv(this.algo, Buffer.from(this.key, this.encoding), iv);
