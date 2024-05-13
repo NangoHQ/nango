@@ -6,7 +6,7 @@ import type { FormatMessageData } from './helpers.js';
 import { getFormattedMessage } from './helpers.js';
 import { LogContext } from '../client.js';
 import { logger } from '../utils.js';
-import type { MessageRow, OperationRowInsert } from '../types/messages.js';
+import type { MessageRow, OperationRowInsert } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;

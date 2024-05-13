@@ -88,6 +88,8 @@ popd
 pushd "$GIT_ROOT_DIR/packages/utils"
 jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.json
 popd
+
+jq ".version = \"$VERSION\"" package.json >temp.json && mv temp.json package.json
 npm i
 
 # DEBUG: show changes in CI

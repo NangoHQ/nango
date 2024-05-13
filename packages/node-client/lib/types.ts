@@ -135,7 +135,7 @@ export interface Connection {
     connection_id: string;
     connection_config: Record<string, string>;
     environment_id: number;
-    metadata: Metadata | null;
+    metadata?: Metadata | null;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AuthCredentials;

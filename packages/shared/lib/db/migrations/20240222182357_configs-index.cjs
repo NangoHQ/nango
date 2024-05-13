@@ -2,7 +2,7 @@ exports.config = { transaction: false };
 
 exports.up = function (knex) {
     return knex.schema.raw(
-        'CREATE INDEX "idx_configs_environmentid_uniquekey_deleted" ON "nango"."_nango_configs" USING BTREE ("environment_id","unique_key") WHERE deleted = false'
+        'CREATE INDEX "idx_configs_environmentid_uniquekey_deleted" ON "_nango_configs" USING BTREE ("environment_id","unique_key") WHERE deleted = false'
     );
 };
 

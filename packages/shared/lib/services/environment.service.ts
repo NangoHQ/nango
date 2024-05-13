@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import db from '../db/database.js';
-import encryptionManager, { ENCRYPTION_KEY, pbkdf2 } from '../utils/encryption.manager.js';
+import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Account } from '../models/Admin.js';
@@ -124,7 +124,7 @@ class EnvironmentService {
     }
 
     async getAccountAndEnvironment(
-        opts: { publicKey: string } | { secretKey: string } | { accountId: number; envName: string }
+        opts: { publicKey: string } | { secretKey: string } | { accountId: number; envName: string } | { accountUuid: string; envName: string }
     ): Promise<{ account: Account; environment: Environment } | null> {
         const q = db.knex
             .select<{
@@ -143,8 +143,10 @@ class EnvironmentService {
             q.where('secret_key_hashed', hash);
         } else if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
-        } else if (opts.accountId !== undefined) {
+        } else if ('accountId' in opts) {
             q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
+        } else if ('accountUuid' in opts) {
+            q.where('_nango_accounts.uuid', opts.accountUuid).where('_nango_environments.name', opts.envName);
         } else {
             return null;
         }
@@ -235,7 +237,10 @@ class EnvironmentService {
                 return null;
             }
 
-            const encryptedEnvironment = await encryptionManager.encryptEnvironment(environment);
+            const encryptedEnvironment = await encryptionManager.encryptEnvironment({
+                ...environment,
+                secret_key_hashed: await hashSecretKey(environment.secret_key)
+            });
             await db.knex.from<Environment>(TABLE).where({ id: environmentId }).update(encryptedEnvironment);
 
             const env = encryptionManager.decryptEnvironment(encryptedEnvironment)!;
@@ -490,11 +495,11 @@ class EnvironmentService {
 }
 
 export async function hashSecretKey(key: string) {
-    if (!ENCRYPTION_KEY) {
+    if (!encryptionManager.getKey()) {
         return key;
     }
 
-    return (await pbkdf2(key, ENCRYPTION_KEY, 310000, 32, 'sha256')).toString('base64');
+    return (await pbkdf2(key, encryptionManager.getKey(), 310000, 32, 'sha256')).toString('base64');
 }
 
 export default new EnvironmentService();

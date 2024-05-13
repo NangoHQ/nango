@@ -33,6 +33,7 @@ import { env } from '@nangohq/utils';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { Environment } from '../../../models/Environment.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
@@ -42,7 +43,7 @@ const nameOfType = 'sync/action';
 type FlowWithVersion = Omit<IncomingFlowConfig, 'fileBody'>;
 
 export async function deploy(
-    environment_id: number,
+    environment: Environment,
     flows: IncomingFlowConfig[],
     nangoYamlBody: string,
     logContextGetter: LogContextGetter,
@@ -54,7 +55,7 @@ export async function deploy(
     const providerConfigKeys = [...new Set(providers)];
 
     const idsToMarkAsInvactive: number[] = [];
-    const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
+    const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
     const log = {
         level: 'info' as LogLevel,
@@ -68,7 +69,7 @@ export async function deploy(
         provider_config_key: `${flows.length} sync${flows.length === 1 ? '' : 's'} from ${providerConfigKeys.length} integration${
             providerConfigKeys.length === 1 ? '' : 's'
         }`,
-        environment_id: environment_id,
+        environment_id: environment.id,
         operation_name: LogActionEnum.SYNC_DEPLOY
     };
 
@@ -81,11 +82,11 @@ export async function deploy(
     const activityLogId = await createActivityLog(log);
     const logCtx = await logContextGetter.create(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'custom' }, message: 'Deploying custom syncs' },
-        { account: { id: accountId }, environment: { id: environment_id } }
+        { account, environment }
     );
 
     if (nangoYamlBody) {
-        await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
+        await remoteFileService.upload(nangoYamlBody, `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`, environment.id);
     }
 
     const flowReturnData: SyncDeploymentResult[] = [];
@@ -98,8 +99,8 @@ export async function deploy(
             insertData,
             flowReturnData,
             env,
-            environment_id,
-            accountId,
+            environment_id: environment.id,
+            accountId: account.id,
             activityLogId: activityLogId as number,
             debug,
             logCtx
@@ -108,7 +109,7 @@ export async function deploy(
         if (!success || !response) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId!,
                 timestamp: Date.now(),
                 content: `Failed to deploy`
@@ -125,7 +126,7 @@ export async function deploy(
     if (insertData.length === 0) {
         if (debug) {
             await createActivityLogMessage({
-                environment_id,
+                environment_id: environment.id,
                 level: 'debug',
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
@@ -175,7 +176,7 @@ export async function deploy(
 
         await createActivityLogMessageAndEnd({
             level: 'info',
-            environment_id,
+            environment_id: environment.id,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
             content: `Successfully deployed the ${nameOfType}${flowsWithVersions.length > 1 ? 's' : ''} ${JSON.stringify(flowsWithVersions, null, 2)}`
@@ -197,9 +198,9 @@ export async function deploy(
             shortContent,
             LogActionEnum.SYNC_DEPLOY,
             {
-                environmentId: String(environment_id),
+                environmentId: String(environment.id),
                 syncName: flowsWithVersions.map((flow) => flow['syncName']).join(', '),
-                accountId: String(accountId),
+                accountId: String(account.id),
                 providers: providers.join(', ')
             },
             'deploy_type:custom'
@@ -213,7 +214,7 @@ export async function deploy(
             `Failed to deploy the syncs (${JSON.stringify(flowsWithVersions, null, 2)}).`,
             e,
             activityLogId as number,
-            environment_id
+            environment.id
         );
 
         await logCtx.error('Failed to deploy syncs', { error: e });
@@ -226,10 +227,11 @@ export async function deploy(
             shortContent,
             LogActionEnum.SYNC_DEPLOY,
             {
-                environmentId: String(environment_id),
+                environmentId: String(environment.id),
                 syncName: flowsWithVersions.map((flow) => flow.syncName).join(', '),
-                accountId: String(accountId),
-                providers: providers.join(', ')
+                accountId: String(account.id),
+                providers: providers.join(', '),
+                level: 'error'
             },
             'deploy_type:custom'
         );
@@ -239,7 +241,7 @@ export async function deploy(
 }
 
 export async function deployPreBuilt(
-    environment_id: number,
+    environment: Environment,
     configs: IncomingPreBuiltFlowConfig[],
     nangoYamlBody: string,
     logContextGetter: LogContextGetter
@@ -256,17 +258,17 @@ export async function deployPreBuilt(
         connection_id: null,
         provider: configs.length === 1 && firstConfig?.provider ? firstConfig.provider : null,
         provider_config_key: '',
-        environment_id: environment_id,
+        environment_id: environment.id,
         operation_name: LogActionEnum.SYNC_DEPLOY
     };
 
-    const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
+    const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
     const providerConfigKeys = [];
 
     const activityLogId = await createActivityLog(log);
     const logCtx = await logContextGetter.create(
         { id: String(activityLogId), operation: { type: 'deploy', action: 'prebuilt' }, message: 'Deploying pre-built flow' },
-        { account: { id: accountId }, environment: { id: environment_id } }
+        { account, environment }
     );
 
     const idsToMarkAsInvactive = [];
@@ -275,14 +277,14 @@ export async function deployPreBuilt(
     let provider_config_key: string;
 
     if (nangoYamlBody) {
-        await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
+        await remoteFileService.upload(nangoYamlBody, `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`, environment.id);
     } else {
         // this is a public template so copy it from the public location
         await remoteFileService.copy(
             firstConfig?.public_route as string,
             nangoConfigFile,
-            `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`,
-            environment_id
+            `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
+            environment.id
         );
     }
 
@@ -290,7 +292,7 @@ export async function deployPreBuilt(
 
     for (const config of configs) {
         if (!config.providerConfigKey) {
-            const providerLookup = await configService.getConfigIdByProvider(config.provider, environment_id);
+            const providerLookup = await configService.getConfigIdByProvider(config.provider, environment.id);
             if (!providerLookup) {
                 const error = new NangoError('provider_not_on_account');
 
@@ -298,7 +300,7 @@ export async function deployPreBuilt(
             }
             ({ id: nango_config_id, unique_key: provider_config_key } = providerLookup);
         } else {
-            const providerConfig = await configService.getProviderConfig(config.providerConfigKey, environment_id);
+            const providerConfig = await configService.getProviderConfig(config.providerConfigKey, environment.id);
 
             if (!providerConfig) {
                 const error = new NangoError('unknown_provider_config', { providerConfigKey: config.providerConfigKey });
@@ -327,20 +329,20 @@ export async function deployPreBuilt(
             return { success: false, error, response: null };
         }
 
-        const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, sync_name, provider_config_key);
+        const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment.id, sync_name, provider_config_key);
         let bumpedVersion = '';
 
         if (previousSyncAndActionConfig) {
             bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
             if (runs) {
-                const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment_id, provider_config_key, sync_name);
+                const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment.id, provider_config_key, sync_name);
                 for (const syncConfig of syncsConfig) {
                     const { success, error } = await updateSyncScheduleFrequency(
                         syncConfig.id,
                         syncConfig.frequency || runs,
                         sync_name,
-                        environment_id,
+                        environment.id,
                         activityLogId as number,
                         logCtx
                     );
@@ -360,21 +362,21 @@ export async function deployPreBuilt(
             file_location = (await remoteFileService.copy(
                 `${config.public_route}/dist`,
                 `${sync_name}-${config.provider}.js`,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
-                environment_id
+                `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
+                environment.id
             )) as string;
         } else {
             file_location = (await remoteFileService.upload(
                 jsFile as string,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
-                environment_id
+                `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
+                environment.id
             )) as string;
         }
 
         if (!file_location) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `There was an error uploading the ${is_public ? 'public template' : ''} file ${sync_name}-v${version}.js`
@@ -389,20 +391,20 @@ export async function deployPreBuilt(
             await remoteFileService.copy(
                 config.public_route as string,
                 `${type}s/${sync_name}.ts`,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
-                environment_id
+                `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}.ts`,
+                environment.id
             );
         } else {
             if (typeof config.fileBody === 'object' && config.fileBody.ts) {
                 await remoteFileService.upload(
                     config.fileBody.ts,
-                    `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
-                    environment_id
+                    `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}.ts`,
+                    environment.id
                 );
             }
         }
 
-        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, nango_config_id, sync_name);
+        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, nango_config_id, sync_name);
 
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
@@ -432,7 +434,7 @@ export async function deployPreBuilt(
             runs,
             input: input && typeof input !== 'string' ? String(input.name) : input,
             model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
-            environment_id,
+            environment_id: environment.id,
             deleted: false,
             track_deletes: false,
             type,
@@ -524,7 +526,7 @@ export async function deployPreBuilt(
 
         await createActivityLogMessageAndEnd({
             level: 'info',
-            environment_id,
+            environment_id: environment.id,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
             content
@@ -537,9 +539,9 @@ export async function deployPreBuilt(
             content,
             LogActionEnum.SYNC_DEPLOY,
             {
-                environmentId: String(environment_id),
+                environmentId: String(environment.id),
                 syncName: configs.map((config) => config.name).join(', '),
-                accountId: String(accountId),
+                accountId: String(account.id),
                 integrations: configs.map((config) => config.provider).join(', '),
                 preBuilt: 'true',
                 is_public: isPublic ? 'true' : 'false'
@@ -552,7 +554,7 @@ export async function deployPreBuilt(
         await updateSuccessActivityLog(activityLogId as number, false);
 
         const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
-        await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number, environment_id);
+        await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number, environment.id);
 
         await logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name), error: e });
         await logCtx.failed();
@@ -562,12 +564,13 @@ export async function deployPreBuilt(
             content,
             LogActionEnum.SYNC_DEPLOY,
             {
-                environmentId: String(environment_id),
+                environmentId: String(environment.id),
                 syncName: configs.map((config) => config.name).join(', '),
-                accountId: String(accountId),
+                accountId: String(account.id),
                 integration: configs.map((config) => config.provider).join(', '),
                 preBuilt: 'true',
-                is_public: isPublic ? 'true' : 'false'
+                is_public: isPublic ? 'true' : 'false',
+                level: 'error'
             },
             `deploy_type:${isPublic ? 'public.' : 'private.'}template`
         );

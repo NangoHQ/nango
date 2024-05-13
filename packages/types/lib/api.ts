@@ -11,7 +11,11 @@ export interface ValidationError {
     path: (string | number)[];
 }
 
-export type ResDefaultErrors = ApiError<'not_found'> | ApiError<'invalid_query_params', ValidationError[]> | ApiError<'invalid_body', ValidationError[]>;
+export type ResDefaultErrors =
+    | ApiError<'not_found'>
+    | ApiError<'invalid_query_params', ValidationError[]>
+    | ApiError<'invalid_body', ValidationError[]>
+    | ApiError<'feature_disabled'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**
@@ -64,7 +68,7 @@ export interface Endpoint<
     /**
      * Response body for any error
      */
-    Errors: T['Error'];
+    Errors: ResDefaultErrors | T['Error'];
 
     /**
      * Response body (success + error)

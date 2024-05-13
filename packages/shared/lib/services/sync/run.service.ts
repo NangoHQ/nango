@@ -270,7 +270,17 @@ export default class SyncRun {
                 return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
 
-            const secretKey = optionalSecretKey || (environment ? environment.secret_key : '');
+            let secretKey = optionalSecretKey || (environment ? environment.secret_key : '');
+
+            if (!isCloud) {
+                if (process.env['NANGO_SECRET_KEY_DEV'] && environment?.name === 'dev') {
+                    secretKey = process.env['NANGO_SECRET_KEY_DEV'];
+                }
+
+                if (process.env['NANGO_SECRET_KEY_PROD'] && environment?.name === 'prod') {
+                    secretKey = process.env['NANGO_SECRET_KEY_PROD'];
+                }
+            }
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
@@ -395,6 +405,10 @@ export default class SyncRun {
                 result = true;
 
                 const syncStartDate = new Date();
+
+                if (typeof nangoProps.accountId === 'number') {
+                    metrics.increment(getMetricType(this.determineExecutionType()), 1, { accountId: nangoProps.accountId });
+                }
 
                 const {
                     success,
@@ -792,7 +806,8 @@ export default class SyncRun {
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
-                debug: String(this.debug)
+                debug: String(this.debug),
+                level: 'error'
             },
             `syncId:${this.syncId}`
         );
@@ -810,5 +825,18 @@ export default class SyncRun {
 
     private determineErrorType(): string {
         return this.determineExecutionType() + '_script_failure';
+    }
+}
+
+function getMetricType(type: string): metrics.Types {
+    switch (type) {
+        case 'sync':
+            return metrics.Types.SYNC_EXECUTION;
+        case 'action':
+            return metrics.Types.ACTION_EXECUTION;
+        case 'webhook':
+            return metrics.Types.WEBHOOK_EXECUTION;
+        default:
+            return metrics.Types.SYNC_EXECUTION;
     }
 }
