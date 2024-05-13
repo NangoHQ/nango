@@ -508,10 +508,54 @@ paths:
                     application/json:
                         schema:
                             type: object
+            responses:
+                '201':
+                    description: Successfully set the metadata
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+    /connection/bulk/metadata:
+        post:
+            description: Set custom metadata for the connections.
+            parameters:
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_ids
+                            properties:
+                                connection_ids:
+                                    type: array
+                                    items:
+                                        type: string
+                                        example: "connection-123"
+                                    description: The connection IDs used to set the metadata on
+                                metadata:
+                                    type: object
 
             responses:
                 '201':
-                    description: Successfully created an integrations
+                    description: Successfully set the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
                 '400':
                     description: Invalid request
                     content:
@@ -522,6 +566,7 @@ paths:
                                     message:
                                         type: string
 
+    /connection/{connectionId}/metadata:
         patch:
             description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
             parameters:
@@ -546,6 +591,51 @@ paths:
             responses:
                 '200':
                     description: Successfully updated the metadata
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+    /connection/bulk/metadata:
+        patch:
+            description: Edit custom metadata for the connections (only overrides specified properties, not the entire metadata).
+            parameters:
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_ids
+                            properties:
+                                connection_ids:
+                                    type: array
+                                    items:
+                                        type: string
+                                        example: "connection-123"
+                                    description: The connection IDs used to update the metadata on
+                                metadata:
+                                    type: object
+
+            responses:
+                '201':
+                    description: Successfully updated the metadata for the connections
                     content:
                         application/json:
                             schema:

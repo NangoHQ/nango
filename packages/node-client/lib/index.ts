@@ -274,7 +274,7 @@ export class Nango {
     /**
      * Sets custom metadata for a connection
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId - The ID of the connection for which to set metadata
+     * @param connectionId - The ID(s) of the connection(s) for which to set metadata
      * @param metadata - The custom metadata to set
      * @returns A promise that resolves with the Axios response from the server
      */
@@ -309,7 +309,7 @@ export class Nango {
     /**
      * Edits custom metadata for a connection, only overriding specified properties, not the entire metadata
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId - The ID of the connection for which to update metadata
+     * @param connectionId - The ID(s) of the connection(s) for which to update metadata
      * @param metadata - The custom metadata to update
      * @returns A promise that resolves with the Axios response from the server
      */
