@@ -7,7 +7,7 @@ import { logContextGetter } from '@nangohq/logs';
 const logger = getLogger('Server');
 
 export function refreshTokens(): void {
-    cron.schedule('*/45 * * * *', async () => {
+    cron.schedule('*/10 * * * *', async () => {
         (async () => {
             const start = Date.now();
             try {
@@ -31,7 +31,7 @@ export async function exec(): Promise<void> {
     logger.info('[refreshTokens] starting');
 
     const today = new Date();
-    const lockKey = parseInt(`${today.getFullYear()}${today.getMonth() + 1}${today.getDate()}`);
+    const lockKey = parseInt(`1${today.getFullYear()}${today.getMonth() + 1}${today.getDate()}`);
 
     // Lock to prevent multiple instances of this cron job from running at the same time
     await db.knex.transaction(async (trx) => {
@@ -40,7 +40,7 @@ export async function exec(): Promise<void> {
             logger.info(`[refreshTokens] could not acquire lock, skipping`);
             return;
         }
-        const staleConnections = await connectionService.getOldConnections({ days: 1, limit: 250 });
+        const staleConnections = await connectionService.getOldConnections({ days: 1, limit: 500 });
 
         logger.info(`[refreshTokens] found ${staleConnections.length} stale connections`);
 
