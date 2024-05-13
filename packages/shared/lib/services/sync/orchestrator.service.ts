@@ -40,6 +40,7 @@ import type { RecordsServiceInterface } from '../../clients/sync.client.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import { stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
+import type { Environment } from '../../models/Environment.js';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -189,7 +190,7 @@ export class Orchestrator {
 
     public async runSyncCommand({
         recordsService,
-        environmentId,
+        environment,
         providerConfigKey,
         syncNames,
         command,
@@ -198,7 +199,7 @@ export class Orchestrator {
         initiator
     }: {
         recordsService: RecordsServiceInterface;
-        environmentId: number;
+        environment: Environment;
         providerConfigKey: string;
         syncNames: string[];
         command: SyncCommand;
@@ -207,8 +208,8 @@ export class Orchestrator {
         initiator: string;
     }): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
-        const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
-        const account = await environmentService.getAccountFromEnvironment(environmentId);
+        const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
+        const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
         const log = {
             level: 'info' as LogLevel,
@@ -220,7 +221,7 @@ export class Orchestrator {
             connection_id: connectionId || '',
             provider: provider!.provider,
             provider_config_key: providerConfigKey,
-            environment_id: environmentId
+            environment_id: environment.id
         };
         const activityLogId = await createActivityLog(log);
         if (!activityLogId) {
@@ -229,7 +230,7 @@ export class Orchestrator {
 
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
-            { account: { id: account!.id }, environment: { id: environmentId }, config: { id: provider!.id! } }
+            { account, environment, config: { id: provider!.id!, name: provider!.unique_key } }
         );
 
         const syncClient = await SyncClient.getInstance();
@@ -238,7 +239,7 @@ export class Orchestrator {
         }
 
         if (connectionId) {
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (!success || !connection) {
                 return { success: false, error, response: false };
@@ -265,7 +266,7 @@ export class Orchestrator {
                     syncId: sync?.id,
                     command,
                     activityLogId,
-                    environmentId,
+                    environmentId: environment.id,
                     providerConfigKey,
                     connectionId,
                     syncName,
@@ -276,14 +277,14 @@ export class Orchestrator {
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
                 }
             }
         } else {
             const syncs =
                 syncNames.length > 0
-                    ? await getSyncsByProviderConfigAndSyncNames(environmentId, providerConfigKey, syncNames)
-                    : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+                    ? await getSyncsByProviderConfigAndSyncNames(environment.id, providerConfigKey, syncNames)
+                    : await getSyncsByProviderConfigKey(environment.id, providerConfigKey);
 
             if (!syncs) {
                 const error = new NangoError('no_syncs_found');
@@ -307,7 +308,7 @@ export class Orchestrator {
                     syncId: sync.id,
                     command,
                     activityLogId,
-                    environmentId,
+                    environmentId: environment.id,
                     providerConfigKey,
                     connectionId: connection.connection_id,
                     syncName: sync.name,
@@ -317,14 +318,14 @@ export class Orchestrator {
                     initiator
                 });
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environmentId, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
                 }
             }
         }
 
         await createActivityLogMessageAndEnd({
             level: 'info',
-            environment_id: environmentId,
+            environment_id: environment.id,
             activity_log_id: activityLogId,
             timestamp: Date.now(),
             content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
@@ -454,7 +455,7 @@ export class Orchestrator {
 
         const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
         if (syncSchedule) {
-            if (syncSchedule?.schedule?.state?.paused && status !== SyncStatus.PAUSED) {
+            if (syncSchedule?.schedule?.state?.paused && schedule?.status === ScheduleStatus.RUNNING) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
                 if (status !== SyncStatus.RUNNING) {
                     status = SyncStatus.PAUSED;
@@ -465,7 +466,9 @@ export class Orchestrator {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId
+                        syncId,
+                        scheduleId: String(schedule?.schedule_id),
+                        level: 'warn'
                     },
                     `syncId:${syncId}`
                 );
@@ -478,7 +481,9 @@ export class Orchestrator {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId
+                        syncId,
+                        scheduleId: String(schedule?.schedule_id),
+                        level: 'warn'
                     },
                     `syncId:${syncId}`
                 );

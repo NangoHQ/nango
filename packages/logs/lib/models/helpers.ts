@@ -5,9 +5,9 @@ export interface FormatMessageData {
     account?: { id: number; name?: string };
     user?: { id: number } | undefined;
     environment?: { id: number; name?: string } | undefined;
-    connection?: { id: number; name?: string } | undefined;
-    config?: { id: number; name?: string } | undefined;
-    sync?: { id: string; name?: string } | undefined;
+    connection?: { id: number; name: string } | undefined;
+    config?: { id: number; name: string } | undefined;
+    sync?: { id: string; name: string } | undefined;
 }
 
 export function getFormattedMessage(data: Partial<MessageRow>, { account, user, environment, config, connection, sync }: FormatMessageData = {}): MessageRow {

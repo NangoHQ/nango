@@ -63,10 +63,10 @@ export async function exec(): Promise<void> {
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
             {
-                account: { id: sync.account_id },
-                environment: { id: sync.environment_id },
-                connection: { id: sync.connection_unique_id },
-                sync: { id: sync.id }
+                account: { id: sync.account_id, name: sync.account_name },
+                environment: { id: sync.environment_id, name: sync.environment_name },
+                connection: { id: sync.connection_unique_id, name: sync.connection_id },
+                sync: { id: sync.id, name: sync.name }
             }
         );
 

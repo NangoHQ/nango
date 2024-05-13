@@ -28,6 +28,7 @@ import {
     slackNotificationService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -98,7 +99,12 @@ class ConnectionController {
                 });
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
-                    { account, environment, connection: { id: connection.id! }, config: { id: connection.config_id! } }
+                    {
+                        account,
+                        environment,
+                        connection: { id: connection.id!, name: connection.connection_id },
+                        config: { id: connection.config_id!, name: connection.provider_config_key }
+                    }
                 );
                 await logCtx.error('Unknown provider config');
                 await logCtx.failed();
@@ -150,7 +156,12 @@ class ConnectionController {
                 });
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
-                    { account, environment, connection: { id: connection.id! }, config: { id: config.id! } }
+                    {
+                        account,
+                        environment,
+                        connection: { id: connection.id!, name: connection.connection_id },
+                        config: { id: config.id!, name: config.unique_key }
+                    }
                 );
                 await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
                 await logCtx.success();
@@ -259,8 +270,13 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
             const instantRefresh = req.query['force_refresh'] === 'true';
+            const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
 
             const action = LogActionEnum.TOKEN;
+
+            if (!isSync) {
+                metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId });
+            }
 
             const {
                 success,

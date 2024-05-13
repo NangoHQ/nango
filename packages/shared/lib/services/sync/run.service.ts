@@ -406,6 +406,10 @@ export default class SyncRun {
 
                 const syncStartDate = new Date();
 
+                if (typeof nangoProps.accountId === 'number') {
+                    metrics.increment(getMetricType(this.determineExecutionType()), 1, { accountId: nangoProps.accountId });
+                }
+
                 const {
                     success,
                     error,
@@ -821,5 +825,18 @@ export default class SyncRun {
 
     private determineErrorType(): string {
         return this.determineExecutionType() + '_script_failure';
+    }
+}
+
+function getMetricType(type: string): metrics.Types {
+    switch (type) {
+        case 'sync':
+            return metrics.Types.SYNC_EXECUTION;
+        case 'action':
+            return metrics.Types.ACTION_EXECUTION;
+        case 'webhook':
+            return metrics.Types.WEBHOOK_EXECUTION;
+        default:
+            return metrics.Types.SYNC_EXECUTION;
     }
 }

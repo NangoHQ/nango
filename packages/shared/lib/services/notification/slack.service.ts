@@ -216,6 +216,7 @@ class SlackService {
             return;
         }
 
+        const envName = (await environmentService.getEnvironmentName(nangoConnection.environment_id))!;
         const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, syncName, syncType);
 
         const account = await environmentService.getAccountFromEnvironment(environment_id);
@@ -254,7 +255,12 @@ class SlackService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-            { account, environment: { id: environment_id }, config: { id: slackConnection.config_id! }, connection: { id: slackConnection.id! } }
+            {
+                account,
+                environment: { id: environment_id, name: envName },
+                config: { id: slackConnection.config_id!, name: slackConnection.provider_config_key },
+                connection: { id: slackConnection.id!, name: slackConnection.connection_id }
+            }
         );
 
         if (!success || !slackNotificationStatus) {
@@ -270,8 +276,6 @@ class SlackService {
 
             return;
         }
-
-        const envName = await environmentService.getEnvironmentName(nangoConnection.environment_id);
 
         const count = slackNotificationStatus.connectionCount;
         const connection = count === 1 ? 'connection' : 'connections';
@@ -373,7 +377,7 @@ class SlackService {
             return;
         }
 
-        const envName = await environmentService.getEnvironmentName(nangoConnection.environment_id);
+        const envName = (await environmentService.getEnvironmentName(nangoConnection.environment_id))!;
 
         let payloadContent = '';
 
@@ -433,7 +437,12 @@ class SlackService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-            { account, environment: { id: environment_id }, config: { id: slackConnection.config_id! }, connection: { id: slackConnection.id! } }
+            {
+                account,
+                environment: { id: environment_id, name: envName },
+                config: { id: slackConnection.config_id!, name: slackConnection.provider_config_key },
+                connection: { id: slackConnection.id!, name: slackConnection.connection_id }
+            }
         );
 
         const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
