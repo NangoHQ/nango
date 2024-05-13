@@ -562,7 +562,7 @@ paths:
                                 properties:
                                     message:
                                         type: string
-    /connection/bulk/metadata:
+    /connection/metadata/bulk:
         post:
             description: Set custom metadata for the connections.
             parameters:

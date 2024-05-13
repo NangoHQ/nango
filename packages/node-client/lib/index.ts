@@ -296,7 +296,7 @@ export class Nango {
         };
 
         if (Array.isArray(connectionId)) {
-            const url = `${this.serverUrl}/connection/bulk/metadata?provider_config_key=${providerConfigKey}`;
+            const url = `${this.serverUrl}/connection/metadata/bulk?provider_config_key=${providerConfigKey}`;
 
             return axios.post(url, { metadata, connection_ids: connectionId }, { headers: this.enrichHeaders(headers) });
         }
@@ -331,7 +331,7 @@ export class Nango {
         };
 
         if (Array.isArray(connectionId)) {
-            const url = `${this.serverUrl}/connection/bulk/metadata?provider_config_key=${providerConfigKey}`;
+            const url = `${this.serverUrl}/connection/metadata/bulk?provider_config_key=${providerConfigKey}`;
 
             return axios.patch(url, { metadata, connection_ids: connectionId }, { headers: this.enrichHeaders(headers) });
         }
