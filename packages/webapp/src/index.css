@@ -11,3 +11,20 @@ body,
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.transparent-code .language-json {
+    background-color: transparent !important;
+}
+
+.transparent-code .language-typescript {
+    background-color: transparent !important;
+}
+
+.break-all-words .token.string {
+    word-break: break-all;
+    white-space: 'normal';
+}
+
+.mantine-Prism-code {
+    font-family: 'Roboto Mono';
+}

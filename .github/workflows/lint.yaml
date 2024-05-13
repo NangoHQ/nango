@@ -8,7 +8,7 @@ on:
     pull_request:
 
 jobs:
-    tests:
+    lint-code:
         runs-on: ubuntu-latest
 
         steps:

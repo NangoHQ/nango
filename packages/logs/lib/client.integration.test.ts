@@ -4,7 +4,7 @@ import { logger } from './utils.js';
 import { deleteIndex, migrateMapping } from './es/helpers.js';
 import type { ListOperations } from './models/messages.js';
 import { getOperation, listMessages, listOperations } from './models/messages.js';
-import type { OperationRowInsert } from './types/messages.js';
+import type { OperationRowInsert } from '@nangohq/types';
 import { afterEach } from 'node:test';
 import { logContextGetter } from './models/logContextGetter.js';
 
@@ -33,7 +33,7 @@ describe('client', () => {
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).toHaveBeenCalled();
 
-        const list = await listOperations({ limit: 1 });
+        const list = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
         expect(list).toStrictEqual<ListOperations>({
             count: 1,
             items: [

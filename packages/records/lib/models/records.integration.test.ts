@@ -7,7 +7,6 @@ import { db } from '../db/client.js';
 import * as Records from '../models/records.js';
 import { formatRecords } from '../helpers/format.js';
 import type { UnencryptedRecordData, UpsertSummary } from '../types.js';
-import { isErr } from '@nangohq/utils';
 
 describe('Records service', () => {
     beforeAll(async () => {
@@ -90,10 +89,10 @@ describe('Records service', () => {
         const n = 10;
         const { connectionId, model } = await upsertNRecords(n);
         const response = await Records.getRecords({ connectionId, model });
-        if (isErr(response)) {
+        if (response.isErr()) {
             throw new Error('Response is undefined');
         }
-        const { records, next_cursor } = response.res;
+        const { records, next_cursor } = response.value;
         expect(records.length).toBe(n);
         expect(records[0]?.['_nango_metadata']).toMatchObject({
             first_seen_at: expect.toBeIsoDateTimezone(),
@@ -119,11 +118,11 @@ describe('Records service', () => {
                 ...(cursor && { cursor })
             });
 
-            if (isErr(response) || !response.res) {
+            if (response.isErr() || !response.value) {
                 throw new Error('Fail to fetch records');
             }
 
-            const { records, next_cursor } = response.res;
+            const { records, next_cursor } = response.value;
 
             allFetchedRecords.push(...records);
 
@@ -159,11 +158,11 @@ describe('Records service', () => {
                 ...(cursor && { cursor })
             });
 
-            if (isErr(response) || !response.res) {
+            if (response.isErr() || !response.value) {
                 throw new Error('Error fetching records');
             }
 
-            const { records, next_cursor } = response.res;
+            const { records, next_cursor } = response.value;
 
             allRecordsLength += records.length;
 
@@ -207,24 +206,24 @@ async function upsertRecords(
     softDelete = false
 ): Promise<UpsertSummary> {
     const formatRes = formatRecords({ data: records, connectionId, model, syncId, syncJobId, softDelete });
-    if (isErr(formatRes)) {
-        throw new Error(`Failed to format records: ${formatRes.err.message}`);
+    if (formatRes.isErr()) {
+        throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const upsertRes = await Records.upsert({ records: formatRes.res, connectionId, model, softDelete });
-    if (isErr(upsertRes)) {
-        throw new Error(`Failed to update records: ${upsertRes.err.message}`);
+    const upsertRes = await Records.upsert({ records: formatRes.value, connectionId, model, softDelete });
+    if (upsertRes.isErr()) {
+        throw new Error(`Failed to update records: ${upsertRes.error.message}`);
     }
-    return upsertRes.res;
+    return upsertRes.value;
 }
 
 async function updateRecords(records: UnencryptedRecordData[], connectionId: number, model: string, syncId: string, syncJobId: number) {
     const formatRes = formatRecords({ data: records, connectionId, model, syncId, syncJobId });
-    if (isErr(formatRes)) {
-        throw new Error(`Failed to format records: ${formatRes.err.message}`);
+    if (formatRes.isErr()) {
+        throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const updateRes = await Records.update({ records: formatRes.res, connectionId, model });
-    if (isErr(updateRes)) {
-        throw new Error(`Failed to update records: ${updateRes.err.message}`);
+    const updateRes = await Records.update({ records: formatRes.value, connectionId, model });
+    if (updateRes.isErr()) {
+        throw new Error(`Failed to update records: ${updateRes.error.message}`);
     }
-    return updateRes.res;
+    return updateRes.value;
 }

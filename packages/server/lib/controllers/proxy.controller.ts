@@ -33,6 +33,7 @@ import {
     connectionService,
     configService
 } from '@nangohq/shared';
+import { metrics } from '@nangohq/utils';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -64,6 +65,10 @@ class ProxyController {
             const accountId = res.locals['account'].id;
 
             const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
+
+            if (!isSync) {
+                metrics.increment(metrics.Types.PROXY, 1, { accountId });
+            }
 
             const log = {
                 level: 'debug' as LogLevel,

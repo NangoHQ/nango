@@ -12,7 +12,7 @@ import {
     findPausableDemoSyncs,
     SpanTypes
 } from '@nangohq/shared';
-import { getLogger, isErr } from '@nangohq/utils';
+import { getLogger } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -63,10 +63,10 @@ export async function exec(): Promise<void> {
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
             {
-                account: { id: sync.account_id },
-                environment: { id: sync.environment_id },
-                connection: { id: sync.connection_unique_id },
-                sync: { id: sync.id }
+                account: { id: sync.account_id, name: sync.account_name },
+                environment: { id: sync.environment_id, name: sync.environment_name },
+                connection: { id: sync.connection_unique_id, name: sync.connection_id },
+                sync: { id: sync.id, name: sync.name }
             }
         );
 
@@ -90,13 +90,13 @@ export async function exec(): Promise<void> {
             recordsService,
             initiator: 'auto_idle_demo'
         });
-        if (isErr(resTemporal)) {
+        if (resTemporal.isErr()) {
             await logCtx.failed();
             continue;
         }
 
         const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, activityLogId, sync.environment_id, logCtx);
-        if (isErr(resDb)) {
+        if (resDb.isErr()) {
             await logCtx.failed();
             continue;
         }

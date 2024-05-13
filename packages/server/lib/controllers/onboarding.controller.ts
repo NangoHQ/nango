@@ -28,7 +28,7 @@ import {
     AnalyticsTypes
 } from '@nangohq/shared';
 import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
-import { getLogger, isErr } from '@nangohq/utils';
+import { getLogger } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -146,11 +146,11 @@ class OnboardingController {
                 connectionId: connectionExists.id,
                 model: DEMO_MODEL
             });
-            if (isErr(getRecords)) {
+            if (getRecords.isErr()) {
                 res.status(400).json({ error: { code: 'failed_to_get_records' } });
                 return;
             } else {
-                payload.records = getRecords.res.records;
+                payload.records = getRecords.value.records;
             }
             if (payload.records.length > 0) {
                 payload.progress = status.progress > 4 ? status.progress : 4;
@@ -208,7 +208,7 @@ class OnboardingController {
                 }
             ];
 
-            const deploy = await deployPreBuiltSyncConfig(environment.id, config, '', logContextGetter);
+            const deploy = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter);
             if (!deploy.success || deploy.response === null) {
                 void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, deploy.error);
@@ -258,7 +258,7 @@ class OnboardingController {
                 logger.info(`[demo] no sync were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environmentId: environment.id,
+                    environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
@@ -268,7 +268,7 @@ class OnboardingController {
                 });
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environmentId: environment.id,
+                    environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.UNPAUSE,
@@ -292,7 +292,7 @@ class OnboardingController {
                 logger.info(`[demo] no job were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environmentId: environment.id,
+                    environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
@@ -418,7 +418,13 @@ class OnboardingController {
 
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account, environment, user, config: { id: connection.config_id! }, connection: { id: connection.id! } }
+                {
+                    account,
+                    environment,
+                    user,
+                    config: { id: connection.config_id!, name: connection.provider_config_key },
+                    connection: { id: connection.id!, name: connection.connection_id }
+                }
             );
             const actionResponse = await syncClient.triggerAction({
                 connection,
@@ -429,17 +435,17 @@ class OnboardingController {
                 logCtx
             });
 
-            if (isErr(actionResponse)) {
+            if (actionResponse.isErr()) {
                 void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
-                errorManager.errResFromNangoErr(res, actionResponse.err);
-                await logCtx.error('Failed to trigger action', { error: actionResponse.err });
+                errorManager.errResFromNangoErr(res, actionResponse.error);
+                await logCtx.error('Failed to trigger action', { error: actionResponse.error });
                 await logCtx.failed();
                 return;
             }
 
             await logCtx.success();
             void analytics.track(AnalyticsTypes.DEMO_5_SUCCESS, account.id, { user_id: user.id });
-            res.status(200).json({ action: actionResponse.res });
+            res.status(200).json({ action: actionResponse.value });
         } catch (err) {
             if (logCtx) {
                 await logCtx.error('Failed to trigger action', { error: err });

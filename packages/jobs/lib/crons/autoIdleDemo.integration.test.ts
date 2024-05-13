@@ -15,7 +15,7 @@ import {
     DEMO_SYNC_NAME
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
-import { nanoid, resultOk } from '@nangohq/utils';
+import { nanoid, Ok } from '@nangohq/utils';
 
 describe('Auto Idle Demo', async () => {
     let env: Environment;
@@ -28,7 +28,7 @@ describe('Auto Idle Demo', async () => {
     it('should delete syncs', async () => {
         const syncClient = (await SyncClient.getInstance())!;
         vi.spyOn(syncClient, 'runSyncCommand').mockImplementation(() => {
-            return Promise.resolve(resultOk(true));
+            return Promise.resolve(Ok(true));
         });
 
         const connName = nanoid();

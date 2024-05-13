@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import type React from 'react';
 import { forwardRef } from 'react';
 
-const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded-md text-sm', {
+const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded text-sm', {
     variants: {
         variant: {
             primary: 'bg-white text-black hover:bg-gray-300',
@@ -13,7 +13,7 @@ const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 round
             success: 'bg-green-700 text-white hover:bg-green-500',
             danger: 'bg-red-700 text-white hover:bg-red-500',
             zombie: 'bg-transparent text-white hover:bg-active-gray',
-            zombieGray: 'bg-transparent text-gray-500 hover:bg-hover-gray border border-gray-500',
+            zombieGray: 'bg-transparent text-white hover:bg-hover-gray border border-active-gray',
             yellow: 'bg-yellow-500 text-white hover:bg-yellow-400',
             black: 'bg-black text-white hover:bg-hover-gray',
             active: 'bg-active-gray text-white',

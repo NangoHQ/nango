@@ -1,10 +1,11 @@
 import { client } from '../es/client.js';
-import type { MessageRow } from '../types/messages.js';
+import type { MessageRow, OperationRow, SearchLogsState } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
+import type { opensearchtypes } from '@opensearch-project/opensearch';
 
 export interface ListOperations {
     count: number;
-    items: MessageRow[];
+    items: OperationRow[];
 }
 export interface ListMessages {
     count: number;
@@ -26,19 +27,33 @@ export async function createMessage(row: MessageRow): Promise<void> {
 /**
  * List operations
  */
-export async function listOperations(opts: { limit: number }): Promise<ListOperations> {
+export async function listOperations(opts: { accountId: number; environmentId?: number; limit: number; states: SearchLogsState[] }): Promise<ListOperations> {
+    const query: opensearchtypes.QueryDslQueryContainer = {
+        bool: {
+            must: [{ term: { accountId: opts.accountId } }],
+            must_not: { exists: { field: 'parentId' } },
+            should: []
+        }
+    };
+    if (opts.environmentId) {
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
+    }
+    if (opts.states.length > 1 || opts.states[0] !== 'all') {
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.states.map((state) => {
+                    return { term: { state } };
+                })
+            }
+        });
+    }
+
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
-        body: {
-            query: {
-                bool: {
-                    must_not: [{ exists: { field: 'parentId' } }]
-                }
-            }
-        }
+        body: { query }
     });
     const hits = res.body.hits;
 
