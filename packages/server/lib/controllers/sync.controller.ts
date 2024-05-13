@@ -57,14 +57,14 @@ class SyncController {
                 debug,
                 singleDeployMode
             }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
-            const environmentId = res.locals['environment'].id;
+            const { environment } = res.locals;
             let reconcileSuccess = true;
 
             const {
                 success,
                 error,
                 response: syncConfigDeployResult
-            } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', logContextGetter, debug);
+            } = await deploySyncConfig(environment, syncs, req.body.nangoYamlBody || '', logContextGetter, debug);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -75,7 +75,7 @@ class SyncController {
             if (reconcile) {
                 const logCtx = logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
                 const success = await getAndReconcileDifferences({
-                    environmentId,
+                    environmentId: environment.id,
                     syncs,
                     performAction: reconcile,
                     activityLogId: syncConfigDeployResult?.activityLogId as number,
@@ -95,7 +95,7 @@ class SyncController {
                 return;
             }
 
-            void analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
+            void analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environment.id);
 
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
@@ -257,11 +257,11 @@ class SyncController {
                 return;
             }
 
-            const environmentId = res.locals['environment'].id;
+            const { environment } = res.locals;
 
             const { success, error } = await syncOrchestrator.runSyncCommand({
                 recordsService,
-                environmentId,
+                environment,
                 providerConfigKey: provider_config_key,
                 syncNames: syncNames as string[],
                 command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
@@ -330,8 +330,8 @@ class SyncController {
         });
 
         const { input, action_name } = req.body;
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { account, environment } = res.locals;
+        const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
         let logCtx: LogContext | undefined;
@@ -394,7 +394,12 @@ class SyncController {
 
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account: { id: accountId }, environment: { id: environmentId }, config: { id: provider!.id! }, connection: { id: connection.id! } }
+                {
+                    account,
+                    environment,
+                    config: { id: provider!.id!, name: connection.provider_config_key },
+                    connection: { id: connection.id!, name: connection.connection_id }
+                }
             );
 
             const syncClient = await SyncClient.getInstance();
@@ -480,11 +485,11 @@ class SyncController {
                 return;
             }
 
-            const environmentId = res.locals['environment'].id;
+            const { environment } = res.locals;
 
             await syncOrchestrator.runSyncCommand({
                 recordsService,
-                environmentId,
+                environment,
                 providerConfigKey: provider_config_key as string,
                 syncNames: syncNames as string[],
                 command: SyncCommand.PAUSE,
@@ -521,11 +526,11 @@ class SyncController {
                 return;
             }
 
-            const environmentId = res.locals['environment'].id;
+            const { environment } = res.locals;
 
             await syncOrchestrator.runSyncCommand({
                 recordsService,
-                environmentId,
+                environment,
                 providerConfigKey: provider_config_key as string,
                 syncNames: syncNames as string[],
                 command: SyncCommand.UNPAUSE,
@@ -605,7 +610,7 @@ class SyncController {
         let logCtx: LogContext | undefined;
 
         try {
-            const { environment } = res.locals;
+            const { account, environment } = res.locals;
 
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
@@ -632,7 +637,7 @@ class SyncController {
                     operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] },
                     message: `Trigger ${command}`
                 },
-                { account: { id: environment.account_id }, environment: { id: environment.id, name: environment.name }, connection: { id: connection!.id! } }
+                { account, environment, connection: { id: connection!.id!, name: connection!.connection_id } }
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {

@@ -124,7 +124,7 @@ class EnvironmentService {
     }
 
     async getAccountAndEnvironment(
-        opts: { publicKey: string } | { secretKey: string } | { accountId: number; envName: string }
+        opts: { publicKey: string } | { secretKey: string } | { accountId: number; envName: string } | { accountUuid: string; envName: string }
     ): Promise<{ account: Account; environment: Environment } | null> {
         const q = db.knex
             .select<{
@@ -143,8 +143,10 @@ class EnvironmentService {
             q.where('secret_key_hashed', hash);
         } else if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
-        } else if (opts.accountId !== undefined) {
+        } else if ('accountId' in opts) {
             q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
+        } else if ('accountUuid' in opts) {
+            q.where('_nango_environments.account_id', opts.accountUuid).where('_nango_environments.name', opts.envName);
         } else {
             return null;
         }

@@ -182,7 +182,12 @@ class SyncClient {
 
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
-                { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id }, connection: { id: nangoConnection.id! } }
+                {
+                    account: { id: nangoConnection.account_id! },
+                    environment: { id: nangoConnection.environment_id },
+                    config: { id: syncConfig.id!, name: syncConfig.unique_key },
+                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id }
+                }
             );
 
             const { success, error, response } = getInterval(syncData.runs, new Date());
@@ -693,17 +698,22 @@ class SyncClient {
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id,
-            provider_config_key: nangoConnection?.provider_config_key,
+            connection_id: nangoConnection.connection_id,
+            provider_config_key: nangoConnection.provider_config_key,
             provider: integration.provider,
-            environment_id: nangoConnection?.environment_id,
+            environment_id: nangoConnection.environment_id,
             operation_name: webhookName
         };
 
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: integration.environment_id }, config: { id: integration.id! } }
+            {
+                account: { id: nangoConnection.account_id! },
+                environment: { id: integration.environment_id },
+                config: { id: integration.id!, name: integration.unique_key },
+                connection: { id: nangoConnection.id!, name: nangoConnection.connection_id }
+            }
         );
 
         const workflowId = generateWebhookWorkflowId(parentSyncName, webhookName, nangoConnection.connection_id);

@@ -10,13 +10,13 @@ import configService from '../../config.service.js';
 import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../../activity/mocks.js';
 import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
+import type { Environment } from '../../../models/Environment.js';
 
 describe('Sync config create', () => {
-    const environment_id = 1;
+    const environment = { id: 1, name: '' } as Environment;
     const debug = true;
 
     it('Create sync configs correctly', async () => {
-        const environment_id = 1;
         const syncs: IncomingFlowConfig[] = [];
         const debug = true;
 
@@ -29,7 +29,7 @@ describe('Sync config create', () => {
         mockAddEndTime();
 
         // empty sync config should return back an empty array
-        const emptyConfig = await DeployConfigService.deploy(environment_id, syncs, '', logContextGetter, debug);
+        const emptyConfig = await DeployConfigService.deploy(environment, syncs, '', logContextGetter, debug);
 
         expect(emptyConfig).not.toBe([]);
     });
@@ -55,7 +55,7 @@ describe('Sync config create', () => {
             return Promise.resolve(null);
         });
 
-        const { error } = await DeployConfigService.deploy(environment_id, syncs, '', logContextGetter, debug);
+        const { error } = await DeployConfigService.deploy(environment, syncs, '', logContextGetter, debug);
         expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
   "providerConfigKey": "google-wrong"
@@ -160,7 +160,7 @@ describe('Sync config create', () => {
             return Promise.resolve([]);
         });
 
-        await expect(DeployConfigService.deploy(environment_id, syncs, '', logContextGetter, debug)).rejects.toThrowError(
+        await expect(DeployConfigService.deploy(environment, syncs, '', logContextGetter, debug)).rejects.toThrowError(
             'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
         );
     });

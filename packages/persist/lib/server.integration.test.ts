@@ -252,7 +252,7 @@ const initDb = async () => {
 
     await logContextGetter.create(
         { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
-        { account: { id: env.account_id }, environment: { id: env.id } }
+        { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
     );
 
     const connectionRes = await connectionService.upsertConnection(`conn-test`, `provider-test`, 'google', {} as AuthCredentials, {}, env.id, 0);

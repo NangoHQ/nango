@@ -134,13 +134,10 @@ describe('GET /logs', () => {
     });
 
     it('should search logs and not return results from an other account', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'auth' } },
-            { account: { id: env.account_id }, environment: { id: env.id } }
-        );
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
