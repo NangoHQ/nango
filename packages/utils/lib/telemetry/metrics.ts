@@ -1,41 +1,46 @@
 import tracer from 'dd-trace';
 
 export enum Types {
+    ACTION_EXECUTION = 'nango.jobs.actionExecution',
     ACTION_TRACK_RUNTIME = 'action_track_runtime',
-    SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
-    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
-    RUNNER_SDK = 'nango.runner.sdk',
-    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
-    JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',
-    JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
-    JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
-    JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
-    JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
-    PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
-    PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_PUBLIC_KEY = 'nango.auth.publicKey',
     AUTH_SESSION = 'nango.auth.session',
-    LOGS_LOG = 'nango.logs.log',
-    REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
-    REFRESH_TOKENS_SUCCESS = 'nango.jobs.cron.refreshTokens.success',
-    REFRESH_TOKENS_FAILED = 'nango.jobs.cron.refreshTokens.failed',
-    DB_POOL_USED = 'nango.db.pool.used',
+    DB_POOL_ACQUISITION_DURATION = 'nango.db.pool.acquisition',
     DB_POOL_FREE = 'nango.db.pool.free',
+    DB_POOL_USED = 'nango.db.pool.used',
     DB_POOL_WAITING = 'nango.db.pool.waiting',
-    DB_POOL_ACQUISITION_DURATION = 'nango.db.pool.acquisition'
+    GET_CONNECTION = 'nango.server.getConnection',
+    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
+    JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',
+    JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
+    JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
+    JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
+    JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
+    LOGS_LOG = 'nango.logs.log',
+    PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
+    PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
+    PROXY = 'nango.server.proxyCall',
+    REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
+    REFRESH_TOKENS_FAILED = 'nango.server.cron.refreshTokens.failed',
+    REFRESH_TOKENS_SUCCESS = 'nango.server.cron.refreshTokens.success',
+    RUNNER_SDK = 'nango.runner.sdk',
+    SYNC_EXECUTION = 'nango.jobs.syncExecution',
+    SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
+    WEBHOOK_EXECUTION = 'nango.jobs.webhookExecution',
+    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime'
 }
 
-export function increment(metricName: Types, value?: number): void {
-    tracer.dogstatsd.increment(metricName, value ?? 1);
+export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+    tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
+}
+
+export function decrement(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+    tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 
 export function gauge(metricName: Types, value?: number): void {
     tracer.dogstatsd.gauge(metricName, value ?? 1);
-}
-
-export function decrement(metricName: Types, value?: number): void {
-    tracer.dogstatsd.decrement(metricName, value ?? 1);
 }
 
 export function duration(metricName: Types, value: number): void {

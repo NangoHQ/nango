@@ -29,6 +29,7 @@ import {
     slackNotificationService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -260,8 +261,13 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
             const instantRefresh = req.query['force_refresh'] === 'true';
+            const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
 
             const action = LogActionEnum.TOKEN;
+
+            if (!isSync) {
+                metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId });
+            }
 
             const {
                 success,
