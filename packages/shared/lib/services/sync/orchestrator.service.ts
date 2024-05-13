@@ -454,7 +454,7 @@ export class Orchestrator {
 
         const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
         if (syncSchedule) {
-            if (syncSchedule?.schedule?.state?.paused && status !== SyncStatus.PAUSED) {
+            if (syncSchedule?.schedule?.state?.paused && schedule?.status === ScheduleStatus.RUNNING) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
                 if (status !== SyncStatus.RUNNING) {
                     status = SyncStatus.PAUSED;
@@ -465,7 +465,9 @@ export class Orchestrator {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId
+                        syncId,
+                        scheduleId: String(schedule?.schedule_id),
+                        level: 'warn'
                     },
                     `syncId:${syncId}`
                 );
@@ -478,7 +480,9 @@ export class Orchestrator {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId
+                        syncId,
+                        scheduleId: String(schedule?.schedule_id),
+                        level: 'warn'
                     },
                     `syncId:${syncId}`
                 );

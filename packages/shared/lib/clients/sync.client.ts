@@ -274,7 +274,7 @@ class SyncClient {
             });
 
             if (syncData.auto_start === false && scheduleHandle) {
-                await scheduleHandle.pause();
+                await scheduleHandle.pause(`schedule for sync '${sync.id}' paused at ${new Date().toISOString()}. Reason: auto_start is false`);
             }
 
             await createSyncSchedule(sync.id, interval, offset, syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING, scheduleId);
@@ -368,20 +368,6 @@ class SyncClient {
         return date;
     }
 
-    async listSchedules() {
-        if (!this.client) {
-            return;
-        }
-
-        const workflowService = this.client?.workflowService;
-
-        const schedules = await workflowService?.listSchedules({
-            namespace: this.namespace
-        });
-
-        return schedules;
-    }
-
     async runSyncCommand({
         scheduleId,
         syncId,
@@ -424,12 +410,12 @@ class SyncClient {
                     break;
                 case SyncCommand.PAUSE:
                     {
-                        await scheduleHandle?.pause(`${initiator} paused the sync schedule`);
+                        await scheduleHandle?.pause(`${initiator} paused the schedule for sync '${syncId}' at ${new Date().toISOString()}`);
                     }
                     break;
                 case SyncCommand.UNPAUSE:
                     {
-                        await scheduleHandle?.unpause(`${initiator} unpaused the sync schedule`);
+                        await scheduleHandle?.unpause(`${initiator} unpaused the schedule for sync '${syncId}' at ${new Date().toISOString()}`);
                         await scheduleHandle?.trigger(OVERLAP_POLICY);
                         const schedule = await getScheduleById(scheduleId);
                         if (schedule) {
