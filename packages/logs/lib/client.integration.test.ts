@@ -33,7 +33,7 @@ describe('client', () => {
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).toHaveBeenCalled();
 
-        const list = await listOperations({ accountId: account.id, limit: 1 });
+        const list = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
         expect(list).toStrictEqual<ListOperations>({
             count: 1,
             items: [
