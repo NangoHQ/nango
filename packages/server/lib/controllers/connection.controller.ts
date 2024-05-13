@@ -531,15 +531,9 @@ class ConnectionController {
             const ids: number[] = [];
 
             for (const connectionId of connectionIds) {
-                const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+                const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
-                if (!success) {
-                    errorManager.errResFromNangoErr(res, error);
-
-                    return;
-                }
-
-                if (!connection || !connection.id) {
+                if (!success || !connection || !connection.id) {
                     const error = new NangoError('unknown_connections_bailed', { connectionId, providerConfigKey, environmentName: environment.name });
                     errorManager.errResFromNangoErr(res, error);
 
@@ -580,15 +574,9 @@ class ConnectionController {
             const validConnections: Connection[] = [];
 
             for (const connectionId of connectionIds) {
-                const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+                const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
-                if (!success) {
-                    errorManager.errResFromNangoErr(res, error);
-
-                    return;
-                }
-
-                if (!connection || !connection.id) {
+                if (!success || !connection || !connection.id) {
                     const error = new NangoError('unknown_connections_bailed', { connectionId, providerConfigKey, environmentName: environment.name });
                     errorManager.errResFromNangoErr(res, error);
 
