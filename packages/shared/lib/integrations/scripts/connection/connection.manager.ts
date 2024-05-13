@@ -114,8 +114,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     {
                         account: { id: accountId! },
                         environment: { id: connection.environment_id },
-                        config: { id: connection.config_id! },
-                        connection: { id: connection.id! }
+                        config: { id: connection.config_id!, name: connection.provider_config_key },
+                        connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
                 await logCtx.error('Post connection script failed', { error: e });
