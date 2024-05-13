@@ -26,7 +26,6 @@ export function cronAutoIdleDemo(): void {
             try {
                 await exec();
             } catch (err: unknown) {
-                console.log(err);
                 const e = new Error('failed_to_auto_idle_demo', { cause: err instanceof Error ? err.message : err });
                 errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
             }
