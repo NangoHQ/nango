@@ -472,7 +472,7 @@ class ConnectionController {
 
             await connectionService.replaceMetadata(connection, req.body);
 
-            res.status(201).send();
+            res.status(201).send(req.body);
         } catch (err) {
             next(err);
         }

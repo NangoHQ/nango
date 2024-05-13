@@ -508,9 +508,51 @@ paths:
                     application/json:
                         schema:
                             type: object
+
             responses:
                 '201':
                     description: Successfully set the metadata
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+        patch:
+            description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+            responses:
+                '200':
+                    description: Successfully updated the metadata
+                    content:
+                        application/json:
+                            schema:
+                                type: object
                 '400':
                     description: Invalid request
                     content:
@@ -565,46 +607,6 @@ paths:
                                 properties:
                                     message:
                                         type: string
-
-    /connection/{connectionId}/metadata:
-        patch:
-            description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
-            parameters:
-                - name: connectionId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: The connection ID used to create the connection.
-                - name: Provider-Config-Key
-                  in: header
-                  required: true
-                  description: The integration ID used to create the connection (aka Unique Key).
-                  schema:
-                      type: string
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-            responses:
-                '200':
-                    description: Successfully updated the metadata
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-    /connection/bulk/metadata:
         patch:
             description: Edit custom metadata for the connections (only overrides specified properties, not the entire metadata).
             parameters:
@@ -649,6 +651,7 @@ paths:
                                 properties:
                                     message:
                                         type: string
+
 
     /scripts/config:
         get:

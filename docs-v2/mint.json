@@ -522,7 +522,9 @@
                                 "reference/api/connection/get",
                                 "reference/api/connection/post",
                                 "reference/api/connection/set-metadata",
+                                "reference/api/connection/bulk-set-metadata",
                                 "reference/api/connection/update-metadata",
+                                "reference/api/connection/bulk-update-metadata",
                                 "reference/api/connection/delete"
                             ]
                         },

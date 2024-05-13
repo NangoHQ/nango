@@ -459,6 +459,50 @@ await nango.setMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'C
 **Response**
 
 Empty response.
+<Expandable>
+```json
+{
+    "CUSTOM_KEY1": "CUSTOM_VALUE1"
+}
+```
+</Expandable>
+
+### Bulk set connection metadata
+
+Set custom metadata for multiple connections (overrides existing metadata).
+
+```js
+await nango.setMetadata('<INTEGRATION-ID>', ['CONNECTION-ID-1', 'CONNECTION-ID-2'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="providerConfigKey" type="string" required>
+        The integration ID of the connection.
+    </ResponseField>
+
+    <ResponseField name="connectionId" type="string[]" required>
+        The connection IDs.
+    </ResponseField>
+
+    <ResponseField name="metadata" type="Record<string, any>" required>
+        The custom metadata to store in the connection.
+    </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "connection_ids": "<string[]>",
+    "metadata": {
+        "CUSTOM_KEY1": "CUSTOM_VALUE1"
+    }
+}
+```
+</Expandable>
 
 ### Edit connection metadata
 
@@ -487,6 +531,50 @@ await nango.updateMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1':
 **Response**
 
 Empty response.
+<Expandable>
+```json
+{
+    "CUSTOM_KEY1": "CUSTOM_VALUE1"
+}
+```
+</Expandable>
+
+### Bulk edit connection metadata
+
+Edit custom metadata for the connection. Only overrides specified properties, not the entire metadata.
+
+```js
+await nango.updateMetadata('<INTEGRATION-ID>', ['CONNECTION-ID-1', 'CONNECTION-ID-2'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="providerConfigKey" type="string" required>
+        The integration ID of the connection.
+    </ResponseField>
+
+    <ResponseField name="connectionIds" type="string[]" required>
+        The connection IDs.
+    </ResponseField>
+
+    <ResponseField name="metadata" type="Record<string, any>" required>
+        The custom metadata to store in the connection.
+    </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "connection_ids": "<string[]>",
+    "metadata": {
+        "CUSTOM_KEY1": "CUSTOM_VALUE1"
+    }
+}
+```
+</Expandable>
 
 ### Delete a connection
 
