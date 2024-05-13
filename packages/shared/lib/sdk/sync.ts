@@ -478,7 +478,7 @@ export class NangoAction {
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<object>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
@@ -487,7 +487,7 @@ export class NangoAction {
         }
     }
 
-    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<object>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);

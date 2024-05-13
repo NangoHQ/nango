@@ -636,7 +636,7 @@ paths:
                                     type: object
 
             responses:
-                '201':
+                '200':
                     description: Successfully updated the metadata for the connections
                     content:
                         application/json:
