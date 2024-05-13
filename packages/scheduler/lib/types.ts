@@ -1,4 +1,4 @@
-import type { TaskProps } from './models/tasks';
+import type { TaskProps, taskStates } from './models/tasks';
 
 type JsonValue = string | number | boolean | null;
 type JsonArray = JsonValue[] | JsonObject[];
@@ -6,7 +6,6 @@ export interface JsonObject {
     [key: string]: JsonValue | JsonObject | JsonArray;
 }
 
-export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 export type TaskState = (typeof taskStates)[number];
 
 export interface Task {

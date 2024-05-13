@@ -17,7 +17,7 @@ export async function up(knex: Knex): Promise<void> {
             CREATE TABLE ${TASKS_TABLE} (
                 id uuid PRIMARY KEY,
                 name varchar(255) NOT NULL,
-                payload jsonb NOT NULL,
+                payload json NOT NULL,
                 group_key varchar(255) NOT NULL,
                 retry_max integer NOT NULL default(0),
                 retry_count integer NOT NULL default(0),
@@ -29,7 +29,7 @@ export async function up(knex: Knex): Promise<void> {
                 state task_states NOT NULL,
                 last_state_transition_at timestamp with time zone NOT NULL,
                 last_heartbeat_at timestamp with time zone NOT NULL,
-                output jsonb NULL,
+                output json NULL,
                 terminated boolean
             );
         `);
@@ -38,6 +38,6 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-    await knex.raw(`DROP TABLE IF EXISTS "tasks"`);
-    await knex.raw(`DROP TYPE IF EXISTS "task_states"`);
+    await knex.raw(`DROP TABLE IF EXISTS ${TASKS_TABLE}`);
+    await knex.raw(`DROP TYPE IF EXISTS task_states`);
 }

@@ -45,6 +45,8 @@ export class Scheduler {
                 }
             });
             this.monitor.start();
+        } else {
+            throw new Error('Scheduler must be instantiated in the main thread');
         }
     }
 

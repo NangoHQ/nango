@@ -2,12 +2,13 @@ import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
 import { db } from '../db/client.js';
 import type { JsonObject, TaskState, Task } from '../types.js';
-import { taskStates } from '../types.js';
 import { uuidv7 } from 'uuidv7';
 
 export const TASKS_TABLE = 'tasks';
 
 export type TaskProps = Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>;
+
+export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 
 interface TaskStateTransition {
     from: TaskState;
@@ -147,12 +148,12 @@ export async function transitionState({ taskId, newState, output }: { taskId: st
     if (newState === 'SUCCEEDED' && !output) {
         return Err(new Error(`Output is required when state = '${newState}'`));
     }
-    const task = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).first();
-    if (!task) {
+    const task = await get(taskId);
+    if (task.isErr()) {
         return Err(new Error(`Task with id '${taskId}' not found`));
     }
 
-    const transition = TaskStateTransition.validate({ from: task.state, to: newState });
+    const transition = TaskStateTransition.validate({ from: task.value.state, to: newState });
     if (transition.isErr()) {
         return Err(transition.error);
     }
@@ -175,33 +176,31 @@ export async function transitionState({ taskId, newState, output }: { taskId: st
 
 export async function dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
     try {
-        return db.transaction(async (trx) => {
-            const tasks = await trx
-                .update({
-                    state: 'STARTED',
-                    last_state_transition_at: new Date()
-                })
-                .from<DbTask>(TASKS_TABLE)
-                .whereIn(
-                    'id',
-                    trx
-                        .select('id')
-                        .from<DbTask>(TASKS_TABLE)
-                        .where({ group_key: groupKey, state: 'CREATED' })
-                        .where('starts_after', '<=', db.fn.now())
-                        .orderBy('created_at')
-                        .limit(limit)
-                        .forUpdate()
-                        .skipLocked()
-                )
-                .returning('*');
-            if (!tasks?.[0]) {
-                return Ok([]);
-            }
-            // Sort tasks by id (uuidv7) to ensure ordering by creation date
-            const sorted = tasks.sort((a, b) => a.id.localeCompare(b.id)).map(DbTask.from);
-            return Ok(sorted);
-        });
+        const tasks = await db
+            .update({
+                state: 'STARTED',
+                last_state_transition_at: new Date()
+            })
+            .from<DbTask>(TASKS_TABLE)
+            .whereIn(
+                'id',
+                db
+                    .select('id')
+                    .from<DbTask>(TASKS_TABLE)
+                    .where({ group_key: groupKey, state: 'CREATED' })
+                    .where('starts_after', '<=', db.fn.now())
+                    .orderBy('created_at')
+                    .limit(limit)
+                    .forUpdate()
+                    .skipLocked()
+            )
+            .returning('*');
+        if (!tasks?.[0]) {
+            return Ok([]);
+        }
+        // Sort tasks by id (uuidv7) to ensure ordering by creation date
+        const sorted = tasks.sort((a, b) => a.id.localeCompare(b.id)).map(DbTask.from);
+        return Ok(sorted);
     } catch (err: unknown) {
         return Err(new Error(`Error dequeuing tasks for group key '${groupKey}': ${stringifyError(err)}`));
     }
@@ -209,40 +208,38 @@ export async function dequeue({ groupKey, limit }: { groupKey: string; limit: nu
 
 export async function expiresIfTimeout(): Promise<Result<Task[]>> {
     try {
-        return db.transaction(async (trx) => {
-            const tasks = await trx
-                .update({
-                    state: 'EXPIRED',
-                    last_state_transition_at: new Date(),
-                    terminated: true
-                })
-                .from<DbTask>(TASKS_TABLE)
-                .whereIn(
-                    'id',
-                    trx
-                        .select('id')
-                        .from<DbTask>(TASKS_TABLE)
-                        .where((builder) => {
-                            builder
-                                .where({ state: 'CREATED' })
-                                .andWhere(db.raw(`starts_after + created_to_started_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
-                            builder
-                                .orWhere({ state: 'STARTED' })
-                                .andWhere(db.raw(`last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
-                            builder
-                                .orWhere({ state: 'STARTED' })
-                                .andWhere(db.raw(`last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
-                        })
-                        .forUpdate()
-                        .skipLocked()
-                        .debug(true)
-                )
-                .returning('*');
-            if (!tasks?.[0]) {
-                return Ok([]);
-            }
-            return Ok(tasks.map(DbTask.from));
-        });
+        const tasks = await db
+            .update({
+                state: 'EXPIRED',
+                last_state_transition_at: new Date(),
+                terminated: true
+            })
+            .from<DbTask>(TASKS_TABLE)
+            .whereIn(
+                'id',
+                db
+                    .select('id')
+                    .from<DbTask>(TASKS_TABLE)
+                    .where((builder) => {
+                        builder
+                            .where({ state: 'CREATED' })
+                            .andWhere(db.raw(`starts_after + created_to_started_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
+                        builder
+                            .orWhere({ state: 'STARTED' })
+                            .andWhere(db.raw(`last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
+                        builder
+                            .orWhere({ state: 'STARTED' })
+                            .andWhere(db.raw(`last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
+                    })
+                    .forUpdate()
+                    .skipLocked()
+                    .debug(true)
+            )
+            .returning('*');
+        if (!tasks?.[0]) {
+            return Ok([]);
+        }
+        return Ok(tasks.map(DbTask.from));
     } catch (err: unknown) {
         return Err(new Error(`Error expiring tasks: ${stringifyError(err)}`));
     }

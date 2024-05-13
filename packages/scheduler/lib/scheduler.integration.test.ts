@@ -41,7 +41,7 @@ describe('Scheduler', () => {
         const succeeded = (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
         expect(succeeded.state).toBe('SUCCEEDED');
     });
-    it('should retry failed task if max retris is not reached', async () => {
+    it('should retry failed task if max retries is not reached', async () => {
         const task = await scheduleTask(scheduler, { taskProps: { retryMax: 2, retryCount: 1 } });
         await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 });
         (await scheduler.fail({ taskId: task.id })).unwrap();

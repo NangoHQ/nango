@@ -2,7 +2,7 @@ import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import { migrate } from '../db/migrate.js';
 import { clearDb } from '../db/test.helpers.js';
 import * as tasks from './tasks.js';
-import { taskStates } from '../types.js';
+import { taskStates } from './tasks.js';
 import type { TaskState, Task } from '../types.js';
 
 describe('Task', () => {
@@ -35,13 +35,13 @@ describe('Task', () => {
             groupKey: 'groupA',
             retryMax: 3,
             retryCount: 1,
-            startsAfter: expect.any(Date) as Date,
-            createdAt: expect.any(Date) as Date,
+            startsAfter: expect.toBeIsoDateTimezone(),
+            createdAt: expect.toBeIsoDateTimezone(),
             createdToStartedTimeoutSecs: 10,
             startedToCompletedTimeoutSecs: 20,
             state: 'CREATED',
-            lastStateTransitionAt: expect.any(Date) as Date,
-            lastHeartbeatAt: expect.any(Date) as Date,
+            lastStateTransitionAt: expect.toBeIsoDateTimezone(),
+            lastHeartbeatAt: expect.toBeIsoDateTimezone(),
             output: null,
             terminated: false
         });

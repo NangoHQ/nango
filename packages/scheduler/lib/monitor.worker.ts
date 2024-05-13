@@ -3,6 +3,7 @@ import type { MessagePort } from 'node:worker_threads';
 import { Worker, isMainThread } from 'node:worker_threads';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import * as tasks from './models/tasks.js';
+import { setTimeout } from 'node:timers/promises';
 
 const logger = getLogger('Scheduler.monitor.worker');
 
@@ -11,7 +12,7 @@ interface MessageOut {
 }
 
 export class MonitorWorker {
-    private worker: Worker;
+    private worker: Worker | null;
     constructor() {
         if (isMainThread) {
             const url = new URL('../dist/monitor.js', import.meta.url);
@@ -19,7 +20,7 @@ export class MonitorWorker {
                 throw new Error(`Monitor script not found at ${url}`);
             }
 
-            this.worker = new Worker(new URL('../dist/monitor.js', import.meta.url));
+            this.worker = new Worker(url);
             // Throw error if monitor exits with error
             this.worker.on('error', (err) => {
                 throw new Error(`Monitor exited with error: ${stringifyError(err)}`);
@@ -36,15 +37,18 @@ export class MonitorWorker {
     }
 
     start(): void {
-        this.worker.postMessage('start');
+        this.worker?.postMessage('start');
     }
 
     stop(): void {
-        this.worker.postMessage('stop');
+        if (this.worker) {
+            this.worker.postMessage('stop');
+            this.worker = null;
+        }
     }
 
     on(callback: (message: MessageOut) => void): void {
-        this.worker.on('message', callback);
+        this.worker?.on('message', callback);
     }
 }
 
@@ -75,7 +79,7 @@ export class MonitorChild {
         // eslint-disable-next-line no-constant-condition
         while (!this.cancelled) {
             await this.expires();
-            await new Promise((resolve) => setTimeout(resolve, this.tickIntervalMs));
+            await setTimeout(this.tickIntervalMs);
         }
     }
 
@@ -97,7 +101,7 @@ export class MonitorChild {
         }
     }
 
-    async send(message: MessageOut) {
+    send(message: MessageOut) {
         this.parent.postMessage(message);
     }
 }
