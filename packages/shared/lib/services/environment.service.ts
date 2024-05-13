@@ -146,7 +146,7 @@ class EnvironmentService {
         } else if ('accountId' in opts) {
             q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
         } else if ('accountUuid' in opts) {
-            q.where('_nango_environments.account_id', opts.accountUuid).where('_nango_environments.name', opts.envName);
+            q.where('_nango_accounts.uuid', opts.accountUuid).where('_nango_environments.name', opts.envName);
         } else {
             return null;
         }
