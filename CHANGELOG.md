@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.27] - 2024-05-13
+
+### Added
+
+- *(logs)* Add more context #2 (#2146)
+- *(ui)* Logs search mvp  (#2106)
+
+### Fixed
+
+- *(release)* Improve changelog (#2147)
+
 ## [v0.39.26] - 2024-05-13
 
 ### Fixed
@@ -173,12 +184,12 @@ All notable changes to this project will be documented in this file.
 
 - *(deps-dev)* Bump vite from 4.5.2 to 4.5.3 (#1948)
 - *(deps)* Bump undici from 6.6.2 to 6.11.1 (#1955)
-- Fix heartbeat (#1980)
 
 ### Fixed
 
 - *(webhooks)* Expose type, fix docs, verifyWebhookSignature helper (#1976)
 - *(integration)* Simple fix for peopledatalabs api support (#1964)
+- Fix heartbeat (#1980)
 - TypeError: request.headers.split is not a function (#1981)
 
 ## [v0.39.16] - 2024-04-10
@@ -512,7 +523,6 @@ All notable changes to this project will be documented in this file.
 
 - Dev clean up (#1651)
 - Use hosted tag for nango-server (#1663)
-- Fix action guide link (#1669)
 
 ### Fixed
 
@@ -528,6 +538,7 @@ All notable changes to this project will be documented in this file.
 - *(runner)* Proper typing  (#1634)
 - *(ci)* Bad substition (#1667)
 - *(ci)* Missing alternatives on master (#1668)
+- Fix action guide link (#1669)
 
 ## [v0.37.22] - 2024-02-08
 
@@ -621,12 +632,9 @@ All notable changes to this project will be documented in this file.
 
 - Override sync frequency  (#1548)
 
-### Changed
-
-- Fix type of the updateMetadata function (#1557)
-
 ### Fixed
 
+- Fix type of the updateMetadata function (#1557)
 - *(api)* /sync/status returns execution frequency (#1550)
 
 ## [v0.37.2] - 2024-01-23
@@ -646,17 +654,17 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Revert auth popup closing detection and race condition fix (#1310)
-- Fix setMetadata argument type (#1428)
 - Buffer should be available inside Node.vm (#1443)
 - Fallback to default runner if account runner is not ready quickly (#1440)
-- Fix no res response
 - Caching runner (#1505)
 - Disable login window detection when needed (#1528)
 
 ### Fixed
 
+- Fix setMetadata argument type (#1428)
 - NangoProps lastSyncDate is not decoded as a Date (#1451)
 - Runner can run script for up to 24h (#1462)
+- Fix no res response
 - If condition in push container github action (#1504)
 - Jobs should depends on shared v0.36.88 (#1512)
 
@@ -746,11 +754,11 @@ All notable changes to this project will be documented in this file.
 
 - Add a table to persist OAuth Session (#426)
 - Add Provider for Keep (#522)
-- Fix typo (#526)
 
 ### Fixed
 
 - Mural authorization URL. (#514)
+- Fix typo (#526)
 
 ## [v0.13.4] - 2023-04-11
 
@@ -930,7 +938,6 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Update dependencies
-- Fix render enndine
 - Dev commands
 - Get rid of webpack for server
 - Move integrations out of src
@@ -940,7 +947,6 @@ All notable changes to this project will be documented in this file.
 - Enless command
 - Providfe mode
 - Use correct location
-- Fix dependencies
 - Clean up
 - Removing some old code
 - Remove ts-node dependency
@@ -977,7 +983,6 @@ All notable changes to this project will be documented in this file.
 - Rename dashboard user/password
 - Upgrade typescript and fix tests
 - : use pipe whenever it is possible
-- Fix test config
 - Update link
 - *(deps)* Bump lodash in /src/clients/javascript (#81)
 - *(deps)* Bump lodash from 4.17.15 to 4.17.19 in /src/clients/node (#82)
@@ -997,10 +1002,12 @@ All notable changes to this project will be documented in this file.
 - Remove legacy files
 - Build server
 - Remvoe legacy references
+- Fix render enndine
 - Views path
 - Bring back auth id
 - Fix app.json
 - Use config foler
+- Fix dependencies
 - Test unsecure
 - Set secure to true
 - SaveUnitialized
@@ -1052,6 +1059,7 @@ All notable changes to this project will be documented in this file.
 - Issue when the setupId is unknown (#34)
 - Issue with setupId
 - Support multiple scopes (one per line) (#42)
+- Fix test config
 - Remove Bearer's callback URL (#46)
 - Enable cors on proxy (#48)
 - No-default scope on integrations (#49)
@@ -1065,65 +1073,66 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161)
 - APIs using client_credentials as grant type (#165)
 
-[v0.39.26]: https://github.com///compare/v0.39.25..v0.39.26
-[v0.39.25]: https://github.com///compare/v0.39.24..v0.39.25
-[v0.39.24]: https://github.com///compare/v0.39.23..v0.39.24
-[v0.39.23]: https://github.com///compare/v0.39.22..v0.39.23
-[v0.39.22]: https://github.com///compare/v0.39.21..v0.39.22
-[v0.39.21]: https://github.com///compare/v0.39.20..v0.39.21
-[v0.39.20]: https://github.com///compare/v0.39.19..v0.39.20
-[v0.39.19]: https://github.com///compare/v0.39.18..v0.39.19
-[v0.39.18]: https://github.com///compare/v0.39.17..v0.39.18
-[v0.39.17]: https://github.com///compare/v0.39.16..v0.39.17
-[v0.39.16]: https://github.com///compare/v0.39.15..v0.39.16
-[v0.39.14]: https://github.com///compare/v0.39.13..v0.39.14
-[v0.39.13]: https://github.com///compare/v0.37.0..v0.39.13
-[v0.37.0]: https://github.com///compare/v0.39.8..v0.37.0
-[v0.39.8]: https://github.com///compare/v0.39.7..v0.39.8
-[v0.39.7]: https://github.com///compare/v0.39.6..v0.39.7
-[v0.39.6]: https://github.com///compare/v0.39.5..v0.39.6
-[v0.39.5]: https://github.com///compare/v0.39.4..v0.39.5
-[v0.39.4]: https://github.com///compare/v0.39.3..v0.39.4
-[v0.39.3]: https://github.com///compare/v0.39.2..v0.39.3
-[v0.39.2]: https://github.com///compare/v0.39.1..v0.39.2
-[v0.39.1]: https://github.com///compare/v0.39.0..v0.39.1
-[v0.39.0]: https://github.com///compare/v0.38.5..v0.39.0
-[v0.38.5]: https://github.com///compare/v0.38.4..v0.38.5
-[v0.38.4]: https://github.com///compare/v0.38.3..v0.38.4
-[v0.38.3]: https://github.com///compare/v0.38.2..v0.38.3
-[v0.38.2]: https://github.com///compare/v0.38.1..v0.38.2
-[v0.38.1]: https://github.com///compare/v0.38.0..v0.38.1
-[v0.38.0]: https://github.com///compare/v0.37.26..v0.38.0
-[v0.37.26]: https://github.com///compare/v0.37.25..v0.37.26
-[v0.37.25]: https://github.com///compare/v0.37.24..v0.37.25
-[v0.37.24]: https://github.com///compare/v0.37.23..v0.37.24
-[v0.37.23]: https://github.com///compare/v0.37.22..v0.37.23
-[v0.37.22]: https://github.com///compare/v0.37.21..v0.37.22
-[v0.37.21]: https://github.com///compare/v0.37.20..v0.37.21
-[v0.37.20]: https://github.com///compare/v0.37.19..v0.37.20
-[v0.37.19]: https://github.com///compare/v0.37.18..v0.37.19
-[v0.37.17]: https://github.com///compare/v0.37.16..v0.37.17
-[v0.37.13]: https://github.com///compare/v0.37.12..v0.37.13
-[v0.37.9]: https://github.com///compare/v0.37.8..v0.37.9
-[v0.37.8]: https://github.com///compare/v0.37.7..v0.37.8
-[v0.37.7]: https://github.com///compare/v0.37.6..v0.37.7
-[v0.37.5]: https://github.com///compare/v0.37.4..v0.37.5
-[v0.37.4]: https://github.com///compare/v0.37.3..v0.37.4
-[v0.37.2]: https://github.com///compare/v0.37.1..v0.37.2
-[v0.37.1]: https://github.com///compare/v0.36.14..v0.37.1
-[v0.36.14]: https://github.com///compare/v0.35.5..v0.36.14
-[v0.24.4]: https://github.com///compare/v0.16.0..v0.24.4
-[v0.16.0]: https://github.com///compare/v0.15.1..v0.16.0
-[v0.15.1]: https://github.com///compare/v0.14.0..v0.15.1
-[v0.14.0]: https://github.com///compare/v0.13.5..v0.14.0
-[v0.13.4]: https://github.com///compare/v0.12.7..v0.13.4
-[v0.12.7]: https://github.com///compare/v0.12.6..v0.12.7
-[v0.12.1]: https://github.com///compare/v0.11.3..v0.12.1
-[v0.11.2]: https://github.com///compare/v0.10.7..v0.11.2
-[v0.8.5]: https://github.com///compare/v0.8.0..v0.8.5
-[v0.8.0]: https://github.com///compare/v0.7.2..v0.8.0
-[v0.5.1]: https://github.com///compare/v0.5.0..v0.5.1
-[v0.3.6]: https://github.com///compare/v0.2.2..v0.3.6
-[v0.2.2]: https://github.com///compare/v0.2.1..v0.2.2
+[0.39.27]: https://github.com/NangoHQ/nango/compare/v0.39.26..0.39.27
+[v0.39.26]: https://github.com/NangoHQ/nango/compare/v0.39.25..v0.39.26
+[v0.39.25]: https://github.com/NangoHQ/nango/compare/v0.39.24..v0.39.25
+[v0.39.24]: https://github.com/NangoHQ/nango/compare/v0.39.23..v0.39.24
+[v0.39.23]: https://github.com/NangoHQ/nango/compare/v0.39.22..v0.39.23
+[v0.39.22]: https://github.com/NangoHQ/nango/compare/v0.39.21..v0.39.22
+[v0.39.21]: https://github.com/NangoHQ/nango/compare/v0.39.20..v0.39.21
+[v0.39.20]: https://github.com/NangoHQ/nango/compare/v0.39.19..v0.39.20
+[v0.39.19]: https://github.com/NangoHQ/nango/compare/v0.39.18..v0.39.19
+[v0.39.18]: https://github.com/NangoHQ/nango/compare/v0.39.17..v0.39.18
+[v0.39.17]: https://github.com/NangoHQ/nango/compare/v0.39.16..v0.39.17
+[v0.39.16]: https://github.com/NangoHQ/nango/compare/v0.39.15..v0.39.16
+[v0.39.14]: https://github.com/NangoHQ/nango/compare/v0.39.13..v0.39.14
+[v0.39.13]: https://github.com/NangoHQ/nango/compare/v0.37.0..v0.39.13
+[v0.37.0]: https://github.com/NangoHQ/nango/compare/v0.39.8..v0.37.0
+[v0.39.8]: https://github.com/NangoHQ/nango/compare/v0.39.7..v0.39.8
+[v0.39.7]: https://github.com/NangoHQ/nango/compare/v0.39.6..v0.39.7
+[v0.39.6]: https://github.com/NangoHQ/nango/compare/v0.39.5..v0.39.6
+[v0.39.5]: https://github.com/NangoHQ/nango/compare/v0.39.4..v0.39.5
+[v0.39.4]: https://github.com/NangoHQ/nango/compare/v0.39.3..v0.39.4
+[v0.39.3]: https://github.com/NangoHQ/nango/compare/v0.39.2..v0.39.3
+[v0.39.2]: https://github.com/NangoHQ/nango/compare/v0.39.1..v0.39.2
+[v0.39.1]: https://github.com/NangoHQ/nango/compare/v0.39.0..v0.39.1
+[v0.39.0]: https://github.com/NangoHQ/nango/compare/v0.38.5..v0.39.0
+[v0.38.5]: https://github.com/NangoHQ/nango/compare/v0.38.4..v0.38.5
+[v0.38.4]: https://github.com/NangoHQ/nango/compare/v0.38.3..v0.38.4
+[v0.38.3]: https://github.com/NangoHQ/nango/compare/v0.38.2..v0.38.3
+[v0.38.2]: https://github.com/NangoHQ/nango/compare/v0.38.1..v0.38.2
+[v0.38.1]: https://github.com/NangoHQ/nango/compare/v0.38.0..v0.38.1
+[v0.38.0]: https://github.com/NangoHQ/nango/compare/v0.37.26..v0.38.0
+[v0.37.26]: https://github.com/NangoHQ/nango/compare/v0.37.25..v0.37.26
+[v0.37.25]: https://github.com/NangoHQ/nango/compare/v0.37.24..v0.37.25
+[v0.37.24]: https://github.com/NangoHQ/nango/compare/v0.37.23..v0.37.24
+[v0.37.23]: https://github.com/NangoHQ/nango/compare/v0.37.22..v0.37.23
+[v0.37.22]: https://github.com/NangoHQ/nango/compare/v0.37.21..v0.37.22
+[v0.37.21]: https://github.com/NangoHQ/nango/compare/v0.37.20..v0.37.21
+[v0.37.20]: https://github.com/NangoHQ/nango/compare/v0.37.19..v0.37.20
+[v0.37.19]: https://github.com/NangoHQ/nango/compare/v0.37.18..v0.37.19
+[v0.37.17]: https://github.com/NangoHQ/nango/compare/v0.37.16..v0.37.17
+[v0.37.13]: https://github.com/NangoHQ/nango/compare/v0.37.12..v0.37.13
+[v0.37.9]: https://github.com/NangoHQ/nango/compare/v0.37.8..v0.37.9
+[v0.37.8]: https://github.com/NangoHQ/nango/compare/v0.37.7..v0.37.8
+[v0.37.7]: https://github.com/NangoHQ/nango/compare/v0.37.6..v0.37.7
+[v0.37.5]: https://github.com/NangoHQ/nango/compare/v0.37.4..v0.37.5
+[v0.37.4]: https://github.com/NangoHQ/nango/compare/v0.37.3..v0.37.4
+[v0.37.2]: https://github.com/NangoHQ/nango/compare/v0.37.1..v0.37.2
+[v0.37.1]: https://github.com/NangoHQ/nango/compare/v0.36.14..v0.37.1
+[v0.36.14]: https://github.com/NangoHQ/nango/compare/v0.35.5..v0.36.14
+[v0.24.4]: https://github.com/NangoHQ/nango/compare/v0.16.0..v0.24.4
+[v0.16.0]: https://github.com/NangoHQ/nango/compare/v0.15.1..v0.16.0
+[v0.15.1]: https://github.com/NangoHQ/nango/compare/v0.14.0..v0.15.1
+[v0.14.0]: https://github.com/NangoHQ/nango/compare/v0.13.5..v0.14.0
+[v0.13.4]: https://github.com/NangoHQ/nango/compare/v0.12.7..v0.13.4
+[v0.12.7]: https://github.com/NangoHQ/nango/compare/v0.12.6..v0.12.7
+[v0.12.1]: https://github.com/NangoHQ/nango/compare/v0.11.3..v0.12.1
+[v0.11.2]: https://github.com/NangoHQ/nango/compare/v0.10.7..v0.11.2
+[v0.8.5]: https://github.com/NangoHQ/nango/compare/v0.8.0..v0.8.5
+[v0.8.0]: https://github.com/NangoHQ/nango/compare/v0.7.2..v0.8.0
+[v0.5.1]: https://github.com/NangoHQ/nango/compare/v0.5.0..v0.5.1
+[v0.3.6]: https://github.com/NangoHQ/nango/compare/v0.2.2..v0.3.6
+[v0.2.2]: https://github.com/NangoHQ/nango/compare/v0.2.1..v0.2.2
 
 <!-- generated by git-cliff -->
