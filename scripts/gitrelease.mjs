@@ -37,7 +37,7 @@ await $`git push --tags`;
 
 echo`Commit pushed, publishing release...`;
 // Push GitHub release
-const releaseNotes = await $`npx git-cliff --latest`;
+const releaseNotes = await $`npx git-cliff --latest --strip header footer`;
 const releaseData = JSON.stringify({
     name: nextTag,
     tag_name: nextTag,
