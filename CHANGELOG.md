@@ -2,6 +2,70 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.25] - 2024-05-10
+
+### Added
+
+- *(integrations)* Add support for dialpad (#2082)
+- *(debug)* Add more details when pausing temporal schedule (#2139)
+- *(sdk)* Add more caching (#2111)
+
+### Changed
+
+- Better Result types (#2116)
+- *(logs)* POST /logs/search (#2063)
+- *(metrics)* [NAN-664] track more usage metrics in datadog (#2136)
+- Publish missing main package version in lock (#2138)
+- *(release)* 0.39.25 [skip ci]
+- *(release)* 0.39.25 [skip ci]
+
+### Fixed
+
+- *(release)* Automatic release publishing (#2103)
+- *(sdk)* Logging null breaks script (#2140)
+
+### Removed
+
+- Remove heroku/render from self-hosted guides (#2110)
+- *(server)* Remove list schedules (#2137)
+
+## [0.39.24] - 2024-05-10
+
+### Added
+
+- *(oauth2cc)* Add authorization request parameters (#2053)
+- *(logs)* Add more context data (#2034)
+- *(integrations)* Add support for posthog api (#2102)
+- *(auth)* Add span and cache 🙈 (#2114)
+- *(persist)* Add error details in auth.middleware (#2113)
+- *(integrations)* Add support for lessonly api (#2083)
+- *(integrations)* Add support for envoy api (#2092)
+- *(integration)* Add strava-web-oauth integration (#2118)
+- *(integration)* Add Bland.ai (#2098)
+- *(integrations)* Add support for pivotaltracker api (#2084)
+
+### Changed
+
+- Script to migrate records (#1934)
+- No cap (#2104)
+- *(integrations)* Add support for wealthbox (#2109)
+- *(deps)* Bump ejs from 3.1.9 to 3.1.10 (#2078)
+
+### Fixed
+
+- *(persist)* Truncate big logs (#2074)
+- *(api)* Handle 404 as json (#2085)
+- *(db)* Slow query getSyncs (#2088)
+- *(api)* Setup for e2e tests (#2090)
+- *(Provider)* Proxy is optional (#2096)
+- *(docker)* Set correct platform (#2101)
+- *(logs)* Make it completely optional (#2100)
+- *(api)* Unified context (#2097)
+- Latency and type error (#2112)
+- Ensure secret_key_hashed is updated when needed (#2119)
+- Set secret_key_hashed when creating environment (#2122)
+- Show error details from persist in activity logs (#2129)
+
 ## [0.39.23] - 2024-05-01
 
 ### Added
@@ -1007,6 +1071,8 @@ All notable changes to this project will be documented in this file.
 - Remove Bearer's callback URL (#46)
 - Remove project link + version (#149)
 
+[0.39.25]: https://github.com/NangoHQ/nango/compare/v0.39.24..0.39.25
+[0.39.24]: https://github.com/NangoHQ/nango/compare/v0.39.23..v0.39.24
 [0.39.23]: https://github.com/NangoHQ/nango/compare/v0.39.22..v0.39.23
 [0.39.22]: https://github.com/NangoHQ/nango/compare/v0.39.21..v0.39.22
 [0.39.21]: https://github.com/NangoHQ/nango/compare/v0.39.20..v0.39.21

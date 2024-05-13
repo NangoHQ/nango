@@ -1,4 +1,4 @@
-name: "[Release] Build service images"
+name: '[Release] Build service images'
 on:
     push:
         branches:
