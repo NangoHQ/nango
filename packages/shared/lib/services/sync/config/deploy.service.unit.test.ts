@@ -11,6 +11,7 @@ import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../../
 import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
+import type { Account } from '../../../models/Admin.js';
 
 describe('Sync config create', () => {
     const environment = { id: 1, name: '' } as Environment;
@@ -20,8 +21,8 @@ describe('Sync config create', () => {
         const syncs: IncomingFlowConfig[] = [];
         const debug = true;
 
-        vi.spyOn(environmentService, 'getAccountIdFromEnvironment').mockImplementation(() => {
-            return Promise.resolve(1);
+        vi.spyOn(environmentService, 'getAccountFromEnvironment').mockImplementation(() => {
+            return Promise.resolve({ id: 1, name: '' } as Account);
         });
 
         mockCreateActivityLog();
