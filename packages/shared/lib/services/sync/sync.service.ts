@@ -255,13 +255,16 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         .join(SYNC_SCHEDULE_TABLE, function () {
             this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
         })
-        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
+        .join(SYNC_CONFIG_TABLE, function () {
+            this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
+                .andOn(`${SYNC_CONFIG_TABLE}.deleted`, '=', db.knex.raw('FALSE'))
+                .andOn(`${SYNC_CONFIG_TABLE}.active`, '=', db.knex.raw('TRUE'))
+                .andOn(`${SYNC_CONFIG_TABLE}.nango_config_id`, '=', db.knex.raw('?', [nangoConnection.config_id]));
+        })
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
             nango_connection_id: nangoConnection.id,
             [`${SYNC_CONFIG_TABLE}.nango_config_id`]: nangoConnection.config_id,
-            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
-            [`${SYNC_CONFIG_TABLE}.active`]: true,
             [`${TABLE}.deleted`]: false
         })
         .orderBy(`${TABLE}.name`, 'asc')
