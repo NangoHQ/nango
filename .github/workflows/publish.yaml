@@ -35,4 +35,4 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  npx zx ./scripts/gitrelease.mjs ${{ inputs.version }} ${{ github.head_ref || github.ref_name }}
+                  npx zx ./scripts/gitrelease.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"
