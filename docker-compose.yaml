@@ -46,7 +46,7 @@ services:
             - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
         depends_on:
             - nango-db
-            - nanog-opensearch
+            - nango-opensearch
         networks:
             - nango
 
@@ -58,7 +58,9 @@ services:
         networks:
             - nango
 
-    nanog-opensearch:
+    # Optional dependency
+    # To not load opensearch, set NANGO_LOGS_OS_URL=false in nango-server and disable this dependency
+    nango-opensearch:
         image: opensearchproject/opensearch:2.13.0
         container_name: nango-opensearch
         ulimits:
@@ -78,6 +80,7 @@ services:
 
 networks:
     nango:
+
 
 volumes:
     opensearch-data1:

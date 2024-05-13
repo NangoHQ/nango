@@ -1,5 +1,5 @@
 import type { opensearchtypes } from '@opensearch-project/opensearch';
-import type { MessageRow } from '../types/messages';
+import type { MessageRow } from '@nangohq/types';
 import { envs } from '../env.js';
 
 const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
