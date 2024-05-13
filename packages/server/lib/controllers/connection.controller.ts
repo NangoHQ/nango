@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
+    Connection,
     OAuth2Credentials,
     OAuth2ClientCredentials,
     ImportedCredentials,
@@ -495,6 +496,105 @@ class ConnectionController {
             const metadata = await connectionService.updateMetadata(connection, req.body);
 
             res.status(200).send(metadata);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async bulkSetMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        try {
+            const environment = res.locals['environment'];
+            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+
+            const body = req.body;
+
+            if (!body.connection_ids) {
+                errorManager.errRes(res, 'missing_connection_ids');
+                return;
+            }
+
+            if (!body.metadata) {
+                errorManager.errRes(res, 'missing_metadata');
+                return;
+            }
+
+            const { connection_ids: connectionIdArg, metadata } = body;
+
+            const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
+
+            const ids: number[] = [];
+
+            for (const connectionId of connectionIds) {
+                const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+
+                if (!success) {
+                    errorManager.errResFromNangoErr(res, error);
+
+                    return;
+                }
+
+                if (!connection || !connection.id) {
+                    const error = new NangoError('unknown_connections_bailed', { connectionId, providerConfigKey, environmentName: environment.name });
+                    errorManager.errResFromNangoErr(res, error);
+
+                    return;
+                }
+
+                ids.push(connection.id);
+            }
+
+            await connectionService.bulkReplaceMetadata(ids, metadata);
+
+            res.status(201).send(req.body);
+        } catch (err) {
+            next(err);
+        }
+    }
+    async bulkUpdateMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        try {
+            const environment = res.locals['environment'];
+            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+
+            const body = req.body;
+
+            if (!body.connection_ids) {
+                errorManager.errRes(res, 'missing_connection_ids');
+                return;
+            }
+
+            if (!body.metadata) {
+                errorManager.errRes(res, 'missing_metadata');
+                return;
+            }
+
+            const { connection_ids: connectionIdArg, metadata } = body;
+
+            const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
+
+            const validConnections: Connection[] = [];
+
+            for (const connectionId of connectionIds) {
+                const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+
+                if (!success) {
+                    errorManager.errResFromNangoErr(res, error);
+
+                    return;
+                }
+
+                if (!connection || !connection.id) {
+                    const error = new NangoError('unknown_connections_bailed', { connectionId, providerConfigKey, environmentName: environment.name });
+                    errorManager.errResFromNangoErr(res, error);
+
+                    return;
+                }
+
+                validConnections.push(connection);
+            }
+
+            await connectionService.bulkUpdateMetada(validConnections, metadata);
+
+            res.status(201).send(req.body);
         } catch (err) {
             next(err);
         }

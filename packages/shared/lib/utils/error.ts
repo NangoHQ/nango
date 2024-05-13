@@ -293,6 +293,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'connection_id'.`;
                 break;
 
+            case 'missing_connection_ids':
+                this.status = 400;
+                this.message = `Missing param 'connection_id'.`;
+                break;
+
             case 'invalid_offset':
                 this.status = 400;
                 this.message = 'Invalid offset provided. The offset should be a number.';
@@ -316,6 +321,14 @@ export class NangoError extends Error {
             case 'unknown_connection':
                 this.status = 404;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
+                if (this.payload) {
+                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
+                }
+                break;
+
+            case 'unknown_connections_bailed':
+                this.status = 404;
+                this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'. If you passed in multiple connections no actions were taken on any of the connections as a result.`;
                 if (this.payload) {
                     this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
                 }

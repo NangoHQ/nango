@@ -278,7 +278,7 @@ export class Nango {
      * @param metadata - The custom metadata to set
      * @returns A promise that resolves with the Axios response from the server
      */
-    public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async setMetadata(providerConfigKey: string, connectionId: string | string[], metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -291,11 +291,17 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
-
         const headers: Record<string, string | number | boolean> = {
             'Provider-Config-Key': providerConfigKey
         };
+
+        if (Array.isArray(connectionId)) {
+            const url = `${this.serverUrl}/connection/bulk/metadata?provider_config_key=${providerConfigKey}`;
+
+            return axios.post(url, { metadata, connection_ids: connectionId }, { headers: this.enrichHeaders(headers) });
+        }
+
+        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
     }
@@ -307,7 +313,7 @@ export class Nango {
      * @param metadata - The custom metadata to update
      * @returns A promise that resolves with the Axios response from the server
      */
-    public async updateMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(providerConfigKey: string, connectionId: string | string[], metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -320,11 +326,17 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
-
         const headers: Record<string, string | number | boolean> = {
             'Provider-Config-Key': providerConfigKey
         };
+
+        if (Array.isArray(connectionId)) {
+            const url = `${this.serverUrl}/connection/bulk/metadata?provider_config_key=${providerConfigKey}`;
+
+            return axios.patch(url, { metadata, connection_ids: connectionId }, { headers: this.enrichHeaders(headers) });
+        }
+
+        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });
     }
