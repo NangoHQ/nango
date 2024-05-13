@@ -12,7 +12,7 @@ import {
     findPausableDemoSyncs,
     SpanTypes
 } from '@nangohq/shared';
-import { getLogger, isErr } from '@nangohq/utils';
+import { getLogger } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -90,13 +90,13 @@ export async function exec(): Promise<void> {
             recordsService,
             initiator: 'auto_idle_demo'
         });
-        if (isErr(resTemporal)) {
+        if (resTemporal.isErr()) {
             await logCtx.failed();
             continue;
         }
 
         const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, activityLogId, sync.environment_id, logCtx);
-        if (isErr(resDb)) {
+        if (resDb.isErr()) {
             await logCtx.failed();
             continue;
         }

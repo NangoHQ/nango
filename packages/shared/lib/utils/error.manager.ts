@@ -111,7 +111,7 @@ class ErrorManager {
             }
         });
 
-        logger.error(`Exception caught: ${stringifyError(e)}`);
+        logger.error(`Exception caught: ${stringifyError(e, { stack: true })}`);
 
         if (e instanceof Error && tracer) {
             // Log to datadog manually

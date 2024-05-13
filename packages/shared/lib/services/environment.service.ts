@@ -235,7 +235,10 @@ class EnvironmentService {
                 return null;
             }
 
-            const encryptedEnvironment = await encryptionManager.encryptEnvironment(environment);
+            const encryptedEnvironment = await encryptionManager.encryptEnvironment({
+                ...environment,
+                secret_key_hashed: await hashSecretKey(environment.secret_key)
+            });
             await db.knex.from<Environment>(TABLE).where({ id: environmentId }).update(encryptedEnvironment);
 
             const env = encryptionManager.decryptEnvironment(encryptedEnvironment)!;

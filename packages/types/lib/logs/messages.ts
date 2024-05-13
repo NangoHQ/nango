@@ -129,6 +129,7 @@ export type MessageRow = {
  */
 export type OperationRequired = 'operation' | 'message';
 export type OperationRowInsert = Pick<MessageRow, OperationRequired> & Partial<Omit<MessageRow, OperationRequired>>;
+export type OperationRow = Pick<MessageRow, OperationRequired> & Omit<MessageRow, OperationRequired>;
 
 /**
  * What is required to insert a Message

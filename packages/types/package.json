@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/types",
-    "version": "0.39.23",
+    "version": "0.39.26",
     "description": "Types used in Nango applications",
     "type": "module",
     "typings": "dist/index.d.ts",
