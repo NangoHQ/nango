@@ -26,7 +26,7 @@ echo`Adding file`;
 await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md`;
 
 echo`Creating commit`;
-await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" commit --allow-empty --author="Release Bot <actions@contact@nango.dev>" -m ${releaseMessage} `;
+await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" commit --allow-empty --author="Release Bot <contact@nango.dev>" -m ${releaseMessage} `;
 
 echo`Creating tag`;
 await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" tag -a ${nextTag} HEAD -m ${releaseMessage}`;

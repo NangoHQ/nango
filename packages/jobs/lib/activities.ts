@@ -172,8 +172,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             {
                 account: { id: nangoConnection.account_id! },
                 environment: { id: nangoConnection.environment_id },
-                connection: { id: nangoConnection.id! },
-                sync: { id: syncId }
+                connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
+                sync: { id: syncId, name: syncName }
             }
         );
         await logCtx.error('The continuous sync failed to run because of a failure to obtain the provider config', { error: err, syncName });
@@ -231,11 +231,11 @@ export async function syncProvider(
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id,
-            provider_config_key: nangoConnection?.provider_config_key,
+            connection_id: nangoConnection.connection_id,
+            provider_config_key: nangoConnection.provider_config_key,
             provider: syncConfig.provider,
             session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection?.environment_id,
+            environment_id: nangoConnection.environment_id,
             operation_name: syncName
         };
         const activityLogId = (await createActivityLog(log)) as number;
@@ -245,8 +245,9 @@ export async function syncProvider(
             {
                 account: { id: nangoConnection.account_id! },
                 environment: { id: nangoConnection.environment_id },
-                connection: { id: nangoConnection.id! },
-                sync: { id: syncId }
+                connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
+                config: { id: syncConfig.id!, name: syncConfig.unique_key },
+                sync: { id: syncId, name: syncName }
             }
         );
 

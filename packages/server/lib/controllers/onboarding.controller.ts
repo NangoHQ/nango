@@ -208,7 +208,7 @@ class OnboardingController {
                 }
             ];
 
-            const deploy = await deployPreBuiltSyncConfig(environment.id, config, '', logContextGetter);
+            const deploy = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter);
             if (!deploy.success || deploy.response === null) {
                 void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, deploy.error);
@@ -258,7 +258,7 @@ class OnboardingController {
                 logger.info(`[demo] no sync were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environmentId: environment.id,
+                    environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
@@ -268,7 +268,7 @@ class OnboardingController {
                 });
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environmentId: environment.id,
+                    environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.UNPAUSE,
@@ -292,7 +292,7 @@ class OnboardingController {
                 logger.info(`[demo] no job were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
-                    environmentId: environment.id,
+                    environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
                     command: SyncCommand.RUN_FULL,
@@ -418,7 +418,13 @@ class OnboardingController {
 
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
-                { account, environment, user, config: { id: connection.config_id! }, connection: { id: connection.id! } }
+                {
+                    account,
+                    environment,
+                    user,
+                    config: { id: connection.config_id!, name: connection.provider_config_key },
+                    connection: { id: connection.id!, name: connection.connection_id }
+                }
             );
             const actionResponse = await syncClient.triggerAction({
                 connection,
