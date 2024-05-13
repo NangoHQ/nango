@@ -4,8 +4,8 @@ import { metrics, retry } from '@nangohq/utils';
 import type { Pool } from 'tarn';
 
 const defaultSchema = process.env['NANGO_DB_SCHEMA'] || 'nango';
-const additionalSearchPaths = process.env['NANGO_DB_ADDITIONAL_SEARCH_PATH']
-? process.env['NANGO_DB_ADDITIONAL_SEARCH_PATH'].split(',')
+const additionalSchemas = process.env['NANGO_DB_ADDITIONAL_SCHEMAS']
+? process.env['NANGO_DB_ADDITIONAL_SCHEMAS'].split(',').map((schema:string) => schema.trim())
 : [];
 
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
@@ -25,7 +25,7 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '50')
         },
         // SearchPath needs the current db and public because extension can only be installed once per DB
-        searchPath: [defaultSchema, ...additionalSearchPaths]
+        searchPath: [defaultSchema, 'public', ...additionalSchemas]
     };
 }
 
