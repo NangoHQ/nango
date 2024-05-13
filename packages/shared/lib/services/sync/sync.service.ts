@@ -754,8 +754,10 @@ export interface PausableSyncs {
     id: string;
     name: string;
     environment_id: number;
+    environment_name: string;
     provider: string;
     account_id: number;
+    account_name: string;
     connection_unique_id: number;
     connection_id: string;
     unique_key: string;
@@ -768,8 +770,10 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         .select(
             '_nango_syncs.id',
             '_nango_syncs.name',
-            '_nango_environments.account_id',
-            '_nango_connections.environment_id',
+            '_nango_accounts.id as account_id',
+            '_nango_accounts.name as account_name',
+            '_nango_environments.id as environment_id',
+            '_nango_environments.name as environment_name',
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             '_nango_connections.id as connection_unique_id',
@@ -778,6 +782,7 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         )
         .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
         .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+        .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
         .join('_nango_configs', function () {
             this.on('_nango_configs.environment_id', '_nango_connections.environment_id').on(
                 '_nango_configs.unique_key',

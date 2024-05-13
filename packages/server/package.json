@@ -27,7 +27,7 @@
         "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
-        "@nangohq/types": "^0.39.24",
+        "@nangohq/types": "^0.39.27",
         "@nangohq/utils": "file:../utils",
         "@workos-inc/node": "^6.2.0",
         "axios": "^1.3.4",

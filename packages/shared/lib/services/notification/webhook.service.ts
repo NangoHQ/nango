@@ -377,7 +377,7 @@ class WebhookService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
-            { account: { id: account.id }, environment: { id: integration.environment_id }, config: { id: integration.id! } }
+            { account, environment: environmentInfo, config: { id: integration.id!, name: integration.unique_key } }
         );
 
         const body: NangoForwardWebhookBody = {

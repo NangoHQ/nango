@@ -14,7 +14,7 @@ const logger = getLogger('Encryption.Manager');
 export const pbkdf2 = utils.promisify(crypto.pbkdf2);
 export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'] || '';
 
-class EncryptionManager extends Encryption {
+export class EncryptionManager extends Encryption {
     private keySalt = 'X89FHEGqR3yNK0+v7rPWxQ==';
 
     public shouldEncrypt(): boolean {
@@ -201,31 +201,57 @@ class EncryptionManager extends Encryption {
         return keyBuffer.toString(this.encoding);
     }
 
+    /**
+     * Determine the Database encryption status
+     */
+    public async encryptionStatus(
+        dbConfig?: DBConfig
+    ): Promise<'disabled' | 'not_started' | 'require_rotation' | 'require_decryption' | 'done' | 'incomplete'> {
+        if (!dbConfig) {
+            if (!this.key) {
+                return 'disabled';
+            } else {
+                return 'not_started';
+            }
+        } else if (!this.key) {
+            return 'require_decryption';
+        }
+
+        const previousEncryptionKeyHash = dbConfig.encryption_key_hash;
+        const encryptionKeyHash = await this.hashEncryptionKey(this.key, this.keySalt);
+        if (previousEncryptionKeyHash !== encryptionKeyHash) {
+            return 'require_rotation';
+        }
+        return dbConfig.encryption_complete ? 'done' : 'incomplete';
+    }
+
     public async encryptDatabaseIfNeeded() {
-        const dbConfig: DBConfig | null = await db.knex.first().from<DBConfig>('_nango_db_config');
-        const previousEncryptionKeyHash = dbConfig?.encryption_key_hash;
+        const dbConfig = await db.knex.select<DBConfig>('*').from<DBConfig>('_nango_db_config').first();
+        const status = await this.encryptionStatus(dbConfig);
         const encryptionKeyHash = this.key ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
-        const isEncryptionKeyNew = dbConfig == null && this.key;
-        const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && !dbConfig.encryption_complete;
-
-        if (isEncryptionKeyNew || isEncryptionIncomplete) {
-            if (isEncryptionKeyNew) {
-                logger.info('🔐 Encryption key has been set. Encrypting database...');
-                await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: false });
-            } else if (isEncryptionIncomplete) {
-                logger.info('🔐 Previously started database encryption is incomplete. Continuing encryption of database...');
-            }
-
-            await this.encryptDatabase();
-            await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: true });
+        if (status === 'disabled') {
             return;
         }
-
-        const isEncryptionKeyChanged = dbConfig?.encryption_key_hash != null && previousEncryptionKeyHash !== encryptionKeyHash;
-        if (isEncryptionKeyChanged) {
-            throw new Error('You cannot edit or remove the encryption key once it has been set.');
+        if (status === 'done') {
+            return;
         }
+        if (status === 'require_rotation') {
+            throw new Error('Rotation of NANGO_ENCRYPTION_KEY is not supported.');
+        }
+        if (status === 'require_decryption') {
+            throw new Error('A previously set NANGO_ENCRYPTION_KEY has been removed from your environment variables.');
+        }
+        if (status === 'not_started') {
+            logger.info('🔐 Encryption key has been set. Encrypting database...');
+            await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: false });
+        }
+        if (status === 'incomplete') {
+            logger.info('🔐 Previously started database encryption is incomplete. Continuing encryption of database...');
+        }
+
+        await this.encryptDatabase();
+        await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: true });
     }
 
     private async encryptDatabase() {

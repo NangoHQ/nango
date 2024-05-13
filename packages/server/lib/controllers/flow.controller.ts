@@ -14,7 +14,8 @@ import {
     getConfigWithEndpointsByProviderConfigKeyAndName,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
     enableScriptConfig as enableConfig,
-    disableScriptConfig as disableConfig
+    disableScriptConfig as disableConfig,
+    environmentService
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -35,27 +36,26 @@ class FlowController {
         try {
             const { targetAccountUUID, targetEnvironment, config } = req.body;
 
-            const result = await accountService.getAccountAndEnvironmentIdByUUID(targetAccountUUID, targetEnvironment);
-
+            const result = await environmentService.getAccountAndEnvironment({ accountUuid: targetAccountUUID, envName: targetEnvironment });
             if (!result) {
                 res.status(400).send('Invalid environment');
                 return;
             }
 
-            const { environmentId } = result;
+            const { environment } = result;
 
             const {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environmentId, config, req.body.nangoYamlBody || '', logContextGetter);
+            } = await deployPreBuiltSyncConfig(environment, config, req.body.nangoYamlBody || '', logContextGetter);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter);
 
             res.sendStatus(200);
         } catch (e) {
@@ -77,7 +77,8 @@ class FlowController {
                 return;
             }
 
-            const environmentId = res.locals['environment'].id;
+            const { environment } = res.locals;
+            const environmentId = environment.id;
             const accountId = res.locals['account'].id;
 
             // config is an array for compatibility purposes, it will only ever have one item
@@ -114,7 +115,7 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environmentId, config, '', logContextGetter);
+            } = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
