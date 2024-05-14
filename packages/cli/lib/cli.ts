@@ -11,7 +11,7 @@ import type { ChildProcess } from 'node:child_process';
 
 import type { NangoConfig } from '@nangohq/shared';
 import { localFileService, nangoConfigFile, SyncConfigType } from '@nangohq/shared';
-import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
+import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
 import configService from './services/config.service.js';
 import modelService from './services/model.service.js';
 import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
@@ -26,9 +26,9 @@ export const version = (debug: boolean) => {
     if (debug) {
         printDebug('Looking up the version first for a local path first then globally');
     }
-    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+    const version = getPkgVersion(debug);
 
-    console.log(chalk.green('Nango CLI version:'), packageJson.version);
+    console.log(chalk.green('Nango CLI version:'), version);
 };
 
 export const generate = async (debug = false, inParentDirectory = false) => {

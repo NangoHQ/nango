@@ -43,5 +43,5 @@ export function getUserAgent(userAgent?: string): string {
 
     const osName = os.platform().replace(' ', '_');
     const osVersion = os.release().replace(' ', '_');
-    return `nango-node-client/${clientVersion} ${osName}.${osVersion}; Node.js ${nodeVersion}${userAgent ? `; ${userAgent}` : ''}`;
+    return `nango-node-client/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})${userAgent ? `; ${userAgent}` : ''}`;
 }

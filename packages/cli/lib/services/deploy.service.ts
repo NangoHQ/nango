@@ -1,13 +1,13 @@
 import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
 import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
-import { printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
+import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
 import type { DeployOptions } from '../types.js';
 
 class DeployService {
@@ -62,12 +62,8 @@ class DeployService {
         const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
 
         try {
-            await axios
-                .post(
-                    url,
-                    { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody },
-                    { headers: enrichHeaders(), httpsAgent: httpsAgent() }
-                )
+            await http
+                .post(url, { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody }, { headers: enrichHeaders() })
                 .then(() => {
                     console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
                 })
@@ -129,11 +125,7 @@ class DeployService {
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
             const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
             try {
-                const response = await axios.post(
-                    confirmationUrl,
-                    { syncs: postData, reconcile: false, debug, singleDeployMode },
-                    { headers: enrichHeaders(), httpsAgent: httpsAgent() }
-                );
+                const response = await http.post(confirmationUrl, { syncs: postData, reconcile: false, debug, singleDeployMode }, { headers: enrichHeaders() });
                 console.log(JSON.stringify(response.data, null, 2));
                 const { newSyncs, deletedSyncs } = response.data;
 
@@ -187,8 +179,8 @@ class DeployService {
         url: string,
         body: { syncs: IncomingFlowConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
     ) {
-        await axios
-            .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+        await http
+            .post(url, body, { headers: enrichHeaders() })
             .then((response: AxiosResponse<SyncDeploymentResult[]>) => {
                 const results = response.data;
                 if (results.length === 0) {

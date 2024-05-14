@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
-import https from 'https';
+import https from 'node:https';
 
 import type {
     ApiKeyCredentials,
@@ -41,8 +41,7 @@ export enum SyncType {
     INCREMENTAL = 'INCREMENTAL'
 }
 
-const agentOptions = { keepAlive: true };
-const defaultHttpsAgent = new https.Agent(agentOptions);
+const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
 export class Nango {
     serverUrl: string;
