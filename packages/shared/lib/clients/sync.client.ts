@@ -594,15 +594,15 @@ class SyncClient {
 
             if (!success || error) {
                 if (writeLogs) {
-                    if (rawError && rawError['type'] === 'action_script_runtime_error') {
+                    if (rawError) {
                         await createActivityLogMessageAndEnd({
                             level: 'error',
                             environment_id,
                             activity_log_id: activityLogId,
                             timestamp: Date.now(),
-                            content: `Failed with error ${JSON.stringify(rawError['payload'])}`
+                            content: `Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`
                         });
-                        await logCtx.error(`Failed with error ${JSON.stringify(rawError['payload'])}`);
+                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
                     }
                     await createActivityLogMessageAndEnd({
                         level: 'error',
