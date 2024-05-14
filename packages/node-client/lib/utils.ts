@@ -1,4 +1,9 @@
+import os from 'os';
+
 import type { ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Validates the configuration for a proxy call
@@ -29,3 +34,14 @@ export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig)
         }
     });
 };
+
+export function getUserAgent(userAgent?: string): string {
+    const dir = path.dirname(fileURLToPath(import.meta.url));
+    const packageJson = JSON.parse(fs.readFileSync(path.resolve(dir, '../package.json'), 'utf8'));
+    const clientVersion: string = packageJson.version ; // eslint-disable-line
+    const nodeVersion = process.versions.node;
+
+    const osName = os.platform().replace(' ', '_');
+    const osVersion = os.release().replace(' ', '_');
+    return `nango-node-client/${clientVersion} ${osName}.${osVersion}; Node.js ${nodeVersion}${userAgent ? `; ${userAgent}` : ''}`;
+}
