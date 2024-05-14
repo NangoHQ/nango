@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { getUserAgent } from './utils.js';
 
+const regex = 'nango-node-client/[0-9.]+ [a-z]+.[0-9a-z.-]+; Node.js [0-9.]+';
 describe('getUserAgent', () => {
     it('should output default user agent', () => {
-        expect(getUserAgent()).toMatch(/nango-node-client\/[0-9.]+ [a-z]+.[0-9.]+; Node.js 20.12.2/);
+        expect(getUserAgent()).toMatch(new RegExp(regex));
     });
     it('should output additional user agent ', () => {
-        expect(getUserAgent('cli')).toMatch(/nango-node-client\/[0-9.]+ [a-z]+.[0-9.]+; Node.js 20.12.2; cli/);
+        expect(getUserAgent('cli')).toMatch(new RegExp(`${regex}; cli`));
     });
 });
