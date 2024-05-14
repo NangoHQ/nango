@@ -80,6 +80,7 @@ export const ENVS = z.object({
     NANGO_ENCRYPTION_KEY: z.string().optional(),
     NANGO_DB_MIGRATION_FOLDER: z.string().optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
+    NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
 
     // Records
     RECORDS_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'), //TODO remove default and deal with default value in the records package (ie: envVar || mainDB || localhost )
