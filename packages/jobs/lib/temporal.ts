@@ -34,9 +34,14 @@ export class Temporal {
             key = await fs.readFile(`/etc/secrets/${this.namespace}.key`);
         }
 
+        const temporalAddress = process.env['TEMPORAL_ADDRESS'];
+        if (!temporalAddress) {
+            throw new Error('TEMPORAL_ADDRESS missing from env var');
+        }
+
         try {
             const connection = await NativeConnection.connect({
-                address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
+                address: temporalAddress,
                 tls:
                     !isProd && !isEnterprise
                         ? false
