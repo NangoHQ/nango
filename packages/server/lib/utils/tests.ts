@@ -13,12 +13,6 @@ function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     });
 }
 
-// & (TMethod extends 'GET'
-// ? { method?: TMethod }
-// : { method: TMethod }) &
-// (TQuery extends never ? { query?: never } : { query: TQuery }) &
-// (TBody extends never ? { body?: never } : { body: TBody }) &
-// (TParams extends never ? { params?: never } : { params: TParams })
 /**
  * Type safe API fetch
  */
