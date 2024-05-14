@@ -2,6 +2,7 @@ import { client } from '../es/client.js';
 import type { MessageRow, OperationRow, SearchLogsState } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
+import { errors } from '@opensearch-project/opensearch';
 
 export interface ListOperations {
     count: number;
@@ -11,6 +12,8 @@ export interface ListMessages {
     count: number;
     items: MessageRow[];
 }
+
+export const ResponseError = errors.ResponseError;
 
 /**
  * Create one message
@@ -68,7 +71,7 @@ export async function listOperations(opts: { accountId: number; environmentId?: 
 /**
  * Get a single operation
  */
-export async function getOperation(opts: { id: MessageRow['id'] }): Promise<MessageRow | undefined> {
+export async function getOperation(opts: { id: MessageRow['id'] }): Promise<MessageRow> {
     const res = await client.get<{ id: string; _source: MessageRow }>({
         index: indexMessages.index,
         id: opts.id
