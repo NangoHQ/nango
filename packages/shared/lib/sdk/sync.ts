@@ -1,3 +1,4 @@
+import https from 'node:https';
 import { Nango, getUserAgent } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
@@ -894,6 +895,7 @@ export class NangoSync extends NangoAction {
 
 const persistApi = axios.create({
     baseURL: getPersistAPIUrl(),
+    httpsAgent: new https.Agent({ keepAlive: true }),
     headers: {
         'User-Agent': getUserAgent('sdk')
     },
