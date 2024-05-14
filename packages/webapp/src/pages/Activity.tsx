@@ -207,20 +207,29 @@ export default function Activity() {
         const newOffset = Number(offset) + limit;
         setOffset(newOffset);
 
-        setSearchParams({ ...queryParams, offset: newOffset } as any);
+        setSearchParams((prev) => {
+            prev.set('offset', String(newOffset));
+            return prev;
+        });
     };
 
     const decrementPage = () => {
         if (Number(offset) - limit >= 0) {
             const newOffset = Number(offset) - limit;
             setOffset(newOffset);
-            setSearchParams({ ...queryParams, offset: newOffset } as any);
+            setSearchParams((prev) => {
+                prev.set('offset', String(newOffset));
+                return prev;
+            });
         }
     };
 
     const resetOffset = () => {
         setOffset(0);
-        setSearchParams({ ...queryParams, offset: 0 } as any);
+        setSearchParams((prev) => {
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const renderParams = (params: Record<string, string>, level: string) => {
