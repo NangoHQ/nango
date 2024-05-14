@@ -5,8 +5,8 @@ import type { Pool } from 'tarn';
 
 const defaultSchema = process.env['NANGO_DB_SCHEMA'] || 'nango';
 const additionalSchemas = process.env['NANGO_DB_ADDITIONAL_SCHEMAS']
-? process.env['NANGO_DB_ADDITIONAL_SCHEMAS'].split(',').map((schema:string) => schema.trim())
-: [];
+    ? process.env['NANGO_DB_ADDITIONAL_SCHEMAS'].split(',').map((schema: string) => schema.trim())
+    : [];
 
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
     return {
