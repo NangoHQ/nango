@@ -1,5 +1,7 @@
-import type { SearchLogs } from '@nangohq/types';
+import type { GetOperation, SearchLogs } from '@nangohq/types';
 import { useEffect, useState } from 'react';
+import useSWR from 'swr';
+import { swrFetcher } from '../utils/api';
 
 export function useSearchLogs(env: string, body: SearchLogs['Body']) {
     const [loading, setLoading] = useState<boolean>(false);
@@ -38,4 +40,16 @@ export function useSearchLogs(env: string, body: SearchLogs['Body']) {
     }, [env, body.limit, body.states]);
 
     return { data, error, loading };
+}
+
+export function useOperation(env: string, params: GetOperation['Params']) {
+    const { data, error } = useSWR<GetOperation['Success']>(`/api/v1/logs/${params.operationId}?env=${env}`, swrFetcher);
+
+    const loading = !data && !error;
+
+    return {
+        loading,
+        error,
+        operation: data?.data
+    };
 }

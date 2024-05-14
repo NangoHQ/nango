@@ -92,9 +92,9 @@ export function formatTimestampWithTZ(timestamp: number): string {
     return formattedDate;
 }
 
-export function elapsedTime(start: number, end: number): string {
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
+export function elapsedTime(start: Date | number, end: Date | number): string {
+    const startTime = start instanceof Date ? start.getTime() : new Date(start).getTime();
+    const endTime = end instanceof Date ? end.getTime() : new Date(end).getTime();
 
     if (isNaN(startTime) || isNaN(endTime)) {
         return '';
@@ -146,7 +146,7 @@ export function formatDateToUSFormat(dateString: string): string {
     return formattedDate;
 }
 
-export function formatDateToIntFormat(dateString: string): string {
+export function formatDateToInternationalFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
         hour: '2-digit',

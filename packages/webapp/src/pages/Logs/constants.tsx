@@ -1,6 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { SearchLogsData, SearchLogsState } from '@nangohq/types';
-import { formatDateToIntFormat } from '../../utils/utils';
+import { formatDateToInternationalFormat } from '../../utils/utils';
 import { StatusTag } from './components/StatusTag';
 import { OperationTag } from './components/OperationTag';
 import type { MultiSelectArgs } from './components/MultiSelect';
@@ -12,7 +12,7 @@ export const columns: ColumnDef<SearchLogsData>[] = [
         header: 'Timestamp',
         size: 150,
         cell: ({ row }) => {
-            return formatDateToIntFormat(row.original.createdAt);
+            return formatDateToInternationalFormat(row.original.createdAt);
         }
     },
     {

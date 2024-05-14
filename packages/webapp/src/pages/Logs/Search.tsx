@@ -63,7 +63,7 @@ export const LogsSearch: React.FC = () => {
 
                 <div className="flex flex-col border border-zinc-500 rounded items-center text-white text-center py-24 gap-2">
                     <h2 className="text-xl">You don&apos;t have logs yet.</h2>
-                    <div className="text-sm text-zinc-400">Note that logs older than 15days are automatically cleared.</div>
+                    <div className="text-sm text-zinc-400">Note that logs older than 15 days are automatically cleared.</div>
                 </div>
             </DashboardLayout>
         );
