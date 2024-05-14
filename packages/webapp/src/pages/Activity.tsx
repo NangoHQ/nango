@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { useState, useEffect, useRef, createRef } from 'react';
 import useSWR from 'swr';
 import { Helmet } from 'react-helmet';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Loading, Tooltip } from '@geist-ui/core';
 import { requestErrorToast, swrFetcher } from '../utils/api';
 import {
@@ -21,7 +21,6 @@ import {
     XSquare
 } from '@geist-ui/icons';
 import { XCircleIcon } from '@heroicons/react/24/outline';
-import queryString from 'query-string';
 
 import { ReactComponent as SyncIcon } from '../icons/sync-code-icon.svg';
 import CopyButton from '../components/ui/button/CopyButton';
@@ -78,8 +77,6 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
 };
 
 export default function Activity() {
-    const navigate = useNavigate();
-
     const [expandedRow, setExpandedRow] = useState(-1);
     const [limit] = useState(20);
     const [logIds, setLogIds] = useState<number[]>([]);
@@ -88,9 +85,8 @@ export default function Activity() {
     const [integrations, setIntegrations] = useState<string[]>([]);
     const [connections, setConnections] = useState<string[]>([]);
 
-    const location = useLocation();
-    const queryParams = queryString.parse(location.search);
-    const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
+    const [queryParams, setSearchParams] = useSearchParams();
+    const activityLogId: string | (string | null)[] | null = queryParams.get('activity_log_id');
 
     const fifteenDaysAgo = new Date();
     fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
@@ -101,12 +97,12 @@ export default function Activity() {
     const [msgs, setMsgs] = useState<ActivityMessageResponse>([]);
     const [activityRefs, setActivityRefs] = useState<Record<number, React.RefObject<HTMLTableRowElement>>>({});
 
-    const [offset, setOffset] = useState<number>(Number(queryParams.offset) || 0);
-    const [status, setStatus] = useState<string>((queryParams.status as string) || '');
-    const [selectedScript, setSelectedScript] = useState<string>((queryParams.script as string) || '');
-    const [selectedIntegration, setSelectedIntegration] = useState<string>((queryParams.integration as string) || '');
-    const [selectedConnection, setSelectedConnection] = useState<string>((queryParams.connection as string) || '');
-    const [selectedDate, setDate] = useState<string>((queryParams.date as string) || '');
+    const [offset, setOffset] = useState<number>(Number(queryParams.get('offset')) || 0);
+    const [status, setStatus] = useState<string>((queryParams.get('status') as string) || '');
+    const [selectedScript, setSelectedScript] = useState<string>((queryParams.get('script') as string) || '');
+    const [selectedIntegration, setSelectedIntegration] = useState<string>((queryParams.get('integration') as string) || '');
+    const [selectedConnection, setSelectedConnection] = useState<string>((queryParams.get('connection') as string) || '');
+    const [selectedDate, setDate] = useState<string>((queryParams.get('date') as string) || '');
     const [loading, setLoading] = useState(false);
 
     const { data: activities, error } = useSWR<ActivityResponse[]>(
@@ -164,15 +160,6 @@ export default function Activity() {
     });
 
     useEffect(() => {
-        if (queryParams.offset) setOffset(parseInt(queryParams.offset as string, 10));
-        if (queryParams.status) setStatus(queryParams.status as string);
-        if (queryParams.script) setSelectedScript(queryParams.script as string);
-        if (queryParams.integration) setSelectedIntegration(queryParams.integration as string);
-        if (queryParams.connection) setSelectedConnection(queryParams.connection as string);
-        if (queryParams.date) setDate(queryParams.date as string);
-    }, []);
-
-    useEffect(() => {
         if (activityFilters) {
             setScripts(activityFilters.scripts.sort());
             setIntegrations(activityFilters.integrations.sort());
@@ -220,22 +207,20 @@ export default function Activity() {
         const newOffset = Number(offset) + limit;
         setOffset(newOffset);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: newOffset }));
+        setSearchParams({ ...queryParams, offset: newOffset } as any);
     };
 
     const decrementPage = () => {
         if (Number(offset) - limit >= 0) {
             const newOffset = Number(offset) - limit;
             setOffset(newOffset);
-
-            navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: newOffset }));
+            setSearchParams({ ...queryParams, offset: newOffset } as any);
         }
     };
 
     const resetOffset = () => {
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: 0 }));
+        setSearchParams({ ...queryParams, offset: 0 } as any);
     };
 
     const renderParams = (params: Record<string, string>, level: string) => {
@@ -252,8 +237,11 @@ export default function Activity() {
         const value = e.target.value;
         setStatus(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('status', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -261,8 +249,11 @@ export default function Activity() {
         const value = e.target.value;
         setSelectedScript(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('script', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -270,8 +261,11 @@ export default function Activity() {
         const value = e.target.value;
         setSelectedIntegration(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('integration', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -279,8 +273,11 @@ export default function Activity() {
         const value = e.target.value;
         setSelectedConnection(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('connection', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -288,19 +285,19 @@ export default function Activity() {
         const value = e.target.value;
         setDate(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('data', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
         setLoading(true);
         action('');
-        const url = window.location.pathname;
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.delete(prop);
-
-        const updatedUrl = url + '?' + searchParams.toString();
-        navigate(updatedUrl);
+        setSearchParams(searchParams);
     };
 
     const copyActivityLogUrl = (activity: ActivityResponse): string => {
