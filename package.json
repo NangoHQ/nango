@@ -11,6 +11,7 @@
         "packages/records",
         "packages/server",
         "packages/runner",
+        "packages/scheduler",
         "packages/persist",
         "packages/jobs",
         "packages/webapp",
