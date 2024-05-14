@@ -16,14 +16,18 @@ describe('GET /logs', () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch('/api/v1/logs/:operationId', { method: 'GET', query: { env: 'dev' }, params: { operationId: '1' } });
+        const res = await api.fetch('/api/v1/logs/:operationId', { query: { env: 'dev' }, params: { operationId: '1' } });
 
         shouldBeProtected(res);
     });
 
     it('should enforce env query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/:operationId', { method: 'GET', token: env.secret_key, params: { operationId: '1' } });
+        const res = await api.fetch(
+            '/api/v1/logs/:operationId',
+            // @ts-expect-error missing query on purpose
+            { token: env.secret_key, params: { operationId: '1' } }
+        );
 
         shouldRequireQueryEnv(res);
     });
@@ -31,13 +35,16 @@ describe('GET /logs', () => {
     it('should validate query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/:operationId', {
-            method: 'GET',
-            query: { env: 'dev', foo: 'bar' },
+            query: {
+                env: 'dev',
+                // @ts-expect-error on purpose
+                foo: 'bar'
+            },
             token: env.secret_key,
             params: { operationId: '1' }
         });
 
-        expect(res.json).toStrictEqual({
+        expect(res.json).toStrictEqual<typeof res.json>({
             error: {
                 code: 'invalid_query_params',
                 errors: [
@@ -55,16 +62,14 @@ describe('GET /logs', () => {
     it('should get empty result', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/:operationId', {
-            method: 'GET',
             query: { env: 'dev' },
             token: env.secret_key,
             params: { operationId: '1' }
         });
 
-        expect(res.res.status).toBe(200);
-        expect(res.json).toStrictEqual({
-            data: [],
-            pagination: { total: 0 }
+        expect(res.res.status).toBe(404);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'not_found' }
         });
     });
 
@@ -79,7 +84,6 @@ describe('GET /logs', () => {
         await logCtx.success();
 
         const res = await api.fetch(`/api/v1/logs/:operationId`, {
-            method: 'GET',
             query: { env: 'dev' },
             token: env.secret_key,
             params: { operationId: logCtx.id }
@@ -133,7 +137,6 @@ describe('GET /logs', () => {
         await logCtx.success();
 
         const res = await api.fetch(`/api/v1/logs/:operationId`, {
-            method: 'GET',
             query: { env: 'dev' },
             token: env2.env.secret_key,
             params: { operationId: logCtx.id }

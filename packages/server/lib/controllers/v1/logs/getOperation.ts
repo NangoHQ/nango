@@ -6,7 +6,7 @@ import { model, envs } from '@nangohq/logs';
 
 const validation = z
     .object({
-        operationId: z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/)
+        operationId: z.string().regex(/^([0-9]+|[a-zA-Z0-9]{20})$/)
     })
     .strict();
 
