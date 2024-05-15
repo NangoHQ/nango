@@ -132,9 +132,9 @@ class EnvironmentController {
                 return;
             }
 
-            const digest = await hmacService.digest(info?.environmentId, integration_key, connectionId as string);
+            const digest = await hmacService.digest(info.environmentId, integration_key, connectionId as string);
 
-            const environment = await environmentService.getById(info?.environmentId);
+            const environment = await environmentService.getById(info.environmentId);
 
             if (!environment) {
                 errorManager.errRes(res, 'account_not_found');
