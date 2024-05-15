@@ -225,18 +225,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
-            db.knex.raw(
-                `(
-                    SELECT models
-                    FROM
-                        _nango_connections
-                        JOIN _nango_configs ON _nango_configs.id = _nango_connections.config_id
-                        JOIN _nango_sync_configs ON _nango_sync_configs.nango_config_id = _nango_configs.id
-                            AND _nango_sync_configs.deleted = FALSE
-                            AND _nango_sync_configs.active = TRUE
-                    WHERE _nango_connections.id = _nango_syncs.nango_connection_id AND _nango_sync_configs.sync_name = _nango_syncs.name
-                ) as models`
-            ),
+            `${SYNC_CONFIG_TABLE}.models`,
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -266,8 +255,16 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         .join(SYNC_SCHEDULE_TABLE, function () {
             this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
         })
+        .join(SYNC_CONFIG_TABLE, function () {
+            this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
+                .andOn(`${SYNC_CONFIG_TABLE}.deleted`, '=', db.knex.raw('FALSE'))
+                .andOn(`${SYNC_CONFIG_TABLE}.active`, '=', db.knex.raw('TRUE'))
+                .andOn(`${SYNC_CONFIG_TABLE}.nango_config_id`, '=', db.knex.raw('?', [nangoConnection.config_id]));
+        })
+        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
             nango_connection_id: nangoConnection.id,
+            [`${SYNC_CONFIG_TABLE}.nango_config_id`]: nangoConnection.config_id,
             [`${TABLE}.deleted`]: false
         })
         .orderBy(`${TABLE}.name`, 'asc')
@@ -754,8 +751,10 @@ export interface PausableSyncs {
     id: string;
     name: string;
     environment_id: number;
+    environment_name: string;
     provider: string;
     account_id: number;
+    account_name: string;
     connection_unique_id: number;
     connection_id: string;
     unique_key: string;
@@ -768,8 +767,10 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         .select(
             '_nango_syncs.id',
             '_nango_syncs.name',
-            '_nango_environments.account_id',
-            '_nango_connections.environment_id',
+            '_nango_accounts.id as account_id',
+            '_nango_accounts.name as account_name',
+            '_nango_environments.id as environment_id',
+            '_nango_environments.name as environment_name',
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             '_nango_connections.id as connection_unique_id',
@@ -778,6 +779,7 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         )
         .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
         .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+        .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
         .join('_nango_configs', function () {
             this.on('_nango_configs.environment_id', '_nango_connections.environment_id').on(
                 '_nango_configs.unique_key',

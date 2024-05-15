@@ -27,6 +27,7 @@ services:
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - NANGO_DB_ADDITIONAL_SCHEMAS=${NANGO_DB_ADDITIONAL_SCHEMAS}
             - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
             - NANGO_PORT=${NANGO_PORT:-3003}

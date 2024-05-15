@@ -3,6 +3,11 @@ import type { Knex } from 'knex';
 import { metrics, retry } from '@nangohq/utils';
 import type { Pool } from 'tarn';
 
+const defaultSchema = process.env['NANGO_DB_SCHEMA'] || 'nango';
+const additionalSchemas = process.env['NANGO_DB_ADDITIONAL_SCHEMAS']
+    ? process.env['NANGO_DB_ADDITIONAL_SCHEMAS'].split(',').map((schema: string) => schema.trim())
+    : [];
+
 export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
     return {
         client: process.env['NANGO_DB_CLIENT'] || 'pg',
@@ -20,7 +25,7 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '50')
         },
         // SearchPath needs the current db and public because extension can only be installed once per DB
-        searchPath: ['nango', 'public']
+        searchPath: [defaultSchema, 'public', ...additionalSchemas]
     };
 }
 
@@ -68,15 +73,23 @@ export class KnexDatabase {
     }
 
     async migrate(directory: string): Promise<any> {
-        return retry(async () => await this.knex.migrate.latest({ directory: directory, tableName: '_nango_auth_migrations', schemaName: this.schema() }), {
-            maxAttempts: 4,
-            delayMs: (attempt) => 500 * attempt,
-            retryIf: () => true
-        });
+        return retry(
+            async () =>
+                await this.knex.migrate.latest({
+                    directory: directory,
+                    tableName: '_nango_auth_migrations',
+                    schemaName: this.schema()
+                }),
+            {
+                maxAttempts: 4,
+                delayMs: (attempt) => 500 * attempt,
+                retryIf: () => true
+            }
+        );
     }
 
     schema() {
-        return 'nango';
+        return defaultSchema;
     }
 }
 

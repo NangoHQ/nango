@@ -100,7 +100,12 @@ class ConnectionController {
                 });
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
-                    { account, environment, connection: { id: connection.id! }, config: { id: connection.config_id! } }
+                    {
+                        account,
+                        environment,
+                        connection: { id: connection.id!, name: connection.connection_id },
+                        config: { id: connection.config_id!, name: connection.provider_config_key }
+                    }
                 );
                 await logCtx.error('Unknown provider config');
                 await logCtx.failed();
@@ -152,7 +157,12 @@ class ConnectionController {
                 });
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
-                    { account, environment, connection: { id: connection.id! }, config: { id: config.id! } }
+                    {
+                        account,
+                        environment,
+                        connection: { id: connection.id!, name: connection.connection_id },
+                        config: { id: config.id!, name: config.unique_key }
+                    }
                 );
                 await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
                 await logCtx.success();

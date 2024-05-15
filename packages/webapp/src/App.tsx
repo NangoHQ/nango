@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { SWRConfig } from 'swr';
 import { Routes, Route, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes, Navigate } from 'react-router-dom';
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, createTheme } from '@mantine/core';
 import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
@@ -30,6 +30,7 @@ import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
+import { LogsSearch } from './pages/Logs/Search';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -39,6 +40,10 @@ Sentry.init({
         })
     ],
     tracesSampleRate: 0.1
+});
+
+const theme = createTheme({
+    fontFamily: 'Inter'
 });
 
 const App = () => {
@@ -53,25 +58,7 @@ const App = () => {
     }, [env, setShowInteractiveDemo]);
 
     return (
-        <MantineProvider
-            theme={{
-                globalStyles: () => ({
-                    '.transparent-code .language-json': {
-                        backgroundColor: 'transparent !important'
-                    },
-                    '.transparent-code .language-typescript': {
-                        backgroundColor: 'transparent !important'
-                    },
-                    '.break-all-words .token.string': {
-                        wordBreak: 'break-all',
-                        whiteSpace: 'normal'
-                    },
-                    '.mantine-Prism-code': {
-                        fontFamily: 'Roboto Mono'
-                    }
-                })
-            }}
-        >
+        <MantineProvider theme={theme}>
             <SWRConfig
                 value={{
                     refreshInterval: 15 * 60000,
@@ -103,6 +90,7 @@ const App = () => {
                         <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
                         <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
                         <Route path="/:env/activity" element={<Activity />} />
+                        <Route path="/:env/logs" element={<LogsSearch />} />
                         <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
                         <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
                         {AUTH_ENABLED && (

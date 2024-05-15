@@ -21,4 +21,4 @@ exports.up = async function (knex) {
     await knex.schema.raw('DROP INDEX CONCURRENTLY IF EXISTS _nango_sync_jobs_status_index');
 };
 
-exports.down = function (knex) {};
+exports.down = function () {};
