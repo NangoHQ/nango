@@ -420,7 +420,7 @@ class SyncController {
             if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
-                res.send(actionResponse.value);
+                res.status(200).json(actionResponse.value);
 
                 return;
             } else {
@@ -430,6 +430,7 @@ class SyncController {
                 await logCtx.failed();
                 span.finish();
 
+                next(actionResponse.error);
                 return;
             }
         } catch (err) {
