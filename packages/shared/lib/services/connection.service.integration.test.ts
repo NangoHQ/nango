@@ -53,7 +53,8 @@ describe('Connection service integration tests', async () => {
             const connectionId = connections[1];
             const dbConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
             await connectionService.replaceMetadata([dbConnection.id as number], initialMetadata);
-            await connectionService.updateMetadata([dbConnection], newMetadata);
+            const updatedMetadataConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
+            await connectionService.updateMetadata([updatedMetadataConnection], newMetadata);
 
             const updatedDbConnection = await connectionService.getConnectionById(connectionId as number);
             const updatedMetadata = updatedDbConnection?.metadata as Metadata;
