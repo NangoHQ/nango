@@ -29,6 +29,9 @@
             "path": "packages/runner"
         },
         {
+            "path": "packages/scheduler"
+        },
+        {
             "path": "packages/server"
         },
         {
