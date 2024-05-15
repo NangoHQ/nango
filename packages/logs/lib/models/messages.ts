@@ -47,6 +47,7 @@ export async function listOperations(opts: {
         (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
     }
     if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
+        // Where or
         (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: opts.states.map((state) => {
@@ -139,7 +140,12 @@ export async function setTimeouted(opts: Pick<MessageRow, 'id'>): Promise<void> 
 /**
  * List messages
  */
-export async function listMessages(opts: { parentId: string; limit: number; states?: SearchOperationsState[] | undefined }): Promise<ListMessages> {
+export async function listMessages(opts: {
+    parentId: string;
+    limit: number;
+    states?: SearchOperationsState[] | undefined;
+    search?: string | undefined;
+}): Promise<ListMessages> {
     const query: opensearchtypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { parentId: opts.parentId } }],
@@ -148,6 +154,7 @@ export async function listMessages(opts: { parentId: string; limit: number; stat
     };
 
     if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
+        // Where or
         (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: opts.states.map((state) => {
@@ -156,19 +163,20 @@ export async function listMessages(opts: { parentId: string; limit: number; stat
             }
         });
     }
+    if (opts.search) {
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            match_phrase_prefix: { message: { query: opts.search } }
+        });
+    }
+
+    console.log(JSON.stringify(query));
 
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
-        body: {
-            query: {
-                bool: {
-                    must: [{ term: { parentId: opts.parentId } }]
-                }
-            }
-        }
+        body: { query }
     });
     const hits = res.body.hits;
 

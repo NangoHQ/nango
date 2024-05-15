@@ -88,7 +88,7 @@ export function useSearchMessages(env: string, body: SearchMessages['Body']) {
         if (!loading) {
             void fetchData();
         }
-    }, [env, body.operationId, body.limit, body.states]);
+    }, [env, body.operationId, body.limit, body.states, body.search]);
 
     return { data, error, loading };
 }

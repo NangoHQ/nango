@@ -66,6 +66,7 @@
         "react-router-dom": "6.8.2",
         "react-scripts": "5.0.1",
         "react-toastify": "9.1.1",
+        "react-use": "17.5.0",
         "swr": "2.2.5",
         "tailwind-merge": "2.2.1",
         "tailwindcss": "3.2.7",

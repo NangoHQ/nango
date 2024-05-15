@@ -12,6 +12,8 @@ import { MessageTag } from './MessageTag';
 import { LevelTag } from './LevelTag';
 import { MessageRow } from './MessageRow';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
+import { useDebounce } from 'react-use';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
@@ -33,7 +35,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'level',
         header: 'Level',
-        size: 60,
+        size: 70,
         cell: ({ row }) => {
             return <LevelTag level={row.original.level} />;
         }
@@ -51,20 +53,27 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
 export const SearchInOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
 
-    const { data, error, loading } = useSearchMessages(env, { limit: 20, operationId });
+    const [search, setSearch] = useState<string | undefined>();
+    const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
+    const { data, error, loading } = useSearchMessages(env, { limit: 20, operationId, search: debouncedSearch });
 
     const table = useReactTable({
         data: data ? data.data : [],
         columns,
-
         getCoreRowModel: getCoreRowModel()
     });
+    useDebounce(() => setDebouncedSearch(search), 250, [search]);
 
     return (
         <div>
             <h4 className="font-semibold text-sm flex items-center gap-2">Logs {loading && <Spinner size={1} />}</h4>
             <header className="mt-4">
-                <Input before={<MagnifyingGlassIcon className="w-4" />} placeholder="Search logs..." className="border-border-gray-400" />
+                <Input
+                    before={<MagnifyingGlassIcon className="w-4" />}
+                    placeholder="Search logs..."
+                    className="border-border-gray-400"
+                    onChange={(e) => setSearch(e.target.value)}
+                />
             </header>
             <main>
                 {error && (

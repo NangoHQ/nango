@@ -28,7 +28,7 @@ export type SearchMessages = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/messages';
     Querystring: { env: string };
-    Body: { operationId: string; limit?: number; states?: SearchOperationsState[] };
+    Body: { operationId: string; limit?: number; states?: SearchOperationsState[]; search?: string | undefined };
     Success: {
         data: MessageRow[];
         pagination: { total: number };

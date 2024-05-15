@@ -8,6 +8,7 @@ const validation = z
     .object({
         operationId: z.string().regex(operationIdRegex),
         limit: z.number().optional().default(100),
+        search: z.string().optional(),
         states: z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
             .optional()
@@ -54,7 +55,12 @@ export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
     }
 
     const body: SearchMessages['Body'] = val.data;
-    const rawOps = await model.listMessages({ parentId: body.operationId, limit: body.limit!, states: body.states });
+    const rawOps = await model.listMessages({
+        parentId: body.operationId,
+        limit: body.limit!,
+        states: body.states,
+        search: body.search
+    });
 
     res.status(200).send({
         data: rawOps.items,
