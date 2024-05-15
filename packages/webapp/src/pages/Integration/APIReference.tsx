@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import type { Tabs, SubTabs, EndpointResponse } from './Show';
 import EndpointRow from './components/EndpointRow';
 import HelpFooter from './components/HelpFooter';
-import type { IntegrationConfig, Environment, Flow } from '../../types';
+import type { IntegrationConfig, Environment, Flow, FlowEndpoint } from '../../types';
 
 interface APIReferenceProps {
     integration: IntegrationConfig | null;
@@ -11,10 +11,11 @@ interface APIReferenceProps {
     environment: Environment;
     setSubTab: (tab: SubTabs) => void;
     setFlow: (flow: Flow) => void;
+    setEndpoint: (endpoint: FlowEndpoint | string) => void;
 }
 
 export default function APIReference(props: APIReferenceProps) {
-    const { integration, endpoints, setSubTab, setFlow } = props;
+    const { integration, endpoints, setSubTab, setFlow, setEndpoint } = props;
 
     const allFlows = [
         ...(endpoints?.allFlows?.syncs || []),
@@ -59,7 +60,14 @@ export default function APIReference(props: APIReferenceProps) {
                                 <Fragment key={flowIndex}>
                                     {flow.endpoints.map((endpoint, index: number) => (
                                         <tr key={`tr-${flow.name}-${flowIndex}-${index}`}>
-                                            <EndpointRow flow={flow} endpoint={endpoint} integration={integration} setSubTab={setSubTab} setFlow={setFlow} />
+                                            <EndpointRow
+                                                flow={flow}
+                                                endpoint={endpoint}
+                                                integration={integration}
+                                                setSubTab={setSubTab}
+                                                setFlow={setFlow}
+                                                setEndpoint={setEndpoint}
+                                            />
                                         </tr>
                                     ))}
                                 </Fragment>
