@@ -486,16 +486,10 @@ paths:
                                 properties:
                                     message:
                                         type: string
-    /connection/{connectionId}/metadata:
+    /connection/metadata:
         post:
-            description: Set custom metadata for the connection.
+            description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string.
             parameters:
-                - name: connectionId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: The connection ID used to create the connection.
                 - name: provider_config_key
                   in: query
                   required: true
@@ -508,10 +502,22 @@ paths:
                     application/json:
                         schema:
                             type: object
+                            required:
+                                - metadata
+                                - connection_id
+                            properties:
+                                connection_id:
+                                    type: string
+                                    items:
+                                        type: string
+                                        example: "connection-123"
+                                    description: The connection ID used to set the metadata on. Accepts an array of connection ids as well
+                                metadata:
+                                    type: object
 
             responses:
                 '201':
-                    description: Successfully set the metadata
+                    description: Successfully set the metadata for the connections
                     content:
                         application/json:
                             schema:
@@ -526,6 +532,87 @@ paths:
                                     message:
                                         type: string
         patch:
+            description: Edit custom metadata for the connection or connections (only overrides specified properties, not the entire metadata). If updating multiple connections pass in an array of connection ids instead of a string.
+            parameters:
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_id
+                            properties:
+                                connection_id:
+                                    type: string
+                                    items:
+                                        type: string
+                                        example: "connection-123"
+                                    description: The connection ID used to update the metadata on. Accepts an array of connection ids as well
+                                metadata:
+                                    type: object
+
+            responses:
+                '200':
+                    description: Successfully updated the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
+    /connection/{connectionId}/metadata:
+        post:
+            description: Set custom metadata for the connection.
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+
+            responses:
+                '201':
+                    description: Successfully created an integrations
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
+        patch:
             description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
             parameters:
                 - name: connectionId
@@ -534,8 +621,8 @@ paths:
                   schema:
                       type: string
                   description: The connection ID used to create the connection.
-                - name: provider_config_key
-                  in: query
+                - name: Provider-Config-Key
+                  in: header
                   required: true
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
@@ -562,96 +649,6 @@ paths:
                                 properties:
                                     message:
                                         type: string
-    /connection/metadata/bulk:
-        post:
-            description: Set custom metadata for the connections.
-            parameters:
-                - name: Provider-Config-Key
-                  in: header
-                  required: true
-                  description: The integration ID used to create the connection (aka Unique Key).
-                  schema:
-                      type: string
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            required:
-                                - metadata
-                                - connection_ids
-                            properties:
-                                connection_ids:
-                                    type: array
-                                    items:
-                                        type: string
-                                        example: "connection-123"
-                                    description: The connection IDs used to set the metadata on
-                                metadata:
-                                    type: object
-
-            responses:
-                '201':
-                    description: Successfully set the metadata for the connections
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-        patch:
-            description: Edit custom metadata for the connections (only overrides specified properties, not the entire metadata).
-            parameters:
-                - name: Provider-Config-Key
-                  in: header
-                  required: true
-                  description: The integration ID used to create the connection (aka Unique Key).
-                  schema:
-                      type: string
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            required:
-                                - metadata
-                                - connection_ids
-                            properties:
-                                connection_ids:
-                                    type: array
-                                    items:
-                                        type: string
-                                        example: "connection-123"
-                                    description: The connection IDs used to update the metadata on
-                                metadata:
-                                    type: object
-
-            responses:
-                '200':
-                    description: Successfully updated the metadata for the connections
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-
 
     /scripts/config:
         get:

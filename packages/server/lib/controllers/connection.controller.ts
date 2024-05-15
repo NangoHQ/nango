@@ -459,7 +459,7 @@ class ConnectionController {
         }
     }
 
-    async setMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async setMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
@@ -488,7 +488,7 @@ class ConnectionController {
         }
     }
 
-    async updateMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async updateMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
@@ -517,15 +517,15 @@ class ConnectionController {
         }
     }
 
-    async bulkSetMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async setMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
-            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
             const body = req.body;
 
-            if (!body.connection_ids) {
-                errorManager.errRes(res, 'missing_connection_ids');
+            if (!body.connection_id) {
+                errorManager.errRes(res, 'missing_connection_id');
                 return;
             }
 
@@ -534,7 +534,7 @@ class ConnectionController {
                 return;
             }
 
-            const { connection_ids: connectionIdArg, metadata } = body;
+            const { connection_id: connectionIdArg, metadata } = body;
 
             const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
 
@@ -544,7 +544,8 @@ class ConnectionController {
                 const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
                 if (!success || !connection || !connection.id) {
-                    const error = new NangoError('unknown_connections_bailed', { connectionId, providerConfigKey, environmentName: environment.name });
+                    const errorType = connectionIds.length > 1 ? 'unknown_connections_bailed' : 'unknown_connection';
+                    const error = new NangoError(errorType, { connectionId, providerConfigKey, environmentName: environment.name });
                     errorManager.errResFromNangoErr(res, error);
 
                     return;
@@ -560,15 +561,15 @@ class ConnectionController {
             next(err);
         }
     }
-    async bulkUpdateMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async updateMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
-            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
             const body = req.body;
 
-            if (!body.connection_ids) {
-                errorManager.errRes(res, 'missing_connection_ids');
+            if (!body.connection_id) {
+                errorManager.errRes(res, 'missing_connection_id');
                 return;
             }
 
@@ -577,17 +578,19 @@ class ConnectionController {
                 return;
             }
 
-            const { connection_ids: connectionIdArg, metadata } = body;
+            const { connection_id: connectionIdArg, metadata } = body;
 
             const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
 
             const validConnections: Connection[] = [];
 
             for (const connectionId of connectionIds) {
-                const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+                const { success, error: yo, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+                console.log(yo);
 
                 if (!success || !connection || !connection.id) {
-                    const error = new NangoError('unknown_connections_bailed', { connectionId, providerConfigKey, environmentName: environment.name });
+                    const errorType = connectionIds.length > 1 ? 'unknown_connections_bailed' : 'unknown_connection';
+                    const error = new NangoError(errorType, { connectionId, providerConfigKey, environmentName: environment.name });
                     errorManager.errResFromNangoErr(res, error);
 
                     return;

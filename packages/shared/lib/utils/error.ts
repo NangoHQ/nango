@@ -293,7 +293,7 @@ export class NangoError extends Error {
                 this.message = `Missing param 'connection_id'.`;
                 break;
 
-            case 'missing_connection_ids':
+            case 'missing_connection_id':
                 this.status = 400;
                 this.message = `Missing param 'connection_id'.`;
                 break;

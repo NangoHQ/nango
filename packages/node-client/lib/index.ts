@@ -295,15 +295,9 @@ export class Nango {
             'Provider-Config-Key': providerConfigKey
         };
 
-        if (Array.isArray(connectionId)) {
-            const url = `${this.serverUrl}/connection/metadata/bulk?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connection/metadata?provider_config_key=${providerConfigKey}`;
 
-            return axios.post(url, { metadata, connection_ids: connectionId }, { headers: this.enrichHeaders(headers) });
-        }
-
-        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
-
-        return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
+        return axios.post(url, { metadata, connection_id: connectionId }, { headers: this.enrichHeaders(headers) });
     }
 
     /**
@@ -330,15 +324,9 @@ export class Nango {
             'Provider-Config-Key': providerConfigKey
         };
 
-        if (Array.isArray(connectionId)) {
-            const url = `${this.serverUrl}/connection/metadata/bulk?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connection/metadata?provider_config_key=${providerConfigKey}`;
 
-            return axios.patch(url, { metadata, connection_ids: connectionId }, { headers: this.enrichHeaders(headers) });
-        }
-
-        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
-
-        return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });
+        return axios.patch(url, { metadata, connection_id: connectionId }, { headers: this.enrichHeaders(headers) });
     }
 
     /**

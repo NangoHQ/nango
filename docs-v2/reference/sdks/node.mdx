@@ -434,10 +434,13 @@ const myTypedMetadata = await nango.getMetadata<CustomMetadata>('<INTEGRATION-ID
 
 ### Set connection metadata
 
-Set custom metadata for the connection (overrides existing metadata).
+Set custom metadata for the connection or connections (overrides existing metadata).
 
 ```js
 await nango.setMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
+
+# set an array of connection ids
+await nango.setMetadata('<INTEGRATION-ID>', ['CONNECTION-ID', 'CONNECTION-ID-TWO'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
 ```
 
 **Parameters**
@@ -447,43 +450,8 @@ await nango.setMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'C
         The integration ID of the connection.
     </ResponseField>
 
-    <ResponseField name="connectionId" type="string" required>
-        The connection ID.
-    </ResponseField>
-
-    <ResponseField name="metadata" type="Record<string, any>" required>
-        The custom metadata to store in the connection.
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-Empty response.
-<Expandable>
-```json
-{
-    "CUSTOM_KEY1": "CUSTOM_VALUE1"
-}
-```
-</Expandable>
-
-### Bulk set connection metadata
-
-Set custom metadata for multiple connections (overrides existing metadata).
-
-```js
-await nango.setMetadata('<INTEGRATION-ID>', ['CONNECTION-ID-1', 'CONNECTION-ID-2'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="providerConfigKey" type="string" required>
-        The integration ID of the connection.
-    </ResponseField>
-
-    <ResponseField name="connectionId" type="string[]" required>
-        The connection IDs.
+    <ResponseField name="connectionId" type="string | string[]" required>
+        The connection ID or connection IDs.
     </ResponseField>
 
     <ResponseField name="metadata" type="Record<string, any>" required>
@@ -496,7 +464,7 @@ await nango.setMetadata('<INTEGRATION-ID>', ['CONNECTION-ID-1', 'CONNECTION-ID-2
 <Expandable>
 ```json
 {
-    "connection_ids": "<string[]>",
+    "connection_id": "<string | [string]>",
     "metadata": {
         "CUSTOM_KEY1": "CUSTOM_VALUE1"
     }
@@ -506,10 +474,13 @@ await nango.setMetadata('<INTEGRATION-ID>', ['CONNECTION-ID-1', 'CONNECTION-ID-2
 
 ### Edit connection metadata
 
-Edit custom metadata for the connection. Only overrides specified properties, not the entire metadata.
+Edit custom metadata for the connection or connections. Only overrides specified properties, not the entire metadata.
 
 ```js
 await nango.updateMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
+
+# update an array of connection ids
+await nango.updateMetadata('<INTEGRATION-ID>', ['CONNECTION-ID', 'CONNECTION-ID-TWO'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
 ```
 
 **Parameters**
@@ -519,43 +490,8 @@ await nango.updateMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1':
         The integration ID of the connection.
     </ResponseField>
 
-    <ResponseField name="connectionId" type="string" required>
-        The connection ID.
-    </ResponseField>
-
-    <ResponseField name="metadata" type="Record<string, any>" required>
-        The custom metadata to store in the connection.
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-Empty response.
-<Expandable>
-```json
-{
-    "CUSTOM_KEY1": "CUSTOM_VALUE1"
-}
-```
-</Expandable>
-
-### Bulk edit connection metadata
-
-Edit custom metadata for the connection. Only overrides specified properties, not the entire metadata.
-
-```js
-await nango.updateMetadata('<INTEGRATION-ID>', ['CONNECTION-ID-1', 'CONNECTION-ID-2'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="providerConfigKey" type="string" required>
-        The integration ID of the connection.
-    </ResponseField>
-
-    <ResponseField name="connectionIds" type="string[]" required>
-        The connection IDs.
+    <ResponseField name="connectionId" type="string | string[]" required>
+        The connection ID or connection IDs.
     </ResponseField>
 
     <ResponseField name="metadata" type="Record<string, any>" required>
@@ -568,7 +504,7 @@ await nango.updateMetadata('<INTEGRATION-ID>', ['CONNECTION-ID-1', 'CONNECTION-I
 <Expandable>
 ```json
 {
-    "connection_ids": ["<string>"],
+    "connection_id": "<string | [string]>",
     "metadata": {
         "CUSTOM_KEY1": "CUSTOM_VALUE1"
     }
