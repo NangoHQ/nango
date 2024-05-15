@@ -3,7 +3,7 @@ import { migrate, Scheduler, clearDb } from '@nangohq/scheduler';
 import { getServer } from './server.js';
 import { OrchestraClient as OrchestraClient } from './client.js';
 
-describe('Client', () => {
+describe('OrchestraClient', () => {
     const scheduler = new Scheduler({
         on: {
             CREATED: (task) => console.log(`Task ${task.id} created`),

@@ -33,7 +33,13 @@ export const createRoute = <E extends EndpointDefinition>(server: Express, rh: R
     }
 };
 
-export const routeFetch = <E extends EndpointDefinition>(baseUrl: string, route: Route<E>) => {
+export const routeFetch = <E extends EndpointDefinition>(
+    baseUrl: string,
+    route: Route<E>,
+    config?: {
+        timeoutMs: number;
+    }
+) => {
     return async function f({
         query,
         body,
@@ -62,7 +68,7 @@ export const routeFetch = <E extends EndpointDefinition>(baseUrl: string, route:
                 method: route.method,
                 headers,
                 body: body ? JSON.stringify(body) : null,
-                signal: AbortSignal.timeout(200)
+                signal: AbortSignal.timeout(config?.timeoutMs || 120_000)
             });
             let json: Endpoint<E>['Reply'] = {};
             if (res.headers.get('content-type')?.includes('application/json')) {
