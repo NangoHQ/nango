@@ -1,5 +1,5 @@
 import type { Endpoint } from '../api';
-import type { MessageState, OperationRow } from './messages';
+import type { MessageRow, MessageState, OperationRow } from './messages';
 
 export type SearchOperations = Endpoint<{
     Method: 'POST';
@@ -11,9 +11,7 @@ export type SearchOperations = Endpoint<{
         pagination: { total: number };
     };
 }>;
-
 export type SearchOperationsState = 'all' | MessageState;
-
 export type SearchOperationsData = SearchOperations['Success']['data'][0];
 
 export type GetOperation = Endpoint<{
@@ -23,5 +21,16 @@ export type GetOperation = Endpoint<{
     Params: { operationId: string };
     Success: {
         data: OperationRow;
+    };
+}>;
+
+export type SearchMessages = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/logs/messages';
+    Querystring: { env: string };
+    Body: { operationId: string; limit?: number; states?: SearchOperationsState[] };
+    Success: {
+        data: MessageRow[];
+        pagination: { total: number };
     };
 }>;

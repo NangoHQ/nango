@@ -139,10 +139,27 @@ export async function setTimeouted(opts: Pick<MessageRow, 'id'>): Promise<void> 
 /**
  * List messages
  */
-export async function listMessages(opts: { parentId: MessageRow['parentId']; limit: number }): Promise<ListMessages> {
+export async function listMessages(opts: { parentId: string; limit: number; states?: SearchOperationsState[] | undefined }): Promise<ListMessages> {
+    const query: opensearchtypes.QueryDslQueryContainer = {
+        bool: {
+            must: [{ term: { parentId: opts.parentId } }],
+            should: []
+        }
+    };
+
+    if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.states.map((state) => {
+                    return { term: { state } };
+                })
+            }
+        });
+    }
+
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
-        size: 5000,
+        size: opts.limit,
         sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
         body: {
@@ -153,7 +170,6 @@ export async function listMessages(opts: { parentId: MessageRow['parentId']; lim
             }
         }
     });
-
     const hits = res.body.hits;
 
     return {

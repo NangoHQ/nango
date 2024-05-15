@@ -1,7 +1,7 @@
 import { logContextGetter, migrateMapping } from '@nangohq/logs';
 import { multipleMigrations, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('GET /logs', () => {
@@ -16,8 +16,7 @@ describe('GET /logs', () => {
     });
 
     it('should be protected', async () => {
-        // @ts-expect-error missing body on purpose
-        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', query: { env: 'dev' } });
+        const res = await api.fetch('/api/v1/logs/messages', { method: 'POST', query: { env: 'dev' }, body: { operationId: '1' } });
 
         shouldBeProtected(res);
     });
@@ -25,14 +24,14 @@ describe('GET /logs', () => {
     it('should enforce env query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing query on purpose
-        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', token: env.secret_key });
+        const res = await api.fetch('/api/v1/logs/messages', { method: 'POST', token: env.secret_key, body: { operationId: '1' } });
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/operations', {
+        const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
@@ -44,6 +43,11 @@ describe('GET /logs', () => {
             error: {
                 code: 'invalid_body',
                 errors: [
+                    {
+                        code: 'invalid_type',
+                        message: 'Required',
+                        path: ['operationId']
+                    },
                     {
                         code: 'invalid_type',
                         message: 'Expected number, received string',
@@ -60,13 +64,17 @@ describe('GET /logs', () => {
         expect(res.res.status).toBe(400);
     });
 
-    it('should search logs and get empty results', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/operations', {
+    it('should search messages and get empty results', async () => {
+        const { account, env } = await seeders.seedAccountEnvAndUser();
+
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
+        await logCtx.success();
+
+        const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { limit: 10 }
+            body: { operationId: logCtx.id, limit: 10 }
         });
 
         isSuccess(res.json);
@@ -77,18 +85,18 @@ describe('GET /logs', () => {
         });
     });
 
-    it('should search logs and get one result', async () => {
+    it('should search messages and get one result', async () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch('/api/v1/logs/operations', {
+        const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { limit: 10 }
+            body: { operationId: logCtx.id, limit: 10 }
         });
 
         isSuccess(res.json);
@@ -96,7 +104,7 @@ describe('GET /logs', () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [
                 {
-                    accountId: env.account_id,
+                    accountId: null,
                     accountName: null,
                     code: null,
                     configId: null,
@@ -104,24 +112,22 @@ describe('GET /logs', () => {
                     connectionId: null,
                     connectionName: null,
                     createdAt: expect.toBeIsoDate(),
-                    endedAt: expect.toBeIsoDate(),
-                    environmentId: env.id,
-                    environmentName: 'dev',
+                    endedAt: null,
+                    environmentId: null,
+                    environmentName: null,
                     error: null,
-                    id: logCtx.id,
+                    id: expect.any(String),
                     jobId: null,
                     level: 'info',
-                    message: 'test 1',
+                    message: 'test info',
                     meta: null,
-                    operation: {
-                        type: 'auth'
-                    },
-                    parentId: null,
+                    operation: null,
+                    parentId: logCtx.id,
                     request: null,
                     response: null,
                     source: 'internal',
-                    startedAt: expect.toBeIsoDate(),
-                    state: 'success',
+                    startedAt: null,
+                    state: 'waiting',
                     syncId: null,
                     syncName: null,
                     title: null,
@@ -134,7 +140,7 @@ describe('GET /logs', () => {
         });
     });
 
-    it('should search logs and not return results from an other account', async () => {
+    it('should search messages and not return results from an other account', async () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
 
@@ -142,18 +148,15 @@ describe('GET /logs', () => {
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch('/api/v1/logs/operations', {
+        const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
             token: env2.env.secret_key,
-            body: { limit: 10 }
+            body: { operationId: logCtx.id, limit: 10 }
         });
 
-        isSuccess(res.json);
-        expect(res.res.status).toBe(200);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            data: [],
-            pagination: { total: 0 }
-        });
+        isError(res.json);
+        expect(res.res.status).toBe(404);
+        expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'not_found' } });
     });
 });

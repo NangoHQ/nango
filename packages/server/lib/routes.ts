@@ -33,6 +33,7 @@ import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
+import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 
 export const app = express();
 
@@ -203,7 +204,7 @@ web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.c
 web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
-// web.route('/api/v1/logs/messages').post(webAuth, searchOperations);
+web.route('/api/v1/logs/messages').post(webAuth, searchMessages);
 web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
 
 // Hosted signin

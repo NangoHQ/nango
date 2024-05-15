@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import Info from '../../components/ui/Info';
 import Spinner from '../../components/ui/Spinner';
-import { useOperation } from '../../hooks/useLogs';
+import { useGetOperation } from '../../hooks/useLogs';
 import { useStore } from '../../store';
 import { OperationTag } from './components/OperationTag';
 import { StatusTag } from './components/StatusTag';
@@ -12,7 +12,7 @@ import { SearchInOperation } from './components/SearchInOperation';
 
 export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
-    const { operation, loading, error } = useOperation(env, { operationId });
+    const { operation, loading, error } = useGetOperation(env, { operationId });
 
     const duration = useMemo<string>(() => {
         if (!operation) {
@@ -31,16 +31,18 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
 
     if (error || !operation) {
         return (
-            <Info color="red" classNames="text-xs" size={20}>
-                An error occurred
-            </Info>
+            <div className="py-6 px-6 flex flex-col gap-9">
+                <Info color="red" classNames="text-xs" size={20} padding="p-2">
+                    An error occurred
+                </Info>
+            </div>
         );
     }
 
     return (
-        <div className="py-6 px-6 flex flex-col gap-12">
+        <div className="py-6 px-6 flex flex-col gap-9">
             <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
-            <div className="flex gap-5 flex-wrap">
+            <div className="flex gap-6 flex-wrap">
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Timestamp</div>
                     <div className="text-gray-400 text-xs pt-[1px]">{operation.startedAt}</div>
@@ -88,7 +90,7 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
                     </div>
                 </div>
             </div>
-            <div>
+            <div className="mt-4">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
                 {!operation.meta && <div className="text-gray-400 text-xs">No payload...</div>}
             </div>

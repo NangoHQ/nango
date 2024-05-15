@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Input } from '../../../components/ui/input/Input';
-import { useSearchOperations } from '../../../hooks/useLogs';
+import { useSearchMessages } from '../../../hooks/useLogs';
 import type { SearchOperationsData } from '@nangohq/types';
 import { formatDateToInternationalFormat } from '../../../utils/utils';
 import { StatusTag } from './StatusTag';
@@ -48,7 +48,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
 export const SearchInOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
 
-    const { data, error, loading } = useSearchOperations(env, { limit: 20, operationId });
+    const { data, error, loading } = useSearchMessages(env, { limit: 20, operationId });
 
     const table = useReactTable({
         data: data ? data.data : [],
