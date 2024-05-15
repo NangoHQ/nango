@@ -12,7 +12,7 @@ interface SchedulingProps {
         count: number;
         max: number;
     };
-    timeoutsInSecs: {
+    timeoutSettingsInSecs: {
         createdToStarted: number;
         startedToCompleted: number;
         heartbeat: number;
@@ -29,7 +29,7 @@ interface SchedulingProps {
     };
 }
 
-export class OrchestraClient {
+export class OrchestratorClient {
     private fetchTimeoutMs: number;
     private baseUrl: string;
 
@@ -49,7 +49,7 @@ export class OrchestraClient {
                 name: props.name,
                 groupKey: props.groupKey,
                 retry: props.retry,
-                timeoutsInSecs: props.timeoutsInSecs,
+                timeoutSettingsInSecs: props.timeoutSettingsInSecs,
                 args: props.args
             }
         });
@@ -63,7 +63,7 @@ export class OrchestraClient {
     async execute(props: Pick<Partial<SchedulingProps>, 'name' | 'groupKey' | 'args'>): Promise<Result<Json>> {
         const scheduleProps = {
             retry: { count: 0, max: 0 },
-            timeoutsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+            timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
             ...props
         } as SchedulingProps;
         const res = await this.schedule(scheduleProps);

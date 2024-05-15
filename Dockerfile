@@ -22,7 +22,7 @@ COPY packages/logs/package.json ./packages/logs/package.json
 COPY packages/records/package.json ./packages/records/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/scheduler/package.json ./packages/scheduler/package.json
-COPY packages/orchestra/package.json ./packages/orchestra/package.json
+COPY packages/orchestrator/package.json ./packages/orchestrator/package.json
 COPY package*.json  ./
 
 # Install every dependencies

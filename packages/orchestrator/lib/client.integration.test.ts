@@ -2,7 +2,7 @@ import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import type { Task } from '@nangohq/scheduler';
 import { migrate, Scheduler, clearDb } from '@nangohq/scheduler';
 import { getServer } from './server.js';
-import { OrchestraClient } from './client.js';
+import { OrchestratorClient } from './client.js';
 
 const scheduler = new Scheduler({
     on: {
@@ -15,10 +15,10 @@ const scheduler = new Scheduler({
     }
 });
 
-describe('OrchestraClient', () => {
+describe('OrchestratorClient', () => {
     const server = getServer({ scheduler });
     const port = Math.floor(Math.random() * 1000) + 11000;
-    const client = new OrchestraClient({ baseUrl: `http://localhost:${port}`, fetchTimeoutMs: 10_000 });
+    const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}`, fetchTimeoutMs: 10_000 });
 
     beforeAll(async () => {
         await migrate();
@@ -37,7 +37,7 @@ describe('OrchestraClient', () => {
                 name: 'Task',
                 groupKey: groupKey,
                 retry: { count: 3, max: 5 },
-                timeoutsInSecs: {
+                timeoutSettingsInSecs: {
                     createdToStarted: 10,
                     startedToCompleted: 10,
                     heartbeat: 10

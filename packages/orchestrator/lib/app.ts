@@ -4,7 +4,7 @@ import { getServer } from './server.js';
 import { envs } from './env.js';
 import { migrate, Scheduler } from '@nangohq/scheduler';
 
-const logger = getLogger('Orchestra');
+const logger = getLogger('Orchestrator');
 
 try {
     await migrate();
@@ -21,12 +21,12 @@ try {
         }
     });
 
-    const port = envs.NANGO_ORCHESTRA_PORT;
+    const port = envs.NANGO_ORCHESTRATOR_PORT;
     const server = getServer({ scheduler });
     server.listen(port, () => {
-        logger.info(`🚀 Orchestra API ready at http://localhost:${port}`);
+        logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });
 } catch (err) {
-    console.error(`Orchestra API error: ${err}`);
+    console.error(`Orchestrator API error: ${err}`);
     process.exit(1);
 }

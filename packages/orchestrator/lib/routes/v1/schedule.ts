@@ -16,7 +16,7 @@ interface Schedule {
             count: number;
             max: number;
         };
-        timeoutsInSecs: {
+        timeoutSettingsInSecs: {
             createdToStarted: number;
             startedToCompleted: number;
             heartbeat: number;
@@ -50,7 +50,7 @@ const validate = validateRequest<Schedule>({
                     count: z.number().int(),
                     max: z.number().int()
                 }),
-                timeoutsInSecs: z.object({
+                timeoutSettingsInSecs: z.object({
                     createdToStarted: z.number().int().positive(),
                     startedToCompleted: z.number().int().positive(),
                     heartbeat: z.number().int().positive()
@@ -79,9 +79,9 @@ const getHandler = (scheduler: Scheduler) => {
                 groupKey: req.body.groupKey,
                 retryMax: req.body.retry.max,
                 retryCount: req.body.retry.count,
-                createdToStartedTimeoutSecs: req.body.timeoutsInSecs.createdToStarted,
-                startedToCompletedTimeoutSecs: req.body.timeoutsInSecs.startedToCompleted,
-                heartbeatTimeoutSecs: req.body.timeoutsInSecs.heartbeat
+                createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
+                startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
+                heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
             }
         });
         if (task.isErr()) {
