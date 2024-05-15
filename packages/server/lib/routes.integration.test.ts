@@ -23,6 +23,11 @@ describe('GET /logs', () => {
             headers: { Authorization: `Bearer ${env.secret_key}`, 'content-type': 'application/json' }
         });
 
-        expect(await res.json()).toStrictEqual({ error: { code: 'invalid_json', message: 'Unexpected token \'u\', "undefined" is not valid JSON' } });
+        expect(await res.json()).toStrictEqual({
+            error: {
+                code: 'invalid_json',
+                message: expect.any(String) // unfortunately the message is different depending on the platform
+            }
+        });
     });
 });
