@@ -1,5 +1,5 @@
 import { client } from '../es/client.js';
-import type { MessageRow, OperationRow, SearchLogsState } from '@nangohq/types';
+import type { MessageRow, OperationRow, SearchOperationsState } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
 import { errors } from '@opensearch-project/opensearch';
@@ -30,7 +30,12 @@ export async function createMessage(row: MessageRow): Promise<void> {
 /**
  * List operations
  */
-export async function listOperations(opts: { accountId: number; environmentId?: number; limit: number; states: SearchLogsState[] }): Promise<ListOperations> {
+export async function listOperations(opts: {
+    accountId: number;
+    environmentId?: number;
+    limit: number;
+    states?: SearchOperationsState[] | undefined;
+}): Promise<ListOperations> {
     const query: opensearchtypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }],
@@ -41,7 +46,7 @@ export async function listOperations(opts: { accountId: number; environmentId?: 
     if (opts.environmentId) {
         (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
     }
-    if (opts.states.length > 1 || opts.states[0] !== 'all') {
+    if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
         (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: opts.states.map((state) => {

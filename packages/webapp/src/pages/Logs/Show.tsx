@@ -8,6 +8,7 @@ import { StatusTag } from './components/StatusTag';
 import { elapsedTime } from '../../utils/utils';
 import { Link } from 'react-router-dom';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import { SearchInOperation } from './components/SearchInOperation';
 
 export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -17,11 +18,11 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
         if (!operation) {
             return '';
         }
-        if (!operation.endedAt) {
+        if (!operation.endedAt || !operation.startedAt) {
             return 'n/a';
         }
 
-        return elapsedTime(new Date(operation.startedAt!), new Date(operation.endedAt));
+        return elapsedTime(new Date(operation.startedAt), new Date(operation.endedAt));
     }, [operation]);
 
     if (loading) {
@@ -29,7 +30,11 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
     }
 
     if (error || !operation) {
-        return <Info color="red">An error occurred</Info>;
+        return (
+            <Info color="red" classNames="text-xs" size={20}>
+                An error occurred
+            </Info>
+        );
     }
 
     return (
@@ -87,9 +92,7 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
                 {!operation.meta && <div className="text-gray-400 text-xs">No payload...</div>}
             </div>
-            <div>
-                <h4 className="font-semibold text-sm">Logs</h4>
-            </div>
+            <SearchInOperation operationId={operationId} />
         </div>
     );
 };

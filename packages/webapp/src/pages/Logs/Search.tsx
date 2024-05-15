@@ -3,14 +3,14 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import Info from '../../components/ui/Info';
 import { Loading } from '@geist-ui/core';
-import { useSearchLogs } from '../../hooks/useLogs';
+import { useSearchOperations } from '../../hooks/useLogs';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './components/MultiSelect';
 import { columns, statusDefaultOptions, statusOptions } from './constants';
 import { useEffect, useState } from 'react';
-import type { SearchLogsState } from '@nangohq/types';
+import type { SearchOperationsState } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
 
@@ -18,9 +18,9 @@ export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
 
     // Data fetch
-    const [states, setStates] = useState<SearchLogsState[]>(statusDefaultOptions);
+    const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
     const [hasLogs, setHasLogs] = useState<boolean>(false);
-    const { data, error, loading } = useSearchLogs(env, { limit: 20, states });
+    const { data, error, loading } = useSearchOperations(env, { limit: 20, states });
 
     const table = useReactTable({
         data: data ? data.data : [],
@@ -78,7 +78,7 @@ export const LogsSearch: React.FC = () => {
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
             </div>
 
-            <Table.Table className="mt-6">
+            <Table.Table className="my-6 table-fixed">
                 <Table.Header>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <Table.Row key={headerGroup.id}>

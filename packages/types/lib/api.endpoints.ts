@@ -1,8 +1,8 @@
 import type { EndpointMethod } from './api';
-import type { GetOperation, SearchLogs } from './logs/api';
+import type { GetOperation, SearchOperations } from './logs/api';
 import type { GetOnboardingStatus } from './onboarding/api';
 
-export type APIEndpoints = SearchLogs | GetOperation | GetOnboardingStatus;
+export type APIEndpoints = SearchOperations | GetOperation | GetOnboardingStatus;
 
 /**
  * Automatically narrow endpoints type with Method + Path

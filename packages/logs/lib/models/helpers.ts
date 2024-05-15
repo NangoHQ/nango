@@ -1,6 +1,7 @@
 import { nanoid } from '@nangohq/utils';
 import type { MessageRow } from '@nangohq/types';
 
+export const operationIdRegex = /([0-9]|[a-zA-Z0-9]{20})/;
 export interface FormatMessageData {
     account?: { id: number; name?: string };
     user?: { id: number } | undefined;

@@ -1,7 +1,7 @@
 import { logContextGetter, migrateMapping } from '@nangohq/logs';
 import { multipleMigrations, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('GET /logs', () => {
@@ -16,21 +16,21 @@ describe('GET /logs', () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch('/api/v1/logs/search', { method: 'POST', query: { env: 'dev' } });
+        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', query: { env: 'dev' } });
 
         shouldBeProtected(res);
     });
 
     it('should enforce env query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/search', { method: 'POST', token: env.secret_key });
+        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', token: env.secret_key });
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
@@ -60,7 +60,7 @@ describe('GET /logs', () => {
 
     it('should search logs and get empty results', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
@@ -75,16 +75,13 @@ describe('GET /logs', () => {
     });
 
     it('should search logs and get one result', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'auth' } },
-            { account: { id: env.account_id }, environment: { id: env.id } }
-        );
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
@@ -105,7 +102,7 @@ describe('GET /logs', () => {
                     createdAt: expect.toBeIsoDate(),
                     endedAt: expect.toBeIsoDate(),
                     environmentId: env.id,
-                    environmentName: null,
+                    environmentName: 'dev',
                     error: null,
                     id: logCtx.id,
                     jobId: null,
@@ -141,7 +138,7 @@ describe('GET /logs', () => {
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env2.env.secret_key,
@@ -152,6 +149,39 @@ describe('GET /logs', () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [],
             pagination: { total: 0 }
+        });
+    });
+
+    describe('query params', () => {
+        it('should filter by operationId', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+
+            // first env
+            const logCtx = await logContextGetter.create(
+                { message: 'test 1', operation: { type: 'auth' } },
+                { account: { id: env.account_id }, environment: { id: env.id } }
+            );
+            await logCtx.info('test first env');
+            await logCtx.success();
+
+            // other env
+            const env2 = await seeders.seedAccountEnvAndUser();
+            const logCtx2 = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account: env2.account, environment: env2.env });
+            await logCtx2.info('test second env');
+            await logCtx2.success();
+
+            const res = await api.fetch('/api/v1/logs/operations', {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: env.secret_key,
+                body: { limit: 10, operationId: logCtx2.id }
+            });
+
+            isSuccess(res.json);
+            expect(res.json.data).toMatchObject({
+                id: logCtx2.id,
+                message: 'test second env'
+            });
         });
     });
 });

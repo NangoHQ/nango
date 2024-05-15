@@ -2,11 +2,11 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '../../../utils/validation.js';
 import type { GetOperation } from '@nangohq/types';
-import { model, envs } from '@nangohq/logs';
+import { model, envs, operationIdRegex } from '@nangohq/logs';
 
 const validation = z
     .object({
-        operationId: z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/)
+        operationId: z.string().regex(operationIdRegex)
     })
     .strict();
 

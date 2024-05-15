@@ -1,8 +1,8 @@
 // import { ChevronRight } from '@geist-ui/icons';
-import type { SearchLogsData } from '@nangohq/types';
+import type { SearchOperationsData } from '@nangohq/types';
 import { cn } from '../../../utils/utils';
 
-export const OperationTag: React.FC<{ operation: Exclude<SearchLogsData['operation'], null>; highlight?: boolean }> = ({ operation, highlight }) => {
+export const OperationTag: React.FC<{ operation: Exclude<SearchOperationsData['operation'], null>; highlight?: boolean }> = ({ operation, highlight }) => {
     return (
         <div
             className={cn(

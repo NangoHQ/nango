@@ -31,7 +31,7 @@ import type { Response, Request } from 'express';
 import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { searchLogs } from './controllers/v1/logs/searchLogs.js';
+import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
 
 export const app = express();
@@ -201,7 +201,8 @@ web.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy
 web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
-web.route('/api/v1/logs/search').post(webAuth, searchLogs);
+web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
+// web.route('/api/v1/logs/messages').post(webAuth, searchOperations);
 web.route('/api/v1/logs/:operationId').get(webAuth, getOperation);
 
 // Hosted signin

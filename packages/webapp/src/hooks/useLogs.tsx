@@ -1,12 +1,12 @@
-import type { GetOperation, SearchLogs } from '@nangohq/types';
+import type { GetOperation, SearchOperations } from '@nangohq/types';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { swrFetcher } from '../utils/api';
 
-export function useSearchLogs(env: string, body: SearchLogs['Body']) {
+export function useSearchOperations(env: string, body: SearchOperations['Body']) {
     const [loading, setLoading] = useState<boolean>(false);
-    const [data, setData] = useState<SearchLogs['Success']>();
-    const [error, setError] = useState<SearchLogs['Errors']>();
+    const [data, setData] = useState<SearchOperations['Success']>();
+    const [error, setError] = useState<SearchOperations['Errors']>();
 
     async function fetchData() {
         setLoading(true);
@@ -18,12 +18,12 @@ export function useSearchLogs(env: string, body: SearchLogs['Body']) {
             });
             if (res.status !== 200) {
                 setData(undefined);
-                setError((await res.json()) as SearchLogs['Errors']);
+                setError((await res.json()) as SearchOperations['Errors']);
                 return;
             }
 
             setError(undefined);
-            setData((await res.json()) as SearchLogs['Success']);
+            setData((await res.json()) as SearchOperations['Success']);
         } catch (err) {
             console.log(err);
             setData(undefined);

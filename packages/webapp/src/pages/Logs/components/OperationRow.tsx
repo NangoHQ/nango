@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
-import type { SearchLogsData } from '@nangohq/types';
+import type { SearchOperationsData } from '@nangohq/types';
 
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../components/ui/Drawer';
 import * as Table from '../../../components/ui/Table';
@@ -8,7 +8,7 @@ import { Show } from '../Show';
 import { Cross1Icon } from '@radix-ui/react-icons';
 
 const drawerWidth = '1034px';
-export const OperationRow: React.FC<{ row: Row<SearchLogsData> }> = ({ row }) => {
+export const OperationRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row }) => {
     return (
         <Drawer direction="right" snapPoints={[drawerWidth]} handleOnly={true} noBodyStyles={true}>
             <DrawerTrigger asChild type={null as unknown as 'button'}>
