@@ -1,12 +1,13 @@
 import * as cron from 'node-cron';
 import { telemetry, LogTypes, LogActionEnum, errorManager, ErrorSourceEnum, SyncClient, db, getRunningSchedules } from '@nangohq/shared';
-import { getLogger, metrics } from '@nangohq/utils';
+import { getLogger, metrics, stringToHash } from '@nangohq/utils';
 import tracer from 'dd-trace';
 
 const logger = getLogger('Jobs.TemporalSchedules');
+const cronName = '[reconcileTemporalSchedules]';
 
 export function reconcileTemporalSchedules(): void {
-    cron.schedule('*/30 * * * *', async () => {
+    cron.schedule('*/15 * * * *', async () => {
         const start = Date.now();
         try {
             await exec();
@@ -20,22 +21,21 @@ export function reconcileTemporalSchedules(): void {
 }
 
 export async function exec(): Promise<void> {
-    logger.info('[reconcileTemporalSchedules] starting');
+    logger.info(`${cronName} starting`);
 
-    const today = new Date();
-    const lockKey = parseInt(`2${today.getFullYear()}${today.getMonth() + 1}${today.getDate()}`);
+    const lockKey = stringToHash(cronName);
 
     const syncClient = await SyncClient.getInstance();
 
     if (!syncClient) {
-        logger.error('[reconcileTemporalSchedules] failed to get sync client');
+        logger.error(`${cronName} failed to get sync client`);
         return;
     }
 
     await db.knex.transaction(async (trx) => {
         const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [lockKey]);
         if (!rows?.[0]?.pg_try_advisory_xact_lock) {
-            logger.info('[reconcileTemporalSchedules] could not acquire lock, skipping');
+            logger.info(`${cronName} could not acquire lock, skipping`);
             return;
         }
 
@@ -46,7 +46,7 @@ export async function exec(): Promise<void> {
             const runningSchedules = await getRunningSchedules({ limit: 1000, offset: lastId });
 
             if (runningSchedules.length === 0) {
-                logger.info('[reconcileTemporalSchedules] no running schedules found');
+                logger.info(`${cronName} no running schedules found`);
                 break;
             }
 
@@ -55,7 +55,7 @@ export async function exec(): Promise<void> {
             for (const schedule of runningSchedules) {
                 const { schedule_id, sync_id } = schedule;
 
-                logger.info(`[reconcileTemporalSchedules] reconciling scheduleId: ${schedule_id}, syncId: ${sync_id}`);
+                logger.info(`${cronName} reconciling scheduleId: ${schedule_id}, syncId: ${sync_id}`);
 
                 try {
                     const syncSchedule = await syncClient.describeSchedule(schedule_id);
@@ -64,10 +64,8 @@ export async function exec(): Promise<void> {
                         const temporalClient = syncClient.getClient();
                         const scheduleHandle = temporalClient?.schedule.getHandle(schedule_id);
 
-                        if (scheduleHandle && !schedule_id.includes('demo')) {
-                            await scheduleHandle.unpause(
-                                `reconcileTemporalSchedules cron unpaused the schedule for sync '${sync_id}' at ${new Date().toISOString()}`
-                            );
+                        if (scheduleHandle && !schedule_id.includes('nango-syncs.issues-demo')) {
+                            await scheduleHandle.unpause(`${cronName} cron unpaused the schedule for sync '${sync_id}' at ${new Date().toISOString()}`);
                             await telemetry.log(
                                 LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
                                 'CRON: Schedule is marked as paused in temporal but not in the database. The schedule has been unpaused in temporal',
@@ -83,7 +81,7 @@ export async function exec(): Promise<void> {
                     }
                     metrics.increment(metrics.Types.RENCONCILE_TEMPORAL_SCHEDULES_SUCCESS);
                 } catch {
-                    logger.error(`[reconcileTemporalSchedules] failed to reconcile scheduleId: ${schedule_id}, syncId: ${sync_id}`);
+                    logger.error(`${cronName} failed to reconcile scheduleId: ${schedule_id}, syncId: ${sync_id}`);
                     metrics.increment(metrics.Types.RENCONCILE_TEMPORAL_SCHEDULES_FAILED);
                 }
             }
@@ -98,6 +96,6 @@ export async function exec(): Promise<void> {
                 lastId = lastSchedule.id;
             }
         }
-        logger.info('[reconcileTemporalSchedules] ✅ done');
+        logger.info(`${cronName} ✅ done`);
     });
 }
