@@ -1,6 +1,4 @@
 export const Show: React.FC = () => {
-    console.log('coucou');
-
     return (
         <div className="py-6 px-6 flex flex-col gap-12">
             <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
