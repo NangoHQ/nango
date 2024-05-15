@@ -4,7 +4,7 @@ export const StatusTag: React.FC<{ state: SearchOperationsData['state'] }> = ({ 
     if (state === 'success') {
         return (
             <div className="inline-flex px-1 pt-[1px] bg-state-green-900 bg-opacity-30 rounded">
-                <div className="text-state-green-400 uppercase text-[10px]">Success</div>
+                <div className="text-state-green-900 uppercase text-[10px]">Success</div>
             </div>
         );
     } else if (state === 'running') {

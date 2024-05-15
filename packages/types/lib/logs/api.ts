@@ -34,3 +34,4 @@ export type SearchMessages = Endpoint<{
         pagination: { total: number };
     };
 }>;
+export type SearchMessagesData = SearchMessages['Success']['data'][0];

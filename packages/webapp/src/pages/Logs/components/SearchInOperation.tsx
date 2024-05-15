@@ -4,12 +4,14 @@ import { Input } from '../../../components/ui/input/Input';
 import { useSearchMessages } from '../../../hooks/useLogs';
 import type { SearchOperationsData } from '@nangohq/types';
 import { formatDateToInternationalFormat } from '../../../utils/utils';
-import { StatusTag } from './StatusTag';
 import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
 import Spinner from '../../../components/ui/Spinner';
-import { OperationRow } from './OperationRow';
 import Info from '../../../components/ui/Info';
+import { MessageTag } from './MessageTag';
+import { LevelTag } from './LevelTag';
+import { MessageRow } from './MessageRow';
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
@@ -21,24 +23,25 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         }
     },
     {
-        accessorKey: 'state',
-        header: 'Status',
-        size: 100,
+        accessorKey: 'type',
+        header: 'Type',
+        size: 80,
         cell: ({ row }) => {
-            return <StatusTag state={row.original.state} />;
+            return <MessageTag type={row.original.type} />;
         }
     },
     {
-        accessorKey: 'operation',
-        header: 'Type',
-        size: 100,
+        accessorKey: 'level',
+        header: 'Level',
+        size: 60,
         cell: ({ row }) => {
-            return row.original.type;
+            return <LevelTag level={row.original.level} />;
         }
     },
     {
         accessorKey: 'message',
         header: 'Additional Info',
+        size: 'auto' as unknown as number,
         cell: ({ row }) => {
             return <div className="truncate">{row.original.message}</div>;
         }
@@ -53,14 +56,15 @@ export const SearchInOperation: React.FC<{ operationId: string }> = ({ operation
     const table = useReactTable({
         data: data ? data.data : [],
         columns,
+
         getCoreRowModel: getCoreRowModel()
     });
 
     return (
         <div>
-            <h4 className="font-semibold text-sm">Logs {loading && <Spinner size={1} />}</h4>
-            <header>
-                <Input placeholder="Search logs" />
+            <h4 className="font-semibold text-sm flex items-center gap-2">Logs {loading && <Spinner size={1} />}</h4>
+            <header className="mt-4">
+                <Input before={<MagnifyingGlassIcon className="w-4" />} placeholder="Search logs..." className="border-border-gray-400" />
             </header>
             <main>
                 {error && (
@@ -79,6 +83,7 @@ export const SearchInOperation: React.FC<{ operationId: string }> = ({ operation
                                             style={{
                                                 width: header.getSize()
                                             }}
+                                            className="bg-pure-black"
                                         >
                                             {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                         </Table.Head>
@@ -89,7 +94,7 @@ export const SearchInOperation: React.FC<{ operationId: string }> = ({ operation
                     </Table.Header>
                     <Table.Body>
                         {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => <OperationRow key={row.id} row={row} />)
+                            table.getRowModel().rows.map((row) => <MessageRow key={row.id} row={row} />)
                         ) : (
                             <Table.Row>
                                 <Table.Cell colSpan={columns.length} className="h-24 text-center">

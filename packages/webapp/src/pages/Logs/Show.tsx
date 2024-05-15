@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import Info from '../../components/ui/Info';
-import Spinner from '../../components/ui/Spinner';
 import { useGetOperation } from '../../hooks/useLogs';
 import { useStore } from '../../store';
 import { OperationTag } from './components/OperationTag';
@@ -9,6 +8,7 @@ import { elapsedTime } from '../../utils/utils';
 import { Link } from 'react-router-dom';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { SearchInOperation } from './components/SearchInOperation';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -26,7 +26,21 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
     }, [operation]);
 
     if (loading) {
-        return <Spinner />;
+        return (
+            <div className="py-6 px-6 flex flex-col gap-9">
+                <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[250px]" />
+                <div className="mt-4">
+                    <h4 className="font-semibold text-sm mb-2">Payload</h4>
+                    <Skeleton className="h-4 w-[250px]" />
+                </div>
+                <div className="mt-4">
+                    <h4 className="font-semibold text-sm mb-2">Logs</h4>
+                    <Skeleton className="h-4 w-[250px]" />
+                </div>
+            </div>
+        );
     }
 
     if (error || !operation) {

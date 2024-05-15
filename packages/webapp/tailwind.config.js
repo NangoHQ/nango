@@ -32,7 +32,6 @@ module.exports = {
                 'dark-800': '#09090B',
                 'bg-dark-blue': '#182633',
                 'state-green-900': '#84D65A',
-                'state-green-400': '#84D65A',
                 'row-hover': '#0d0d14',
                 white: '#FFFFFF'
             },

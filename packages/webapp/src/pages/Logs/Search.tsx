@@ -13,6 +13,8 @@ import { useEffect, useState } from 'react';
 import type { SearchOperationsState } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
+import { Input } from '../../components/ui/input/Input';
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -74,7 +76,9 @@ export const LogsSearch: React.FC = () => {
             <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
 
             <div className="flex gap-2 justify-between">
-                <div>{/* <Input before={<Search size={16} />} placeholder="Search logs..." /> */}</div>
+                <div className="w-full">
+                    <Input before={<MagnifyingGlassIcon className="w-4" />} placeholder="Search operations..." />
+                </div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
             </div>
 
