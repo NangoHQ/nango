@@ -1,4 +1,5 @@
-import { Nango } from '@nangohq/node';
+import https from 'node:https';
+import { Nango, getUserAgent } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
@@ -297,10 +298,15 @@ export class NangoAction {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango({
-            isSync: true,
-            ...config
-        });
+        this.nango = new Nango(
+            {
+                isSync: true,
+                ...config
+            },
+            {
+                userAgent: 'sdk'
+            }
+        );
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -364,7 +370,10 @@ export class NangoAction {
         return {
             ...config,
             providerConfigKey: config.providerConfigKey,
-            connectionId: config.connectionId
+            connectionId: config.connectionId,
+            headers: {
+                'user-agent': this.nango.userAgent
+            }
         };
     }
 
@@ -386,6 +395,7 @@ export class NangoAction {
             }
 
             const proxyConfig = this.proxyConfig(config);
+
             const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
                 existingActivityLogId: this.activityLogId as number,
                 connection,
@@ -885,6 +895,10 @@ export class NangoSync extends NangoAction {
 
 const persistApi = axios.create({
     baseURL: getPersistAPIUrl(),
+    httpsAgent: new https.Agent({ keepAlive: true }),
+    headers: {
+        'User-Agent': getUserAgent('sdk')
+    },
     validateStatus: (_status) => {
         return true;
     }
