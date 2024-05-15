@@ -470,14 +470,7 @@ class ConnectionService {
         return result;
     }
 
-    public async replaceMetadata(connection: Connection, metadata: Metadata) {
-        await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .where({ id: connection.id as number, deleted: false })
-            .update({ metadata });
-    }
-
-    public async bulkReplaceMetadata(ids: number[], metadata: Metadata) {
+    public async replaceMetadata(ids: number[], metadata: Metadata) {
         await db.knex.from<StoredConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
@@ -488,18 +481,10 @@ class ConnectionService {
             .update({ connection_config: config });
     }
 
-    public async updateMetadata(connection: Connection, metadata: Metadata): Promise<Metadata> {
-        const existingMetadata = await this.getMetadata(connection);
-        const newMetadata = { ...existingMetadata, ...metadata };
-        await this.replaceMetadata(connection, newMetadata);
-
-        return newMetadata;
-    }
-
-    public async bulkUpdateMetada(connections: Connection[], metadata: Metadata): Promise<void> {
+    public async updateMetadata(connections: Connection[], metadata: Metadata): Promise<void> {
         for (const connection of connections) {
             const newMetadata = { ...connection.metadata, ...metadata };
-            await this.replaceMetadata(connection, newMetadata);
+            await this.replaceMetadata([connection.id as number], newMetadata);
         }
     }
 

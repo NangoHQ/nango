@@ -473,14 +473,14 @@ class ConnectionController {
                 return;
             }
 
-            if (!connection) {
+            if (!connection || !connection.id) {
                 const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
 
-            await connectionService.replaceMetadata(connection, req.body);
+            await connectionService.replaceMetadata([connection.id], req.body);
 
             res.status(201).send(req.body);
         } catch (err) {
@@ -509,9 +509,9 @@ class ConnectionController {
                 return;
             }
 
-            const metadata = await connectionService.updateMetadata(connection, req.body);
+            await connectionService.updateMetadata([connection], req.body);
 
-            res.status(200).send(metadata);
+            res.status(200).send(req.body);
         } catch (err) {
             next(err);
         }
@@ -553,7 +553,7 @@ class ConnectionController {
                 ids.push(connection.id);
             }
 
-            await connectionService.bulkReplaceMetadata(ids, metadata);
+            await connectionService.replaceMetadata(ids, metadata);
 
             res.status(201).send(req.body);
         } catch (err) {
@@ -596,7 +596,7 @@ class ConnectionController {
                 validConnections.push(connection);
             }
 
-            await connectionService.bulkUpdateMetada(validConnections, metadata);
+            await connectionService.updateMetadata(validConnections, metadata);
 
             res.status(200).send(req.body);
         } catch (err) {
