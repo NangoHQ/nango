@@ -9,11 +9,13 @@ export interface EndpointRowProps {
     endpoint: string | FlowEndpoint;
     setSubTab: (tab: SubTabs) => void;
     setFlow: (flow: Flow) => void;
+    setEndpoint: (endpoint: FlowEndpoint | string) => void;
 }
 
-export default function EndpointRow({ flow, endpoint, setSubTab, setFlow }: EndpointRowProps) {
+export default function EndpointRow({ flow, endpoint, setSubTab, setFlow, setEndpoint }: EndpointRowProps) {
     const routeToReference = () => {
         setFlow(flow);
+        setEndpoint(endpoint);
         setSubTab(SubTabs.Reference);
     };
 
