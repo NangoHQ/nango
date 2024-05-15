@@ -13,7 +13,7 @@ import { LinkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
-import type { IntegrationConfig, Flow } from '../../types';
+import type { IntegrationConfig, Flow, FlowEndpoint } from '../../types';
 import { useStore } from '../../store';
 import { requestErrorToast } from '../../utils/api';
 import PageNotFound from '../PageNotFound';
@@ -56,6 +56,7 @@ export default function ShowIntegration() {
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
     const [subTab, setSubTab] = useState<SubTabs | null>(null);
     const [currentFlow, setCurrentFlow] = useState<Flow | null>(null);
+    const [endpoint, setEndpoint] = useState<FlowEndpoint | string | null>(null);
     const [flowConfig, setFlowConfig] = useState<FlowConfiguration | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
@@ -164,6 +165,7 @@ export default function ShowIntegration() {
                                 environment={environment}
                                 integration={integration}
                                 activeFlow={currentFlow}
+                                activeEndpoint={endpoint}
                                 setActiveTab={setActiveTab}
                                 setSubTab={setSubTab}
                             />
@@ -175,6 +177,7 @@ export default function ShowIntegration() {
                                 environment={environment}
                                 setSubTab={setSubTab}
                                 setFlow={setCurrentFlow}
+                                setEndpoint={setEndpoint}
                             />
                         )}
                     </>

@@ -32,6 +32,8 @@ import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthE
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { searchLogs } from './controllers/v1/logs/searchLogs.js';
+import { getOperation } from './controllers/v1/logs/getOperation.js';
+import type { ApiError } from '@nangohq/types';
 
 export const app = express();
 
@@ -204,6 +206,7 @@ web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.c
 web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 web.route('/api/v1/logs/search').post(webAuth, searchLogs);
+web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {
@@ -233,6 +236,11 @@ app.use(staticSite);
 
 // -------
 // Error handling.
-app.use((e: any, req: Request, res: Response, _: any) => {
-    errorManager.handleGenericError(e, req, res, tracer);
+app.use((err: any, req: Request, res: Response<ApiError<'invalid_json'>>, _: any) => {
+    if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {
+        res.status(400).send({ error: { code: 'invalid_json', message: err.message } });
+        return;
+    }
+
+    errorManager.handleGenericError(err, req, res, tracer);
 });
