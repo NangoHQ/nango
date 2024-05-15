@@ -80,7 +80,7 @@ class EnvironmentController {
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
             res.status(200).send({
-                account: { ...environment, env_variables: environmentVariables, host: baseUrl, uuid: account.uuid, email: user.email }
+                environment: { ...environment, env_variables: environmentVariables, host: baseUrl, uuid: account.uuid, email: user.email }
             });
         } catch (err) {
             next(err);
@@ -165,6 +165,22 @@ class EnvironmentController {
             const { environment } = res.locals;
 
             await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateSecondaryWebhookURL(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const { environment } = res.locals;
+
+            await environmentService.editSecondaryWebhookUrl(req.body['webhook_secondary_url'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);
