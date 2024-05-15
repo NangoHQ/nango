@@ -16,7 +16,7 @@ describe('GET /logs', () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch('/api/v1/logs/:operationId', { query: { env: 'dev' }, params: { operationId: '1' } });
+        const res = await api.fetch('/api/v1/logs/operations/:operationId', { query: { env: 'dev' }, params: { operationId: '1' } });
 
         shouldBeProtected(res);
     });
@@ -24,7 +24,7 @@ describe('GET /logs', () => {
     it('should enforce env query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
-            '/api/v1/logs/:operationId',
+            '/api/v1/logs/operations/:operationId',
             // @ts-expect-error missing query on purpose
             { token: env.secret_key, params: { operationId: '1' } }
         );
@@ -34,7 +34,7 @@ describe('GET /logs', () => {
 
     it('should validate query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/:operationId', {
+        const res = await api.fetch('/api/v1/logs/operations/:operationId', {
             query: {
                 env: 'dev',
                 // @ts-expect-error on purpose
@@ -61,7 +61,7 @@ describe('GET /logs', () => {
 
     it('should get empty result', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/:operationId', {
+        const res = await api.fetch('/api/v1/logs/operations/:operationId', {
             query: { env: 'dev' },
             token: env.secret_key,
             params: { operationId: '1' }
@@ -83,7 +83,7 @@ describe('GET /logs', () => {
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch(`/api/v1/logs/:operationId`, {
+        const res = await api.fetch(`/api/v1/logs/operations/:operationId`, {
             query: { env: 'dev' },
             token: env.secret_key,
             params: { operationId: logCtx.id }
@@ -136,7 +136,7 @@ describe('GET /logs', () => {
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch(`/api/v1/logs/:operationId`, {
+        const res = await api.fetch(`/api/v1/logs/operations/:operationId`, {
             query: { env: 'dev' },
             token: env2.env.secret_key,
             params: { operationId: logCtx.id }

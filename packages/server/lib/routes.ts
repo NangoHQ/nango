@@ -202,7 +202,7 @@ web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.c
 web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
 web.route('/api/v1/logs/search').post(webAuth, searchLogs);
-web.route('/api/v1/logs/:operationId').get(webAuth, getOperation);
+web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

@@ -18,7 +18,7 @@ export type SearchLogsData = SearchLogs['Success']['data'][0];
 
 export type GetOperation = Endpoint<{
     Method: 'GET';
-    Path: `/api/v1/logs/:operationId`;
+    Path: `/api/v1/logs/operations/:operationId`;
     Querystring: { env: string };
     Params: { operationId: string };
     Success: {

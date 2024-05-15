@@ -8,9 +8,11 @@ import { getServerPort } from '@nangohq/shared';
 import { app } from '../routes.js';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
-    return tpl.replace(/:([a-zA-Z]+)/g, function (_, name) {
-        return data[name];
-    });
+    let res = tpl;
+    for (const [key, value] of Object.entries(data)) {
+        res = res.replace(`:${key}`, value);
+    }
+    return res;
 }
 
 /**
