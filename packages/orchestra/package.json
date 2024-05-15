@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/nango-conductor",
+    "name": "@nangohq/nango-orchestra",
     "version": "1.0.0",
     "type": "module",
     "main": "dist/index.js",
@@ -11,7 +11,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/conductor"
+        "directory": "packages/orchestra"
     },
     "dependencies": {
         "@nangohq/scheduler": "file:../scheduler",

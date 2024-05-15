@@ -28,7 +28,7 @@ interface SchedulingProps {
     };
 }
 
-export class ConductorClient {
+export class OrchestraClient {
     private baseUrl: string;
     private fetchTimeoutMs: number;
 

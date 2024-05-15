@@ -6,7 +6,7 @@ import { getRouteHandler as outputHandler } from './routes/v1/taskId/output.js';
 import { getLogger, createRoute } from '@nangohq/utils';
 import type { Scheduler } from '@nangohq/scheduler';
 
-const logger = getLogger('Conductor.server');
+const logger = getLogger('Orchestra.server');
 
 export const getServer = ({ scheduler }: { scheduler: Scheduler }): Express => {
     const server = express();

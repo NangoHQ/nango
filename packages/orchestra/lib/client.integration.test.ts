@@ -1,7 +1,7 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import { migrate, Scheduler, clearDb } from '@nangohq/scheduler';
 import { getServer } from './server.js';
-import { ConductorClient } from './client.js';
+import { OrchestraClient as OrchestraClient } from './client.js';
 
 describe('Client', () => {
     const scheduler = new Scheduler({
@@ -16,7 +16,7 @@ describe('Client', () => {
     });
     const server = getServer({ scheduler });
     const port = Math.floor(Math.random() * 1000) + 11000;
-    const client = new ConductorClient({ baseUrl: `http://localhost:${port}`, fetchTimeoutMs: 10_000 });
+    const client = new OrchestraClient({ baseUrl: `http://localhost:${port}`, fetchTimeoutMs: 10_000 });
 
     beforeAll(async () => {
         await migrate();
