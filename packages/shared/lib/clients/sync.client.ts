@@ -101,6 +101,8 @@ class SyncClient {
         }
     }
 
+    getClient = (): Client | null => this.client;
+
     async initiate(nangoConnectionId: number, logContextGetter: LogContextGetter): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
