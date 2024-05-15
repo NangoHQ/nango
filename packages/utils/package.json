@@ -22,7 +22,6 @@
         "zod": "3.22.4"
     },
     "devDependencies": {
-        "@nangohq/types": "file:../types",
         "rimraf": "3.0.2",
         "vitest": "0.33.0"
     },
