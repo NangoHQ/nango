@@ -39,7 +39,7 @@ class DeployService {
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
-            return;
+            process.exit(1);
         }
 
         const { success, error, response: config } = await configService.load('', debug);
@@ -117,7 +117,7 @@ class DeployService {
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
-            return;
+            process.exit(1);
         }
 
         const { success, error, response: config } = await configService.load('', debug);
