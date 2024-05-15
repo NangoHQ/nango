@@ -32,6 +32,9 @@
             "path": "packages/scheduler"
         },
         {
+            "path": "packages/conductor"
+        },
+        {
             "path": "packages/server"
         },
         {

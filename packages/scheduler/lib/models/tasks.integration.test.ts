@@ -1,4 +1,4 @@
-import { expect, describe, it, beforeAll, afterAll } from 'vitest';
+import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { migrate } from '../db/migrate.js';
 import { clearDb } from '../db/test.helpers.js';
 import * as tasks from './tasks.js';
@@ -6,11 +6,11 @@ import { taskStates } from './tasks.js';
 import type { TaskState, Task } from '../types.js';
 
 describe('Task', () => {
-    beforeAll(async () => {
+    beforeEach(async () => {
         await migrate();
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         await clearDb();
     });
 
@@ -127,6 +127,25 @@ describe('Task', () => {
         await new Promise((resolve) => void setTimeout(resolve, timeout * 1100));
         const expired = (await tasks.expiresIfTimeout()).unwrap();
         expect(expired).toHaveLength(1);
+    });
+    it('should list of tasks', async () => {
+        const t1 = await createTaskWithState('STARTED');
+        const t2 = await createTaskWithState('CREATED');
+        const t3 = await createTaskWithState('CREATED');
+
+        const l1 = (await tasks.list()).unwrap();
+        expect(l1.length).toBe(3);
+
+        const l2 = (await tasks.list({ groupKey: t1.groupKey })).unwrap();
+        expect(l2.length).toBe(1);
+        expect(l2.map((t) => t.id)).toStrictEqual([t1.id]);
+
+        const l3 = (await tasks.list({ state: 'CREATED' })).unwrap();
+        expect(l3.length).toBe(2);
+        expect(l3.map((t) => t.id)).toStrictEqual([t2.id, t3.id]);
+
+        const l4 = (await tasks.list({ state: 'CREATED', groupKey: 'unkown' })).unwrap();
+        expect(l4.length).toBe(0);
     });
 });
 

@@ -9,3 +9,5 @@ export * from './encryption.js';
 export * as metrics from './telemetry/metrics.js';
 export * from './retry.js';
 export * from './string.js';
+export * from './express/route.js';
+export * from './express/validate.js';

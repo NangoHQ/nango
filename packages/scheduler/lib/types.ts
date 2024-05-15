@@ -1,17 +1,14 @@
 import type { TaskProps, taskStates } from './models/tasks';
 
-type JsonValue = string | number | boolean | null;
-type JsonArray = JsonValue[] | JsonObject[];
-export interface JsonObject {
-    [key: string]: JsonValue | JsonObject | JsonArray;
-}
+type JsonLiteral = string | number | boolean | null;
+export type Json = JsonLiteral | { [key: string]: Json } | Json[];
 
 export type TaskState = (typeof taskStates)[number];
 
 export interface Task {
     readonly id: string;
     readonly name: string;
-    readonly payload: JsonObject;
+    readonly payload: Json;
     readonly groupKey: string;
     readonly retryMax: number;
     readonly retryCount: number;
@@ -23,7 +20,7 @@ export interface Task {
     readonly state: TaskState;
     readonly lastStateTransitionAt: Date;
     readonly lastHeartbeatAt: Date;
-    readonly output: JsonObject | null;
+    readonly output: Json | null;
     readonly terminated: boolean;
 }
 

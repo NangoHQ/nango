@@ -32,6 +32,9 @@ export const ENVS = z.object({
     PERSIST_SERVICE_URL: z.string().url().optional(),
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
+    CONDUCTOR_SERVICE_URL: z.string().url().optional(),
+    NANGO_CONDUCTOR_PORT: z.coerce.number().optional().default(3008),
+
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional(),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),

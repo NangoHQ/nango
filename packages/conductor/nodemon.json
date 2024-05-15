@@ -1,0 +1,6 @@
+{
+    "watch": ["lib", "../utils/dist", "../types/dist", "../scheduler/dist", "../../.env"],
+    "ext": "js,ts,json",
+    "ignore": ["lib/**/*.test.ts"],
+    "exec": "tsc && tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env"
+}
