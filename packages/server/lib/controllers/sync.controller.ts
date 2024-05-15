@@ -425,12 +425,11 @@ class SyncController {
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.error);
-                errorManager.errResFromNangoErr(res, actionResponse.error);
                 await logCtx.error('Failed to trigger action', { error: actionResponse.error });
                 await logCtx.failed();
-                span.finish();
 
-                next(actionResponse.error);
+                errorManager.errResFromNangoErr(res, actionResponse.error);
+                span.finish();
                 return;
             }
         } catch (err) {

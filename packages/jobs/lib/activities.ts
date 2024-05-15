@@ -23,7 +23,7 @@ import {
     getLastSyncDate
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
-import { getLogger, env, stringifyError } from '@nangohq/utils';
+import { getLogger, env, stringifyError, errorToObject } from '@nangohq/utils';
 import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
@@ -430,7 +430,7 @@ export async function reportFailure(
         name,
         connectionId: nangoConnection?.connection_id,
         providerConfigKey: nangoConnection?.provider_config_key,
-        error: stringifyError(error),
+        error: JSON.stringify(errorToObject(error)), // temporal is wrapping error with an exotic class that is not Error
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
         runId: context.info.workflowExecution.runId,
