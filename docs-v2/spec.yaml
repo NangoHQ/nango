@@ -496,8 +496,8 @@ paths:
                   schema:
                       type: string
                   description: The connection ID used to create the connection.
-                - name: Provider-Config-Key
-                  in: header
+                - name: provider_config_key
+                  in: query
                   required: true
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
@@ -534,8 +534,8 @@ paths:
                   schema:
                       type: string
                   description: The connection ID used to create the connection.
-                - name: Provider-Config-Key
-                  in: header
+                - name: provider_config_key
+                  in: query
                   required: true
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
