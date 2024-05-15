@@ -8,26 +8,30 @@ import getPort from 'get-port';
 import { app } from '../routes.js';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
-    return tpl.replace(/\$\(([^)]+)?\)/g, function (_, $2) {
-        return data[$2];
-    });
+    let res = tpl;
+    for (const [key, value] of Object.entries(data)) {
+        res = res.replace(`:${key}`, value);
+    }
+    return res;
 }
 
 /**
  * Type safe API fetch
  */
 export function apiFetch(baseUrl: string) {
-    return async function apiFetch<
-        TPath extends APIEndpoints['Path'],
-        TEndpoint extends APIEndpointsPickerWithPath<TPath>,
-        TMethod extends TEndpoint['Method'],
-        TQuery extends TEndpoint['Querystring'],
-        TBody extends TEndpoint['Body'],
-        TParams extends TEndpoint['Params']
-    >(
+    return async function apiFetch<TPath extends APIEndpoints['Path'], TEndpoint extends APIEndpointsPickerWithPath<TPath>>(
         path: TPath,
-        { method, query, token, body, params }: { method?: TMethod; query?: TQuery; token?: string; body?: TBody; params?: TParams } = {}
-    ): Promise<{ res: Response; json: APIEndpointsPicker<TMethod, TPath>['Reply'] }> {
+        {
+            method,
+            query,
+            token,
+            body,
+            params
+        }: { token?: string } & (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
+            (TEndpoint['Querystring'] extends never ? { query?: never } : { query: TEndpoint['Querystring'] }) &
+            (TEndpoint['Body'] extends never ? { body?: never } : { body: TEndpoint['Body'] }) &
+            (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] })
+    ): Promise<{ res: Response; json: APIEndpointsPicker<TEndpoint['Method'], TPath>['Reply'] }> {
         const search = new URLSearchParams(query);
         const url = new URL(`${baseUrl}${path}?${search.toString()}`);
         const headers = new Headers();

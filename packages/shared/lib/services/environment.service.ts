@@ -289,6 +289,10 @@ class EnvironmentService {
         return db.knex.from<Environment>(TABLE).where({ id }).update({ webhook_url: webhookUrl }, ['id']);
     }
 
+    async editSecondaryWebhookUrl(webhookUrl: string, id: number): Promise<Environment | null> {
+        return db.knex.from<Environment>(TABLE).where({ id }).update({ webhook_url_secondary: webhookUrl }, ['id']);
+    }
+
     async editHmacEnabled(hmacEnabled: boolean, id: number): Promise<Environment | null> {
         return db.knex.from<Environment>(TABLE).where({ id }).update({ hmac_enabled: hmacEnabled }, ['id']);
     }

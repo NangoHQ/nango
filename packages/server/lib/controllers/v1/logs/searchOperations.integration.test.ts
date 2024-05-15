@@ -16,6 +16,7 @@ describe('GET /logs', () => {
     });
 
     it('should be protected', async () => {
+        // @ts-expect-error missing body on purpose
         const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', query: { env: 'dev' } });
 
         shouldBeProtected(res);
@@ -23,6 +24,7 @@ describe('GET /logs', () => {
 
     it('should enforce env query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
+        // @ts-expect-error missing query on purpose
         const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', token: env.secret_key });
 
         shouldRequireQueryEnv(res);

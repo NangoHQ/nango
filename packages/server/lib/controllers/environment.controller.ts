@@ -80,7 +80,7 @@ class EnvironmentController {
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
             res.status(200).send({
-                account: { ...environment, env_variables: environmentVariables, host: baseUrl, uuid: account.uuid, email: user.email }
+                environment: { ...environment, env_variables: environmentVariables, host: baseUrl, uuid: account.uuid, email: user.email }
             });
         } catch (err) {
             next(err);
@@ -126,9 +126,22 @@ class EnvironmentController {
             const nangoAdminUUID = NANGO_ADMIN_UUID;
             const env = 'prod';
             const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
-            const digest = await hmacService.digest(info?.environmentId as number, integration_key, connectionId as string);
 
-            res.status(200).send({ hmac_digest: digest, public_key: res.locals['environment'].public_key, integration_key });
+            if (!info) {
+                errorManager.errRes(res, 'account_not_found');
+                return;
+            }
+
+            const digest = await hmacService.digest(info.environmentId, integration_key, connectionId as string);
+
+            const environment = await environmentService.getById(info.environmentId);
+
+            if (!environment) {
+                errorManager.errRes(res, 'account_not_found');
+                return;
+            }
+
+            res.status(200).send({ hmac_digest: digest, public_key: environment.public_key, integration_key });
         } catch (err) {
             next(err);
         }
@@ -165,6 +178,22 @@ class EnvironmentController {
             const { environment } = res.locals;
 
             await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateSecondaryWebhookURL(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const { environment } = res.locals;
+
+            await environmentService.editSecondaryWebhookUrl(req.body['webhook_secondary_url'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);

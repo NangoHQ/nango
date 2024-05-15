@@ -5,7 +5,7 @@ export type SearchOperations = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/operations';
     Querystring: { env: string };
-    Body: { limit?: number; states?: SearchOperationsState[]; operationId?: string | undefined };
+    Body: { limit?: number; states?: SearchOperationsState[] };
     Success: {
         data: OperationRow[];
         pagination: { total: number };
@@ -18,7 +18,7 @@ export type SearchOperationsData = SearchOperations['Success']['data'][0];
 
 export type GetOperation = Endpoint<{
     Method: 'GET';
-    Path: `/api/v1/logs/:operationId`;
+    Path: `/api/v1/logs/operations/:operationId`;
     Querystring: { env: string };
     Params: { operationId: string };
     Success: {

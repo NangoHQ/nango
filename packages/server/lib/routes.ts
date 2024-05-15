@@ -145,6 +145,7 @@ web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switch
 web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
 web.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
 web.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
+web.route('/api/v1/environment/webhook-secondary').post(webAuth, environmentController.updateSecondaryWebhookURL.bind(environmentController));
 web.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
 web.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
 web.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
@@ -203,7 +204,7 @@ web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeG
 
 web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
 // web.route('/api/v1/logs/messages').post(webAuth, searchOperations);
-web.route('/api/v1/logs/:operationId').get(webAuth, getOperation);
+web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

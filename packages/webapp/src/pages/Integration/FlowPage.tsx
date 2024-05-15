@@ -11,7 +11,7 @@ import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
 import type { FlowConfiguration, EndpointResponse } from './Show';
 import { Tabs, SubTabs } from './Show';
-import type { IntegrationConfig, Account, Flow, Connection } from '../../types';
+import type { IntegrationConfig, Environment, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info';
@@ -21,7 +21,7 @@ import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippet
 import { useStore } from '../../store';
 
 interface FlowPageProps {
-    account: Account;
+    environment: Environment;
     integration: IntegrationConfig;
     flow: Flow | null;
     flowConfig: FlowConfiguration | null;
@@ -33,7 +33,7 @@ interface FlowPageProps {
 }
 
 export default function FlowPage(props: FlowPageProps) {
-    const { account, integration, flow, flowConfig, reload, endpoints, setFlow, setActiveTab, setSubTab } = props;
+    const { environment, integration, flow, flowConfig, reload, endpoints, setFlow, setActiveTab, setSubTab } = props;
     const env = useStore((state) => state.env);
     const { data: connections, error } = useSWR<Connection[]>(`/api/v1/integration/${integration.unique_key}/connections?env=${env}`);
 
@@ -417,7 +417,7 @@ export default function FlowPage(props: FlowPageProps) {
                                                                 <CopyButton
                                                                     dark
                                                                     text={setMetadaSnippet(
-                                                                        account.secret_key,
+                                                                        environment.secret_key,
                                                                         integration.unique_key,
                                                                         parseInput(flow) as Record<string, any>
                                                                     )}
@@ -425,7 +425,7 @@ export default function FlowPage(props: FlowPageProps) {
                                                             </div>
                                                             <Prism noCopy language="typescript" className="p-1 transparent-code" colorScheme="dark">
                                                                 {setMetadaSnippet(
-                                                                    account.secret_key,
+                                                                    environment.secret_key,
                                                                     integration.unique_key,
                                                                     parseInput(flow) as Record<string, any>
                                                                 )}
@@ -479,11 +479,11 @@ export default function FlowPage(props: FlowPageProps) {
                                                                 </div>
                                                                 <CopyButton
                                                                     dark
-                                                                    text={autoStartSnippet(account.secret_key, integration.unique_key, flow?.name)}
+                                                                    text={autoStartSnippet(environment.secret_key, integration.unique_key, flow?.name)}
                                                                 />
                                                             </div>
                                                             <Prism noCopy language="typescript" className="p-1 transparent-code" colorScheme="dark">
-                                                                {autoStartSnippet(account.secret_key, integration.unique_key, flow?.name)}
+                                                                {autoStartSnippet(environment.secret_key, integration.unique_key, flow?.name)}
                                                             </Prism>
                                                         </div>
                                                     )}

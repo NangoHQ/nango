@@ -242,7 +242,7 @@ export interface Flow {
     webhookSubscriptions: string[];
 }
 
-export interface Account {
+export interface Environment {
     id: number;
     name: string;
     account_id: number;
@@ -252,6 +252,7 @@ export interface Account {
     secret_key_tag: string | null;
     callback_url: string;
     webhook_url: string;
+    webhook_url_secondary: string | null;
     webhook_receive_url: string;
     hmac_enabled: boolean;
     hmac_key: string;

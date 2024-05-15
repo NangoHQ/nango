@@ -293,6 +293,34 @@ export function useEditWebhookUrlAPI(env: string) {
     };
 }
 
+export function useEditWebhookSecondaryUrlAPI(env: string) {
+    const signout = useSignout();
+
+    return async (webhookSecondaryUrl: string) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ webhook_secondary_url: webhookSecondaryUrl })
+            };
+
+            const res = await fetch(`/api/v1/environment/webhook-secondary?env=${env}`, options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useGetIntegrationListAPI(env: string) {
     const signout = useSignout();
 
