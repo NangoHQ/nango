@@ -15,13 +15,13 @@
     },
     "dependencies": {
         "@nangohq/scheduler": "file:../scheduler",
-        "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "express": "4.19.2",
         "dd-trace": "5.2.0",
         "zod": "3.22.4"
     },
     "devDependencies": {
+        "@nangohq/types": "file:../types",
         "@types/node": "20.12.2",
         "vitest": "0.33.0"
     }

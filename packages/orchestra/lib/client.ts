@@ -1,8 +1,9 @@
 import type { Json } from '@nangohq/scheduler';
 import { route as scheduleRoute } from './routes/v1/schedule.js';
 import { route as outputRoute } from './routes/v1/taskId/output.js';
-import type { Result } from '@nangohq/utils';
+import type { Result, Route } from '@nangohq/utils';
 import { Ok, Err, routeFetch } from '@nangohq/utils';
+import type { EndpointDefinition } from '@nangohq/types';
 
 interface SchedulingProps {
     name: string;
@@ -29,19 +30,20 @@ interface SchedulingProps {
 }
 
 export class OrchestraClient {
-    private baseUrl: string;
     private fetchTimeoutMs: number;
+    private baseUrl: string;
 
     constructor({ baseUrl, fetchTimeoutMs = 120_000 }: { baseUrl: string; fetchTimeoutMs?: number }) {
         this.baseUrl = baseUrl;
         this.fetchTimeoutMs = fetchTimeoutMs;
     }
 
+    private routeFetch<E extends EndpointDefinition>(route: Route<E>) {
+        return routeFetch(this.baseUrl, route);
+    }
+
     public async schedule(props: SchedulingProps): Promise<Result<{ taskId: string }>> {
-        const res = await routeFetch(
-            this.baseUrl,
-            scheduleRoute
-        )({
+        const res = await this.routeFetch(scheduleRoute)({
             body: {
                 scheduling: 'immediate',
                 name: props.name,
@@ -72,7 +74,7 @@ export class OrchestraClient {
         const start = Date.now();
         const timeoutInMs = this.fetchTimeoutMs;
         while (Date.now() - start < timeoutInMs) {
-            const res = await routeFetch(this.baseUrl, outputRoute)({ params: { taskId } });
+            const res = await this.routeFetch(outputRoute)({ params: { taskId } });
             if ('error' in res) {
                 return Err(res.error.message || 'Unknown error');
             } else if (res.output) {
