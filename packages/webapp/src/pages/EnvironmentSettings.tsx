@@ -9,6 +9,7 @@ import Nango from '@nangohq/frontend';
 import {
     useEditCallbackUrlAPI,
     useEditWebhookUrlAPI,
+    useEditWebhookSecondaryUrlAPI,
     useEditHmacEnabledAPI,
     useEditHmacKeyAPI,
     useEditEnvVariablesAPI,
@@ -42,6 +43,9 @@ export const EnvironmentSettings: React.FC = () => {
     const [callbackEditMode, setCallbackEditMode] = useState(false);
     const [webhookEditMode, setWebhookEditMode] = useState(false);
 
+    const [webhookUrlSecondary, setWebhookUrlSecondary] = useState('');
+    const [webhookSecondaryEditMode, setWebhookSecondaryEditMode] = useState(false);
+
     const [slackIsConnected, setSlackIsConnected] = useState(false);
 
     const [hmacKey, setHmacKey] = useState('');
@@ -53,6 +57,7 @@ export const EnvironmentSettings: React.FC = () => {
     const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
     const editCallbackUrlAPI = useEditCallbackUrlAPI(env);
     const editWebhookUrlAPI = useEditWebhookUrlAPI(env);
+    const editWebhookSecondaryUrlAPI = useEditWebhookSecondaryUrlAPI(env);
     const editHmacEnabled = useEditHmacEnabledAPI(env);
     const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI(env);
     const editSendAuthWebhook = useEditSendAuthWebhookAPI(env);
@@ -85,6 +90,7 @@ export const EnvironmentSettings: React.FC = () => {
         setCallbackUrl(environment.callback_url || defaultCallback());
 
         setWebhookUrl(environment.webhook_url || '');
+        setWebhookUrlSecondary(environment.webhook_url_secondary || '');
         setSendAuthWebhook(environment.send_auth_webhook);
         setHostUrl(environment.host);
         setAccountUUID(environment.uuid);
@@ -115,7 +121,7 @@ export const EnvironmentSettings: React.FC = () => {
         }
     };
 
-    const handleWebhookbackSave = async (e: React.SyntheticEvent) => {
+    const handleWebhookEditSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
 
         const target = e.target as typeof e.target & {
@@ -128,6 +134,23 @@ export const EnvironmentSettings: React.FC = () => {
             toast.success('Wehook URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setWebhookEditMode(false);
             setWebhookUrl(target.webhook_url.value);
+            void mutate();
+        }
+    };
+
+    const handleWebhookSecondaryEditSave = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+
+        const target = e.target as typeof e.target & {
+            webhook_url_secondary: { value: string };
+        };
+
+        const res = await editWebhookSecondaryUrlAPI(target.webhook_url_secondary.value);
+
+        if (res?.status === 200) {
+            toast.success('Secondary Wehook URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            setWebhookSecondaryEditMode(false);
+            setWebhookUrlSecondary(target.webhook_url_secondary.value);
             void mutate();
         }
     };
@@ -707,7 +730,7 @@ export const EnvironmentSettings: React.FC = () => {
                                     </Tooltip>
                                 </div>
                                 {webhookEditMode && (
-                                    <form className="mt-2" onSubmit={handleWebhookbackSave}>
+                                    <form className="mt-2" onSubmit={handleWebhookEditSave}>
                                         <div className="flex">
                                             <input
                                                 id="webhook_url"
@@ -741,6 +764,81 @@ export const EnvironmentSettings: React.FC = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                        <div>
+                            {!environment?.webhook_url_secondary && !webhookSecondaryEditMode ? (
+                                <button
+                                    onClick={() => setWebhookSecondaryEditMode(true)}
+                                    className="mx-8 mt-4 hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm"
+                                    type="button"
+                                >
+                                    Add Secondary Webhook URL
+                                </button>
+                            ) : (
+                                <>
+                                    <div className="mx-8 mt-8">
+                                        <div className="flex">
+                                            <label htmlFor="webhook_url" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                                Secondary Webhook URL
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            {`Be notified when new data is available from Nango (cf. `}
+                                                            <a
+                                                                href="https://docs.nango.dev/integrate/guides/sync-data-from-an-api#listen-for-webhooks-from-nango"
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="text-text-blue ml-1"
+                                                            >
+                                                                webhook docs
+                                                            </a>
+                                                            {`).`}
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        {webhookSecondaryEditMode && (
+                                            <form className="mt-2" onSubmit={handleWebhookSecondaryEditSave}>
+                                                <div className="flex">
+                                                    <input
+                                                        id="webhook_url_secondary"
+                                                        name="webhook_url_secondary"
+                                                        autoComplete="new-password"
+                                                        type="url"
+                                                        defaultValue={webhookUrlSecondary}
+                                                        className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                                    />
+
+                                                    <button
+                                                        type="submit"
+                                                        className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        {!webhookSecondaryEditMode && (
+                                            <div className="flex">
+                                                <Prism language="bash" colorScheme="dark" className="w-full">
+                                                    {webhookUrlSecondary || '\u0000'}
+                                                </Prism>
+                                                <button
+                                                    onClick={() => setWebhookSecondaryEditMode(!webhookSecondaryEditMode)}
+                                                    className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                >
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <div>
                             <div className="mx-8 mt-8">
