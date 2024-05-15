@@ -417,13 +417,10 @@ class SyncController {
                 logCtx
             });
 
-            // Temp
-            console.log('ACTION SUCCESS', actionResponse);
-
             if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
-                res.send(actionResponse.value);
+                res.status(200).json(actionResponse.value);
 
                 return;
             } else {
@@ -444,8 +441,6 @@ class SyncController {
                 await logCtx.failed();
             }
 
-            // Temp
-            console.log('ACTION ERROR', err);
             next(err);
         }
     }
