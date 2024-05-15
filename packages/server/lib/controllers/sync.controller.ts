@@ -420,16 +420,17 @@ class SyncController {
             if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
-                res.send(actionResponse.value);
+                res.status(200).json(actionResponse.value);
 
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.error);
                 errorManager.errResFromNangoErr(res, actionResponse.error);
-                await logCtx.error('Failed to trigger action', { err: actionResponse.error });
+                await logCtx.error('Failed to trigger action', { error: actionResponse.error });
                 await logCtx.failed();
                 span.finish();
 
+                next(actionResponse.error);
                 return;
             }
         } catch (err) {

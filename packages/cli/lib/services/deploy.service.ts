@@ -35,7 +35,12 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        await compileAllFiles({ debug });
+        const successfulCompile = await compileAllFiles({ debug });
+
+        if (!successfulCompile) {
+            console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
+            process.exit(1);
+        }
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -104,7 +109,12 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        await compileAllFiles({ debug });
+        const successfulCompile = await compileAllFiles({ debug });
+
+        if (!successfulCompile) {
+            console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
+            process.exit(1);
+        }
 
         const { success, error, response: config } = await configService.load('', debug);
 

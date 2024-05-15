@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
 import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip, useModal } from '@geist-ui/core';
-import type { IntegrationConfig, Account } from '../../types';
+import type { IntegrationConfig, Environment } from '../../types';
 import { AuthModes } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
 import Info from '../../components/ui/Info';
@@ -20,12 +20,12 @@ import { useSWRConfig } from 'swr';
 
 interface AuthSettingsProps {
     integration: IntegrationConfig | null;
-    account: Account;
+    environment: Environment;
 }
 
 export default function AuthSettings(props: AuthSettingsProps) {
     const { mutate } = useSWRConfig();
-    const { integration, account } = props;
+    const { integration, environment } = props;
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -279,8 +279,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             <span className="text-gray-400 text-xs uppercase">Callback Url</span>
                         </div>
                         <span className="flex items-center gap-2">
-                            <span className="text-white">{account.callback_url || defaultCallback()}</span>
-                            <CopyButton text={account.callback_url || defaultCallback()} dark classNames="" />
+                            <span className="text-white">{environment.callback_url || defaultCallback()}</span>
+                            <CopyButton text={environment.callback_url || defaultCallback()} dark classNames="" />
                         </span>
                     </div>
                 </div>
@@ -304,8 +304,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             </Tooltip>
                         </div>
                         <span className="flex items-center gap-2">
-                            <span className="text-white">{account.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
-                            <CopyButton text={account.callback_url.replace('oauth/callback', 'app-auth/connect')} dark classNames="" />
+                            <span className="text-white">{environment.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
+                            <CopyButton text={environment.callback_url.replace('oauth/callback', 'app-auth/connect')} dark classNames="" />
                         </span>
                     </div>
                 </div>
@@ -329,8 +329,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             </Tooltip>
                         </div>
                         <div className="flex text-white items-center gap-2">
-                            <span className="text-white">{`${account.webhook_receive_url}/${integrationId}`}</span>
-                            <CopyButton text={`${account.webhook_receive_url}/${integrationId}`} dark classNames="" />
+                            <span className="text-white">{`${environment.webhook_receive_url}/${integrationId}`}</span>
+                            <CopyButton text={`${environment.webhook_receive_url}/${integrationId}`} dark classNames="" />
                         </div>
                     </div>
                     {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && integration?.webhook_secret && (

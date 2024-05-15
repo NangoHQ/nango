@@ -74,23 +74,14 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
         let newPath = `/${pathSegments.join('/')}`;
 
-        let requiresRedirect = false;
-
         // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
         if (pathSegments[1] === 'integration' && pathSegments.length > 2) {
             newPath = `/${newEnv}/integrations`;
-            requiresRedirect = true;
         } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
             newPath = `/${newEnv}/connections`;
-            requiresRedirect = true;
         }
 
-        if (requiresRedirect) {
-            window.location.href = newPath;
-            return;
-        }
-
-        window.history.pushState({}, '', newPath);
+        navigate(newPath);
     };
 
     if (!meta) {

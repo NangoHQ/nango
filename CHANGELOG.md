@@ -2,7 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.39.27] - 2024-05-13
+## [0.39.28] - 2024-05-15
+
+### Added
+
+- *(db)* Add ability to change schema name (#2126)
+- *(orchestration)* Introducing the scheduler (#2132)
+- *(db)* Add extensions to search_path (#2143)
+- *(webapp)* [nan-839] add secondary url (#2135)
+- [nan-851] improve query to use the nango_config_id (#2124)
+- *(logs)* GET /logs/operations/:operationId (#2156)
+- *(cli)* [nan-918] exit deploy if not everything compiled successfully (#2158)
+
+### Fixed
+
+- *(action)* Logs ActionError in activities (#2148)
+- *(db)* Backfill secret key hash (#2134)
+- *(action)* Log all errors
+- *(env)* Correctly parse db-schemas (#2154)
+- *(oauth)* [nan-934] fix public key lookup (#2157)
+- *(ui)* Env switching issue (#2152)
+- *(webapp)* [nan-943] fix API reference for multi models (#2159)
+
+## [v0.39.27] - 2024-05-13
 
 ### Added
 
@@ -1073,7 +1095,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161)
 - APIs using client_credentials as grant type (#165)
 
-[0.39.27]: https://github.com/NangoHQ/nango/compare/v0.39.26..0.39.27
+[0.39.28]: https://github.com/NangoHQ/nango/compare/v0.39.27..0.39.28
+[v0.39.27]: https://github.com/NangoHQ/nango/compare/v0.39.26..v0.39.27
 [v0.39.26]: https://github.com/NangoHQ/nango/compare/v0.39.25..v0.39.26
 [v0.39.25]: https://github.com/NangoHQ/nango/compare/v0.39.24..v0.39.25
 [v0.39.24]: https://github.com/NangoHQ/nango/compare/v0.39.23..v0.39.24
