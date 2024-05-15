@@ -127,6 +127,11 @@ type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentia
 
 export type Metadata = Record<string, string | Record<string, any>>;
 
+export interface MetadataChangeResponse {
+    metadata: Metadata;
+    connection_id: string | string[];
+}
+
 export interface Connection {
     id?: number;
     created_at?: Date;

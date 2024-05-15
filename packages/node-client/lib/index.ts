@@ -17,6 +17,7 @@ import type {
     IntegrationWithCreds,
     ListRecordsRequestConfig,
     Metadata,
+    MetadataChangeResponse,
     NangoProps,
     OAuth1Token,
     ProxyConfiguration,
@@ -292,7 +293,11 @@ export class Nango {
      * @param metadata - The custom metadata to set
      * @returns A promise that resolves with the Axios response from the server
      */
-    public async setMetadata(providerConfigKey: string, connectionId: string | string[], metadata: Record<string, any>): Promise<AxiosResponse<object>> {
+    public async setMetadata(
+        providerConfigKey: string,
+        connectionId: string | string[],
+        metadata: Record<string, any>
+    ): Promise<AxiosResponse<MetadataChangeResponse>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -321,7 +326,11 @@ export class Nango {
      * @param metadata - The custom metadata to update
      * @returns A promise that resolves with the Axios response from the server
      */
-    public async updateMetadata(providerConfigKey: string, connectionId: string | string[], metadata: Record<string, any>): Promise<AxiosResponse<object>> {
+    public async updateMetadata(
+        providerConfigKey: string,
+        connectionId: string | string[],
+        metadata: Record<string, any>
+    ): Promise<AxiosResponse<MetadataChangeResponse>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
