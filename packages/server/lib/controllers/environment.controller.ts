@@ -126,9 +126,22 @@ class EnvironmentController {
             const nangoAdminUUID = NANGO_ADMIN_UUID;
             const env = 'prod';
             const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
-            const digest = await hmacService.digest(info?.environmentId as number, integration_key, connectionId as string);
 
-            res.status(200).send({ hmac_digest: digest, public_key: res.locals['environment'].public_key, integration_key });
+            if (!info) {
+                errorManager.errRes(res, 'account_not_found');
+                return;
+            }
+
+            const digest = await hmacService.digest(info.environmentId, integration_key, connectionId as string);
+
+            const environment = await environmentService.getById(info.environmentId);
+
+            if (!environment) {
+                errorManager.errRes(res, 'account_not_found');
+                return;
+            }
+
+            res.status(200).send({ hmac_digest: digest, public_key: environment.public_key, integration_key });
         } catch (err) {
             next(err);
         }
