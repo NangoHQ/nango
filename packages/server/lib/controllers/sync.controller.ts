@@ -417,6 +417,9 @@ class SyncController {
                 logCtx
             });
 
+            // Temp
+            console.log('ACTION SUCCESS', actionResponse);
+
             if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
@@ -430,6 +433,7 @@ class SyncController {
                 await logCtx.failed();
                 span.finish();
 
+                next(actionResponse.error);
                 return;
             }
         } catch (err) {
@@ -440,6 +444,8 @@ class SyncController {
                 await logCtx.failed();
             }
 
+            // Temp
+            console.log('ACTION ERROR', err);
             next(err);
         }
     }
