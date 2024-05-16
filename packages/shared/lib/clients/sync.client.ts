@@ -72,9 +72,14 @@ class SyncClient {
             return new SyncClient(true as any);
         }
 
+        const temporalAddress = process.env['TEMPORAL_ADDRESS'];
+        if (!temporalAddress) {
+            throw new Error('TEMPORAL_ADDRESS missing from env var');
+        }
+
         try {
             const connection = await Connection.connect({
-                address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
+                address: temporalAddress,
                 tls: isProd
                     ? {
                           clientCertPair: {
@@ -95,7 +100,7 @@ class SyncClient {
                 operation: LogActionEnum.SYNC_CLIENT,
                 metadata: {
                     namespace,
-                    address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
+                    address: temporalAddress
                 }
             });
             return null;
