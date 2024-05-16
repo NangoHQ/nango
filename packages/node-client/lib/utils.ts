@@ -38,7 +38,7 @@ export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig)
 export function getUserAgent(userAgent?: string): string {
     const dir = path.dirname(fileURLToPath(import.meta.url));
     const packageJson = JSON.parse(fs.readFileSync(path.resolve(dir, '../package.json'), 'utf8'));
-    const clientVersion: string = packageJson.version ; // eslint-disable-line
+    const clientVersion: string = packageJson.version; // eslint-disable-line
     const nodeVersion = process.versions.node;
 
     const osName = os.platform().replace(' ', '_');
