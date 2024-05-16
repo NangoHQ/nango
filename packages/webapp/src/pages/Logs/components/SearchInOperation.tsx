@@ -8,12 +8,12 @@ import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
 import Spinner from '../../../components/ui/Spinner';
 import Info from '../../../components/ui/Info';
-import { MessageTag } from './MessageTag';
 import { LevelTag } from './LevelTag';
 import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { useDebounce } from 'react-use';
+import { Tag } from './Tag';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
@@ -29,7 +29,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         header: 'Type',
         size: 80,
         cell: ({ row }) => {
-            return <MessageTag type={row.original.type} />;
+            return <Tag>{row.original.type === 'log' ? 'Message' : 'HTTP'}</Tag>;
         }
     },
     {

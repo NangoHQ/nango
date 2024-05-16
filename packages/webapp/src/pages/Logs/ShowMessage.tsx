@@ -1,9 +1,9 @@
 import type { MessageRow } from '@nangohq/types';
 import { useMemo } from 'react';
 import { formatDateToLogFormat } from '../../utils/utils';
-import { SourceTag } from './components/SourceTag';
 import { Prism } from '@mantine/prism';
 import { LevelTag } from './components/LevelTag';
+import { Tag } from './components/Tag';
 
 export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
     const createdAt = useMemo(() => {
@@ -30,7 +30,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                 <div className="flex gap-2 items-center w-[48%]">
                     <div className="font-semibold text-sm">Source</div>
                     <div className="text-gray-400 text-xs pt-[1px]">
-                        <SourceTag source={message.source} />
+                        <Tag>{message.source === 'internal' ? 'System' : 'User'}</Tag>
                     </div>
                 </div>
             </div>
