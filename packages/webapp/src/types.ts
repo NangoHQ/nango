@@ -18,7 +18,7 @@ export interface ActivityResponse {
         | 'cancel sync'
         | 'action'
         | 'webhook';
-    success: boolean;
+    success: boolean | null;
     timestamp: number;
     start: number;
     end: number;
