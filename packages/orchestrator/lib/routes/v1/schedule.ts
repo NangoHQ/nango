@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import type { Json, Scheduler } from '@nangohq/scheduler';
-import type { ApiError } from '@nangohq/types';
+import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import { jsonSchema } from '../../utils/validation.js';
 
-interface Schedule {
+type Schedule = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
@@ -34,7 +34,7 @@ interface Schedule {
     };
     Error: ApiError<'schedule_failed'>;
     Success: { taskId: string };
-}
+}>;
 
 const path = '/v1/schedule';
 const method = 'POST';

@@ -1,9 +1,9 @@
 import type { Json } from '@nangohq/scheduler';
 import { route as scheduleRoute } from './routes/v1/schedule.js';
-import { route as outputRoute } from './routes/v1/taskId/output.js';
+import { route as outputRoute } from './routes/v1/task/taskId/output.js';
 import type { Result, Route } from '@nangohq/utils';
 import { Ok, Err, routeFetch } from '@nangohq/utils';
-import type { EndpointDefinition } from '@nangohq/types';
+import type { Endpoint } from '@nangohq/types';
 
 interface SchedulingProps {
     name: string;
@@ -38,7 +38,7 @@ export class OrchestratorClient {
         this.fetchTimeoutMs = fetchTimeoutMs;
     }
 
-    private routeFetch<E extends EndpointDefinition>(route: Route<E>) {
+    private routeFetch<E extends Endpoint<any>>(route: Route<E>) {
         return routeFetch(this.baseUrl, route);
     }
 

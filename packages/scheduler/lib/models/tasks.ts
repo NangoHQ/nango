@@ -132,7 +132,7 @@ export async function get(taskId: string): Promise<Result<Task>> {
     return Ok(DbTask.from(task));
 }
 
-export async function list(params?: { groupKey?: string; state?: TaskState }): Promise<Result<Task[]>> {
+export async function list(params?: { groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
     const query = db.from<DbTask>(TASKS_TABLE);
     if (params?.groupKey) {
         query.where('group_key', params.groupKey);
@@ -140,7 +140,8 @@ export async function list(params?: { groupKey?: string; state?: TaskState }): P
     if (params?.state) {
         query.where('state', params.state);
     }
-    const tasks = await query;
+    const limit = params?.limit || 100;
+    const tasks = await query.limit(limit);
     return Ok(tasks.map(DbTask.from));
 }
 

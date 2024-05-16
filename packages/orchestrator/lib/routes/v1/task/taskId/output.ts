@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import type { Json, Scheduler } from '@nangohq/scheduler';
-import type { ApiError } from '@nangohq/types';
+import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 
-interface Output {
+type Output = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Params: {
@@ -12,13 +12,13 @@ interface Output {
     };
     Error: ApiError<'fetching_failed' | 'task_failed' | 'task_expired' | 'task_cancelled'>;
     Success: { output: Json };
-}
+}>;
 
-const path = '/v1/:taskId/output';
+const path = '/v1/task/:taskId/output';
 const method = 'GET';
 
 const validate = validateRequest<Output>({
-    parseParams: (data) => z.object({ taskId: z.string().nonempty() }).parse(data)
+    parseParams: (data) => z.object({ taskId: z.string().uuid() }).parse(data)
 });
 
 const getHandler = (scheduler: Scheduler) => {

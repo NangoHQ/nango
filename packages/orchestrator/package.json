@@ -16,8 +16,9 @@
     "dependencies": {
         "@nangohq/scheduler": "file:../scheduler",
         "@nangohq/utils": "file:../utils",
-        "express": "4.19.2",
         "dd-trace": "5.2.0",
+        "express": "4.19.2",
+        "get-port": "7.1.0",
         "zod": "3.22.4"
     },
     "devDependencies": {

@@ -1,54 +1,43 @@
 import type { Request, Response, NextFunction, Express } from 'express';
-import type { Endpoint, EndpointDefinition } from '@nangohq/types';
+import type { Endpoint } from '@nangohq/types';
 
-export type EndpointRequest<E extends EndpointDefinition> = Request<
-    Endpoint<E>['Params'],
-    Endpoint<E>['Reply'],
-    Endpoint<E>['Body'],
-    Endpoint<E>['Querystring']
->;
-export type EndpointResponse<E extends EndpointDefinition> = Response<Endpoint<E>['Reply']>;
+export type EndpointRequest<E extends Endpoint<any>> = Request<E['Params'], E['Reply'], E['Body'], E['Querystring']>;
+export type EndpointResponse<E extends Endpoint<any>> = Response<E['Reply']>;
 
-export interface Route<E extends EndpointDefinition> {
+export interface Route<E extends Endpoint<any>> {
     path: E['Path'];
     method: E['Method'];
 }
 
-export interface RouteHandler<E extends EndpointDefinition> extends Route<E> {
+export interface RouteHandler<E extends Endpoint<any>> extends Route<E> {
     validate: (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => void;
     handler: (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => void;
 }
 
-export const createRoute = <E extends EndpointDefinition>(server: Express, rh: RouteHandler<E>): void => {
+export const createRoute = <E extends Endpoint<any>>(server: Express, rh: RouteHandler<E>): void => {
+    const safeHandler = (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) =>
+        Promise.resolve(rh.handler(req, res, next)).catch((error: unknown) => next(error));
     if (rh.method === 'GET') {
-        server.get(rh.path, rh.validate, rh.handler);
+        server.get(rh.path, rh.validate, safeHandler);
     } else if (rh.method === 'POST') {
-        server.post(rh.path, rh.validate, rh.handler);
+        server.post(rh.path, rh.validate, safeHandler);
     } else if (rh.method === 'PATCH') {
-        server.patch(rh.path, rh.validate, rh.handler);
+        server.patch(rh.path, rh.validate, safeHandler);
     } else if (rh.method === 'PUT') {
-        server.put(rh.path, rh.validate, rh.handler);
+        server.put(rh.path, rh.validate, safeHandler);
     } else if (rh.method === 'DELETE') {
-        server.delete(rh.path, rh.validate, rh.handler);
+        server.delete(rh.path, rh.validate, safeHandler);
     }
 };
 
-export const routeFetch = <E extends EndpointDefinition>(
+export const routeFetch = <E extends Endpoint<any>>(
     baseUrl: string,
     route: Route<E>,
     config?: {
         timeoutMs: number;
     }
 ) => {
-    return async function f({
-        query,
-        body,
-        params
-    }: {
-        query?: Endpoint<E>['Querystring'];
-        body?: Endpoint<E>['Body'];
-        params?: Endpoint<E>['Params'];
-    }): Promise<Endpoint<E>['Reply']> {
+    return async function f({ query, body, params }: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }): Promise<E['Reply']> {
         const search = query ? `?${new URLSearchParams(query)}` : '';
         let path = route.path;
         if (params) {

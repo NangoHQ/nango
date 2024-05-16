@@ -57,7 +57,6 @@ export class Scheduler {
     /**
      * Get a task
      * @param taskId - Task ID
-     * @returns Task
      * @example
      * const task = await scheduler.get({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
@@ -70,7 +69,6 @@ export class Scheduler {
      * @param params
      * @param params.groupKey - Group key
      * @param params.state - Task state
-     * @returns Task[]
      * @example
      * const tasks = await scheduler.list({ groupKey: 'test', state: 'CREATED' });
      */

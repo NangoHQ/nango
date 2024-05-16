@@ -3,6 +3,7 @@ import type { Task } from '@nangohq/scheduler';
 import { migrate, Scheduler, clearDb } from '@nangohq/scheduler';
 import { getServer } from './server.js';
 import { OrchestratorClient } from './client.js';
+import getPort from 'get-port';
 
 const scheduler = new Scheduler({
     on: {
@@ -15,9 +16,9 @@ const scheduler = new Scheduler({
     }
 });
 
-describe('OrchestratorClient', () => {
+describe('OrchestratorClient', async () => {
     const server = getServer({ scheduler });
-    const port = Math.floor(Math.random() * 1000) + 11000;
+    const port = await getPort();
     const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}`, fetchTimeoutMs: 10_000 });
 
     beforeAll(async () => {
@@ -70,23 +71,25 @@ describe('OrchestratorClient', () => {
                 await scheduler.succeed({ taskId: task.id, output });
             }
         });
-
-        const res = await client.execute({
-            name: 'Task',
-            groupKey: groupKey,
-            args: {
-                name: 'Action',
-                connection: {
-                    id: 1234,
-                    provider_config_key: 'P',
-                    environment_id: 5678
-                },
-                activityLogId: 9876,
-                input: { foo: 'bar' }
-            }
-        });
-        expect(res.unwrap()).toEqual(output);
-        processor.stop();
+        try {
+            const res = await client.execute({
+                name: 'Task',
+                groupKey: groupKey,
+                args: {
+                    name: 'Action',
+                    connection: {
+                        id: 1234,
+                        provider_config_key: 'P',
+                        environment_id: 5678
+                    },
+                    activityLogId: 9876,
+                    input: { foo: 'bar' }
+                }
+            });
+            expect(res.unwrap()).toEqual(output);
+        } finally {
+            processor.stop();
+        }
     });
     it('should return an error if execute fails', async () => {
         const groupKey = 'groupC';
@@ -97,23 +100,25 @@ describe('OrchestratorClient', () => {
                 await scheduler.fail({ taskId: task.id });
             }
         });
-
-        const res = await client.execute({
-            name: 'Task',
-            groupKey: groupKey,
-            args: {
-                name: 'Action',
-                connection: {
-                    id: 1234,
-                    provider_config_key: 'P',
-                    environment_id: 5678
-                },
-                activityLogId: 9876,
-                input: { foo: 'bar' }
-            }
-        });
-        expect(res.isErr()).toBe(true);
-        processor.stop();
+        try {
+            const res = await client.execute({
+                name: 'Task',
+                groupKey: groupKey,
+                args: {
+                    name: 'Action',
+                    connection: {
+                        id: 1234,
+                        provider_config_key: 'P',
+                        environment_id: 5678
+                    },
+                    activityLogId: 9876,
+                    input: { foo: 'bar' }
+                }
+            });
+            expect(res.isErr()).toBe(true);
+        } finally {
+            processor.stop();
+        }
     });
 });
 

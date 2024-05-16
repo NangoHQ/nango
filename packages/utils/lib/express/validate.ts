@@ -1,16 +1,16 @@
-import type { NextFunction } from 'express';
+import type { Request, NextFunction } from 'express';
 import { z } from 'zod';
-import type { Endpoint, EndpointDefinition } from '@nangohq/types';
+import type { ValidationError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse } from './route.js';
 
-interface RequestParser<E extends EndpointDefinition> {
-    parseBody?: (data: unknown) => Endpoint<E>['Body'];
-    parseQuery?: (data: unknown) => Endpoint<E>['Querystring'];
-    parseParams?: (data: unknown) => Endpoint<E>['Params'];
+interface RequestParser<E extends Endpoint<any>> {
+    parseBody?: (data: unknown) => E['Body'];
+    parseQuery?: (data: unknown) => E['Querystring'];
+    parseParams?: (data: unknown) => E['Params'];
 }
 
 export const validateRequest =
-    <E extends EndpointDefinition>(parser: RequestParser<E>) =>
+    <E extends Endpoint<any>>(parser: RequestParser<E>) =>
     (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => {
         try {
             if (parser.parseBody) {
@@ -31,7 +31,44 @@ export const validateRequest =
             return next();
         } catch (error: unknown) {
             if (error instanceof z.ZodError) {
-                return res.status(400).send({ error: { code: 'invalid_request', message: `${error}` } });
+                res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(error) } });
             }
         }
     };
+
+export function zodErrorToHTTP(error: z.ZodError): ValidationError[] {
+    return error.issues.map(({ code, message, path }) => {
+        return { code, message, path };
+    });
+}
+
+/**
+ * Enforce empty request body
+ */
+export function requireEmptyBody(req: Request) {
+    if (!req.body) {
+        return;
+    }
+
+    const val = z.object({}).strict().safeParse(req.body);
+    if (val.success) {
+        return;
+    }
+
+    return val;
+}
+
+/**
+ * Enforce empty request query string
+ */
+export function requireEmptyQuery(req: Request, { withEnv }: { withEnv: boolean } = { withEnv: false }) {
+    const val = z
+        .object(withEnv ? { env: z.string().max(250).min(1) } : {})
+        .strict()
+        .safeParse(req.query);
+    if (val.success) {
+        return;
+    }
+
+    return val;
+}

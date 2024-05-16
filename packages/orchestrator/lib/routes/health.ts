@@ -1,12 +1,11 @@
-import type { ApiError } from '@nangohq/types';
+import type { Endpoint } from '@nangohq/types';
 import type { RouteHandler } from '@nangohq/utils';
 
-interface Health {
+type Health = Endpoint<{
     Method: typeof method;
     Path: typeof path;
-    Error: ApiError<'health_failed'>;
     Success: { status: 'ok' };
-}
+}>;
 
 const path = '/health';
 const method = 'GET';
