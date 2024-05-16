@@ -283,7 +283,7 @@ class SlackService {
         const date = new Date();
         const dateString = date.toISOString().split('T')[0];
         const payload: NotificationPayload = {
-            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
+            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
@@ -386,7 +386,7 @@ class SlackService {
         } else {
             const count = connectionCount;
             const connection = count === 1 ? 'connection' : 'connections';
-            payloadContent = `*${syncName}* (${syncType.toLowerCase()}) is failing for ${count} ${connection}. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
+            payloadContent = `*${syncName}* (${syncType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
         }
 
         const payload: NotificationPayload = {
