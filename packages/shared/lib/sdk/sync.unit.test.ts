@@ -11,11 +11,6 @@ import { isValidHttpUrl } from '../utils/utils.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosResponse } from 'axios';
 
-vi.mock('@nangohq/node', () => {
-    const Nango = vi.fn();
-    return { Nango };
-});
-
 describe('cache', () => {
     let nangoAction: NangoAction;
     let nango: Nango;
@@ -156,6 +151,9 @@ describe('Pagination', () => {
         expect(nango.proxy).toHaveBeenCalledWith({
             method: 'POST',
             endpoint,
+            headers: {
+                'user-agent': expect.any(String)
+            },
             data: { limit: 2 },
             paginate: { limit: 2 },
             connectionId: 'abc',
@@ -188,6 +186,9 @@ describe('Pagination', () => {
         expect(nango.proxy).toHaveBeenLastCalledWith({
             method: 'GET',
             endpoint,
+            headers: {
+                'user-agent': expect.any(String)
+            },
             params: { offset: '3', per_page: 3 },
             paginate: paginationConfigOverride,
             providerConfigKey,

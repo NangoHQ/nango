@@ -55,8 +55,6 @@ export async function exec(): Promise<void> {
             for (const schedule of runningSchedules) {
                 const { schedule_id, sync_id } = schedule;
 
-                logger.info(`${cronName} reconciling scheduleId: ${schedule_id}, syncId: ${sync_id}`);
-
                 try {
                     const syncSchedule = await syncClient.describeSchedule(schedule_id);
 
@@ -64,7 +62,11 @@ export async function exec(): Promise<void> {
                         const temporalClient = syncClient.getClient();
                         const scheduleHandle = temporalClient?.schedule.getHandle(schedule_id);
 
+                        const previousNote = syncSchedule.schedule.state.notes;
+
                         if (scheduleHandle && !schedule_id.includes('nango-syncs.issues-demo')) {
+                            logger.info(`${cronName} reconciling scheduleId: ${schedule_id}, syncId: ${sync_id}`);
+
                             await scheduleHandle.unpause(`${cronName} cron unpaused the schedule for sync '${sync_id}' at ${new Date().toISOString()}`);
                             await telemetry.log(
                                 LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
@@ -73,7 +75,8 @@ export async function exec(): Promise<void> {
                                 {
                                     sync_id,
                                     schedule_id,
-                                    level: 'warn'
+                                    level: 'warn',
+                                    previousNote: String(previousNote)
                                 },
                                 `syncId:${sync_id}`
                             );

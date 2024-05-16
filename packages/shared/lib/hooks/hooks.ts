@@ -11,7 +11,7 @@ import integrationPostConnectionScript from '../integrations/scripts/connection/
 import webhookService from '../services/notification/webhook.service.js';
 import { SpanTypes } from '../utils/telemetry.js';
 import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
-import { isCloud, isLocal, isEnterprise, getLogger, Ok, Err } from '@nangohq/utils';
+import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -60,9 +60,7 @@ export const connectionCreated = async (
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
     logCtx?: LogContext
 ): Promise<void> => {
-    const hosted = !isCloud && !isLocal && !isEnterprise;
-
-    if (options.initiateSync === true && !hosted) {
+    if (options.initiateSync === true && !isHosted) {
         const syncClient = await SyncClient.getInstance();
         await syncClient?.initiate(connection.id as number, logContextGetter);
     }
