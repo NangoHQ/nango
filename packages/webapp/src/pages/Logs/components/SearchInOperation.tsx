@@ -3,7 +3,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Input } from '../../../components/ui/input/Input';
 import { useSearchMessages } from '../../../hooks/useLogs';
 import type { SearchOperationsData } from '@nangohq/types';
-import { formatDateToInternationalFormat } from '../../../utils/utils';
+import { formatDateToLogFormat } from '../../../utils/utils';
 import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
 import Spinner from '../../../components/ui/Spinner';
@@ -11,7 +11,7 @@ import Info from '../../../components/ui/Info';
 import { MessageTag } from './MessageTag';
 import { LevelTag } from './LevelTag';
 import { MessageRow } from './MessageRow';
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { useDebounce } from 'react-use';
 
@@ -19,9 +19,9 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'createdAt',
         header: 'Timestamp',
-        size: 120,
+        size: 170,
         cell: ({ row }) => {
-            return formatDateToInternationalFormat(row.original.createdAt);
+            return <div className="font-code text-s">{formatDateToLogFormat(row.original.createdAt)}</div>;
         }
     },
     {
@@ -46,6 +46,18 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         size: 'auto' as unknown as number,
         cell: ({ row }) => {
             return <div className="truncate">{row.original.message}</div>;
+        }
+    },
+    {
+        accessorKey: 'id',
+        header: '',
+        size: 40,
+        cell: () => {
+            return (
+                <div className="-ml-2">
+                    <ChevronRightIcon />
+                </div>
+            );
         }
     }
 ];

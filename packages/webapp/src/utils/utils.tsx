@@ -146,7 +146,7 @@ export function formatDateToUSFormat(dateString: string): string {
     return formattedDate;
 }
 
-export function formatDateToInternationalFormat(dateString: string): string {
+export function formatDateToLogFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
         hour: '2-digit',
@@ -154,6 +154,7 @@ export function formatDateToInternationalFormat(dateString: string): string {
         second: '2-digit',
         month: 'short',
         day: '2-digit',
+        fractionalSecondDigits: 2,
         hour12: false
     };
 
@@ -164,7 +165,7 @@ export function formatDateToInternationalFormat(dateString: string): string {
     }
 
     const parts = formattedDate.split(', ');
-    return `${parts[0]}, ${parts[1]}`;
+    return `${parts[0]} ${parts[1]}`;
 }
 
 export function parseCron(frequency: string): string {

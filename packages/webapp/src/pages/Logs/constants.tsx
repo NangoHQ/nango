@@ -1,24 +1,24 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { SearchOperationsData, SearchOperationsState } from '@nangohq/types';
-import { formatDateToInternationalFormat } from '../../utils/utils';
+import { formatDateToLogFormat } from '../../utils/utils';
 import { StatusTag } from './components/StatusTag';
 import { OperationTag } from './components/OperationTag';
 import type { MultiSelectArgs } from './components/MultiSelect';
-import { ChevronRight } from '@geist-ui/icons';
+import { ChevronRightIcon } from '@radix-ui/react-icons';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'createdAt',
         header: 'Timestamp',
-        size: 120,
+        size: 170,
         cell: ({ row }) => {
-            return formatDateToInternationalFormat(row.original.createdAt);
+            return <div className="font-code text-s">{formatDateToLogFormat(row.original.createdAt)}</div>;
         }
     },
     {
         accessorKey: 'state',
         header: 'Status',
-        size: 100,
+        size: 90,
         cell: ({ row }) => {
             return <StatusTag state={row.original.state} />;
         }
@@ -36,15 +36,15 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         header: 'Integration',
         size: 200,
         cell: ({ row }) => {
-            return <div className="truncate">{row.original.configName}</div>;
+            return <div className="truncate font-code text-s">{row.original.configName}</div>;
         }
     },
     {
         accessorKey: 'syncId',
         header: 'Script',
-        size: 200,
+        size: 180,
         cell: ({ row }) => {
-            return <div className="truncate">{row.original.syncName}</div>;
+            return <div className="truncate font-code text-s">{row.original.syncName}</div>;
         }
     },
     {
@@ -52,17 +52,17 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         header: 'Connection',
         size: 200,
         cell: ({ row }) => {
-            return <div className="truncate">{row.original.connectionName}</div>;
+            return <div className="truncate font-code text-s">{row.original.connectionName}</div>;
         }
     },
     {
         accessorKey: 'id',
         header: '',
-        size: 20,
+        size: 40,
         cell: () => {
             return (
                 <div className="-ml-2">
-                    <ChevronRight size={15} />
+                    <ChevronRightIcon />
                 </div>
             );
         }

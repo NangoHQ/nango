@@ -40,7 +40,11 @@ module.exports = {
                 largecell: '480px'
             },
             fontSize: {
+                s: '13px',
                 '3xl': '28px'
+            },
+            fontFamily: {
+                code: ['"Roboto Mono"', '"Source Code Pro"', 'system-ui', 'sans-serif']
             }
         }
     },

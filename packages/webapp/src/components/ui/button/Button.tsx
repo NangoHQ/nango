@@ -1,9 +1,9 @@
 import { Loader } from '@geist-ui/icons';
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
-import classNames from 'classnames';
 import type React from 'react';
 import { forwardRef } from 'react';
+import { cn } from '../../../utils/utils';
 
 const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded text-sm', {
     variants: {
@@ -49,11 +49,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({ size
     }
 
     return (
-        <button ref={ref} className={classNames(buttonStyles({ className, variant, size }), {})} {...props}>
+        <button ref={ref} className={cn(buttonStyles({ className, variant, size }), {})} {...props}>
             <div className="relative">
-                <div
-                    className={classNames('flex gap-2 items-center', { 'opacity-0': isLoading, 'flex-row-reverse': iconProps && iconProps.position === 'end' })}
-                >
+                <div className={cn('flex gap-2 items-center', { 'opacity-0': isLoading, 'flex-row-reverse': iconProps && iconProps.position === 'end' })}>
                     {iconProps && iconProps.Icon}
                     {children}
                 </div>

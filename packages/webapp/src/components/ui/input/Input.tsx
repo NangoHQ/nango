@@ -15,7 +15,7 @@ const Input = forwardRef<
     return (
         <div
             className={cn(
-                'relative flex items-center bg-transparent w-full rounded border border-zinc-900 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                'relative flex items-center bg-transparent w-full rounded border border-zinc-900 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 className
             )}
         >
@@ -24,7 +24,7 @@ const Input = forwardRef<
                 type={type}
                 ref={ref}
                 className={cn(
-                    'bg-transparent h-full px-3 py-2.5 w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium',
+                    'bg-transparent border-0 h-full px-3 py-[7px] w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium',
                     before && 'pl-8'
                 )}
                 {...props}

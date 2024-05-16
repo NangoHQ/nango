@@ -4,7 +4,7 @@ import { useGetOperation } from '../../hooks/useLogs';
 import { useStore } from '../../store';
 import { OperationTag } from './components/OperationTag';
 import { StatusTag } from './components/StatusTag';
-import { elapsedTime } from '../../utils/utils';
+import { elapsedTime, formatDateToLogFormat } from '../../utils/utils';
 import { Link } from 'react-router-dom';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { SearchInOperation } from './components/SearchInOperation';
@@ -24,6 +24,9 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
 
         return elapsedTime(new Date(operation.startedAt), new Date(operation.endedAt));
     }, [operation]);
+    const createdAt = useMemo(() => {
+        return operation?.createdAt ? formatDateToLogFormat(operation?.createdAt) : 'n/a';
+    }, [operation?.createdAt]);
 
     if (loading) {
         return (
@@ -54,38 +57,49 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
     }
 
     return (
-        <div className="py-6 px-6 flex flex-col gap-9">
-            <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
-            <div className="flex gap-6 flex-wrap">
+        <div className="py-6 px-6 flex flex-col gap-5">
+            <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
+            </div>
+
+            <div className="flex gap-5 flex-wrap mt-4">
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Timestamp</div>
-                    <div className="text-gray-400 text-xs pt-[1px]">{operation.startedAt}</div>
+                    <div className="text-gray-400 text-s pt-[1px] font-code">{createdAt}</div>
                 </div>
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Integration</div>
-                    <div className="text-gray-400 text-xs pt-[1px] truncate">
-                        <Link to={`/integration/${operation.configName}`} target="_blank" className="flex gap-1 hover:text-white">
-                            <div className="truncate">{operation.configName}</div>
-                            <div className="w-8">
-                                <ExternalLinkIcon className="w-[14px]" />
-                            </div>
-                        </Link>
+                    <div className="text-gray-400 text-s font-code truncate">
+                        {operation.configName ? (
+                            <Link to={`/integration/${operation.configName}`} target="_blank" className="flex gap-1 hover:text-white">
+                                <div className="truncate">{operation.configName}</div>
+                                <div className="w-8">
+                                    <ExternalLinkIcon className="w-[14px]" />
+                                </div>
+                            </Link>
+                        ) : (
+                            'n/a'
+                        )}
                     </div>
                 </div>
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Connection</div>
-                    <div className="text-gray-400 text-xs pt-[1px] truncate">
-                        <Link to={`/integration/${operation.configName}`} target="_blank" className="flex gap-1 hover:text-white">
-                            <div className="truncate">{operation.connectionName}</div>
-                            <div className="w-8">
-                                <ExternalLinkIcon className="w-[14px]" />
-                            </div>
-                        </Link>
+                    <div className="text-gray-400 text-s font-code truncate">
+                        {operation.connectionName ? (
+                            <Link to={`/connections/${operation.connectionName}`} target="_blank" className="flex gap-1 hover:text-white">
+                                <div className="truncate">{operation.connectionName}</div>
+                                <div className="w-8">
+                                    <ExternalLinkIcon className="w-[14px]" />
+                                </div>
+                            </Link>
+                        ) : (
+                            'n/a'
+                        )}
                     </div>
                 </div>
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Duration</div>
-                    <div className="text-gray-400 text-xs pt-[1px]">{duration}</div>
+                    <div className="text-gray-400 text-s pt-[1px] font-code">{duration}</div>
                 </div>
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
@@ -95,7 +109,7 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
                 </div>
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Script</div>
-                    <div className="text-gray-400 text-xs pt-[1px] truncate">{operation.syncName}</div>
+                    <div className="text-gray-400 text-xs pt-[1px] truncate">{operation.syncName ? operation.syncName : 'n/a'}</div>
                 </div>
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Status</div>
@@ -104,9 +118,9 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
                     </div>
                 </div>
             </div>
-            <div className="mt-4">
+            <div className="">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
-                {!operation.meta && <div className="text-gray-400 text-xs">No payload...</div>}
+                {!operation.meta && <div className="text-gray-400 text-xs bg-pure-black py-2 px-2">No payload.</div>}
             </div>
             <SearchInOperation operationId={operationId} />
         </div>

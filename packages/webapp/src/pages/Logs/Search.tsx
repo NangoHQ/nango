@@ -9,12 +9,14 @@ import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-tabl
 
 import { MultiSelect } from './components/MultiSelect';
 import { columns, statusDefaultOptions, statusOptions } from './constants';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { SearchOperationsState } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
 import { Input } from '../../components/ui/input/Input';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+
+const formatter = Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 });
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -37,6 +39,13 @@ export const LogsSearch: React.FC = () => {
             setHasLogs(true);
         }
     }, [loading]);
+
+    const total = useMemo(() => {
+        if (!data?.pagination) {
+            return 0;
+        }
+        return formatter.format(data.pagination.total);
+    }, [data?.pagination]);
 
     if (error) {
         return (
@@ -73,11 +82,14 @@ export const LogsSearch: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
-            <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
+                <div className="text-white text-xs">{total} logs found</div>
+            </div>
 
             <div className="flex gap-2 justify-between">
                 <div className="w-full">
-                    <Input before={<MagnifyingGlassIcon className="w-4" />} placeholder="Search operations..." />
+                    <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." />
                 </div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
             </div>
