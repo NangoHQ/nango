@@ -34,6 +34,7 @@ import tracer from 'dd-trace';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
+import type { ApiError } from '@nangohq/types';
 
 export const app = express();
 
@@ -235,6 +236,11 @@ app.use(staticSite);
 
 // -------
 // Error handling.
-app.use((e: any, req: Request, res: Response, _: any) => {
-    errorManager.handleGenericError(e, req, res, tracer);
+app.use((err: any, req: Request, res: Response<ApiError<'invalid_json'>>, _: any) => {
+    if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {
+        res.status(400).send({ error: { code: 'invalid_json', message: err.message } });
+        return;
+    }
+
+    errorManager.handleGenericError(err, req, res, tracer);
 });

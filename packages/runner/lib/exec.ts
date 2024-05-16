@@ -65,6 +65,7 @@ export async function exec(
                 Buffer,
                 setTimeout
             };
+
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context);
 

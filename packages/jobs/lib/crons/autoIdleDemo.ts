@@ -60,6 +60,11 @@ export async function exec(): Promise<void> {
             continue;
         }
 
+        const syncClient = await SyncClient.getInstance();
+        if (!syncClient) {
+            continue;
+        }
+
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
             {
@@ -69,11 +74,6 @@ export async function exec(): Promise<void> {
                 sync: { id: sync.id, name: sync.name }
             }
         );
-
-        const syncClient = await SyncClient.getInstance();
-        if (!syncClient) {
-            continue;
-        }
 
         logger.info(`[autoidle] pausing ${sync.id}`);
 

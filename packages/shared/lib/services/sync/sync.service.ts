@@ -259,6 +259,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
                 .andOn(`${SYNC_CONFIG_TABLE}.deleted`, '=', db.knex.raw('FALSE'))
                 .andOn(`${SYNC_CONFIG_TABLE}.active`, '=', db.knex.raw('TRUE'))
+                .andOn(`${SYNC_CONFIG_TABLE}.type`, '=', db.knex.raw('?', 'sync'))
                 .andOn(`${SYNC_CONFIG_TABLE}.nango_config_id`, '=', db.knex.raw('?', [nangoConnection.config_id]));
         })
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
@@ -283,7 +284,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         const syncSchedule = await syncClient?.describeSchedule(schedule_id);
 
         if (syncSchedule) {
-            if (syncSchedule.schedule?.state?.paused && sync.schedule_status !== SyncStatus.PAUSED) {
+            if (syncSchedule.schedule?.state?.paused && sync.schedule_status === SyncStatus.RUNNING) {
                 sync = {
                     ...sync,
                     schedule_status: SyncStatus.PAUSED

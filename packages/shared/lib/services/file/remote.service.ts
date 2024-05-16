@@ -3,7 +3,7 @@ import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
-import { isCloud, isEnterprise, isLocal } from '@nangohq/utils';
+import { isCloud, isEnterprise, isLocal, isTest } from '@nangohq/utils';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -12,7 +12,7 @@ import { nangoConfigFile } from '../nango-config.service.js';
 import localFileService from './local.service.js';
 
 let client: S3Client | null = null;
-let useS3 = !isLocal;
+let useS3 = !isLocal && !isTest;
 
 if (isEnterprise) {
     useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);

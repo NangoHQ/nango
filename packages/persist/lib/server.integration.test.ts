@@ -231,6 +231,51 @@ describe('Persist API', () => {
             }
         }
     });
+
+    it('should fail with invalid records ', async () => {
+        const model = 'MyModel';
+        const records = [{ id: 'id'.repeat(200), name: 'new1' }];
+        const response = await fetch(
+            `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records`,
+            {
+                method: 'PUT',
+                body: JSON.stringify({
+                    model,
+                    records: records,
+                    providerConfigKey: seed.connection.provider_config_key,
+                    connectionId: seed.connection.connection_id,
+                    activityLogId: seed.activityLogId,
+                    lastSyncDate: new Date(),
+                    trackDeletes: false,
+                    softDelete: true
+                }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        expect(response.status).toEqual(400);
+        expect(await response.json()).toStrictEqual([
+            {
+                errors: {
+                    issues: [
+                        {
+                            code: 'too_big',
+                            exact: false,
+                            inclusive: true,
+                            maximum: 255,
+                            message: 'String must contain at most 255 character(s)',
+                            path: ['records', 0, 'id'],
+                            type: 'string'
+                        }
+                    ],
+                    name: 'ZodError'
+                },
+                type: 'Body'
+            }
+        ]);
+    });
 });
 
 const initDb = async () => {

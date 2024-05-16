@@ -3,12 +3,12 @@ import { NodeEnv, localhostUrl } from './constants.js';
 export const baseUrl = process.env['NANGO_SERVER_URL'] || localhostUrl;
 export const basePublicUrl = process.env['NANGO_PUBLIC_SERVER_URL'] || baseUrl;
 
+export const isDocker = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED';
 export const isStaging = process.env['NODE_ENV'] === NodeEnv.Staging;
 export const isProd = process.env['NODE_ENV'] === NodeEnv.Prod;
 export const isCloud = process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
-export const isLocal = baseUrl === localhostUrl;
 export const isEnterprise = process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
-export const isDev = process.env['NODE_ENV'] === NodeEnv.Dev;
+export const isLocal = !isCloud && !isEnterprise && !isDocker && process.env['NODE_ENV'] === NodeEnv.Dev;
 export const isTest = Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
 export const isBasicAuthEnabled = !isCloud && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 export const isHosted = !isCloud && !isLocal && !isEnterprise;

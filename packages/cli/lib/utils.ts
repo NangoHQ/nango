@@ -1,7 +1,6 @@
-import https from 'https';
 import axios, { AxiosError } from 'axios';
 import fs from 'fs';
-import * as os from 'os';
+import os from 'os';
 import npa from 'npm-package-arg';
 import Module from 'node:module';
 import path, { dirname } from 'path';
@@ -15,6 +14,7 @@ import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangoh
 import { SyncConfigType, cloudHost, stagingHost } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
+import https from 'node:https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -112,6 +112,17 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
+let pkgVersion: string | undefined = undefined;
+export function getPkgVersion(debug = false) {
+    if (pkgVersion) {
+        return pkgVersion;
+    }
+
+    const pkg = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8')) as { version: string };
+    pkgVersion = pkg.version;
+    return pkg.version;
+}
+
 export async function upgradeAction(debug = false) {
     const isRunViaNpx = process.argv.some((arg) => arg.includes('npx'));
     const locallyInstalled = isLocallyInstalled('nango', debug);
@@ -141,11 +152,11 @@ export async function upgradeAction(debug = false) {
 
     try {
         const resolved = npa('nango');
-        const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+        const version = getPkgVersion(debug);
         if (debug) {
             printDebug(`Version ${version} of nango is installed.`);
         }
-        const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
+        const response = await http.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
 
         if (debug) {
@@ -219,8 +230,8 @@ export async function getConnection(providerConfigKey: string, connectionId: str
     if (debug) {
         printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await axios
-        .get(url, { params: { provider_config_key: providerConfigKey }, headers, httpsAgent: httpsAgent() })
+    return await http
+        .get(url, { params: { provider_config_key: providerConfigKey }, headers })
         .then((res) => {
             return res.data;
         })
@@ -235,8 +246,8 @@ export async function getConfig(providerConfigKey: string, debug = false) {
     if (debug) {
         printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await axios
-        .get(url, { headers, httpsAgent: httpsAgent() })
+    return await http
+        .get(url, { headers })
         .then((res) => {
             return res.data;
         })
@@ -253,10 +264,19 @@ export function enrichHeaders(headers: Record<string, string | number | boolean>
     return headers;
 }
 
-export function httpsAgent() {
-    return new https.Agent({
-        rejectUnauthorized: false
-    });
+const defaultHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
+export const http = axios.create({
+    httpsAgent: defaultHttpsAgent,
+    headers: { 'User-Agent': getUserAgent() }
+});
+
+export function getUserAgent(): string {
+    const clientVersion = getPkgVersion(false);
+    const nodeVersion = process.versions.node;
+
+    const osName = os.platform().replace(' ', '_');
+    const osVersion = os.release().replace(' ', '_');
+    return `nango-cli/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
 }
 
 export function getFieldType(rawField: string | NangoModel, debug = false): string {
