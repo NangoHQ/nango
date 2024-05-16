@@ -1,7 +1,8 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '../db/database.js';
 import connectionService from './connection.service.js';
-import type { Connection, Metadata } from '../models/Connection.js';
+import type { Connection } from '../models/Connection.js';
+import type { Metadata } from '@nangohq/types';
 import { createConfigSeeds } from '../db/seeders/config.seeder.js';
 import { createConnectionSeeds } from '../db/seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../db/seeders/environment.seeder.js';

@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from 'express';
 import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
-    Connection,
     OAuth2Credentials,
     OAuth2ClientCredentials,
     ImportedCredentials,
@@ -510,96 +509,6 @@ class ConnectionController {
             }
 
             await connectionService.updateMetadata([connection], req.body);
-
-            res.status(200).send(req.body);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async setMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environment = res.locals['environment'];
-            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
-
-            const body = req.body;
-
-            if (!body.connection_id) {
-                errorManager.errRes(res, 'missing_connection_id');
-                return;
-            }
-
-            if (!body.metadata) {
-                errorManager.errRes(res, 'missing_metadata');
-                return;
-            }
-
-            const { connection_id: connectionIdArg, metadata } = body;
-
-            const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
-
-            const ids: number[] = [];
-
-            for (const connectionId of connectionIds) {
-                const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-
-                if (!success || !connection || !connection.id) {
-                    const errorType = connectionIds.length > 1 ? 'unknown_connections_bailed' : 'unknown_connection';
-                    const error = new NangoError(errorType, { connectionId, providerConfigKey, environmentName: environment.name });
-                    errorManager.errResFromNangoErr(res, error);
-
-                    return;
-                }
-
-                ids.push(connection.id);
-            }
-
-            await connectionService.replaceMetadata(ids, metadata);
-
-            res.status(201).send(req.body);
-        } catch (err) {
-            next(err);
-        }
-    }
-    async updateMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environment = res.locals['environment'];
-            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
-
-            const body = req.body;
-
-            if (!body.connection_id) {
-                errorManager.errRes(res, 'missing_connection_id');
-                return;
-            }
-
-            if (!body.metadata) {
-                errorManager.errRes(res, 'missing_metadata');
-                return;
-            }
-
-            const { connection_id: connectionIdArg, metadata } = body;
-
-            const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
-
-            const validConnections: Connection[] = [];
-
-            for (const connectionId of connectionIds) {
-                const { success, error: yo, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-                console.log(yo);
-
-                if (!success || !connection || !connection.id) {
-                    const errorType = connectionIds.length > 1 ? 'unknown_connections_bailed' : 'unknown_connection';
-                    const error = new NangoError(errorType, { connectionId, providerConfigKey, environmentName: environment.name });
-                    errorManager.errResFromNangoErr(res, error);
-
-                    return;
-                }
-
-                validConnections.push(connection);
-            }
-
-            await connectionService.updateMetadata(validConnections, metadata);
 
             res.status(200).send(req.body);
         } catch (err) {

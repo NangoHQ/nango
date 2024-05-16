@@ -1,6 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
-import type { NangoConnection, Metadata } from '../../models/Connection.js';
+import type { NangoConnection } from '../../models/Connection.js';
+import type { Metadata } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';

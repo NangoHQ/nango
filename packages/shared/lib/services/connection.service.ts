@@ -25,7 +25,8 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { Metadata } from '@nangohq/types';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';

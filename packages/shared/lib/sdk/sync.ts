@@ -191,7 +191,7 @@ type AuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials;
 
-type Metadata = Record<string, string | Record<string, any>>;
+type Metadata = Record<string, unknown>;
 
 interface MetadataChangeResponse {
     metadata: Metadata;
