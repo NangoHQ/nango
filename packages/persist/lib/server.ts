@@ -59,7 +59,7 @@ const validateRecordsRequest = validateRequest({
     }),
     body: z.object({
         model: z.string(),
-        records: z.array(z.object({ id: z.string().max(255).min(1) })).nonempty(),
+        records: z.array(z.object({ id: z.union([z.string().max(255).min(1), z.number()]) })).nonempty(),
         providerConfigKey: z.string(),
         connectionId: z.string(),
         activityLogId: z.number()
