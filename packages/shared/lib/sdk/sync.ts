@@ -377,6 +377,7 @@ export class NangoAction {
             providerConfigKey: config.providerConfigKey,
             connectionId: config.connectionId,
             headers: {
+                ...(config.headers || {}),
                 'user-agent': this.nango.userAgent
             }
         };

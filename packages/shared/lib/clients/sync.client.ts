@@ -2,6 +2,7 @@ import type { ScheduleDescription } from '@temporalio/client';
 import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
 import type { StringValue } from 'ms';
+import { v4 as uuid } from 'uuid';
 import ms from 'ms';
 import fs from 'fs-extra';
 import type { Config, Config as ProviderConfig } from '../models/Provider.js';
@@ -35,7 +36,7 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Client');
 
-const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
+const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${uuid()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
     `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connectionId}.${Date.now()}`;
 const generateWorkflowId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
@@ -71,9 +72,14 @@ class SyncClient {
             return new SyncClient(true as any);
         }
 
+        const temporalAddress = process.env['TEMPORAL_ADDRESS'];
+        if (!temporalAddress) {
+            throw new Error('TEMPORAL_ADDRESS missing from env var');
+        }
+
         try {
             const connection = await Connection.connect({
-                address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
+                address: temporalAddress,
                 tls: isProd
                     ? {
                           clientCertPair: {
@@ -94,7 +100,7 @@ class SyncClient {
                 operation: LogActionEnum.SYNC_CLIENT,
                 metadata: {
                     namespace,
-                    address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
+                    address: temporalAddress
                 }
             });
             return null;
@@ -588,7 +594,6 @@ class SyncClient {
 
             // Errors received from temporal are raw objects not classes
             const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
-
             if (!success || error) {
                 if (writeLogs) {
                     if (rawError) {
@@ -606,11 +611,9 @@ class SyncClient {
                         environment_id,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `The action workflow ${workflowId} did not complete successfully ${JSON.stringify(response, null, 2)} ${JSON.stringify(rawError, null, 2)}`
+                        content: `The action workflow ${workflowId} did not complete successfully`
                     });
-                    await logCtx.error(
-                        `The action workflow ${workflowId} did not complete successfully ${JSON.stringify(response, null, 2)} ${JSON.stringify(rawError, null, 2)}`
-                    );
+                    await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
                 }
 
                 return Err(error!);
@@ -647,11 +650,11 @@ class SyncClient {
             );
 
             return Ok(response);
-        } catch (e) {
-            const errorMessage = stringifyError(e, { pretty: true });
+        } catch (err) {
+            const errorMessage = stringifyError(err, { pretty: true });
             const error = new NangoError('action_failure', { errorMessage });
 
-            const content = `The action workflow ${workflowId} failed with error: ${e}`;
+            const content = `The action workflow ${workflowId} failed with error: ${err}`;
 
             if (writeLogs) {
                 await createActivityLogMessageAndEnd({
@@ -664,7 +667,7 @@ class SyncClient {
                 await logCtx.error(content);
             }
 
-            errorManager.report(e, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: connection.environment_id,
