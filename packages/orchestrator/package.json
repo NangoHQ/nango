@@ -23,6 +23,7 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
+        "type-fest": "4.14.0",
         "@types/node": "20.12.2",
         "vitest": "0.33.0"
     }

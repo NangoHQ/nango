@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Json, Scheduler } from '@nangohq/scheduler';
+import type { JsonValue } from 'type-fest';
+import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
@@ -11,7 +12,7 @@ type Output = Endpoint<{
         taskId: string;
     };
     Error: ApiError<'fetching_failed' | 'task_failed' | 'task_expired' | 'task_cancelled'>;
-    Success: { output: Json };
+    Success: { output: JsonValue };
 }>;
 
 const path = '/v1/task/:taskId/output';

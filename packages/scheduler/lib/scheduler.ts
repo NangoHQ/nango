@@ -1,5 +1,6 @@
 import { isMainThread } from 'node:worker_threads';
-import type { Json, SchedulingProps, Task, TaskState } from './types';
+import type { JsonValue } from 'type-fest';
+import type { SchedulingProps, Task, TaskState } from './types';
 import * as tasks from './models/tasks.js';
 import type { Result } from '@nangohq/utils';
 import { stringifyError, getLogger } from '@nangohq/utils';
@@ -150,7 +151,7 @@ export class Scheduler {
      * @example
      * const succeed = await scheduler.succeed({ taskId: '00000000-0000-0000-0000-000000000000', output: {foo: 'bar'} });
      */
-    public async succeed({ taskId, output }: { taskId: string; output: Json }): Promise<Result<Task>> {
+    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<Task>> {
         const succeeded = await tasks.transitionState({ taskId, newState: 'SUCCEEDED', output });
         if (succeeded.isOk()) {
             const task = succeeded.value;

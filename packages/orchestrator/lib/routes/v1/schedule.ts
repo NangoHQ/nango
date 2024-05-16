@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Json, Scheduler } from '@nangohq/scheduler';
+import type { JsonValue } from 'type-fest';
+import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
@@ -29,7 +30,7 @@ type Schedule = Endpoint<{
                 environment_id: number;
             };
             activityLogId: number;
-            input: Json;
+            input: JsonValue;
         };
     };
     Error: ApiError<'schedule_failed'>;
@@ -44,8 +45,8 @@ const validate = validateRequest<Schedule>({
         z
             .object({
                 scheduling: z.literal('immediate'),
-                name: z.string().nonempty(),
-                groupKey: z.string().nonempty(),
+                name: z.string().min(1),
+                groupKey: z.string().min(1),
                 retry: z.object({
                     count: z.number().int(),
                     max: z.number().int()
@@ -56,10 +57,10 @@ const validate = validateRequest<Schedule>({
                     heartbeat: z.number().int().positive()
                 }),
                 args: z.object({
-                    name: z.string().nonempty(),
+                    name: z.string().min(1),
                     connection: z.object({
                         id: z.number().positive(),
-                        provider_config_key: z.string().nonempty(),
+                        provider_config_key: z.string().min(1),
                         environment_id: z.number().positive()
                     }),
                     activityLogId: z.number().positive(),

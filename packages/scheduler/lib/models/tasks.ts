@@ -1,7 +1,8 @@
+import type { JsonValue } from 'type-fest';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
 import { db } from '../db/client.js';
-import type { Json, TaskState, Task } from '../types.js';
+import type { TaskState, Task } from '../types.js';
 import { uuidv7 } from 'uuidv7';
 
 export const TASKS_TABLE = 'tasks';
@@ -43,7 +44,7 @@ const TaskStateTransition = {
 interface DbTask {
     readonly id: string;
     readonly name: string;
-    readonly payload: Json;
+    readonly payload: JsonValue;
     readonly group_key: string;
     readonly retry_max: number;
     readonly retry_count: number;
@@ -55,7 +56,7 @@ interface DbTask {
     state: TaskState;
     last_state_transition_at: Date;
     last_heartbeat_at: Date;
-    output: Json | null;
+    output: JsonValue | null;
     terminated: boolean;
 }
 const DbTask = {
@@ -157,7 +158,7 @@ export async function heartbeat(taskId: string): Promise<Result<Task>> {
     }
 }
 
-export async function transitionState({ taskId, newState, output }: { taskId: string; newState: TaskState; output?: Json }): Promise<Result<Task>> {
+export async function transitionState({ taskId, newState, output }: { taskId: string; newState: TaskState; output?: JsonValue }): Promise<Result<Task>> {
     if (newState === 'SUCCEEDED' && !output) {
         return Err(new Error(`Output is required when state = '${newState}'`));
     }

@@ -1,4 +1,4 @@
-import type { Json } from '@nangohq/scheduler';
+import type { JsonValue } from 'type-fest';
 import { route as scheduleRoute } from './routes/v1/schedule.js';
 import { route as outputRoute } from './routes/v1/task/taskId/output.js';
 import type { Result, Route } from '@nangohq/utils';
@@ -25,7 +25,7 @@ interface SchedulingProps {
             environment_id: number;
         };
         activityLogId: number;
-        input: Json;
+        input: JsonValue;
     };
 }
 
@@ -60,7 +60,7 @@ export class OrchestratorClient {
         }
     }
 
-    async execute(props: Pick<Partial<SchedulingProps>, 'name' | 'groupKey' | 'args'>): Promise<Result<Json>> {
+    async execute(props: Pick<Partial<SchedulingProps>, 'name' | 'groupKey' | 'args'>): Promise<Result<JsonValue>> {
         const scheduleProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },

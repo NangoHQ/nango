@@ -1,14 +1,12 @@
 import type { TaskProps, taskStates } from './models/tasks';
-
-type JsonLiteral = string | number | boolean | null;
-export type Json = JsonLiteral | { [key: string]: Json } | Json[];
+import type { JsonValue } from 'type-fest';
 
 export type TaskState = (typeof taskStates)[number];
 
 export interface Task {
     readonly id: string;
     readonly name: string;
-    readonly payload: Json;
+    readonly payload: JsonValue;
     readonly groupKey: string;
     readonly retryMax: number;
     readonly retryCount: number;
@@ -20,7 +18,7 @@ export interface Task {
     readonly state: TaskState;
     readonly lastStateTransitionAt: Date;
     readonly lastHeartbeatAt: Date;
-    readonly output: Json | null;
+    readonly output: JsonValue | null;
     readonly terminated: boolean;
 }
 
