@@ -4,10 +4,10 @@ import type { SearchOperationsData } from '@nangohq/types';
 
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../components/ui/Drawer';
 import * as Table from '../../../components/ui/Table';
-import { Show } from '../Show';
-import { Cross1Icon } from '@radix-ui/react-icons';
+import { ShowMessage } from '../ShowMessage';
+import { ArrowLeftIcon } from '@radix-ui/react-icons';
 
-const drawerWidth = '1034px';
+const drawerWidth = '834px';
 export const MessageRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row }) => {
     return (
         <Drawer direction="right" snapPoints={[drawerWidth]} handleOnly={true} noBodyStyles={true}>
@@ -19,13 +19,13 @@ export const MessageRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row }
                 </Table.Row>
             </DrawerTrigger>
             <DrawerContent>
-                <div className={`w-[1034px] relative`}>
-                    <div className="absolute right-4 top-4">
-                        <DrawerClose title="Close" className="w-8 h-8 flex items-center justify-center">
-                            <Cross1Icon className="text-gray-400 hover:text-white" />
+                <div className={`w-[834px] relative`}>
+                    <div className="absolute top-7 left-4">
+                        <DrawerClose title="Close" className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white">
+                            <ArrowLeftIcon />
                         </DrawerClose>
                     </div>
-                    <Show operationId={row.original.id} />
+                    <ShowMessage message={row.original} />
                 </div>
             </DrawerContent>
         </Drawer>

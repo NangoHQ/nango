@@ -4,7 +4,7 @@ import type { SearchOperationsData } from '@nangohq/types';
 
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../components/ui/Drawer';
 import * as Table from '../../../components/ui/Table';
-import { Show } from '../Show';
+import { ShowOperation } from '../ShowOperation';
 import { Cross1Icon } from '@radix-ui/react-icons';
 
 const drawerWidth = '1034px';
@@ -21,11 +21,11 @@ export const OperationRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row
             <DrawerContent>
                 <div className={`w-[1034px] relative`}>
                     <div className="absolute right-4 top-4">
-                        <DrawerClose title="Close" className="w-8 h-8 flex items-center justify-center">
-                            <Cross1Icon className="text-gray-400 hover:text-white" />
+                        <DrawerClose title="Close" className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white">
+                            <Cross1Icon className="" />
                         </DrawerClose>
                     </div>
-                    <Show operationId={row.original.id} />
+                    <ShowOperation operationId={row.original.id} />
                 </div>
             </DrawerContent>
         </Drawer>

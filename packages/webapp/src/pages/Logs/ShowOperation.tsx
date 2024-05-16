@@ -10,7 +10,7 @@ import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { SearchInOperation } from './components/SearchInOperation';
 import { Skeleton } from '../../components/ui/Skeleton';
 
-export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
+export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
     const { operation, loading, error } = useGetOperation(env, { operationId });
 
@@ -57,7 +57,7 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
     }
 
     return (
-        <div className="py-6 px-6 flex flex-col gap-5">
+        <div className="py-8 px-6 flex flex-col gap-5">
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
             </div>
@@ -120,7 +120,7 @@ export const Show: React.FC<{ operationId: string }> = ({ operationId }) => {
             </div>
             <div className="">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
-                {!operation.meta && <div className="text-gray-400 text-xs bg-pure-black py-2 px-2">No payload.</div>}
+                {!operation.meta && <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>}
             </div>
             <SearchInOperation operationId={operationId} />
         </div>
