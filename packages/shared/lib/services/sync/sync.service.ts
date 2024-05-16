@@ -283,7 +283,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         const syncSchedule = await syncClient?.describeSchedule(schedule_id);
 
         if (syncSchedule) {
-            if (syncSchedule.schedule?.state?.paused && sync.schedule_status !== SyncStatus.PAUSED) {
+            if (syncSchedule.schedule?.state?.paused && sync.schedule_status === SyncStatus.RUNNING) {
                 sync = {
                     ...sync,
                     schedule_status: SyncStatus.PAUSED
