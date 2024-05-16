@@ -215,7 +215,11 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
                                     className={`flex items-center px-2 py-3 text-[13px] ${syncCommandButtonsDisabled ? '' : 'cursor-pointer'} justify-between border-b border-border-gray`}
                                 >
                                     <div className="flex items-center w-52">
-                                        <div className="w-36 max-w-3xl ml-1 truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
+                                        <Tooltip text={sync.name} type="dark">
+                                            <div className="w-36 max-w-3xl ml-1 truncate">
+                                                {Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}
+                                            </div>
+                                        </Tooltip>
                                     </div>
                                     <div className="flex w-20 -ml-2">
                                         <span className="">

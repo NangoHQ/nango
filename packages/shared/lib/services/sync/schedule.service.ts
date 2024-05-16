@@ -134,3 +134,24 @@ export async function softDeleteSchedules({ syncId, limit }: { syncId: string; l
             sub.select('id').from('_nango_sync_schedules').where({ deleted: false, sync_id: syncId }).limit(limit);
         });
 }
+
+export async function getRunningSchedules({
+    limit,
+    offset
+}: {
+    limit: number;
+    offset?: number;
+}): Promise<Pick<SyncSchedule, 'id' | 'schedule_id' | 'sync_id'>[]> {
+    const query = db
+        .knex('_nango_sync_schedules')
+        .select('id', 'schedule_id', 'sync_id')
+        .where({ status: ScheduleStatus.RUNNING, deleted: false })
+        .orderBy('id')
+        .limit(limit);
+
+    if (offset) {
+        query.where('id', '>', offset);
+    }
+
+    return query;
+}

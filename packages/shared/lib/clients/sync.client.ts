@@ -106,6 +106,8 @@ class SyncClient {
         }
     }
 
+    getClient = (): Client | null => this.client;
+
     async initiate(nangoConnectionId: number, logContextGetter: LogContextGetter): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
@@ -609,9 +611,11 @@ class SyncClient {
                         environment_id,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `The action workflow ${workflowId} did not complete successfully`
+                        content: `The action workflow ${workflowId} did not complete successfully ${JSON.stringify(response, null, 2)} ${JSON.stringify(rawError, null, 2)}`
                     });
-                    await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
+                    await logCtx.error(
+                        `The action workflow ${workflowId} did not complete successfully ${JSON.stringify(response, null, 2)} ${JSON.stringify(rawError, null, 2)}`
+                    );
                 }
 
                 return Err(error!);

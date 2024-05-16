@@ -13,6 +13,9 @@ export default defineConfig({
             NANGO_LOGS_OS_USER: '',
             NANGO_LOGS_OS_PWD: '',
             NANGO_LOGS_ENABLED: 'false'
+        },
+        chaiConfig: {
+            truncateThreshold: 10000
         }
     }
 });

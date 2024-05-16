@@ -458,9 +458,8 @@ class ConnectionService {
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .select('connection_id', '_nango_connections.environment_id', 'unique_key as provider_config_key', 'account_id')
-            .where('last_fetched_at', '<', dateThreshold)
-            .orWhere('last_fetched_at', null)
-            .andWhere('_nango_connections.deleted', false)
+            .where('_nango_connections.deleted', false)
+            .andWhere((builder) => builder.where('last_fetched_at', '<', dateThreshold).orWhereNull('last_fetched_at'))
             .limit(limit);
 
         if (!result || result.length === 0) {

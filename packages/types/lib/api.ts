@@ -15,6 +15,7 @@ export type ResDefaultErrors =
     | ApiError<'not_found'>
     | ApiError<'invalid_query_params', ValidationError[]>
     | ApiError<'invalid_body', ValidationError[]>
+    | ApiError<'invalid_uri_params', ValidationError[]>
     | ApiError<'feature_disabled'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -68,7 +69,7 @@ export interface Endpoint<
     /**
      * Response body for any error
      */
-    Errors: ResDefaultErrors | T['Error'];
+    Errors: T['Error'] extends ApiError<any> ? ResDefaultErrors | T['Error'] : ResDefaultErrors;
 
     /**
      * Response body (success + error)
