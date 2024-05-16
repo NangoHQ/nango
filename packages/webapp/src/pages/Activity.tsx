@@ -590,7 +590,7 @@ export default function Activity() {
                                                                         <CheckInCircle className="stroke-green-500" size="32" />
                                                                     </Link>
                                                                 )}
-                                                                {!activity.success && (
+                                                                {activity.success === false && (
                                                                     <Link
                                                                         to={
                                                                             activity.action === 'sync deploy'
