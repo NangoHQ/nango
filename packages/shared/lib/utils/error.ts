@@ -326,14 +326,6 @@ export class NangoError extends Error {
                 }
                 break;
 
-            case 'unknown_connections_bailed':
-                this.status = 404;
-                this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'. If you passed in multiple connections no actions were taken on any of the connections as a result.`;
-                if (this.payload) {
-                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
-                }
-                break;
-
             case 'refresh_token_external_error':
                 this.status = 400;
                 this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;
