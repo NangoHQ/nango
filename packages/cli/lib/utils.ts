@@ -114,7 +114,7 @@ export function checkEnvVars(optionalHostport?: string) {
 
 let pkgVersion: string | undefined = undefined;
 export function getPkgVersion(debug = false) {
-    if (pkgVersion) {
+    if (pkgVersion && !debug) {
         return pkgVersion;
     }
 
@@ -456,18 +456,11 @@ function getPackagePath(debug = false) {
 }
 
 export async function parseSecretKey(environment: string, debug = false): Promise<void> {
-    if (process.env['NANGO_SECRET_KEY_PROD'] && environment === 'prod') {
+    if (process.env[`NANGO_SECRET_KEY_${environment.toUpperCase()}`]) {
         if (debug) {
-            printDebug(`Environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
+            printDebug(`Environment is set to ${environment}, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_${environment.toUpperCase()}.`);
         }
-        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_PROD'];
-    }
-
-    if (process.env['NANGO_SECRET_KEY_DEV'] && environment === 'dev') {
-        if (debug) {
-            printDebug(`Environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
-        }
-        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
+        process.env['NANGO_SECRET_KEY'] = process.env[`NANGO_SECRET_KEY_${environment.toUpperCase()}`];
     }
 
     if (!process.env['NANGO_SECRET_KEY']) {
