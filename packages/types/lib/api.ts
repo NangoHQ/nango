@@ -22,19 +22,18 @@ export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**
  * API Request/Response type
  */
-export interface Endpoint<
-    T extends {
-        Method: EndpointMethod;
-        Path: string;
-        Params?: Record<string, any>;
-        Body?: Record<string, any>;
-        Querystring?: Record<string, any>;
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        Error?: ApiError<any> | never;
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        Success: Record<string, any> | never;
-    }
-> {
+export interface EndpointDefinition {
+    Method: EndpointMethod;
+    Path: string;
+    Params?: Record<string, any>;
+    Body?: Record<string, any>;
+    Querystring?: Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    Error?: ApiError<any> | never;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    Success: Record<string, any> | never;
+}
+export interface Endpoint<T extends EndpointDefinition> {
     // ------------
     // ------------ Request
     Method: T['Method'];
