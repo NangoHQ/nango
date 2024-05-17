@@ -1,4 +1,3 @@
-import { migrateMapping } from '@nangohq/logs';
 import { connectionService, multipleMigrations, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -7,10 +6,9 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/connection/metadata';
 
-describe('GET /logs', () => {
+describe(`PATCH ${endpoint}`, () => {
     beforeAll(async () => {
         await multipleMigrations();
-        await migrateMapping();
 
         api = await runServer();
     });
