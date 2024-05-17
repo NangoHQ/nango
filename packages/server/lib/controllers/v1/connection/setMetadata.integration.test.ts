@@ -31,8 +31,9 @@ describe('GET /logs', () => {
         shouldBeProtected(res);
     });
 
-    it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+    it('should validate body with an empty connection_id', async () => {
+        const env = await seeders.createEnvironmentSeed();
+
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: env.secret_key,
@@ -51,6 +52,34 @@ describe('GET /logs', () => {
                         code: 'too_small',
                         message: 'String must contain at least 1 character(s)',
                         path: ['connection_id']
+                    }
+                ]
+            }
+        });
+        expect(res.res.status).toBe(400);
+    });
+
+    it('should validate body with an empty provider config key', async () => {
+        const env = await seeders.createEnvironmentSeed();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            body: {
+                connection_id: 'abc',
+                provider_config_key: '',
+                metadata: {}
+            }
+        });
+
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'too_small',
+                        message: 'String must contain at least 1 character(s)',
+                        path: ['provider_config_key']
                     }
                 ]
             }

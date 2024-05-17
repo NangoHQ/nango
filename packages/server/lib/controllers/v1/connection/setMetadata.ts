@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '../../../utils/validation.js';
-import type { ApiError, SetMetadata } from '@nangohq/types';
+import type { ApiError, SetMetadata, MetadataBody } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
 
 const validation = z
@@ -14,6 +14,7 @@ const validation = z
 
 export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
+
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
@@ -29,7 +30,7 @@ export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
 
     const { environment } = res.locals;
 
-    const body: Required<SetMetadata['Body']> = val.data;
+    const body: Required<MetadataBody> = val.data;
 
     const { connection_id: connectionIdArg, provider_config_key: providerConfigKey, metadata } = body;
 

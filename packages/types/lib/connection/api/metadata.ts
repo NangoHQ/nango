@@ -1,34 +1,26 @@
 import type { ApiError, Endpoint } from '../../api';
 import type { Metadata } from '../db';
 
+export interface MetadataBody {
+    connection_id: string | string[];
+    provider_config_key: string;
+    metadata: Metadata;
+}
+
+type MetadataError = ApiError<'invalid_body'> | ApiError<'unknown_connection'>;
+
 export type SetMetadata = Endpoint<{
     Method: 'POST';
+    Body: MetadataBody;
     Path: '/connection/metadata';
-    Body: {
-        connection_id: string | string[];
-        provider_config_key: string;
-        metadata: Metadata;
-    };
-    Error: ApiError<'invalid_body'> | ApiError<'unknown_connection'>;
-    Success: {
-        connection_id: string | string[];
-        provider_config_key: string;
-        metadata: Metadata;
-    };
+    Error: MetadataError;
+    Success: MetadataBody;
 }>;
 
 export type UpdateMetadata = Endpoint<{
     Method: 'PATCH';
     Path: '/connection/metadata';
-    Body: {
-        connection_id: string | string[];
-        provider_config_key: string;
-        metadata: Metadata;
-    };
-    Error: ApiError<'invalid_body'> | ApiError<'unknown_connection'>;
-    Success: {
-        connection_id: string | string[];
-        provider_config_key: string;
-        metadata: Metadata;
-    };
+    Body: MetadataBody;
+    Error: MetadataError;
+    Success: MetadataBody;
 }>;
