@@ -526,14 +526,14 @@ paths:
                                 properties:
                                     connection_id:
                                         oneOf:
-                                          - type: string
-                                            example: "connection-123"
-                                            description: The connection ID used to set the metadata on. Returns an array of connection ids if an array is passed in.
-                                          - type: array
-                                            items:
-                                                type: string
-                                                example: "connection-123"
-                                            description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                            - type: string
+                                              example: "connection-123"
+                                              description: The connection ID used to set the metadata on. Returns an array of connection ids if an array is passed in.
+                                            - type: array
+                                              items:
+                                                  type: string
+                                                  example: "connection-123"
+                                              description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
                                     provider_config_key:
                                         type: string
                                         description: The integration ID used to create the connection (aka Unique Key).
