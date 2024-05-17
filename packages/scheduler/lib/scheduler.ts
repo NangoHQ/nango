@@ -166,12 +166,13 @@ export class Scheduler {
     /**
      * Fail a task
      * @param taskId - Task ID
+     * @param error - Json object representing the error
      * @returns Task
      * @example
-     * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000' });
+     * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000', error: {message: 'error'});
      */
-    public async fail({ taskId }: { taskId: string }): Promise<Result<Task>> {
-        const failed = await tasks.transitionState(this.dbClient.db, { taskId, newState: 'FAILED' });
+    public async fail({ taskId, error }: { taskId: string; error: JsonValue }): Promise<Result<Task>> {
+        const failed = await tasks.transitionState(this.dbClient.db, { taskId, newState: 'FAILED', output: error });
         if (failed.isOk()) {
             const task = failed.value;
             this.onCallbacks[task.state](task);
@@ -206,11 +207,15 @@ export class Scheduler {
      * @example
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
-    public async cancel(cancelBy: { taskId: string } | { scheduleId: string }): Promise<Result<Task>> {
+    public async cancel(cancelBy: { taskId: string; reason: string } | { scheduleId: string; reason: string }): Promise<Result<Task>> {
         if ('scheduleId' in cancelBy) {
             throw new Error(`Cancelling tasks for schedule '${cancelBy.scheduleId}' not implemented`);
         }
-        const cancelled = await tasks.transitionState(this.dbClient.db, { taskId: cancelBy.taskId, newState: 'CANCELLED' });
+        const cancelled = await tasks.transitionState(this.dbClient.db, {
+            taskId: cancelBy.taskId,
+            newState: 'CANCELLED',
+            output: { reason: cancelBy.reason }
+        });
         if (cancelled.isOk()) {
             const task = cancelled.value;
             this.onCallbacks[task.state](task);

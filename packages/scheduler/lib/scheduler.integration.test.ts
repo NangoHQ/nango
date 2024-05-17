@@ -45,14 +45,14 @@ describe('Scheduler', () => {
     it('should retry failed task if max retries is not reached', async () => {
         const task = await scheduleTask(scheduler, { taskProps: { retryMax: 2, retryCount: 1 } });
         await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 });
-        (await scheduler.fail({ taskId: task.id })).unwrap();
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(1);
     });
     it('should not retry failed task if reached max retries', async () => {
         const task = await scheduleTask(scheduler, { taskProps: { retryMax: 2, retryCount: 2 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        (await scheduler.fail({ taskId: task.id })).unwrap();
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(0);
     });
@@ -73,7 +73,7 @@ describe('Scheduler', () => {
     it('should call callback when task is failed', async () => {
         const task = await scheduleTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        (await scheduler.fail({ taskId: task.id })).unwrap();
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happend' } })).unwrap();
         expect(callbacks.FAILED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is succeeded', async () => {
@@ -85,7 +85,7 @@ describe('Scheduler', () => {
     it('should call callback when task is cancelled', async () => {
         const task = await scheduleTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        (await scheduler.cancel({ taskId: task.id })).unwrap();
+        (await scheduler.cancel({ taskId: task.id, reason: 'cancelled by user' })).unwrap();
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is expired', async () => {

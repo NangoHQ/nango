@@ -96,11 +96,13 @@ export class MonitorChild {
         if (expired.isErr()) {
             logger.error(`Error expiring tasks: ${stringifyError(expired.error)}`);
         } else {
-            const taskIds = expired.value.map((t) => t.id);
-            if (taskIds.length > 0 && !this.cancelled) {
-                this.send({ ids: taskIds });
+            if (expired.value.length > 0) {
+                const taskIds = expired.value.map((t) => t.id);
+                if (taskIds.length > 0 && !this.cancelled) {
+                    this.send({ ids: taskIds });
+                }
+                logger.info(`Expired tasks: ${JSON.stringify(expired.value.map((t) => t.id))} `);
             }
-            logger.info(`Expired tasks: ${JSON.stringify(expired.value.map((t) => t.id))} `);
         }
     }
 

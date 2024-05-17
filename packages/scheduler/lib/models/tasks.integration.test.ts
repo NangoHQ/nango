@@ -54,26 +54,23 @@ describe('Task', () => {
         const updated = (await tasks.heartbeat(db, t.id)).unwrap();
         expect(updated.lastHeartbeatAt.getTime()).toBeGreaterThan(t.lastHeartbeatAt.getTime());
     });
-    it('should fail to transition to SUCCEEDED without an output', async () => {
-        const t = await startTask(db);
-        const updated = await tasks.transitionState(db, { taskId: t.id, newState: 'SUCCEEDED' });
-        expect(updated.isErr()).toBe(true);
-    });
     it('should transition between valid states and error when transitioning between invalid states', async () => {
+        const doTransition = async ({ taskId, newState }: { taskId: string; newState: TaskState }) => {
+            return newState === 'CREATED' || newState === 'STARTED'
+                ? await tasks.transitionState(db, { taskId, newState })
+                : await tasks.transitionState(db, { taskId, newState, output: { foo: 'bar' } });
+        };
         for (const from of taskStates) {
             for (const to of taskStates) {
                 const t = await createTaskWithState(db, from);
                 if (tasks.validTaskStateTransitions.find((v) => v.from === from && v.to === to)) {
                     // sleep to ensure lastStateTransitionAt is different from the previous state
                     await new Promise((resolve) => void setTimeout(resolve, 10));
-                    const updated =
-                        to === 'SUCCEEDED'
-                            ? await tasks.transitionState(db, { taskId: t.id, newState: to, output: { foo: 'bar' } })
-                            : await tasks.transitionState(db, { taskId: t.id, newState: to });
+                    const updated = await doTransition({ taskId: t.id, newState: to });
                     expect(updated.unwrap().state).toBe(to);
                     expect(updated.unwrap().lastStateTransitionAt.getTime()).toBeGreaterThan(t.lastStateTransitionAt.getTime());
                 } else {
-                    const updated = await tasks.transitionState(db, { taskId: t.id, newState: to });
+                    const updated = await doTransition({ taskId: t.id, newState: to });
                     expect(updated.isErr(), `transition from ${from} to ${to} failed`).toBe(true);
                 }
             }
@@ -113,6 +110,7 @@ describe('Task', () => {
         await new Promise((resolve) => void setTimeout(resolve, timeout * 1100));
         const expired = (await tasks.expiresIfTimeout(db)).unwrap();
         expect(expired).toHaveLength(1);
+        expect(expired[0]?.output).toMatchObject({ reason: `createdToStartedTimeoutSecs_exceeded` });
     });
     it('should expires tasks if startedToCompletedTimeoutSecs is reached', async () => {
         const timeout = 1;
@@ -120,13 +118,15 @@ describe('Task', () => {
         await new Promise((resolve) => void setTimeout(resolve, timeout * 1100));
         const expired = (await tasks.expiresIfTimeout(db)).unwrap();
         expect(expired).toHaveLength(1);
+        expect(expired[0]?.output).toMatchObject({ reason: `startedToCompletedTimeoutSecs_exceeded` });
     });
     it('should expires tasks if heartbeatTimeoutSecs is reached', async () => {
         const timeout = 1;
-        await startTask(db, { startedToCompletedTimeoutSecs: timeout });
+        await startTask(db, { heartbeatTimeoutSecs: timeout });
         await new Promise((resolve) => void setTimeout(resolve, timeout * 1100));
         const expired = (await tasks.expiresIfTimeout(db)).unwrap();
         expect(expired).toHaveLength(1);
+        expect(expired[0]?.output).toMatchObject({ reason: `heartbeatTimeoutSecs_exceeded` });
     });
     it('should list of tasks', async () => {
         const t1 = await createTaskWithState(db, 'STARTED');
@@ -156,13 +156,17 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
         case 'STARTED':
             return startTask(db);
         case 'FAILED':
-            return startTask(db).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'FAILED' })).unwrap());
+            return startTask(db).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'FAILED', output: { foo: 'bar' } })).unwrap());
         case 'SUCCEEDED':
             return startTask(db).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'SUCCEEDED', output: { foo: 'bar' } })).unwrap());
         case 'EXPIRED':
-            return startTask(db).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'EXPIRED' })).unwrap());
+            return startTask(db).then(async (t) =>
+                (await tasks.transitionState(db, { taskId: t.id, newState: 'EXPIRED', output: { reason: `timeout_exceeded` } })).unwrap()
+            );
         case 'CANCELLED':
-            return startTask(db).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'CANCELLED' })).unwrap());
+            return startTask(db).then(async (t) =>
+                (await tasks.transitionState(db, { taskId: t.id, newState: 'CANCELLED', output: { reason: 'cancelled_via_ui' } })).unwrap()
+            );
     }
 }
 
