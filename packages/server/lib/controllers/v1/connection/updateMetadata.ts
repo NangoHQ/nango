@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '../../../utils/validation.js';
-import type { ApiError, UpdateMetadata } from '@nangohq/types';
+import type { ApiError, UpdateMetadata, MetadataBody } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
 import type { Connection } from '@nangohq/shared';
 
@@ -30,7 +30,7 @@ export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
 
     const { environment } = res.locals;
 
-    const body: Required<UpdateMetadata['Body']> = val.data;
+    const body: Required<MetadataBody> = val.data;
 
     const { connection_id: connectionIdArg, provider_config_key: providerConfigKey, metadata } = body;
 
