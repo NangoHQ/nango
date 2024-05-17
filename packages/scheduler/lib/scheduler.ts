@@ -5,6 +5,7 @@ import * as tasks from './models/tasks.js';
 import type { Result } from '@nangohq/utils';
 import { stringifyError, getLogger } from '@nangohq/utils';
 import { MonitorWorker } from './monitor.worker.js';
+import type { DatabaseClient } from './db/client.js';
 
 const logger = getLogger('Scheduler');
 
@@ -13,6 +14,7 @@ export class Scheduler {
 
     private monitor: MonitorWorker | null = null;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
+    private dbClient: DatabaseClient;
 
     /**
      * Scheduler
@@ -31,14 +33,15 @@ export class Scheduler {
      *    }
      * });
      */
-    constructor({ on }: { on: Record<TaskState, (task: Task) => void> }) {
-        this.onCallbacks = on;
+    constructor({ dbClient, on }: { dbClient: DatabaseClient; on: Record<TaskState, (task: Task) => void> }) {
         if (isMainThread) {
-            this.monitor = new MonitorWorker();
+            this.onCallbacks = on;
+            this.dbClient = dbClient;
+            this.monitor = new MonitorWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
             this.monitor.on(async (message) => {
                 const { ids } = message;
                 for (const taskId of ids) {
-                    const fetched = await tasks.get(taskId);
+                    const fetched = await tasks.get(this.dbClient.db, taskId);
                     if (fetched.isOk()) {
                         const task = fetched.value;
                         this.onCallbacks[task.state](task);
@@ -62,7 +65,7 @@ export class Scheduler {
      * const task = await scheduler.get({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
     public async get({ taskId }: { taskId: string }): Promise<Result<Task>> {
-        return tasks.get(taskId);
+        return tasks.get(this.dbClient.db, taskId);
     }
 
     /**
@@ -74,7 +77,7 @@ export class Scheduler {
      * const tasks = await scheduler.list({ groupKey: 'test', state: 'CREATED' });
      */
     public async list(params?: { groupKey?: string; state?: TaskState }): Promise<Result<Task[]>> {
-        return tasks.list(params);
+        return tasks.list(this.dbClient.db, params);
     }
 
     /**
@@ -106,7 +109,7 @@ export class Scheduler {
                     ...props.taskProps,
                     startsAfter: new Date()
                 };
-                const created = await tasks.create(taskProps);
+                const created = await tasks.create(this.dbClient.db, taskProps);
                 if (created.isOk()) {
                     const task = created.value;
                     this.onCallbacks[task.state](task);
@@ -125,7 +128,7 @@ export class Scheduler {
      * const dequeued = await scheduler.dequeue({ groupKey: 'test', limit: 1 });
      */
     public async dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
-        const dequeued = await tasks.dequeue({ groupKey, limit });
+        const dequeued = await tasks.dequeue(this.dbClient.db, { groupKey, limit });
         if (dequeued.isOk()) {
             dequeued.value.forEach((task) => this.onCallbacks[task.state](task));
         }
@@ -140,7 +143,7 @@ export class Scheduler {
      * const heartbeat = await scheduler.heartbeat({ taskId: 'test' });
      */
     public async heartbeat({ taskId }: { taskId: string }): Promise<Result<Task>> {
-        return tasks.heartbeat(taskId);
+        return tasks.heartbeat(this.dbClient.db, taskId);
     }
 
     /**
@@ -152,7 +155,7 @@ export class Scheduler {
      * const succeed = await scheduler.succeed({ taskId: '00000000-0000-0000-0000-000000000000', output: {foo: 'bar'} });
      */
     public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<Task>> {
-        const succeeded = await tasks.transitionState({ taskId, newState: 'SUCCEEDED', output });
+        const succeeded = await tasks.transitionState(this.dbClient.db, { taskId, newState: 'SUCCEEDED', output });
         if (succeeded.isOk()) {
             const task = succeeded.value;
             this.onCallbacks[task.state](task);
@@ -168,7 +171,7 @@ export class Scheduler {
      * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
     public async fail({ taskId }: { taskId: string }): Promise<Result<Task>> {
-        const failed = await tasks.transitionState({ taskId, newState: 'FAILED' });
+        const failed = await tasks.transitionState(this.dbClient.db, { taskId, newState: 'FAILED' });
         if (failed.isOk()) {
             const task = failed.value;
             this.onCallbacks[task.state](task);
@@ -207,7 +210,7 @@ export class Scheduler {
         if ('scheduleId' in cancelBy) {
             throw new Error(`Cancelling tasks for schedule '${cancelBy.scheduleId}' not implemented`);
         }
-        const cancelled = await tasks.transitionState({ taskId: cancelBy.taskId, newState: 'CANCELLED' });
+        const cancelled = await tasks.transitionState(this.dbClient.db, { taskId: cancelBy.taskId, newState: 'CANCELLED' });
         if (cancelled.isOk()) {
             const task = cancelled.value;
             this.onCallbacks[task.state](task);

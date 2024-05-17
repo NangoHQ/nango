@@ -32,8 +32,11 @@ export const ENVS = z.object({
     PERSIST_SERVICE_URL: z.string().url().optional(),
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
+    // Orchestrator
     ORCHESTRATOR_SERVICE_URL: z.string().url().optional(),
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
+    ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
+    ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
 
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional(),
@@ -88,10 +91,6 @@ export const ENVS = z.object({
     // Records
     RECORDS_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'), //TODO remove default and deal with default value in the records package (ie: envVar || mainDB || localhost )
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
-
-    // Schduler
-    SCHEDULER_DATABASE_URL: z.string().url().optional(),
-    SCHEDULER_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
 
     // Redis
     NANGO_REDIS_URL: z.string().url().optional(),

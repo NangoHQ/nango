@@ -1,12 +1,13 @@
 import { expect, describe, it, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { migrate } from './db/migrate.js';
-import { clearDb } from './db/test.helpers.js';
 import { Scheduler } from './scheduler.js';
 import type { Task } from './types.js';
 import type { TaskProps } from './models/tasks.js';
 import * as tasks from './models/tasks.js';
+import { getTestDbClient } from './db/helpers.test.js';
 
 describe('Scheduler', () => {
+    const dbClient = getTestDbClient();
+    const db = dbClient.db;
     const callbacks = {
         CREATED: vi.fn((task: Task) => expect(task.state).toBe('CREATED')),
         STARTED: vi.fn((task: Task) => expect(task.state).toBe('STARTED')),
@@ -15,10 +16,10 @@ describe('Scheduler', () => {
         EXPIRED: vi.fn((task: Task) => expect(task.state).toBe('EXPIRED')),
         CANCELLED: vi.fn((task: Task) => expect(task.state).toBe('CANCELLED'))
     };
-    const scheduler = new Scheduler({ on: callbacks });
+    const scheduler = new Scheduler({ dbClient, on: callbacks });
 
     beforeAll(async () => {
-        await migrate();
+        await dbClient.migrate();
     });
 
     afterEach(() => {
@@ -32,7 +33,7 @@ describe('Scheduler', () => {
 
     afterAll(async () => {
         scheduler.stop();
-        await clearDb();
+        await dbClient.clearDatabase();
     });
 
     it('mark task as SUCCEEDED', async () => {
@@ -97,7 +98,7 @@ describe('Scheduler', () => {
         const timeout = 1;
         const task = await scheduleTask(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
-        const expired = (await tasks.get(task.id)).unwrap();
+        const expired = (await tasks.get(db, task.id)).unwrap();
         expect(expired.state).toBe('EXPIRED');
     });
     it('should monitor and expires started tasks if timeout is reached', async () => {
@@ -105,7 +106,7 @@ describe('Scheduler', () => {
         const task = await scheduleTask(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeout } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
-        const taskAfter = (await tasks.get(task.id)).unwrap();
+        const taskAfter = (await tasks.get(db, task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
     it('should monitor and expires started tasks if heartbeat timeout is reached', async () => {
@@ -113,7 +114,7 @@ describe('Scheduler', () => {
         const task = await scheduleTask(scheduler, { taskProps: { heartbeatTimeoutSecs: timeout } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
-        const taskAfter = (await tasks.get(task.id)).unwrap();
+        const taskAfter = (await tasks.get(db, task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
 });

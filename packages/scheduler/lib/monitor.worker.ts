@@ -4,6 +4,7 @@ import { Worker, isMainThread } from 'node:worker_threads';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import * as tasks from './models/tasks.js';
 import { setTimeout } from 'node:timers/promises';
+import type knex from 'knex';
 
 const logger = getLogger('Scheduler.monitor.worker');
 
@@ -13,14 +14,14 @@ interface MessageOut {
 
 export class MonitorWorker {
     private worker: Worker | null;
-    constructor() {
+    constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
         if (isMainThread) {
             const url = new URL('../dist/monitor.js', import.meta.url);
             if (!fs.existsSync(url)) {
                 throw new Error(`Monitor script not found at ${url}`);
             }
 
-            this.worker = new Worker(url);
+            this.worker = new Worker(url, { workerData: { url: databaseUrl, schema: databaseSchema } });
             // Throw error if monitor exits with error
             this.worker.on('error', (err) => {
                 throw new Error(`Monitor exited with error: ${stringifyError(err)}`);
@@ -53,14 +54,16 @@ export class MonitorWorker {
 }
 
 export class MonitorChild {
+    private db: knex.Knex;
     private parent: MessagePort;
     private cancelled: boolean = false;
     private tickIntervalMs = 100;
 
-    constructor(parent: MessagePort) {
+    constructor(parent: MessagePort, db: knex.Knex) {
         if (isMainThread) {
             throw new Error('Monitor should not be instantiated in the main thread');
         }
+        this.db = db;
         this.parent = parent;
         this.parent.on('message', async (msg: 'start' | 'stop') => {
             switch (msg) {
@@ -89,7 +92,7 @@ export class MonitorChild {
     }
 
     async expires(): Promise<void> {
-        const expired = await tasks.expiresIfTimeout();
+        const expired = await tasks.expiresIfTimeout(this.db);
         if (expired.isErr()) {
             logger.error(`Error expiring tasks: ${stringifyError(expired.error)}`);
         } else {
