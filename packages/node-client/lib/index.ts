@@ -293,11 +293,7 @@ export class Nango {
      * @param metadata - The custom metadata to set
      * @returns A promise that resolves with the Axios response from the server
      */
-    public async setMetadata(
-        providerConfigKey: string,
-        connectionId: string | string[],
-        metadata: Record<string, any>
-    ): Promise<AxiosResponse<MetadataChangeResponse>> {
+    public async setMetadata(providerConfigKey: string, connectionId: string | string[], metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -310,13 +306,9 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey
-        };
+        const url = `${this.serverUrl}/connection/metadata`;
 
-        const url = `${this.serverUrl}/connection/metadata?provider_config_key=${providerConfigKey}`;
-
-        return this.http.post(url, { metadata, connection_id: connectionId }, { headers: this.enrichHeaders(headers) });
+        return this.http.post(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
 
     /**
@@ -329,7 +321,7 @@ export class Nango {
     public async updateMetadata(
         providerConfigKey: string,
         connectionId: string | string[],
-        metadata: Record<string, any>
+        metadata: Metadata
     ): Promise<AxiosResponse<MetadataChangeResponse>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
@@ -343,13 +335,9 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey
-        };
+        const url = `${this.serverUrl}/connection/metadata`;
 
-        const url = `${this.serverUrl}/connection/metadata?provider_config_key=${providerConfigKey}`;
-
-        return this.http.patch(url, { metadata, connection_id: connectionId }, { headers: this.enrichHeaders(headers) });
+        return this.http.patch(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
 
     /**

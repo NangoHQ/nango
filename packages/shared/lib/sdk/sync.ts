@@ -195,6 +195,7 @@ type Metadata = Record<string, unknown>;
 
 interface MetadataChangeResponse {
     metadata: Metadata;
+    provider_config_key: string;
     connection_id: string | string[];
 }
 
@@ -494,7 +495,7 @@ export class NangoAction {
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<MetadataChangeResponse>> {
+    public async setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
@@ -503,7 +504,7 @@ export class NangoAction {
         }
     }
 
-    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<MetadataChangeResponse>> {
+    public async updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
