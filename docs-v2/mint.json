@@ -396,6 +396,7 @@
                 "integrations/all/linear",
                 "integrations/all/linkedin",
                 "integrations/all/mailchimp",
+                "integrations/all/marketo",
                 "integrations/all/microsoft-ads",
                 "integrations/all/microsoft-teams",
                 "integrations/all/microsoft-tenant-specific",

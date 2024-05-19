@@ -1328,6 +1328,14 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
+marketo:
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://${connectionConfig.endpointURL}
+    authorization_url: https://${connectionConfig.identityURL}/oauth/token
+    authorization_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/marketo
 microsoft-teams:
     categories:
         - productivity
