@@ -12,6 +12,7 @@ import type {
     ConnectionUpsertResponse
 } from '@nangohq/shared';
 import {
+    db,
     AuthModes as ProviderAuthModes,
     LogActionEnum,
     configService,
@@ -479,7 +480,9 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.replaceMetadata([connection.id], req.body);
+            await db.knex.transaction(async (trx) => {
+                await connectionService.replaceMetadata([connection.id as number], req.body, trx);
+            });
 
             res.status(201).send(req.body);
         } catch (err) {

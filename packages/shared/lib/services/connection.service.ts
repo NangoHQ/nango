@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import type { Knex } from 'knex';
 import axios from 'axios';
 import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -470,8 +471,8 @@ class ConnectionService {
         return result;
     }
 
-    public async replaceMetadata(ids: number[], metadata: Metadata) {
-        await db.knex.from<StoredConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+        await trx.from<StoredConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
     public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
@@ -482,10 +483,12 @@ class ConnectionService {
     }
 
     public async updateMetadata(connections: Connection[], metadata: Metadata): Promise<void> {
-        for (const connection of connections) {
-            const newMetadata = { ...connection.metadata, ...metadata };
-            await this.replaceMetadata([connection.id as number], newMetadata);
-        }
+        await db.knex.transaction(async (trx) => {
+            for (const connection of connections) {
+                const newMetadata = { ...connection.metadata, ...metadata };
+                await this.replaceMetadata([connection.id as number], newMetadata, trx);
+            }
+        });
     }
 
     public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {

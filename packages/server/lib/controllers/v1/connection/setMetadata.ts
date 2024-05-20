@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '../../../utils/validation.js';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { ApiError, SetMetadata, MetadataBody } from '@nangohq/types';
-import { connectionService } from '@nangohq/shared';
+import { db, connectionService } from '@nangohq/shared';
 
 const validation = z
     .object({
@@ -65,7 +65,9 @@ export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
         ids.push(connection.id);
     }
 
-    await connectionService.replaceMetadata(ids, metadata);
+    await db.knex.transaction(async (trx) => {
+        await connectionService.replaceMetadata(ids, metadata, trx);
+    });
 
     res.status(201).send(req.body);
 });
