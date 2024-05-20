@@ -7,3 +7,6 @@ export type * from './onboarding/api.js';
 export type * from './record/api.js';
 export type * from './logs/api.js';
 export type * from './logs/messages.js';
+
+export type * from './account/api.js';
+export type * from './user/api.js';

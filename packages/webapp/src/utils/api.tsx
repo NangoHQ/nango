@@ -39,20 +39,20 @@ export function useLogoutAPI() {
             headers: getHeaders()
         };
 
-        await fetch('/api/v1/logout', options);
+        await fetch('/api/v1/account/logout', options);
     };
 }
 
 export function useSignupAPI() {
-    return async (name: string, email: string, password: string, account_id?: number, token?: string) => {
+    return async (name: string, email: string, password: string) => {
         try {
             const options = {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify({ name: name, email: email, password: password, account_id, token })
+                body: JSON.stringify({ name: name, email: email, password: password })
             };
 
-            return fetch('/api/v1/signup', options);
+            return fetch('/api/v1/account/signup', options);
         } catch {
             requestErrorToast();
         }
@@ -68,9 +68,9 @@ export function useSigninAPI() {
                 body: JSON.stringify({ email: email, password: password })
             };
 
-            const res = await fetch('/api/v1/signin', options);
+            const res = await fetch('/api/v1/account/signin', options);
 
-            if (res.status !== 200 && res.status !== 401) {
+            if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
                 return serverErrorToast();
             }
 

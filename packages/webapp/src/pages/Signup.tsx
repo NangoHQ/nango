@@ -1,20 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-import { useAnalyticsTrack } from '../utils/analytics';
 import { MANAGED_AUTH_ENABLED } from '../utils/utils';
 import { useSignupAPI } from '../utils/api';
-import type { User } from '../utils/user';
-import { useSignin } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
 import GoogleButton from '../components/ui/button/Auth/Google';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const navigate = useNavigate();
-    const signin = useSignin();
     const signupAPI = useSignupAPI();
-    const analyticsTrack = useAnalyticsTrack();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -29,19 +23,12 @@ export default function Signup() {
         const res = await signupAPI(target.name.value, target.email.value, target.password.value);
 
         if (res?.status === 200) {
-            const data = await res.json();
-            const user: User = data['user'];
-            analyticsTrack('web:account_signup', {
-                user_id: user.id,
-                email: user.email,
-                name: user.name,
-                accountId: user.accountId
-            });
-            signin(user);
-            navigate('/');
-        } else if (res != null) {
-            const errorMessage = (await res.json()).error;
-            setServerErrorMessage(errorMessage);
+            const { uuid } = await res.json();
+
+            navigate(`/verify-email/${uuid}`);
+        } else {
+            const response = await res?.json();
+            setServerErrorMessage(response?.error?.message || 'Issue signing up. Please try again.');
         }
     };
 

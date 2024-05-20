@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { useInviteSignupAPI, useSignupAPI } from '../utils/api';
+import { useInviteSignupAPI } from '../utils/api';
 import { MANAGED_AUTH_ENABLED, isEnterprise } from '../utils/utils';
 import { useSignin } from '../utils/user';
 import type { User } from '../utils/user';
@@ -17,7 +17,6 @@ export default function InviteSignup() {
     const navigate = useNavigate();
     const getInvitee = useInviteSignupAPI();
     const signin = useSignin();
-    const signupAPI = useSignupAPI();
 
     const { token } = useParams();
 
@@ -52,7 +51,19 @@ export default function InviteSignup() {
             password: { value: string };
         };
 
-        const res = await signupAPI(target.name.value, target.email.value, target.password.value, invitedAccountID, token as string);
+        const res = await fetch(`/api/v1/account/signup/token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: target.name.value,
+                email: target.email.value,
+                password: target.password.value,
+                accountId: invitedAccountID,
+                token
+            })
+        });
 
         if (res?.status === 200) {
             const data = await res.json();
@@ -60,7 +71,7 @@ export default function InviteSignup() {
             signin(user);
             navigate('/');
         } else if (res != null) {
-            const errorMessage = (await res.json()).error;
+            const errorMessage = (await res.json()).error.message || 'Unknown error';
             setServerErrorMessage(errorMessage);
         }
     };

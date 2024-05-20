@@ -1,5 +1,5 @@
 /*
-By convention Left represents a faild computation
+By convention Left represents a failed computation
 And Right represents a successful one
 */
 export interface Left<T, E extends Error> {

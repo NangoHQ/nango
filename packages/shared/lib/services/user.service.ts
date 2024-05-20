@@ -1,7 +1,7 @@
 import db from '../db/database.js';
 import * as uuid from 'uuid';
 import { isEnterprise } from '@nangohq/utils';
-import type { User, InviteUser } from '../models/Admin.js';
+import type { User, InviteUser, Account } from '../models/Admin.js';
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {
@@ -12,6 +12,30 @@ class UserService {
         }
 
         if (result[0].suspended) {
+            return null;
+        }
+
+        return result[0];
+    }
+
+    async getUserByUuid(uuid: string): Promise<User | null> {
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ uuid });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0];
+    }
+
+    async getUserAndAccountByToken(token: string): Promise<(User & Account & { account_id: number; user_id: number }) | null> {
+        const result = await db.knex
+            .select('*', '_nango_accounts.id as account_id', '_nango_users.id as user_id')
+            .from<User>(`_nango_users`)
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_users.account_id')
+            .where({ email_verification_token: token });
+
+        if (result == null || result.length == 0 || result[0] == null) {
             return null;
         }
 
@@ -66,10 +90,19 @@ class UserService {
         return result[0];
     }
 
-    async createUser(email: string, name: string, hashedPassword: string, salt: string, accountId: number): Promise<User | null> {
-        const result: Pick<User, 'id'> = await db.knex
-            .from<User>(`_nango_users`)
-            .insert({ email: email, name: name, hashed_password: hashedPassword, salt: salt, account_id: accountId }, ['id']);
+    async createUser(email: string, name: string, hashedPassword: string, salt: string, accountId: number, email_verified = true): Promise<User | null> {
+        const result: Pick<User, 'id'> = await db.knex.from<User>(`_nango_users`).insert(
+            {
+                email,
+                name,
+                hashed_password: hashedPassword,
+                salt: salt,
+                account_id: accountId,
+                email_verified,
+                email_verification_token: email_verified ? null : uuid.v4()
+            },
+            ['id']
+        );
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
             const userId = result[0]['id'];
@@ -101,6 +134,10 @@ class UserService {
         if (id !== null && id !== undefined) {
             await db.knex.from<User>(`_nango_users`).where({ id }).update({ suspended: true, suspended_at: new Date() });
         }
+    }
+
+    async verifyUserEmail(id: number) {
+        return db.knex.from<User>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
     }
 
     async inviteUser(email: string, name: string, accountId: number, inviter_id: number) {

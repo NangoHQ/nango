@@ -33,6 +33,7 @@ import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { searchLogs } from './controllers/v1/logs/searchLogs.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
+import { getEmailByUuid, resendVerificationEmail, signup, signupWithToken, signin, validateEmailAndLogin } from './controllers/v1/account/index.js';
 import type { ApiError } from '@nangohq/types';
 
 export const app = express();
@@ -124,12 +125,16 @@ setupAuth(web);
 
 // Webapp routes (no auth).
 if (AUTH_ENABLED) {
-    web.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
-    web.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
-    web.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
-    web.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
+    web.route('/api/v1/account/signup').post(rateLimiterMiddleware, signup);
+    web.route('/api/v1/account/signup/token').post(rateLimiterMiddleware, signupWithToken);
+    web.route('/api/v1/account/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
+    web.route('/api/v1/account/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
+    web.route('/api/v1/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
     web.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
     web.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+    web.route('/api/v1/account/resend-verification-email').post(rateLimiterMiddleware, resendVerificationEmail);
+    web.route('/api/v1/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
+    web.route('/api/v1/account/verify/code').post(rateLimiterMiddleware, validateEmailAndLogin);
 }
 
 if (MANAGED_AUTH_ENABLED) {

@@ -24,6 +24,7 @@ import { EnvironmentSettings } from './pages/EnvironmentSettings';
 import { PrivateRoute } from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import Activity from './pages/Activity';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
@@ -31,6 +32,7 @@ import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
+import { EmailVerified } from './pages/EmailVerified';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -108,6 +110,8 @@ const App = () => {
                             <Route path="/signup/:token" element={<InviteSignup />} />
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
+                            <Route path="/verify-email/:uuid" element={<VerifyEmail />} />
+                            <Route path="/signup/verification/:token" element={<EmailVerified />} />
                         </>
                     )}
                     {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}

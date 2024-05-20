@@ -22,6 +22,9 @@ export interface User extends Timestamps {
     suspended: boolean;
     suspended_at: Date;
     currentUser?: boolean;
+    email_verified: boolean;
+    email_verification_token: string | null;
+    uuid: string;
 }
 
 export interface InviteUser extends Timestamps {

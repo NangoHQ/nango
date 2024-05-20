@@ -32,6 +32,8 @@ export default function Signin() {
             navigate('/');
         } else if (res?.status === 401) {
             setServerErrorMessage('Invalid email or password.');
+        } else if (res?.status === 400) {
+            setServerErrorMessage('Please verify your email before logging in. Another verification email has been sent to your email address.');
         }
     };
 
