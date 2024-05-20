@@ -1,7 +1,8 @@
+import type { JsonValue } from 'type-fest';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
 import { db } from '../db/client.js';
-import type { JsonObject, TaskState, Task } from '../types.js';
+import type { TaskState, Task } from '../types.js';
 import { uuidv7 } from 'uuidv7';
 
 export const TASKS_TABLE = 'tasks';
@@ -43,7 +44,7 @@ const TaskStateTransition = {
 interface DbTask {
     readonly id: string;
     readonly name: string;
-    readonly payload: JsonObject;
+    readonly payload: JsonValue;
     readonly group_key: string;
     readonly retry_max: number;
     readonly retry_count: number;
@@ -55,7 +56,7 @@ interface DbTask {
     state: TaskState;
     last_state_transition_at: Date;
     last_heartbeat_at: Date;
-    output: JsonObject | null;
+    output: JsonValue | null;
     terminated: boolean;
 }
 const DbTask = {
@@ -132,6 +133,19 @@ export async function get(taskId: string): Promise<Result<Task>> {
     return Ok(DbTask.from(task));
 }
 
+export async function list(params?: { groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
+    const query = db.from<DbTask>(TASKS_TABLE);
+    if (params?.groupKey) {
+        query.where('group_key', params.groupKey);
+    }
+    if (params?.state) {
+        query.where('state', params.state);
+    }
+    const limit = params?.limit || 100;
+    const tasks = await query.limit(limit);
+    return Ok(tasks.map(DbTask.from));
+}
+
 export async function heartbeat(taskId: string): Promise<Result<Task>> {
     try {
         const updated = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).update({ last_heartbeat_at: new Date() }).returning('*');
@@ -144,7 +158,7 @@ export async function heartbeat(taskId: string): Promise<Result<Task>> {
     }
 }
 
-export async function transitionState({ taskId, newState, output }: { taskId: string; newState: TaskState; output?: JsonObject }): Promise<Result<Task>> {
+export async function transitionState({ taskId, newState, output }: { taskId: string; newState: TaskState; output?: JsonValue }): Promise<Result<Task>> {
     if (newState === 'SUCCEEDED' && !output) {
         return Err(new Error(`Output is required when state = '${newState}'`));
     }

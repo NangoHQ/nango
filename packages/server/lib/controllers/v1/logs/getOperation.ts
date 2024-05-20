@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '../../../utils/validation.js';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { GetOperation } from '@nangohq/types';
 import { model, envs } from '@nangohq/logs';
 

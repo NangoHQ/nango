@@ -55,52 +55,52 @@ describe('Scheduler', () => {
         const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(0);
     });
-    it('dequeue task', async () => {
+    it('should dequeue task', async () => {
         const task = await scheduleTask(scheduler);
         const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued.length).toBe(1);
     });
-    it('call callback when task is created', async () => {
+    it('should call callback when task is created', async () => {
         await scheduleTask(scheduler);
         expect(callbacks.CREATED).toHaveBeenCalledOnce();
     });
-    it('call callback when task is started', async () => {
+    it('should call callback when task is started', async () => {
         const task = await scheduleTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(callbacks.STARTED).toHaveBeenCalledOnce();
     });
-    it('call callback when task is failed', async () => {
+    it('should call callback when task is failed', async () => {
         const task = await scheduleTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.fail({ taskId: task.id })).unwrap();
         expect(callbacks.FAILED).toHaveBeenCalledOnce();
     });
-    it('call callback when task is succeeded', async () => {
+    it('should call callback when task is succeeded', async () => {
         const task = await scheduleTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
         expect(callbacks.SUCCEEDED).toHaveBeenCalledOnce();
     });
-    it('call callback when task is cancelled', async () => {
+    it('should call callback when task is cancelled', async () => {
         const task = await scheduleTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.cancel({ taskId: task.id })).unwrap();
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
     });
-    it('call callback when task is expired', async () => {
+    it('should call callback when task is expired', async () => {
         const timeout = 1;
         await scheduleTask(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
         expect(callbacks.EXPIRED).toHaveBeenCalledOnce();
     });
-    it('monitor and expires created tasks if timeout is reached', async () => {
+    it('should monitor and expires created tasks if timeout is reached', async () => {
         const timeout = 1;
         const task = await scheduleTask(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
         const expired = (await tasks.get(task.id)).unwrap();
         expect(expired.state).toBe('EXPIRED');
     });
-    it('monitor and expires started tasks if timeout is reached', async () => {
+    it('should monitor and expires started tasks if timeout is reached', async () => {
         const timeout = 1;
         const task = await scheduleTask(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeout } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
@@ -108,7 +108,7 @@ describe('Scheduler', () => {
         const taskAfter = (await tasks.get(task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
-    it('monitor and expires started tasks if heartbeat timeout is reached', async () => {
+    it('should monitor and expires started tasks if heartbeat timeout is reached', async () => {
         const timeout = 1;
         const task = await scheduleTask(scheduler, { taskProps: { heartbeatTimeoutSecs: timeout } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();

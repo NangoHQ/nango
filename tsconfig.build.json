@@ -32,6 +32,9 @@
             "path": "packages/scheduler"
         },
         {
+            "path": "packages/orchestrator"
+        },
+        {
             "path": "packages/server"
         },
         {

@@ -2,6 +2,9 @@
     "files": [],
     "references": [
         {
+            "path": "packages/types"
+        },
+        {
             "path": "packages/data-ingestion"
         },
         {
@@ -27,6 +30,9 @@
         },
         {
             "path": "packages/scheduler"
+        },
+        {
+            "path": "packages/orchestrator"
         },
         {
             "path": "packages/server"
