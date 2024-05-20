@@ -65,7 +65,19 @@ function getKey(req: Request, res: Response): string {
 }
 
 function getPointsToConsume(req: Request): number {
-    if (['/api/v1/signin', '/api/v1/signup', '/api/v1/forgot-password', '/api/v1/reset-password'].includes(req.path)) {
+    if (
+        [
+            '/api/v1/account/signin',
+            '/api/v1/account/signup',
+            '/api/v1/forgot-password',
+            '/api/v1/reset-password',
+            '/api/v1/account/signup/token',
+            '/api/v1/account/signup/invite',
+            '/api/v1/account/resend-verification-email',
+            '/api/v1/account/email',
+            '/api/v1/account/verify/code'
+        ].includes(req.path)
+    ) {
         // limiting  to 6 requests per period to avoid brute force attacks
         return rateLimiter.points / 6;
     }

@@ -19,13 +19,9 @@ class UserService {
     }
 
     async getUserByUuid(uuid: string): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ uuid });
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ uuid }).first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
+        return result || null;
     }
 
     async getUserAndAccountByToken(token: string): Promise<(User & Account & { account_id: number; user_id: number }) | null> {
@@ -33,13 +29,10 @@ class UserService {
             .select('*', '_nango_accounts.id as account_id', '_nango_users.id as user_id')
             .from<User>(`_nango_users`)
             .join('_nango_accounts', '_nango_accounts.id', '_nango_users.account_id')
-            .where({ email_verification_token: token });
+            .where({ email_verification_token: token })
+            .first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
+        return result || null;
     }
 
     async getUsersByAccountId(accountId: number): Promise<User[]> {

@@ -11,7 +11,7 @@ export function sendVerificationEmail(email: string, name: string, token: string
 
 <p>We need to verify your email address ${email}</p>
 
-<p>Please verify this account by clicking <a href="${basePublicUrl}/signup/verification/${token}">here</a></p>
+<p>Please verify this account by clicking <a href="${basePublicUrl}/signup/verification/${token}">${basePublicUrl}/signup/verification/${token}</a></p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 

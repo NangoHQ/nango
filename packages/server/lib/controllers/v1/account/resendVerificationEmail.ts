@@ -32,7 +32,7 @@ export const resendVerificationEmail = asyncWrapper<ResendVerificationEmail>(asy
     const user = await userService.getUserByUuid(uuid);
 
     if (!user) {
-        res.status(404).send({ error: { code: 'user_not_found', message: 'User was found in our system.' } });
+        res.status(404).send({ error: { code: 'user_not_found', message: 'User was not found in our system.' } });
         return;
     }
 
