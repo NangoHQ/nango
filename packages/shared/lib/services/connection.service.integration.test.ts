@@ -34,11 +34,11 @@ describe('Connection service integration tests', async () => {
             await db.knex.transaction(async (trx) => {
                 await connectionService.replaceMetadata([connection.id as number], initialMetadata, trx);
                 await connectionService.replaceMetadata([connection.id as number], newMetadata, trx);
-
-                const dbConnection = await connectionService.getConnectionById(connectionId as number);
-                const updatedMetadata = dbConnection?.metadata as Metadata;
-                expect(updatedMetadata).toEqual(newMetadata);
             });
+
+            const dbConnection = await connectionService.getConnectionById(connectionId as number);
+            const updatedMetadata = dbConnection?.metadata as Metadata;
+            expect(updatedMetadata).toEqual(newMetadata);
         });
 
         it('Should update metadata and not overwrite', async () => {
@@ -57,13 +57,14 @@ describe('Connection service integration tests', async () => {
             const dbConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
             await db.knex.transaction(async (trx) => {
                 await connectionService.replaceMetadata([dbConnection.id as number], initialMetadata, trx);
-                const updatedMetadataConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
-                await connectionService.updateMetadata([updatedMetadataConnection], newMetadata);
-
-                const updatedDbConnection = await connectionService.getConnectionById(connectionId as number);
-                const updatedMetadata = updatedDbConnection?.metadata as Metadata;
-                expect(updatedMetadata).toEqual({ ...initialMetadata, ...newMetadata });
             });
+
+            const updatedMetadataConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
+            await connectionService.updateMetadata([updatedMetadataConnection], newMetadata);
+
+            const updatedDbConnection = await connectionService.getConnectionById(connectionId as number);
+            const updatedMetadata = updatedDbConnection?.metadata as Metadata;
+            expect(updatedMetadata).toEqual({ ...initialMetadata, ...newMetadata });
         });
     });
 });
