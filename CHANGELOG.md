@@ -2,7 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.39.28] - 2024-05-15
+## [0.39.29] - 2024-05-20
+
+### Added
+
+- *(jobs)* [nan-919] reconcile temporal schedules (#2149)
+- *(client)* Add user-agent, reuse http agent (#2153)
+- [nan-919] only fix for paused and allow concurrent actions (#2165)
+- *(scripts)* [nan-973] slack integration for each environment (#2168)
+- Introduces the orchestra API and client (#2162)
+- *(api)* [NAN-793] bulk metadata update api (#2145)
+
+### Fixed
+
+- *(action)* Debug empty response (#2160)
+- *(api)* Handle invalid json payload (#2161)
+- *(temporal)* [nan-919] more quiet logs and add in the previous note (#2164)
+- *(getSyncs)* Should not join on action (#2167)
+- *(persist)* Catch invalid payload early (#2166)
+- *(temporal)* Should not be loaded for oauth install (#2151)
+- *(temporal)* Handle error outside the scripts (#2163)
+- Headers issues in sync (#2169)
+- *(webapp)* [nan-968] when success if null it has a specific status (#2170)
+- *(server)* [nan-990] hosted logic for sync tab (#2174)
+
+## [v0.39.28] - 2024-05-15
 
 ### Added
 
@@ -1095,7 +1119,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161)
 - APIs using client_credentials as grant type (#165)
 
-[0.39.28]: https://github.com/NangoHQ/nango/compare/v0.39.27..0.39.28
+[0.39.29]: https://github.com/NangoHQ/nango/compare/v0.39.28..0.39.29
+[v0.39.28]: https://github.com/NangoHQ/nango/compare/v0.39.27..v0.39.28
 [v0.39.27]: https://github.com/NangoHQ/nango/compare/v0.39.26..v0.39.27
 [v0.39.26]: https://github.com/NangoHQ/nango/compare/v0.39.25..v0.39.26
 [v0.39.25]: https://github.com/NangoHQ/nango/compare/v0.39.24..v0.39.25
