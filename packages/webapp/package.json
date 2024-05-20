@@ -8,6 +8,7 @@
         "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
         "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject",
         "start:hosted": "env-cmd -f .env.hosted npm run start",
+        "start:local": "env-cmd -f .env.local npm run start",
         "start:staging": "env-cmd -f .env.staging npm run start",
         "start:prod": "env-cmd -f .env.prod npm run start",
         "build:hosted": "env-cmd -f .env.hosted npm run build",

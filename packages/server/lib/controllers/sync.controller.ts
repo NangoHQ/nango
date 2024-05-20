@@ -45,6 +45,7 @@ import {
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import type { LastAction } from '@nangohq/records';
+import { isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -203,6 +204,11 @@ class SyncController {
                 const error = new NangoError('unknown_connection', { connection_id, provider_config_key, environmentName: environment.name });
                 errorManager.errResFromNangoErr(res, error);
 
+                return;
+            }
+
+            if (isHosted) {
+                res.send([]);
                 return;
             }
 
