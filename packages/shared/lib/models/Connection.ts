@@ -9,8 +9,7 @@ import type {
     UnauthCredentials
 } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-
-export type Metadata = Record<string, string | Record<string, any>>;
+import type { Metadata } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 

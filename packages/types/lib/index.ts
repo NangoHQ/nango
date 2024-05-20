@@ -10,3 +10,5 @@ export type * from './logs/messages.js';
 
 export type * from './account/api.js';
 export type * from './user/api.js';
+export type * from './connection/api/metadata.js';
+export type * from './connection/db.js';

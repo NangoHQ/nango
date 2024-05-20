@@ -1,7 +1,8 @@
 import promptly from 'promptly';
 import chalk from 'chalk';
 
-import type { Metadata, NangoConnection } from '@nangohq/shared';
+import type { NangoConnection } from '@nangohq/shared';
+import type { Metadata } from '@nangohq/types';
 import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';

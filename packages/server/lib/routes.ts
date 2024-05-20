@@ -34,6 +34,8 @@ import tracer from 'dd-trace';
 import { searchLogs } from './controllers/v1/logs/searchLogs.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
 import { getEmailByUuid, resendVerificationEmail, signup, signupWithToken, signin, validateEmailAndLogin } from './controllers/v1/account/index.js';
+import { setMetadata } from './controllers/v1/connection/setMetadata.js';
+import { updateMetadata } from './controllers/v1/connection/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
 
 export const app = express();
@@ -96,8 +98,10 @@ app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteP
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
-app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadata.bind(connectionController));
-app.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadata.bind(connectionController));
+app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
+app.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
+app.route('/connection/metadata').post(apiAuth, setMetadata);
+app.route('/connection/metadata').patch(apiAuth, updateMetadata);
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));

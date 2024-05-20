@@ -12,6 +12,7 @@ import type {
     ConnectionUpsertResponse
 } from '@nangohq/shared';
 import {
+    db,
     AuthModes as ProviderAuthModes,
     LogActionEnum,
     configService,
@@ -458,11 +459,11 @@ class ConnectionController {
         }
     }
 
-    async setMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async setMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
-            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
@@ -472,26 +473,28 @@ class ConnectionController {
                 return;
             }
 
-            if (!connection) {
+            if (!connection || !connection.id) {
                 const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
 
-            await connectionService.replaceMetadata(connection, req.body);
+            await db.knex.transaction(async (trx) => {
+                await connectionService.replaceMetadata([connection.id as number], req.body, trx);
+            });
 
-            res.status(201).send();
+            res.status(201).send(req.body);
         } catch (err) {
             next(err);
         }
     }
 
-    async updateMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async updateMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
-            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
@@ -508,9 +511,9 @@ class ConnectionController {
                 return;
             }
 
-            const metadata = await connectionService.updateMetadata(connection, req.body);
+            await connectionService.updateMetadata([connection], req.body);
 
-            res.status(200).send(metadata);
+            res.status(200).send(req.body);
         } catch (err) {
             next(err);
         }
