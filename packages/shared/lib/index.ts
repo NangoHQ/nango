@@ -17,10 +17,11 @@ import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator, { syncCommandToOperation } from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
-import slackNotificationService, { generateSlackConnectionId } from './services/notification/slack.service.js';
 import webhookService from './services/notification/webhook.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import featureFlags from './utils/featureflags.js';
+import { Orchestrator } from './clients/orchestrator.js';
+import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
@@ -70,11 +71,12 @@ export {
     hmacService,
     proxyService,
     flowService,
-    slackNotificationService,
-    generateSlackConnectionId,
     webhookService,
     analytics,
     AnalyticsTypes,
     featureFlags,
-    syncCommandToOperation
+    syncCommandToOperation,
+    Orchestrator,
+    SlackService,
+    generateSlackConnectionId
 };

@@ -20,7 +20,8 @@ import {
     LogTypes,
     isInitialSyncStillRunning,
     getSyncByIdAndName,
-    getLastSyncDate
+    getLastSyncDate,
+    getOrchestratorUrl
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, env, stringifyError, errorToObject } from '@nangohq/utils';
@@ -29,6 +30,7 @@ import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs, WebhookArgs } from './models/worker';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Jobs');
 
@@ -36,6 +38,8 @@ const bigQueryClient = await BigQueryClient.createInstance({
     datasetName: 'raw',
     tableName: `${env}_script_runs`
 });
+
+const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
@@ -65,6 +69,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         bigQueryClient,
         integrationService,
         recordsService,
+        orchestratorClient,
         logContextGetter,
         writeToDb: true,
         nangoConnection,
@@ -274,6 +279,7 @@ export async function syncProvider(
             integrationService,
             recordsService,
             logContextGetter,
+            orchestratorClient,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -368,6 +374,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         integrationService,
         recordsService,
         logContextGetter,
+        orchestratorClient,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,
@@ -463,6 +470,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
             bigQueryClient,
             integrationService,
             recordsService,
+            orchestratorClient,
             logContextGetter,
             writeToDb: true,
             syncId,

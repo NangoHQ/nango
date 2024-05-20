@@ -1,18 +1,16 @@
 import type { ScheduleDescription } from '@temporalio/client';
 import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
-import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
+import type { NangoConnection } from '../models/Connection.js';
 import type { StringValue } from 'ms';
-import { v4 as uuid } from 'uuid';
 import ms from 'ms';
 import fs from 'fs-extra';
-import type { Config, Config as ProviderConfig } from '../models/Provider.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
 import type { Sync, SyncWithSchedule } from '../models/Sync.js';
 import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
-import type { ServiceResponse } from '../models/Generic.js';
 import type { LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
-import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
+import { SYNC_TASK_QUEUE } from '../constants.js';
 import {
     createActivityLog,
     createActivityLogMessage,
@@ -26,19 +24,14 @@ import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } f
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
-import telemetry, { LogTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
-import type { RunnerOutput } from '../models/Runner.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, getLogger, metrics, Ok, Err, stringifyError } from '@nangohq/utils';
+import { isTest, isProd, getLogger, Ok, Err, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Sync.Client');
 
-const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${uuid()}`;
-const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
-    `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connectionId}.${Date.now()}`;
 const generateWorkflowId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) =>
     `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
@@ -534,293 +527,6 @@ class SyncClient {
                     }
                 });
             }
-        }
-    }
-
-    async triggerAction<T = any>({
-        connection,
-        actionName,
-        input,
-        activityLogId,
-        environment_id,
-        writeLogs = true,
-        logCtx
-    }: {
-        connection: NangoConnection;
-        actionName: string;
-        input: object;
-        activityLogId: number;
-        environment_id: number;
-        writeLogs?: boolean;
-        logCtx: LogContext;
-    }): Promise<Result<T, NangoError>> {
-        const startTime = Date.now();
-        const workflowId = generateActionWorkflowId(actionName, connection.connection_id);
-
-        try {
-            if (writeLogs) {
-                await createActivityLogMessage({
-                    level: 'info',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
-                    params: {
-                        input: JSON.stringify(input, null, 2)
-                    },
-                    timestamp: Date.now()
-                });
-                await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
-            }
-
-            const actionHandler = await this.client?.workflow.execute('action', {
-                taskQueue: SYNC_TASK_QUEUE,
-                workflowId,
-                args: [
-                    {
-                        actionName,
-                        nangoConnection: {
-                            id: connection.id,
-                            connection_id: connection.connection_id,
-                            provider_config_key: connection.provider_config_key,
-                            environment_id: connection.environment_id
-                        },
-                        input,
-                        activityLogId: writeLogs ? activityLogId : undefined
-                    }
-                ]
-            });
-
-            const { success, error: rawError, response }: RunnerOutput = actionHandler;
-
-            // Errors received from temporal are raw objects not classes
-            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
-            if (!success || error) {
-                if (writeLogs) {
-                    if (rawError) {
-                        await createActivityLogMessageAndEnd({
-                            level: 'error',
-                            environment_id,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content: `Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`
-                        });
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
-                    }
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `The action workflow ${workflowId} did not complete successfully`
-                    });
-                    await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
-                }
-
-                return Err(error!);
-            }
-
-            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
-                0,
-                100
-            )}`;
-
-            if (writeLogs) {
-                await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
-                await updateSuccessActivityLog(activityLogId, true);
-                await logCtx.info(content);
-            }
-
-            await telemetry.log(
-                LogTypes.ACTION_SUCCESS,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
-
-            return Ok(response);
-        } catch (err) {
-            const errorMessage = stringifyError(err, { pretty: true });
-            const error = new NangoError('action_failure', { errorMessage });
-
-            const content = `The action workflow ${workflowId} failed with error: ${err}`;
-
-            if (writeLogs) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
-                await logCtx.error(content);
-            }
-
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.SYNC_CLIENT,
-                environmentId: connection.environment_id,
-                metadata: {
-                    actionName,
-                    connectionDetails: JSON.stringify(connection),
-                    input
-                }
-            });
-
-            await telemetry.log(
-                LogTypes.ACTION_FAILURE,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName,
-                    level: 'error'
-                },
-                `actionName:${actionName}`
-            );
-
-            return Err(error);
-        } finally {
-            const endTime = Date.now();
-            const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
-        }
-    }
-
-    async triggerWebhook<T = any>(
-        integration: Config,
-        nangoConnection: NangoConnection,
-        webhookName: string,
-        parentSyncName: string,
-        input: object,
-        logContextGetter: LogContextGetter
-    ): Promise<ServiceResponse<T>> {
-        const log = {
-            level: 'info' as LogLevel,
-            success: null,
-            action: LogActionEnum.WEBHOOK,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoConnection.connection_id,
-            provider_config_key: nangoConnection.provider_config_key,
-            provider: integration.provider,
-            environment_id: nangoConnection.environment_id,
-            operation_name: webhookName
-        };
-
-        const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
-            {
-                account: { id: nangoConnection.account_id! },
-                environment: { id: integration.environment_id },
-                config: { id: integration.id!, name: integration.unique_key },
-                connection: { id: nangoConnection.id!, name: nangoConnection.connection_id }
-            }
-        );
-
-        const workflowId = generateWebhookWorkflowId(parentSyncName, webhookName, nangoConnection.connection_id);
-
-        try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Starting webhook workflow ${workflowId} in the task queue: ${WEBHOOK_TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
-            await logCtx.info('Starting webhook workflow', { workflowId, input });
-
-            const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
-                nangoConnection as unknown as NangoFullConnection;
-
-            const webhookHandler = await this.client?.workflow.execute('webhook', {
-                taskQueue: WEBHOOK_TASK_QUEUE,
-                workflowId,
-                args: [
-                    {
-                        name: webhookName,
-                        parentSyncName,
-                        nangoConnection: nangoConnectionWithoutCredentials,
-                        input,
-                        activityLogId
-                    }
-                ]
-            });
-
-            const { success, error, response } = webhookHandler;
-
-            if (success === false || error) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: integration.environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `The webhook workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error('The webhook workflow did not complete successfully');
-                await logCtx.failed();
-
-                return { success, error, response };
-            }
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} was successfully run.`
-            });
-            await logCtx.info('The webhook workflow was successfully run');
-            await logCtx.success();
-
-            await updateSuccessActivityLog(activityLogId as number, true);
-
-            return { success, error, response };
-        } catch (e) {
-            const errorMessage = stringifyError(e, { pretty: true });
-            const error = new NangoError('webhook_script_failure', { errorMessage });
-
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} failed with error: ${errorMessage}`
-            });
-            await logCtx.error('The webhook workflow failed', { error: e });
-            await logCtx.failed();
-
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.SYNC_CLIENT,
-                environmentId: nangoConnection.environment_id,
-                metadata: {
-                    parentSyncName,
-                    webhookName,
-                    connectionDetails: JSON.stringify(nangoConnection),
-                    input
-                }
-            });
-
-            return { success: false, error, response: null };
         }
     }
 
