@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import type { Knex } from 'knex';
 import axios from 'axios';
 import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -25,7 +26,8 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { Metadata } from '@nangohq/types';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -469,11 +471,8 @@ class ConnectionService {
         return result;
     }
 
-    public async replaceMetadata(connection: Connection, metadata: Metadata) {
-        await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .where({ id: connection.id as number, deleted: false })
-            .update({ metadata });
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+        await trx.from<StoredConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
     public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
@@ -483,12 +482,13 @@ class ConnectionService {
             .update({ connection_config: config });
     }
 
-    public async updateMetadata(connection: Connection, metadata: Metadata): Promise<Metadata> {
-        const existingMetadata = await this.getMetadata(connection);
-        const newMetadata = { ...existingMetadata, ...metadata };
-        await this.replaceMetadata(connection, newMetadata);
-
-        return newMetadata;
+    public async updateMetadata(connections: Connection[], metadata: Metadata): Promise<void> {
+        await db.knex.transaction(async (trx) => {
+            for (const connection of connections) {
+                const newMetadata = { ...connection.metadata, ...metadata };
+                await this.replaceMetadata([connection.id as number], newMetadata, trx);
+            }
+        });
     }
 
     public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {

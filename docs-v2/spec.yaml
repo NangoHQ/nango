@@ -486,6 +486,130 @@ paths:
                                 properties:
                                     message:
                                         type: string
+    /connection/metadata:
+        post:
+            description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_id
+                                - provider_config_key
+                            properties:
+                                connection_id:
+                                    oneOf:
+                                        - type: string
+                                          example: "connection-123"
+                                          description: The connection ID used to set the metadata on.
+                                        - type: array
+                                          items:
+                                              type: string
+                                              example: "connection-123"
+                                          description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used to create the connection (aka Unique Key).
+                                metadata:
+                                    type: object
+
+            responses:
+                '201':
+                    description: Successfully set the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    connection_id:
+                                        oneOf:
+                                            - type: string
+                                              example: "connection-123"
+                                              description: The connection ID used to set the metadata on. Returns an array of connection ids if an array is passed in.
+                                            - type: array
+                                              items:
+                                                  type: string
+                                                  example: "connection-123"
+                                              description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                    provider_config_key:
+                                        type: string
+                                        description: The integration ID used to create the connection (aka Unique Key).
+                                    metadata:
+                                        type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+        patch:
+            description: Edit custom metadata for the connection or connections (only overrides specified properties, not the entire metadata). If updating multiple connections pass in an array of connection ids instead of a string.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_id
+                                - provider_config_key
+                            properties:
+                                connection_id:
+                                    oneOf:
+                                        - type: string
+                                          example: "connection-123"
+                                          description: The connection ID used to update the metadata on. Accepts an array of connection ids as well
+                                        - type: array
+                                          items:
+                                              type: string
+                                              example: "connection-123"
+                                          description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used to create the connection (aka Unique Key).
+                                metadata:
+                                    type: object
+
+            responses:
+                '200':
+                    description: Successfully updated the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    connection_id:
+                                        oneOf:
+                                            - type: string
+                                              example: "connection-123"
+                                              description: The connection ID used to update the metadata on. Returns an array of connection ids if an array is passed in.
+                                            - type: array
+                                              items:
+                                                  type: string
+                                                  example: "connection-123"
+                                              description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                    provider_config_key:
+                                        type: string
+                                        description: The integration ID used to create the connection (aka Unique Key).
+                                    metadata:
+                                        type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /connection/{connectionId}/metadata:
         post:
             description: Set custom metadata for the connection.
