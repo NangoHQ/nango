@@ -1727,6 +1727,24 @@ posthog:
             method: GET
             endpoint: /api/users/@me
     docs: https://docs.nango.dev/integrations/all/posthog
+productboard:
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.productboard.com/oauth2/authorize
+    token_url: https://app.productboard.com/oauth2/token
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            X-Version: 1
+        base_url: https://api.productboard.com
+    docs: https://docs.nango.dev/integrations/all/productboard
 qualtrics:
     categories:
         - surveys
