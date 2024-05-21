@@ -74,7 +74,6 @@ function getPointsToConsume(req: Request): number {
             '/api/v1/account/signup/token',
             '/api/v1/account/signup/invite',
             '/api/v1/account/resend-verification-email',
-            '/api/v1/account/email',
             '/api/v1/account/verify/code'
         ].includes(req.path)
     ) {
