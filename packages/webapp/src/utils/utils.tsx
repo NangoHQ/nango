@@ -385,7 +385,7 @@ export function formatFrequency(frequency: string): string {
 
     for (const [unit, abbreviation] of Object.entries(unitMap)) {
         if (frequency.includes(unit)) {
-            frequency = frequency.replace(new RegExp(unit, 'g'), abbreviation).replace(/\s+/g, '');
+            return frequency.replace(unit, abbreviation).replace(/\s/g, '');
         }
     }
 
