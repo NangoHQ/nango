@@ -373,22 +373,6 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function _formatFrequency(frequency: string): string {
-    if (frequency.includes('minutes') || frequency.includes('minute')) {
-        return frequency.replace('minutes', 'm').replace('minute', 'm').replace(/\s/g, '');
-    }
-
-    if (frequency.includes('hours') || frequency.includes('hour')) {
-        return frequency.replace('hours', 'h').replace('hour', 'h').replace(/\s/g, '');
-    }
-
-    if (frequency.includes('days') || frequency.includes('day')) {
-        return frequency.replace('days', 'd').replace('day', 'd').replace(/\s/g, '');
-    }
-
-    return frequency;
-}
-
 export function formatFrequency(frequency: string): string {
     const unitMap: Record<string, string> = {
         minutes: 'm',
