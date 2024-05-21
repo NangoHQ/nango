@@ -169,8 +169,6 @@ export async function listMessages(opts: {
         });
     }
 
-    console.log(JSON.stringify(query));
-
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
