@@ -33,7 +33,7 @@ jobs:
               run: |
                   npm ci
                   npm run ts-build
-                  push packages/node-client
+                  pushd packages/node-client
                   npm run build
                   popd
 
