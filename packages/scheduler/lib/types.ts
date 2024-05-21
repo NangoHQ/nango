@@ -2,6 +2,8 @@ import type { TaskProps, taskStates } from './models/tasks';
 import type { JsonValue } from 'type-fest';
 
 export type TaskState = (typeof taskStates)[number];
+export type TaskTerminalState = Exclude<TaskState, 'CREATED' | 'STARTED'>;
+export type TaskNonTerminalState = Exclude<TaskState, TaskTerminalState>;
 
 export interface Task {
     readonly id: string;

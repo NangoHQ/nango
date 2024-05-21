@@ -2,7 +2,7 @@ import type { JsonValue } from 'type-fest';
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
-import type { TaskState, Task } from '../types.js';
+import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
 import { uuidv7 } from 'uuidv7';
 
 export const TASKS_TABLE = 'tasks';
@@ -25,7 +25,7 @@ export const validTaskStateTransitions = [
     { from: 'STARTED', to: 'CANCELLED' },
     { from: 'STARTED', to: 'EXPIRED' }
 ] as const;
-const terminalStates: TaskState[] = taskStates.filter((state) => {
+const validToStates: TaskState[] = taskStates.filter((state) => {
     return validTaskStateTransitions.every((transition) => transition.from !== state);
 });
 export type ValidTaskStateTransitions = (typeof validTaskStateTransitions)[number];
@@ -160,33 +160,40 @@ export async function heartbeat(db: knex.Knex, taskId: string): Promise<Result<T
 
 export async function transitionState(
     db: knex.Knex,
-    { taskId, newState, output }: { taskId: string; newState: TaskState; output?: JsonValue }
+    props:
+        | {
+              taskId: string;
+              newState: TaskTerminalState;
+              output: JsonValue;
+          }
+        | {
+              taskId: string;
+              newState: TaskNonTerminalState;
+          }
 ): Promise<Result<Task>> {
-    if (newState === 'SUCCEEDED' && !output) {
-        return Err(new Error(`Output is required when state = '${newState}'`));
-    }
-    const task = await get(db, taskId);
+    const task = await get(db, props.taskId);
     if (task.isErr()) {
-        return Err(new Error(`Task with id '${taskId}' not found`));
+        return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
 
-    const transition = TaskStateTransition.validate({ from: task.value.state, to: newState });
+    const transition = TaskStateTransition.validate({ from: task.value.state, to: props.newState });
     if (transition.isErr()) {
         return Err(transition.error);
     }
 
+    const output = 'output' in props ? props.output : null;
     const updated = await db
         .from<DbTask>(TASKS_TABLE)
-        .where('id', taskId)
+        .where('id', props.taskId)
         .update({
             state: transition.value.to,
             last_state_transition_at: new Date(),
-            terminated: terminalStates.includes(transition.value.to),
-            output: output || null
+            terminated: validToStates.includes(transition.value.to),
+            output
         })
         .returning('*');
     if (!updated?.[0]) {
-        return Err(new Error(`Task with id '${taskId}' not found`));
+        return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
     return Ok(DbTask.from(updated[0]));
 }
@@ -229,7 +236,15 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
             .update({
                 state: 'EXPIRED',
                 last_state_transition_at: new Date(),
-                terminated: true
+                terminated: true,
+                output: db.raw(`
+                    CASE
+                        WHEN state = 'CREATED' AND starts_after + created_to_started_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "createdToStartedTimeoutSecs_exceeded"}'
+                        WHEN state = 'STARTED' AND last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "heartbeatTimeoutSecs_exceeded"}'
+                        WHEN state = 'STARTED' AND last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "startedToCompletedTimeoutSecs_exceeded"}'
+                        ELSE output
+                    END
+                `)
             })
             .from<DbTask>(TASKS_TABLE)
             .whereIn(
