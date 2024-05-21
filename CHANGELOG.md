@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.39.30] - 2024-05-21
+
+### Added
+
+- Add env.local file (#2178) by @khaliqgant
+- *(integrations)* Add support for woocommerce (#2175) by @hassan254-prog
+
+### Fixed
+
+- *(client)* Build esm/cjs compatible client (#2180) by @bodinsamuel
+
 ## [v0.39.29] - 2024-05-20
 
 ### Added
@@ -1119,6 +1130,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.39.30]: https://github.com/NangoHQ/nango/compare/v0.39.29..v0.39.30
 [v0.39.29]: https://github.com/NangoHQ/nango/compare/v0.39.28..v0.39.29
 [v0.39.28]: https://github.com/NangoHQ/nango/compare/v0.39.27..v0.39.28
 [v0.39.27]: https://github.com/NangoHQ/nango/compare/v0.39.26..v0.39.27
