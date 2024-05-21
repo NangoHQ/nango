@@ -358,7 +358,7 @@ export const EnvironmentSettings: React.FC = () => {
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
 
-        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}?env=${env}`, {
+        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}-${env}?env=${env}`, {
             method: 'DELETE'
         });
 
@@ -372,7 +372,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const connectSlack = async () => {
-        const connectionId = `account-${accountUUID}`;
+        const connectionId = `account-${accountUUID}-${env}`;
 
         const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
             method: 'GET',
@@ -598,32 +598,30 @@ export const EnvironmentSettings: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                        {env !== 'dev' && (
-                            <div className="flex items-center justify-between mx-8 mt-8">
-                                <div>
-                                    <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
-                                        Slack Alerts
-                                        <Tooltip
-                                            text={
-                                                <div className="flex text-black text-sm">
-                                                    {slackIsConnected
-                                                        ? 'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.'
-                                                        : 'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'}
-                                                </div>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
-                                    </label>
-                                </div>
-                                <div className="">
-                                    <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
-                                        <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
-                                        {slackIsConnected ? 'Disconnect' : 'Connect'}
-                                    </Button>
-                                </div>
+                        <div className="flex items-center justify-between mx-8 mt-8">
+                            <div>
+                                <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
+                                    Slack Alerts
+                                    <Tooltip
+                                        text={
+                                            <div className="flex text-black text-sm">
+                                                {slackIsConnected
+                                                    ? 'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.'
+                                                    : 'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'}
+                                            </div>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                </label>
                             </div>
-                        )}
+                            <div className="">
+                                <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
+                                    <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
+                                    {slackIsConnected ? 'Disconnect' : 'Connect'}
+                                </Button>
+                            </div>
+                        </div>
                         <div>
                             <div className="mx-8 mt-8">
                                 <div className="flex text-white  mb-2">

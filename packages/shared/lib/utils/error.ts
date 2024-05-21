@@ -293,6 +293,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'connection_id'.`;
                 break;
 
+            case 'missing_connection_id':
+                this.status = 400;
+                this.message = `Missing param 'connection_id'.`;
+                break;
+
             case 'invalid_offset':
                 this.status = 400;
                 this.message = 'Invalid offset provided. The offset should be a number.';

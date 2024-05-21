@@ -7,12 +7,13 @@ import environmentService from '../environment.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
-import { basePublicUrl } from '@nangohq/utils';
+import { basePublicUrl, getLogger } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
+const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
 
 interface NotificationResponse {
@@ -224,17 +225,18 @@ class SlackService {
             throw new Error('failed_to_get_account');
         }
 
-        const slackConnectionId = `account-${account.uuid}`;
+        const slackConnectionId = `account-${account.uuid}-${envName}`;
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
 
         // we get the connection on the nango admin account to be able to send the notification
-        const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
-            slackConnectionId,
-            this.integrationKey,
-            nangoEnvironmentId
-        );
+        const {
+            success: connectionSuccess,
+            error: slackConnectionError,
+            response: slackConnection
+        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, nangoEnvironmentId);
 
         if (!connectionSuccess || !slackConnection) {
+            logger.error(slackConnectionError);
             return;
         }
 
@@ -283,7 +285,7 @@ class SlackService {
         const date = new Date();
         const dateString = date.toISOString().split('T')[0];
         const payload: NotificationPayload = {
-            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection}. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
+            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
@@ -386,7 +388,7 @@ class SlackService {
         } else {
             const count = connectionCount;
             const connection = count === 1 ? 'connection' : 'connections';
-            payloadContent = `*${syncName}* (${syncType.toLowerCase()}) is failing for ${count} ${connection}. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
+            payloadContent = `*${syncName}* (${syncType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
         }
 
         const payload: NotificationPayload = {
@@ -409,7 +411,7 @@ class SlackService {
         }
 
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
-        const slackConnectionId = `account-${account.uuid}`;
+        const slackConnectionId = `account-${account.uuid}-${envName}`;
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,

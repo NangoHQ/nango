@@ -1,5 +1,6 @@
 import { isMainThread } from 'node:worker_threads';
-import type { JsonObject, SchedulingProps, Task, TaskState } from './types';
+import type { JsonValue } from 'type-fest';
+import type { SchedulingProps, Task, TaskState } from './types';
 import * as tasks from './models/tasks.js';
 import type { Result } from '@nangohq/utils';
 import { stringifyError, getLogger } from '@nangohq/utils';
@@ -55,6 +56,28 @@ export class Scheduler {
     }
 
     /**
+     * Get a task
+     * @param taskId - Task ID
+     * @example
+     * const task = await scheduler.get({ taskId: '00000000-0000-0000-0000-000000000000' });
+     */
+    public async get({ taskId }: { taskId: string }): Promise<Result<Task>> {
+        return tasks.get(taskId);
+    }
+
+    /**
+     * List tasks
+     * @param params
+     * @param params.groupKey - Group key
+     * @param params.state - Task state
+     * @example
+     * const tasks = await scheduler.list({ groupKey: 'test', state: 'CREATED' });
+     */
+    public async list(params?: { groupKey?: string; state?: TaskState }): Promise<Result<Task[]>> {
+        return tasks.list(params);
+    }
+
+    /**
      * Schedule a task
      * @param props - Scheduling properties
      * @param props.scheduling - 'immediate'
@@ -75,7 +98,6 @@ export class Scheduler {
      *     }
      * };
      * const scheduled = await scheduler.schedule(schedulingProps);
-     * @returns Task
      */
     public async schedule(props: SchedulingProps): Promise<Result<Task>> {
         switch (props.scheduling) {
@@ -101,7 +123,6 @@ export class Scheduler {
      * @returns Task[]
      * @example
      * const dequeued = await scheduler.dequeue({ groupKey: 'test', limit: 1 });
-     * @returns Task[]
      */
     public async dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
         const dequeued = await tasks.dequeue({ groupKey, limit });
@@ -117,7 +138,6 @@ export class Scheduler {
      * @returns Task
      * @example
      * const heartbeat = await scheduler.heartbeat({ taskId: 'test' });
-     * @returns Task
      */
     public async heartbeat({ taskId }: { taskId: string }): Promise<Result<Task>> {
         return tasks.heartbeat(taskId);
@@ -130,9 +150,8 @@ export class Scheduler {
      * @returns Task
      * @example
      * const succeed = await scheduler.succeed({ taskId: '00000000-0000-0000-0000-000000000000', output: {foo: 'bar'} });
-     * @returns Task
      */
-    public async succeed({ taskId, output }: { taskId: string; output: JsonObject }): Promise<Result<Task>> {
+    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<Task>> {
         const succeeded = await tasks.transitionState({ taskId, newState: 'SUCCEEDED', output });
         if (succeeded.isOk()) {
             const task = succeeded.value;
@@ -147,7 +166,6 @@ export class Scheduler {
      * @returns Task
      * @example
      * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000' });
-     * @returns Task
      */
     public async fail({ taskId }: { taskId: string }): Promise<Result<Task>> {
         const failed = await tasks.transitionState({ taskId, newState: 'FAILED' });
@@ -184,7 +202,6 @@ export class Scheduler {
      * @returns Task
      * @example
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
-     * @returns Task
      */
     public async cancel(cancelBy: { taskId: string } | { scheduleId: string }): Promise<Result<Task>> {
         if ('scheduleId' in cancelBy) {

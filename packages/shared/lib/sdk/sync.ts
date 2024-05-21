@@ -191,7 +191,13 @@ type AuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials;
 
-type Metadata = Record<string, string | Record<string, any>>;
+type Metadata = Record<string, unknown>;
+
+interface MetadataChangeResponse {
+    metadata: Metadata;
+    provider_config_key: string;
+    connection_id: string | string[];
+}
 
 interface Connection {
     id?: number;
@@ -372,6 +378,7 @@ export class NangoAction {
             providerConfigKey: config.providerConfigKey,
             connectionId: config.connectionId,
             headers: {
+                ...(config.headers || {}),
                 'user-agent': this.nango.userAgent
             }
         };
@@ -488,7 +495,7 @@ export class NangoAction {
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
@@ -497,7 +504,7 @@ export class NangoAction {
         }
     }
 
-    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
@@ -509,7 +516,7 @@ export class NangoAction {
     /**
      * @deprecated please use setMetadata instead.
      */
-    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
         logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.setMetadata(fieldMapping);
     }

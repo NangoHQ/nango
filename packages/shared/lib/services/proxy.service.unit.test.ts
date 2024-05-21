@@ -561,7 +561,7 @@ describe('Proxy service configure', () => {
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
-        expect(error?.message).toContain('missing_connection_id');
+        expect(error?.message).toContain("Missing param 'connection_id'.");
         expect(activityLogs.length).toBe(1);
         expect(activityLogs[0]).toMatchObject({
             environment_id: 1,
