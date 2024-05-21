@@ -1318,6 +1318,11 @@ linkhut:
     proxy:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
+mailgun:
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    docs: https://docs.nango.dev/integrations/all/mailgun
 mailchimp:
     categories:
         - marketing
