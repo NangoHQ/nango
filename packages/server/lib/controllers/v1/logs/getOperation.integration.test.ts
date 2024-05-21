@@ -74,12 +74,9 @@ describe('GET /logs', () => {
     });
 
     it('should get one result', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'auth' } },
-            { account: { id: env.account_id }, environment: { id: env.id } }
-        );
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
@@ -97,6 +94,7 @@ describe('GET /logs', () => {
                 code: null,
                 configId: null,
                 configName: null,
+                providerName: null,
                 connectionId: null,
                 connectionName: null,
                 createdAt: expect.toBeIsoDate(),
@@ -118,8 +116,8 @@ describe('GET /logs', () => {
                 source: 'internal',
                 startedAt: expect.toBeIsoDate(),
                 state: 'success',
-                syncId: null,
-                syncName: null,
+                syncConfigId: null,
+                syncConfigName: null,
                 title: null,
                 type: 'log',
                 updatedAt: expect.toBeIsoDate(),

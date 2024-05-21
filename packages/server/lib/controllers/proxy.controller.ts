@@ -61,8 +61,9 @@ class ProxyController {
             const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
-            const environment_id = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
+            const { account, environment } = res.locals;
+            const accountId = account.id;
+            const environment_id = environment.id;
 
             const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
 
@@ -90,11 +91,7 @@ class ProxyController {
             }
             logCtx = existingActivityLogId
                 ? logContextGetter.get({ id: String(existingActivityLogId) })
-                : await logContextGetter.create(
-                      { operation: { type: 'action' }, message: 'Start action' },
-                      { account: { id: accountId }, environment: { id: environment_id } },
-                      { dryRun: isDryRun }
-                  );
+                : await logContextGetter.create({ operation: { type: 'proxy' }, message: 'Proxy call' }, { account, environment }, { dryRun: isDryRun });
 
             const { method } = req;
 
@@ -135,32 +132,42 @@ class ProxyController {
             );
 
             if (!connSuccess || !connection) {
+                await logCtx.error('Failed to get connection credentials', { error: connError });
+                await logCtx.failed();
                 throw new Error(`Failed to get connection credentials: '${connError}'`);
             }
             const providerConfig = await configService.getProviderConfig(providerConfigKey, environment_id);
 
-            if (!providerConfig && activityLogId) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: 'Provider configuration not found'
-                });
-                await logCtx.error('Provider configuration not found');
-                await logCtx.failed();
+            if (!providerConfig) {
+                if (activityLogId) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        environment_id,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: 'Provider configuration not found'
+                    });
+                    await logCtx.error('Provider configuration not found');
+                    await logCtx.failed();
+                }
 
                 throw new NangoError('unknown_provider_config');
             }
-            if (activityLogId && providerConfig) {
+            if (activityLogId) {
                 await updateProviderActivityLog(activityLogId, providerConfig.provider);
-                await logCtx.enrichOperation({ configId: providerConfig.id!, configName: providerConfig.unique_key });
+                await logCtx.enrichOperation({
+                    configId: providerConfig.id!,
+                    configName: providerConfig.unique_key,
+                    providerName: providerConfig.provider,
+                    connectionId: connection.id!,
+                    connectionName: connection.connection_id
+                });
             }
 
             const internalConfig: InternalProxyConfiguration = {
                 existingActivityLogId: activityLogId,
                 connection,
-                provider: providerConfig!.provider
+                provider: providerConfig.provider
             };
 
             const { success, error, response: proxyConfig, activityLogs } = proxyService.configure(externalConfig, internalConfig);

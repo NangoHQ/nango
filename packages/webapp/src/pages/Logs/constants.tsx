@@ -5,6 +5,7 @@ import { StatusTag } from './components/StatusTag';
 import { OperationTag } from './components/OperationTag';
 import type { MultiSelectArgs } from './components/MultiSelect';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
+import { ProviderTag } from './components/ProviderTag';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
@@ -36,15 +37,15 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         header: 'Integration',
         size: 200,
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.configName}</div>;
+            return <ProviderTag msg={row.original} />;
         }
     },
     {
-        accessorKey: 'syncId',
+        accessorKey: 'syncConfigId',
         header: 'Script',
         size: 180,
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.syncName}</div>;
+            return <div className="truncate font-code text-s">{row.original.syncConfigName}</div>;
         }
     },
     {

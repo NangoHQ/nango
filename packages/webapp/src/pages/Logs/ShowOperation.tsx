@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 import { CalendarIcon, ClockIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { SearchInOperation } from './components/SearchInOperation';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { ProviderTag } from './components/ProviderTag';
+import { Prism } from '@mantine/prism';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -86,12 +88,12 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 </div>
             </div>
             <div className="flex gap-3 flex-wrap items-center">
-                <div className="flex gap-2 items-center max-w-[40%]">
+                <div className="flex gap-2 items-center max-w-[30%]">
                     <div className="font-semibold text-sm">Integration</div>
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.configName ? (
-                            <Link to={`/integration/${operation.configName}`} target="_blank" className="flex gap-1 items-center hover:text-white">
-                                <div className="truncate">{operation.configName}</div>
+                            <Link to={`/integration/${operation.configName}`} target="_blank" className="flex gap-2.5 items-center hover:text-white">
+                                <ProviderTag msg={operation} />
                                 <div className="w-4">
                                     <ExternalLinkIcon className="w-[14px]" />
                                 </div>
@@ -102,11 +104,11 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     </div>
                 </div>
                 <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
-                <div className="flex gap-2 items-center max-w-[40%]">
+                <div className="flex gap-2 items-center max-w-[30%]">
                     <div className="font-semibold text-sm">Connection</div>
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.connectionName ? (
-                            <Link to={`/connections/${operation.connectionName}`} target="_blank" className="flex gap-1 items-center hover:text-white">
+                            <Link to={`/connections/${operation.connectionName}`} target="_blank" className="flex gap-2.5 items-center hover:text-white">
                                 <div className="truncate">{operation.connectionName}</div>
                                 <div className="w-4">
                                     <ExternalLinkIcon className="w-[14px]" />
@@ -118,14 +120,29 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     </div>
                 </div>
                 <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
-                <div className="flex gap-2 items-center max-w-[40%]">
+                <div className="flex gap-2 items-center max-w-[30%]">
                     <div className="font-semibold text-sm">Script</div>
-                    <div className="text-gray-400 text-s pt-[1px] truncate">{operation.syncName ? operation.syncName : 'n/a'}</div>
+                    <div className="text-gray-400 text-s pt-[1px] truncate">{operation.syncConfigName ? operation.syncConfigName : 'n/a'}</div>
                 </div>
             </div>
             <div className="">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
-                {!operation.meta && <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>}
+                {operation.meta ? (
+                    <div className="text-gray-400 text-sm bg-pure-black py-2">
+                        <Prism
+                            language="json"
+                            className="transparent-code"
+                            colorScheme="dark"
+                            styles={() => {
+                                return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
+                            }}
+                        >
+                            {JSON.stringify(operation.meta, null, 2)}
+                        </Prism>
+                    </div>
+                ) : (
+                    <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>
+                )}
             </div>
             <SearchInOperation operationId={operationId} />
         </div>

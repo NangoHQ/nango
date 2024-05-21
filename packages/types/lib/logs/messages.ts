@@ -89,14 +89,24 @@ export type MessageRow = {
     environmentId: number | null;
     environmentName: string | null;
 
+    /**
+     * Provider name, i.e: github
+     */
+    providerName: string | null;
+    /**
+     * Database ID of the config, i.e: 9
+     */
     configId: number | null;
+    /**
+     * Unique config name, i.e: github-demo
+     */
     configName: string | null;
 
     connectionId: number | null;
     connectionName: string | null;
 
-    syncId: string | null;
-    syncName: string | null;
+    syncConfigId: number | null;
+    syncConfigName: string | null;
 
     jobId: string | null;
 

@@ -25,7 +25,8 @@ import {
     createActivityLog,
     LogActionEnum,
     analytics,
-    AnalyticsTypes
+    AnalyticsTypes,
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
@@ -416,14 +417,26 @@ class OnboardingController {
                 throw new NangoError('failed_to_create_activity_log');
             }
 
+            const syncConfig = await getSyncConfigRaw({
+                environmentId: environment.id,
+                config_id: connection.config_id!,
+                name: DEMO_ACTION_NAME,
+                isAction: true
+            });
+            if (!syncConfig) {
+                res.status(500).json({ message: 'failed_to_find_action' });
+                return;
+            }
+
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
                 {
                     account,
                     environment,
                     user,
-                    config: { id: connection.config_id!, name: connection.provider_config_key },
-                    connection: { id: connection.id!, name: connection.connection_id }
+                    config: { id: connection.config_id!, name: connection.provider_config_key, provider: 'github' },
+                    connection: { id: connection.id!, name: connection.connection_id },
+                    syncConfig: { id: syncConfig.id!, name: syncConfig?.sync_name }
                 }
             );
             const actionResponse = await syncClient.triggerAction({

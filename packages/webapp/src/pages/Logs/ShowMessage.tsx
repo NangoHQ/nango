@@ -12,7 +12,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
     }, [message.createdAt]);
 
     return (
-        <div className="py-8 px-6 flex flex-col gap-5">
+        <div className="py-8 px-6 flex flex-col gap-5 h-full">
             <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
                 <div className="flex items-center ml-10">
                     <h3 className="text-xl font-semibold text-white">{message.type === 'log' ? 'Message' : 'HTTP'} Details</h3>
@@ -37,9 +37,8 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     </div>
                 </div>
             </div>
-            <div className="">
-                <h4 className="font-semibold text-sm mb-2">Payload</h4>
-
+            <div className="overflow-x-auto">
+                <h4 className="font-semibold text-sm mb-2">Message</h4>
                 <div className="text-gray-400 text-sm bg-pure-black py-2">
                     <Prism
                         language="json"
@@ -49,9 +48,29 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                             return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                         }}
                     >
-                        {JSON.stringify({ message: message.message, error: message.error || undefined }, null, 2)}
+                        {message.message}
                     </Prism>
                 </div>
+            </div>
+            <div className="overflow-x-auto">
+                <h4 className="font-semibold text-sm mb-2">Payload</h4>
+
+                {message.meta ? (
+                    <div className="text-gray-400 text-sm bg-pure-black py-2">
+                        <Prism
+                            language="json"
+                            className="transparent-code"
+                            colorScheme="dark"
+                            styles={() => {
+                                return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
+                            }}
+                        >
+                            {JSON.stringify({ error: message.error || undefined, output: message.meta || undefined }, null, 2)}
+                        </Prism>
+                    </div>
+                ) : (
+                    <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>
+                )}
             </div>
         </div>
     );

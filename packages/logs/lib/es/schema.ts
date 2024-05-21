@@ -15,12 +15,13 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
 
     configId: { type: 'keyword' },
     configName: { type: 'keyword' },
+    providerName: { type: 'keyword' },
 
     connectionId: { type: 'keyword' },
     connectionName: { type: 'keyword' },
 
-    syncId: { type: 'keyword' },
-    syncName: { type: 'keyword' },
+    syncConfigId: { type: 'keyword' },
+    syncConfigName: { type: 'keyword' },
 
     jobId: { type: 'keyword' },
 
