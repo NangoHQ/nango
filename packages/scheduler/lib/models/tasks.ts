@@ -1,7 +1,7 @@
 import type { JsonValue } from 'type-fest';
+import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
-import { db } from '../db/client.js';
 import type { TaskState, Task } from '../types.js';
 import { uuidv7 } from 'uuidv7';
 
@@ -102,7 +102,7 @@ const DbTask = {
     }
 };
 
-export async function create(taskProps: TaskProps): Promise<Result<Task>> {
+export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Result<Task>> {
     const now = new Date();
     const newTask: Task = {
         ...taskProps,
@@ -125,7 +125,7 @@ export async function create(taskProps: TaskProps): Promise<Result<Task>> {
     }
 }
 
-export async function get(taskId: string): Promise<Result<Task>> {
+export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> {
     const task = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).first();
     if (!task) {
         return Err(new Error(`Task with id '${taskId}' not found`));
@@ -133,7 +133,7 @@ export async function get(taskId: string): Promise<Result<Task>> {
     return Ok(DbTask.from(task));
 }
 
-export async function list(params?: { groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
+export async function list(db: knex.Knex, params?: { groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
     const query = db.from<DbTask>(TASKS_TABLE);
     if (params?.groupKey) {
         query.where('group_key', params.groupKey);
@@ -146,7 +146,7 @@ export async function list(params?: { groupKey?: string; state?: TaskState; limi
     return Ok(tasks.map(DbTask.from));
 }
 
-export async function heartbeat(taskId: string): Promise<Result<Task>> {
+export async function heartbeat(db: knex.Knex, taskId: string): Promise<Result<Task>> {
     try {
         const updated = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).update({ last_heartbeat_at: new Date() }).returning('*');
         if (!updated?.[0]) {
@@ -158,11 +158,14 @@ export async function heartbeat(taskId: string): Promise<Result<Task>> {
     }
 }
 
-export async function transitionState({ taskId, newState, output }: { taskId: string; newState: TaskState; output?: JsonValue }): Promise<Result<Task>> {
+export async function transitionState(
+    db: knex.Knex,
+    { taskId, newState, output }: { taskId: string; newState: TaskState; output?: JsonValue }
+): Promise<Result<Task>> {
     if (newState === 'SUCCEEDED' && !output) {
         return Err(new Error(`Output is required when state = '${newState}'`));
     }
-    const task = await get(taskId);
+    const task = await get(db, taskId);
     if (task.isErr()) {
         return Err(new Error(`Task with id '${taskId}' not found`));
     }
@@ -188,7 +191,7 @@ export async function transitionState({ taskId, newState, output }: { taskId: st
     return Ok(DbTask.from(updated[0]));
 }
 
-export async function dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
+export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
     try {
         const tasks = await db
             .update({
@@ -220,7 +223,7 @@ export async function dequeue({ groupKey, limit }: { groupKey: string; limit: nu
     }
 }
 
-export async function expiresIfTimeout(): Promise<Result<Task[]>> {
+export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
     try {
         const tasks = await db
             .update({

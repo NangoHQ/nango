@@ -1,11 +1,13 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import type { Task } from '@nangohq/scheduler';
-import { migrate, Scheduler, clearDb } from '@nangohq/scheduler';
+import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { getServer } from './server.js';
 import { OrchestratorClient } from './client.js';
 import getPort from 'get-port';
 
+const dbClient = getTestDbClient();
 const scheduler = new Scheduler({
+    dbClient,
     on: {
         CREATED: (task) => console.log(`Task ${task.id} created`),
         STARTED: (task) => console.log(`Task ${task.id} started`),
@@ -22,13 +24,13 @@ describe('OrchestratorClient', async () => {
     const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}`, fetchTimeoutMs: 10_000 });
 
     beforeAll(async () => {
-        await migrate();
+        await dbClient.migrate();
         server.listen(port);
     });
 
     afterAll(async () => {
         scheduler.stop();
-        await clearDb();
+        await dbClient.clearDatabase();
     });
 
     it('should schedule immediate task', async () => {
