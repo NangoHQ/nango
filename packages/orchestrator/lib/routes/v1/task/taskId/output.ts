@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { JsonValue } from 'type-fest';
-import type { Scheduler } from '@nangohq/scheduler';
+import type { Scheduler, TaskTerminalState } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
@@ -11,8 +11,8 @@ type Output = Endpoint<{
     Params: {
         taskId: string;
     };
-    Error: ApiError<'fetching_failed' | 'task_failed' | 'task_expired' | 'task_cancelled'>;
-    Success: { output: JsonValue };
+    Error: ApiError<'fetching_failed'>;
+    Success: { state: TaskTerminalState; output: JsonValue };
 }>;
 
 const path = '/v1/task/:taskId/output';
@@ -33,13 +33,10 @@ const getHandler = (scheduler: Scheduler) => {
             case 'STARTED':
                 return res.status(204).send(); // No content yet
             case 'SUCCEEDED':
-                return res.status(200).json({ output: task.value.output });
             case 'FAILED':
-                return res.status(404).json({ error: { code: 'task_failed', message: `failed` } });
             case 'EXPIRED':
-                return res.status(404).json({ error: { code: 'task_expired', message: `expired` } });
             case 'CANCELLED':
-                return res.status(404).json({ error: { code: 'task_cancelled', message: `cancelled` } });
+                return res.status(200).json({ state: task.value.state, output: task.value.output });
         }
     };
 };
