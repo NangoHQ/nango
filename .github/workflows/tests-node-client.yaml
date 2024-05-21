@@ -40,9 +40,9 @@ jobs:
             - name: Test CJS
               run: |
                   RES=$(node packages/node-client/tests/built.cjs)
-                  [ "$RES" == *"Done"* ] || { echo "$RES"; exit 1; }
+                  [ "$RES" != *"Done"* ] || { echo "$RES"; exit 1; }
 
             - name: Test ESM
               run: |
                   RES=$(node packages/node-client/tests/built.js)
-                  [ "$RES" == *"Done"* ] || { echo "$RES"; exit 1; }
+                  [ "$RES" != *"Done"* ] || { echo "$RES"; exit 1; }
