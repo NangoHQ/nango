@@ -53,6 +53,7 @@ bump_and_npm_publish "@nangohq/types" "$VERSION"
 bump_other_pkg "shared" "types"
 bump_other_pkg "server" "types"
 bump_other_pkg "webapp" "types"
+bump_other_pkg "cli" "types"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"

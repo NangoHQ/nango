@@ -1,12 +1,15 @@
 import { Nango } from '../dist/index.js';
 const args = process.argv.slice(2);
-const nango = new Nango({ secretKey: args[0] });
+const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
 
 const metadata = {
-    customFields: ['Question__c', 'Answer__c']
+    otherCustomFields: {
+        customField1: 'value1',
+        customField2: 'value2'
+    }
 };
 
-await nango.setMetadata(args[1], args[2], metadata).then((response) => {
+await nango.updateMetadata(args[1], args[2], metadata).then((response) => {
     console.log(response?.data);
 });
 

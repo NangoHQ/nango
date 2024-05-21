@@ -523,7 +523,9 @@
                                 "reference/api/connection/get",
                                 "reference/api/connection/post",
                                 "reference/api/connection/set-metadata",
+                                "reference/api/connection/set-metadata-legacy",
                                 "reference/api/connection/update-metadata",
+                                "reference/api/connection/update-metadata-legacy",
                                 "reference/api/connection/delete"
                             ]
                         },

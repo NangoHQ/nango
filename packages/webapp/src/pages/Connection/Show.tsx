@@ -17,6 +17,7 @@ import Syncs from './Syncs';
 import Authorization from './Authorization';
 import type { SyncResponse, Connection } from '../../types';
 import PageNotFound from '../PageNotFound';
+import { isHosted } from '../../utils/utils';
 
 import { useStore } from '../../store';
 
@@ -65,7 +66,7 @@ export default function ShowIntegration() {
         if (location.hash === '#models' || location.hash === '#syncs') {
             setActiveTab(Tabs.Syncs);
         }
-        if (location.hash === '#authorization') {
+        if (location.hash === '#authorization' || isHosted()) {
             setActiveTab(Tabs.Authorization);
         }
     }, [location]);
