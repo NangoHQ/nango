@@ -1,10 +1,11 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import get from 'lodash-es/get.js';
-import type { Config as ProviderConfig, Connection, ConnectionConfig } from '@nangohq/shared';
-import { connectionService, configService } from '@nangohq/shared';
+import type { Config as ProviderConfig, Connection, ConnectionConfig, ConnectionUpsertResponse } from '@nangohq/shared';
+import { connectionService, configService, AuthModes as ProviderAuthModes } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
 import type { LogContextGetter } from '@nangohq/logs';
+import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -79,6 +80,24 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
 
         const logCtx = logContextGetter.get({ id: activityLogId });
 
+        const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+            void connectionCreatedHook(
+                {
+                    id: res.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: integration.unique_key,
+                    environment_id: integration.environment_id,
+                    auth_mode: ProviderAuthModes.App,
+                    operation: res.operation
+                },
+                integration.provider,
+                logContextGetter,
+                activityLogId,
+                { initiateSync: true, runPostConnectionScript: false },
+                logCtx
+            );
+        };
+
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
@@ -86,7 +105,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             connectionConfig as ConnectionConfig,
             activityLogId,
             logCtx,
-            logContextGetter
+            connCreatedHook
         );
     }
 }

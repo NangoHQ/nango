@@ -1,22 +1,32 @@
 import axios from 'axios';
 import type { Span, Tracer } from 'dd-trace';
-import SyncClient from '../clients/sync.client.js';
-import type { ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
-import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '../models/Connection.js';
-import type { ApplicationConstructedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
-import proxyService from '../services/proxy.service.js';
-import type { HTTP_VERB } from '../models/Generic.js';
-import type { Template as ProviderTemplate } from '../models/Provider.js';
-import integrationPostConnectionScript from '../integrations/scripts/connection/connection.manager.js';
-import webhookService from '../services/notification/webhook.service.js';
-import { SpanTypes } from '../utils/telemetry.js';
-import { getSyncConfigsWithConnections } from '../services/sync/config/config.service.js';
+import {
+    CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
+    NangoError,
+    SpanTypes,
+    SyncClient,
+    proxyService,
+    webhookService,
+    getSyncConfigsWithConnections,
+    analytics,
+    AnalyticsTypes
+} from '@nangohq/shared';
+import type {
+    ApplicationConstructedProxyConfiguration,
+    InternalProxyConfiguration,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    RecentlyCreatedConnection,
+    Connection,
+    ConnectionConfig,
+    Template as ProviderTemplate,
+    HTTP_VERB
+} from '@nangohq/shared';
+
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
-import analytics, { AnalyticsTypes } from '../utils/analytics.js';
+import postConnection from './connection/post-connection.js';
 
 const logger = getLogger('hooks');
 
@@ -66,7 +76,7 @@ export const connectionCreated = async (
     }
 
     if (options.runPostConnectionScript === true) {
-        await integrationPostConnectionScript(connection, provider, logContextGetter);
+        await postConnection(connection, provider, logContextGetter);
     }
 
     await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);
