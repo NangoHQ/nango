@@ -83,22 +83,29 @@ class UserService {
         return result[0];
     }
 
-    async createUser(email: string, name: string, hashedPassword: string, salt: string, accountId: number, email_verified = true): Promise<User | null> {
-        const result: Pick<User, 'id'> = await db.knex.from<User>(`_nango_users`).insert(
-            {
+    async createUser(
+        email: string,
+        name: string,
+        hashed_password: string,
+        salt: string,
+        account_id: number,
+        email_verified: boolean = true
+    ): Promise<User | null> {
+        const result: Pick<User, 'id'>[] = await db.knex
+            .from<User>('_nango_users')
+            .insert({
                 email,
                 name,
-                hashed_password: hashedPassword,
-                salt: salt,
-                account_id: accountId,
+                hashed_password,
+                salt,
+                account_id,
                 email_verified,
                 email_verification_token: email_verified ? null : uuid.v4()
-            },
-            ['id']
-        );
+            })
+            .returning('id');
 
-        if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-            const userId = result[0]['id'];
+        if (result.length === 1 && result[0]?.id) {
+            const userId = result[0].id;
             return this.getUserById(userId);
         }
 
