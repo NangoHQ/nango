@@ -15,8 +15,7 @@ import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
 import { Input } from '../../components/ui/input/Input';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
-
-const formatter = Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 });
+import { formatQuantity } from '../../utils/utils';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -44,7 +43,7 @@ export const LogsSearch: React.FC = () => {
         if (!data?.pagination) {
             return 0;
         }
-        return formatter.format(data.pagination.total);
+        return formatQuantity(data.pagination.total);
     }, [data?.pagination]);
 
     if (error) {

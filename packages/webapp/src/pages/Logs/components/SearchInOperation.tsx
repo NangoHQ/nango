@@ -3,7 +3,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Input } from '../../../components/ui/input/Input';
 import { useSearchMessages } from '../../../hooks/useLogs';
 import type { SearchOperationsData } from '@nangohq/types';
-import { formatDateToLogFormat } from '../../../utils/utils';
+import { formatDateToLogFormat, formatQuantity } from '../../../utils/utils';
 import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
 import Spinner from '../../../components/ui/Spinner';
@@ -11,7 +11,7 @@ import Info from '../../../components/ui/Info';
 import { LevelTag } from './LevelTag';
 import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDebounce } from 'react-use';
 import { Tag } from './Tag';
 
@@ -76,9 +76,19 @@ export const SearchInOperation: React.FC<{ operationId: string }> = ({ operation
     });
     useDebounce(() => setDebouncedSearch(search), 250, [search]);
 
+    const total = useMemo(() => {
+        if (!data?.pagination) {
+            return 0;
+        }
+        return formatQuantity(data.pagination.total);
+    }, [data?.pagination]);
+
     return (
         <div>
-            <h4 className="font-semibold text-sm flex items-center gap-2">Logs {loading && <Spinner size={1} />}</h4>
+            <div className="flex justify-between items-center">
+                <h4 className="font-semibold text-sm flex items-center gap-2">Logs {loading && <Spinner size={1} />}</h4>
+                <div className="text-white text-xs">{total} logs found</div>
+            </div>
             <header className="mt-4">
                 <Input
                     before={<MagnifyingGlassIcon className="w-4" />}

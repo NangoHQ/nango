@@ -20,7 +20,7 @@ export const OperationRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row
             </DrawerTrigger>
             <DrawerContent>
                 <div className={`w-[1034px] relative`}>
-                    <div className="absolute right-4 top-4">
+                    <div className="absolute right-4 top-7">
                         <DrawerClose title="Close" className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white">
                             <Cross1Icon className="" />
                         </DrawerClose>

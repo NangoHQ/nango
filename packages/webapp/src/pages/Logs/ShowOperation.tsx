@@ -6,7 +6,7 @@ import { OperationTag } from './components/OperationTag';
 import { StatusTag } from './components/StatusTag';
 import { elapsedTime, formatDateToLogFormat } from '../../utils/utils';
 import { Link } from 'react-router-dom';
-import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import { CalendarIcon, ClockIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { SearchInOperation } from './components/SearchInOperation';
 import { Skeleton } from '../../components/ui/Skeleton';
 
@@ -58,64 +58,69 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
 
     return (
         <div className="py-8 px-6 flex flex-col gap-5">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
-            </div>
+            <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
+                <h3 className="text-xl font-semibold text-white ">Operation Details</h3>
+                <div className="flex gap-3 items-center">
+                    <div className="flex">
+                        <StatusTag state={operation.state} />
+                    </div>
+                    <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                    <div className="flex gap-2 items-center">
+                        <ClockIcon />
+                        <div className="text-gray-400 text-s pt-[1px] font-code">{duration}</div>
+                    </div>
+                    <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                    <div className="flex gap-2 items-center">
+                        <CalendarIcon />
+                        <div className="text-gray-400 text-s pt-[1px] font-code">{createdAt}</div>
+                    </div>
+                </div>
+            </header>
 
-            <div className="flex gap-5 flex-wrap mt-4">
-                <div className="flex gap-2 items-center w-[30%]">
-                    <div className="font-semibold text-sm">Timestamp</div>
-                    <div className="text-gray-400 text-s pt-[1px] font-code">{createdAt}</div>
-                </div>
-                <div className="flex gap-2 items-center w-[30%]">
-                    <div className="font-semibold text-sm">Integration</div>
-                    <div className="text-gray-400 text-s font-code truncate">
-                        {operation.configName ? (
-                            <Link to={`/integration/${operation.configName}`} target="_blank" className="flex gap-1 hover:text-white">
-                                <div className="truncate">{operation.configName}</div>
-                                <div className="w-8">
-                                    <ExternalLinkIcon className="w-[14px]" />
-                                </div>
-                            </Link>
-                        ) : (
-                            'n/a'
-                        )}
-                    </div>
-                </div>
-                <div className="flex gap-2 items-center w-[30%]">
-                    <div className="font-semibold text-sm">Connection</div>
-                    <div className="text-gray-400 text-s font-code truncate">
-                        {operation.connectionName ? (
-                            <Link to={`/connections/${operation.connectionName}`} target="_blank" className="flex gap-1 hover:text-white">
-                                <div className="truncate">{operation.connectionName}</div>
-                                <div className="w-8">
-                                    <ExternalLinkIcon className="w-[14px]" />
-                                </div>
-                            </Link>
-                        ) : (
-                            'n/a'
-                        )}
-                    </div>
-                </div>
-                <div className="flex gap-2 items-center w-[30%]">
-                    <div className="font-semibold text-sm">Duration</div>
-                    <div className="text-gray-400 text-s pt-[1px] font-code">{duration}</div>
-                </div>
+            <div className="flex gap-5 flex-wrap">
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
                     <div className="text-gray-400 text-xs pt-[1px]">
                         <OperationTag operation={operation.operation!} highlight />
                     </div>
                 </div>
-                <div className="flex gap-2 items-center w-[30%]">
-                    <div className="font-semibold text-sm">Script</div>
-                    <div className="text-gray-400 text-xs pt-[1px] truncate">{operation.syncName ? operation.syncName : 'n/a'}</div>
-                </div>
-                <div className="flex gap-2 items-center w-[30%]">
-                    <div className="font-semibold text-sm">Status</div>
-                    <div className="text-gray-400 text-xs pt-[1px]">
-                        <StatusTag state={operation.state} />
+            </div>
+            <div className="flex gap-3 flex-wrap items-center">
+                <div className="flex gap-2 items-center max-w-[40%]">
+                    <div className="font-semibold text-sm">Integration</div>
+                    <div className="text-gray-400 text-s font-code truncate">
+                        {operation.configName ? (
+                            <Link to={`/integration/${operation.configName}`} target="_blank" className="flex gap-1 items-center hover:text-white">
+                                <div className="truncate">{operation.configName}</div>
+                                <div className="w-4">
+                                    <ExternalLinkIcon className="w-[14px]" />
+                                </div>
+                            </Link>
+                        ) : (
+                            'n/a'
+                        )}
                     </div>
+                </div>
+                <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                <div className="flex gap-2 items-center max-w-[40%]">
+                    <div className="font-semibold text-sm">Connection</div>
+                    <div className="text-gray-400 text-s font-code truncate">
+                        {operation.connectionName ? (
+                            <Link to={`/connections/${operation.connectionName}`} target="_blank" className="flex gap-1 items-center hover:text-white">
+                                <div className="truncate">{operation.connectionName}</div>
+                                <div className="w-4">
+                                    <ExternalLinkIcon className="w-[14px]" />
+                                </div>
+                            </Link>
+                        ) : (
+                            'n/a'
+                        )}
+                    </div>
+                </div>
+                <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                <div className="flex gap-2 items-center max-w-[40%]">
+                    <div className="font-semibold text-sm">Script</div>
+                    <div className="text-gray-400 text-s pt-[1px] truncate">{operation.syncName ? operation.syncName : 'n/a'}</div>
                 </div>
             </div>
             <div className="">
