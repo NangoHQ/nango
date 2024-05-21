@@ -30,7 +30,12 @@ jobs:
                   node-version: ${{ matrix.node-version }}
 
             - name: Build
-              run: npm ci && npm run ts-build
+              run: |
+                  npm ci
+                  npm run ts-build
+                  push packages/node-client
+                  npm run build
+                  popd
 
             - name: Test CJS
               run: |
