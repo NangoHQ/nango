@@ -8,7 +8,7 @@ on:
     pull_request:
 
 concurrency:
-    group: tests-node-client-${{ github.event.pull_request.number || github.ref }}
+    group: pulls/${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
                   node-version: ${{ matrix.node-version }}
 
             - name: Build
-              run: npm run ci && npm run ts-build
+              run: npm ci && npm run ts-build
 
             - name: Test CJS
               run: |
