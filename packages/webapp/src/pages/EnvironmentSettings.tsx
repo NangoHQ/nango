@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, HelpCircle } from '@geist-ui/icons';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { Tooltip, useModal, Modal } from '@geist-ui/core';
-import Nango from '@nangohq/frontend';
 
 import {
     useEditCallbackUrlAPI,
@@ -24,6 +23,7 @@ import SecretInput from '../components/ui/input/SecretInput';
 import { useStore } from '../store';
 import Button from '../components/ui/button/Button';
 import { useEnvironment } from '../hooks/useEnvironment';
+import { connectSlack } from '../utils/slack-connection';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -50,7 +50,7 @@ export const EnvironmentSettings: React.FC = () => {
 
     const [hmacKey, setHmacKey] = useState('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
-    const [accountUUID, setAccountUUID] = useState<string>();
+    const [accountUUID, setAccountUUID] = useState<string>('');
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
@@ -371,40 +371,17 @@ export const EnvironmentSettings: React.FC = () => {
         }
     };
 
-    const connectSlack = async () => {
-        const connectionId = `account-${accountUUID}-${env}`;
+    const createSlackConnection = async () => {
+        const onFinish = () => {
+            setSlackIsConnected(true);
+            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            void mutate();
+        };
 
-        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (res.status !== 200) {
+        const onFailure = () => {
             toast.error('Something went wrong during the lookup for the Slack connect', { position: toast.POSITION.BOTTOM_CENTER });
-            return;
-        }
-
-        const authResponse = await res.json();
-        const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
-
-        const nango = new Nango({ host: hostUrl, publicKey });
-        nango
-            .auth(integrationKey, connectionId, {
-                user_scope: [],
-                params: {},
-                hmac: hmacDigest
-            })
-            .then(async () => {
-                await updateSlackNotifications(true);
-                setSlackIsConnected(true);
-                toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
-                void mutate();
-            })
-            .catch((err: unknown) => {
-                console.log(err);
-            });
+        };
+        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
 
     return (
@@ -616,7 +593,7 @@ export const EnvironmentSettings: React.FC = () => {
                                 </label>
                             </div>
                             <div className="">
-                                <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
+                                <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : createSlackConnection}>
                                     <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
                                     {slackIsConnected ? 'Disconnect' : 'Connect'}
                                 </Button>

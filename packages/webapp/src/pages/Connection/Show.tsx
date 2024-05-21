@@ -13,11 +13,13 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import Info from '../../components/ui/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
+import { useEnvironment } from '../../hooks/useEnvironment';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
 import type { SyncResponse, Connection } from '../../types';
 import PageNotFound from '../PageNotFound';
 import { isHosted } from '../../utils/utils';
+import { connectSlack } from '../../utils/slack-connection';
 
 import { useStore } from '../../store';
 
@@ -29,6 +31,7 @@ export enum Tabs {
 export default function ShowIntegration() {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
+    const { environment, mutate: environmentMutate } = useEnvironment(env);
 
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
@@ -37,6 +40,7 @@ export default function ShowIntegration() {
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [pageNotFound, setPageNotFound] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
+    const [slackIsConnected, setSlackIsConnected] = useState(true);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI(env);
     const deleteConnectionAPI = useDeleteConnectionAPI(env);
 
@@ -61,6 +65,12 @@ export default function ShowIntegration() {
             requestErrorToast();
         }
     }, [syncLoadError]);
+
+    useEffect(() => {
+        if (environment) {
+            setSlackIsConnected(environment.slack_notifications);
+        }
+    }, [environment]);
 
     useEffect(() => {
         if (location.hash === '#models' || location.hash === '#syncs') {
@@ -136,6 +146,20 @@ We could not retrieve and/or refresh your access token due to the following erro
         setTimeout(() => {
             setFetchingRefreshToken(false);
         }, 400);
+    };
+
+    const createSlackConnection = async () => {
+        if (!environment) return;
+        const { uuid: accountUUID, host: hostUrl } = environment;
+        const onFinish = () => {
+            environmentMutate();
+            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+        };
+
+        const onFailure = () => {
+            toast.error('Failed to create Slack connection!', { position: toast.POSITION.BOTTOM_CENTER });
+        };
+        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
 
     if (pageNotFound) {
@@ -225,6 +249,18 @@ We could not retrieve and/or refresh your access token due to the following erro
                         Authorization
                     </li>
                 </ul>
+
+                {!slackIsConnected && (
+                    <Info size={8} color="blue" showIcon={false} padding="mt-4 p-1">
+                        <div className="flex text-sm items-center">
+                            <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
+                            Receive instant monitoring alerts on Slack.{' '}
+                            <span onClick={createSlackConnection} className="ml-1 cursor-pointer underline">
+                                Set up now for the {env} environment.
+                            </span>
+                        </div>
+                    </Info>
+                )}
             </section>
 
             {serverErrorMessage && (
