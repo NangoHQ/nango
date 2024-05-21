@@ -17,7 +17,7 @@ import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator, { syncCommandToOperation } from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
-import slackNotificationService from './services/notification/slack.service.js';
+import slackNotificationService, { generateSlackConnectionId } from './services/notification/slack.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import routeWebhook from './integrations/scripts/webhook/webhook.manager.js';
 import featureFlags from './utils/featureflags.js';
@@ -73,6 +73,7 @@ export {
     proxyService,
     flowService,
     slackNotificationService,
+    generateSlackConnectionId,
     analytics,
     AnalyticsTypes,
     routeWebhook,

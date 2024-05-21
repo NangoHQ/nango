@@ -1,4 +1,4 @@
-import type { Timestamps } from './Generic.js';
+import type { Timestamps } from '../db';
 
 export interface EnvironmentVariable extends Timestamps {
     id?: number;

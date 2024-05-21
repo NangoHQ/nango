@@ -47,8 +47,9 @@ export const EnvironmentSettings: React.FC = () => {
     const [webhookSecondaryEditMode, setWebhookSecondaryEditMode] = useState(false);
 
     const [slackIsConnected, setSlackIsConnected] = useState(false);
+    const [slackConnectedChannel, setSlackConnectedChannel] = useState<string | null>('');
 
-    const [hmacKey, setHmacKey] = useState('');
+    const [hmacKey, setHmacKey] = useState<string | null>('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
     const [accountUUID, setAccountUUID] = useState<string>('');
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
@@ -67,7 +68,7 @@ export const EnvironmentSettings: React.FC = () => {
     const { setVisible, bindings } = useModal();
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
-    const { environment, mutate } = useEnvironment(env);
+    const { environmentAndAccount, mutate } = useEnvironment(env);
 
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id));
@@ -75,10 +76,11 @@ export const EnvironmentSettings: React.FC = () => {
     }, [env]);
 
     useEffect(() => {
-        if (!environment) {
+        if (!environmentAndAccount) {
             return;
         }
 
+        const { environment, host, uuid, env_variables, slack_notifications_channel } = environmentAndAccount;
         setSecretKey(environment.pending_secret_key || environment.secret_key);
         setSecretKeyRotatable(environment.secret_key_rotatable !== false);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
@@ -92,17 +94,18 @@ export const EnvironmentSettings: React.FC = () => {
         setWebhookUrl(environment.webhook_url || '');
         setWebhookUrlSecondary(environment.webhook_url_secondary || '');
         setSendAuthWebhook(environment.send_auth_webhook);
-        setHostUrl(environment.host);
-        setAccountUUID(environment.uuid);
+        setHostUrl(host);
+        setAccountUUID(uuid);
 
         setHmacEnabled(environment.hmac_enabled);
         setAlwaysSendWebhook(environment.always_send_webhook);
-        setHmacKey(environment.hmac_key);
+        setHmacKey(environment.hmac_key || '');
 
         setSlackIsConnected(environment.slack_notifications);
+        setSlackConnectedChannel(slack_notifications_channel);
 
-        setEnvVariables(environment.env_variables);
-    }, [environment]);
+        setEnvVariables(env_variables);
+    }, [environmentAndAccount]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -594,8 +597,8 @@ export const EnvironmentSettings: React.FC = () => {
                             </div>
                             <div className="">
                                 <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : createSlackConnection}>
-                                    <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
-                                    {slackIsConnected ? 'Disconnect' : 'Connect'}
+                                    <IntegrationLogo provider="slack" height={5} width={6} classNames="" />
+                                    {slackIsConnected ? `Disconnect ${slackConnectedChannel}` : 'Connect'}
                                 </Button>
                             </div>
                         </div>
@@ -741,7 +744,7 @@ export const EnvironmentSettings: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                            {!environment?.webhook_url_secondary && !webhookSecondaryEditMode ? (
+                            {!environmentAndAccount?.environment.webhook_url_secondary && !webhookSecondaryEditMode ? (
                                 <button
                                     onClick={() => setWebhookSecondaryEditMode(true)}
                                     className="mx-8 mt-4 hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm"
@@ -917,7 +920,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                 name="hmac_key"
                                                 autoComplete="new-password"
                                                 type="text"
-                                                value={hmacKey}
+                                                value={hmacKey || ''}
                                                 onChange={(event) => setHmacKey(event.target.value)}
                                                 className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
                                             />

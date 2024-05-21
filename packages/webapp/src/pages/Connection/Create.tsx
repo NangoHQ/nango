@@ -39,7 +39,7 @@ export default function IntegrationCreate() {
     const [oauthSelectedScopes, oauthAddToScopesSet, oauthRemoveFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
-    const [websocketsPath, setWebsocketsPath] = useState('');
+    const [websocketsPath, setWebsocketsPath] = useState<string>('');
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI(env);
@@ -54,7 +54,7 @@ export default function IntegrationCreate() {
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
     const { providerConfigKey } = useParams();
-    const { environment } = useEnvironment(env);
+    const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {
         setLoaded(false);
@@ -94,10 +94,11 @@ export default function IntegrationCreate() {
             }
         };
 
-        if (environment) {
+        if (environmentAndAccount) {
+            const { environment, host } = environmentAndAccount;
             setPublicKey(environment.public_key);
-            setHostUrl(environment.host || baseUrl());
-            setWebsocketsPath(environment.websockets_path);
+            setHostUrl(host || baseUrl());
+            setWebsocketsPath(environment.websockets_path || '');
             setIsHmacEnabled(Boolean(environment.hmac_key));
         }
 
@@ -105,7 +106,7 @@ export default function IntegrationCreate() {
             setLoaded(true);
             void getIntegrations();
         }
-    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environment, setPublicKey, providerConfigKey]);
+    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environmentAndAccount, setPublicKey, providerConfigKey]);
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();

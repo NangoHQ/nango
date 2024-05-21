@@ -31,7 +31,7 @@ export enum Tabs {
 export default function ShowIntegration() {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
-    const { environment, mutate: environmentMutate } = useEnvironment(env);
+    const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
 
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
@@ -67,10 +67,10 @@ export default function ShowIntegration() {
     }, [syncLoadError]);
 
     useEffect(() => {
-        if (environment) {
-            setSlackIsConnected(environment.slack_notifications);
+        if (environmentAndAccount) {
+            setSlackIsConnected(environmentAndAccount.environment.slack_notifications);
         }
-    }, [environment]);
+    }, [environmentAndAccount]);
 
     useEffect(() => {
         if (location.hash === '#models' || location.hash === '#syncs') {
@@ -149,8 +149,8 @@ We could not retrieve and/or refresh your access token due to the following erro
     };
 
     const createSlackConnection = async () => {
-        if (!environment) return;
-        const { uuid: accountUUID, host: hostUrl } = environment;
+        if (!environmentAndAccount) return;
+        const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
         const onFinish = () => {
             environmentMutate();
             toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
