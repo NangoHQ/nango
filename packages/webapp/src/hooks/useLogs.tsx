@@ -75,7 +75,6 @@ export function useSearchMessages(env: string, body: SearchMessages['Body']) {
             setError(undefined);
             setData((await res.json()) as SearchMessages['Success']);
         } catch (err) {
-            console.log(err);
             setData(undefined);
             setError(err as any);
         } finally {
