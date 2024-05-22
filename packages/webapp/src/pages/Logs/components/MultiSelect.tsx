@@ -1,20 +1,20 @@
-import type { SearchLogsState } from '@nangohq/types';
+import type { SearchOperationsState } from '@nangohq/types';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../../components/ui/DropdownMenu';
 import Button from '../../../components/ui/button/Button';
 import { useState } from 'react';
 
 export interface MultiSelectArgs {
     label: string;
-    options: { name: string; value: SearchLogsState }[];
-    selected: SearchLogsState[];
-    defaultSelect: SearchLogsState[];
+    options: { name: string; value: SearchOperationsState }[];
+    selected: SearchOperationsState[];
+    defaultSelect: SearchOperationsState[];
     all?: boolean;
-    onChange: (selected: SearchLogsState[]) => void;
+    onChange: (selected: SearchOperationsState[]) => void;
 }
 
 export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selected, defaultSelect, all, onChange }) => {
     const [open, setOpen] = useState(false);
-    const select = (val: SearchLogsState, checked: boolean) => {
+    const select = (val: SearchOperationsState, checked: boolean) => {
         if (all && val === 'all') {
             onChange(['all']);
             return;
@@ -30,7 +30,9 @@ export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selecte
     return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
-                <Button variant="zombieGray">{label}</Button>
+                <Button variant="zombieGray" size={'xs'}>
+                    {label}
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
                 {options.map((option) => {

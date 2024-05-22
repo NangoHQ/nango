@@ -1,5 +1,5 @@
 import { client } from '../es/client.js';
-import type { MessageRow, OperationRow, SearchLogsState } from '@nangohq/types';
+import type { MessageRow, OperationRow, SearchOperationsState } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
 import { errors } from '@opensearch-project/opensearch';
@@ -30,7 +30,12 @@ export async function createMessage(row: MessageRow): Promise<void> {
 /**
  * List operations
  */
-export async function listOperations(opts: { accountId: number; environmentId?: number; limit: number; states: SearchLogsState[] }): Promise<ListOperations> {
+export async function listOperations(opts: {
+    accountId: number;
+    environmentId?: number;
+    limit: number;
+    states?: SearchOperationsState[] | undefined;
+}): Promise<ListOperations> {
     const query: opensearchtypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }],
@@ -41,7 +46,8 @@ export async function listOperations(opts: { accountId: number; environmentId?: 
     if (opts.environmentId) {
         (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
     }
-    if (opts.states.length > 1 || opts.states[0] !== 'all') {
+    if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
+        // Where or
         (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: opts.states.map((state) => {
@@ -134,21 +140,42 @@ export async function setTimeouted(opts: Pick<MessageRow, 'id'>): Promise<void> 
 /**
  * List messages
  */
-export async function listMessages(opts: { parentId: MessageRow['parentId']; limit: number }): Promise<ListMessages> {
+export async function listMessages(opts: {
+    parentId: string;
+    limit: number;
+    states?: SearchOperationsState[] | undefined;
+    search?: string | undefined;
+}): Promise<ListMessages> {
+    const query: opensearchtypes.QueryDslQueryContainer = {
+        bool: {
+            must: [{ term: { parentId: opts.parentId } }],
+            should: []
+        }
+    };
+
+    if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.states.map((state) => {
+                    return { term: { state } };
+                })
+            }
+        });
+    }
+    if (opts.search) {
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            match_phrase_prefix: { message: { query: opts.search } }
+        });
+    }
+
     const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
-        size: 5000,
+        size: opts.limit,
         sort: ['createdAt:desc', '_score'],
         track_total_hits: true,
-        body: {
-            query: {
-                bool: {
-                    must: [{ term: { parentId: opts.parentId } }]
-                }
-            }
-        }
+        body: { query }
     });
-
     const hits = res.body.hits;
 
     return {
