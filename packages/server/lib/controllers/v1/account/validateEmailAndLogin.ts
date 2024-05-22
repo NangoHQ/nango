@@ -31,13 +31,29 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
 
     const { token } = val.data;
 
-    const userAndAccount = await userService.getUserAndAccountByToken(token);
+    const tokenResponse = await userService.getUserAndAccountByToken(token);
 
-    if (!userAndAccount) {
-        logger.error('Error validating user');
-        res.status(500).send({ error: { code: 'error_validating_user', message: 'There was a problem validating the user. Please reach out to support.' } });
+    if (tokenResponse.isErr()) {
+        const error = tokenResponse.error;
+
+        if (error.message === 'token_expired') {
+            res.status(400).send({
+                error: {
+                    code: 'token_expired',
+                    message: 'The token has expired. An email has been sent with a new token.'
+                }
+            });
+        } else {
+            logger.error('Error validating user');
+            res.status(500).send({
+                error: { code: 'error_validating_user', message: 'There was a problem validating the user. Please reach out to support.' }
+            });
+        }
+
         return;
     }
+
+    const userAndAccount = tokenResponse.value;
 
     await userService.verifyUserEmail(userAndAccount.user_id);
 

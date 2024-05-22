@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import { useResetPasswordAPI } from '../utils/api';
-import DefaultLayout from '../layout/DefaultLayout';
+import { useResetPasswordAPI } from '../../utils/api';
+import DefaultLayout from '../../layout/DefaultLayout';
 
 export default function ResetPassword() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');

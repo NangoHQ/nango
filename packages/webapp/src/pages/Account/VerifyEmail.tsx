@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
-import type { GetEmailByUuid } from '@nangohq/types';
+import type { GetEmailByUuid, ResendVerificationEmailByUuid } from '@nangohq/types';
 import { toast } from 'react-toastify';
 
-import DefaultLayout from '../layout/DefaultLayout';
+import DefaultLayout from '../../layout/DefaultLayout';
 
-export default function VerifyEmail() {
+export function VerifyEmail() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [email, setEmail] = useState('');
     const [loaded, setLoaded] = useState(false);
@@ -43,7 +43,7 @@ export default function VerifyEmail() {
         if (!loaded) {
             getEmail();
         }
-    }, [uuid, loaded, setLoaded]);
+    }, [uuid, loaded, setLoaded, navigate]);
 
     const resendEmail = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -62,7 +62,7 @@ export default function VerifyEmail() {
         if (res?.status === 200) {
             toast.success('Verification email sent again!', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
-            const response = await res.json();
+            const response: ResendVerificationEmailByUuid['Errors'] = await res.json();
             setServerErrorMessage(response.error.message || 'Unkown error...');
         }
     };

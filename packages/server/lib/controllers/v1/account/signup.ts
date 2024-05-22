@@ -36,8 +36,23 @@ export const signup = asyncWrapper<Signup>(async (req, res) => {
 
     const { email, password, name } = val.data;
 
-    if ((await userService.getUserByEmail(email)) !== null) {
-        res.status(400).send({ error: { code: 'user_already_exists', message: 'User with this email already exists' } });
+    const existingUser = await userService.getUserByEmail(email);
+    if (existingUser !== null) {
+        if (!existingUser.email_verified) {
+            res.status(400).send({
+                error: {
+                    code: 'email_not_verified',
+                    message: 'A user already exists with this email address but the address is not verified.'
+                }
+            });
+        } else {
+            res.status(400).send({
+                error: {
+                    code: 'user_already_exists',
+                    message: 'User with this email already exists'
+                }
+            });
+        }
         return;
     }
 

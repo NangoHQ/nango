@@ -10,9 +10,9 @@ import { AUTH_ENABLED, isCloud, isLocal } from './utils/utils';
 import { fetcher } from './utils/api';
 import { useStore } from './store';
 
-import Signup from './pages/Signup';
-import InviteSignup from './pages/InviteSignup';
-import Signin from './pages/Signin';
+import Signup from './pages/Account/Signup';
+import InviteSignup from './pages/Account/InviteSignup';
+import Signin from './pages/Account/Signin';
 import { InteractiveDemo } from './pages/InteractiveDemo';
 import IntegrationList from './pages/Integration/List';
 import CreateIntegration from './pages/Integration/Create';
@@ -22,9 +22,10 @@ import Connection from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
 import { EnvironmentSettings } from './pages/EnvironmentSettings';
 import { PrivateRoute } from './components/PrivateRoute';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/Account/ForgotPassword';
+import ResetPassword from './pages/Account/ResetPassword';
+import { VerifyEmail } from './pages/Account/VerifyEmail';
+import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
 import Activity from './pages/Activity';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
@@ -32,7 +33,7 @@ import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
-import { EmailVerified } from './pages/EmailVerified';
+import { EmailVerified } from './pages/Account/EmailVerified';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -111,6 +112,7 @@ const App = () => {
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
                             <Route path="/verify-email/:uuid" element={<VerifyEmail />} />
+                            <Route path="/verify-email/expired/:token" element={<VerifyEmailByExpiredToken />} />
                             <Route path="/signup/verification/:token" element={<EmailVerified />} />
                         </>
                     )}

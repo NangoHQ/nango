@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Loading } from '@geist-ui/core';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAnalyticsTrack } from '../utils/analytics';
-import { useSignin } from '../utils/user';
+import { useAnalyticsTrack } from '../../utils/analytics';
+import { useSignin } from '../../utils/user';
 import type { ValidateEmailAndLogin } from '@nangohq/types';
 import { toast } from 'react-toastify';
-import { useStore } from '../store';
+import { useStore } from '../../store';
 
 export const EmailVerified: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
@@ -32,6 +32,13 @@ export const EmailVerified: React.FC = () => {
                 const response = await res.json();
 
                 if (res.status !== 200) {
+                    const errorResponse: ValidateEmailAndLogin['Errors'] = response;
+
+                    if (errorResponse.error.code === 'token_expired') {
+                        toast.error(errorResponse.error.message, { position: toast.POSITION.BOTTOM_CENTER });
+                        navigate(`/verify-email/expired/${token}`);
+                        return;
+                    }
                     toast.error(response.error.message || 'Issue verifying email. Please try again.', { position: toast.POSITION.BOTTOM_CENTER });
                 } else {
                     const user: ValidateEmailAndLogin['Success']['user'] = response['user'];

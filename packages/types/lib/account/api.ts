@@ -9,7 +9,12 @@ export type Signup = Endpoint<{
         name: string;
         password: string;
     };
-    Error: ApiError<'email_already_verified'> | ApiError<'error_creating_user'> | ApiError<'user_already_exists'> | ApiError<'error_creating_account'>;
+    Error:
+        | ApiError<'email_already_verified'>
+        | ApiError<'error_creating_user'>
+        | ApiError<'user_already_exists'>
+        | ApiError<'error_creating_account'>
+        | ApiError<'email_not_verified'>;
     Success: {
         uuid: string;
     };
@@ -42,7 +47,7 @@ export type ValidateEmailAndLogin = Endpoint<{
     Body: {
         token: string;
     };
-    Error: ApiError<'error_logging_in'> | ApiError<'error_validating_user'>;
+    Error: ApiError<'error_logging_in'> | ApiError<'error_validating_user'> | ApiError<'token_expired'> | ApiError<'error_refreshing_token'>;
     Success: {
         user: WebUser;
     };
@@ -71,11 +76,23 @@ export type ResendVerificationEmailByEmail = Endpoint<{
 export type GetEmailByUuid = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/account/email/:uuid';
-    Params: { id: string };
+    Params: { uuid: string };
     Error: ApiError<'user_not_found'>;
     Success: {
         email: string;
         verified: boolean;
+    };
+}>;
+
+export type GetEmailByExpiredToken = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/account/email/expired-token/:token';
+    Params: { token: string };
+    Error: ApiError<'user_not_found'> | ApiError<'error_refreshing_token'>;
+    Success: {
+        email: string;
+        verified: boolean;
+        uuid: string;
     };
 }>;
 

@@ -40,7 +40,8 @@ import {
     signup,
     signupWithToken,
     signin,
-    validateEmailAndLogin
+    validateEmailAndLogin,
+    getEmailByExpiredToken
 } from './controllers/v1/account/index.js';
 import { setMetadata } from './controllers/v1/connection/setMetadata.js';
 import { updateMetadata } from './controllers/v1/connection/updateMetadata.js';
@@ -147,6 +148,7 @@ if (AUTH_ENABLED) {
     web.route('/api/v1/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
     web.route('/api/v1/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/api/v1/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
+    web.route('/api/v1/account/email/expired-token/:token').get(rateLimiterMiddleware, getEmailByExpiredToken);
     web.route('/api/v1/account/verify/code').post(rateLimiterMiddleware, validateEmailAndLogin);
 }
 

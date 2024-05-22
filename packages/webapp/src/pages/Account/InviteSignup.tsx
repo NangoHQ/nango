@@ -1,15 +1,47 @@
-import { useState } from 'react';
-import type { Signup } from '@nangohq/types';
-import { Link, useNavigate } from 'react-router-dom';
-import { MANAGED_AUTH_ENABLED } from '../utils/utils';
-import { useSignupAPI } from '../utils/api';
-import DefaultLayout from '../layout/DefaultLayout';
-import GoogleButton from '../components/ui/button/Auth/Google';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-export default function Signup() {
+import type { SignupWithToken } from '@nangohq/types';
+import { useInviteSignupAPI } from '../../utils/api';
+import { useAnalyticsTrack } from '../../utils/analytics';
+import { MANAGED_AUTH_ENABLED, isEnterprise } from '../../utils/utils';
+import { useSignin } from '../../utils/user';
+import DefaultLayout from '../../layout/DefaultLayout';
+import GoogleButton from '../../components/ui/button/Auth/Google';
+
+export default function InviteSignup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [loaded, setLoaded] = useState(false);
+    const [invitedName, setName] = useState('');
+    const [invitedEmail, setEmail] = useState('');
+    const [invitedAccountID, setAccountID] = useState<number>();
     const navigate = useNavigate();
-    const signupAPI = useSignupAPI();
+    const getInvitee = useInviteSignupAPI();
+    const signin = useSignin();
+    const analyticsTrack = useAnalyticsTrack();
+
+    const { token } = useParams();
+
+    useEffect(() => {
+        const getInvite = async () => {
+            const res = await getInvitee(token as string);
+
+            if (res?.status === 200) {
+                const invitee = await res.json();
+                const { name, email, account_id } = invitee;
+                setName(name);
+                setEmail(email);
+                setAccountID(Number(account_id));
+            } else {
+                isEnterprise() ? navigate('/signin') : navigate('/signup');
+            }
+        };
+
+        if (!loaded) {
+            setLoaded(true);
+            getInvite();
+        }
+    }, [navigate, getInvitee, token, loaded, setLoaded]);
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -21,16 +53,34 @@ export default function Signup() {
             password: { value: string };
         };
 
-        const res = await signupAPI(target.name.value, target.email.value, target.password.value);
+        const res = await fetch(`/api/v1/account/signup/token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: target.name.value,
+                email: target.email.value,
+                password: target.password.value,
+                accountId: invitedAccountID,
+                token
+            })
+        });
 
         if (res?.status === 200) {
-            const response: Signup['Success'] = await res.json();
-            const { uuid } = response;
-
-            navigate(`/verify-email/${uuid}`);
-        } else {
-            const response: Signup['Errors'] = await res?.json();
-            setServerErrorMessage(response?.error?.message || 'Issue signing up. Please try again.');
+            const data = await res.json();
+            const user: SignupWithToken['Success']['user'] = data['user'];
+            analyticsTrack('web:account_signup', {
+                user_id: user.id,
+                email: user.email,
+                name: user.name,
+                accountId: user.accountId
+            });
+            signin(user);
+            navigate('/');
+        } else if (res != null) {
+            const errorMessage = (await res.json()).error.message || 'Unknown error';
+            setServerErrorMessage(errorMessage);
         }
     };
 
@@ -39,7 +89,7 @@ export default function Signup() {
             <DefaultLayout>
                 <div className="flex flex-col justify-center">
                     <div className="flex flex-col justify-center w-80 mx-4">
-                        <h2 className="mt-4 text-center text-[20px] text-white">Sign up to Nango</h2>
+                        <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Sign up</h2>
                         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
                             <div>
                                 <div className="mt-1">
@@ -48,9 +98,10 @@ export default function Signup() {
                                         name="name"
                                         type="text"
                                         autoComplete="name"
+                                        defaultValue={invitedName}
                                         required
-                                        minLength={1}
                                         placeholder="Name"
+                                        minLength={1}
                                         maxLength={100}
                                         className="border-border-gray bg-dark-600 placeholder-dark-500 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
                                     />
@@ -64,9 +115,11 @@ export default function Signup() {
                                         name="email"
                                         type="email"
                                         autoComplete="email"
+                                        defaultValue={invitedEmail}
                                         placeholder="Email"
                                         required
-                                        className="border-border-gray bg-dark-600 placeholder-dark-500 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
+                                        readOnly={!isEnterprise()}
+                                        className={`${isEnterprise() ? '' : 'cursor-not-allowed outline-none border-transparent focus:border-transparent focus:ring-0 border-none '}bg-bg-black text-text-light-gray block h-11 focus:outline-none w-full appearance-none rounded-md px-3 py-2 text-[14px] shadow-sm`}
                                     />
                                 </div>
                             </div>
@@ -77,8 +130,8 @@ export default function Signup() {
                                         id="password"
                                         name="password"
                                         type="password"
-                                        autoComplete="new-password"
                                         placeholder="Password"
+                                        autoComplete="current-password"
                                         required
                                         minLength={8}
                                         maxLength={50}
@@ -104,17 +157,14 @@ export default function Signup() {
                                     <span className="text-dark-500">or continue with</span>
                                     <div className="border-t border-gray-600 flex-grow ml-7"></div>
                                 </div>
-                                <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} />
+                                <GoogleButton
+                                    text="Sign up with Google"
+                                    invitedAccountID={invitedAccountID}
+                                    token={token}
+                                    setServerErrorMessage={setServerErrorMessage}
+                                />
                             </>
                         )}
-                    </div>
-                    <div className="grid text-xs">
-                        <div className="mt-7 flex place-self-center">
-                            <p className="text-dark-500">Already have an account?</p>
-                            <Link to="/signin" className="text-white ml-1">
-                                Sign in.
-                            </Link>
-                        </div>
                     </div>
                     <div className="grid w-full">
                         <div className="mt-8 flex text-xs">

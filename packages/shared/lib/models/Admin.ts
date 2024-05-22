@@ -24,6 +24,7 @@ export interface User extends Timestamps {
     currentUser?: boolean;
     email_verified: boolean;
     email_verification_token: string | null;
+    email_verification_token_expires_at: Date | null;
     uuid: string;
 }
 
