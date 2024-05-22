@@ -79,41 +79,53 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
 
 export const statusDefaultOptions: SearchOperationsState[] = ['all'];
 export const statusOptions: MultiSelectArgs<SearchOperationsState>['options'] = [
-    {
-        name: 'All',
-        value: 'all'
-    },
-    {
-        name: 'Success',
-        value: 'success'
-    },
-    {
-        name: 'Failed',
-        value: 'failed'
-    },
-    {
-        name: 'Running',
-        value: 'running'
-    },
-    {
-        name: 'Cancelled',
-        value: 'cancelled'
-    },
-    {
-        name: 'Timeout',
-        value: 'timeout'
-    },
-    {
-        name: 'Waiting',
-        value: 'waiting'
-    }
+    { name: 'All', value: 'all' },
+    { name: 'Success', value: 'success' },
+    { name: 'Failed', value: 'failed' },
+    { name: 'Running', value: 'running' },
+    { name: 'Cancelled', value: 'cancelled' },
+    { name: 'Timeout', value: 'timeout' },
+    { name: 'Waiting', value: 'waiting' }
 ];
 
-export const typesDefaultOptions: SearchOperationsType[] = [{ type: 'sync', action: 'run' }];
-export const typesOptions: MultiSelectArgs<SearchOperationsType>['options'] = [
+export const typesDefaultOptions: SearchOperationsType[] = ['all'];
+export const typesOptions = [
     {
-        name: 'Execution',
-        value: { type: 'sync', action: 'run' }
+        value: 'all',
+        name: 'All'
+    },
+    {
+        value: 'sync',
+        name: 'Sync',
+        childs: [
+            { name: 'Execution', value: 'sync:run' },
+            { name: 'Pause Schedule', value: 'sync:pause' },
+            { name: 'Resume Schedule', value: 'sync:unpause' },
+            { name: 'Trigger Incremental Execution', value: 'sync:request_run' },
+            { name: 'Trigger Full Execution', value: 'sync:request_run_full' },
+            { name: 'Sync Init', value: 'sync:init' },
+            { name: 'Cancel Execution', value: 'sync:cancel' }
+        ]
+    },
+    {
+        value: 'action',
+        name: 'Action'
+    },
+    {
+        value: 'proxy',
+        name: 'Proxy'
+    },
+    {
+        value: 'deploy',
+        name: 'Deploy'
+    },
+    {
+        value: 'auth',
+        name: 'Auth'
+    },
+    {
+        value: 'webhook',
+        name: 'Webhook'
     }
 ];
 

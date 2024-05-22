@@ -8,7 +8,7 @@ import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './components/MultiSelect';
-import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions, typesOptions } from './constants';
+import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
 import { useEffect, useMemo, useState } from 'react';
 import type { SearchOperationsIntegration, SearchOperationsPeriod, SearchOperationsState, SearchOperationsSync, SearchOperationsType } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
@@ -21,6 +21,7 @@ import { useInterval } from 'react-use';
 import Button from '../../components/ui/button/Button';
 import { LightningBoltIcon } from '@radix-ui/react-icons';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
+import { TypesSelect } from './components/TypesSelect';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -37,7 +38,7 @@ export const LogsSearch: React.FC = () => {
     const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
     const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
-    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, integrations, connections, syncs });
+    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, types, integrations, connections, syncs });
 
     const table = useReactTable({
         data: data ? data.data : [],
@@ -150,7 +151,7 @@ export const LogsSearch: React.FC = () => {
             <div className="flex gap-2 justify-between">
                 <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
-                <MultiSelect label="Type" options={typesOptions} selected={types} defaultSelect={typesDefaultOptions} onChange={setTypes} />
+                <TypesSelect selected={types} onChange={setTypes} />
                 <SearchableMultiSelect label="Integration" selected={integrations} category={'config'} onChange={setIntegrations} />
                 <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
                 <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />

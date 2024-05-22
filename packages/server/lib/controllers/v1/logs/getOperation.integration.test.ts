@@ -76,7 +76,7 @@ describe('GET /logs/operations/:operationId', () => {
     it('should get one result', async () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
@@ -108,7 +108,7 @@ describe('GET /logs/operations/:operationId', () => {
                 message: 'test 1',
                 meta: null,
                 operation: {
-                    type: 'auth'
+                    type: 'proxy'
                 },
                 parentId: null,
                 request: null,
@@ -130,7 +130,7 @@ describe('GET /logs/operations/:operationId', () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 

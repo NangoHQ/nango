@@ -5,7 +5,8 @@ import type {
     SearchOperationsConnection,
     SearchOperationsIntegration,
     SearchOperationsState,
-    SearchOperationsSync
+    SearchOperationsSync,
+    SearchOperationsType
 } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
@@ -45,6 +46,7 @@ export async function listOperations(opts: {
     environmentId?: number;
     limit: number;
     states?: SearchOperationsState[] | undefined;
+    types?: SearchOperationsType[] | undefined;
     integrations?: SearchOperationsIntegration[] | undefined;
     connections?: SearchOperationsConnection[] | undefined;
     syncs?: SearchOperationsSync[] | undefined;
@@ -96,6 +98,23 @@ export async function listOperations(opts: {
                 should: opts.syncs.map((sync) => {
                     return { term: { 'syncConfigName.keyword': sync } };
                 })
+            }
+        });
+    }
+    if (opts.types && (opts.types.length > 1 || opts.types[0] !== 'all')) {
+        const types: opensearchtypes.QueryDslQueryContainer[] = [];
+        for (const couple of opts.types) {
+            const [type, action] = couple.split(':');
+            if (action && type) {
+                types.push({ bool: { must: [{ term: { 'operation.action': action } }, { term: { 'operation.type': type } }], should: [] } });
+            } else if (type) {
+                types.push({ term: { 'operation.type': type } });
+            }
+        }
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: types
             }
         });
     }

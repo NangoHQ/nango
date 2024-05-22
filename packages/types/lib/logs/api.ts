@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import type { Endpoint } from '../api';
-import type { MessageRow, MessageState, OperationRow } from './messages';
+import type { MessageOperation, MessageRow, MessageState, OperationRow } from './messages';
+
+type Concat<T extends MessageOperation> = T[keyof T] | (T extends { action: string } ? `${T['type']}:${T['action']}` : never);
 
 export type SearchOperations = Endpoint<{
     Method: 'POST';
@@ -21,7 +23,7 @@ export type SearchOperations = Endpoint<{
     };
 }>;
 export type SearchOperationsState = 'all' | MessageState;
-export type SearchOperationsType = OperationRow['operation'];
+export type SearchOperationsType = 'all' | Concat<MessageOperation>;
 export type SearchOperationsIntegration = 'all' | string;
 export type SearchOperationsConnection = 'all' | string;
 export type SearchOperationsSync = 'all' | string;

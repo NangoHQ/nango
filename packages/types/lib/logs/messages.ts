@@ -41,9 +41,7 @@ export interface MessageOpAction {
 }
 export interface MessageOpAuth {
     type: 'auth';
-}
-export interface MessageOpToken {
-    type: 'token';
+    action: 'connect' | 'refresh_token' | 'post_connection';
 }
 export interface MessageOpAdmin {
     type: 'admin';
@@ -57,15 +55,7 @@ export interface MessageOpDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
-export type MessageOperation =
-    | MessageOpSync
-    | MessageOpProxy
-    | MessageOpAction
-    | MessageOpWebhook
-    | MessageOpDeploy
-    | MessageOpAuth
-    | MessageOpAdmin
-    | MessageOpToken;
+export type MessageOperation = MessageOpSync | MessageOpProxy | MessageOpAction | MessageOpWebhook | MessageOpDeploy | MessageOpAuth | MessageOpAdmin;
 
 /**
  * Full schema
