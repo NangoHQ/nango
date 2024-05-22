@@ -2449,6 +2449,18 @@ wildix-pbx:
     docs: https://docs.nango.dev/integrations/all/wildix-pbx
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
+woocommerce:
+    categories:
+        - e-commerce
+        - dev-tools
+        - design
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.storeURL}
+        verification:
+            method: GET
+            endpoint: /wp-json/wc/v3/customers
+    docs: https://docs.nango.dev/integrations/all/woocommerce
 workable:
     categories:
         - ats

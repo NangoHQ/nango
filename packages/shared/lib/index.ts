@@ -18,8 +18,8 @@ import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator, { syncCommandToOperation } from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
 import slackNotificationService from './services/notification/slack.service.js';
+import webhookService from './services/notification/webhook.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
-import routeWebhook from './integrations/scripts/webhook/webhook.manager.js';
 import featureFlags from './utils/featureflags.js';
 
 export * from './services/activity/activity.service.js';
@@ -73,9 +73,9 @@ export {
     proxyService,
     flowService,
     slackNotificationService,
+    webhookService,
     analytics,
     AnalyticsTypes,
-    routeWebhook,
     featureFlags,
     syncCommandToOperation
 };
