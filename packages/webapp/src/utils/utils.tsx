@@ -372,3 +372,22 @@ export function parseEndpoint(endpoint: string | FlowEndpoint): string {
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
+
+export function formatFrequency(frequency: string): string {
+    const unitMap: Record<string, string> = {
+        minutes: 'm',
+        minute: 'm',
+        hours: 'h',
+        hour: 'h',
+        days: 'd',
+        day: 'd'
+    };
+
+    for (const [unit, abbreviation] of Object.entries(unitMap)) {
+        if (frequency.includes(unit)) {
+            return frequency.replace(unit, abbreviation).replace(/\s/g, '');
+        }
+    }
+
+    return frequency;
+}

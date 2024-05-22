@@ -16,7 +16,15 @@ import {
 } from '@heroicons/react/24/outline';
 import type { SyncResponse, RunSyncCommand, Connection } from '../../types';
 import { UserFacingSyncCommand } from '../../types';
-import { calculateTotalRuntime, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun, getSimpleDate } from '../../utils/utils';
+import {
+    formatFrequency,
+    calculateTotalRuntime,
+    getRunTime,
+    parseLatestSyncResult,
+    formatDateToUSFormat,
+    interpretNextRun,
+    getSimpleDate
+} from '../../utils/utils';
 import Button from '../../components/ui/button/Button';
 import { useRunSyncAPI } from '../../utils/api';
 
@@ -233,7 +241,7 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
                                             {sync?.status === 'SUCCESS' && renderBubble(<SuccessBubble />, successBubbleStyles, sync)}
                                         </span>
                                     </div>
-                                    <div className="flex items-center w-10">{sync.frequency}</div>
+                                    <div className="flex items-center w-10">{formatFrequency(sync.frequency)}</div>
                                     <div className="flex items-center w-28">
                                         {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                                             <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
