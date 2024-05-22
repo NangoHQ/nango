@@ -38,7 +38,12 @@ export const signin = asyncWrapper<Signin>(async (req, res) => {
     const user = getUser.value;
 
     if (!user.email_verified) {
-        res.status(400).send({ error: { code: 'email_not_verified' } });
+        // since a session is created to get the user info we need to destroy it
+        // since the user is not verified even if they exist and the credentials
+        // are correct
+        req.session.destroy(() => {
+            res.status(400).send({ error: { code: 'email_not_verified' } });
+        });
         return;
     }
 
@@ -48,5 +53,6 @@ export const signin = asyncWrapper<Signin>(async (req, res) => {
         email: user.email,
         name: user.name
     };
+
     res.status(200).send({ user: webUser });
 });
