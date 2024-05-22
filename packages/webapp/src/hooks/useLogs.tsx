@@ -25,7 +25,6 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'])
             setError(undefined);
             setData((await res.json()) as SearchOperations['Success']);
         } catch (err) {
-            console.log(err);
             setData(undefined);
             setError(err as any);
         } finally {

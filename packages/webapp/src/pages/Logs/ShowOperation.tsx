@@ -106,7 +106,11 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="font-semibold text-sm">Connection</div>
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.connectionName ? (
-                            <Link to={`/connections/${operation.connectionName}`} target="_blank" className="flex gap-1 items-center hover:text-white">
+                            <Link
+                                to={`/connections/${operation.configName}/${operation.connectionName}`}
+                                target="_blank"
+                                className="flex gap-1 items-center hover:text-white"
+                            >
                                 <div className="truncate">{operation.connectionName}</div>
                                 <div className="w-4">
                                     <ExternalLinkIcon className="w-[14px]" />
