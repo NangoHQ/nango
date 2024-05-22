@@ -2,13 +2,14 @@ import { Fragment } from 'react';
 import type { Tabs, SubTabs, EndpointResponse } from './Show';
 import EndpointRow from './components/EndpointRow';
 import HelpFooter from './components/HelpFooter';
-import type { IntegrationConfig, Environment, Flow, FlowEndpoint } from '../../types';
+import type { EnvironmentAndAccount } from '@nangohq/server';
+import type { IntegrationConfig, Flow, FlowEndpoint } from '../../types';
 
 interface APIReferenceProps {
     integration: IntegrationConfig | null;
     setActiveTab: (tab: Tabs) => void;
     endpoints: EndpointResponse;
-    environment: Environment;
+    environment: EnvironmentAndAccount['environment'];
     setSubTab: (tab: SubTabs) => void;
     setFlow: (flow: Flow) => void;
     setEndpoint: (endpoint: FlowEndpoint | string) => void;

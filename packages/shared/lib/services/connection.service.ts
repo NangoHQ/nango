@@ -423,7 +423,7 @@ class ConnectionService {
         return result[0].metadata;
     }
 
-    public async getConnectionConfig(connection: Connection): Promise<ConnectionConfig> {
+    public async getConnectionConfig(connection: Pick<Connection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
         const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('connection_config').where({
             connection_id: connection.connection_id,
             provider_config_key: connection.provider_config_key,
