@@ -17,6 +17,7 @@ export default function Signup() {
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
+        setShowResendEmail(false);
 
         const target = e.target as typeof e.target & {
             name: { value: string };
