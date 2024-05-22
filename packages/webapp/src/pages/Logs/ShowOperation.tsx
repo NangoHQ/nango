@@ -32,15 +32,15 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
                 <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="w-[250px]" />
+                <Skeleton className="w-[250px]" />
                 <div className="mt-4">
                     <h4 className="font-semibold text-sm mb-2">Payload</h4>
-                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="w-[250px]" />
                 </div>
                 <div className="mt-4">
                     <h4 className="font-semibold text-sm mb-2">Logs</h4>
-                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="w-[250px]" />
                 </div>
             </div>
         );
