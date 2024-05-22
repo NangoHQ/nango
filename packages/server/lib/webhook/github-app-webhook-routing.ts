@@ -1,5 +1,5 @@
 import type { InternalNango as Nango } from './internal-nango.js';
-import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import crypto from 'crypto';

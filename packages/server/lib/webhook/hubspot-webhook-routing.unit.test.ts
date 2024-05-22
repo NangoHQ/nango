@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import crypto from 'crypto';
 import * as HubspotWebhookRouting from './hubspot-webhook-routing.js';
 import type { InternalNango as Nango } from './internal-nango.js';
-import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 
 vi.mock('crypto', async () => {

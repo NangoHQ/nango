@@ -29,6 +29,11 @@ interface SchedulingProps {
     };
 }
 
+interface ClientError extends Error {
+    name: string;
+    payload: JsonValue;
+}
+
 export class OrchestratorClient {
     private fetchTimeoutMs: number;
     private baseUrl: string;
@@ -42,7 +47,7 @@ export class OrchestratorClient {
         return routeFetch(this.baseUrl, route);
     }
 
-    public async schedule(props: SchedulingProps): Promise<Result<{ taskId: string }>> {
+    public async schedule(props: SchedulingProps): Promise<Result<{ taskId: string }, ClientError>> {
         const res = await this.routeFetch(scheduleRoute)({
             body: {
                 scheduling: 'immediate',
@@ -54,13 +59,17 @@ export class OrchestratorClient {
             }
         });
         if ('error' in res) {
-            return Err(`${res.error.code}: ${res.error.message || 'Unknown error'}`);
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error scheduling tasks`,
+                payload: {} // TODO
+            });
         } else {
             return Ok(res);
         }
     }
 
-    async execute(props: Pick<Partial<SchedulingProps>, 'name' | 'groupKey' | 'args'>): Promise<Result<JsonValue>> {
+    async execute(props: Pick<Partial<SchedulingProps>, 'name' | 'groupKey' | 'args'>): Promise<Result<JsonValue, ClientError>> {
         const scheduleProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -76,11 +85,40 @@ export class OrchestratorClient {
         while (Date.now() - start < timeoutInMs) {
             const res = await this.routeFetch(outputRoute)({ params: { taskId } });
             if ('error' in res) {
-                return Err(res.error.message || 'Unknown error');
-            } else if (res.output) {
-                return Ok(res.output);
+                return Err({
+                    name: res.error.code,
+                    message: res.error.message || `Error fetching task '${taskId}' output`,
+                    payload: {}
+                });
+            } else {
+                switch (res.state) {
+                    case 'SUCCEEDED':
+                        return Ok(res.output);
+                    case 'FAILED':
+                        return Err({
+                            name: 'task_failed_error',
+                            message: `Task ${taskId} failed`,
+                            payload: res.output
+                        });
+                    case 'EXPIRED':
+                        return Err({
+                            name: 'task_failed_error',
+                            message: `Task ${taskId} expired`,
+                            payload: res.output
+                        });
+                    case 'CANCELLED':
+                        return Err({
+                            name: 'task_failed_error',
+                            message: `Task ${taskId} cancelled`,
+                            payload: res.output
+                        });
+                }
             }
         }
-        return Err(`Timeout exceeded: ${JSON.stringify(props)}`);
+        return Err({
+            name: 'task_execute_timeout',
+            message: `Task execution timeout: ${JSON.stringify(props)}`,
+            payload: {}
+        });
     }
 }
