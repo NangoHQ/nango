@@ -1,17 +1,17 @@
 import { z } from 'zod';
 import { userService } from '@nangohq/shared';
-import type { ResendVerificationEmail } from '@nangohq/types';
+import type { ResendVerificationEmailByUuid } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 const validation = z
     .object({
-        uuid: z.string().regex(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/)
+        uuid: z.string().uuid()
     })
     .strict();
 
-export const resendVerificationEmail = asyncWrapper<ResendVerificationEmail>(async (req, res) => {
+export const resendVerificationEmailByUuid = asyncWrapper<ResendVerificationEmailByUuid>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

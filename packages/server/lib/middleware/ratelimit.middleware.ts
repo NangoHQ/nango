@@ -65,17 +65,7 @@ function getKey(req: Request, res: Response): string {
 }
 
 function getPointsToConsume(req: Request): number {
-    const paths = [
-        '/api/v1/account/signin',
-        '/api/v1/account/signup',
-        '/api/v1/forgot-password',
-        '/api/v1/reset-password',
-        '/api/v1/account/signup/token',
-        '/api/v1/account/signup/invite',
-        '/api/v1/account/resend-verification-email',
-        '/api/v1/account/email',
-        '/api/v1/account/verify/code'
-    ];
+    const paths = ['/api/v1/account'];
 
     if (paths.some((path) => req.path.startsWith(path))) {
         // limiting to 6 requests per period to avoid brute force attacks

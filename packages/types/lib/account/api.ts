@@ -48,10 +48,20 @@ export type ValidateEmailAndLogin = Endpoint<{
     };
 }>;
 
-export type ResendVerificationEmail = Endpoint<{
+export type ResendVerificationEmailByUuid = Endpoint<{
     Method: 'POST';
-    Path: '/api/v1/account/resend-verification-email';
+    Path: '/api/v1/account/resend-verification-email/by-uuid';
     Body: { uuid: string };
+    Error: ApiError<'user_not_found'> | ApiError<'email_already_verified'>;
+    Success: {
+        success: boolean;
+    };
+}>;
+
+export type ResendVerificationEmailByEmail = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/account/resend-verification-email/by-email';
+    Body: { email: string };
     Error: ApiError<'user_not_found'> | ApiError<'email_already_verified'>;
     Success: {
         success: boolean;

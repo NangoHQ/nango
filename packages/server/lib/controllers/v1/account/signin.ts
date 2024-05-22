@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { getUserFromSession } from '../../../utils/utils.js';
-import { sendVerificationEmail } from '../../../helpers/email.js';
 import type { WebUser, Signin } from '@nangohq/types';
 
 const validation = z
@@ -39,7 +38,6 @@ export const signin = asyncWrapper<Signin>(async (req, res) => {
     const user = getUser.value;
 
     if (!user.email_verified) {
-        sendVerificationEmail(user.email, user.name, user.email_verification_token as string);
         res.status(400).send({ error: { code: 'email_not_verified' } });
         return;
     }

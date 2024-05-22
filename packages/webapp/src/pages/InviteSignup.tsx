@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import type { SignupWithToken } from '@nangohq/types';
 import { useInviteSignupAPI } from '../utils/api';
+import { useAnalyticsTrack } from '../utils/analytics';
 import { MANAGED_AUTH_ENABLED, isEnterprise } from '../utils/utils';
 import { useSignin } from '../utils/user';
-import type { User } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
 import GoogleButton from '../components/ui/button/Auth/Google';
 
@@ -17,6 +18,7 @@ export default function InviteSignup() {
     const navigate = useNavigate();
     const getInvitee = useInviteSignupAPI();
     const signin = useSignin();
+    const analyticsTrack = useAnalyticsTrack();
 
     const { token } = useParams();
 
@@ -67,7 +69,13 @@ export default function InviteSignup() {
 
         if (res?.status === 200) {
             const data = await res.json();
-            const user: User = data['user'];
+            const user: SignupWithToken['Success']['user'] = data['user'];
+            analyticsTrack('web:account_signup', {
+                user_id: user.id,
+                email: user.email,
+                name: user.name,
+                accountId: user.accountId
+            });
             signin(user);
             navigate('/');
         } else if (res != null) {

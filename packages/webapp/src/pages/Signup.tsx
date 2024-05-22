@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Signup } from '@nangohq/types';
 import { Link, useNavigate } from 'react-router-dom';
 import { MANAGED_AUTH_ENABLED } from '../utils/utils';
 import { useSignupAPI } from '../utils/api';
@@ -23,11 +24,12 @@ export default function Signup() {
         const res = await signupAPI(target.name.value, target.email.value, target.password.value);
 
         if (res?.status === 200) {
-            const { uuid } = await res.json();
+            const response: Signup['Success'] = await res.json();
+            const { uuid } = response;
 
             navigate(`/verify-email/${uuid}`);
         } else {
-            const response = await res?.json();
+            const response: Signup['Errors'] = await res?.json();
             setServerErrorMessage(response?.error?.message || 'Issue signing up. Please try again.');
         }
     };

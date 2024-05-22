@@ -33,7 +33,15 @@ import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { searchLogs } from './controllers/v1/logs/searchLogs.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
-import { getEmailByUuid, resendVerificationEmail, signup, signupWithToken, signin, validateEmailAndLogin } from './controllers/v1/account/index.js';
+import {
+    getEmailByUuid,
+    resendVerificationEmailByUuid,
+    resendVerificationEmailByEmail,
+    signup,
+    signupWithToken,
+    signin,
+    validateEmailAndLogin
+} from './controllers/v1/account/index.js';
 import { setMetadata } from './controllers/v1/connection/setMetadata.js';
 import { updateMetadata } from './controllers/v1/connection/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
@@ -134,9 +142,10 @@ if (AUTH_ENABLED) {
     web.route('/api/v1/account/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
     web.route('/api/v1/account/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
     web.route('/api/v1/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
-    web.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
-    web.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
-    web.route('/api/v1/account/resend-verification-email').post(rateLimiterMiddleware, resendVerificationEmail);
+    web.route('/api/v1/account/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
+    web.route('/api/v1/account/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+    web.route('/api/v1/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
+    web.route('/api/v1/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/api/v1/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
     web.route('/api/v1/account/verify/code').post(rateLimiterMiddleware, validateEmailAndLogin);
 }

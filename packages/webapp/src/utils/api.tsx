@@ -633,7 +633,7 @@ export function useDeleteConnectionAPI(env: string) {
 export function useRequestPasswordResetAPI() {
     return async (email: string) => {
         try {
-            const res = await fetch(`/api/v1/forgot-password`, {
+            const res = await fetch(`/api/v1/account/forgot-password`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ email: email })
@@ -649,7 +649,7 @@ export function useRequestPasswordResetAPI() {
 export function useResetPasswordAPI() {
     return async (token: string, password: string) => {
         try {
-            const res = await fetch(`/api/v1/reset-password`, {
+            const res = await fetch(`/api/v1/account/reset-password`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ password: password, token: token })

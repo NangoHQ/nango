@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
+import type { GetEmailByUuid } from '@nangohq/types';
 import { toast } from 'react-toastify';
 
 import DefaultLayout from '../layout/DefaultLayout';
@@ -22,17 +23,19 @@ export default function VerifyEmail() {
     useEffect(() => {
         const getEmail = async () => {
             const res = await fetch(`/api/v1/account/email/${uuid}`);
-            const response = await res.json();
 
             if (res?.status === 200) {
+                const response: GetEmailByUuid['Success'] = (await res.json()) as GetEmailByUuid['Success'];
                 const { email, verified } = response;
 
                 if (verified) {
-                    setServerErrorMessage('Email already verified. Please navigate to the login page');
+                    toast.success('Email already verified. Routing to the login page', { position: toast.POSITION.BOTTOM_CENTER });
+                    navigate('/signin');
                 }
                 setEmail(email);
             } else {
-                setServerErrorMessage(response.error.message || 'Issue verifying email. Please try again.');
+                const errorResponse: GetEmailByUuid['Errors'] = (await res.json()) as GetEmailByUuid['Errors'];
+                setServerErrorMessage(errorResponse.error.message || 'Issue verifying email. Please try again.');
             }
             setLoaded(true);
         };
@@ -46,7 +49,7 @@ export default function VerifyEmail() {
         e.preventDefault();
         setServerErrorMessage('');
 
-        const res = await fetch('/api/v1/account/resend-verification-email', {
+        const res = await fetch('/api/v1/account/resend-verification-email/by-uuid', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

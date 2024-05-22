@@ -6,7 +6,7 @@ import type { GetEmailByUuid } from '@nangohq/types';
 
 const validation = z
     .object({
-        uuid: z.string().regex(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/)
+        uuid: z.string().uuid()
     })
     .strict();
 
