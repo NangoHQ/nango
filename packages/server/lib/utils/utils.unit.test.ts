@@ -224,7 +224,7 @@ describe('Utils unit tests', () => {
     });
 
     it('Should place params to string with domain dot awareness', () => {
-        const url = interpolateString('https://${subdomain ?? "hello"}.service.com/oauth/authorize', { subdomain: 'myaccount' });
+        const url = interpolateString('https://${subdomain}.service.com/oauth/authorize', { subdomain: 'myaccount' });
         expect(url).toEqual('https://myaccount.service.com/oauth/authorize');
 
         const url2 = interpolateString('https://${subdomain}.service.com/oauth/authorize', { subdomain: '' });
