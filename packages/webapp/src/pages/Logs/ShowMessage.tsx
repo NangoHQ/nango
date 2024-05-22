@@ -37,7 +37,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     </div>
                 </div>
             </div>
-            <div className="overflow-x-auto">
+            <div>
                 <h4 className="font-semibold text-sm mb-2">Message</h4>
                 <div className="text-gray-400 text-sm bg-pure-black py-2">
                     <Prism

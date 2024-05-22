@@ -1,9 +1,7 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import get from 'lodash-es/get.js';
-import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { Connection, ConnectionConfig } from '../../../models/Connection.js';
-import connectionService from '../../../services/connection.service.js';
-import configService from '../../../services/config.service.js';
+import type { Config as ProviderConfig, Connection, ConnectionConfig } from '@nangohq/shared';
+import { connectionService, configService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
 import type { LogContextGetter } from '@nangohq/logs';

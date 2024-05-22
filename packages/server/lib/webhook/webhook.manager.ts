@@ -1,11 +1,6 @@
-import configService from '../../../services/config.service.js';
-import environmentService from '../../../services/environment.service.js';
-import webhookService from '../../../services/notification/webhook.service.js';
-import telemetry, { LogTypes } from '../../../utils/telemetry.js';
-import { LogActionEnum } from '../../../models/Activity.js';
+import { configService, environmentService, webhookService, telemetry, LogTypes, LogActionEnum } from '@nangohq/shared';
 import { internalNango } from './internal-nango.js';
 import { getLogger } from '@nangohq/utils';
-
 import * as webhookHandlers from './index.js';
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';

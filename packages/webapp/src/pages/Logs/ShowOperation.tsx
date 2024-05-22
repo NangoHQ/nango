@@ -34,15 +34,15 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
                 <h3 className="text-xl font-semibold text-white flex gap-4 items-center">Operation Details</h3>
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="w-[250px]" />
+                <Skeleton className="w-[250px]" />
                 <div className="mt-4">
                     <h4 className="font-semibold text-sm mb-2">Payload</h4>
-                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="w-[250px]" />
                 </div>
                 <div className="mt-4">
                     <h4 className="font-semibold text-sm mb-2">Logs</h4>
-                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="w-[250px]" />
                 </div>
             </div>
         );
@@ -108,7 +108,11 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="font-semibold text-sm">Connection</div>
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.connectionName ? (
-                            <Link to={`/connections/${operation.connectionName}`} target="_blank" className="flex gap-2.5 items-center hover:text-white">
+                            <Link
+                                to={`/connections/${operation.configName}/${operation.connectionName}`}
+                                target="_blank"
+                                className="flex gap-2.5 items-center hover:text-white"
+                            >
                                 <div className="truncate">{operation.connectionName}</div>
                                 <div className="w-4">
                                     <ExternalLinkIcon className="w-[14px]" />

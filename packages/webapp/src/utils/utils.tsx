@@ -378,3 +378,22 @@ const quantityFormatter = Intl.NumberFormat('en', { notation: 'compact', maximum
 export function formatQuantity(quantity: number): string {
     return quantityFormatter.format(quantity);
 }
+
+export function formatFrequency(frequency: string): string {
+    const unitMap: Record<string, string> = {
+        minutes: 'm',
+        minute: 'm',
+        hours: 'h',
+        hour: 'h',
+        days: 'd',
+        day: 'd'
+    };
+
+    for (const [unit, abbreviation] of Object.entries(unitMap)) {
+        if (frequency.includes(unit)) {
+            return frequency.replace(unit, abbreviation).replace(/\s/g, '');
+        }
+    }
+
+    return frequency;
+}

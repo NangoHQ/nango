@@ -1,13 +1,6 @@
 import get from 'lodash-es/get.js';
-import environmentService from '../../../services/environment.service.js';
-import type { Connection } from './../../../models/Connection.js';
-import type { Config as ProviderConfig } from './../../../models/Provider.js';
-import SyncClient from '../../../clients/sync.client.js';
-import type { SyncConfig } from './../../../models/Sync.js';
-import connectionService from '../../../services/connection.service.js';
-import { getSyncConfigsByConfigIdForWebhook } from '../../../services/sync/config/config.service.js';
-import { LogActionEnum } from '../../../models/Activity.js';
-import telemetry, { LogTypes } from '../../../utils/telemetry.js';
+import { environmentService, connectionService, telemetry, getSyncConfigsByConfigIdForWebhook, SyncClient, LogActionEnum, LogTypes } from '@nangohq/shared';
+import type { Config as ProviderConfig, SyncConfig, Connection } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
 
 export interface InternalNango {

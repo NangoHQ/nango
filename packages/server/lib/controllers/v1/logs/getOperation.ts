@@ -6,7 +6,7 @@ import { model, envs, operationIdRegex } from '@nangohq/logs';
 
 const validation = z
     .object({
-        operationId: z.string().regex(operationIdRegex)
+        operationId: operationIdRegex
     })
     .strict();
 

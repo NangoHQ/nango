@@ -1,4 +1,4 @@
-export * from './db/migrate.js';
 export * from './scheduler.js';
 export * from './types.js';
-export * from './db/test.helpers.js';
+export * from './db/helpers.test.js';
+export * from './db/client.js';

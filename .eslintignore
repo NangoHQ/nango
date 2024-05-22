@@ -4,3 +4,4 @@ build/
 coverage/
 bin/
 packages/server/nango-integrations/
+packages/node-client/tests

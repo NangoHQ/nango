@@ -6,7 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 const validation = z
     .object({
-        operationId: z.string().regex(operationIdRegex),
+        operationId: operationIdRegex,
         limit: z.number().optional().default(100),
         search: z.string().optional(),
         states: z
