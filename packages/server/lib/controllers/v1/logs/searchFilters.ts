@@ -6,7 +6,7 @@ import { model, envs } from '@nangohq/logs';
 
 const validation = z
     .object({
-        for: z.enum(['config', 'connection', 'syncConfig']),
+        category: z.enum(['config', 'connection', 'syncConfig']),
         search: z.string().optional()
     })
     .strict();
@@ -31,7 +31,7 @@ export const searchFilters = asyncWrapper<SearchFilters>(async (req, res) => {
 
     const env = res.locals['environment'];
     const body: SearchFilters['Body'] = val.data;
-    const rawOps = await model.listFilters({ accountId: env.account_id, environmentId: env.id, for: body.for, limit: 20, search: body.search });
+    const rawOps = await model.listFilters({ accountId: env.account_id, environmentId: env.id, category: body.category, limit: 20, search: body.search });
 
     res.status(200).send({
         data: rawOps.items

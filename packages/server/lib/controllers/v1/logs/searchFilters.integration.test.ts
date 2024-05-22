@@ -16,7 +16,7 @@ describe('POST /logs/filters', () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', query: { env: 'dev' }, body: { for: 'config', search: '' } });
+        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', query: { env: 'dev' }, body: { category: 'config', search: '' } });
 
         shouldBeProtected(res);
     });
@@ -24,7 +24,7 @@ describe('POST /logs/filters', () => {
     it('should enforce env query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing query on purpose
-        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', token: env.secret_key, body: { for: 'config' } });
+        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', token: env.secret_key, body: { category: 'config' } });
 
         shouldRequireQueryEnv(res);
     });
@@ -36,7 +36,7 @@ describe('POST /logs/filters', () => {
             query: { env: 'dev' },
             token: env.secret_key,
             // @ts-expect-error on purpose
-            body: { for: 'a', foo: 'bar' }
+            body: { category: 'a', foo: 'bar' }
         });
 
         expect(res.json).toStrictEqual({
@@ -65,7 +65,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { for: 'config', search: '' }
+            body: { category: 'config', search: '' }
         });
 
         isSuccess(res.json);
@@ -89,7 +89,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { for: 'config', search: '' }
+            body: { category: 'config', search: '' }
         });
 
         isSuccess(res.json);
@@ -113,7 +113,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { for: 'config', search: 'hel' }
+            body: { category: 'config', search: 'hel' }
         });
 
         isSuccess(res.json);
@@ -138,7 +138,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env2.env.secret_key,
-            body: { for: 'config', search: '' }
+            body: { category: 'config', search: '' }
         });
 
         isSuccess(res.json);

@@ -10,7 +10,8 @@ const validation = z
         states: z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
             .optional()
-            .default(['all'])
+            .default(['all']),
+        integrations: z.array(z.string()).optional()
     })
     .strict();
 
@@ -36,7 +37,13 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
 
     const env = res.locals['environment'];
     const body: SearchOperations['Body'] = val.data;
-    const rawOps = await model.listOperations({ accountId: env.account_id, environmentId: env.id, limit: body.limit!, states: body.states });
+    const rawOps = await model.listOperations({
+        accountId: env.account_id,
+        environmentId: env.id,
+        limit: body.limit!,
+        states: body.states,
+        integrations: body.integrations
+    });
 
     res.status(200).send({
         data: rawOps.items,

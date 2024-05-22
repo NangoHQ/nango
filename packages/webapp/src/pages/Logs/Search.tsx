@@ -10,13 +10,17 @@ import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-tabl
 import { MultiSelect } from './components/MultiSelect';
 import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, typesDefaultOptions, typesOptions } from './constants';
 import { useEffect, useMemo, useState } from 'react';
-import type { SearchOperationsIntegration, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
+import type { SearchOperationsIntegration, SearchOperationsPeriod, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
-import { Input } from '../../components/ui/input/Input';
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+// import { Input } from '../../components/ui/input/Input';
+// import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity } from '../../utils/utils';
 import { useSearchParams } from 'react-router-dom';
+import { useInterval } from 'react-use';
+import Button from '../../components/ui/button/Button';
+import { LightningBoltIcon } from '@radix-ui/react-icons';
+import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -27,8 +31,9 @@ export const LogsSearch: React.FC = () => {
     const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
     const [types, setTypes] = useState<SearchOperationsType[]>(typesDefaultOptions);
     const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
+    const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
     const [hasLogs, setHasLogs] = useState<boolean>(false);
-    const { data, error, loading } = useSearchOperations(synced, env, { limit: 20, states });
+    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, integrations });
 
     const table = useReactTable({
         data: data ? data.data : [],
@@ -36,21 +41,36 @@ export const LogsSearch: React.FC = () => {
         getCoreRowModel: getCoreRowModel()
     });
 
-    useEffect(() => {
-        if (synced) {
-            return;
-        }
+    useEffect(
+        function syncQueryParamsToState() {
+            if (synced) {
+                // we do it once to avoid the issue of double render
+                return;
+            }
 
-        const tmpStates = searchParams.get('states');
-        setStates(tmpStates ? (tmpStates.split(',') as any) : statusDefaultOptions);
-        const tmpIntegrations = searchParams.get('integrations');
-        setIntegrations(tmpIntegrations ? (tmpIntegrations.split(',') as any) : integrationsDefaultOptions);
-        setSynced(true);
-    }, [searchParams, synced]);
+            const tmpStates = searchParams.get('states');
+            setStates(tmpStates ? (tmpStates.split(',') as any) : statusDefaultOptions);
+            const tmpIntegrations = searchParams.get('integrations');
+            setIntegrations(tmpIntegrations ? (tmpIntegrations.split(',') as any) : integrationsDefaultOptions);
+            const tmpBefore = searchParams.get('before');
+            const tmpAfter = searchParams.get('after');
+            setPeriod(tmpBefore && tmpAfter ? { before: tmpBefore, after: tmpAfter } : undefined);
+            setSynced(true);
+        },
+        [searchParams, synced]
+    );
 
-    useEffect(() => {
-        setSearchParams(new URLSearchParams({ states: states as any, integrations: integrations as any }));
-    }, [states]);
+    useEffect(
+        function syncStateToQueryParams() {
+            const tmp = new URLSearchParams({ states: states as any, integrations: integrations as any });
+            if (period) {
+                tmp.set('before', period.before);
+                tmp.set('after', period.after);
+            }
+            setSearchParams(tmp);
+        },
+        [states, integrations, period]
+    );
 
     useEffect(() => {
         if (!loading) {
@@ -59,6 +79,13 @@ export const LogsSearch: React.FC = () => {
             setHasLogs(true);
         }
     }, [loading]);
+
+    useInterval(
+        () => {
+            trigger();
+        },
+        synced ? 10000 : null
+    );
 
     const total = useMemo(() => {
         if (!data?.pagination) {
@@ -73,7 +100,7 @@ export const LogsSearch: React.FC = () => {
                 <Info color={error.error.code === 'feature_disabled' ? 'orange' : 'red'} classNames="text-xs" size={20}>
                     {error.error.code === 'feature_disabled'
                         ? 'This feature is disabled. Install OpenSearch and set "NANGO_LOGS_ENABLED" flag to `true`'
-                        : 'An error occured, refresh your page or reach out to the support.'}
+                        : 'An error occurred, refresh your page or reach out to the support.'}
                 </Info>
             </DashboardLayout>
         );
@@ -108,15 +135,17 @@ export const LogsSearch: React.FC = () => {
             </div>
 
             <div className="flex gap-2 justify-between">
-                <div className="w-full">
-                    <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." />
-                </div>
+                <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
                 <MultiSelect label="Type" options={typesOptions} selected={types} defaultSelect={typesDefaultOptions} onChange={setTypes} />
-                <MultiSelect label="Integration" options={typesOptions} selected={types} defaultSelect={typesDefaultOptions} onChange={setTypes} all />
+                <SearchableMultiSelect label="Integration" selected={integrations} category={'config'} onChange={setIntegrations} />
+                <Button variant="zombieGray" size={'xs'}>
+                    <LightningBoltIcon />
+                    Live
+                </Button>
             </div>
 
-            <Table.Table className="my-6 table-fixed">
+            <Table.Table className="my-4 table-fixed">
                 <Table.Header>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <Table.Row key={headerGroup.id}>

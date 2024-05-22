@@ -5,7 +5,13 @@ export type SearchOperations = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/operations';
     Querystring: { env: string };
-    Body: { limit?: number; states?: SearchOperationsState[]; types?: SearchOperationsType[]; integrations?: SearchOperationsIntegration[] };
+    Body: {
+        limit?: number;
+        states?: SearchOperationsState[];
+        types?: SearchOperationsType[];
+        integrations?: SearchOperationsIntegration[] | undefined;
+        period?: SearchOperationsPeriod;
+    };
     Success: {
         data: OperationRow[];
         pagination: { total: number };
@@ -15,6 +21,10 @@ export type SearchOperationsState = 'all' | MessageState;
 export type SearchOperationsType = OperationRow['operation'];
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type SearchOperationsIntegration = 'all' | string;
+export interface SearchOperationsPeriod {
+    before: string;
+    after: string;
+}
 export type SearchOperationsData = SearchOperations['Success']['data'][0];
 
 export type GetOperation = Endpoint<{
@@ -43,7 +53,7 @@ export type SearchFilters = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/filters';
     Querystring: { env: string };
-    Body: { for: 'config' | 'syncConfig' | 'connection'; search?: string | undefined };
+    Body: { category: 'config' | 'syncConfig' | 'connection'; search?: string | undefined };
     Success: {
         data: { key: string; doc_count: number }[];
     };

@@ -1,7 +1,5 @@
-import type { SearchOperationsState } from '@nangohq/types';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../../components/ui/DropdownMenu';
 import Button from '../../../components/ui/button/Button';
-import type { MouseEventHandler } from 'react';
 import { useMemo, useState } from 'react';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 
@@ -17,7 +15,7 @@ export interface MultiSelectArgs<T> {
 export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, selected, defaultSelect, all, onChange }) => {
     const [open, setOpen] = useState(false);
 
-    const select = (val: SearchOperationsState, checked: boolean) => {
+    const select = (val: string, checked: boolean) => {
         if (all && val === 'all') {
             onChange(['all']);
             return;
@@ -30,7 +28,7 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
         onChange(tmp.length <= 0 ? [...defaultSelect] : tmp);
     };
 
-    const reset: MouseEventHandler<HTMLButtonElement> = (e) => {
+    const reset = (e: any) => {
         e.preventDefault();
         if (all) {
             onChange(['all']);
@@ -53,7 +51,15 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
                 <Button variant="zombieGray" size={'xs'}>
                     {label}
                     {isDirty && (
-                        <button className="bg-pure-black text-white flex gap-1 items-center px-1.5 rounded-xl" onPointerDown={reset}>
+                        <button
+                            className="bg-pure-black text-white flex gap-1 items-center px-1.5 rounded-xl"
+                            onPointerDown={reset}
+                            onKeyDown={(e) => {
+                                if (['Enter', ' '].includes(e.key)) {
+                                    reset(e);
+                                }
+                            }}
+                        >
                             <CrossCircledIcon />
                             {selected.length}
                         </button>

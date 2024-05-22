@@ -1,5 +1,5 @@
 import { client } from '../es/client.js';
-import type { MessageRow, OperationRow, SearchOperationsState } from '@nangohq/types';
+import type { MessageRow, OperationRow, SearchOperationsIntegration, SearchOperationsState } from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
 import { errors } from '@opensearch-project/opensearch';
@@ -38,6 +38,7 @@ export async function listOperations(opts: {
     environmentId?: number;
     limit: number;
     states?: SearchOperationsState[] | undefined;
+    integrations?: SearchOperationsIntegration[] | undefined;
 }): Promise<ListOperations> {
     const query: opensearchtypes.QueryDslQueryContainer = {
         bool: {
@@ -55,6 +56,16 @@ export async function listOperations(opts: {
             bool: {
                 should: opts.states.map((state) => {
                     return { term: { state } };
+                })
+            }
+        });
+    }
+    if (opts.integrations && (opts.integrations.length > 1 || opts.integrations[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.integrations.map((integration) => {
+                    return { term: { 'configName.keyword': integration } };
                 })
             }
         });
@@ -196,13 +207,13 @@ export async function listFilters(opts: {
     accountId: number;
     environmentId: number;
     limit: number;
-    for: 'config' | 'syncConfig' | 'connection';
+    category: 'config' | 'syncConfig' | 'connection';
     search?: string | undefined;
 }): Promise<ListFilters> {
     let aggField: string;
-    if (opts.for === 'config') {
+    if (opts.category === 'config') {
         aggField = 'configName';
-    } else if (opts.for === 'connection') {
+    } else if (opts.category === 'connection') {
         aggField = 'connectionName';
     } else {
         aggField = 'syncConfigName';
