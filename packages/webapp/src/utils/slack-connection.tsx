@@ -24,6 +24,7 @@ export const connectSlack = async ({
 
     if (res.status !== 200) {
         onFailure();
+        return;
     }
 
     const authResponse = await res.json();
@@ -34,14 +35,16 @@ export const connectSlack = async ({
         .auth(integrationKey, connectionId, {
             user_scope: [],
             params: {},
-            hmac: hmacDigest
+            hmac: hmacDigest,
+            detectClosedAuthWindow: true
         })
         .then(async () => {
             await updateSlackNotifications(env, true);
             onFinish();
         })
-        .catch((err: unknown) => {
-            console.log(err);
+        .catch((error: unknown) => {
+            console.error(error);
+            onFailure();
         });
 };
 

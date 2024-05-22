@@ -35,6 +35,7 @@ export default function ShowIntegration() {
 
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
+    const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
@@ -149,15 +150,18 @@ We could not retrieve and/or refresh your access token due to the following erro
     };
 
     const createSlackConnection = async () => {
+        setSlackIsConnecting(true);
         if (!environmentAndAccount) return;
         const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
         const onFinish = () => {
             environmentMutate();
             toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            setSlackIsConnecting(false);
         };
 
         const onFailure = () => {
             toast.error('Failed to create Slack connection!', { position: toast.POSITION.BOTTOM_CENTER });
+            setSlackIsConnecting(false);
         };
         await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
@@ -250,14 +254,18 @@ We could not retrieve and/or refresh your access token due to the following erro
                     </li>
                 </ul>
 
-                {!slackIsConnected && (
+                {!slackIsConnected && !isHosted() && (
                     <Info size={8} color="blue" showIcon={false} padding="mt-4 p-1">
                         <div className="flex text-sm items-center">
                             <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
                             Receive instant monitoring alerts on Slack.{' '}
-                            <span onClick={createSlackConnection} className="ml-1 cursor-pointer underline">
+                            <button
+                                disabled={slackIsConnecting}
+                                onClick={createSlackConnection}
+                                className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
+                            >
                                 Set up now for the {env} environment.
-                            </span>
+                            </button>
                         </div>
                     </Info>
                 )}
