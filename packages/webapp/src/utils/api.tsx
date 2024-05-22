@@ -830,7 +830,7 @@ export function useInviteSignupAPI() {
 
     return async (token: string) => {
         try {
-            const res = await fetch(`/api/v1/signup/invite?token=${token}`, {
+            const res = await fetch(`/api/v1/account/signup/invite?token=${token}`, {
                 method: 'GET',
                 headers: getHeaders()
             });
