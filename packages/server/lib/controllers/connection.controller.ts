@@ -24,14 +24,13 @@ import {
     NangoError,
     createActivityLogAndLogMessage,
     accountService,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     slackNotificationService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
 
 class ConnectionController {
     /**
@@ -625,6 +624,22 @@ class ConnectionController {
                     }
                 }
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            id: res.id,
+                            connection_id,
+                            provider_config_key,
+                            environment_id: environment.id,
+                            auth_mode: ProviderAuthModes.OAuth2,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
+
                 const [imported] = await connectionService.importOAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -632,7 +647,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     oAuthCredentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {
@@ -658,6 +673,22 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            id: res.id,
+                            connection_id,
+                            provider_config_key,
+                            environment_id: environment.id,
+                            auth_mode: ProviderAuthModes.OAuth2,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
+
                 const [imported] = await connectionService.importOAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -665,7 +696,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     oAuthCredentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {
@@ -685,6 +716,21 @@ class ConnectionController {
                     password
                 };
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            id: res.id,
+                            connection_id,
+                            provider_config_key,
+                            environment_id: environment.id,
+                            auth_mode: ProviderAuthModes.ApiKey,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
                 const [imported] = await connectionService.importApiAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -692,7 +738,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     credentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {
@@ -711,6 +757,22 @@ class ConnectionController {
                     apiKey
                 };
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            id: res.id,
+                            connection_id,
+                            provider_config_key,
+                            environment_id: environment.id,
+                            auth_mode: ProviderAuthModes.ApiKey,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
+
                 const [imported] = await connectionService.importApiAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -718,7 +780,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     credentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {

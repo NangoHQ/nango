@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Prism } from '@mantine/prism';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Info from '../../components/ui/Info';
 import EndpointLabel from './components/EndpointLabel';
-import type { NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow, Environment } from '../../types';
+import type { NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
 import { parseInput, generateResponseModel } from '../../utils/utils';
 import { Tabs, SubTabs } from './Show';
@@ -21,7 +22,7 @@ enum Language {
 }
 
 interface EndpointReferenceProps {
-    environment: Environment;
+    environment: EnvironmentAndAccount['environment'];
     integration: IntegrationConfig;
     activeEndpoint: string | FlowEndpoint | null;
     activeFlow: Flow | null;

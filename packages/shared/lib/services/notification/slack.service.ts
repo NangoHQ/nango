@@ -61,6 +61,8 @@ interface SlackActionResponse {
     };
 }
 
+export const generateSlackConnectionId = (accountUUID: string, environmentName: string) => `account-${accountUUID}-${environmentName}`;
+
 /**
  * _nango_slack_notifications
  * @desc persistence layer for slack notifications and the connection list
@@ -225,7 +227,7 @@ class SlackService {
             throw new Error('failed_to_get_account');
         }
 
-        const slackConnectionId = `account-${account.uuid}-${envName}`;
+        const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
 
         // we get the connection on the nango admin account to be able to send the notification
@@ -411,7 +413,7 @@ class SlackService {
         }
 
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
-        const slackConnectionId = `account-${account.uuid}-${envName}`;
+        const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
