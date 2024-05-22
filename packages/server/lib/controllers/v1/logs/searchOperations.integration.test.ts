@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
-describe('GET /logs', () => {
+describe('POST /logs/operations', () => {
     beforeAll(async () => {
         await multipleMigrations();
         await migrateMapping();

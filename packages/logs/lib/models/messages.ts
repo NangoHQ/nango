@@ -12,6 +12,9 @@ export interface ListMessages {
     count: number;
     items: MessageRow[];
 }
+export interface ListFilters {
+    items: { key: string; doc_count: number }[];
+}
 
 export const ResponseError = errors.ResponseError;
 
@@ -183,5 +186,56 @@ export async function listMessages(opts: {
         items: hits.hits.map((hit) => {
             return hit._source;
         })
+    };
+}
+
+/**
+ * List filters
+ */
+export async function listFilters(opts: {
+    accountId: number;
+    environmentId: number;
+    limit: number;
+    for: 'config' | 'syncConfig' | 'connection';
+    search?: string | undefined;
+}): Promise<ListFilters> {
+    let aggField: string;
+    if (opts.for === 'config') {
+        aggField = 'configName';
+    } else if (opts.for === 'connection') {
+        aggField = 'connectionName';
+    } else {
+        aggField = 'syncConfigName';
+    }
+
+    const body: { query: opensearchtypes.QueryDslQueryContainer; aggs: any } = {
+        query: {
+            bool: {
+                must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }],
+                must_not: { exists: { field: 'parentId' } },
+                should: []
+            }
+        },
+        aggs: {
+            byName: {
+                terms: { field: `${aggField}.keyword`, size: opts.limit }
+            }
+        }
+    };
+
+    if (opts.search) {
+        (body.query.bool!.must! as any).push({ match_phrase_prefix: { [aggField]: { query: opts.search } } });
+    }
+    const res = await client.search<{ aggregations: { byName: { buckets: any[] } } }>({
+        index: indexMessages.index,
+        size: 0,
+        sort: ['createdAt:desc', '_score'],
+        track_total_hits: true,
+        body
+    });
+    const agg = res.body.aggregations.byName;
+
+    return {
+        items: agg.buckets
     };
 }

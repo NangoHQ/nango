@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import type { SearchMessages } from '@nangohq/types';
 import { model, envs, operationIdRegex } from '@nangohq/logs';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { parseQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 const validation = z
     .object({
@@ -22,9 +22,9 @@ export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
         return;
     }
 
-    const emptyQuery = requireEmptyQuery(req, { withEnv: true });
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
+    const query = parseQuery(req, { withEnv: true });
+    if (query) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(query.error) } });
         return;
     }
 

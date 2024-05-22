@@ -5,16 +5,16 @@ import type { MouseEventHandler } from 'react';
 import { useMemo, useState } from 'react';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 
-export interface MultiSelectArgs {
+export interface MultiSelectArgs<T> {
     label: string;
-    options: { name: string; value: SearchOperationsState }[];
-    selected: SearchOperationsState[];
-    defaultSelect: SearchOperationsState[];
+    options: { name: string; value: T }[];
+    selected: T[];
+    defaultSelect: T[];
     all?: boolean;
-    onChange: (selected: SearchOperationsState[]) => void;
+    onChange: (selected: T[]) => void;
 }
 
-export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selected, defaultSelect, all, onChange }) => {
+export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, selected, defaultSelect, all, onChange }) => {
     const [open, setOpen] = useState(false);
 
     const select = (val: SearchOperationsState, checked: boolean) => {
@@ -31,10 +31,12 @@ export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selecte
     };
 
     const reset: MouseEventHandler<HTMLButtonElement> = (e) => {
-        console.log('prout');
         e.preventDefault();
-        if (all) onChange(['all']);
-        else onChange([...defaultSelect]);
+        if (all) {
+            onChange(['all']);
+        } else {
+            onChange([...defaultSelect]);
+        }
     };
 
     const isDirty = useMemo(() => {
@@ -43,7 +45,7 @@ export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selecte
         }
 
         return !(selected.length === 1 && selected[0] === 'all');
-    }, [selected]);
+    }, [selected, all, options]);
 
     return (
         <DropdownMenu open={open} onOpenChange={setOpen}>

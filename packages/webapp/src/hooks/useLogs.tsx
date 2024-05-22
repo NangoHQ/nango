@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { swrFetcher } from '../utils/api';
 
-export function useSearchOperations(env: string, body: SearchOperations['Body']) {
+export function useSearchOperations(enabled: boolean, env: string, body: SearchOperations['Body']) {
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<SearchOperations['Success']>();
     const [error, setError] = useState<SearchOperations['Errors']>();
@@ -33,10 +33,10 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'])
     }
 
     useEffect(() => {
-        if (!loading) {
+        if (enabled && !loading) {
             void fetchData();
         }
-    }, [env, body.limit, body.states]);
+    }, [enabled, env, body.limit, body.states]);
 
     return { data, error, loading };
 }

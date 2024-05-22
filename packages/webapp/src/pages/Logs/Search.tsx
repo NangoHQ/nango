@@ -8,28 +8,49 @@ import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './components/MultiSelect';
-import { columns, statusDefaultOptions, statusOptions } from './constants';
+import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, typesDefaultOptions, typesOptions } from './constants';
 import { useEffect, useMemo, useState } from 'react';
-import type { SearchOperationsState } from '@nangohq/types';
+import type { SearchOperationsIntegration, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
 import { Input } from '../../components/ui/input/Input';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity } from '../../utils/utils';
+import { useSearchParams } from 'react-router-dom';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // Data fetch
+    const [synced, setSynced] = useState(false);
     const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
+    const [types, setTypes] = useState<SearchOperationsType[]>(typesDefaultOptions);
+    const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [hasLogs, setHasLogs] = useState<boolean>(false);
-    const { data, error, loading } = useSearchOperations(env, { limit: 20, states });
+    const { data, error, loading } = useSearchOperations(synced, env, { limit: 20, states });
 
     const table = useReactTable({
         data: data ? data.data : [],
         columns,
         getCoreRowModel: getCoreRowModel()
     });
+
+    useEffect(() => {
+        if (synced) {
+            return;
+        }
+
+        const tmpStates = searchParams.get('states');
+        setStates(tmpStates ? (tmpStates.split(',') as any) : statusDefaultOptions);
+        const tmpIntegrations = searchParams.get('integrations');
+        setIntegrations(tmpIntegrations ? (tmpIntegrations.split(',') as any) : integrationsDefaultOptions);
+        setSynced(true);
+    }, [searchParams, synced]);
+
+    useEffect(() => {
+        setSearchParams(new URLSearchParams({ states: states as any, integrations: integrations as any }));
+    }, [states]);
 
     useEffect(() => {
         if (!loading) {
@@ -91,6 +112,8 @@ export const LogsSearch: React.FC = () => {
                     <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." />
                 </div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
+                <MultiSelect label="Type" options={typesOptions} selected={types} defaultSelect={typesDefaultOptions} onChange={setTypes} />
+                <MultiSelect label="Integration" options={typesOptions} selected={types} defaultSelect={typesDefaultOptions} onChange={setTypes} all />
             </div>
 
             <Table.Table className="my-6 table-fixed">
