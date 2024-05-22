@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import type { Endpoint } from '../api';
 import type { MessageRow, MessageState, OperationRow } from './messages';
 
@@ -10,6 +11,8 @@ export type SearchOperations = Endpoint<{
         states?: SearchOperationsState[];
         types?: SearchOperationsType[];
         integrations?: SearchOperationsIntegration[] | undefined;
+        connections?: SearchOperationsConnection[] | undefined;
+        syncs?: SearchOperationsSync[] | undefined;
         period?: SearchOperationsPeriod;
     };
     Success: {
@@ -19,8 +22,9 @@ export type SearchOperations = Endpoint<{
 }>;
 export type SearchOperationsState = 'all' | MessageState;
 export type SearchOperationsType = OperationRow['operation'];
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type SearchOperationsIntegration = 'all' | string;
+export type SearchOperationsConnection = 'all' | string;
+export type SearchOperationsSync = 'all' | string;
 export interface SearchOperationsPeriod {
     before: string;
     after: string;

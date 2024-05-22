@@ -11,7 +11,9 @@ const validation = z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
             .optional()
             .default(['all']),
-        integrations: z.array(z.string()).optional()
+        integrations: z.array(z.string()).optional(),
+        connections: z.array(z.string()).optional(),
+        syncs: z.array(z.string()).optional()
     })
     .strict();
 
@@ -42,7 +44,9 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
         environmentId: env.id,
         limit: body.limit!,
         states: body.states,
-        integrations: body.integrations
+        integrations: body.integrations,
+        connections: body.connections,
+        syncs: body.syncs
     });
 
     res.status(200).send({

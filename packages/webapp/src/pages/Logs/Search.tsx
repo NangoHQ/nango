@@ -8,9 +8,9 @@ import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './components/MultiSelect';
-import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, typesDefaultOptions, typesOptions } from './constants';
+import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions, typesOptions } from './constants';
 import { useEffect, useMemo, useState } from 'react';
-import type { SearchOperationsIntegration, SearchOperationsPeriod, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
+import type { SearchOperationsIntegration, SearchOperationsPeriod, SearchOperationsState, SearchOperationsSync, SearchOperationsType } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
 // import { Input } from '../../components/ui/input/Input';
@@ -26,14 +26,18 @@ export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Data fetch
+    // State
+    const [hasLogs, setHasLogs] = useState<boolean>(false);
     const [synced, setSynced] = useState(false);
+
+    // Data fetch
     const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
     const [types, setTypes] = useState<SearchOperationsType[]>(typesDefaultOptions);
     const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
+    const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
+    const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
     const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
-    const [hasLogs, setHasLogs] = useState<boolean>(false);
-    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, integrations });
+    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, integrations, connections, syncs });
 
     const table = useReactTable({
         data: data ? data.data : [],
@@ -50,11 +54,20 @@ export const LogsSearch: React.FC = () => {
 
             const tmpStates = searchParams.get('states');
             setStates(tmpStates ? (tmpStates.split(',') as any) : statusDefaultOptions);
+
             const tmpIntegrations = searchParams.get('integrations');
             setIntegrations(tmpIntegrations ? (tmpIntegrations.split(',') as any) : integrationsDefaultOptions);
+
+            const tmpConnections = searchParams.get('integrations');
+            setIntegrations(tmpConnections ? (tmpConnections.split(',') as any) : integrationsDefaultOptions);
+
+            const tmpSyncs = searchParams.get('syncs');
+            setSyncs(tmpSyncs ? (tmpSyncs.split(',') as any) : syncsDefaultOptions);
+
             const tmpBefore = searchParams.get('before');
             const tmpAfter = searchParams.get('after');
             setPeriod(tmpBefore && tmpAfter ? { before: tmpBefore, after: tmpAfter } : undefined);
+
             setSynced(true);
         },
         [searchParams, synced]
@@ -62,14 +75,14 @@ export const LogsSearch: React.FC = () => {
 
     useEffect(
         function syncStateToQueryParams() {
-            const tmp = new URLSearchParams({ states: states as any, integrations: integrations as any });
+            const tmp = new URLSearchParams({ states: states as any, integrations: integrations as any, connections: connections as any, syncs: syncs as any });
             if (period) {
                 tmp.set('before', period.before);
                 tmp.set('after', period.after);
             }
             setSearchParams(tmp);
         },
-        [states, integrations, period]
+        [states, integrations, period, connections]
     );
 
     useEffect(() => {
@@ -139,6 +152,8 @@ export const LogsSearch: React.FC = () => {
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
                 <MultiSelect label="Type" options={typesOptions} selected={types} defaultSelect={typesDefaultOptions} onChange={setTypes} />
                 <SearchableMultiSelect label="Integration" selected={integrations} category={'config'} onChange={setIntegrations} />
+                <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
+                <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
                 <Button variant="zombieGray" size={'xs'}>
                     <LightningBoltIcon />
                     Live

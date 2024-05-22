@@ -1,5 +1,12 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import type { SearchOperationsData, SearchOperationsIntegration, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
+import type {
+    SearchOperationsConnection,
+    SearchOperationsData,
+    SearchOperationsIntegration,
+    SearchOperationsState,
+    SearchOperationsSync,
+    SearchOperationsType
+} from '@nangohq/types';
 import { formatDateToLogFormat } from '../../utils/utils';
 import { StatusTag } from './components/StatusTag';
 import { OperationTag } from './components/OperationTag';
@@ -111,9 +118,5 @@ export const typesOptions: MultiSelectArgs<SearchOperationsType>['options'] = [
 ];
 
 export const integrationsDefaultOptions: SearchOperationsIntegration[] = ['all'];
-export const integrationsOptions: MultiSelectArgs<SearchOperationsIntegration>['options'] = [
-    {
-        name: 'All',
-        value: 'all'
-    }
-];
+export const connectionsDefaultOptions: SearchOperationsConnection[] = ['all'];
+export const syncsDefaultOptions: SearchOperationsSync[] = ['all'];

@@ -36,7 +36,7 @@ export function useSearchOperations(enabled: boolean, env: string, body: SearchO
         if (enabled && !loading) {
             void fetchData();
         }
-    }, [enabled, env, body.limit, body.states, body.integrations, body.period, body.types]);
+    }, [enabled, env, body.limit, body.states, body.integrations, body.period, body.types, body.connections, body.syncs]);
 
     function trigger() {
         if (enabled && !loading) {

@@ -1,5 +1,12 @@
 import { client } from '../es/client.js';
-import type { MessageRow, OperationRow, SearchOperationsIntegration, SearchOperationsState } from '@nangohq/types';
+import type {
+    MessageRow,
+    OperationRow,
+    SearchOperationsConnection,
+    SearchOperationsIntegration,
+    SearchOperationsState,
+    SearchOperationsSync
+} from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
 import { errors } from '@opensearch-project/opensearch';
@@ -39,6 +46,8 @@ export async function listOperations(opts: {
     limit: number;
     states?: SearchOperationsState[] | undefined;
     integrations?: SearchOperationsIntegration[] | undefined;
+    connections?: SearchOperationsConnection[] | undefined;
+    syncs?: SearchOperationsSync[] | undefined;
 }): Promise<ListOperations> {
     const query: opensearchtypes.QueryDslQueryContainer = {
         bool: {
@@ -66,6 +75,26 @@ export async function listOperations(opts: {
             bool: {
                 should: opts.integrations.map((integration) => {
                     return { term: { 'configName.keyword': integration } };
+                })
+            }
+        });
+    }
+    if (opts.connections && (opts.connections.length > 1 || opts.connections[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.connections.map((connection) => {
+                    return { term: { 'connectionName.keyword': connection } };
+                })
+            }
+        });
+    }
+    if (opts.syncs && (opts.syncs.length > 1 || opts.syncs[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.syncs.map((sync) => {
+                    return { term: { 'syncConfigName.keyword': sync } };
                 })
             }
         });
