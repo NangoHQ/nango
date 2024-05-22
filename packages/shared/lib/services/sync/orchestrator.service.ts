@@ -46,8 +46,8 @@ import type { Environment } from '../../models/Environment.js';
 export const syncCommandToOperation = {
     PAUSE: 'pause',
     UNPAUSE: 'unpause',
-    RUN: 'run',
-    RUN_FULL: 'run_full',
+    RUN: 'request_run',
+    RUN_FULL: 'request_run_full',
     CANCEL: 'cancel'
 } as const;
 

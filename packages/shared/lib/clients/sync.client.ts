@@ -466,7 +466,7 @@ class SyncClient {
                         await this.cancelSync(syncId);
 
                         await clearLastSyncDate(syncId);
-                        await recordsService.deleteRecordsBySyncId({ syncId });
+                        const del = await recordsService.deleteRecordsBySyncId({ syncId });
                         await createActivityLogMessage({
                             level: 'info',
                             environment_id: environmentId,
@@ -474,6 +474,7 @@ class SyncClient {
                             timestamp: Date.now(),
                             content: `Records for the sync were deleted successfully`
                         });
+                        await logCtx.info(`Records for the sync were deleted successfully`, del);
                         const nangoConnection: NangoConnection = {
                             id: nangoConnectionId as number,
                             provider_config_key: providerConfigKey,

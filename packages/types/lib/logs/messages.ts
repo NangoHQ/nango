@@ -31,7 +31,7 @@ export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeo
  */
 export interface MessageOpSync {
     type: 'sync';
-    action: 'pause' | 'unpause' | 'run' | 'run_full' | 'cancel' | 'init';
+    action: 'pause' | 'unpause' | 'run' | 'request_run' | 'request_run_full' | 'cancel' | 'init';
 }
 export interface MessageOpProxy {
     type: 'proxy';
