@@ -1,5 +1,5 @@
 import { describe, it, beforeAll, expect, vi } from 'vitest';
-import type { Environment } from '@nangohq/shared';
+import type { Environment, SyncConfig } from '@nangohq/shared';
 import {
     seeders,
     multipleMigrations,
@@ -12,7 +12,8 @@ import {
     ScheduleStatus,
     SyncClient,
     DEMO_GITHUB_CONFIG_KEY,
-    DEMO_SYNC_NAME
+    DEMO_SYNC_NAME,
+    SyncConfigType
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
 import { nanoid, Ok } from '@nangohq/utils';
@@ -32,13 +33,38 @@ describe('Auto Idle Demo', async () => {
         });
 
         const connName = nanoid();
-        await configService.createProviderConfig({
+        const config = await configService.createProviderConfig({
             unique_key: DEMO_GITHUB_CONFIG_KEY,
             provider: 'github',
             environment_id: env.id,
             oauth_client_id: '',
             oauth_client_secret: ''
         });
+        await db.knex
+            .from<SyncConfig>('_nango_sync_configs')
+            .insert({
+                created_at: new Date(),
+                sync_name: DEMO_SYNC_NAME,
+                nango_config_id: config![0]!.id!,
+                file_location: '_LOCAL_FILE_',
+                version: '1',
+                models: ['GithubIssueDemo'],
+                active: true,
+                runs: 'every 5 minutes',
+                input: '',
+                model_schema: [],
+                environment_id: env.id,
+                deleted: false,
+                track_deletes: false,
+                type: SyncConfigType.SYNC,
+                auto_start: false,
+                attributes: {},
+                metadata: {},
+                pre_built: true,
+                is_public: false,
+                enabled: true
+            })
+            .returning('id');
         const conn = await connectionService.upsertConnection(connName, DEMO_GITHUB_CONFIG_KEY, 'github', {} as any, {}, env.id, 0);
         const connId = conn[0]!.id;
         const sync = (await createSync(connId, DEMO_SYNC_NAME))!;

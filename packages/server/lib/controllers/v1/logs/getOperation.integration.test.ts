@@ -100,7 +100,7 @@ describe('GET /logs', () => {
                 createdAt: expect.toBeIsoDate(),
                 endedAt: expect.toBeIsoDate(),
                 environmentId: env.id,
-                environmentName: null,
+                environmentName: 'dev',
                 error: null,
                 id: logCtx.id,
                 jobId: null,

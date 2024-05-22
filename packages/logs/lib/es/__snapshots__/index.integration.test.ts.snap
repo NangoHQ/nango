@@ -71,6 +71,9 @@ exports[`mapping > should apply mapping 1`] = `
     "parentId": {
       "type": "keyword",
     },
+    "providerName": {
+      "type": "keyword",
+    },
     "request": {
       "properties": {
         "headers": {
@@ -105,10 +108,10 @@ exports[`mapping > should apply mapping 1`] = `
     "state": {
       "type": "keyword",
     },
-    "syncId": {
+    "syncConfigId": {
       "type": "keyword",
     },
-    "syncName": {
+    "syncConfigName": {
       "type": "keyword",
     },
     "title": {

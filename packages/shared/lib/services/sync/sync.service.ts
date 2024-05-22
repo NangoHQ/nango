@@ -793,10 +793,12 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
             );
         })
         .join('_nango_sync_configs', function () {
-            this.on('_nango_sync_configs.environment_id', '_nango_environments.environment_id')
+            this.on('_nango_sync_configs.environment_id', '_nango_environments.id')
                 .on('_nango_sync_configs.nango_config_id', '_nango_configs.id')
                 .on('_nango_sync_configs.sync_name', '_nango_syncs.name')
-                .on('_nango_sync_configs.type', db.knex.raw('action'));
+                .onVal('_nango_sync_configs.type', 'sync')
+                .onVal('_nango_sync_configs.deleted', false)
+                .onVal('_nango_sync_configs.active', true);
         })
         .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
         .where({
