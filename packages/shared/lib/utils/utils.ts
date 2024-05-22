@@ -207,9 +207,17 @@ export function getWebsocketsPath(): string {
  * Copied from https://stackoverflow.com/a/1408373/250880
  */
 export function interpolateString(str: string, replacers: Record<string, any>) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => {
+    return str.replace(/\${([^{}]*)}\.?/g, (a, b) => {
         const r = replacers[b];
-        return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
+        if ((typeof r === 'string' && r.length > 0) || typeof r === 'number') {
+            if (a.endsWith('.') && (r as string).endsWith('.')) {
+                return r as string; // Typecast needed to make TypeScript happy
+            } else {
+                return (r as string) + '.'; // Typecast needed to make TypeScript happy
+            }
+        } else {
+            return '';
+        }
     });
 }
 
