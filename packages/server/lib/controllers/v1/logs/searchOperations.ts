@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { SearchLogs } from '@nangohq/types';
+import type { SearchOperations } from '@nangohq/types';
 import { model, envs } from '@nangohq/logs';
 
 const validation = z
@@ -14,7 +14,7 @@ const validation = z
     })
     .strict();
 
-export const searchLogs = asyncWrapper<SearchLogs>(async (req, res) => {
+export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) => {
     if (!envs.NANGO_LOGS_ENABLED) {
         res.status(404).send({ error: { code: 'feature_disabled' } });
         return;
@@ -35,8 +35,8 @@ export const searchLogs = asyncWrapper<SearchLogs>(async (req, res) => {
     }
 
     const env = res.locals['environment'];
-    const body: Required<SearchLogs['Body']> = val.data;
-    const rawOps = await model.listOperations({ accountId: env.account_id, environmentId: env.id, limit: body.limit, states: body.states });
+    const body: SearchOperations['Body'] = val.data;
+    const rawOps = await model.listOperations({ accountId: env.account_id, environmentId: env.id, limit: body.limit!, states: body.states });
 
     res.status(200).send({
         data: rawOps.items,

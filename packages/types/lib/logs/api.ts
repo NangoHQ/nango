@@ -1,20 +1,18 @@
 import type { Endpoint } from '../api';
-import type { MessageState, OperationRow } from './messages';
+import type { MessageRow, MessageState, OperationRow } from './messages';
 
-export type SearchLogs = Endpoint<{
+export type SearchOperations = Endpoint<{
     Method: 'POST';
-    Path: '/api/v1/logs/search';
+    Path: '/api/v1/logs/operations';
     Querystring: { env: string };
-    Body: { limit?: number; states?: SearchLogsState[] };
+    Body: { limit?: number; states?: SearchOperationsState[] };
     Success: {
         data: OperationRow[];
         pagination: { total: number };
     };
 }>;
-
-export type SearchLogsState = 'all' | MessageState;
-
-export type SearchLogsData = SearchLogs['Success']['data'][0];
+export type SearchOperationsState = 'all' | MessageState;
+export type SearchOperationsData = SearchOperations['Success']['data'][0];
 
 export type GetOperation = Endpoint<{
     Method: 'GET';
@@ -25,3 +23,15 @@ export type GetOperation = Endpoint<{
         data: OperationRow;
     };
 }>;
+
+export type SearchMessages = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/logs/messages';
+    Querystring: { env: string };
+    Body: { operationId: string; limit?: number; states?: SearchOperationsState[]; search?: string | undefined };
+    Success: {
+        data: MessageRow[];
+        pagination: { total: number };
+    };
+}>;
+export type SearchMessagesData = SearchMessages['Success']['data'][0];

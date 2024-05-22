@@ -2,7 +2,7 @@ import * as uuid from 'uuid';
 import db from '../db/database.js';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
-import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
+import type { EnvironmentVariable } from '@nangohq/types';
 import type { Account } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 import accountService from './account.service.js';

@@ -3,7 +3,7 @@ import type { Server } from 'node:http';
 import { createServer } from 'node:http';
 import { expect } from 'vitest';
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
-import { getServerPort } from '@nangohq/shared';
+import getPort from 'get-port';
 
 import { app } from '../routes.js';
 
@@ -105,8 +105,8 @@ export function shouldRequireQueryEnv({ res, json }: { res: Response; json: any 
  */
 export async function runServer(): Promise<{ server: Server; url: string; fetch: ReturnType<typeof apiFetch> }> {
     const server = createServer(app);
+    const port = await getPort();
     return new Promise((resolve) => {
-        const port = getServerPort();
         server.listen(port, () => {
             const url = `http://localhost:${port}`;
             resolve({ server, url, fetch: apiFetch(url) });

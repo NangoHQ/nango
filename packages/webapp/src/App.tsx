@@ -26,6 +26,7 @@ import ForgotPassword from './pages/Account/ForgotPassword';
 import ResetPassword from './pages/Account/ResetPassword';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
+import { EmailVerified } from './pages/Account/EmailVerified';
 import Activity from './pages/Activity';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
@@ -33,7 +34,7 @@ import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
-import { EmailVerified } from './pages/Account/EmailVerified';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 Sentry.init({
     dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
@@ -62,65 +63,67 @@ const App = () => {
 
     return (
         <MantineProvider theme={theme}>
-            <SWRConfig
-                value={{
-                    refreshInterval: 15 * 60000,
-                    // Our server is not well configured if we enable that it will just fetch all the time
-                    revalidateIfStale: false,
-                    revalidateOnFocus: false,
-                    revalidateOnReconnect: true,
-                    fetcher,
-                    onError: (error) => {
-                        if (error.status === 401) {
-                            return signout();
+            <TooltipProvider>
+                <SWRConfig
+                    value={{
+                        refreshInterval: 15 * 60000,
+                        // Our server is not well configured if we enable that it will just fetch all the time
+                        revalidateIfStale: false,
+                        revalidateOnFocus: false,
+                        revalidateOnReconnect: true,
+                        fetcher,
+                        onError: (error) => {
+                            if (error.status === 401) {
+                                return signout();
+                            }
                         }
-                    }
-                }}
-            >
-                <SentryRoutes>
-                    <Route path="/" element={<Homepage />} />
-                    <Route element={<PrivateRoute />}>
-                        {showInteractiveDemo && (
-                            <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
-                                <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
-                            </Route>
-                        )}
-                        <Route path="/:env/integrations" element={<IntegrationList />} />
-                        <Route path="/:env/integration/create" element={<CreateIntegration />} />
-                        <Route path="/:env/integration/:providerConfigKey" element={<ShowIntegration />} />
-                        <Route path="/:env/connections" element={<ConnectionList />} />
-                        <Route path="/:env/connections/create" element={<ConnectionCreate />} />
-                        <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
-                        <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
-                        <Route path="/:env/activity" element={<Activity />} />
-                        <Route path="/:env/logs" element={<LogsSearch />} />
-                        <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
-                        <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
+                    }}
+                >
+                    <SentryRoutes>
+                        <Route path="/" element={<Homepage />} />
+                        <Route element={<PrivateRoute />}>
+                            {showInteractiveDemo && (
+                                <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
+                                    <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
+                                </Route>
+                            )}
+                            <Route path="/:env/integrations" element={<IntegrationList />} />
+                            <Route path="/:env/integration/create" element={<CreateIntegration />} />
+                            <Route path="/:env/integration/:providerConfigKey" element={<ShowIntegration />} />
+                            <Route path="/:env/connections" element={<ConnectionList />} />
+                            <Route path="/:env/connections/create" element={<ConnectionCreate />} />
+                            <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
+                            <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
+                            <Route path="/:env/activity" element={<Activity />} />
+                            <Route path="/:env/logs" element={<LogsSearch />} />
+                            <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
+                            <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
+                            {AUTH_ENABLED && (
+                                <>
+                                    <Route path="/:env/account-settings" element={<AccountSettings />} />
+                                    <Route path="/:env/user-settings" element={<UserSettings />} />
+                                </>
+                            )}
+                        </Route>
+                        <Route path="/auth-link" element={<AuthLink />} />
+                        {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
                         {AUTH_ENABLED && (
                             <>
-                                <Route path="/:env/account-settings" element={<AccountSettings />} />
-                                <Route path="/:env/user-settings" element={<UserSettings />} />
+                                <Route path="/signin" element={<Signin />} />
+                                <Route path="/signup/:token" element={<InviteSignup />} />
+                                <Route path="/forgot-password" element={<ForgotPassword />} />
+                                <Route path="/reset-password/:token" element={<ResetPassword />} />
+                                <Route path="/verify-email/:uuid" element={<VerifyEmail />} />
+                                <Route path="/verify-email/expired/:token" element={<VerifyEmailByExpiredToken />} />
+                                <Route path="/signup/verification/:token" element={<EmailVerified />} />
                             </>
                         )}
-                    </Route>
-                    <Route path="/auth-link" element={<AuthLink />} />
-                    {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
-                    {AUTH_ENABLED && (
-                        <>
-                            <Route path="/signin" element={<Signin />} />
-                            <Route path="/signup/:token" element={<InviteSignup />} />
-                            <Route path="/forgot-password" element={<ForgotPassword />} />
-                            <Route path="/reset-password/:token" element={<ResetPassword />} />
-                            <Route path="/verify-email/:uuid" element={<VerifyEmail />} />
-                            <Route path="/verify-email/expired/:token" element={<VerifyEmailByExpiredToken />} />
-                            <Route path="/signup/verification/:token" element={<EmailVerified />} />
-                        </>
-                    )}
-                    {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
-                    <Route path="*" element={<NotFound />} />
-                </SentryRoutes>
-            </SWRConfig>
-            <ToastContainer />
+                        {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
+                        <Route path="*" element={<NotFound />} />
+                    </SentryRoutes>
+                </SWRConfig>
+                <ToastContainer />
+            </TooltipProvider>
         </MantineProvider>
     );
 };

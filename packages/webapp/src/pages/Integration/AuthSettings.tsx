@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
 import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Tooltip, useModal } from '@geist-ui/core';
-import type { IntegrationConfig, Environment } from '../../types';
+import type { IntegrationConfig } from '../../types';
 import { AuthModes } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
 import Info from '../../components/ui/Info';
@@ -20,7 +21,7 @@ import { useSWRConfig } from 'swr';
 
 interface AuthSettingsProps {
     integration: IntegrationConfig | null;
-    environment: Environment;
+    environment: EnvironmentAndAccount['environment'];
 }
 
 export default function AuthSettings(props: AuthSettingsProps) {
@@ -285,7 +286,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     </div>
                 </div>
             )}
-            {integration?.auth_mode === AuthModes.App && (
+            {integration?.auth_mode === AuthModes.App && environment.callback_url && (
                 <div className="flex">
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">

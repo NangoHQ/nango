@@ -1,7 +1,7 @@
 import { logContextGetter, migrateMapping } from '@nangohq/logs';
 import { multipleMigrations, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('GET /logs', () => {
@@ -17,7 +17,7 @@ describe('GET /logs', () => {
 
     it('should be protected', async () => {
         // @ts-expect-error missing body on purpose
-        const res = await api.fetch('/api/v1/logs/search', { method: 'POST', query: { env: 'dev' } });
+        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', query: { env: 'dev' } });
 
         shouldBeProtected(res);
     });
@@ -25,14 +25,14 @@ describe('GET /logs', () => {
     it('should enforce env query params', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing query on purpose
-        const res = await api.fetch('/api/v1/logs/search', { method: 'POST', token: env.secret_key });
+        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', token: env.secret_key });
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
@@ -62,13 +62,14 @@ describe('GET /logs', () => {
 
     it('should search logs and get empty results', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
             body: { limit: 10 }
         });
 
+        isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual({
             data: [],
@@ -77,22 +78,20 @@ describe('GET /logs', () => {
     });
 
     it('should search logs and get one result', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'auth' } },
-            { account: { id: env.account_id }, environment: { id: env.id } }
-        );
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
             body: { limit: 10 }
         });
 
+        isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [
@@ -107,7 +106,7 @@ describe('GET /logs', () => {
                     createdAt: expect.toBeIsoDate(),
                     endedAt: expect.toBeIsoDate(),
                     environmentId: env.id,
-                    environmentName: null,
+                    environmentName: 'dev',
                     error: null,
                     id: logCtx.id,
                     jobId: null,
@@ -143,13 +142,14 @@ describe('GET /logs', () => {
         await logCtx.info('test info');
         await logCtx.success();
 
-        const res = await api.fetch('/api/v1/logs/search', {
+        const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
             token: env2.env.secret_key,
             body: { limit: 10 }
         });
 
+        isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [],

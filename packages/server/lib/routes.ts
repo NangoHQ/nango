@@ -31,7 +31,7 @@ import type { Response, Request } from 'express';
 import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { searchLogs } from './controllers/v1/logs/searchLogs.js';
+import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
 import {
     getEmailByUuid,
@@ -43,6 +43,7 @@ import {
     validateEmailAndLogin,
     getEmailByExpiredToken
 } from './controllers/v1/account/index.js';
+import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { setMetadata } from './controllers/v1/connection/setMetadata.js';
 import { updateMetadata } from './controllers/v1/connection/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
@@ -223,7 +224,8 @@ web.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy
 web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
-web.route('/api/v1/logs/search').post(webAuth, searchLogs);
+web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
+web.route('/api/v1/logs/messages').post(webAuth, searchMessages);
 web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
 
 // Hosted signin

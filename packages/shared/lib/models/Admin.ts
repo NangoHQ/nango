@@ -6,7 +6,7 @@ export interface Account {
     secret_key: string;
     host?: string | null;
     websockets_path?: string;
-    uuid?: string;
+    uuid: string;
     is_admin?: boolean;
     is_capped?: boolean;
 }

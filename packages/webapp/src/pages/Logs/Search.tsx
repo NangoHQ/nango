@@ -3,24 +3,27 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import Info from '../../components/ui/Info';
 import { Loading } from '@geist-ui/core';
-import { useSearchLogs } from '../../hooks/useLogs';
+import { useSearchOperations } from '../../hooks/useLogs';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './components/MultiSelect';
 import { columns, statusDefaultOptions, statusOptions } from './constants';
-import { useEffect, useState } from 'react';
-import type { SearchLogsState } from '@nangohq/types';
+import { useEffect, useMemo, useState } from 'react';
+import type { SearchOperationsState } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
+import { Input } from '../../components/ui/input/Input';
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { formatQuantity } from '../../utils/utils';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
 
     // Data fetch
-    const [states, setStates] = useState<SearchLogsState[]>(statusDefaultOptions);
+    const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
     const [hasLogs, setHasLogs] = useState<boolean>(false);
-    const { data, error, loading } = useSearchLogs(env, { limit: 20, states });
+    const { data, error, loading } = useSearchOperations(env, { limit: 20, states });
 
     const table = useReactTable({
         data: data ? data.data : [],
@@ -35,6 +38,13 @@ export const LogsSearch: React.FC = () => {
             setHasLogs(true);
         }
     }, [loading]);
+
+    const total = useMemo(() => {
+        if (!data?.pagination) {
+            return 0;
+        }
+        return formatQuantity(data.pagination.total);
+    }, [data?.pagination]);
 
     if (error) {
         return (
@@ -63,7 +73,7 @@ export const LogsSearch: React.FC = () => {
 
                 <div className="flex flex-col border border-zinc-500 rounded items-center text-white text-center py-24 gap-2">
                     <h2 className="text-xl">You don&apos;t have logs yet.</h2>
-                    <div className="text-sm text-zinc-400">Note that logs older than 15days are automatically cleared.</div>
+                    <div className="text-sm text-zinc-400">Note that logs older than 15 days are automatically cleared.</div>
                 </div>
             </DashboardLayout>
         );
@@ -71,14 +81,19 @@ export const LogsSearch: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
-            <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
+                <div className="text-white text-xs">{total} logs found</div>
+            </div>
 
             <div className="flex gap-2 justify-between">
-                <div>{/* <Input before={<Search size={16} />} placeholder="Search logs..." /> */}</div>
+                <div className="w-full">
+                    <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." />
+                </div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
             </div>
 
-            <Table.Table className="mt-6">
+            <Table.Table className="my-6 table-fixed">
                 <Table.Header>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <Table.Row key={headerGroup.id}>
