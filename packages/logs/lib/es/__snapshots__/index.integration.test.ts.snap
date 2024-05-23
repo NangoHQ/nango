@@ -13,12 +13,6 @@ exports[`mapping > should apply mapping 1`] = `
     "code": {
       "type": "keyword",
     },
-    "integrationId": {
-      "type": "keyword",
-    },
-    "integrationName": {
-      "type": "keyword",
-    },
     "connectionId": {
       "type": "keyword",
     },
@@ -42,6 +36,12 @@ exports[`mapping > should apply mapping 1`] = `
       "type": "object",
     },
     "id": {
+      "type": "keyword",
+    },
+    "integrationId": {
+      "type": "keyword",
+    },
+    "integrationName": {
       "type": "keyword",
     },
     "jobId": {
