@@ -245,6 +245,7 @@ app.use(web);
 
 // -------
 // Webapp assets, static files and build.
+const baseUrl = process.env['NANGO_ASSET_BASE_URL'] || '';
 const webappBuildPath = '../../../webapp/build';
 const staticSite = express.Router();
 staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
@@ -252,7 +253,7 @@ staticSite.use(express.static(path.join(dirname(), webappBuildPath), { setHeader
 staticSite.get('*', (_, res) => {
     res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
 });
-app.use(staticSite);
+app.use(baseUrl, staticSite);
 
 // -------
 // Error handling.
