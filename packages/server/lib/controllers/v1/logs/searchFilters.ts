@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { parseQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { SearchFilters } from '@nangohq/types';
 import { model, envs } from '@nangohq/logs';
 
@@ -17,9 +17,9 @@ export const searchFilters = asyncWrapper<SearchFilters>(async (req, res) => {
         return;
     }
 
-    const query = parseQuery(req, { withEnv: true });
-    if (query) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(query.error) } });
+    const emptyQuery = requireEmptyQuery(req, { withEnv: true });
+    if (emptyQuery) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 

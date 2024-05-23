@@ -61,16 +61,14 @@ export function requireEmptyBody(req: Request) {
 /**
  * Enforce empty request query string
  */
-export function parseQuery(req: Request, { withEnv }: { withEnv: boolean } = { withEnv: false }, merge?: z.AnyZodObject) {
-    let val = z.object(withEnv ? { env: z.string().max(250).min(1) } : {});
-    if (merge) {
-        val = val.merge(merge) as any;
-    }
-
-    const res = val.strict().safeParse(req.query);
-    if (res.success) {
+export function requireEmptyQuery(req: Request, { withEnv }: { withEnv: boolean } = { withEnv: false }) {
+    const val = z
+        .object(withEnv ? { env: z.string().max(250).min(1) } : {})
+        .strict()
+        .safeParse(req.query);
+    if (val.success) {
         return;
     }
 
-    return res;
+    return val;
 }
