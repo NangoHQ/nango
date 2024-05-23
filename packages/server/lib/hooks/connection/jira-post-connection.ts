@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from './connection.manager.js';
+import type { InternalNango as Nango } from './post-connection.js';
 import axios from 'axios';
 
 export default async function execute(nango: Nango) {

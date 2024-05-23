@@ -44,7 +44,6 @@ import type {
 } from '../models/Auth.js';
 import { AuthModes as ProviderAuthModes, AuthOperation } from '../models/Auth.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
-import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -208,7 +207,7 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         parsedRawCredentials: ImportedCredentials,
-        logContextGetter: LogContextGetter
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
     ) {
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
@@ -224,19 +223,7 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            void connectionCreatedHook(
-                {
-                    id: importedConnection?.id,
-                    connection_id,
-                    provider_config_key,
-                    environment_id: environmentId,
-                    auth_mode: ProviderAuthModes.OAuth2,
-                    operation: importedConnection?.operation
-                },
-                provider,
-                logContextGetter,
-                null
-            );
+            void connectionCreatedHook(importedConnection);
         }
 
         return [importedConnection];
@@ -249,30 +236,12 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         credentials: BasicApiCredentials | ApiKeyCredentials,
-        logContextGetter: LogContextGetter
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
     ) {
-        const connection = await this.checkIfConnectionExists(connection_id, provider_config_key, environmentId);
-
-        if (connection) {
-            throw new NangoError('connection_already_exists');
-        }
-
         const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            void connectionCreatedHook(
-                {
-                    id: importedConnection.id,
-                    connection_id,
-                    provider_config_key,
-                    environment_id: environmentId,
-                    auth_mode: ProviderAuthModes.ApiKey,
-                    operation: importedConnection.operation
-                },
-                provider,
-                logContextGetter,
-                null
-            );
+            void connectionCreatedHook(importedConnection);
         }
 
         return [importedConnection];
@@ -904,7 +873,7 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         activityLogId: number,
         logCtx: LogContext,
-        logContextGetter: LogContextGetter
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
     ): Promise<void> {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
@@ -926,23 +895,7 @@ class ConnectionService {
         );
 
         if (updatedConnection) {
-            void connectionCreatedHook(
-                {
-                    id: updatedConnection.id,
-                    connection_id: connectionId,
-                    provider_config_key: integration.unique_key,
-                    environment_id: integration.environment_id,
-                    auth_mode: ProviderAuthModes.App,
-                    operation: updatedConnection.operation
-                },
-                integration.provider,
-                logContextGetter,
-                activityLogId,
-                // the connection is complete so we want to initiate syncs
-                // the post connection script has run already because we needed to get the github handle
-                { initiateSync: true, runPostConnectionScript: false },
-                logCtx
-            );
+            void connectionCreatedHook(updatedConnection);
         }
 
         await createActivityLogMessageAndEnd({

@@ -1,6 +1,6 @@
-import type { InternalNango as Nango } from './connection.manager.js';
-import type { OAuth2Credentials } from '../../../models/Auth.js';
-import { AuthModes } from '../../../models/Auth.js';
+import type { InternalNango as Nango } from './post-connection.js';
+import type { OAuth2Credentials } from '@nangohq/shared';
+import { AuthModes } from '@nangohq/shared';
 import axios from 'axios';
 
 export default async function execute(nango: Nango) {

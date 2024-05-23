@@ -41,7 +41,6 @@ export const internalNango: InternalNango = {
                     level: 'error'
                 }
             );
-
             return { connectionIds: [] };
         }
 

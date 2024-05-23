@@ -27,7 +27,8 @@ class EmailClient {
         if (process.env['MAILGUN_API_KEY'] === undefined || process.env['MAILGUN_API_KEY'] === 'EMPTY' || !this.client) {
             logger.info('Email client not configured');
             logger.info('The following email would have been sent:');
-            logger.info(email, subject, html);
+            logger.info(email, subject);
+            logger.info(html);
             return;
         }
         return this.client.messages.create('email.nango.dev', {
