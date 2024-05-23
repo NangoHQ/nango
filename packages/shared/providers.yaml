@@ -2469,7 +2469,7 @@ wrike:
     token_response_metadata:
         - host
     proxy:
-        base_url: ${connectionConfig.host}/api/v4
+        base_url: https://${connectionConfig.host}/api/v4
     docs: https://docs.nango.dev/integrations/all/wrike
 xero:
     categories:
