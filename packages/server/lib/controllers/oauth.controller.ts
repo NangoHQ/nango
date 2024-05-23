@@ -17,12 +17,11 @@ import type {
     OAuthSession,
     OAuth1RequestTokenResult,
     OAuth2Credentials,
-    ConnectionConfig
+    ConnectionConfig,
+    ConnectionUpsertResponse
 } from '@nangohq/shared';
 import {
     getConnectionConfig,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationFailed as connectionCreationFailedHook,
     interpolateStringFromObject,
     getOauthCallbackUrl,
     getGlobalAppCallbackUrl,
@@ -56,6 +55,7 @@ import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -1477,6 +1477,23 @@ class OAuthController {
 
             if (template.auth_mode === ProviderAuthModes.Custom && installationId) {
                 pending = false;
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            id: res.id,
+                            connection_id: connectionId,
+                            provider_config_key: providerConfigKey,
+                            environment_id,
+                            auth_mode: ProviderAuthModes.App,
+                            operation: res.operation
+                        },
+                        config.provider,
+                        logContextGetter,
+                        activityLogId,
+                        { initiateSync: true, runPostConnectionScript: false },
+                        logCtx
+                    );
+                };
                 await connectionService.getAppCredentialsAndFinishConnection(
                     connectionId,
                     config,
@@ -1484,7 +1501,7 @@ class OAuthController {
                     connectionConfig as ConnectionConfig,
                     activityLogId,
                     logCtx,
-                    logContextGetter
+                    connCreatedHook
                 );
             } else {
                 await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);

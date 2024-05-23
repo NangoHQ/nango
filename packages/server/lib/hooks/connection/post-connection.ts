@@ -1,15 +1,6 @@
 import type { AxiosError, AxiosResponse } from 'axios';
-import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '../../../models/Connection.js';
-import type { LogLevel } from '../../../models/Activity.js';
-import { LogActionEnum } from '../../../models/Activity.js';
-import { createActivityLogAndLogMessage } from '../../../services/activity/activity.service.js';
-import type { HTTP_VERB } from '../../../models/Generic.js';
-import type { UserProvidedProxyConfiguration } from '../../../models/Proxy.js';
-import proxyService from '../../../services/proxy.service.js';
-import connectionService from '../../../services/connection.service.js';
-import environmentService from '../../../services/environment.service.js';
-import telemetry, { LogTypes } from '../../../utils/telemetry.js';
-
+import type { RecentlyCreatedConnection, Connection, ConnectionConfig, LogLevel, HTTP_VERB, UserProvidedProxyConfiguration } from '@nangohq/shared';
+import { LogActionEnum, LogTypes, createActivityLogAndLogMessage, proxyService, connectionService, environmentService, telemetry } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
