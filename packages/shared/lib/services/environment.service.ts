@@ -150,7 +150,7 @@ class EnvironmentService {
             q.where('_nango_environments.public_key', opts.publicKey);
         } else if ('accountUuid' in opts) {
             q.where('_nango_accounts.uuid', opts.accountUuid).where('_nango_environments.name', opts.envName);
-        } else if ('envName' in opts) {
+        } else if ('accountId' in opts) {
             q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
         } else if ('environmentId' in opts) {
             q.where('_nango_environments.id', opts.environmentId);
