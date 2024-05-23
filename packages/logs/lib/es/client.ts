@@ -1,4 +1,4 @@
-import { Client } from '@opensearch-project/opensearch';
+import { Client } from '@elastic/elasticsearch';
 import { envs } from '../env.js';
 
 export const client = new Client({
@@ -8,6 +8,5 @@ export const client = new Client({
     auth: {
         username: envs.NANGO_LOGS_OS_USER!, // ggignore
         password: envs.NANGO_LOGS_OS_PWD! // ggignore
-    },
-    ssl: { rejectUnauthorized: false }
+    }
 });

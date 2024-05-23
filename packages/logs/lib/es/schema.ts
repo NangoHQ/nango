@@ -1,8 +1,8 @@
-import type { opensearchtypes } from '@opensearch-project/opensearch';
+import type { estypes } from '@elastic/elasticsearch';
 import type { MessageRow } from '@nangohq/types';
 import { envs } from '../env.js';
 
-const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
+const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
 
     parentId: { type: 'keyword' },
@@ -94,26 +94,24 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     endedAt: { type: 'date' }
 };
 
-export const indexMessages: opensearchtypes.IndicesCreateRequest = {
+export const indexMessages: estypes.IndicesCreateRequest = {
     index: `20240522_${envs.NANGO_LOGS_OS_INDEX ?? 'messages'}`,
-    body: {
-        settings: {
-            analysis: {
-                analyzer: {
-                    default: {
-                        type: 'standard'
-                    },
-                    default_search: {
-                        type: 'standard'
-                    }
+    settings: {
+        analysis: {
+            analyzer: {
+                default: {
+                    type: 'standard'
+                },
+                default_search: {
+                    type: 'standard'
                 }
             }
-        },
-        mappings: {
-            dynamic: false,
-            properties: props
         }
+    },
+    mappings: {
+        dynamic: false,
+        properties: props
     }
 };
 
-export const indices: opensearchtypes.IndicesCreateRequest[] = [indexMessages];
+export const indices: estypes.IndicesCreateRequest[] = [indexMessages];
