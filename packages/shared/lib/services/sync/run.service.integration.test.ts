@@ -28,6 +28,12 @@ class integrationServiceMock implements IntegrationServiceInterface {
     }
 }
 
+const orchestratorClient = {
+    execute: () => {
+        return Promise.resolve({}) as any;
+    }
+};
+
 const integrationService = new integrationServiceMock();
 
 describe('Running sync', () => {
@@ -183,7 +189,8 @@ describe('SyncRun', () => {
     it('should initialize correctly', () => {
         const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
-            recordsService: recordsService,
+            recordsService,
+            orchestratorClient,
             logContextGetter,
             writeToDb: true,
             nangoConnection: {
@@ -243,8 +250,9 @@ const runJob = async (
 
     const config: SyncRunConfig = {
         integrationService: integrationService,
-        recordsService: recordsService,
-        logContextGetter: logContextGetter,
+        recordsService,
+        orchestratorClient,
+        logContextGetter,
         writeToDb: true,
         nangoConnection: connection,
         syncName: sync.name,

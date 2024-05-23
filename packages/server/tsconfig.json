@@ -22,6 +22,9 @@
         },
         {
             "path": "../records"
+        },
+        {
+            "path": "../orchestrator"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts"]

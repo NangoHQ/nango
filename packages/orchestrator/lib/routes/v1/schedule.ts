@@ -22,16 +22,7 @@ type Schedule = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: {
-            name: string;
-            connection: {
-                id: number;
-                provider_config_key: string;
-                environment_id: number;
-            };
-            activityLogId: number;
-            input: JsonValue;
-        };
+        args: JsonValue;
     };
     Error: ApiError<'schedule_failed'>;
     Success: { taskId: string };

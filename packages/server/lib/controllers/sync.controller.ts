@@ -48,6 +48,7 @@ import type { LastAction } from '@nangohq/records';
 import { isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
+import { getOrchestrator } from '../utils/utils.js';
 
 class SyncController {
     public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -414,7 +415,7 @@ class SyncController {
                 throw new NangoError('failed_to_get_sync_client');
             }
 
-            const actionResponse = await syncClient.triggerAction({
+            const actionResponse = await getOrchestrator().triggerAction({
                 connection,
                 actionName: action_name,
                 input,
