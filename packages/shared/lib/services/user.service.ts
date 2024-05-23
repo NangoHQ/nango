@@ -1,7 +1,11 @@
 import db from '../db/database.js';
 import * as uuid from 'uuid';
-import { isEnterprise } from '@nangohq/utils';
-import type { User, InviteUser } from '../models/Admin.js';
+import type { Result } from '@nangohq/utils';
+import { isEnterprise, Ok, Err } from '@nangohq/utils';
+import type { User, InviteUser, Account } from '../models/Admin.js';
+
+const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
+const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {
@@ -16,6 +20,46 @@ class UserService {
         }
 
         return result[0];
+    }
+
+    async getUserByUuid(uuid: string): Promise<User | null> {
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ uuid }).first();
+
+        return result || null;
+    }
+
+    async getUserAndAccountByToken(token: string): Promise<Result<User & Account & { account_id: number; user_id: number }>> {
+        const result = await db.knex
+            .select('*', '_nango_accounts.id as account_id', '_nango_users.id as user_id')
+            .from<User>(`_nango_users`)
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_users.account_id')
+            .where({ email_verification_token: token })
+            .first();
+
+        if (result) {
+            const expired = new Date(result.email_verification_token_expires_at).getTime() < new Date().getTime();
+            if (expired) {
+                return Err(new Error('token_expired'));
+            }
+        }
+
+        return Ok(result) || Err(new Error('user_not_found'));
+    }
+
+    async refreshEmailVerificationToken(expiredToken: string): Promise<User | null> {
+        const newToken = uuid.v4();
+        const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
+
+        const result = await db.knex
+            .from<User>(`_nango_users`)
+            .where({ email_verification_token: expiredToken })
+            .update({
+                email_verification_token: newToken,
+                email_verification_token_expires_at: expires_at
+            })
+            .returning('*');
+
+        return result[0] || null;
     }
 
     async getUsersByAccountId(accountId: number): Promise<User[]> {
@@ -66,13 +110,31 @@ class UserService {
         return result[0];
     }
 
-    async createUser(email: string, name: string, hashedPassword: string, salt: string, accountId: number): Promise<User | null> {
-        const result: Pick<User, 'id'> = await db.knex
-            .from<User>(`_nango_users`)
-            .insert({ email: email, name: name, hashed_password: hashedPassword, salt: salt, account_id: accountId }, ['id']);
+    async createUser(
+        email: string,
+        name: string,
+        hashed_password: string,
+        salt: string,
+        account_id: number,
+        email_verified: boolean = true
+    ): Promise<User | null> {
+        const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
+        const result: Pick<User, 'id'>[] = await db.knex
+            .from<User>('_nango_users')
+            .insert({
+                email,
+                name,
+                hashed_password,
+                salt,
+                account_id,
+                email_verified,
+                email_verification_token: email_verified ? null : uuid.v4(),
+                email_verification_token_expires_at: email_verified ? null : expires_at
+            })
+            .returning('id');
 
-        if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-            const userId = result[0]['id'];
+        if (result.length === 1 && result[0]?.id) {
+            const userId = result[0].id;
             return this.getUserById(userId);
         }
 
@@ -103,9 +165,13 @@ class UserService {
         }
     }
 
+    async verifyUserEmail(id: number) {
+        return db.knex.from<User>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
+    }
+
     async inviteUser(email: string, name: string, accountId: number, inviter_id: number) {
         const token = uuid.v4();
-        const expires_at = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000);
+        const expires_at = new Date(new Date().getTime() + INVITE_EMAIL_EXPIRATION);
 
         const result = await db.knex
             .from<InviteUser>(`_nango_invited_users`)
