@@ -18,7 +18,7 @@ import { stringifyError } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
-const RETRY_ATTEMPTS = 7;
+const RETRY_ATTEMPTS = 10;
 
 const NON_FORWARDABLE_HEADERS = [
     'host',

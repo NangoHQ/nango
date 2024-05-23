@@ -648,7 +648,7 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendSyncUpdate(
+        void webhookService.sendSyncUpdate(
             this.nangoConnection,
             this.syncName,
             model,
