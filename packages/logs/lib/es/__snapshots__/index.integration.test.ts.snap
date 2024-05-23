@@ -13,10 +13,10 @@ exports[`mapping > should apply mapping 1`] = `
     "code": {
       "type": "keyword",
     },
-    "configId": {
+    "integrationId": {
       "type": "keyword",
     },
-    "configName": {
+    "integrationName": {
       "type": "keyword",
     },
     "connectionId": {

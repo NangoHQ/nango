@@ -582,7 +582,7 @@ class ConnectionService {
 
         if (activityLogId && config) {
             await updateProviderActivityLog(activityLogId, config.provider);
-            await logCtx?.enrichOperation({ configId: config.id!, configName: config.unique_key, providerName: config.provider });
+            await logCtx?.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
         }
 
         if (config === null) {

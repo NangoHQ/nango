@@ -60,6 +60,9 @@ export interface NangoConnection {
     connection_config?: ConnectionConfig;
 
     // TODO legacy while the migration is in progress
+    /**
+     * @deprecated
+     */
     account_id?: number;
 }
 

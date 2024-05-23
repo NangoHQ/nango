@@ -102,7 +102,7 @@ class ConnectionController {
                     {
                         account,
                         environment,
-                        config: { id: connection.config_id!, name: connection.provider_config_key, provider: 'unknown' },
+                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider: 'unknown' },
                         connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
@@ -159,7 +159,7 @@ class ConnectionController {
                     {
                         account,
                         environment,
-                        config: { id: config.id!, name: config.unique_key, provider: config.provider },
+                        integration: { id: config.id!, name: config.unique_key, provider: config.provider },
                         connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );

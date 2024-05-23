@@ -206,7 +206,7 @@ class SyncClient {
                 {
                     account,
                     environment,
-                    config: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                    integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                     connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                     syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
                 }
@@ -754,7 +754,7 @@ class SyncClient {
             {
                 account,
                 environment,
-                config: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
+                integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
                 connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                 syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
             }

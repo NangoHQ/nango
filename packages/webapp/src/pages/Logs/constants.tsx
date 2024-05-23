@@ -33,7 +33,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         }
     },
     {
-        accessorKey: 'configId',
+        accessorKey: 'integrationId',
         header: 'Integration',
         size: 200,
         cell: ({ row }) => {

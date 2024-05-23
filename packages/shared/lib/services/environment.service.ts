@@ -124,6 +124,7 @@ class EnvironmentService {
     }
 
     async getAccountAndEnvironment(
+        // TODO: fix this union type that is not discriminated
         opts:
             | { publicKey: string }
             | { secretKey: string }
