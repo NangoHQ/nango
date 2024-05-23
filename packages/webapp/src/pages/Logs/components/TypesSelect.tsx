@@ -1,9 +1,8 @@
 import Button from '../../../components/ui/button/Button';
 import { useMemo, useState } from 'react';
-import { CrossCircledIcon, CheckIcon } from '@radix-ui/react-icons';
+import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
-import { cn } from '../../../utils/utils';
+import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { typesOptions } from '../constants';
 import { Input } from '../../../components/ui/input/Input';
 
@@ -84,18 +83,8 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                                             onSelect={() => {
                                                 select(parent.value, !checked);
                                             }}
-                                            className={cn(
-                                                'text-gray-400 relative flex cursor-pointer rounded select-none items-center py-1.5 pl-8 pr-2 text-xs outline-none transition-colors aria-selected:bg-pure-black aria-selected:text-white '
-                                            )}
                                         >
-                                            <span
-                                                className={cn(
-                                                    'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-sm',
-                                                    checked && 'border-transparent'
-                                                )}
-                                            >
-                                                {checked && <CheckIcon className="h-5 w-5" />}
-                                            </span>
+                                            <CommandCheck checked={checked} />
                                             {parent.name}
                                         </CommandItem>
                                         {parent.childs && (
@@ -109,18 +98,8 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                                                             onSelect={() => {
                                                                 select(option.value, !checked);
                                                             }}
-                                                            className={cn(
-                                                                'text-gray-400 relative flex cursor-pointer rounded select-none items-center py-1.5 pl-8 pr-2 text-xs outline-none transition-colors aria-selected:bg-pure-black aria-selected:text-white '
-                                                            )}
                                                         >
-                                                            <span
-                                                                className={cn(
-                                                                    'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-sm',
-                                                                    checked && 'border-transparent'
-                                                                )}
-                                                            >
-                                                                {checked && <CheckIcon className="h-5 w-5" />}
-                                                            </span>
+                                                            <CommandCheck checked={checked} />
                                                             {option.name}
                                                         </CommandItem>
                                                     );

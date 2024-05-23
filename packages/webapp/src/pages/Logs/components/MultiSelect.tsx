@@ -1,7 +1,8 @@
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../../components/ui/DropdownMenu';
 import Button from '../../../components/ui/button/Button';
 import { useMemo, useState } from 'react';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList, CommandCheck } from '../../../components/ui/Command';
 
 export interface MultiSelectArgs<T> {
     label: string;
@@ -46,8 +47,8 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
     }, [selected, all, options]);
 
     return (
-        <DropdownMenu open={open} onOpenChange={setOpen}>
-            <DropdownMenuTrigger>
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
                 <Button variant="zombieGray" size={'xs'}>
                     {label}
                     {isDirty && (
@@ -65,24 +66,31 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
                         </button>
                     )}
                 </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-                {options.map((option) => {
-                    const checked = selected.some((sel) => option.value === sel);
-                    return (
-                        <DropdownMenuCheckboxItem
-                            key={option.value}
-                            checked={checked}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                select(option.value, !checked);
-                            }}
-                        >
-                            {option.name}
-                        </DropdownMenuCheckboxItem>
-                    );
-                })}
-            </DropdownMenuContent>
-        </DropdownMenu>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-0 text-white bg-active-gray">
+                <Command>
+                    <CommandList>
+                        <CommandEmpty>No framework found.</CommandEmpty>
+                        <CommandGroup>
+                            {options.map((option) => {
+                                const checked = selected.some((sel) => option.value === sel);
+                                return (
+                                    <CommandItem
+                                        key={option.value}
+                                        value={option.value}
+                                        onSelect={() => {
+                                            select(option.value, !checked);
+                                        }}
+                                    >
+                                        <CommandCheck checked={checked} />
+                                        {option.name}
+                                    </CommandItem>
+                                );
+                            })}
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
+            </PopoverContent>
+        </Popover>
     );
 };

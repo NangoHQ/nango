@@ -143,7 +143,7 @@ export function useSearchFilters(enabled: boolean, env: string, body: SearchFilt
         if (enabled && !loading) {
             void fetchData();
         }
-    }, [env, body.category, body.search]);
+    }, [env, enabled, body.category, body.search]);
 
     function trigger() {
         if (enabled && !loading) {

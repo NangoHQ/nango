@@ -4,6 +4,7 @@ import { Command as CommandPrimitive } from 'cmdk';
 
 import { Dialog, DialogContent } from './Dialog';
 import { cn } from '../../utils/utils';
+import { CheckIcon } from '@radix-ui/react-icons';
 
 const Command = React.forwardRef<React.ElementRef<typeof CommandPrimitive>, React.ComponentPropsWithoutRef<typeof CommandPrimitive>>(
     ({ className, ...props }, ref) => (
@@ -88,7 +89,7 @@ const CommandItem = React.forwardRef<React.ElementRef<typeof CommandPrimitive.It
         <CommandPrimitive.Item
             ref={ref}
             className={cn(
-                'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
+                'px-2 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 text-gray-400 relative flex cursor-pointer rounded select-none items-center py-1.5 pl-8 pr-2 text-xs outline-none transition-colors aria-selected:bg-pure-black aria-selected:text-white',
                 className
             )}
             {...props}
@@ -103,4 +104,21 @@ const CommandShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanE
 };
 CommandShortcut.displayName = 'CommandShortcut';
 
-export { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator };
+// Custom
+const CommandCheck = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item> & { checked: boolean }>(
+    ({ className, checked }, ref) => (
+        <span
+            ref={ref}
+            className={cn(
+                'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-sm',
+                checked && 'border-transparent',
+                className
+            )}
+        >
+            {checked && <CheckIcon className="h-5 w-5" />}
+        </span>
+    )
+);
+CommandCheck.displayName = 'CommandCheck';
+
+export { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator, CommandCheck };
