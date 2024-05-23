@@ -391,8 +391,6 @@ class ConnectionService {
             }
         }
 
-        await this.updateLastFetched(connection?.id as number);
-
         return { success: true, error: null, response: connection };
     }
 
@@ -662,6 +660,8 @@ class ConnectionService {
 
             connection.credentials = credentials as OAuth2Credentials;
         }
+
+        await this.updateLastFetched(connection.id as number);
 
         return { success: true, error: null, response: connection };
     }

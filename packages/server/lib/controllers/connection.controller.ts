@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
+    Connection,
     OAuth2Credentials,
     OAuth2ClientCredentials,
     ImportedCredentials,
@@ -61,7 +62,28 @@ class ConnectionController {
                 environment_id: environment.id
             };
 
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            let success: boolean;
+            let error: NangoError | null;
+            let connection: Connection | null;
+            if (instantRefresh) {
+                ({
+                    success,
+                    error,
+                    response: connection
+                } = await connectionService.getConnectionCredentials(
+                    account.id,
+                    environment.id,
+                    connectionId,
+                    providerConfigKey,
+                    logContextGetter,
+                    undefined,
+                    undefined,
+                    action,
+                    true
+                ));
+            } else {
+                ({ success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id));
+            }
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -116,10 +138,12 @@ class ConnectionController {
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
+            // if instantRefresh is true, we already refreshed the credentials
             if (
-                connection.credentials.type === ProviderAuthModes.OAuth2 ||
-                connection.credentials.type === ProviderAuthModes.App ||
-                connection.credentials.type === ProviderAuthModes.OAuth2CC
+                !instantRefresh &&
+                (connection.credentials.type === ProviderAuthModes.OAuth2 ||
+                    connection.credentials.type === ProviderAuthModes.App ||
+                    connection.credentials.type === ProviderAuthModes.OAuth2CC)
             ) {
                 const {
                     success,
