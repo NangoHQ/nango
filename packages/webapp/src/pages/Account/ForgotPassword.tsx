@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { useRequestPasswordResetAPI } from '../utils/api';
-import DefaultLayout from '../layout/DefaultLayout';
+import { useRequestPasswordResetAPI } from '../../utils/api';
+import DefaultLayout from '../../layout/DefaultLayout';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');

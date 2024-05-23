@@ -1,24 +1,23 @@
 import { useState } from 'react';
+import type { Signup } from '@nangohq/types';
 import { Link, useNavigate } from 'react-router-dom';
-
-import { useAnalyticsTrack } from '../utils/analytics';
-import { MANAGED_AUTH_ENABLED } from '../utils/utils';
-import { useSignupAPI } from '../utils/api';
-import type { User } from '../utils/user';
-import { useSignin } from '../utils/user';
-import DefaultLayout from '../layout/DefaultLayout';
-import GoogleButton from '../components/ui/button/Auth/Google';
+import { MANAGED_AUTH_ENABLED } from '../../utils/utils';
+import { useSignupAPI } from '../../utils/api';
+import DefaultLayout from '../../layout/DefaultLayout';
+import GoogleButton from '../../components/ui/button/Auth/Google';
+import Button from '../../components/ui/button/Button';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [showResendEmail, setShowResendEmail] = useState(false);
+    const [email, setEmail] = useState('');
     const navigate = useNavigate();
-    const signin = useSignin();
     const signupAPI = useSignupAPI();
-    const analyticsTrack = useAnalyticsTrack();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
+        setShowResendEmail(false);
 
         const target = e.target as typeof e.target & {
             name: { value: string };
@@ -29,19 +28,38 @@ export default function Signup() {
         const res = await signupAPI(target.name.value, target.email.value, target.password.value);
 
         if (res?.status === 200) {
-            const data = await res.json();
-            const user: User = data['user'];
-            analyticsTrack('web:account_signup', {
-                user_id: user.id,
-                email: user.email,
-                name: user.name,
-                accountId: user.accountId
-            });
-            signin(user);
-            navigate('/');
-        } else if (res != null) {
-            const errorMessage = (await res.json()).error;
-            setServerErrorMessage(errorMessage);
+            const response: Signup['Success'] = await res.json();
+            const { uuid } = response;
+
+            navigate(`/verify-email/${uuid}`);
+        } else {
+            const errorResponse: Signup['Errors'] = await res?.json();
+            if (errorResponse.error.code === 'email_not_verified') {
+                setShowResendEmail(true);
+                setEmail(target.email.value);
+            }
+            setServerErrorMessage(errorResponse?.error?.message || 'Issue signing up. Please try again.');
+        }
+    };
+
+    const resendVerificationEmail = async () => {
+        setShowResendEmail(false);
+        setServerErrorMessage('');
+
+        const res = await fetch('/api/v1/account/resend-verification-email/by-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email
+            })
+        });
+
+        if (res?.status === 200) {
+            setServerErrorMessage('Verification email sent.');
+        } else {
+            setServerErrorMessage('Issue sending verification email. Please try again.');
         }
     };
 
@@ -105,7 +123,16 @@ export default function Signup() {
                                 >
                                     Sign up
                                 </button>
-                                {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
+                                {serverErrorMessage && (
+                                    <>
+                                        <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>
+                                        {showResendEmail && (
+                                            <Button onClick={resendVerificationEmail} className="flex justify-center mt-2 text-light-gray" variant="danger">
+                                                Resend verification email
+                                            </Button>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </form>
                         {MANAGED_AUTH_ENABLED && (
