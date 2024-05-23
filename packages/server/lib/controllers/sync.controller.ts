@@ -375,10 +375,15 @@ class SyncController {
 
             const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
             if (!provider) {
-                res.status(400).json({ error: { code: 'not_found' } });
+                res.status(404).json({ error: { code: 'not_found' } });
                 return;
             }
+
             const syncConfig = await getSyncConfigRaw({ environmentId, config_id: provider.id!, name: action_name, isAction: true });
+            if (!syncConfig) {
+                res.status(404).json({ error: { code: 'not_found' } });
+                return;
+            }
 
             const log = {
                 level: 'info' as LogLevel,
@@ -411,7 +416,7 @@ class SyncController {
                     environment,
                     config: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
-                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name },
+                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
                     meta: { input }
                 }
             );
@@ -629,19 +634,19 @@ class SyncController {
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
-                res.status(400).json({ error: { code: 'not_found' } });
+                res.status(404).json({ error: { code: 'not_found' } });
                 return;
             }
 
             const config = await configService.getProviderConfig(connection.provider_config_key, environment.id);
             if (!config) {
-                res.status(400).json({ error: { code: 'not_found' } });
+                res.status(404).json({ error: { code: 'not_found' } });
                 return;
             }
 
             const syncConfig = await getSyncConfigRaw({ environmentId: config.environment_id, config_id: config.id!, name: sync_name, isAction: false });
             if (!syncConfig) {
-                res.status(400).json({ error: { code: 'not_found' } });
+                res.status(404).json({ error: { code: 'not_found' } });
                 return;
             }
 
