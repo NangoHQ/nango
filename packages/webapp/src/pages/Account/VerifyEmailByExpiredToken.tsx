@@ -83,7 +83,7 @@ export function VerifyEmailByExpiredToken() {
                             <form className="mt-6 space-y-6" onSubmit={resendEmail}>
                                 <span className="text-text-light-gray mb-4 text-[14px]">Check {email} to verify your account and get started.</span>
                                 <div className="flex justify-center">
-                                    <button className="w-1/2 bg-white flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow active:ring-2 active:ring-offset-2">
+                                    <button className="min-w-8 bg-white flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow active:ring-2 active:ring-offset-2">
                                         Resend verification email
                                     </button>
                                 </div>
