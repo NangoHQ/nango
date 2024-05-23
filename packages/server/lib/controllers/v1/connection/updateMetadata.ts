@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { parseQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { ApiError, UpdateMetadata, MetadataBody } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
 import type { Connection } from '@nangohq/shared';
@@ -14,9 +14,9 @@ const validation = z
     .strict();
 
 export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
-    const query = parseQuery(req);
-    if (query) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(query.error) } });
+    const emptyQuery = requireEmptyQuery(req);
+    if (emptyQuery) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 
