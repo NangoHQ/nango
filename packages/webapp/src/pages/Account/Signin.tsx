@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { useSigninAPI } from '../utils/api';
-import { useSignin } from '../utils/user';
-import type { User } from '../utils/user';
-import { MANAGED_AUTH_ENABLED } from '../utils/utils';
-import DefaultLayout from '../layout/DefaultLayout';
-import GoogleButton from '../components/ui/button/Auth/Google';
+import { useSigninAPI } from '../../utils/api';
+import { useSignin } from '../../utils/user';
+import type { WebUser, Signin } from '@nangohq/types';
+import { MANAGED_AUTH_ENABLED } from '../../utils/utils';
+import DefaultLayout from '../../layout/DefaultLayout';
+import GoogleButton from '../../components/ui/button/Auth/Google';
+import Button from '../../components/ui/button/Button';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [showResendEmail, setShowResendEmail] = useState(false);
+    const [email, setEmail] = useState('');
     const navigate = useNavigate();
     const signin = useSignin();
     const signinAPI = useSigninAPI();
@@ -17,6 +20,7 @@ export default function Signin() {
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
+        setShowResendEmail(false);
 
         const target = e.target as typeof e.target & {
             email: { value: string };
@@ -27,11 +31,41 @@ export default function Signin() {
 
         if (res?.status === 200) {
             const data = await res.json();
-            const user: User = data['user'];
+            const user: WebUser = data['user'];
             signin(user);
             navigate('/');
         } else if (res?.status === 401) {
             setServerErrorMessage('Invalid email or password.');
+        } else if (res?.status === 400) {
+            const errorResponse: Signin['Errors'] = (await res.json()) as Signin['Errors'];
+            if (errorResponse.error.code === 'email_not_verified') {
+                setShowResendEmail(true);
+                setEmail(target.email.value);
+                setServerErrorMessage('Please verify your email before logging in.');
+            } else {
+                setServerErrorMessage('Issue logging in. Please try again.');
+            }
+        }
+    };
+
+    const resendVerificationEmail = async () => {
+        setShowResendEmail(false);
+        setServerErrorMessage('');
+
+        const res = await fetch('/api/v1/account/resend-verification-email/by-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email
+            })
+        });
+
+        if (res?.status === 200) {
+            setServerErrorMessage('Verification email sent.');
+        } else {
+            setServerErrorMessage('Issue sending verification email. Please try again.');
         }
     };
 
@@ -84,7 +118,16 @@ export default function Signin() {
                                 >
                                     Log in
                                 </button>
-                                {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
+                                {serverErrorMessage && (
+                                    <>
+                                        <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>
+                                        {showResendEmail && (
+                                            <Button onClick={resendVerificationEmail} className="flex justify-center mt-2 text-light-gray" variant="danger">
+                                                Resend verification email
+                                            </Button>
+                                        )}
+                                    </>
+                                )}
                             </div>
 
                             {MANAGED_AUTH_ENABLED && (

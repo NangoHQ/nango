@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { useInviteSignupAPI, useSignupAPI } from '../utils/api';
-import { MANAGED_AUTH_ENABLED, isEnterprise } from '../utils/utils';
-import { useSignin } from '../utils/user';
-import type { User } from '../utils/user';
-import DefaultLayout from '../layout/DefaultLayout';
-import GoogleButton from '../components/ui/button/Auth/Google';
+import type { SignupWithToken } from '@nangohq/types';
+import { useInviteSignupAPI } from '../../utils/api';
+import { useAnalyticsTrack } from '../../utils/analytics';
+import { MANAGED_AUTH_ENABLED, isEnterprise } from '../../utils/utils';
+import { useSignin } from '../../utils/user';
+import DefaultLayout from '../../layout/DefaultLayout';
+import GoogleButton from '../../components/ui/button/Auth/Google';
 
 export default function InviteSignup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -17,7 +18,7 @@ export default function InviteSignup() {
     const navigate = useNavigate();
     const getInvitee = useInviteSignupAPI();
     const signin = useSignin();
-    const signupAPI = useSignupAPI();
+    const analyticsTrack = useAnalyticsTrack();
 
     const { token } = useParams();
 
@@ -52,15 +53,33 @@ export default function InviteSignup() {
             password: { value: string };
         };
 
-        const res = await signupAPI(target.name.value, target.email.value, target.password.value, invitedAccountID, token as string);
+        const res = await fetch(`/api/v1/account/signup/token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: target.name.value,
+                email: target.email.value,
+                password: target.password.value,
+                accountId: invitedAccountID,
+                token
+            })
+        });
 
         if (res?.status === 200) {
             const data = await res.json();
-            const user: User = data['user'];
+            const user: SignupWithToken['Success']['user'] = data['user'];
+            analyticsTrack('web:account_signup', {
+                user_id: user.id,
+                email: user.email,
+                name: user.name,
+                accountId: user.accountId
+            });
             signin(user);
             navigate('/');
         } else if (res != null) {
-            const errorMessage = (await res.json()).error;
+            const errorMessage = (await res.json()).error.message || 'Unknown error';
             setServerErrorMessage(errorMessage);
         }
     };
