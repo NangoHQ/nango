@@ -138,7 +138,7 @@ class AppStoreAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key, providerName: config.provider });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             if (!req.body.privateKeyId) {
                 errorManager.errRes(res, 'missing_private_key_id');

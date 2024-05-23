@@ -13,8 +13,8 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     environmentId: { type: 'keyword' },
     environmentName: { type: 'keyword' },
 
-    configId: { type: 'keyword' },
-    configName: {
+    integrationId: { type: 'keyword' },
+    integrationName: {
         type: 'text',
         analyzer: 'standard',
         search_analyzer: 'standard',

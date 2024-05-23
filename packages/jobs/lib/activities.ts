@@ -203,16 +203,13 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             content
         });
 
-        const { account, environment } = (await environmentService.getAccountAndEnvironment({
-            accountId: nangoConnection.account_id!,
-            environmentId: nangoConnection.environment_id
-        }))!;
+        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
-                config: providerConfig ? { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider } : undefined,
+                integration: providerConfig ? { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider } : undefined,
                 connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                 syncConfig: syncConfig ? { id: syncConfig.id!, name: syncConfig.sync_name } : undefined
             }
@@ -292,16 +289,13 @@ export async function syncProvider({
         };
         const activityLogId = (await createActivityLog(log)) as number;
 
-        const { account, environment } = (await environmentService.getAccountAndEnvironment({
-            accountId: nangoConnection.account_id!,
-            environmentId: nangoConnection.environment_id
-        }))!;
+        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
         logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
-                config: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                 connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                 syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
             }

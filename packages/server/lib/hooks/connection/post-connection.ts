@@ -105,7 +105,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     {
                         account,
                         environment,
-                        config: { id: connection.config_id!, name: connection.provider_config_key, provider },
+                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider },
                         connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );

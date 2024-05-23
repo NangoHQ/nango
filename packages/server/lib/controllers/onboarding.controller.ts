@@ -434,7 +434,7 @@ class OnboardingController {
                     account,
                     environment,
                     user,
-                    config: { id: connection.config_id!, name: connection.provider_config_key, provider: 'github' },
+                    integration: { id: connection.config_id!, name: connection.provider_config_key, provider: 'github' },
                     connection: { id: connection.id!, name: connection.connection_id },
                     syncConfig: { id: syncConfig.id!, name: syncConfig?.sync_name }
                 }

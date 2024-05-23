@@ -80,7 +80,7 @@ describe('POST /logs/filters', () => {
 
         const logCtx = await logContextGetter.create(
             { message: 'test 1', operation: { type: 'proxy' } },
-            { account, environment: env, config: { id: 1, name: 'hello', provider: 'github' } }
+            { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
         await logCtx.success();
@@ -104,7 +104,7 @@ describe('POST /logs/filters', () => {
 
         const logCtx = await logContextGetter.create(
             { message: 'test 1', operation: { type: 'proxy' } },
-            { account, environment: env, config: { id: 1, name: 'hello', provider: 'github' } }
+            { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
         await logCtx.success();
@@ -129,7 +129,7 @@ describe('POST /logs/filters', () => {
 
         const logCtx = await logContextGetter.create(
             { message: 'test 1', operation: { type: 'proxy' } },
-            { account, environment: env, config: { id: 1, name: 'hello', provider: 'github' } }
+            { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
         await logCtx.success();

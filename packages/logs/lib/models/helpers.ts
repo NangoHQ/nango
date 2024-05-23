@@ -9,14 +9,14 @@ export interface FormatMessageData {
     user?: { id: number } | undefined;
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
-    config?: { id: number; name: string; provider: string } | undefined;
+    integration?: { id: number; name: string; provider: string } | undefined;
     syncConfig?: { id: number; name: string } | undefined;
     meta?: MessageRow['meta'];
 }
 
 export function getFormattedMessage(
     data: Partial<MessageRow>,
-    { account, user, environment, config, connection, syncConfig, meta }: FormatMessageData = {}
+    { account, user, environment, integration, connection, syncConfig, meta }: FormatMessageData = {}
 ): MessageRow {
     return {
         id: data.id || nanoid(),
@@ -36,9 +36,9 @@ export function getFormattedMessage(
         environmentId: environment?.id ?? data.environmentId ?? null,
         environmentName: environment?.name || data.environmentName || null,
 
-        configId: config?.id ?? data.configId ?? null,
-        configName: config?.name || data.configName || null,
-        providerName: config?.provider || data.providerName || null,
+        integrationId: integration?.id ?? data.integrationId ?? null,
+        integrationName: integration?.name || data.integrationName || null,
+        providerName: integration?.provider || data.integrationName || null,
 
         connectionId: connection?.id ?? data.connectionId ?? null,
         connectionName: connection?.name || data.connectionName || null,

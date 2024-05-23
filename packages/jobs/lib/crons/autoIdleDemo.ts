@@ -70,7 +70,7 @@ export async function exec(): Promise<void> {
             {
                 account: { id: sync.account_id, name: sync.account_name },
                 environment: { id: sync.environment_id, name: sync.environment_name },
-                config: { id: sync.config_id, name: sync.provider_unique_key, provider: sync.provider },
+                integration: { id: sync.config_id, name: sync.provider_unique_key, provider: sync.provider },
                 connection: { id: sync.connection_unique_id, name: sync.connection_id },
                 syncConfig: { id: sync.sync_config_id, name: sync.name }
             }
