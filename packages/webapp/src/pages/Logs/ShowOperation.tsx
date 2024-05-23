@@ -37,6 +37,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
 
     useInterval(
         () => {
+            // Auto refresh
             trigger();
         },
         isLive ? 5000 : null

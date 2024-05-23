@@ -28,8 +28,8 @@ export type SearchOperationsIntegration = 'all' | string;
 export type SearchOperationsConnection = 'all' | string;
 export type SearchOperationsSync = 'all' | string;
 export interface SearchOperationsPeriod {
-    before: string;
-    after: string;
+    from: string;
+    to: string;
 }
 export type SearchOperationsData = SearchOperations['Success']['data'][0];
 

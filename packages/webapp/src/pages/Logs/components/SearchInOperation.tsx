@@ -85,6 +85,7 @@ export const SearchInOperation: React.FC<{ operationId: string; live: boolean }>
 
     useInterval(
         () => {
+            // Auto refresh
             trigger();
         },
         live ? 5000 : null

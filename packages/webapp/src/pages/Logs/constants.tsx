@@ -90,10 +90,7 @@ export const statusOptions: MultiSelectArgs<SearchOperationsState>['options'] = 
 
 export const typesDefaultOptions: SearchOperationsType[] = ['all'];
 export const typesOptions = [
-    {
-        value: 'all',
-        name: 'All'
-    },
+    { value: 'all', name: 'All' },
     {
         value: 'sync',
         name: 'Sync',
@@ -107,26 +104,11 @@ export const typesOptions = [
             { name: 'Cancel Execution', value: 'sync:cancel' }
         ]
     },
-    {
-        value: 'action',
-        name: 'Action'
-    },
-    {
-        value: 'proxy',
-        name: 'Proxy'
-    },
-    {
-        value: 'deploy',
-        name: 'Deploy'
-    },
-    {
-        value: 'auth',
-        name: 'Auth'
-    },
-    {
-        value: 'webhook',
-        name: 'Webhook'
-    }
+    { value: 'action', name: 'Action' },
+    { value: 'proxy', name: 'Proxy' },
+    { value: 'deploy', name: 'Deploy' },
+    { value: 'auth', name: 'Auth' },
+    { value: 'webhook', name: 'Webhook' }
 ];
 
 export const integrationsDefaultOptions: SearchOperationsIntegration[] = ['all'];

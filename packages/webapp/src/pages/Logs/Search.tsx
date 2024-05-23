@@ -48,8 +48,9 @@ export const LogsSearch: React.FC = () => {
 
     useEffect(
         function syncQueryParamsToState() {
+            // Sync the query params to the react state, it allows to share the URL
+            // we do it only on load, after that we don't care about the update
             if (synced) {
-                // we do it once to avoid the issue of double render
                 return;
             }
 
@@ -65,9 +66,12 @@ export const LogsSearch: React.FC = () => {
             const tmpSyncs = searchParams.get('syncs');
             setSyncs(tmpSyncs ? (tmpSyncs.split(',') as any) : syncsDefaultOptions);
 
-            const tmpBefore = searchParams.get('before');
-            const tmpAfter = searchParams.get('after');
-            setPeriod(tmpBefore && tmpAfter ? { before: tmpBefore, after: tmpAfter } : undefined);
+            const tmpTypes = searchParams.get('types');
+            setTypes(tmpTypes ? (tmpTypes.split(',') as any) : typesDefaultOptions);
+
+            const tmpFrom = searchParams.get('from');
+            const tmpTo = searchParams.get('to');
+            setPeriod(tmpFrom && tmpTo ? { from: tmpFrom, to: tmpTo } : undefined);
 
             setSynced(true);
         },
@@ -76,14 +80,21 @@ export const LogsSearch: React.FC = () => {
 
     useEffect(
         function syncStateToQueryParams() {
-            const tmp = new URLSearchParams({ states: states as any, integrations: integrations as any, connections: connections as any, syncs: syncs as any });
+            // Sync the state back to the URL for sharing
+            const tmp = new URLSearchParams({
+                states: states as any,
+                integrations: integrations as any,
+                connections: connections as any,
+                syncs: syncs as any,
+                types: types as any
+            });
             if (period) {
-                tmp.set('before', period.before);
-                tmp.set('after', period.after);
+                tmp.set('from', period.from);
+                tmp.set('to', period.to);
             }
             setSearchParams(tmp);
         },
-        [states, integrations, period, connections]
+        [states, integrations, period, connections, syncs, types]
     );
 
     useEffect(() => {
@@ -96,6 +107,7 @@ export const LogsSearch: React.FC = () => {
 
     useInterval(
         () => {
+            // Auto refresh
             trigger();
         },
         synced ? 10000 : null

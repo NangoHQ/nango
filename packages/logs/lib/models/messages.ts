@@ -119,7 +119,7 @@ export async function listOperations(opts: {
         });
     }
 
-    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
+    const res = await client.search<{ hits: { total: { value: number }; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
@@ -129,7 +129,7 @@ export async function listOperations(opts: {
     const hits = res.body.hits;
 
     return {
-        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
         items: hits.hits.map((hit) => {
             return hit._source;
         })
@@ -231,7 +231,7 @@ export async function listMessages(opts: {
         });
     }
 
-    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
+    const res = await client.search<{ hits: { total: { value: number }; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
@@ -241,7 +241,7 @@ export async function listMessages(opts: {
     const hits = res.body.hits;
 
     return {
-        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
         items: hits.hits.map((hit) => {
             return hit._source;
         })
