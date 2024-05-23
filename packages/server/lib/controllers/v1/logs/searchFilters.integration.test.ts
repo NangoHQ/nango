@@ -46,7 +46,7 @@ describe('POST /logs/filters', () => {
                     {
                         code: 'invalid_enum_value',
                         message: "Invalid enum value. Expected 'config' | 'connection' | 'syncConfig', received 'a'",
-                        path: ['for']
+                        path: ['category']
                     },
                     {
                         code: 'unrecognized_keys',
