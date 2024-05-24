@@ -2,12 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
-    Connection,
-    OAuth2Credentials,
-    OAuth2ClientCredentials,
     ImportedCredentials,
     AuthCredentials,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
     ConnectionList,
     LogLevel,
     ConnectionUpsertResponse
@@ -62,34 +58,22 @@ class ConnectionController {
                 environment_id: environment.id
             };
 
-            let success: boolean;
-            let error: NangoError | null = null;
-            let connection: Connection | null = null;
-            if (instantRefresh) {
-                const credentialResponse = await connectionService.getConnectionCredentials({
-                    account,
-                    environment,
-                    connectionId,
-                    providerConfigKey,
-                    logContextGetter,
-                    instantRefresh
-                });
-                success = credentialResponse.isOk();
+            const credentialResponse = await connectionService.getConnectionCredentials({
+                account,
+                environment,
+                connectionId,
+                providerConfigKey,
+                logContextGetter,
+                instantRefresh
+            });
 
-                if (credentialResponse.isOk()) {
-                    connection = credentialResponse.value;
-                } else {
-                    error = credentialResponse.error;
-                }
-            } else {
-                ({ success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id));
-            }
-
-            if (!success || !connection) {
-                errorManager.errResFromNangoErr(res, error);
+            if (credentialResponse.isErr()) {
+                errorManager.errResFromNangoErr(res, credentialResponse.error);
 
                 return;
             }
+
+            const { value: connection } = credentialResponse;
 
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
@@ -117,33 +101,6 @@ class ConnectionController {
             }
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
-
-            // if instantRefresh is true, we already refreshed the credentials
-            if (
-                !instantRefresh &&
-                (connection.credentials.type === ProviderAuthModes.OAuth2 ||
-                    connection.credentials.type === ProviderAuthModes.App ||
-                    connection.credentials.type === ProviderAuthModes.OAuth2CC)
-            ) {
-                const {
-                    success,
-                    error,
-                    response: credentials
-                } = await connectionService.refreshCredentialsIfNeeded({
-                    connection,
-                    providerConfig: config,
-                    template: template as ProviderTemplateOAuth2,
-                    environment_id: environment.id,
-                    instantRefresh
-                });
-
-                if (!success) {
-                    errorManager.errResFromNangoErr(res, error);
-                    return;
-                }
-
-                connection.credentials = credentials as OAuth2Credentials | OAuth2ClientCredentials;
-            }
 
             if (instantRefresh) {
                 log.provider = config.provider;
