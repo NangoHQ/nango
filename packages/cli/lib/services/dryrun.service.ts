@@ -199,7 +199,10 @@ class DryRunService {
         };
         // dry-run is not scheduling any tasks so we can safely mock the orchestrator client
         const orchestratorClient = {
-            execute: () => {
+            executeAction: () => {
+                return Promise.resolve({}) as any;
+            },
+            executeWebhook: () => {
                 return Promise.resolve({}) as any;
             }
         };

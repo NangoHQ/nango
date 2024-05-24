@@ -35,41 +35,9 @@ describe('OrchestratorClient', async () => {
         await dbClient.clearDatabase();
     });
 
-    describe('schedule', () => {
-        it('should schedule immediate task', async () => {
-            const groupKey = 'groupA';
-            const res = (
-                await client.schedule({
-                    name: 'Task',
-                    groupKey: groupKey,
-                    retry: { count: 3, max: 5 },
-                    timeoutSettingsInSecs: {
-                        createdToStarted: 10,
-                        startedToCompleted: 10,
-                        heartbeat: 10
-                    },
-                    args: {
-                        name: 'Action',
-                        connection: {
-                            id: 1234,
-                            provider_config_key: 'P',
-                            environment_id: 5678
-                        },
-                        activityLogId: 9876,
-                        input: { foo: 'bar' }
-                    }
-                })
-            ).unwrap();
-            const tasks = (await scheduler.list({ groupKey })).unwrap();
-            expect(tasks.length).toBe(1);
-            expect(tasks[0]?.id).toBe(res.taskId);
-            expect(tasks[0]?.state).toBe('CREATED');
-        });
-    });
-
-    describe('execute', () => {
-        it('should be successful when task succeed', async () => {
-            const groupKey = 'groupB';
+    describe('executeAction', () => {
+        it('should be successful when action task succeed', async () => {
+            const groupKey = rndStr();
             const output = { count: 9 };
 
             const processor = new MockProcessor({
@@ -79,7 +47,7 @@ describe('OrchestratorClient', async () => {
                 }
             });
             try {
-                const res = await client.execute({
+                const res = await client.executeAction({
                     name: 'Task',
                     groupKey: groupKey,
                     args: {
@@ -98,8 +66,8 @@ describe('OrchestratorClient', async () => {
                 processor.stop();
             }
         });
-        it('should return an error if task fails', async () => {
-            const groupKey = 'groupC';
+        it('should return an error if action task fails', async () => {
+            const groupKey = rndStr();
 
             const errorPayload = { message: 'something bad happened' };
             const processor = new MockProcessor({
@@ -109,11 +77,78 @@ describe('OrchestratorClient', async () => {
                 }
             });
             try {
-                const res = await client.execute({
+                const res = await client.executeAction({
                     name: 'Task',
                     groupKey: groupKey,
                     args: {
                         name: 'Action',
+                        connection: {
+                            id: 1234,
+                            provider_config_key: 'P',
+                            environment_id: 5678
+                        },
+                        activityLogId: 9876,
+                        input: { foo: 'bar' }
+                    }
+                });
+                expect(res.isOk()).toBe(false);
+                if (res.isErr()) {
+                    expect(res.error.payload).toBe(res.error.payload);
+                }
+            } finally {
+                processor.stop();
+            }
+        });
+    });
+    describe('executeWebhook', () => {
+        it('should be successful when action task succeed', async () => {
+            const groupKey = rndStr();
+            const output = { count: 9 };
+
+            const processor = new MockProcessor({
+                groupKey,
+                process: async (task) => {
+                    await scheduler.succeed({ taskId: task.id, output });
+                }
+            });
+            try {
+                const res = await client.executeWebhook({
+                    name: 'Task',
+                    groupKey: groupKey,
+                    args: {
+                        name: 'Action',
+                        parentSyncName: 'parent',
+                        connection: {
+                            id: 1234,
+                            provider_config_key: 'P',
+                            environment_id: 5678
+                        },
+                        activityLogId: 9876,
+                        input: { foo: 'bar' }
+                    }
+                });
+                expect(res.unwrap()).toEqual(output);
+            } finally {
+                processor.stop();
+            }
+        });
+        it('should return an error if action task fails', async () => {
+            const groupKey = rndStr();
+
+            const errorPayload = { message: 'something bad happened' };
+            const processor = new MockProcessor({
+                groupKey,
+                process: async (task) => {
+                    await scheduler.fail({ taskId: task.id, error: errorPayload });
+                }
+            });
+            try {
+                const res = await client.executeWebhook({
+                    name: 'Task',
+                    groupKey: groupKey,
+                    args: {
+                        name: 'Action',
+                        parentSyncName: rndStr(),
                         connection: {
                             id: 1234,
                             provider_config_key: 'P',
@@ -156,4 +191,8 @@ class MockProcessor {
     stop() {
         clearTimeout(this.interval);
     }
+}
+
+function rndStr() {
+    return Math.random().toString(36).substring(7);
 }
