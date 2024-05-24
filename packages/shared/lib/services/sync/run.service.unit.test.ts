@@ -2,7 +2,6 @@ import { expect, describe, it, vi } from 'vitest';
 import type { SyncRunConfig } from './run.service.js';
 import SyncRun from './run.service.js';
 import environmentService from '../environment.service.js';
-import accountService from '../account.service.js';
 import LocalFileService from '../file/local.service.js';
 import { SyncType } from '../../models/Sync.js';
 import * as configService from './config/config.service.js';
@@ -104,26 +103,19 @@ describe('SyncRun', () => {
     it('should mock the run method in dry run mode with different fail and success conditions', async () => {
         const syncRun = new SyncRun(dryRunConfig);
 
-        vi.spyOn(environmentService, 'getById').mockImplementation(() => {
+        vi.spyOn(environmentService, 'getAccountAndEnvironment').mockImplementation(() => {
             return Promise.resolve({
-                id: 1,
-                name: 'test',
-                account_id: 1,
-                secret_key: '1234'
-            } as Environment);
-        });
-
-        vi.spyOn(environmentService, 'getEnvironmentName').mockImplementation(() => {
-            return Promise.resolve('test');
-        });
-
-        vi.spyOn(accountService, 'getAccountById').mockImplementation(() => {
-            return Promise.resolve({
-                id: 1,
-                name: 'test',
-                secret_key: '',
-                host: ''
-            } as Account);
+                account: {
+                    id: 1,
+                    name: 'test',
+                    uuid: '1234'
+                } as Account,
+                environment: {
+                    id: 1,
+                    name: 'test',
+                    secret_key: 'secret'
+                } as Environment
+            });
         });
 
         vi.spyOn(configService, 'getSyncConfig').mockImplementation(() => {

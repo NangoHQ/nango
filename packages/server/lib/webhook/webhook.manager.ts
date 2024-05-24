@@ -27,10 +27,13 @@ async function execute(
         return;
     }
 
-    const account = await environmentService.getAccountFromEnvironment(integration.environment_id);
-    if (!account) {
+    const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentUuid: environmentUuid });
+
+    if (!environmentAndAccountLookup) {
         return;
     }
+
+    const { environment, account } = environmentAndAccountLookup;
 
     const handler = handlers[`${integration.provider.replace(/-/g, '')}Webhook`];
     if (!handler) {
@@ -57,7 +60,15 @@ async function execute(
     const webhookBodyToForward = res?.parsedBody || body;
     const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward({ integration, account, connectionIds, payload: webhookBodyToForward, webhookOriginalHeaders: headers, logContextGetter });
+    await webhookService.forward({
+        integration,
+        account,
+        environment,
+        connectionIds,
+        payload: webhookBodyToForward,
+        webhookOriginalHeaders: headers,
+        logContextGetter
+    });
 
     await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
         accountId: String(account.id),

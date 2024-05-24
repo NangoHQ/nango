@@ -1,6 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
+import type { Account } from '../../models/Admin.js';
 import type { Metadata } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
@@ -11,7 +12,6 @@ import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
-import accountService from '../account.service.js';
 import { SlackService } from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
 import { integrationFilesAreRemote, isCloud, getLogger, metrics, stringifyError } from '@nangohq/utils';
@@ -79,8 +79,8 @@ export interface SyncRunConfig {
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
 
-    accountName?: string;
-    environmentName?: string;
+    account?: Account;
+    environment?: Environment;
 
     temporalContext?: Context;
 }
@@ -128,8 +128,8 @@ export default class SyncRun {
     };
     stubbedMetadata?: Metadata | undefined = undefined;
 
-    accountName?: string;
-    environmentName?: string;
+    account?: Account;
+    environment?: Environment;
 
     temporalContext?: Context;
     isWebhook: boolean;
@@ -253,26 +253,23 @@ export default class SyncRun {
         // if there is a matching customer integration code for the provider config key then run it
         if (integrations[this.nangoConnection.provider_config_key]) {
             let environment: Environment | null = null;
+            let account: Account | null = null;
 
             if (!bypassEnvironment) {
-                environment = await environmentService.getById(this.nangoConnection.environment_id);
+                const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: this.nangoConnection.environment_id });
+                if (!environmentAndAccountLookup) {
+                    const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
+                    await this.reportFailureForResults({ content: message, runTime: 0 });
+                    const errorType = this.determineErrorType();
+                    return { success: false, error: new NangoError(errorType, message, 404), response: false };
+                }
+                ({ environment, account } = environmentAndAccountLookup);
+                this.account = account;
+                this.environment = environment;
             }
 
             if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
                 this.nangoConnection.account_id = environment.account_id;
-            }
-
-            if (!bypassEnvironment) {
-                const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
-                this.accountName = account?.name || '';
-                this.environmentName = (await environmentService.getEnvironmentName(this.nangoConnection.environment_id)) || '';
-            }
-
-            if (!environment && !bypassEnvironment) {
-                const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
-                await this.reportFailureForResults({ content: message, runTime: 0 });
-                const errorType = this.determineErrorType();
-                return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
 
             let secretKey = optionalSecretKey || (environment ? environment.secret_key : '');
@@ -367,7 +364,7 @@ export default class SyncRun {
 
             const nangoProps: NangoProps = {
                 host: optionalHost || getApiUrl(),
-                accountId: environment?.account_id as number,
+                accountId: this.account?.id as number,
                 connectionId: String(this.nangoConnection.connection_id),
                 environmentId: this.nangoConnection.environment_id,
                 providerConfigKey: String(this.nangoConnection.provider_config_key),
@@ -540,17 +537,17 @@ export default class SyncRun {
         }
 
         // we only want to report to bigquery once if it is a multi model sync
-        if (this.bigQueryClient) {
+        if (this.bigQueryClient && this.account && this.environment) {
             void this.bigQueryClient.insert({
                 executionType: this.determineExecutionType(),
                 connectionId: this.nangoConnection.connection_id,
                 internalConnectionId: this.nangoConnection.id,
-                accountId: this.nangoConnection.account_id,
-                accountName: this.accountName as string,
+                accountId: this.account.id,
+                accountName: this.account.name,
                 scriptName: this.syncName,
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
-                environmentName: this.environmentName as string,
+                environmentName: this.environment.name,
                 providerConfigKey: this.nangoConnection.provider_config_key,
                 status: 'success',
                 syncId: this.syncId as string,
@@ -661,7 +658,7 @@ export default class SyncRun {
             syncStartDate,
             this.activityLogId,
             this.logCtx!,
-            this.nangoConnection.environment_id
+            this.environment as Environment
         );
 
         if (index === numberOfModels - 1) {
@@ -714,17 +711,17 @@ export default class SyncRun {
             return;
         }
 
-        if (this.bigQueryClient) {
+        if (this.bigQueryClient && this.account && this.environment) {
             void this.bigQueryClient.insert({
                 executionType: this.determineExecutionType(),
                 connectionId: this.nangoConnection.connection_id,
                 internalConnectionId: this.nangoConnection.id,
-                accountId: this.nangoConnection.account_id,
-                accountName: this.accountName as string,
+                accountId: this.account.id,
+                accountName: this.account.name,
                 scriptName: this.syncName,
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
-                environmentName: this.environmentName as string,
+                environmentName: this.environment.name,
                 providerConfigKey: this.nangoConnection.provider_config_key,
                 status: 'failed',
                 syncId: this.syncId as string,
