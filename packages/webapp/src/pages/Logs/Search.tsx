@@ -164,7 +164,7 @@ export const LogsSearch: React.FC = () => {
                 <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
                 <TypesSelect selected={types} onChange={setTypes} />
-                <SearchableMultiSelect label="Integration" selected={integrations} category={'config'} onChange={setIntegrations} />
+                <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} />
                 <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
                 <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
                 <Button variant="zombieGray" size={'xs'}>
