@@ -4,24 +4,26 @@ import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { getServer } from './server.js';
 import { OrchestratorClient } from './client.js';
 import getPort from 'get-port';
+import { EventsHandler } from './events.js';
 
 const dbClient = getTestDbClient();
+const eventsHandler = new EventsHandler({
+    CREATED: (task) => console.log(`Task ${task.id} created`),
+    STARTED: (task) => console.log(`Task ${task.id} started`),
+    SUCCEEDED: (task) => console.log(`Task ${task.id} succeeded`),
+    FAILED: (task) => console.log(`Task ${task.id} failed`),
+    EXPIRED: (task) => console.log(`Task ${task.id} expired`),
+    CANCELLED: (task) => console.log(`Task ${task.id} cancelled`)
+});
 const scheduler = new Scheduler({
     dbClient,
-    on: {
-        CREATED: (task) => console.log(`Task ${task.id} created`),
-        STARTED: (task) => console.log(`Task ${task.id} started`),
-        SUCCEEDED: (task) => console.log(`Task ${task.id} succeeded`),
-        FAILED: (task) => console.log(`Task ${task.id} failed`),
-        EXPIRED: (task) => console.log(`Task ${task.id} expired`),
-        CANCELLED: (task) => console.log(`Task ${task.id} cancelled`)
-    }
+    on: eventsHandler.onCallbacks
 });
 
 describe('OrchestratorClient', async () => {
-    const server = getServer({ scheduler });
+    const server = getServer(scheduler, eventsHandler);
     const port = await getPort();
-    const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}`, fetchTimeoutMs: 10_000 });
+    const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 
     beforeAll(async () => {
         await dbClient.migrate();
