@@ -1,7 +1,7 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import get from 'lodash-es/get.js';
 import type { Config as ProviderConfig, Connection, ConnectionConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import { connectionService, configService, AuthModes as ProviderAuthModes } from '@nangohq/shared';
+import { environmentService, connectionService, configService, AuthModes as ProviderAuthModes } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -56,6 +56,14 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return;
     } else {
+        const environment = await environmentService.getById(integration.environment_id);
+        const account = await environmentService.getAccountFromEnvironment(integration.environment_id);
+
+        if (!environment || !account) {
+            logger.error('Environment or account not found');
+            return;
+        }
+
         const installationId = get(body, 'installation.id');
         const [connection] = connections as Connection[];
 
@@ -65,11 +73,9 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             return;
         }
 
-        const template = configService.getTemplate(integration?.provider);
+        const template = configService.getTemplate(integration.provider);
 
         const activityLogId = connection.connection_config['pendingLog'];
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete connection.connection_config['pendingLog'];
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete connection.connection_config['pendingLog'];
 
@@ -86,7 +92,8 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                     id: res.id,
                     connection_id: connection.connection_id,
                     provider_config_key: integration.unique_key,
-                    environment_id: integration.environment_id,
+                    environment,
+                    account,
                     auth_mode: ProviderAuthModes.App,
                     operation: res.operation
                 },

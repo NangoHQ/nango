@@ -1,6 +1,6 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig, LogLevel, HTTP_VERB, UserProvidedProxyConfiguration } from '@nangohq/shared';
-import { LogActionEnum, LogTypes, createActivityLogAndLogMessage, proxyService, connectionService, environmentService, telemetry } from '@nangohq/shared';
+import { LogActionEnum, LogTypes, createActivityLogAndLogMessage, proxyService, connectionService, telemetry } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -18,20 +18,21 @@ export interface InternalNango {
 }
 
 async function execute(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter) {
-    const { connection_id, environment_id, provider_config_key } = createdConnection;
+    const { connection_id, environment, account, provider_config_key } = createdConnection;
     try {
-        const accountId = await environmentService.getAccountIdFromEnvironment(environment_id);
-        const { success, response: connection } = await connectionService.getConnectionCredentials(
-            accountId as number,
-            environment_id,
-            connection_id,
-            provider_config_key,
-            logContextGetter
-        );
+        const credentialResponse = await connectionService.getConnectionCredentials({
+            account,
+            environment,
+            connectionId: connection_id,
+            providerConfigKey: provider_config_key,
+            instantRefresh: false
+        });
 
-        if (!success || !connection) {
+        if (credentialResponse.isErr()) {
             return;
         }
+
+        const { value: connection } = credentialResponse;
 
         const internalConfig = {
             connection,
@@ -48,7 +49,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
         const internalNango: InternalNango = {
             getConnection: async () => {
-                const { response: connection } = await connectionService.getConnection(connection_id, provider_config_key, environment_id);
+                const { response: connection } = await connectionService.getConnection(connection_id, provider_config_key, environment.id);
 
                 return connection as Connection;
             },
@@ -91,19 +92,19 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     connection_id: connection_id,
                     provider,
                     provider_config_key: provider_config_key,
-                    environment_id
+                    environment_id: environment.id
                 };
 
                 const activityLogId = await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    environment_id: environment_id,
+                    environment_id: environment.id,
                     timestamp: Date.now(),
                     content: `Post connection script failed with the error: ${errorString}`
                 });
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Authentication' },
                     {
-                        account: { id: accountId! },
+                        account: { id: account.id },
                         environment: { id: connection.environment_id },
                         config: { id: connection.config_id!, name: connection.provider_config_key },
                         connection: { id: connection.id!, name: connection.connection_id }
@@ -113,7 +114,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 await logCtx.failed();
 
                 await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
-                    environmentId: String(environment_id),
+                    environmentId: String(environment.id),
                     connectionId: connection_id,
                     providerConfigKey: provider_config_key,
                     provider: provider,
@@ -123,7 +124,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
         }
     } catch (err) {
         await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
-            environmentId: String(environment_id),
+            environmentId: String(environment.id),
             connectionId: connection_id,
             providerConfigKey: provider_config_key,
             provider: provider,

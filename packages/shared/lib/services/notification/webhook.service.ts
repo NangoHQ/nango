@@ -244,7 +244,7 @@ class WebhookService {
         activityLogId: number | null,
         logCtx?: LogContext | null
     ): Promise<void> {
-        const { send, environmentInfo } = await this.shouldSendWebhook(connection.environment_id, { auth: true });
+        const { send, environmentInfo } = await this.shouldSendWebhook(connection.environment.id, { auth: true });
 
         if (!send || !environmentInfo) {
             return;
@@ -252,7 +252,7 @@ class WebhookService {
 
         const { webhook_url: webhookUrl } = environmentInfo;
 
-        const environment_id = connection.environment_id;
+        const environment_id = connection.environment.id;
         const environment = await environmentService.getEnvironmentName(environment_id);
 
         const body: NangoAuthWebhookBody = {

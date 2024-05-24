@@ -2,7 +2,6 @@ import * as cron from 'node-cron';
 import { db, errorManager, ErrorSourceEnum, connectionService } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics, stringToHash } from '@nangohq/utils';
 import tracer from 'dd-trace';
-import { logContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Server');
 const cronName = '[refreshTokens]';
@@ -26,6 +25,7 @@ export function refreshTokens(): void {
             logger.error(error);
         });
     });
+    exec();
 }
 
 export async function exec(): Promise<void> {
@@ -45,13 +45,23 @@ export async function exec(): Promise<void> {
         logger.info(`${cronName} found ${staleConnections.length} stale connections`);
 
         for (const staleConnection of staleConnections) {
-            const { connection_id, environment_id, provider_config_key, account_id } = staleConnection;
+            const { connection_id, environment, provider_config_key, account } = staleConnection;
 
-            logger.info(`${cronName} refreshing token for connectionId: ${connection_id}, accountId: ${account_id}`);
+            logger.info(`${cronName} refreshing token for connectionId: ${connection_id}, accountId: ${account.id}`);
 
             try {
-                await connectionService.getConnectionCredentials(account_id, environment_id, connection_id, provider_config_key, logContextGetter);
-                metrics.increment(metrics.Types.REFRESH_TOKENS_SUCCESS);
+                const credentialResponse = await connectionService.getConnectionCredentials({
+                    account,
+                    environment,
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
+                    instantRefresh: false
+                });
+                if (credentialResponse.isOk()) {
+                    metrics.increment(metrics.Types.REFRESH_TOKENS_SUCCESS);
+                } else {
+                    metrics.increment(metrics.Types.REFRESH_TOKENS_FAILED);
+                }
             } catch (err) {
                 logger.error(`${cronName} failed to refresh token for connectionId: ${connection_id} ${stringifyError(err)}`);
                 metrics.increment(metrics.Types.REFRESH_TOKENS_FAILED);

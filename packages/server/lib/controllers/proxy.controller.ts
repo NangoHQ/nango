@@ -50,6 +50,8 @@ class ProxyController {
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      */
     public async routeCall(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const { environment, account } = res.locals;
+
         let logCtx: LogContext | undefined;
         try {
             const connectionId = req.get('Connection-Id') as string;
@@ -61,13 +63,11 @@ class ProxyController {
             const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
-            const environment_id = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
 
             const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
 
             if (!isSync) {
-                metrics.increment(metrics.Types.PROXY, 1, { accountId });
+                metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id });
             }
 
             const log = {
@@ -80,7 +80,7 @@ class ProxyController {
                 method: req.method as HTTP_VERB,
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
-                environment_id
+                environment_id: environment.id
             };
 
             let activityLogId: number | null = null;
@@ -92,7 +92,7 @@ class ProxyController {
                 ? logContextGetter.get({ id: String(existingActivityLogId) })
                 : await logContextGetter.create(
                       { operation: { type: 'action' }, message: 'Start action' },
-                      { account: { id: accountId }, environment: { id: environment_id } },
+                      { account: { id: account.id }, environment: { id: environment.id } },
                       { dryRun: isDryRun }
                   );
 
@@ -118,31 +118,26 @@ class ProxyController {
                 retryOn
             };
 
-            const {
-                success: connSuccess,
-                error: connError,
-                response: connection
-            } = await connectionService.getConnectionCredentials(
-                accountId,
-                environment_id,
+            const credentialResponse = await connectionService.getConnectionCredentials({
+                account,
+                environment,
                 connectionId,
                 providerConfigKey,
-                logContextGetter,
-                activityLogId,
-                logCtx,
-                logAction,
-                false
-            );
+                instantRefresh: false
+            });
 
-            if (!connSuccess || !connection) {
-                throw new Error(`Failed to get connection credentials: '${connError}'`);
+            if (credentialResponse.isErr()) {
+                throw new Error(`Failed to get connection credentials: '${credentialResponse.error.message}'`);
             }
-            const providerConfig = await configService.getProviderConfig(providerConfigKey, environment_id);
+
+            const { value: connection } = credentialResponse;
+
+            const providerConfig = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (!providerConfig && activityLogId) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: 'Provider configuration not found'
@@ -190,20 +185,19 @@ class ProxyController {
                 method: method as HTTP_VERB,
                 configBody: proxyConfig,
                 activityLogId,
-                environment_id,
+                environment_id: environment.id,
                 isSync,
                 isDryRun,
                 logCtx
             });
         } catch (err) {
-            const environmentId = res.locals['environment'].id;
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.PROXY,
-                environmentId,
+                environmentId: environment.id,
                 metadata: {
                     connectionId,
                     providerConfigKey

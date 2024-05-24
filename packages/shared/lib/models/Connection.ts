@@ -8,6 +8,8 @@ import type {
     AuthOperation,
     UnauthCredentials
 } from './Auth.js';
+import type { Account } from './Admin.js';
+import type { Environment } from './Environment.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { Metadata } from '@nangohq/types';
 
@@ -34,10 +36,12 @@ export interface Connection extends BaseConnection {
     credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials;
 }
 
-export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'> & {
+export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key'> & {
     auth_mode: AuthModes;
     error?: string;
     operation: AuthOperation;
+    environment: Environment;
+    account: Account;
 };
 
 export interface ApiConnection {
