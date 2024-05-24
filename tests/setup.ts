@@ -19,9 +19,9 @@ export async function setupElasticsearch() {
 
     const url = `http://${es.getHost()}:${es.getMappedPort(9200)}`;
 
-    process.env['NANGO_LOGS_OS_URL'] = url;
-    process.env['NANGO_LOGS_OS_USER'] = '';
-    process.env['NANGO_LOGS_OS_PWD'] = '';
+    process.env['NANGO_LOGS_ES_URL'] = url;
+    process.env['NANGO_LOGS_ES_USER'] = '';
+    process.env['NANGO_LOGS_ES_PWD'] = '';
     process.env['NANGO_LOGS_ENABLED'] = 'true';
     console.log('OS running at', url);
 }

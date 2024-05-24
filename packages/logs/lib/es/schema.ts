@@ -95,7 +95,7 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
 };
 
 export const indexMessages: estypes.IndicesCreateRequest = {
-    index: `20240522_${envs.NANGO_LOGS_OS_INDEX ?? 'messages'}`,
+    index: `20240522_${envs.NANGO_LOGS_ES_INDEX ?? 'messages'}`,
     settings: {
         analysis: {
             analyzer: {

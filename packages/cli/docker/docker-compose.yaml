@@ -40,9 +40,9 @@ services:
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
             - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-elasticsearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
@@ -71,9 +71,9 @@ services:
             - NANGO_DB_SSL=${NANGO_DB_SSL}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
             - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-elasticsearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         depends_on:
             - nango-db
             - temporal
@@ -99,9 +99,9 @@ services:
             - NANGO_DB_SSL=${NANGO_DB_SSL}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
             - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-elasticsearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         depends_on:
             - nango-db
             # - nango-elasticsearch

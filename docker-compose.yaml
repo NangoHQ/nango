@@ -38,9 +38,9 @@ services:
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
             - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-elasticsearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         volumes:
             - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         restart: always
