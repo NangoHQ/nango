@@ -1742,7 +1742,7 @@ productboard:
         grant_type: refresh_token
     proxy:
         headers:
-            X-Version: 1
+            X-Version: '1'
         base_url: https://api.productboard.com
     docs: https://docs.nango.dev/integrations/all/productboard
 qualtrics:
