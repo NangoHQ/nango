@@ -41,7 +41,7 @@ export interface MessageOpAction {
 }
 export interface MessageOpAuth {
     type: 'auth';
-    action: 'connect' | 'refresh_token' | 'post_connection';
+    action: 'create_connection' | 'refresh_token' | 'post_connection';
 }
 export interface MessageOpAdmin {
     type: 'admin';
