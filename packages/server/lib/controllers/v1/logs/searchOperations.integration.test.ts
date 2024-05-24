@@ -80,7 +80,10 @@ describe('POST /logs/operations', () => {
     it('should search logs and get one result', async () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth', action: 'connect' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create(
+            { message: 'test 1', operation: { type: 'auth', action: 'create_connection' } },
+            { account, environment: env }
+        );
         await logCtx.info('test info');
         await logCtx.success();
 
@@ -116,7 +119,7 @@ describe('POST /logs/operations', () => {
                     meta: null,
                     operation: {
                         type: 'auth',
-                        action: 'connect'
+                        action: 'create_connection'
                     },
                     parentId: null,
                     request: null,
@@ -140,7 +143,10 @@ describe('POST /logs/operations', () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth', action: 'connect' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create(
+            { message: 'test 1', operation: { type: 'auth', action: 'create_connection' } },
+            { account, environment: env }
+        );
         await logCtx.info('test info');
         await logCtx.success();
 
