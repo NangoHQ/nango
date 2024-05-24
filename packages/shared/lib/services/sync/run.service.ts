@@ -649,17 +649,19 @@ export default class SyncRun {
             deleted
         };
 
-        void webhookService.sendSyncUpdate(
-            this.nangoConnection,
-            this.syncName,
-            model,
-            results,
-            this.syncType,
-            syncStartDate,
-            this.activityLogId,
-            this.logCtx!,
-            this.environment as Environment
-        );
+        if (this.environment) {
+            void webhookService.sendSyncUpdate(
+                this.nangoConnection,
+                this.syncName,
+                model,
+                results,
+                this.syncType,
+                syncStartDate,
+                this.activityLogId,
+                this.logCtx!,
+                this.environment
+            );
+        }
 
         if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({
