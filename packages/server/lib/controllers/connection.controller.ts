@@ -25,13 +25,14 @@ import {
     NangoError,
     createActivityLogAndLogMessage,
     accountService,
-    slackNotificationService
+    SlackService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
+import { getOrchestratorClient } from '../utils/utils.js';
 
 class ConnectionController {
     /**
@@ -103,8 +104,8 @@ class ConnectionController {
                     {
                         account,
                         environment,
-                        connection: { id: connection.id!, name: connection.connection_id },
-                        config: { id: connection.config_id!, name: connection.provider_config_key }
+                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider: 'unknown' },
+                        connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
                 await logCtx.error('Unknown provider config');
@@ -159,8 +160,8 @@ class ConnectionController {
                     {
                         account,
                         environment,
-                        connection: { id: connection.id!, name: connection.connection_id },
-                        config: { id: config.id!, name: config.unique_key }
+                        integration: { id: config.id!, name: config.unique_key, provider: config.provider },
+                        connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
                 await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
@@ -422,6 +423,7 @@ class ConnectionController {
 
             await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
 
+            const slackNotificationService = new SlackService(getOrchestratorClient());
             await slackNotificationService.closeAllOpenNotifications(environment.id);
 
             res.status(204).send();

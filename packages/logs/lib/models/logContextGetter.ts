@@ -25,10 +25,10 @@ export const logContextGetter = {
      */
     async create(
         data: OperationRowInsert,
-        { start, account, user, environment }: SetRequired<OperationContextData, 'account' | 'environment'>,
+        { start, ...rest }: SetRequired<OperationContextData, 'account' | 'environment'>,
         options?: Options
     ): Promise<LogContext> {
-        const msg = getFormattedMessage(data, { account, user, environment });
+        const msg = getFormattedMessage(data, rest);
         if (typeof start === 'undefined' || start) {
             msg.startedAt = msg.startedAt ?? new Date().toISOString();
             msg.state = msg.state === 'waiting' ? 'running' : msg.state;

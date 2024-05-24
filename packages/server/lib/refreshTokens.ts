@@ -25,7 +25,6 @@ export function refreshTokens(): void {
             logger.error(error);
         });
     });
-    exec();
 }
 
 export async function exec(): Promise<void> {

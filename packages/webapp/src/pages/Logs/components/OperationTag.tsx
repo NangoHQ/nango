@@ -2,7 +2,7 @@
 import type { SearchOperationsData } from '@nangohq/types';
 import { cn } from '../../../utils/utils';
 import { Tag } from './Tag';
-import { CrossCircledIcon, LoopIcon, PauseIcon, PlayIcon, ResumeIcon, UploadIcon } from '@radix-ui/react-icons';
+import { CrossCircledIcon, Crosshair1Icon, PauseIcon, PlayIcon, ResumeIcon, UploadIcon } from '@radix-ui/react-icons';
 import * as Tooltip from '../../../components/ui/Tooltip';
 
 export const OperationTag: React.FC<{ operation: Exclude<SearchOperationsData['operation'], null>; highlight?: boolean }> = ({ operation, highlight }) => {
@@ -18,9 +18,10 @@ export const OperationTag: React.FC<{ operation: Exclude<SearchOperationsData['o
                             {operation.action === 'cancel' && <CrossCircledIcon className="w-3.5" />}
                             {operation.action === 'init' && <UploadIcon className="w-3.5" />}
                             {operation.action === 'pause' && <PauseIcon className="w-3.5" />}
-                            {operation.action === 'run' && <LoopIcon className="w-3.5" />}
-                            {operation.action === 'run_full' && <PlayIcon className="w-3.5" />}
+                            {operation.action === 'request_run' && <Crosshair1Icon className="w-3.5" />}
+                            {operation.action === 'request_run_full' && <Crosshair1Icon className="w-3.5" />}
                             {operation.action === 'unpause' && <ResumeIcon className="w-3.5" />}
+                            {operation.action === 'run' && <PlayIcon className="w-3.5" />}
                         </Tag>
                     </Tooltip.TooltipTrigger>
                     <Tooltip.TooltipContent>

@@ -1,4 +1,4 @@
-import type { JsonValue } from 'type-fest';
+import type { JsonValue, SetOptional } from 'type-fest';
 import { route as scheduleRoute } from './routes/v1/schedule.js';
 import { route as outputRoute } from './routes/v1/task/taskId/output.js';
 import type { Result, Route } from '@nangohq/utils';
@@ -17,22 +17,16 @@ interface SchedulingProps {
         startedToCompleted: number;
         heartbeat: number;
     };
-    args: {
-        name: string;
-        connection: {
-            id: number;
-            provider_config_key: string;
-            environment_id: number;
-        };
-        activityLogId: number;
-        input: JsonValue;
-    };
+    args: JsonValue;
 }
 
 interface ClientError extends Error {
     name: string;
     payload: JsonValue;
 }
+
+export type TExecuteProps = SetOptional<SchedulingProps, 'retry' | 'timeoutSettingsInSecs'>;
+export type TExecuteReturn = Result<JsonValue, ClientError>;
 
 export class OrchestratorClient {
     private fetchTimeoutMs: number;
@@ -69,7 +63,7 @@ export class OrchestratorClient {
         }
     }
 
-    async execute(props: Pick<Partial<SchedulingProps>, 'name' | 'groupKey' | 'args'>): Promise<Result<JsonValue, ClientError>> {
+    async execute(props: TExecuteProps): Promise<TExecuteReturn> {
         const scheduleProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -102,13 +96,13 @@ export class OrchestratorClient {
                         });
                     case 'EXPIRED':
                         return Err({
-                            name: 'task_failed_error',
+                            name: 'task_expired_error',
                             message: `Task ${taskId} expired`,
                             payload: res.output
                         });
                     case 'CANCELLED':
                         return Err({
-                            name: 'task_failed_error',
+                            name: 'task_cancelled_error',
                             message: `Task ${taskId} cancelled`,
                             payload: res.output
                         });

@@ -13,12 +13,6 @@ exports[`mapping > should apply mapping 1`] = `
     "code": {
       "type": "keyword",
     },
-    "configId": {
-      "type": "keyword",
-    },
-    "configName": {
-      "type": "keyword",
-    },
     "connectionId": {
       "type": "keyword",
     },
@@ -42,6 +36,12 @@ exports[`mapping > should apply mapping 1`] = `
       "type": "object",
     },
     "id": {
+      "type": "keyword",
+    },
+    "integrationId": {
+      "type": "keyword",
+    },
+    "integrationName": {
       "type": "keyword",
     },
     "jobId": {
@@ -69,6 +69,9 @@ exports[`mapping > should apply mapping 1`] = `
       },
     },
     "parentId": {
+      "type": "keyword",
+    },
+    "providerName": {
       "type": "keyword",
     },
     "request": {
@@ -105,10 +108,10 @@ exports[`mapping > should apply mapping 1`] = `
     "state": {
       "type": "keyword",
     },
-    "syncId": {
+    "syncConfigId": {
       "type": "keyword",
     },
-    "syncName": {
+    "syncConfigName": {
       "type": "keyword",
     },
     "title": {

@@ -635,7 +635,7 @@ class ConnectionService {
                     {
                         account,
                         environment,
-                        config: config ? { id: config.id, name: config.unique_key } : undefined,
+                        integration: config ? { id: config.id, name: config.unique_key, provider: config.provider } : undefined,
                         connection: { id: connection.id, name: connection.connection_id }
                     }
                 );

@@ -61,8 +61,9 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { account, environment } = res.locals;
+        const accountId = account.id;
+        const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         let connectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
@@ -86,7 +87,7 @@ class OAuthController {
         try {
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth' },
-                { account: { id: accountId }, environment: { id: environmentId } }
+                { account, environment }
             );
             if (!wsClientId) {
                 void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
@@ -202,7 +203,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             let template: ProviderTemplate;
             try {
@@ -384,7 +385,7 @@ class OAuthController {
         try {
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth2 CC' },
-                { account: { id: account.id }, environment: { id: environment.id } }
+                { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, account.id);
 
@@ -473,7 +474,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const { success, error, response: credentials } = await connectionService.getOauthClientCredentials(template, client_id, client_secret);
 
@@ -1067,7 +1068,7 @@ class OAuthController {
 
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const environment = await environmentService.getById(session.environmentId);
             const account = await environmentService.getAccountFromEnvironment(session.environmentId);
@@ -1435,7 +1436,7 @@ class OAuthController {
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',

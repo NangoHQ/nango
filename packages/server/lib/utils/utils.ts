@@ -5,7 +5,8 @@ import type { User, Template as ProviderTemplate } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
-import { NangoError, userService, interpolateString } from '@nangohq/shared';
+import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Server.Utils');
 
@@ -332,4 +333,12 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 
 export function resetPasswordSecret() {
     return process.env['NANGO_ADMIN_KEY'] || 'nango';
+}
+
+export function getOrchestratorClient() {
+    return new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
+}
+
+export function getOrchestrator() {
+    return new Orchestrator(getOrchestratorClient());
 }

@@ -104,9 +104,9 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Authentication' },
                     {
-                        account: { id: account.id },
-                        environment: { id: connection.environment_id },
-                        config: { id: connection.config_id!, name: connection.provider_config_key },
+                        account,
+                        environment,
+                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider },
                         connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );

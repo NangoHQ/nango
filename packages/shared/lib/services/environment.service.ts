@@ -124,7 +124,13 @@ class EnvironmentService {
     }
 
     async getAccountAndEnvironment(
-        opts: { publicKey: string } | { secretKey: string } | { accountId: number; envName: string } | { accountUuid: string; envName: string }
+        // TODO: fix this union type that is not discriminated
+        opts:
+            | { publicKey: string }
+            | { secretKey: string }
+            | { accountId: number; envName: string }
+            | { environmentId: number }
+            | { accountUuid: string; envName: string }
     ): Promise<{ account: Account; environment: Environment } | null> {
         const q = db.knex
             .select<{
@@ -143,10 +149,12 @@ class EnvironmentService {
             q.where('secret_key_hashed', hash);
         } else if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
-        } else if ('accountId' in opts) {
-            q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
         } else if ('accountUuid' in opts) {
             q.where('_nango_accounts.uuid', opts.accountUuid).where('_nango_environments.name', opts.envName);
+        } else if ('accountId' in opts) {
+            q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
+        } else if ('environmentId' in opts) {
+            q.where('_nango_environments.id', opts.environmentId);
         } else {
             return null;
         }

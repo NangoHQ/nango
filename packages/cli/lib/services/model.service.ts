@@ -141,7 +141,7 @@ class ModelService {
 
             if (tsType.includes('|')) {
                 const types = tsType.split('|');
-                const hasStringLiteral = types.some((type) => !isJsOrTsType(type.trim()) && !Object.keys(models).includes(type.trim()));
+                const hasStringLiteral = types.some((type) => !isJsOrTsType(type.trim()) && !Object.keys(models).includes(type.replace(/\[\]/g, '').trim()));
 
                 if (hasStringLiteral) {
                     const enumValues = tsType

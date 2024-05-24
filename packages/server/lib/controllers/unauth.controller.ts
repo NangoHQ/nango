@@ -47,7 +47,7 @@ class UnAuthController {
         try {
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Unauthenticated' },
-                { account: { id: account.id }, environment: { id: environment.id } }
+                { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
 
@@ -136,7 +136,7 @@ class UnAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             await createActivityLogMessage({
                 level: 'info',
