@@ -24,13 +24,14 @@ import {
     NangoError,
     createActivityLogAndLogMessage,
     accountService,
-    slackNotificationService
+    SlackService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
+import { getOrchestratorClient } from '../utils/utils.js';
 
 class ConnectionController {
     /**
@@ -431,6 +432,7 @@ class ConnectionController {
 
             await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
 
+            const slackNotificationService = new SlackService(getOrchestratorClient());
             await slackNotificationService.closeAllOpenNotifications(environment.id);
 
             res.status(204).send();

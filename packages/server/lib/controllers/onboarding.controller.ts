@@ -26,7 +26,9 @@ import {
     LogActionEnum,
     analytics,
     AnalyticsTypes,
-    getSyncConfigRaw
+    getSyncConfigRaw,
+    getOrchestratorUrl,
+    Orchestrator
 } from '@nangohq/shared';
 import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
@@ -35,6 +37,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import type { GetOnboardingStatus } from '@nangohq/types';
 import type { RequestLocals } from '../utils/express.js';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Server.Onboarding');
 
@@ -439,7 +442,8 @@ class OnboardingController {
                     syncConfig: { id: syncConfig.id!, name: syncConfig?.sync_name }
                 }
             );
-            const actionResponse = await syncClient.triggerAction({
+            const orchestrator = new Orchestrator(new OrchestratorClient({ baseUrl: getOrchestratorUrl() }));
+            const actionResponse = await orchestrator.triggerAction({
                 connection,
                 actionName: DEMO_ACTION_NAME,
                 input: { title: req.body.title },

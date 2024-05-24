@@ -63,6 +63,7 @@
     "devDependencies": {
         "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
+        "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/types": "^0.39.30",
         "@octokit/types": "^9.2.1",
         "@types/amqplib": "^0.8.2",
