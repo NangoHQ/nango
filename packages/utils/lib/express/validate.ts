@@ -14,17 +14,17 @@ export const validateRequest =
     (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => {
         try {
             if (parser.parseBody) {
-                parser.parseBody(req.body);
+                req.body = parser.parseBody(req.body);
             } else {
                 z.object({}).strict('Body is not allowed').parse(req.body);
             }
             if (parser.parseQuery) {
-                parser.parseQuery(req.query);
+                req.query = parser.parseQuery(req.query);
             } else {
                 z.object({}).strict('Query string parameters are not allowed').parse(req.query);
             }
             if (parser.parseParams) {
-                parser.parseParams(req.params);
+                req.params = parser.parseParams(req.params);
             } else {
                 z.object({}).strict('Url parameters are not allowed').parse(req.params);
             }

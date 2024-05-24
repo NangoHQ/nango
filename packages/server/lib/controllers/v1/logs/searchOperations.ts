@@ -10,7 +10,32 @@ const validation = z
         states: z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
             .optional()
-            .default(['all'])
+            .default(['all']),
+        types: z
+            .array(
+                z.enum([
+                    'all',
+                    'action',
+                    'sync',
+                    'sync:init',
+                    'sync:cancel',
+                    'sync:pause',
+                    'sync:unpause',
+                    'sync:run',
+                    'sync:request_run',
+                    'sync:request_run_full',
+                    'proxy',
+                    'deploy',
+                    'auth',
+                    'admin',
+                    'webhook'
+                ])
+            )
+            .optional()
+            .default(['all']),
+        integrations: z.array(z.string()).optional().default(['all']),
+        connections: z.array(z.string()).optional().default(['all']),
+        syncs: z.array(z.string()).optional().default(['all'])
     })
     .strict();
 
@@ -36,7 +61,16 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
 
     const env = res.locals['environment'];
     const body: SearchOperations['Body'] = val.data;
-    const rawOps = await model.listOperations({ accountId: env.account_id, environmentId: env.id, limit: body.limit!, states: body.states });
+    const rawOps = await model.listOperations({
+        accountId: env.account_id,
+        environmentId: env.id,
+        limit: body.limit!,
+        states: body.states,
+        types: body.types,
+        integrations: body.integrations,
+        connections: body.connections,
+        syncs: body.syncs
+    });
 
     res.status(200).send({
         data: rawOps.items,

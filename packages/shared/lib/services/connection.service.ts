@@ -633,7 +633,7 @@ class ConnectionService {
                 const activityLogId = await createActivityLogAndLogMessage(log, logMessage);
 
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Token refresh error' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Token refresh error' },
                     {
                         account,
                         environment,

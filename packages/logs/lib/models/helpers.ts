@@ -38,7 +38,7 @@ export function getFormattedMessage(
 
         integrationId: integration?.id ?? data.integrationId ?? null,
         integrationName: integration?.name || data.integrationName || null,
-        providerName: integration?.provider || data.integrationName || null,
+        providerName: integration?.provider || data.providerName || null,
 
         connectionId: connection?.id ?? data.connectionId ?? null,
         connectionName: connection?.name || data.connectionName || null,

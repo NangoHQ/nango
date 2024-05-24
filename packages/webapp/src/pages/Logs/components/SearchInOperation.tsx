@@ -12,7 +12,7 @@ import { LevelTag } from './LevelTag';
 import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
-import { useDebounce } from 'react-use';
+import { useDebounce, useInterval } from 'react-use';
 import { Tag } from './Tag';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
@@ -62,12 +62,12 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     }
 ];
 
-export const SearchInOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
+export const SearchInOperation: React.FC<{ operationId: string; live: boolean }> = ({ operationId, live }) => {
     const env = useStore((state) => state.env);
 
     const [search, setSearch] = useState<string | undefined>();
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
-    const { data, error, loading } = useSearchMessages(env, { limit: 20, operationId, search: debouncedSearch });
+    const { data, error, loading, trigger } = useSearchMessages(env, { limit: 20, operationId, search: debouncedSearch });
 
     const table = useReactTable({
         data: data ? data.data : [],
@@ -82,6 +82,14 @@ export const SearchInOperation: React.FC<{ operationId: string }> = ({ operation
         }
         return formatQuantity(data.pagination.total);
     }, [data?.pagination]);
+
+    useInterval(
+        () => {
+            // Auto refresh
+            trigger();
+        },
+        live ? 5000 : null
+    );
 
     return (
         <div>

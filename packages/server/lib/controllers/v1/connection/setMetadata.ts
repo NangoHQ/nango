@@ -14,7 +14,6 @@ const validation = z
 
 export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
-
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;

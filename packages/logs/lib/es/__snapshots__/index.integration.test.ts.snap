@@ -17,7 +17,13 @@ exports[`mapping > should apply mapping 1`] = `
       "type": "keyword",
     },
     "connectionName": {
-      "type": "keyword",
+      "analyzer": "standard",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+        },
+      },
+      "type": "text",
     },
     "createdAt": {
       "type": "date",
@@ -42,7 +48,13 @@ exports[`mapping > should apply mapping 1`] = `
       "type": "keyword",
     },
     "integrationName": {
-      "type": "keyword",
+      "analyzer": "standard",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+        },
+      },
+      "type": "text",
     },
     "jobId": {
       "type": "keyword",
@@ -112,7 +124,13 @@ exports[`mapping > should apply mapping 1`] = `
       "type": "keyword",
     },
     "syncConfigName": {
-      "type": "keyword",
+      "analyzer": "standard",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+        },
+      },
+      "type": "text",
     },
     "title": {
       "type": "keyword",

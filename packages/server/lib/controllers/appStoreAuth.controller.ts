@@ -46,7 +46,7 @@ class AppStoreAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization App Store' },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, account.id);

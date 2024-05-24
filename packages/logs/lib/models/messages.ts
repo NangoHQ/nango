@@ -1,8 +1,16 @@
 import { client } from '../es/client.js';
-import type { MessageRow, OperationRow, SearchOperationsState } from '@nangohq/types';
+import type {
+    MessageRow,
+    OperationRow,
+    SearchOperationsConnection,
+    SearchOperationsIntegration,
+    SearchOperationsState,
+    SearchOperationsSync,
+    SearchOperationsType
+} from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
-import type { opensearchtypes } from '@opensearch-project/opensearch';
-import { errors } from '@opensearch-project/opensearch';
+import type { estypes } from '@elastic/elasticsearch';
+import { errors } from '@elastic/elasticsearch';
 
 export interface ListOperations {
     count: number;
@@ -11,6 +19,9 @@ export interface ListOperations {
 export interface ListMessages {
     count: number;
     items: MessageRow[];
+}
+export interface ListFilters {
+    items: { key: string; doc_count: number }[];
 }
 
 export const ResponseError = errors.ResponseError;
@@ -22,7 +33,7 @@ export async function createMessage(row: MessageRow): Promise<void> {
     await client.create<MessageRow>({
         index: indexMessages.index,
         id: row.id,
-        body: row,
+        document: row,
         refresh: true
     });
 }
@@ -35,8 +46,12 @@ export async function listOperations(opts: {
     environmentId?: number;
     limit: number;
     states?: SearchOperationsState[] | undefined;
+    types?: SearchOperationsType[] | undefined;
+    integrations?: SearchOperationsIntegration[] | undefined;
+    connections?: SearchOperationsConnection[] | undefined;
+    syncs?: SearchOperationsSync[] | undefined;
 }): Promise<ListOperations> {
-    const query: opensearchtypes.QueryDslQueryContainer = {
+    const query: estypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }],
             must_not: { exists: { field: 'parentId' } },
@@ -44,11 +59,11 @@ export async function listOperations(opts: {
         }
     };
     if (opts.environmentId) {
-        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
     }
     if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
         // Where or
-        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: opts.states.map((state) => {
                     return { term: { state } };
@@ -56,20 +71,67 @@ export async function listOperations(opts: {
             }
         });
     }
+    if (opts.integrations && (opts.integrations.length > 1 || opts.integrations[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.integrations.map((integration) => {
+                    return { term: { 'integrationName.keyword': integration } };
+                })
+            }
+        });
+    }
+    if (opts.connections && (opts.connections.length > 1 || opts.connections[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.connections.map((connection) => {
+                    return { term: { 'connectionName.keyword': connection } };
+                })
+            }
+        });
+    }
+    if (opts.syncs && (opts.syncs.length > 1 || opts.syncs[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.syncs.map((sync) => {
+                    return { term: { 'syncConfigName.keyword': sync } };
+                })
+            }
+        });
+    }
+    if (opts.types && (opts.types.length > 1 || opts.types[0] !== 'all')) {
+        const types: estypes.QueryDslQueryContainer[] = [];
+        for (const couple of opts.types) {
+            const [type, action] = couple.split(':');
+            if (action && type) {
+                types.push({ bool: { must: [{ term: { 'operation.action': action } }, { term: { 'operation.type': type } }], should: [] } });
+            } else if (type) {
+                types.push({ term: { 'operation.type': type } });
+            }
+        }
+        // Where or
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: types
+            }
+        });
+    }
 
-    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
+    const res = await client.search<OperationRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: ['createdAt:desc', '_score'],
+        sort: [{ createdAt: 'desc' }, '_score'],
         track_total_hits: true,
-        body: { query }
+        query
     });
-    const hits = res.body.hits;
+    const hits = res.hits;
 
     return {
-        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
         items: hits.hits.map((hit) => {
-            return hit._source;
+            return hit._source!;
         })
     };
 }
@@ -78,11 +140,11 @@ export async function listOperations(opts: {
  * Get a single operation
  */
 export async function getOperation(opts: { id: MessageRow['id'] }): Promise<MessageRow> {
-    const res = await client.get<{ id: string; _source: MessageRow }>({
+    const res = await client.get<OperationRow>({
         index: indexMessages.index,
         id: opts.id
     });
-    return res.body._source;
+    return res._source!;
 }
 
 /**
@@ -146,7 +208,7 @@ export async function listMessages(opts: {
     states?: SearchOperationsState[] | undefined;
     search?: string | undefined;
 }): Promise<ListMessages> {
-    const query: opensearchtypes.QueryDslQueryContainer = {
+    const query: estypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { parentId: opts.parentId } }],
             should: []
@@ -155,7 +217,7 @@ export async function listMessages(opts: {
 
     if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
         // Where or
-        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: opts.states.map((state) => {
                     return { term: { state } };
@@ -164,24 +226,74 @@ export async function listMessages(opts: {
         });
     }
     if (opts.search) {
-        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             match_phrase_prefix: { message: { query: opts.search } }
         });
     }
 
-    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
+    const res = await client.search<MessageRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: ['createdAt:desc', '_score'],
+        sort: [{ createdAt: 'desc' }, '_score'],
         track_total_hits: true,
-        body: { query }
+        query
     });
-    const hits = res.body.hits;
+    const hits = res.hits;
 
     return {
-        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
         items: hits.hits.map((hit) => {
-            return hit._source;
+            return hit._source!;
         })
+    };
+}
+
+/**
+ * List filters
+ */
+export async function listFilters(opts: {
+    accountId: number;
+    environmentId: number;
+    limit: number;
+    category: 'integration' | 'syncConfig' | 'connection';
+    search?: string | undefined;
+}): Promise<ListFilters> {
+    let aggField: string;
+    if (opts.category === 'integration') {
+        aggField = 'integrationName';
+    } else if (opts.category === 'connection') {
+        aggField = 'connectionName';
+    } else {
+        aggField = 'syncConfigName';
+    }
+
+    const query: estypes.QueryDslQueryContainer = {
+        bool: {
+            must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }],
+            must_not: { exists: { field: 'parentId' } },
+            should: []
+        }
+    };
+
+    if (opts.search) {
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({ match_phrase_prefix: { [aggField]: { query: opts.search } } });
+    }
+
+    const res = await client.search<
+        never,
+        {
+            byName: estypes.AggregationsTermsAggregateBase<{ key: string; doc_count: number }>;
+        }
+    >({
+        index: indexMessages.index,
+        size: 0,
+        track_total_hits: true,
+        aggs: { byName: { terms: { field: `${aggField}.keyword`, size: opts.limit } } },
+        query
+    });
+    const agg = res.aggregations!['byName'];
+
+    return {
+        items: agg.buckets as any
     };
 }

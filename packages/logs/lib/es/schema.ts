@@ -1,8 +1,8 @@
-import type { opensearchtypes } from '@opensearch-project/opensearch';
+import type { estypes } from '@elastic/elasticsearch';
 import type { MessageRow } from '@nangohq/types';
 import { envs } from '../env.js';
 
-const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
+const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
 
     parentId: { type: 'keyword' },
@@ -14,14 +14,41 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     environmentName: { type: 'keyword' },
 
     integrationId: { type: 'keyword' },
-    integrationName: { type: 'keyword' },
+    integrationName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
     providerName: { type: 'keyword' },
 
     connectionId: { type: 'keyword' },
-    connectionName: { type: 'keyword' },
+    connectionName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
 
     syncConfigId: { type: 'keyword' },
-    syncConfigName: { type: 'keyword' },
+    syncConfigName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
 
     jobId: { type: 'keyword' },
 
@@ -67,26 +94,24 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     endedAt: { type: 'date' }
 };
 
-export const indexMessages: opensearchtypes.IndicesCreateRequest = {
-    index: envs.NANGO_LOGS_OS_INDEX ?? 'messages',
-    body: {
-        settings: {
-            analysis: {
-                analyzer: {
-                    default: {
-                        type: 'standard'
-                    },
-                    default_search: {
-                        type: 'standard'
-                    }
+export const indexMessages: estypes.IndicesCreateRequest = {
+    index: `20240522_${envs.NANGO_LOGS_ES_INDEX ?? 'messages'}`,
+    settings: {
+        analysis: {
+            analyzer: {
+                default: {
+                    type: 'standard'
+                },
+                default_search: {
+                    type: 'standard'
                 }
             }
-        },
-        mappings: {
-            dynamic: false,
-            properties: props
         }
+    },
+    mappings: {
+        dynamic: false,
+        properties: props
     }
 };
 
-export const indices: opensearchtypes.IndicesCreateRequest[] = [indexMessages];
+export const indices: estypes.IndicesCreateRequest[] = [indexMessages];
