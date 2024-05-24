@@ -1272,7 +1272,7 @@ paths:
                                 frequency:
                                     type: string
                                     nullable: true
-                                    description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency"
+                                    description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency. Uses the https://github.com/vercel/ms notations. Min frequency: 5 minutes."
             responses:
                 '200':
                     description: Successfully updated the frequency
