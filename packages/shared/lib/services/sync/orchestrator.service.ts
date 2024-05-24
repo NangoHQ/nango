@@ -59,7 +59,7 @@ interface CreateSyncArgs {
     syncName: string;
 }
 
-export class Orchestrator {
+export class OrchestratorService {
     public async create(
         connections: Connection[],
         syncName: string,
@@ -528,4 +528,4 @@ export class Orchestrator {
     }
 }
 
-export default new Orchestrator();
+export default new OrchestratorService();
