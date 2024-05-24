@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
+    OAuth2Credentials,
     ImportedCredentials,
     AuthCredentials,
     ConnectionList,
