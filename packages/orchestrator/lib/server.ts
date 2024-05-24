@@ -6,10 +6,11 @@ import { getRouteHandler as outputHandler } from './routes/v1/task/taskId/output
 import { getLogger, createRoute } from '@nangohq/utils';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
+import type EventEmitter from 'node:events';
 
 const logger = getLogger('Orchestrator.server');
 
-export const getServer = ({ scheduler }: { scheduler: Scheduler }): Express => {
+export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Express => {
     const server = express();
 
     server.use(express.json({ limit: '100kb' }));
@@ -34,7 +35,7 @@ export const getServer = ({ scheduler }: { scheduler: Scheduler }): Express => {
 
     createRoute(server, healthHandler);
     createRoute(server, scheduleHandler(scheduler));
-    createRoute(server, outputHandler(scheduler));
+    createRoute(server, outputHandler(scheduler, eventEmmiter));
 
     server.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
         res.status(500).json({ error: `Internal server error: '${err}'` });
