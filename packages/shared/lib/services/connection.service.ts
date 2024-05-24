@@ -56,13 +56,6 @@ const logger = getLogger('Connection');
 
 type KeyValuePairs = Record<string, string | boolean>;
 
-interface IntegrationValuesWithAccountAndEnvironment {
-    connection_id: string;
-    provider_config_key: string;
-    account: Account;
-    environment: Environment;
-}
-
 class ConnectionService {
     private locking: Locking;
 
@@ -426,16 +419,24 @@ class ConnectionService {
         return result;
     }
 
-    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<IntegrationValuesWithAccountAndEnvironment[]> {
+    public async getOldConnections({
+        days,
+        limit
+    }: {
+        days: number;
+        limit: number;
+    }): Promise<{ connection_id: string; provider_config_key: string; account: Account; environment: Environment }[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
+
+        type T = Awaited<ReturnType<ConnectionService['getOldConnections']>>;
 
         const result = await db
             .knex<StoredConnection>(`_nango_connections`)
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
-            .select<IntegrationValuesWithAccountAndEnvironment[]>(
+            .select<T>(
                 'connection_id',
                 'unique_key as provider_config_key',
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),

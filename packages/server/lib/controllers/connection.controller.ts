@@ -72,7 +72,7 @@ class ConnectionController {
                     connectionId,
                     providerConfigKey,
                     logContextGetter,
-                    instantRefresh: false
+                    instantRefresh
                 });
                 success = credentialResponse.isOk();
 
