@@ -97,7 +97,7 @@ describe('GET /logs', () => {
             data: [
                 {
                     accountId: env.account_id,
-                    accountName: null,
+                    accountName: account.name,
                     code: null,
                     integrationId: null,
                     integrationName: null,
