@@ -1,5 +1,13 @@
 import { client } from '../es/client.js';
-import type { MessageRow, OperationRow, SearchOperationsState } from '@nangohq/types';
+import type {
+    MessageRow,
+    OperationRow,
+    SearchOperationsConnection,
+    SearchOperationsIntegration,
+    SearchOperationsState,
+    SearchOperationsSync,
+    SearchOperationsType
+} from '@nangohq/types';
 import { indexMessages } from '../es/schema.js';
 import type { opensearchtypes } from '@opensearch-project/opensearch';
 import { errors } from '@opensearch-project/opensearch';
@@ -11,6 +19,9 @@ export interface ListOperations {
 export interface ListMessages {
     count: number;
     items: MessageRow[];
+}
+export interface ListFilters {
+    items: { key: string; doc_count: number }[];
 }
 
 export const ResponseError = errors.ResponseError;
@@ -35,6 +46,10 @@ export async function listOperations(opts: {
     environmentId?: number;
     limit: number;
     states?: SearchOperationsState[] | undefined;
+    types?: SearchOperationsType[] | undefined;
+    integrations?: SearchOperationsIntegration[] | undefined;
+    connections?: SearchOperationsConnection[] | undefined;
+    syncs?: SearchOperationsSync[] | undefined;
 }): Promise<ListOperations> {
     const query: opensearchtypes.QueryDslQueryContainer = {
         bool: {
@@ -56,8 +71,55 @@ export async function listOperations(opts: {
             }
         });
     }
+    if (opts.integrations && (opts.integrations.length > 1 || opts.integrations[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.integrations.map((integration) => {
+                    return { term: { 'integrationName.keyword': integration } };
+                })
+            }
+        });
+    }
+    if (opts.connections && (opts.connections.length > 1 || opts.connections[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.connections.map((connection) => {
+                    return { term: { 'connectionName.keyword': connection } };
+                })
+            }
+        });
+    }
+    if (opts.syncs && (opts.syncs.length > 1 || opts.syncs[0] !== 'all')) {
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: opts.syncs.map((sync) => {
+                    return { term: { 'syncConfigName.keyword': sync } };
+                })
+            }
+        });
+    }
+    if (opts.types && (opts.types.length > 1 || opts.types[0] !== 'all')) {
+        const types: opensearchtypes.QueryDslQueryContainer[] = [];
+        for (const couple of opts.types) {
+            const [type, action] = couple.split(':');
+            if (action && type) {
+                types.push({ bool: { must: [{ term: { 'operation.action': action } }, { term: { 'operation.type': type } }], should: [] } });
+            } else if (type) {
+                types.push({ term: { 'operation.type': type } });
+            }
+        }
+        // Where or
+        (query.bool!.must as opensearchtypes.QueryDslQueryContainer[]).push({
+            bool: {
+                should: types
+            }
+        });
+    }
 
-    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
+    const res = await client.search<{ hits: { total: { value: number }; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
@@ -67,7 +129,7 @@ export async function listOperations(opts: {
     const hits = res.body.hits;
 
     return {
-        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
         items: hits.hits.map((hit) => {
             return hit._source;
         })
@@ -169,7 +231,7 @@ export async function listMessages(opts: {
         });
     }
 
-    const res = await client.search<{ hits: { total: number; hits: { _source: MessageRow }[] } }>({
+    const res = await client.search<{ hits: { total: { value: number }; hits: { _source: MessageRow }[] } }>({
         index: indexMessages.index,
         size: opts.limit,
         sort: ['createdAt:desc', '_score'],
@@ -179,9 +241,60 @@ export async function listMessages(opts: {
     const hits = res.body.hits;
 
     return {
-        count: typeof hits.total === 'number' ? hits.total : hits.hits.length,
+        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
         items: hits.hits.map((hit) => {
             return hit._source;
         })
+    };
+}
+
+/**
+ * List filters
+ */
+export async function listFilters(opts: {
+    accountId: number;
+    environmentId: number;
+    limit: number;
+    category: 'integration' | 'syncConfig' | 'connection';
+    search?: string | undefined;
+}): Promise<ListFilters> {
+    let aggField: string;
+    if (opts.category === 'integration') {
+        aggField = 'integrationName';
+    } else if (opts.category === 'connection') {
+        aggField = 'connectionName';
+    } else {
+        aggField = 'syncConfigName';
+    }
+
+    const body: { query: opensearchtypes.QueryDslQueryContainer; aggs: any } = {
+        query: {
+            bool: {
+                must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }],
+                must_not: { exists: { field: 'parentId' } },
+                should: []
+            }
+        },
+        aggs: {
+            byName: {
+                terms: { field: `${aggField}.keyword`, size: opts.limit }
+            }
+        }
+    };
+
+    if (opts.search) {
+        (body.query.bool!.must! as any).push({ match_phrase_prefix: { [aggField]: { query: opts.search } } });
+    }
+    const res = await client.search<{ aggregations: { byName: { buckets: any[] } } }>({
+        index: indexMessages.index,
+        size: 0,
+        sort: ['createdAt:desc', '_score'],
+        track_total_hits: true,
+        body
+    });
+    const agg = res.body.aggregations.byName;
+
+    return {
+        items: agg.buckets
     };
 }

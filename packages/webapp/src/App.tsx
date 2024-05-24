@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { SWRConfig } from 'swr';
-import { Routes, Route, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes, Navigate } from 'react-router-dom';
+import { Route, Navigate } from 'react-router-dom';
 import { MantineProvider, createTheme } from '@mantine/core';
-import * as Sentry from '@sentry/react';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,23 +34,13 @@ import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
-
-Sentry.init({
-    dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
-    integrations: [
-        new Sentry.BrowserTracing({
-            routingInstrumentation: Sentry.reactRouterV6Instrumentation(React.useEffect, useLocation, useNavigationType, createRoutesFromChildren, matchRoutes)
-        })
-    ],
-    tracesSampleRate: 0.1
-});
+import { SentryRoutes } from './utils/sentry';
 
 const theme = createTheme({
     fontFamily: 'Inter'
 });
 
 const App = () => {
-    const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
     const env = useStore((state) => state.env);
     const signout = useSignout();
     const setShowInteractiveDemo = useStore((state) => state.setShowInteractiveDemo);

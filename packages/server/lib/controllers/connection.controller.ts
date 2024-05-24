@@ -77,7 +77,7 @@ class ConnectionController {
                     content: 'Unknown connection'
                 });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
                     { account, environment }
                 );
                 await logCtx.error('Unknown connection');
@@ -99,7 +99,7 @@ class ConnectionController {
                     content: 'Unknown provider config'
                 });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
                     {
                         account,
                         environment,
@@ -156,7 +156,7 @@ class ConnectionController {
                     timestamp: Date.now()
                 });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
                     {
                         account,
                         environment,

@@ -8,28 +8,94 @@ import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './components/MultiSelect';
-import { columns, statusDefaultOptions, statusOptions } from './constants';
+import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
 import { useEffect, useMemo, useState } from 'react';
-import type { SearchOperationsState } from '@nangohq/types';
+import type { SearchOperationsIntegration, SearchOperationsPeriod, SearchOperationsState, SearchOperationsSync, SearchOperationsType } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
 import { OperationRow } from './components/OperationRow';
-import { Input } from '../../components/ui/input/Input';
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+// import { Input } from '../../components/ui/input/Input';
+// import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity } from '../../utils/utils';
+import { useSearchParams } from 'react-router-dom';
+import { useInterval } from 'react-use';
+import Button from '../../components/ui/button/Button';
+import { LightningBoltIcon } from '@radix-ui/react-icons';
+import { SearchableMultiSelect } from './components/SearchableMultiSelect';
+import { TypesSelect } from './components/TypesSelect';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // State
+    const [hasLogs, setHasLogs] = useState<boolean>(false);
+    const [synced, setSynced] = useState(false);
 
     // Data fetch
     const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
-    const [hasLogs, setHasLogs] = useState<boolean>(false);
-    const { data, error, loading } = useSearchOperations(env, { limit: 20, states });
+    const [types, setTypes] = useState<SearchOperationsType[]>(typesDefaultOptions);
+    const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
+    const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
+    const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
+    const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
+    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, types, integrations, connections, syncs });
 
     const table = useReactTable({
         data: data ? data.data : [],
         columns,
         getCoreRowModel: getCoreRowModel()
     });
+
+    useEffect(
+        function syncQueryParamsToState() {
+            // Sync the query params to the react state, it allows to share the URL
+            // we do it only on load, after that we don't care about the update
+            if (synced) {
+                return;
+            }
+
+            const tmpStates = searchParams.get('states');
+            setStates(tmpStates ? (tmpStates.split(',') as any) : statusDefaultOptions);
+
+            const tmpIntegrations = searchParams.get('integrations');
+            setIntegrations(tmpIntegrations ? (tmpIntegrations.split(',') as any) : integrationsDefaultOptions);
+
+            const tmpConnections = searchParams.get('integrations');
+            setIntegrations(tmpConnections ? (tmpConnections.split(',') as any) : integrationsDefaultOptions);
+
+            const tmpSyncs = searchParams.get('syncs');
+            setSyncs(tmpSyncs ? (tmpSyncs.split(',') as any) : syncsDefaultOptions);
+
+            const tmpTypes = searchParams.get('types');
+            setTypes(tmpTypes ? (tmpTypes.split(',') as any) : typesDefaultOptions);
+
+            const tmpFrom = searchParams.get('from');
+            const tmpTo = searchParams.get('to');
+            setPeriod(tmpFrom && tmpTo ? { from: tmpFrom, to: tmpTo } : undefined);
+
+            setSynced(true);
+        },
+        [searchParams, synced]
+    );
+
+    useEffect(
+        function syncStateToQueryParams() {
+            // Sync the state back to the URL for sharing
+            const tmp = new URLSearchParams({
+                states: states as any,
+                integrations: integrations as any,
+                connections: connections as any,
+                syncs: syncs as any,
+                types: types as any
+            });
+            if (period) {
+                tmp.set('from', period.from);
+                tmp.set('to', period.to);
+            }
+            setSearchParams(tmp);
+        },
+        [states, integrations, period, connections, syncs, types]
+    );
 
     useEffect(() => {
         if (!loading) {
@@ -38,6 +104,14 @@ export const LogsSearch: React.FC = () => {
             setHasLogs(true);
         }
     }, [loading]);
+
+    useInterval(
+        () => {
+            // Auto refresh
+            trigger();
+        },
+        synced ? 10000 : null
+    );
 
     const total = useMemo(() => {
         if (!data?.pagination) {
@@ -52,7 +126,7 @@ export const LogsSearch: React.FC = () => {
                 <Info color={error.error.code === 'feature_disabled' ? 'orange' : 'red'} classNames="text-xs" size={20}>
                     {error.error.code === 'feature_disabled'
                         ? 'This feature is disabled. Install OpenSearch and set "NANGO_LOGS_ENABLED" flag to `true`'
-                        : 'An error occured, refresh your page or reach out to the support.'}
+                        : 'An error occurred, refresh your page or reach out to the support.'}
                 </Info>
             </DashboardLayout>
         );
@@ -87,13 +161,19 @@ export const LogsSearch: React.FC = () => {
             </div>
 
             <div className="flex gap-2 justify-between">
-                <div className="w-full">
-                    <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." />
-                </div>
+                <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
                 <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
+                <TypesSelect selected={types} onChange={setTypes} />
+                <SearchableMultiSelect label="Integration" selected={integrations} category={'config'} onChange={setIntegrations} />
+                <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
+                <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
+                <Button variant="zombieGray" size={'xs'}>
+                    <LightningBoltIcon />
+                    Live
+                </Button>
             </div>
 
-            <Table.Table className="my-6 table-fixed">
+            <Table.Table className="my-4 table-fixed">
                 <Table.Header>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <Table.Row key={headerGroup.id}>

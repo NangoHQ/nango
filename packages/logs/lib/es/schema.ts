@@ -14,14 +14,41 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     environmentName: { type: 'keyword' },
 
     integrationId: { type: 'keyword' },
-    integrationName: { type: 'keyword' },
+    integrationName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
     providerName: { type: 'keyword' },
 
     connectionId: { type: 'keyword' },
-    connectionName: { type: 'keyword' },
+    connectionName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
 
     syncConfigId: { type: 'keyword' },
-    syncConfigName: { type: 'keyword' },
+    syncConfigName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
 
     jobId: { type: 'keyword' },
 
@@ -68,7 +95,7 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
 };
 
 export const indexMessages: opensearchtypes.IndicesCreateRequest = {
-    index: envs.NANGO_LOGS_OS_INDEX ?? 'messages',
+    index: `20240522_${envs.NANGO_LOGS_OS_INDEX ?? 'messages'}`,
     body: {
         settings: {
             analysis: {

@@ -11,10 +11,11 @@ import { SearchInOperation } from './components/SearchInOperation';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ProviderTag } from './components/ProviderTag';
 import { Prism } from '@mantine/prism';
+import { useInterval } from 'react-use';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
-    const { operation, loading, error } = useGetOperation(env, { operationId });
+    const { operation, loading, error, trigger } = useGetOperation(env, { operationId });
 
     const duration = useMemo<string>(() => {
         if (!operation) {
@@ -29,6 +30,18 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     const createdAt = useMemo(() => {
         return operation?.createdAt ? formatDateToLogFormat(operation?.createdAt) : 'n/a';
     }, [operation?.createdAt]);
+
+    const isLive = useMemo(() => {
+        return !operation || operation.state === 'waiting' || operation.state === 'running';
+    }, [operation]);
+
+    useInterval(
+        () => {
+            // Auto refresh
+            trigger();
+        },
+        isLive ? 5000 : null
+    );
 
     if (loading) {
         return (
@@ -148,7 +161,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>
                 )}
             </div>
-            <SearchInOperation operationId={operationId} />
+            <SearchInOperation operationId={operationId} live={isLive} />
         </div>
     );
 };

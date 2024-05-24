@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
-describe('GET /logs', () => {
+describe('POST /logs/messages', () => {
     beforeAll(async () => {
         await multipleMigrations();
         await migrateMapping();
@@ -67,7 +67,7 @@ describe('GET /logs', () => {
     it('should search messages and get empty results', async () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
         await logCtx.success();
 
         const res = await api.fetch('/api/v1/logs/messages', {
@@ -88,7 +88,7 @@ describe('GET /logs', () => {
     it('should search messages and get one result', async () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
@@ -145,7 +145,7 @@ describe('GET /logs', () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'auth' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 

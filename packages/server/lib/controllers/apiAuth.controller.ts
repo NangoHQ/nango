@@ -53,7 +53,7 @@ class ApiAuthController {
         let logCtx: LogContext | undefined;
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization API Key' },
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization API Key' },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, account.id);
@@ -292,7 +292,7 @@ class ApiAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Basic' },
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization Basic' },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, account.id);
