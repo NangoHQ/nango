@@ -51,19 +51,14 @@ class AppAuthController {
             await oAuthSessionService.delete(session.id);
         }
 
-        const account = await environmentService.getAccountFromEnvironment(session.environmentId);
+        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: session.environmentId });
 
-        if (!account) {
+        if (!environmentAndAccountLookup) {
             res.sendStatus(404);
             return;
         }
 
-        const environment = await environmentService.getById(session.environmentId);
-
-        if (!environment) {
-            res.sendStatus(404);
-            return;
-        }
+        const { environment, account } = environmentAndAccountLookup;
 
         void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
 

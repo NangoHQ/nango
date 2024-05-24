@@ -56,13 +56,14 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return;
     } else {
-        const environment = await environmentService.getById(integration.environment_id);
-        const account = await environmentService.getAccountFromEnvironment(integration.environment_id);
+        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id });
 
-        if (!environment || !account) {
+        if (!environmentAndAccountLookup) {
             logger.error('Environment or account not found');
             return;
         }
+
+        const { environment, account } = environmentAndAccountLookup;
 
         const installationId = get(body, 'installation.id');
         const [connection] = connections as Connection[];
