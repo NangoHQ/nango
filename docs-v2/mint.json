@@ -439,6 +439,7 @@
                 "integrations/all/servicenow",
                 "integrations/all/shopify",
                 "integrations/all/shortcut",
+                "integrations/all/signnow",
                 "integrations/all/slack",
                 "integrations/all/smartrecruiters",
                 "integrations/all/smartsheet",
