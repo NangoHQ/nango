@@ -112,3 +112,25 @@ actions and do not track sensitive information.
 
 You can disable telemetry by setting the env var `TELEMETRY=false` (in the
 `.env` file or directly on Heroku/Render).
+
+## Logs[](#logs 'Direct link to Logs')
+
+We use Elasticsearch to store Nango's execution logs and power the logs UI.
+To limit the requirements to self-host, this stack is optional and up to the developper to setup.
+
+If you want to enable logs, you will need to first:
+- Host an elasticsearch cluster in the way you want
+- Update your environment variables, set `NANGO_LOGS_ENABLED=true` and add the appropriate values in `NANGO_LOGS_ES_*`
+
+### Hosting
+
+To host elasticsearch you have multiple solutions:
+
+- Locally: uncomment the service inside [`docker-compose.yml`](https://github.com/NangoHQ/nango/blob/master/docker-compose.yaml#L63) and run `docker-compose up -d`
+- ElasticCloud: use the minimal installation on Standard tier, about 20€/mo [elastic.co](https://www.elastic.co/)
+- Render: deploy a free instance [doc](https://docs.render.com/deploy-elasticsearch)
+
+### Alternatives
+
+We don't provide alternatives storage for the moment.
+If `NANGO_LOGS_ENABLED` is `false`, all the logs are sent to stdout so you can always find everything in your hosts logs UI.
