@@ -6,7 +6,7 @@ import { model, envs } from '@nangohq/logs';
 
 const validation = z
     .object({
-        category: z.enum(['config', 'connection', 'syncConfig']),
+        category: z.enum(['integration', 'connection', 'syncConfig']),
         search: z.string().optional()
     })
     .strict();

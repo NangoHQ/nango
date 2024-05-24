@@ -59,7 +59,7 @@ export type SearchFilters = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/filters';
     Querystring: { env: string };
-    Body: { category: 'config' | 'syncConfig' | 'connection'; search?: string | undefined };
+    Body: { category: 'integration' | 'syncConfig' | 'connection'; search?: string | undefined };
     Success: {
         data: { key: string; doc_count: number }[];
     };
