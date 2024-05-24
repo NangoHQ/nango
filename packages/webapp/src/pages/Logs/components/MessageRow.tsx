@@ -19,7 +19,7 @@ export const MessageRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row }
                 </Table.Row>
             </DrawerTrigger>
             <DrawerContent>
-                <div className={`w-[834px] relative`}>
+                <div className={`w-[834px] relative h-screen`}>
                     <div className="absolute top-7 left-4">
                         <DrawerClose title="Close" className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white">
                             <ArrowLeftIcon />

@@ -40,7 +40,8 @@ import {
     getSyncAndActionConfigsBySyncNameAndConfigId,
     createActivityLogMessage,
     trackFetch,
-    syncCommandToOperation
+    syncCommandToOperation,
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
@@ -374,6 +375,16 @@ class SyncController {
             }
 
             const provider = await configService.getProviderConfig(providerConfigKey, environmentId);
+            if (!provider) {
+                res.status(404).json({ error: { code: 'not_found' } });
+                return;
+            }
+
+            const syncConfig = await getSyncConfigRaw({ environmentId, config_id: provider.id!, name: action_name, isAction: true });
+            if (!syncConfig) {
+                res.status(404).json({ error: { code: 'not_found' } });
+                return;
+            }
 
             const log = {
                 level: 'info' as LogLevel,
@@ -383,7 +394,7 @@ class SyncController {
                 end: Date.now(),
                 timestamp: Date.now(),
                 connection_id: connection.connection_id,
-                provider: provider!.provider,
+                provider: provider.provider,
                 provider_config_key: connection.provider_config_key,
                 environment_id: environmentId,
                 operation_name: action_name
@@ -404,8 +415,10 @@ class SyncController {
                 {
                     account,
                     environment,
-                    config: { id: provider!.id!, name: connection.provider_config_key },
-                    connection: { id: connection.id!, name: connection.connection_id }
+                    integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
+                    connection: { id: connection.id!, name: connection.connection_id },
+                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
+                    meta: { input }
                 }
             );
 
@@ -432,7 +445,7 @@ class SyncController {
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.error);
-                await logCtx.error('Failed to trigger action', { error: actionResponse.error });
+                await logCtx.error('Failed to run action', { error: actionResponse.error });
                 await logCtx.failed();
 
                 errorManager.errResFromNangoErr(res, actionResponse.error);
@@ -443,7 +456,7 @@ class SyncController {
             span.setTag('nango.error', err);
             span.finish();
             if (logCtx) {
-                await logCtx.error('Failed to trigger action', { error: err });
+                await logCtx.error('Failed to run action', { error: err });
                 await logCtx.failed();
             }
 
@@ -621,6 +634,22 @@ class SyncController {
 
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
+            if (!connection) {
+                res.status(404).json({ error: { code: 'not_found' } });
+                return;
+            }
+
+            const config = await configService.getProviderConfig(connection.provider_config_key, environment.id);
+            if (!config) {
+                res.status(404).json({ error: { code: 'not_found' } });
+                return;
+            }
+
+            const syncConfig = await getSyncConfigRaw({ environmentId: config.environment_id, config_id: config.id!, name: sync_name, isAction: false });
+            if (!syncConfig) {
+                res.status(404).json({ error: { code: 'not_found' } });
+                return;
+            }
 
             const action = CommandToActivityLog[command as SyncCommand];
 
@@ -631,9 +660,9 @@ class SyncController {
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
-                connection_id: connection?.connection_id as string,
+                connection_id: connection.connection_id,
                 provider,
-                provider_config_key: connection?.provider_config_key as string,
+                provider_config_key: connection.provider_config_key,
                 environment_id: environment.id,
                 operation_name: sync_name
             };
@@ -644,7 +673,13 @@ class SyncController {
                     operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] },
                     message: `Trigger ${command}`
                 },
-                { account, environment, connection: { id: connection!.id!, name: connection!.connection_id } }
+                {
+                    account,
+                    environment,
+                    integration: { id: config.id!, name: config.unique_key, provider: config.provider },
+                    connection: { id: connection.id!, name: connection.connection_id },
+                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                }
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
@@ -678,8 +713,8 @@ class SyncController {
                 command,
                 activityLogId: activityLogId as number,
                 environmentId: environment.id,
-                providerConfigKey: connection?.provider_config_key as string,
-                connectionId: connection?.connection_id as string,
+                providerConfigKey: connection?.provider_config_key,
+                connectionId: connection?.connection_id,
                 syncName: sync_name,
                 nangoConnectionId: connection?.id,
                 logCtx,
@@ -705,7 +740,7 @@ class SyncController {
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
             });
             await updateSuccessActivityLog(activityLogId as number, true);
-            await logCtx.info('Sync command run successfully', { action, syncId: sync_id });
+            await logCtx.info(`Sync command run successfully "${action}"`, { action, syncId: sync_id });
             await logCtx.success();
 
             let event = AnalyticsTypes.SYNC_RUN;
@@ -729,8 +764,8 @@ class SyncController {
                 sync_id,
                 sync_name,
                 provider,
-                provider_config_key: connection?.provider_config_key as string,
-                connection_id: connection?.connection_id as string,
+                provider_config_key: connection?.provider_config_key,
+                connection_id: connection?.connection_id,
                 schedule_id
             });
 

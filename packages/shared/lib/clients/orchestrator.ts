@@ -21,6 +21,9 @@ import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
 import type { TExecuteReturn, TExecuteProps } from '@nangohq/nango-orchestrator';
+import type { Account } from '../models/Admin.js';
+import type { Environment } from '../models/Environment.js';
+import type { SyncConfig } from '../models/index.js';
 
 const logger = getLogger('orchestrator.client');
 
@@ -220,14 +223,25 @@ export class Orchestrator {
         }
     }
 
-    async triggerWebhook<T = any>(
-        integration: ProviderConfig,
-        connection: NangoConnection,
-        webhookName: string,
-        parentSyncName: string,
-        input: object,
-        logContextGetter: LogContextGetter
-    ): Promise<Result<T, NangoError>> {
+    async triggerWebhook<T = any>({
+        account,
+        environment,
+        integration,
+        connection,
+        webhookName,
+        syncConfig,
+        input,
+        logContextGetter
+    }: {
+        account: Account;
+        environment: Environment;
+        integration: ProviderConfig;
+        connection: NangoConnection;
+        webhookName: string;
+        syncConfig: SyncConfig;
+        input: object;
+        logContextGetter: LogContextGetter;
+    }): Promise<Result<T, NangoError>> {
         const log = {
             level: 'info' as LogLevel,
             success: null,
@@ -246,14 +260,15 @@ export class Orchestrator {
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
             {
-                account: { id: connection.account_id! },
-                environment: { id: integration.environment_id },
-                config: { id: integration.id!, name: integration.unique_key },
-                connection: { id: connection.id!, name: connection.connection_id }
+                account,
+                environment,
+                integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
+                connection: { id: connection.id!, name: connection.connection_id },
+                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
             }
         );
 
-        const workflowId = `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connection.connection_id}.${Date.now()}`;
+        const workflowId = `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${syncConfig.sync_name}:${webhookName}.${connection.connection_id}.${Date.now()}`;
 
         try {
             await createActivityLogMessage({
@@ -278,7 +293,7 @@ export class Orchestrator {
                 groupKey,
                 args: {
                     name: webhookName,
-                    parentSyncName,
+                    parentSyncName: syncConfig.sync_name,
                     connection: {
                         id: connection.id!,
                         provider_config_key: connection.provider_config_key,
@@ -296,7 +311,7 @@ export class Orchestrator {
                 args: [
                     {
                         name: webhookName,
-                        parentSyncName,
+                        parentSyncName: syncConfig.sync_name,
                         nangoConnection: nangoConnectionWithoutCredentials,
                         input,
                         activityLogId
@@ -352,7 +367,7 @@ export class Orchestrator {
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: connection.environment_id,
                 metadata: {
-                    parentSyncName,
+                    parentSyncName: syncConfig.sync_name,
                     webhookName,
                     connectionDetails: JSON.stringify(connection),
                     input

@@ -25,8 +25,9 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 
 class UnAuthController {
     async create(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { account, environment } = res.locals;
+        const accountId = account.id;
+        const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
 
@@ -48,7 +49,7 @@ class UnAuthController {
         try {
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Unauthenticated' },
-                { account: { id: accountId }, environment: { id: environmentId } }
+                { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
 
@@ -137,7 +138,7 @@ class UnAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             await createActivityLogMessage({
                 level: 'info',

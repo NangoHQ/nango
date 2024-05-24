@@ -103,8 +103,8 @@ class ConnectionController {
                     {
                         account,
                         environment,
-                        connection: { id: connection.id!, name: connection.connection_id },
-                        config: { id: connection.config_id!, name: connection.provider_config_key }
+                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider: 'unknown' },
+                        connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
                 await logCtx.error('Unknown provider config');
@@ -160,8 +160,8 @@ class ConnectionController {
                     {
                         account,
                         environment,
-                        connection: { id: connection.id!, name: connection.connection_id },
-                        config: { id: config.id!, name: config.unique_key }
+                        integration: { id: config.id!, name: config.unique_key, provider: config.provider },
+                        connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
                 await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);

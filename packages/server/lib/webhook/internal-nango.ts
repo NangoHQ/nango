@@ -89,10 +89,10 @@ export const internalNango: InternalNango = {
             return { connectionIds: connections?.map((connection) => connection.connection_id) };
         }
 
-        const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
+        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id }))!;
 
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_RECEIVED, 'Incoming webhook received and connection found for it', LogActionEnum.WEBHOOK, {
-            accountId: String(accountId),
+            accountId: String(account.id),
             environmentId: String(integration.environment_id),
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
@@ -111,7 +111,16 @@ export const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (type === webhook) {
                     for (const connection of connections) {
-                        await getOrchestrator().triggerWebhook(integration, connection, webhook, syncConfig.sync_name, body, logContextGetter);
+                        await getOrchestrator().triggerWebhook({
+                            account,
+                            environment,
+                            integration,
+                            connection,
+                            webhookName: webhook,
+                            syncConfig,
+                            input: body,
+                            logContextGetter
+                        });
                     }
                 }
             }

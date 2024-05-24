@@ -932,3 +932,23 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
 
     return result;
 }
+
+export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<SyncConfig | null> {
+    const query = db.knex
+        .select<SyncConfig>('*')
+        .where({
+            environment_id: opts.environmentId,
+            sync_name: opts.name,
+            nango_config_id: opts.config_id,
+            active: true,
+            enabled: true,
+            type: opts.isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+            deleted: false
+        })
+        .from<SyncConfig>(TABLE)
+        .first();
+
+    const res = await query;
+
+    return res || null;
+}

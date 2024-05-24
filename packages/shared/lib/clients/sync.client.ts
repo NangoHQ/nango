@@ -19,7 +19,7 @@ import {
 } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
-import { getSyncConfig } from '../services/sync/config/config.service.js';
+import { getSyncConfig, getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
@@ -29,6 +29,8 @@ import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { isTest, isProd, getLogger, Ok, Err, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
+import type { InitialSyncArgs } from '../models/worker.js';
+import environmentService from '../services/environment.service.js';
 
 const logger = getLogger('Sync.Client');
 
@@ -124,7 +126,7 @@ class SyncClient {
             return;
         }
 
-        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        const providerConfig: ProviderConfig = (await configService.getProviderConfig(
             nangoConnection?.provider_config_key,
             nangoConnection?.environment_id
         )) as ProviderConfig;
@@ -140,7 +142,7 @@ class SyncClient {
             const sync = await createSync(nangoConnectionId, syncName);
 
             if (sync) {
-                await this.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData, logContextGetter);
+                await this.startContinuous(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter);
             }
         }
     }
@@ -154,7 +156,7 @@ class SyncClient {
     async startContinuous(
         nangoConnection: NangoConnection,
         sync: Sync,
-        syncConfig: ProviderConfig,
+        providerConfig: ProviderConfig,
         syncName: string,
         syncData: NangoIntegrationData,
         logContextGetter: LogContextGetter,
@@ -172,7 +174,7 @@ class SyncClient {
                 timestamp: Date.now(),
                 connection_id: nangoConnection.connection_id,
                 provider_config_key: nangoConnection.provider_config_key,
-                provider: syncConfig.provider,
+                provider: providerConfig.provider,
                 session_id: sync?.id?.toString(),
                 environment_id: nangoConnection.environment_id,
                 operation_name: syncName
@@ -181,13 +183,23 @@ class SyncClient {
                 return;
             }
 
+            const syncConfig = await getSyncConfigRaw({
+                environmentId: nangoConnection.environment_id,
+                config_id: providerConfig.id!,
+                name: syncName,
+                isAction: false
+            });
+
+            const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
+
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
                 {
-                    account: { id: nangoConnection.account_id! },
-                    environment: { id: nangoConnection.environment_id },
-                    config: { id: syncConfig.id!, name: syncConfig.unique_key },
-                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id }
+                    account,
+                    environment,
+                    integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
+                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
                 }
             );
 
@@ -211,7 +223,7 @@ class SyncClient {
                     environmentId: nangoConnection.environment_id,
                     metadata: {
                         connectionDetails: nangoConnection,
-                        syncConfig,
+                        providerConfig,
                         syncName,
                         sync,
                         syncData
@@ -307,7 +319,7 @@ class SyncClient {
                     syncName,
                     connectionDetails: JSON.stringify(nangoConnection),
                     syncId: sync.id,
-                    syncConfig,
+                    providerConfig,
                     syncData: JSON.stringify(syncData)
                 }
             });
@@ -445,7 +457,7 @@ class SyncClient {
                         await this.cancelSync(syncId);
 
                         await clearLastSyncDate(syncId);
-                        await recordsService.deleteRecordsBySyncId({ syncId });
+                        const del = await recordsService.deleteRecordsBySyncId({ syncId });
                         await createActivityLogMessage({
                             level: 'info',
                             environment_id: environmentId,
@@ -453,6 +465,7 @@ class SyncClient {
                             timestamp: Date.now(),
                             content: `Records for the sync were deleted successfully`
                         });
+                        await logCtx.info(`Records for the sync were deleted successfully`, del);
                         const nangoConnection: NangoConnection = {
                             id: nangoConnectionId as number,
                             provider_config_key: providerConfigKey,
@@ -476,7 +489,7 @@ class SyncClient {
                 timestamp: Date.now(),
                 content: `The sync command: ${command} failed with error: ${errorMessage}`
             });
-            await logCtx.error('Sync command failed', { error: err, command });
+            await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
 
             return Err(err as Error);
         }
@@ -601,10 +614,12 @@ class SyncClient {
             return false;
         }
 
+        const args: InitialSyncArgs = { syncId: syncId, syncJobId: syncJobId.id, nangoConnection, syncName, debug: debug === true };
+
         const handle = await this.client?.workflow.start('initialSync', {
             taskQueue: SYNC_TASK_QUEUE,
             workflowId: jobId,
-            args: [{ syncId: syncId, syncJobId: syncJobId.id, nangoConnection, syncName, debug }]
+            args: [args]
         });
         if (!handle) {
             return false;

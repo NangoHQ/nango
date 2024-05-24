@@ -269,7 +269,7 @@ export class SlackService {
             {
                 account,
                 environment: { id: environment_id, name: envName },
-                config: { id: slackConnection.config_id!, name: slackConnection.provider_config_key },
+                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
         );
@@ -451,7 +451,7 @@ export class SlackService {
             {
                 account,
                 environment: { id: environment_id, name: envName },
-                config: { id: slackConnection.config_id!, name: slackConnection.provider_config_key },
+                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
         );

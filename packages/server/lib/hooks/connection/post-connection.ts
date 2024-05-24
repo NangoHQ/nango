@@ -20,9 +20,9 @@ export interface InternalNango {
 async function execute(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter) {
     const { connection_id, environment_id, provider_config_key } = createdConnection;
     try {
-        const accountId = await environmentService.getAccountIdFromEnvironment(environment_id);
+        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: environment_id }))!;
         const { success, response: connection } = await connectionService.getConnectionCredentials(
-            accountId as number,
+            account.id,
             environment_id,
             connection_id,
             provider_config_key,
@@ -103,9 +103,9 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 const logCtx = await logContextGetter.create(
                     { id: String(activityLogId), operation: { type: 'token' }, message: 'Authentication' },
                     {
-                        account: { id: accountId! },
-                        environment: { id: connection.environment_id },
-                        config: { id: connection.config_id!, name: connection.provider_config_key },
+                        account,
+                        environment,
+                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider },
                         connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );

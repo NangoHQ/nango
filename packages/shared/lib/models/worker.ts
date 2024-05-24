@@ -1,4 +1,5 @@
-import type { NangoConnection, NangoIntegrationData } from '@nangohq/shared';
+import type { NangoConnection } from './Connection';
+import type { NangoIntegrationData } from './NangoConfig';
 
 export interface InitialSyncArgs {
     syncId: string;
@@ -20,7 +21,7 @@ export interface ActionArgs {
     input: object;
     actionName: string;
     nangoConnection: NangoConnection;
-    activityLogId: number;
+    activityLogId: number | undefined;
 }
 
 export interface WebhookArgs {
