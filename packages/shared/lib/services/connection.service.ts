@@ -32,6 +32,7 @@ import { getLogger, stringifyError, Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
+import { errorNotificationService } from './notification/error.service.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type {
     AppCredentials,
@@ -556,6 +557,8 @@ class ConnectionService {
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
     }): Promise<Result<Connection, NangoError>> {
+        const operation = { type: 'auth', action: 'refresh_token' };
+
         if (connectionId === null) {
             const error = new NangoError('missing_connection');
 
@@ -632,7 +635,7 @@ class ConnectionService {
                 const activityLogId = await createActivityLogAndLogMessage(log, logMessage);
 
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Token refresh error' },
+                    { id: String(activityLogId), operation, message: 'Token refresh error' },
                     {
                         account,
                         environment,
@@ -645,6 +648,13 @@ class ConnectionService {
                 await logCtx.failed();
 
                 // TODO now insert into notifications to recall this error and link to it
+                await errorNotificationService.auth.create({
+                    action: operation.action,
+                    connection_id: connection.id,
+                    activity_log_id: activityLogId,
+                    log_id: logCtx.id,
+                    active: true
+                });
 
                 return Err(error);
             }
@@ -653,6 +663,11 @@ class ConnectionService {
         }
 
         await this.updateLastFetched(connection.id);
+
+        await errorNotification.auth.invalidate({
+            type: operation.type,
+            connection_id: connection.id
+        });
 
         return Ok(connection);
     }

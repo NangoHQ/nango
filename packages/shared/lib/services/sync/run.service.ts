@@ -8,6 +8,7 @@ import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
@@ -815,6 +816,15 @@ export default class SyncRun {
             },
             `syncId:${this.syncId}`
         );
+
+        await errorNotificationService.sync.create({
+            action: 'run',
+            syncId: this.syncId as string,
+            connection_id: this.nangoConnection.id,
+            activity_log_id: this.activityLogId,
+            log_id: this.logCtx?.id,
+            active: true
+        });
     }
 
     private determineExecutionType(): string {
