@@ -1,6 +1,7 @@
 import * as cron from 'node-cron';
 import { db, errorManager, ErrorSourceEnum, connectionService } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics, stringToHash } from '@nangohq/utils';
+import { logContextGetter } from '@nangohq/logs';
 import tracer from 'dd-trace';
 
 const logger = getLogger('Server');
@@ -54,6 +55,7 @@ export async function exec(): Promise<void> {
                     environment,
                     connectionId: connection_id,
                     providerConfigKey: provider_config_key,
+                    logContextGetter,
                     instantRefresh: false
                 });
                 if (credentialResponse.isOk()) {

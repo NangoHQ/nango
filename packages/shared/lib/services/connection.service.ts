@@ -49,8 +49,7 @@ import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
-import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 
 const logger = getLogger('Connection');
@@ -547,12 +546,14 @@ class ConnectionService {
         environment,
         connectionId,
         providerConfigKey,
+        logContextGetter,
         instantRefresh
     }: {
         account: Account;
         environment: Environment;
         connectionId: string;
         providerConfigKey: string;
+        logContextGetter: LogContextGetter;
         instantRefresh: boolean;
     }): Promise<Result<Connection, NangoError>> {
         if (connectionId === null) {

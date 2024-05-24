@@ -119,6 +119,7 @@ class ProxyController {
                 environment,
                 connectionId,
                 providerConfigKey,
+                logContextGetter,
                 instantRefresh: false
             });
 

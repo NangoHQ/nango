@@ -25,6 +25,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             environment,
             connectionId: connection_id,
             providerConfigKey: provider_config_key,
+            logContextGetter,
             instantRefresh: false
         });
 
