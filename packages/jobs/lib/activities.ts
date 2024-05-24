@@ -31,7 +31,8 @@ import {
     isInitialSyncStillRunning,
     getSyncByIdAndName,
     getLastSyncDate,
-    getSyncConfigRaw
+    getSyncConfigRaw,
+    getOrchestratorUrl
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, env, stringifyError, errorToObject } from '@nangohq/utils';
@@ -39,6 +40,7 @@ import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
 import integrationService from './integration.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Jobs');
 
@@ -46,6 +48,8 @@ const bigQueryClient = await BigQueryClient.createInstance({
     datasetName: 'raw',
     tableName: `${env}_script_runs`
 });
+
+const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
@@ -91,6 +95,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         bigQueryClient,
         integrationService,
         recordsService,
+        orchestratorClient,
         logContextGetter,
         writeToDb: true,
         nangoConnection,
@@ -203,16 +208,13 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             content
         });
 
-        const { account, environment } = (await environmentService.getAccountAndEnvironment({
-            accountId: nangoConnection.account_id!,
-            environmentId: nangoConnection.environment_id
-        }))!;
+        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
-                config: providerConfig ? { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider } : undefined,
+                integration: providerConfig ? { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider } : undefined,
                 connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                 syncConfig: syncConfig ? { id: syncConfig.id!, name: syncConfig.sync_name } : undefined
             }
@@ -292,16 +294,13 @@ export async function syncProvider({
         };
         const activityLogId = (await createActivityLog(log)) as number;
 
-        const { account, environment } = (await environmentService.getAccountAndEnvironment({
-            accountId: nangoConnection.account_id!,
-            environmentId: nangoConnection.environment_id
-        }))!;
+        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
         logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
-                config: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                 connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                 syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
             }
@@ -330,6 +329,7 @@ export async function syncProvider({
             integrationService,
             recordsService,
             logContextGetter,
+            orchestratorClient,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -424,6 +424,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         integrationService,
         recordsService,
         logContextGetter,
+        orchestratorClient,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,
@@ -519,6 +520,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
             bigQueryClient,
             integrationService,
             recordsService,
+            orchestratorClient,
             logContextGetter,
             writeToDb: true,
             syncId,

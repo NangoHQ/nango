@@ -76,9 +76,8 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                             {typesOptions.map((parent) => {
                                 const checked = selected.some((sel) => parent.value === sel);
                                 return (
-                                    <>
+                                    <div key={parent.value}>
                                         <CommandItem
-                                            key={parent.value}
                                             value={parent.value}
                                             onSelect={() => {
                                                 select(parent.value, !checked);
@@ -106,7 +105,7 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                                                 })}
                                             </div>
                                         )}
-                                    </>
+                                    </div>
                                 );
                             })}
                         </CommandGroup>

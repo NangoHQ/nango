@@ -76,7 +76,7 @@ export async function listOperations(opts: {
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: opts.integrations.map((integration) => {
-                    return { term: { 'configName.keyword': integration } };
+                    return { term: { 'integrationName.keyword': integration } };
                 })
             }
         });
@@ -255,12 +255,12 @@ export async function listFilters(opts: {
     accountId: number;
     environmentId: number;
     limit: number;
-    category: 'config' | 'syncConfig' | 'connection';
+    category: 'integration' | 'syncConfig' | 'connection';
     search?: string | undefined;
 }): Promise<ListFilters> {
     let aggField: string;
-    if (opts.category === 'config') {
-        aggField = 'configName';
+    if (opts.category === 'integration') {
+        aggField = 'integrationName';
     } else if (opts.category === 'connection') {
         aggField = 'connectionName';
     } else {

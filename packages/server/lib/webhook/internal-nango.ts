@@ -1,7 +1,8 @@
 import get from 'lodash-es/get.js';
-import { environmentService, connectionService, telemetry, getSyncConfigsByConfigIdForWebhook, SyncClient, LogActionEnum, LogTypes } from '@nangohq/shared';
+import { environmentService, connectionService, telemetry, getSyncConfigsByConfigIdForWebhook, LogActionEnum, LogTypes } from '@nangohq/shared';
 import type { Config as ProviderConfig, SyncConfig, Connection } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
+import { getOrchestrator } from '../utils/utils.js';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
@@ -98,7 +99,6 @@ export const internalNango: InternalNango = {
             connectionIds: connections.map((connection) => connection.connection_id).join(',')
         });
 
-        const syncClient = await SyncClient.getInstance();
         const type = get(body, webhookType);
 
         for (const syncConfig of syncConfigsWithWebhooks) {
@@ -111,11 +111,11 @@ export const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (type === webhook) {
                     for (const connection of connections) {
-                        await syncClient?.triggerWebhook({
+                        await getOrchestrator().triggerWebhook({
                             account,
                             environment,
                             integration,
-                            nangoConnection: connection,
+                            connection,
                             webhookName: webhook,
                             syncConfig,
                             input: body,

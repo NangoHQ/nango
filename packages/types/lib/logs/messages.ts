@@ -86,11 +86,11 @@ export type MessageRow = {
     /**
      * Database ID of the config, i.e: 9
      */
-    configId: number | null;
+    integrationId: number | null;
     /**
      * Unique config name, i.e: github-demo
      */
-    configName: string | null;
+    integrationName: string | null;
 
     connectionId: number | null;
     connectionName: string | null;

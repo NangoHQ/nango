@@ -156,8 +156,8 @@ class ProxyController {
             if (activityLogId) {
                 await updateProviderActivityLog(activityLogId, providerConfig.provider);
                 await logCtx.enrichOperation({
-                    configId: providerConfig.id!,
-                    configName: providerConfig.unique_key,
+                    integrationId: providerConfig.id!,
+                    integrationName: providerConfig.unique_key,
                     providerName: providerConfig.provider,
                     connectionId: connection.id!,
                     connectionName: connection.connection_id

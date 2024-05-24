@@ -18,7 +18,7 @@ import { stringifyError } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
-const RETRY_ATTEMPTS = 10;
+const RETRY_ATTEMPTS = 7;
 
 const NON_FORWARDABLE_HEADERS = [
     'host',
@@ -390,7 +390,7 @@ class WebhookService {
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
-            { account, environment: environmentInfo, config: { id: integration.id!, name: integration.unique_key, provider: integration.provider } }
+            { account, environment: environmentInfo, integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider } }
         );
 
         const body: NangoForwardWebhookBody = {

@@ -49,6 +49,7 @@ import type { LastAction } from '@nangohq/records';
 import { isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
+import { getOrchestrator } from '../utils/utils.js';
 
 class SyncController {
     public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -414,7 +415,7 @@ class SyncController {
                 {
                     account,
                     environment,
-                    config: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
+                    integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
                     syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
                     meta: { input }
@@ -427,7 +428,7 @@ class SyncController {
                 throw new NangoError('failed_to_get_sync_client');
             }
 
-            const actionResponse = await syncClient.triggerAction({
+            const actionResponse = await getOrchestrator().triggerAction({
                 connection,
                 actionName: action_name,
                 input,
@@ -675,7 +676,7 @@ class SyncController {
                 {
                     account,
                     environment,
-                    config: { id: config.id!, name: config.unique_key, provider: config.provider },
+                    integration: { id: config.id!, name: config.unique_key, provider: config.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
                     syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
                 }

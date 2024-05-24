@@ -59,7 +59,7 @@ interface CreateSyncArgs {
     syncName: string;
 }
 
-export class Orchestrator {
+export class OrchestratorService {
     public async create(
         connections: Connection[],
         syncName: string,
@@ -230,7 +230,7 @@ export class Orchestrator {
 
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
-            { account, environment, config: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
+            { account, environment, integration: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
         );
 
         const syncClient = await SyncClient.getInstance();
@@ -528,4 +528,4 @@ export class Orchestrator {
     }
 }
 
-export default new Orchestrator();
+export default new OrchestratorService();

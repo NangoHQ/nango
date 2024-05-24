@@ -20,17 +20,17 @@ try {
     const scheduler = new Scheduler({
         dbClient,
         on: {
-            CREATED: (task) => console.log(`Task ${task.id} created`),
-            STARTED: (task) => console.log(`Task ${task.id} started`),
-            SUCCEEDED: (task) => console.log(`Task ${task.id} succeeded`),
-            FAILED: (task) => console.log(`Task ${task.id} failed`),
-            EXPIRED: (task) => console.log(`Task ${task.id} expired`),
-            CANCELLED: (task) => console.log(`Task ${task.id} cancelled`)
+            CREATED: (task) => console.log(`Task created: ${JSON.stringify(task)}`),
+            STARTED: (task) => console.log(`Task started: ${JSON.stringify(task)}`),
+            SUCCEEDED: (task) => console.log(`Task succeeded: ${JSON.stringify(task)}`),
+            FAILED: (task) => console.log(`Task failed: ${JSON.stringify(task)}`),
+            EXPIRED: (task) => console.log(`Task expired: ${JSON.stringify(task)}`),
+            CANCELLED: (task) => console.log(`Task cancelled: ${JSON.stringify(task)}`)
         }
     });
 
-    const port = envs.NANGO_ORCHESTRATOR_PORT;
     const server = getServer({ scheduler });
+    const port = envs.NANGO_ORCHESTRATOR_PORT;
     server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });

@@ -16,7 +16,7 @@ describe('POST /logs/filters', () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', query: { env: 'dev' }, body: { category: 'config', search: '' } });
+        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', query: { env: 'dev' }, body: { category: 'integration', search: '' } });
 
         shouldBeProtected(res);
     });
@@ -45,7 +45,7 @@ describe('POST /logs/filters', () => {
                 errors: [
                     {
                         code: 'invalid_enum_value',
-                        message: "Invalid enum value. Expected 'config' | 'connection' | 'syncConfig', received 'a'",
+                        message: "Invalid enum value. Expected 'integration' | 'connection' | 'syncConfig', received 'a'",
                         path: ['category']
                     },
                     {
@@ -65,7 +65,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { category: 'config', search: '' }
+            body: { category: 'integration', search: '' }
         });
 
         isSuccess(res.json);
@@ -80,7 +80,7 @@ describe('POST /logs/filters', () => {
 
         const logCtx = await logContextGetter.create(
             { message: 'test 1', operation: { type: 'proxy' } },
-            { account, environment: env, config: { id: 1, name: 'hello', provider: 'github' } }
+            { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
         await logCtx.success();
@@ -89,7 +89,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { category: 'config', search: '' }
+            body: { category: 'integration', search: '' }
         });
 
         isSuccess(res.json);
@@ -104,7 +104,7 @@ describe('POST /logs/filters', () => {
 
         const logCtx = await logContextGetter.create(
             { message: 'test 1', operation: { type: 'proxy' } },
-            { account, environment: env, config: { id: 1, name: 'hello', provider: 'github' } }
+            { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
         await logCtx.success();
@@ -113,7 +113,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { category: 'config', search: 'hel' }
+            body: { category: 'integration', search: 'hel' }
         });
 
         isSuccess(res.json);
@@ -129,7 +129,7 @@ describe('POST /logs/filters', () => {
 
         const logCtx = await logContextGetter.create(
             { message: 'test 1', operation: { type: 'proxy' } },
-            { account, environment: env, config: { id: 1, name: 'hello', provider: 'github' } }
+            { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
         await logCtx.success();
@@ -138,7 +138,7 @@ describe('POST /logs/filters', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env2.env.secret_key,
-            body: { category: 'config', search: '' }
+            body: { category: 'integration', search: '' }
         });
 
         isSuccess(res.json);

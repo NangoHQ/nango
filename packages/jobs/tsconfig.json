@@ -22,6 +22,9 @@
         },
         {
             "path": "../data-ingestion"
+        },
+        {
+            "path": "../orchestrator"
         }
     ],
     "include": ["lib/**/*"]
