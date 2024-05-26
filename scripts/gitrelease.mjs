@@ -23,7 +23,7 @@ echo`Generating changelog`;
 await $`npx git-cliff -o CHANGELOG.md -t ${nextTag}`;
 
 echo`Adding file`;
-await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md`;
+await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md packages/**/lib/version.ts`;
 
 echo`Creating commit`;
 await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" commit --allow-empty --author="Release Bot <contact@nango.dev>" -m ${releaseMessage} `;
