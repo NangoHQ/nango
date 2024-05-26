@@ -15,7 +15,7 @@ export type SearchOperations = Endpoint<{
         integrations?: SearchOperationsIntegration[] | undefined;
         connections?: SearchOperationsConnection[] | undefined;
         syncs?: SearchOperationsSync[] | undefined;
-        period?: SearchOperationsPeriod;
+        period?: SearchOperationsPeriod | undefined;
     };
     Success: {
         data: OperationRow[];

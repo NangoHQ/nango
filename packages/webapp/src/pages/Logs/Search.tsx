@@ -18,10 +18,9 @@ import { OperationRow } from './components/OperationRow';
 import { formatQuantity } from '../../utils/utils';
 import { useSearchParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
-import Button from '../../components/ui/button/Button';
-import { LightningBoltIcon } from '@radix-ui/react-icons';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 import { TypesSelect } from './components/TypesSelect';
+import { DatePicker } from './components/DatePicker';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -38,13 +37,17 @@ export const LogsSearch: React.FC = () => {
     const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
     const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
-    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, types, integrations, connections, syncs });
+    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, types, integrations, connections, syncs, period });
 
     const table = useReactTable({
         data: data ? data.data : [],
         columns,
         getCoreRowModel: getCoreRowModel()
     });
+
+    const isLive = useMemo(() => {
+        return !period;
+    }, [period]);
 
     useEffect(
         function syncQueryParamsToState() {
@@ -110,7 +113,7 @@ export const LogsSearch: React.FC = () => {
             // Auto refresh
             trigger();
         },
-        synced ? 10000 : null
+        synced && isLive ? 10000 : null
     );
 
     const total = useMemo(() => {
@@ -162,15 +165,18 @@ export const LogsSearch: React.FC = () => {
 
             <div className="flex gap-2 justify-between">
                 <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
-                <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
-                <TypesSelect selected={types} onChange={setTypes} />
-                <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} />
-                <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
-                <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
-                <Button variant="zombieGray" size={'xs'}>
-                    <LightningBoltIcon />
-                    Live
-                </Button>
+                <div className="flex gap-2">
+                    <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
+                    <TypesSelect selected={types} onChange={setTypes} />
+                    <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} />
+                    <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
+                    <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
+
+                    <DatePicker
+                        period={period}
+                        onChange={(range) => setPeriod(range ? { from: range.from!.toISOString(), to: range.to!.toISOString() } : undefined)}
+                    />
+                </div>
             </div>
 
             <Table.Table className="my-4 table-fixed">

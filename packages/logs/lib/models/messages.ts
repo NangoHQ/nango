@@ -4,6 +4,7 @@ import type {
     OperationRow,
     SearchOperationsConnection,
     SearchOperationsIntegration,
+    SearchOperationsPeriod,
     SearchOperationsState,
     SearchOperationsSync,
     SearchOperationsType
@@ -50,6 +51,7 @@ export async function listOperations(opts: {
     integrations?: SearchOperationsIntegration[] | undefined;
     connections?: SearchOperationsConnection[] | undefined;
     syncs?: SearchOperationsSync[] | undefined;
+    period?: SearchOperationsPeriod | undefined;
 }): Promise<ListOperations> {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
@@ -115,6 +117,13 @@ export async function listOperations(opts: {
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             bool: {
                 should: types
+            }
+        });
+    }
+    if (opts.period) {
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
+            range: {
+                createdAt: { gte: opts.period.from, lte: opts.period.to }
             }
         });
     }
