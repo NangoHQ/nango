@@ -11,7 +11,7 @@ import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
-import { SyncConfigType, cloudHost, stagingHost } from '@nangohq/shared';
+import { SyncConfigType, cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
 import https from 'node:https';
@@ -112,15 +112,8 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
-let pkgVersion: string | undefined = undefined;
-export function getPkgVersion(debug = false) {
-    if (pkgVersion && !debug) {
-        return pkgVersion;
-    }
-
-    const pkg = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8')) as { version: string };
-    pkgVersion = pkg.version;
-    return pkg.version;
+export function getPkgVersion() {
+    return NANGO_VERSION;
 }
 
 export async function upgradeAction(debug = false) {
@@ -152,7 +145,7 @@ export async function upgradeAction(debug = false) {
 
     try {
         const resolved = npa('nango');
-        const version = getPkgVersion(debug);
+        const version = getPkgVersion();
         if (debug) {
             printDebug(`Version ${version} of nango is installed.`);
         }
@@ -271,7 +264,7 @@ export const http = axios.create({
 });
 
 export function getUserAgent(): string {
-    const clientVersion = getPkgVersion(false);
+    const clientVersion = getPkgVersion();
     const nodeVersion = process.versions.node;
 
     const osName = os.platform().replace(' ', '_');

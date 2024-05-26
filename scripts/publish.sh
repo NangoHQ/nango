@@ -34,6 +34,9 @@ if [[ ! "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+|0\.0\.1-[0-9a-fA-F]{40})$ ]]; the
     exit 1
 fi
 
+sed -E -i '' "s/NANGO_VERSION = '[0-9.]+/NANGO_VERSION = '$VERSION/" "$GIT_ROOT_DIR/packages/shared/lib/version.ts"
+sed -E -i '' "s/NANGO_VERSION = '[0-9.]+/NANGO_VERSION = '$VERSION/" "$GIT_ROOT_DIR/packages/node-client/lib/version.ts"
+
 npm ci
 npm run ts-build
 
