@@ -130,24 +130,27 @@ export async function listOperations(opts: {
         });
     }
 
+    const cursor = opts.cursor ? JSON.parse(Buffer.from(opts.cursor, 'base64').toString('utf8')) : undefined;
     const res = await client.search<OperationRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort: [{ createdAt: 'desc' }, 'id'],
         track_total_hits: true,
-        search_after: opts.cursor ? JSON.parse(Buffer.from(opts.cursor, 'base64').toString('utf8')) : undefined,
+        search_after: cursor,
         query
     });
     const hits = res.hits;
 
-    console.log('top', { first: hits.hits[0], last: hits.hits[hits.hits.length - 1] });
     const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
     return {
         count: total,
         items: hits.hits.map((hit) => {
             return hit._source!;
         }),
-        cursor: hits.hits.length > 0 && total > hits.hits.length ? Buffer.from(JSON.stringify(hits.hits[hits.hits.length - 1]!.sort)).toString('base64') : null
+        cursor:
+            hits.hits.length > 0 && total > hits.hits.length && hits.hits.length >= opts.limit
+                ? Buffer.from(JSON.stringify(hits.hits[hits.hits.length - 1]!.sort)).toString('base64')
+                : null
     };
 }
 
@@ -249,7 +252,7 @@ export async function listMessages(opts: {
     const res = await client.search<MessageRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort: [{ createdAt: 'desc' }, 'id'],
         track_total_hits: true,
         query
     });
