@@ -2,8 +2,6 @@ import type { Request, Response, NextFunction } from 'express';
 import type { AuthCredentials, NangoError } from '@nangohq/shared';
 import {
     environmentService,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationFailed as connectionCreationFailedHook,
     errorManager,
     analytics,
     AnalyticsTypes,
@@ -24,6 +22,7 @@ import oAuthSessionService from '../services/oauth-session.service.js';
 import publisher from '../clients/publisher.client.js';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 
 class AppAuthController {
     async connect(req: Request, res: Response<any, never>, _next: NextFunction) {

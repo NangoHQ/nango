@@ -31,17 +31,22 @@ module.exports = {
                 'dark-700': '#18181B',
                 'dark-800': '#09090B',
                 'bg-dark-blue': '#182633',
-                'state-green-900': '#84D65A',
-                'state-green-400': '#84D65A',
                 'row-hover': '#0d0d14',
-                white: '#FFFFFF'
+                white: '#FFFFFF',
+
+                // From Figma
+                'green-base': '#84D65A'
             },
             width: {
                 largebox: '1200px',
                 largecell: '480px'
             },
             fontSize: {
+                s: '13px',
                 '3xl': '28px'
+            },
+            fontFamily: {
+                code: ['"Roboto Mono"', '"Source Code Pro"', 'system-ui', 'sans-serif']
             }
         }
     },

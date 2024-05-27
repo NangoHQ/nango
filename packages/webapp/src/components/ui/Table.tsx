@@ -2,8 +2,8 @@ import { forwardRef } from 'react';
 import { cn } from '../../utils/utils';
 
 const Table = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
-        <table ref={ref} className={cn('w-full caption-bottom text-sm', className)} {...props} />
+    <div className="relative w-full">
+        <table ref={ref} className={cn('w-full caption-bottom text-sm border-separate border-spacing-0', className)} {...props} />
     </div>
 ));
 Table.displayName = 'Table';
@@ -27,7 +27,7 @@ const Row = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowEle
     <tr
         ref={ref}
         className={cn(
-            'text-xs transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-row-hover hover:text-white',
+            'text-sm transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-row-hover hover:text-white',
             className
         )}
         {...props}
@@ -39,7 +39,7 @@ const Head = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCe
     <th
         ref={ref}
         className={cn(
-            'bg-active-gray first-of-type:rounded-l last-of-type:rounded-r px-3 py-2.5 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+            'bg-active-gray border-t border-b border-border-gray-400 first-of-type:border-l last-of-type:border-r first-of-type:rounded-l last-of-type:rounded-r px-3 py-1 pt-1.5 text-xs leading-5 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
             className
         )}
         {...props}

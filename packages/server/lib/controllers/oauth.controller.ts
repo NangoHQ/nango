@@ -17,12 +17,11 @@ import type {
     OAuthSession,
     OAuth1RequestTokenResult,
     OAuth2Credentials,
-    ConnectionConfig
+    ConnectionConfig,
+    ConnectionUpsertResponse
 } from '@nangohq/shared';
 import {
     getConnectionConfig,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationFailed as connectionCreationFailedHook,
     interpolateStringFromObject,
     getOauthCallbackUrl,
     getGlobalAppCallbackUrl,
@@ -56,11 +55,13 @@ import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { account, environment } = res.locals;
+        const accountId = account.id;
+        const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         let connectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
@@ -83,8 +84,8 @@ class OAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth' },
-                { account: { id: accountId }, environment: { id: environmentId } }
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization OAuth' },
+                { account, environment }
             );
             if (!wsClientId) {
                 void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
@@ -200,7 +201,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             let template: ProviderTemplate;
             try {
@@ -344,8 +345,9 @@ class OAuthController {
     }
 
     public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { account, environment } = res.locals;
+        const accountId = account.id;
+        const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -382,8 +384,8 @@ class OAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth2 CC' },
-                { account: { id: accountId }, environment: { id: environmentId } }
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization OAuth2 CC' },
+                { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, accountId);
 
@@ -472,7 +474,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const { success, error, response: credentials } = await connectionService.getOauthClientCredentials(template, client_id, client_secret);
 
@@ -1064,7 +1066,7 @@ class OAuthController {
 
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             if (session.authMode === ProviderAuthModes.OAuth2 || session.authMode === ProviderAuthModes.Custom) {
                 return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId, session.environmentId, logCtx);
@@ -1422,7 +1424,7 @@ class OAuthController {
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',
@@ -1477,6 +1479,23 @@ class OAuthController {
 
             if (template.auth_mode === ProviderAuthModes.Custom && installationId) {
                 pending = false;
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            id: res.id,
+                            connection_id: connectionId,
+                            provider_config_key: providerConfigKey,
+                            environment_id,
+                            auth_mode: ProviderAuthModes.App,
+                            operation: res.operation
+                        },
+                        config.provider,
+                        logContextGetter,
+                        activityLogId,
+                        { initiateSync: true, runPostConnectionScript: false },
+                        logCtx
+                    );
+                };
                 await connectionService.getAppCredentialsAndFinishConnection(
                     connectionId,
                     config,
@@ -1484,7 +1503,7 @@ class OAuthController {
                     connectionConfig as ConnectionConfig,
                     activityLogId,
                     logCtx,
-                    logContextGetter
+                    connCreatedHook
                 );
             } else {
                 await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);

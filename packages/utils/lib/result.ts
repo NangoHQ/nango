@@ -1,5 +1,5 @@
 /*
-By convention Left represents a faild computation
+By convention Left represents a failed computation
 And Right represents a successful one
 */
 export interface Left<T, E extends Error> {
@@ -38,7 +38,7 @@ export function Ok<T, E extends Error>(value: T): Result<T, E> {
 
 export function Err<T, E extends Error>(error: E | string): Result<T, E> {
     return {
-        error: error instanceof Error ? error : (new Error(error) as E),
+        error: typeof error === 'string' ? (new Error(error) as E) : error,
         unwrap: () => {
             throw error as Error;
         },

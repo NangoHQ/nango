@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import type { Knex } from 'knex';
 import axios from 'axios';
 import db, { schema } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -25,7 +26,8 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { Metadata } from '@nangohq/types';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -42,7 +44,6 @@ import type {
 } from '../models/Auth.js';
 import { AuthModes as ProviderAuthModes, AuthOperation } from '../models/Auth.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
-import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -206,7 +207,7 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         parsedRawCredentials: ImportedCredentials,
-        logContextGetter: LogContextGetter
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
     ) {
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
@@ -222,19 +223,7 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            void connectionCreatedHook(
-                {
-                    id: importedConnection?.id,
-                    connection_id,
-                    provider_config_key,
-                    environment_id: environmentId,
-                    auth_mode: ProviderAuthModes.OAuth2,
-                    operation: importedConnection?.operation
-                },
-                provider,
-                logContextGetter,
-                null
-            );
+            void connectionCreatedHook(importedConnection);
         }
 
         return [importedConnection];
@@ -247,30 +236,12 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         credentials: BasicApiCredentials | ApiKeyCredentials,
-        logContextGetter: LogContextGetter
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
     ) {
-        const connection = await this.checkIfConnectionExists(connection_id, provider_config_key, environmentId);
-
-        if (connection) {
-            throw new NangoError('connection_already_exists');
-        }
-
         const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            void connectionCreatedHook(
-                {
-                    id: importedConnection.id,
-                    connection_id,
-                    provider_config_key,
-                    environment_id: environmentId,
-                    auth_mode: ProviderAuthModes.ApiKey,
-                    operation: importedConnection.operation
-                },
-                provider,
-                logContextGetter,
-                null
-            );
+            void connectionCreatedHook(importedConnection);
         }
 
         return [importedConnection];
@@ -421,7 +392,7 @@ class ConnectionService {
         return result[0].metadata;
     }
 
-    public async getConnectionConfig(connection: Connection): Promise<ConnectionConfig> {
+    public async getConnectionConfig(connection: Pick<Connection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
         const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('connection_config').where({
             connection_id: connection.connection_id,
             provider_config_key: connection.provider_config_key,
@@ -469,11 +440,8 @@ class ConnectionService {
         return result;
     }
 
-    public async replaceMetadata(connection: Connection, metadata: Metadata) {
-        await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .where({ id: connection.id as number, deleted: false })
-            .update({ metadata });
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+        await trx.from<StoredConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
     public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
@@ -483,12 +451,13 @@ class ConnectionService {
             .update({ connection_config: config });
     }
 
-    public async updateMetadata(connection: Connection, metadata: Metadata): Promise<Metadata> {
-        const existingMetadata = await this.getMetadata(connection);
-        const newMetadata = { ...existingMetadata, ...metadata };
-        await this.replaceMetadata(connection, newMetadata);
-
-        return newMetadata;
+    public async updateMetadata(connections: Connection[], metadata: Metadata): Promise<void> {
+        await db.knex.transaction(async (trx) => {
+            for (const connection of connections) {
+                const newMetadata = { ...connection.metadata, ...metadata };
+                await this.replaceMetadata([connection.id as number], newMetadata, trx);
+            }
+        });
     }
 
     public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {
@@ -613,7 +582,7 @@ class ConnectionService {
 
         if (activityLogId && config) {
             await updateProviderActivityLog(activityLogId, config.provider);
-            await logCtx?.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx?.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
         }
 
         if (config === null) {
@@ -904,7 +873,7 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         activityLogId: number,
         logCtx: LogContext,
-        logContextGetter: LogContextGetter
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
     ): Promise<void> {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
@@ -926,23 +895,7 @@ class ConnectionService {
         );
 
         if (updatedConnection) {
-            void connectionCreatedHook(
-                {
-                    id: updatedConnection.id,
-                    connection_id: connectionId,
-                    provider_config_key: integration.unique_key,
-                    environment_id: integration.environment_id,
-                    auth_mode: ProviderAuthModes.App,
-                    operation: updatedConnection.operation
-                },
-                integration.provider,
-                logContextGetter,
-                activityLogId,
-                // the connection is complete so we want to initiate syncs
-                // the post connection script has run already because we needed to get the github handle
-                { initiateSync: true, runPostConnectionScript: false },
-                logCtx
-            );
+            void connectionCreatedHook(updatedConnection);
         }
 
         await createActivityLogMessageAndEnd({

@@ -5,8 +5,6 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationFailed as connectionCreationFailedHook,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     AuthOperation,
@@ -23,11 +21,13 @@ import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { account, environment } = res.locals;
+        const accountId = account.id;
+        const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
 
@@ -48,8 +48,8 @@ class AppStoreAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization App Store' },
-                { account: { id: accountId }, environment: { id: environmentId } }
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization App Store' },
+                { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
 
@@ -138,7 +138,7 @@ class AppStoreAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             if (!req.body.privateKeyId) {
                 errorManager.errRes(res, 'missing_private_key_id');

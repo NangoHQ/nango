@@ -9,8 +9,7 @@ import type {
     UnauthCredentials
 } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-
-export type Metadata = Record<string, string | Record<string, any>>;
+import type { Metadata } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -61,6 +60,9 @@ export interface NangoConnection {
     connection_config?: ConnectionConfig;
 
     // TODO legacy while the migration is in progress
+    /**
+     * @deprecated
+     */
     account_id?: number;
 }
 

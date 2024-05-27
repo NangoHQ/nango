@@ -1,0 +1,50 @@
+name: Test node client
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+
+concurrency:
+    group: tests-node-client/${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    tests-node-client:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [18.x, 20.x]
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: '0'
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Build
+              run: |
+                  npm ci
+                  npm run ts-build
+                  pushd packages/node-client
+                  npm run build
+                  popd
+
+            - name: Test CJS
+              run: |
+                  RES=$(node packages/node-client/tests/built.cjs)
+                  echo "$RES";
+                  [ "$RES" != *"Done"* ] || { exit 1; }
+
+            - name: Test ESM
+              run: |
+                  RES=$(node packages/node-client/tests/built.js)
+                  echo "$RES";
+                  [ "$RES" != *"Done"* ] || { exit 1; }

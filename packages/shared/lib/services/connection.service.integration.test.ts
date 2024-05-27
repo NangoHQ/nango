@@ -1,7 +1,8 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../db/database.js';
+import db, { multipleMigrations } from '../db/database.js';
 import connectionService from './connection.service.js';
-import type { Connection, Metadata } from '../models/Connection.js';
+import type { Connection } from '../models/Connection.js';
+import type { Metadata } from '@nangohq/types';
 import { createConfigSeeds } from '../db/seeders/config.seeder.js';
 import { createConnectionSeeds } from '../db/seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../db/seeders/environment.seeder.js';
@@ -30,8 +31,10 @@ describe('Connection service integration tests', async () => {
 
             const [connectionId] = connections;
             const connection = { id: connectionId } as Connection;
-            await connectionService.replaceMetadata(connection, initialMetadata);
-            await connectionService.replaceMetadata(connection, newMetadata);
+            await db.knex.transaction(async (trx) => {
+                await connectionService.replaceMetadata([connection.id as number], initialMetadata, trx);
+                await connectionService.replaceMetadata([connection.id as number], newMetadata, trx);
+            });
 
             const dbConnection = await connectionService.getConnectionById(connectionId as number);
             const updatedMetadata = dbConnection?.metadata as Metadata;
@@ -52,8 +55,12 @@ describe('Connection service integration tests', async () => {
 
             const connectionId = connections[1];
             const dbConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
-            await connectionService.replaceMetadata(dbConnection, initialMetadata);
-            await connectionService.updateMetadata(dbConnection, newMetadata);
+            await db.knex.transaction(async (trx) => {
+                await connectionService.replaceMetadata([dbConnection.id as number], initialMetadata, trx);
+            });
+
+            const updatedMetadataConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
+            await connectionService.updateMetadata([updatedMetadataConnection], newMetadata);
 
             const updatedDbConnection = await connectionService.getConnectionById(connectionId as number);
             const updatedMetadata = updatedDbConnection?.metadata as Metadata;

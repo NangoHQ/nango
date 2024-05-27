@@ -1,6 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
-import type { NangoConnection, Metadata } from '../../models/Connection.js';
+import type { NangoConnection } from '../../models/Connection.js';
+import type { Metadata } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -11,7 +12,7 @@ import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
 import accountService from '../account.service.js';
-import slackNotificationService from '../notification/slack.service.js';
+import { SlackService } from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
 import { integrationFilesAreRemote, isCloud, getLogger, metrics, stringifyError } from '@nangohq/utils';
 import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
@@ -24,6 +25,7 @@ import type { Environment } from '../../models/Environment.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
 import type { UpsertSummary } from '@nangohq/records';
+import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
 
 const logger = getLogger('run.service');
 
@@ -54,6 +56,7 @@ export interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
     dryRunService?: NangoProps['dryRunService'];
+    orchestratorClient: OrchestratorClientInterface;
     logContextGetter: LogContextGetter;
 
     writeToDb: boolean;
@@ -102,6 +105,7 @@ export default class SyncRun {
     recordsService: RecordsServiceInterface;
     dryRunService?: NangoProps['dryRunService'];
     logContextGetter: LogContextGetter;
+    slackNotificationService: SlackService;
 
     writeToDb: boolean;
     isAction: boolean;
@@ -136,6 +140,7 @@ export default class SyncRun {
         this.integrationService = config.integrationService;
         this.recordsService = config.recordsService;
         this.logContextGetter = config.logContextGetter;
+        this.slackNotificationService = new SlackService(config.orchestratorClient);
         if (config.bigQueryClient) {
             this.bigQueryClient = config.bigQueryClient;
         }
@@ -467,7 +472,7 @@ export default class SyncRun {
                     await this.logCtx?.info(content);
                     await this.logCtx?.success();
 
-                    await slackNotificationService.removeFailingConnection(
+                    await this.slackNotificationService.removeFailingConnection(
                         this.nangoConnection,
                         this.syncName,
                         this.syncType,
@@ -578,7 +583,7 @@ export default class SyncRun {
             // any changes while the sync is running
             if (!this.isWebhook) {
                 await setLastSyncDate(this.syncId as string, syncStartDate);
-                await slackNotificationService.removeFailingConnection(
+                await this.slackNotificationService.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
@@ -647,7 +652,7 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendSyncUpdate(
+        void webhookService.sendSyncUpdate(
             this.nangoConnection,
             this.syncName,
             model,
@@ -731,7 +736,7 @@ export default class SyncRun {
 
         if (!this.isWebhook) {
             try {
-                await slackNotificationService.reportFailure(
+                await this.slackNotificationService.reportFailure(
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,

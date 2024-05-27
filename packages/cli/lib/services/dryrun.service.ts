@@ -1,7 +1,8 @@
 import promptly from 'promptly';
 import chalk from 'chalk';
 
-import type { Metadata, NangoConnection } from '@nangohq/shared';
+import type { NangoConnection } from '@nangohq/shared';
+import type { Metadata } from '@nangohq/types';
 import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
@@ -196,6 +197,13 @@ class DryRunService {
                 return Promise.resolve([]);
             }
         };
+        // dry-run is not scheduling any tasks so we can safely mock the orchestrator client
+        const orchestratorClient = {
+            execute: () => {
+                return Promise.resolve({}) as any;
+            }
+        };
+
         const logContextGetter = {
             create: () => {
                 return Promise.resolve({}) as any;
@@ -208,6 +216,7 @@ class DryRunService {
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
+            orchestratorClient,
             dryRunService: new DryRunService(environment, true),
             logContextGetter,
             writeToDb: false,

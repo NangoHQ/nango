@@ -93,6 +93,10 @@ export function getRedisUrl() {
     return process.env['NANGO_REDIS_URL'] || undefined;
 }
 
+export function getOrchestratorUrl() {
+    return process.env['ORCHESTRATOR_SERVICE_URL'] || `http://localhost:${process.env['NANGO_ORCHESTRATOR_PORT'] || 3008}`;
+}
+
 export function isValidHttpUrl(str: string) {
     try {
         new URL(str);
