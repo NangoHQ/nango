@@ -90,7 +90,7 @@ describe('GET /logs/operations/:operationId', () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             data: {
                 accountId: env.account_id,
-                accountName: null,
+                accountName: account.name,
                 code: null,
                 integrationId: null,
                 integrationName: null,

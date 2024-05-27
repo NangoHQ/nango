@@ -51,11 +51,18 @@ class AppAuthController {
             await oAuthSessionService.delete(session.id);
         }
 
-        const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: session.environmentId });
 
-        void analytics.track(AnalyticsTypes.PRE_APP_AUTH, accountId);
+        if (!environmentAndAccountLookup) {
+            res.sendStatus(404);
+            return;
+        }
 
-        const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
+        const { environment, account } = environmentAndAccountLookup;
+
+        void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
+
+        const { providerConfigKey, connectionId, webSocketClientId: wsClientId } = session;
         const activityLogId = Number(session.activityLogId);
         const logCtx = logContextGetter.get({ id: session.activityLogId });
 
@@ -72,12 +79,12 @@ class AppAuthController {
                 return;
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (config == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
@@ -98,7 +105,7 @@ class AppAuthController {
             if (template.auth_mode !== AuthModes.App) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `Provider ${config.provider} does not support app creation`
@@ -116,7 +123,7 @@ class AppAuthController {
             if (action === 'request') {
                 await createActivityLogMessage({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     content: 'App types do not support the request flow. Please use the github-app-oauth provider for the request flow.',
                     timestamp: Date.now(),
@@ -145,7 +152,7 @@ class AppAuthController {
                 const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
                 await createActivityLogMessage({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     content: error.message,
                     timestamp: Date.now(),
@@ -172,7 +179,7 @@ class AppAuthController {
             if (!success || !credentials) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     content: `Error during app token retrieval call: ${error?.message}`,
                     timestamp: Date.now()
@@ -185,7 +192,7 @@ class AppAuthController {
                     `App auth token retrieval request process failed ${error?.message}`,
                     LogActionEnum.AUTH,
                     {
-                        environmentId: String(environmentId),
+                        environmentId: String(environment.id),
                         providerConfigKey: String(providerConfigKey),
                         connectionId: String(connectionId),
                         authMode: String(template.auth_mode),
@@ -198,7 +205,8 @@ class AppAuthController {
                         id: -1,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environmentId,
+                        environment,
+                        account,
                         auth_mode: AuthModes.App,
                         error: `Error during app token retrieval call: ${error?.message}`,
                         operation: AuthOperation.UNKNOWN
@@ -219,8 +227,8 @@ class AppAuthController {
                 session.provider,
                 credentials as unknown as AuthCredentials,
                 connectionConfig as Record<string, string | boolean>,
-                environmentId,
-                accountId
+                environment.id,
+                account.id
             );
 
             if (updatedConnection) {
@@ -229,7 +237,8 @@ class AppAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environmentId,
+                        environment,
+                        account,
                         auth_mode: AuthModes.App,
                         operation: updatedConnection.operation
                     },
@@ -243,7 +252,7 @@ class AppAuthController {
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
-                environment_id: environmentId,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: 'App connection was successful and credentials were saved',
                 timestamp: Date.now()
@@ -252,7 +261,7 @@ class AppAuthController {
             await logCtx.success();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
-                environmentId: String(environmentId),
+                environmentId: String(environment.id),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
@@ -268,7 +277,7 @@ class AppAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
-                environment_id: environmentId,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content,
                 timestamp: Date.now(),
@@ -279,7 +288,7 @@ class AppAuthController {
             await logCtx.failed();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
-                environmentId: String(environmentId),
+                environmentId: String(environment.id),
                 providerConfigKey: String(providerConfigKey),
                 connectionId: String(connectionId)
             });
@@ -289,7 +298,8 @@ class AppAuthController {
                     id: -1,
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
-                    environment_id: environmentId,
+                    environment,
+                    account,
                     auth_mode: AuthModes.App,
                     error: content,
                     operation: AuthOperation.UNKNOWN

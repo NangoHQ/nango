@@ -213,7 +213,8 @@ class ApiAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environment.id,
+                        environment,
+                        account,
                         auth_mode: AuthModes.ApiKey,
                         operation: updatedConnection.operation
                     },
@@ -242,7 +243,8 @@ class ApiAuthController {
                         id: -1,
                         connection_id: connectionId as string,
                         provider_config_key: providerConfigKey as string,
-                        environment_id: environment.id,
+                        environment,
+                        account,
                         auth_mode: AuthModes.ApiKey,
                         error: `Error during API key auth: ${prettyError}`,
                         operation: AuthOperation.UNKNOWN
@@ -446,7 +448,8 @@ class ApiAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environment.id,
+                        environment,
+                        account,
                         auth_mode: AuthModes.Basic,
                         operation: updatedConnection.operation
                     },
@@ -475,7 +478,8 @@ class ApiAuthController {
                         id: -1,
                         connection_id: connectionId as string,
                         provider_config_key: providerConfigKey as string,
-                        environment_id: environment.id,
+                        environment,
+                        account,
                         auth_mode: AuthModes.ApiKey,
                         error: `Error during basic API key auth: ${prettyError}`,
                         operation: AuthOperation.UNKNOWN

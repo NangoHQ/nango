@@ -46,6 +46,101 @@ describe('Environment service', () => {
         expect(env.secret_key).not.toEqual(env.secret_key_hashed);
     });
 
+    it('should retrieve env and account by various keys', async () => {
+        const account = await createAccount();
+        const environment = await environmentService.createEnvironment(account.id, uuid());
+
+        const bySecretKey = await environmentService.getAccountAndEnvironment({ secretKey: environment!.secret_key });
+
+        expect(bySecretKey).toStrictEqual({
+            account: {
+                ...account,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            environment: {
+                ...environment,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            }
+        });
+
+        const byPublicKey = await environmentService.getAccountAndEnvironment({ publicKey: environment!.public_key });
+
+        expect(byPublicKey).toStrictEqual({
+            account: {
+                ...account,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            environment: {
+                ...environment,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            }
+        });
+
+        const byUuid = await environmentService.getAccountAndEnvironment({ environmentUuid: environment!.uuid });
+
+        expect(byUuid).toStrictEqual({
+            account: {
+                ...account,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            environment: {
+                ...environment,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            }
+        });
+
+        const byAccountUuid = await environmentService.getAccountAndEnvironment({ accountUuid: account.uuid, envName: environment!.name });
+
+        expect(byAccountUuid).toStrictEqual({
+            account: {
+                ...account,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            environment: {
+                ...environment,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            }
+        });
+
+        const byAccountId = await environmentService.getAccountAndEnvironment({ accountId: account.id, envName: environment!.name });
+
+        expect(byAccountId).toStrictEqual({
+            account: {
+                ...account,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            environment: {
+                ...environment,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            }
+        });
+
+        const byEnvironmentId = await environmentService.getAccountAndEnvironment({ environmentId: environment!.id });
+
+        expect(byEnvironmentId).toStrictEqual({
+            account: {
+                ...account,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            environment: {
+                ...environment,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            }
+        });
+    });
+
     it('should retrieve env by secretKey', async () => {
         const account = await createAccount();
         const env = await environmentService.createEnvironment(account.id, uuid());

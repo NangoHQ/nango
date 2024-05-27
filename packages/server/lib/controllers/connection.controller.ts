@@ -3,10 +3,8 @@ import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
     OAuth2Credentials,
-    OAuth2ClientCredentials,
     ImportedCredentials,
     AuthCredentials,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
     ConnectionList,
     LogLevel,
     ConnectionUpsertResponse
@@ -61,33 +59,22 @@ class ConnectionController {
                 environment_id: environment.id
             };
 
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            const credentialResponse = await connectionService.getConnectionCredentials({
+                account,
+                environment,
+                connectionId,
+                providerConfigKey,
+                logContextGetter,
+                instantRefresh
+            });
 
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (!connection) {
-                const activityLogId = await createActivityLogAndLogMessage(log, {
-                    level: 'error',
-                    environment_id: environment.id,
-                    timestamp: Date.now(),
-                    content: 'Unknown connection'
-                });
-                const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
-                    { account, environment }
-                );
-                await logCtx.error('Unknown connection');
-                await logCtx.failed();
-
-                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
-                errorManager.errResFromNangoErr(res, error);
+            if (credentialResponse.isErr()) {
+                errorManager.errResFromNangoErr(res, credentialResponse.error);
 
                 return;
             }
+
+            const { value: connection } = credentialResponse;
 
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
@@ -115,34 +102,6 @@ class ConnectionController {
             }
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
-
-            if (
-                connection.credentials.type === ProviderAuthModes.OAuth2 ||
-                connection.credentials.type === ProviderAuthModes.App ||
-                connection.credentials.type === ProviderAuthModes.OAuth2CC
-            ) {
-                const {
-                    success,
-                    error,
-                    response: credentials
-                } = await connectionService.refreshCredentialsIfNeeded({
-                    connection,
-                    providerConfig: config,
-                    template: template as ProviderTemplateOAuth2,
-                    activityLogId: null,
-                    environment_id: environment.id,
-                    instantRefresh,
-                    logAction: LogActionEnum.TOKEN,
-                    logContextGetter
-                });
-
-                if (!success) {
-                    errorManager.errResFromNangoErr(res, error);
-                    return;
-                }
-
-                connection.credentials = credentials as OAuth2Credentials | OAuth2ClientCredentials;
-            }
 
             if (instantRefresh) {
                 log.provider = config.provider;
@@ -265,41 +224,33 @@ class ConnectionController {
 
     async getConnectionCreds(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
+            const { environment, account } = res.locals;
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
             const instantRefresh = req.query['force_refresh'] === 'true';
             const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
 
-            const action = LogActionEnum.TOKEN;
-
             if (!isSync) {
-                metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId });
+                metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId: account.id });
             }
 
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnectionCredentials(
-                accountId,
-                environmentId,
+            const credentialResponse = await connectionService.getConnectionCredentials({
+                account,
+                environment,
                 connectionId,
                 providerConfigKey,
                 logContextGetter,
-                null,
-                undefined,
-                action,
                 instantRefresh
-            );
+            });
 
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
+            if (credentialResponse.isErr()) {
+                errorManager.errResFromNangoErr(res, credentialResponse.error);
 
                 return;
             }
+
+            const { value: connection } = credentialResponse;
 
             if (connection && connection.credentials && connection.credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
                 if (connection.credentials.refresh_token) {
@@ -632,7 +583,8 @@ class ConnectionController {
                             id: res.id,
                             connection_id,
                             provider_config_key,
-                            environment_id: environment.id,
+                            environment,
+                            account,
                             auth_mode: ProviderAuthModes.OAuth2,
                             operation: res.operation
                         },
@@ -681,7 +633,8 @@ class ConnectionController {
                             id: res.id,
                             connection_id,
                             provider_config_key,
-                            environment_id: environment.id,
+                            environment,
+                            account,
                             auth_mode: ProviderAuthModes.OAuth2,
                             operation: res.operation
                         },
@@ -724,7 +677,8 @@ class ConnectionController {
                             id: res.id,
                             connection_id,
                             provider_config_key,
-                            environment_id: environment.id,
+                            environment,
+                            account,
                             auth_mode: ProviderAuthModes.ApiKey,
                             operation: res.operation
                         },
@@ -765,7 +719,8 @@ class ConnectionController {
                             id: res.id,
                             connection_id,
                             provider_config_key,
-                            environment_id: environment.id,
+                            environment,
+                            account,
                             auth_mode: ProviderAuthModes.ApiKey,
                             operation: res.operation
                         },
@@ -852,7 +807,8 @@ class ConnectionController {
                         id: updatedConnection.id,
                         connection_id,
                         provider_config_key,
-                        environment_id: environment.id,
+                        environment,
+                        account,
                         auth_mode: template.auth_mode,
                         operation: updatedConnection.operation || AuthOperation.UNKNOWN
                     },

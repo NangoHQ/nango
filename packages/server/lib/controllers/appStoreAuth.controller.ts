@@ -25,9 +25,7 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { account, environment } = res.locals;
-        const accountId = account.id;
-        const environmentId = environment.id;
+        const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
 
@@ -40,7 +38,7 @@ class AppStoreAuthController {
             timestamp: Date.now(),
             connection_id: connectionId as string,
             provider_config_key: providerConfigKey as string,
-            environment_id: environmentId
+            environment_id: environment.id
         };
 
         const activityLogId = await createActivityLog(log);
@@ -51,7 +49,7 @@ class AppStoreAuthController {
                 { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization App Store' },
                 { account, environment }
             );
-            void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, account.id);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -65,13 +63,13 @@ class AppStoreAuthController {
                 return;
             }
 
-            const hmacEnabled = await hmacService.isEnabled(environmentId);
+            const hmacEnabled = await hmacService.isEnabled(environment.id);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
-                        environment_id: environmentId,
+                        environment_id: environment.id,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
@@ -83,11 +81,11 @@ class AppStoreAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
-                        environment_id: environmentId,
+                        environment_id: environment.id,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
@@ -101,12 +99,12 @@ class AppStoreAuthController {
                 }
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (config == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId as number,
                     content: `Error during App store auth: config not found`,
                     timestamp: Date.now()
@@ -124,7 +122,7 @@ class AppStoreAuthController {
             if (template.auth_mode !== AuthModes.AppStore) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Provider ${config.provider} does not support App store auth`
@@ -174,7 +172,8 @@ class AppStoreAuthController {
                         id: -1,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environmentId,
+                        environment,
+                        account,
                         auth_mode: AuthModes.AppStore,
                         error: `Error during App store credentials auth: ${error?.message}`,
                         operation: AuthOperation.UNKNOWN
@@ -190,7 +189,7 @@ class AppStoreAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
-                environment_id: environmentId,
+                environment_id: environment.id,
                 activity_log_id: activityLogId as number,
                 content: `App store auth creation was successful`,
                 timestamp: Date.now()
@@ -206,8 +205,8 @@ class AppStoreAuthController {
                 config.provider,
                 credentials as unknown as AuthCredentials,
                 connectionConfig,
-                environmentId,
-                accountId
+                environment.id,
+                account.id
             );
 
             if (updatedConnection) {
@@ -216,7 +215,8 @@ class AppStoreAuthController {
                         id: updatedConnection.id,
                         connection_id: connectionId,
                         provider_config_key: providerConfigKey,
-                        environment_id: environmentId,
+                        environment,
+                        account,
                         auth_mode: AuthModes.AppStore,
                         operation: updatedConnection.operation
                     },
@@ -234,7 +234,7 @@ class AppStoreAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
-                environment_id: environmentId,
+                environment_id: environment.id,
                 activity_log_id: activityLogId as number,
                 content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
@@ -245,7 +245,8 @@ class AppStoreAuthController {
                         id: -1,
                         connection_id: connectionId as string,
                         provider_config_key: providerConfigKey as string,
-                        environment_id: environmentId,
+                        environment,
+                        account,
                         auth_mode: AuthModes.AppStore,
                         error: `Error during App store auth: ${prettyError}`,
                         operation: AuthOperation.UNKNOWN
@@ -261,7 +262,7 @@ class AppStoreAuthController {
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
-                environmentId,
+                environmentId: environment.id,
                 metadata: {
                     providerConfigKey,
                     connectionId
