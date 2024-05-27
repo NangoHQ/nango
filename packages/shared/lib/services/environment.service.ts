@@ -130,6 +130,7 @@ class EnvironmentService {
             | { secretKey: string }
             | { accountId: number; envName: string }
             | { environmentId: number }
+            | { environmentUuid: string }
             | { accountUuid: string; envName: string }
     ): Promise<{ account: Account; environment: Environment } | null> {
         const q = db.knex
@@ -149,6 +150,8 @@ class EnvironmentService {
             q.where('secret_key_hashed', hash);
         } else if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
+        } else if ('environmentUuid' in opts) {
+            q.where('_nango_environments.uuid', opts.environmentUuid);
         } else if ('accountUuid' in opts) {
             q.where('_nango_accounts.uuid', opts.accountUuid).where('_nango_environments.name', opts.envName);
         } else if ('accountId' in opts) {
