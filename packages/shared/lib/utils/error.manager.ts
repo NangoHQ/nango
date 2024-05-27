@@ -6,10 +6,10 @@ import type { ErrorEvent } from '@sentry/types';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
 import { getLogger, isCloud, stringifyError } from '@nangohq/utils';
-import { packageJsonFile } from './utils.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
+import { NANGO_VERSION } from '../version.js';
 
 const logger = getLogger('ErrorManager');
 
@@ -33,7 +33,7 @@ class ErrorManager {
     constructor() {
         try {
             if (isCloud && process.env['SENTRY_DNS']) {
-                const packageVersion = packageJsonFile().version;
+                const packageVersion = NANGO_VERSION;
                 sentry.init({
                     dsn: process.env['SENTRY_DNS'],
                     beforeSend(event: ErrorEvent, _: EventHint) {

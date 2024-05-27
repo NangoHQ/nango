@@ -48,6 +48,8 @@ export * from './utils/kvstore/RedisStore.js';
 
 export * from './sdk/sync.js';
 
+export { NANGO_VERSION } from './version.js';
+
 export {
     db,
     seeders,
