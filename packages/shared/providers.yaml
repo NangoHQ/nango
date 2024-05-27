@@ -1390,7 +1390,7 @@ microsoft-entra-ID:
     categories:
         - other
     alias: microsoft
-    docs: https://docs.nango.dev/integrations/all/one-note
+    docs: https://docs.nango.dev/integrations/all/microsoft-entra-ID
 mixpanel:
     categories:
         - analytics
