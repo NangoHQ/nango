@@ -591,6 +591,13 @@ export default class SyncRun {
                     this.logContextGetter
                 );
             }
+
+            if (this.syncId && this.nangoConnection.id) {
+                await errorNotificationService.sync.invalidate({
+                    sync_id: this.syncId,
+                    connection_id: this.nangoConnection.id
+                });
+            }
         }
 
         const updatedResults: Record<string, SyncResult> = {
@@ -736,7 +743,7 @@ export default class SyncRun {
 
         if (!this.isWebhook) {
             try {
-                await this.slackNotificationService.reportFailure(
+                void this.slackNotificationService.reportFailure(
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
@@ -817,14 +824,17 @@ export default class SyncRun {
             `syncId:${this.syncId}`
         );
 
-        await errorNotificationService.sync.create({
-            action: 'run',
-            syncId: this.syncId as string,
-            connection_id: this.nangoConnection.id,
-            activity_log_id: this.activityLogId,
-            log_id: this.logCtx?.id,
-            active: true
-        });
+        if (this.nangoConnection.id && this.activityLogId && this.logCtx?.id && this.syncId) {
+            await errorNotificationService.sync.create({
+                action: 'run',
+                type: 'sync',
+                sync_id: this.syncId,
+                connection_id: this.nangoConnection.id,
+                activity_log_id: this.activityLogId,
+                log_id: this.logCtx?.id,
+                active: true
+            });
+        }
     }
 
     private determineExecutionType(): string {
