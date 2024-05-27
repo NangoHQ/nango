@@ -16,6 +16,7 @@ import { errors } from '@elastic/elasticsearch';
 export interface ListOperations {
     count: number;
     items: OperationRow[];
+    cursor: string | null;
 }
 export interface ListMessages {
     count: number;
@@ -52,6 +53,7 @@ export async function listOperations(opts: {
     connections?: SearchOperationsConnection[] | undefined;
     syncs?: SearchOperationsSync[] | undefined;
     period?: SearchOperationsPeriod | undefined;
+    cursor?: string | null | undefined;
 }): Promise<ListOperations> {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
@@ -133,15 +135,19 @@ export async function listOperations(opts: {
         size: opts.limit,
         sort: [{ createdAt: 'desc' }, '_score'],
         track_total_hits: true,
+        search_after: opts.cursor ? JSON.parse(Buffer.from(opts.cursor, 'base64').toString('utf8')) : undefined,
         query
     });
     const hits = res.hits;
 
+    console.log('top', { first: hits.hits[0], last: hits.hits[hits.hits.length - 1] });
+    const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
     return {
-        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
+        count: total,
         items: hits.hits.map((hit) => {
             return hit._source!;
-        })
+        }),
+        cursor: hits.hits.length > 0 && total > hits.hits.length ? Buffer.from(JSON.stringify(hits.hits[hits.hits.length - 1]!.sort)).toString('base64') : null
     };
 }
 

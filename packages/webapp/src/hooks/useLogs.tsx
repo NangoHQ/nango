@@ -8,12 +8,12 @@ export function useSearchOperations(enabled: boolean, env: string, body: SearchO
     const [data, setData] = useState<SearchOperations['Success']>();
     const [error, setError] = useState<SearchOperations['Errors']>();
 
-    async function fetchData() {
+    async function fetchData(cursor?: SearchOperations['Body']['cursor']) {
         setLoading(true);
         try {
             const res = await fetch(`/api/v1/logs/operations?env=${env}`, {
                 method: 'POST',
-                body: JSON.stringify(body),
+                body: JSON.stringify({ ...body, cursor }),
                 headers: { 'Content-Type': 'application/json' }
             });
             if (res.status !== 200) {
@@ -38,9 +38,9 @@ export function useSearchOperations(enabled: boolean, env: string, body: SearchO
         }
     }, [enabled, env, body.limit, body.states, body.integrations, body.period, body.types, body.connections, body.syncs]);
 
-    function trigger() {
+    function trigger(cursor?: SearchOperations['Body']['cursor']) {
         if (enabled && !loading) {
-            void fetchData();
+            void fetchData(cursor);
         }
     }
 

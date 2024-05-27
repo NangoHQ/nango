@@ -9,18 +9,26 @@ import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-tabl
 
 import { MultiSelect } from './components/MultiSelect';
 import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
-import { useEffect, useMemo, useState } from 'react';
-import type { SearchOperationsIntegration, SearchOperationsPeriod, SearchOperationsState, SearchOperationsSync, SearchOperationsType } from '@nangohq/types';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type {
+    SearchOperationsData,
+    SearchOperationsIntegration,
+    SearchOperationsPeriod,
+    SearchOperationsState,
+    SearchOperationsSync,
+    SearchOperationsType
+} from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
-import { OperationRow } from './components/OperationRow';
 // import { Input } from '../../components/ui/input/Input';
 // import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity } from '../../utils/utils';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useInterval } from 'react-use';
+import { useIntersection, useInterval } from 'react-use';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 import { TypesSelect } from './components/TypesSelect';
 import { DatePicker } from './components/DatePicker';
+import Button from '../../components/ui/button/Button';
+import { OperationRow } from './components/OperationRow';
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -37,10 +45,20 @@ export const LogsSearch: React.FC = () => {
     const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
     const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
-    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, types, integrations, connections, syncs, period });
+    const [cursor, setCursor] = useState<string | null | undefined>();
+    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 5, states, types, integrations, connections, syncs, period });
+    const [operations, setOperations] = useState<SearchOperationsData[]>([]);
+
+    // Infinite scroll
+    const bottomScrollRef = useRef(null);
+    const bottomScroll = useIntersection(bottomScrollRef, {
+        root: null,
+        rootMargin: '0px',
+        threshold: 1
+    });
 
     const table = useReactTable({
-        data: data ? data.data : [],
+        data: operations,
         columns,
         getCoreRowModel: getCoreRowModel()
     });
@@ -76,6 +94,11 @@ export const LogsSearch: React.FC = () => {
             const tmpTo = searchParams.get('to');
             setPeriod(tmpFrom && tmpTo ? { from: tmpFrom, to: tmpTo } : undefined);
 
+            const tmpCursor = searchParams.get('cursor');
+            if (tmpCursor) {
+                setCursor(tmpCursor);
+            }
+
             setSynced(true);
         },
         [searchParams, synced]
@@ -95,9 +118,12 @@ export const LogsSearch: React.FC = () => {
                 tmp.set('from', period.from);
                 tmp.set('to', period.to);
             }
+            if (cursor) {
+                tmp.set('cursor', cursor);
+            }
             setSearchParams(tmp);
         },
-        [states, integrations, period, connections, syncs, types]
+        [states, integrations, period, connections, syncs, types, cursor]
     );
 
     useEffect(() => {
@@ -123,9 +149,34 @@ export const LogsSearch: React.FC = () => {
         return formatQuantity(data.pagination.total);
     }, [data?.pagination]);
 
+    useEffect(() => {
+        if (!bottomScroll) {
+            return;
+        }
+        console.log('hello..', bottomScroll);
+        if (!bottomScroll.isIntersecting) {
+            return;
+        }
+        if (!data?.pagination.cursor || loading) {
+            return;
+        }
+        console.log('trigger search');
+        setCursor(data.pagination.cursor);
+    }, [bottomScroll, data]);
+
+    const loadMore = () => {
+        if (data?.pagination.cursor) {
+            trigger(data.pagination.cursor);
+        }
+    };
+
+    useEffect(() => {
+        setOperations((prev) => [...prev, ...(data?.data || [])]);
+    }, [data]);
+
     if (error) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
+            <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth>
                 <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
                 {error.error.code === 'feature_disabled' ? (
                     <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
@@ -149,7 +200,7 @@ export const LogsSearch: React.FC = () => {
 
     if ((loading && !data) || !data) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
+            <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="px-6">
                 <Loading spaceRatio={2.5} className="-top-36" />
             </DashboardLayout>
         );
@@ -157,7 +208,7 @@ export const LogsSearch: React.FC = () => {
 
     if (data.pagination.total <= 0 && !hasLogs) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
+            <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth>
                 <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
 
                 <div className="flex flex-col border border-zinc-500 rounded items-center text-white text-center py-24 gap-2">
@@ -169,7 +220,7 @@ export const LogsSearch: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
+        <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
                 <div className="text-white text-xs">{total} logs found</div>
@@ -222,6 +273,11 @@ export const LogsSearch: React.FC = () => {
                     )}
                 </Table.Body>
             </Table.Table>
+            {data.pagination.total > 0 && data.data.length > 0 && (
+                <div ref={bottomScrollRef}>
+                    <Button onClick={loadMore}>Load More</Button>
+                </div>
+            )}
         </DashboardLayout>
     );
 };
