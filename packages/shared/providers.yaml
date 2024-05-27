@@ -1328,10 +1328,7 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
-microsoft-teams:
-    categories:
-        - productivity
-        - video
+microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
@@ -1342,13 +1339,21 @@ microsoft-teams:
         response_type: code
         response_mode: query
         prompt: consent
-    proxy:
-        base_url: https://graph.microsoft.com
-        decompress: true
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://graph.microsoft.com
+        retry:
+            after: 'Retry-After'
+        decompress: true
+    docs: https://docs.nango.dev/integrations/all/microsoft
+microsoft-teams:
+    categories:
+        - productivity
+        - video
+    alias: microsoft
     docs: https://docs.nango.dev/integrations/all/microsoft-teams
 microsoft-tenant-specific:
     categories:
@@ -1369,7 +1374,7 @@ microsoft-tenant-specific:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
 microsoft-ads:
-    alias: microsoft-teams
+    alias: microsoft
     categories:
         - marketing
     default_scopes:
@@ -1381,6 +1386,11 @@ microsoft-ads:
         grant_type: refresh_token
         scope: https://ads.microsoft.com/msads.manage
     docs: https://docs.nango.dev/integrations/all/microsoft-ads
+microsoft-entra-ID:
+    categories:
+        - other
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/one-note
 mixpanel:
     categories:
         - analytics
@@ -1504,8 +1514,13 @@ one-drive:
     categories:
         - knowledge-base
         - storage
-    alias: microsoft-teams
+    alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-drive
+one-note:
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/one-note
 osu:
     categories:
         - gaming
@@ -1523,6 +1538,11 @@ osu:
     proxy:
         base_url: https://osu.ppy.sh
     docs: https://docs.nango.dev/integrations/all/osu
+outlook:
+    categories:
+        - communication
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/outlook
 outreach:
     categories:
         - marketing
@@ -1914,6 +1934,12 @@ servicenow:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/servicenow
+sharepoint-online:
+    categories:
+        - storage
+        - communication
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/sharepoint-online
 shopify:
     categories:
         - e-commerce
