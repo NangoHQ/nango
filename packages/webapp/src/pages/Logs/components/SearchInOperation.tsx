@@ -14,6 +14,7 @@ import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
 import { useDebounce, useInterval } from 'react-use';
 import { Tag } from './Tag';
+import { Skeleton } from '../../../components/ui/Skeleton';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
@@ -90,6 +91,17 @@ export const SearchInOperation: React.FC<{ operationId: string; live: boolean }>
         },
         live ? 5000 : null
     );
+
+    if (!data && loading) {
+        return (
+            <div>
+                <div className="flex justify-between items-center">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">Logs</h4>
+                </div>
+                <Skeleton className="mt-2 w-[250px]" />
+            </div>
+        );
+    }
 
     return (
         <div>

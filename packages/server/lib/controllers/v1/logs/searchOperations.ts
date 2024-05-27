@@ -35,7 +35,8 @@ const validation = z
             .default(['all']),
         integrations: z.array(z.string()).optional().default(['all']),
         connections: z.array(z.string()).optional().default(['all']),
-        syncs: z.array(z.string()).optional().default(['all'])
+        syncs: z.array(z.string()).optional().default(['all']),
+        period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional()
     })
     .strict();
 
@@ -69,7 +70,8 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
         types: body.types,
         integrations: body.integrations,
         connections: body.connections,
-        syncs: body.syncs
+        syncs: body.syncs,
+        period: body.period
     });
 
     res.status(200).send({
