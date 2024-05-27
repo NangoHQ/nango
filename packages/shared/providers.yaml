@@ -1386,11 +1386,11 @@ microsoft-ads:
         grant_type: refresh_token
         scope: https://ads.microsoft.com/msads.manage
     docs: https://docs.nango.dev/integrations/all/microsoft-ads
-microsoft-entra-ID:
+microsoft-entra-id:
     categories:
         - other
     alias: microsoft
-    docs: https://docs.nango.dev/integrations/all/microsoft-entra-ID
+    docs: https://docs.nango.dev/integrations/all/microsoft-entra-id
 mixpanel:
     categories:
         - analytics
