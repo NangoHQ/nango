@@ -16,7 +16,7 @@ import { OperationRow } from './components/OperationRow';
 // import { Input } from '../../components/ui/input/Input';
 // import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity } from '../../utils/utils';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import Button from '../../components/ui/button/Button';
 import { LightningBoltIcon } from '@radix-ui/react-icons';
@@ -123,11 +123,23 @@ export const LogsSearch: React.FC = () => {
     if (error) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
-                <Info color={error.error.code === 'feature_disabled' ? 'orange' : 'red'} classNames="text-xs" size={20}>
-                    {error.error.code === 'feature_disabled'
-                        ? 'This feature is disabled. Install OpenSearch and set "NANGO_LOGS_ENABLED" flag to `true`'
-                        : 'An error occurred, refresh your page or reach out to the support.'}
-                </Info>
+                <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
+                {error.error.code === 'feature_disabled' ? (
+                    <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
+                        <h2 className="text-xl text-center">Logs not configured</h2>
+                        <div className="text-sm text-gray-400">
+                            Follow{' '}
+                            <Link to="https://docs.nango.dev/host/self-host/self-hosting-instructions#logs" className="text-blue-400">
+                                these instructions
+                            </Link>{' '}
+                            to configure logs.
+                        </div>
+                    </div>
+                ) : (
+                    <Info color={'red'} classNames="text-xs" size={20}>
+                        An error occurred, refresh your page or reach out to the support.
+                    </Info>
+                )}
             </DashboardLayout>
         );
     }
