@@ -22,18 +22,18 @@ export async function migrateMapping() {
             indices.map(async (index) => {
                 logger.info(`Migrating index "${index.index}"...`);
                 const exists = await client.indices.exists({ index: index.index });
-                if (!exists.body) {
+                if (!exists) {
                     logger.info(`  creating index "${index.index}"...`);
-                    await client.indices.create({ index: index.index, body: index.body! });
+                    await client.indices.create({ index: index.index });
                 }
 
                 logger.info(`  mapping index "${index.index}"...`);
-                return await client.indices.putMapping({ index: index.index, body: index.body!.mappings! }, { ignore: [404] });
+                return await client.indices.putMapping({ index: index.index, ...index.mappings }, { ignore: [404] });
             })
         );
     } catch (err) {
         logger.error(err);
-        throw new Error('failed_to_init_opensearch');
+        throw new Error('failed_to_init_elasticsearch');
     }
 }
 

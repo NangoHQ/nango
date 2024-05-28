@@ -24,12 +24,13 @@ const Input = forwardRef<
                 type={type}
                 ref={ref}
                 className={cn(
-                    'bg-transparent border-0 h-full px-3 py-[7px] w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium',
-                    before && 'pl-8'
+                    'bg-transparent border-0 h-full px-3 py-[7px] w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none',
+                    before && 'pl-8',
+                    after && 'pr-8'
                 )}
                 {...props}
             />
-            {after && <div>{after}</div>}
+            {after && <div className="absolute right-0 text-text-light-gray px-2">{after}</div>}
         </div>
     );
 });

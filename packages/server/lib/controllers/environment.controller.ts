@@ -11,10 +11,10 @@ import {
     getWebsocketsPath,
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
-    packageJsonFile,
     getOnboardingProgress,
     userService,
-    generateSlackConnectionId
+    generateSlackConnectionId,
+    NANGO_VERSION
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import type { RequestLocals } from '../utils/express.js';
@@ -53,11 +53,10 @@ class EnvironmentController {
             }
 
             const environments = await environmentService.getEnvironmentsByAccountId(user.account_id);
-            const version = packageJsonFile().version;
             const onboarding = await getOnboardingProgress(sessionUser.id);
             res.status(200).send({
                 environments,
-                version,
+                version: NANGO_VERSION,
                 email: sessionUser.email,
                 baseUrl,
                 debugMode: req.session.debugMode === true,

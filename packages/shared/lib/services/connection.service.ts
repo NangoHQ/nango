@@ -57,13 +57,6 @@ const logger = getLogger('Connection');
 
 type KeyValuePairs = Record<string, string | boolean>;
 
-interface IntegrationValuesWithAccountAndEnvironment {
-    connection_id: string;
-    provider_config_key: string;
-    account: Account;
-    environment: Environment;
-}
-
 class ConnectionService {
     private locking: Locking;
 
@@ -427,16 +420,24 @@ class ConnectionService {
         return result;
     }
 
-    public async getOldConnections({ days, limit }: { days: number; limit: number }): Promise<IntegrationValuesWithAccountAndEnvironment[]> {
+    public async getOldConnections({
+        days,
+        limit
+    }: {
+        days: number;
+        limit: number;
+    }): Promise<{ connection_id: string; provider_config_key: string; account: Account; environment: Environment }[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
+
+        type T = Awaited<ReturnType<ConnectionService['getOldConnections']>>;
 
         const result = await db
             .knex<StoredConnection>(`_nango_connections`)
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
-            .select<IntegrationValuesWithAccountAndEnvironment[]>(
+            .select<T>(
                 'connection_id',
                 'unique_key as provider_config_key',
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
@@ -510,14 +511,28 @@ class ConnectionService {
     public async listConnections(
         environment_id: number,
         connectionId?: string
-    ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata }[]> {
+    ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; error_log_id: number | null }[]> {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
-            .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' }, 'metadata')
-            .where({ environment_id, deleted: false });
+            .leftJoin('_nango_ui_notifications', function () {
+                this.on('_nango_connections.id', '=', '_nango_ui_notifications.connection_id').onVal('_nango_ui_notifications.active', true);
+            })
+            .select(
+                { id: '_nango_connections.id' },
+                { connection_id: '_nango_connections.connection_id' },
+                { provider: '_nango_connections.provider_config_key' },
+                { created: '_nango_connections.created_at' },
+                '_nango_connections.metadata',
+                { error_log_id: '_nango_ui_notifications.activity_log_id' }
+            )
+            .where({ '_nango_connections.environment_id': environment_id, '_nango_connections.deleted': false });
+
         if (connectionId) {
-            queryBuilder.where({ connection_id: connectionId });
+            queryBuilder.where({
+                '_nango_connections.connection_id': connectionId
+            });
         }
+
         return queryBuilder;
     }
 
@@ -633,7 +648,7 @@ class ConnectionService {
                 const activityLogId = await createActivityLogAndLogMessage(log, logMessage);
 
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Token refresh error' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Token refresh error' },
                     {
                         account,
                         environment,
@@ -647,7 +662,7 @@ class ConnectionService {
 
                 // TODO now insert into notifications to recall this error and link to it
                 if (activityLogId) {
-                    await errorNotificationService.auth.create({
+                    const result = await errorNotificationService.auth.create({
                         type: 'auth',
                         action: 'token_refresh',
                         connection_id: connection.id,
@@ -655,6 +670,7 @@ class ConnectionService {
                         log_id: logCtx.id,
                         active: true
                     });
+                    console.log(result);
                 }
 
                 return Err(error);

@@ -1,20 +1,22 @@
-import type { SearchOperationsState } from '@nangohq/types';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../../components/ui/DropdownMenu';
 import Button from '../../../components/ui/button/Button';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { CrossCircledIcon } from '@radix-ui/react-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList, CommandCheck } from '../../../components/ui/Command';
 
-export interface MultiSelectArgs {
+export interface MultiSelectArgs<T> {
     label: string;
-    options: { name: string; value: SearchOperationsState }[];
-    selected: SearchOperationsState[];
-    defaultSelect: SearchOperationsState[];
+    options: { name: string; value: T }[];
+    selected: T[];
+    defaultSelect: T[];
     all?: boolean;
-    onChange: (selected: SearchOperationsState[]) => void;
+    onChange: (selected: T[]) => void;
 }
 
-export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selected, defaultSelect, all, onChange }) => {
+export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, selected, defaultSelect, all, onChange }) => {
     const [open, setOpen] = useState(false);
-    const select = (val: SearchOperationsState, checked: boolean) => {
+
+    const select = (val: string, checked: boolean) => {
         if (all && val === 'all') {
             onChange(['all']);
             return;
@@ -24,33 +26,71 @@ export const MultiSelect: React.FC<MultiSelectArgs> = ({ label, options, selecte
         if (all && tmp.length > 1) {
             tmp = tmp.filter((sel) => sel !== 'all');
         }
-        onChange(tmp.length <= 0 ? defaultSelect : tmp);
+        onChange(tmp.length <= 0 ? [...defaultSelect] : tmp);
     };
 
+    const reset = (e: any) => {
+        e.preventDefault();
+        if (all) {
+            onChange(['all']);
+        } else {
+            onChange([...defaultSelect]);
+        }
+    };
+
+    const isDirty = useMemo(() => {
+        if (!all) {
+            return selected.length !== options.length;
+        }
+
+        return !(selected.length === 1 && selected[0] === 'all');
+    }, [selected, all, options]);
+
     return (
-        <DropdownMenu open={open} onOpenChange={setOpen}>
-            <DropdownMenuTrigger asChild>
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
                 <Button variant="zombieGray" size={'xs'}>
                     {label}
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-                {options.map((option) => {
-                    const checked = selected.some((sel) => option.value === sel);
-                    return (
-                        <DropdownMenuCheckboxItem
-                            key={option.value}
-                            checked={checked}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                select(option.value, !checked);
+                    {isDirty && (
+                        <button
+                            className="bg-pure-black text-white flex gap-1 items-center px-1.5 rounded-xl"
+                            onPointerDown={reset}
+                            onKeyDown={(e) => {
+                                if (['Enter', ' '].includes(e.key)) {
+                                    reset(e);
+                                }
                             }}
                         >
-                            {option.name}
-                        </DropdownMenuCheckboxItem>
-                    );
-                })}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                            <CrossCircledIcon />
+                            {selected.length}
+                        </button>
+                    )}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-0 text-white bg-active-gray">
+                <Command>
+                    <CommandList>
+                        <CommandEmpty>No framework found.</CommandEmpty>
+                        <CommandGroup>
+                            {options.map((option) => {
+                                const checked = selected.some((sel) => option.value === sel);
+                                return (
+                                    <CommandItem
+                                        key={option.value}
+                                        value={option.value}
+                                        onSelect={() => {
+                                            select(option.value, !checked);
+                                        }}
+                                    >
+                                        <CommandCheck checked={checked} />
+                                        {option.name}
+                                    </CommandItem>
+                                );
+                            })}
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
+            </PopoverContent>
+        </Popover>
     );
 };

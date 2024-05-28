@@ -2,12 +2,9 @@ import type { Request, Response, NextFunction } from 'express';
 import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
-    Connection,
     OAuth2Credentials,
-    OAuth2ClientCredentials,
     ImportedCredentials,
     AuthCredentials,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
     ConnectionList,
     LogLevel,
     ConnectionUpsertResponse
@@ -33,6 +30,8 @@ import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
 import { getOrchestratorClient } from '../utils/utils.js';
+
+export type { ConnectionList };
 
 class ConnectionController {
     /**
@@ -62,34 +61,22 @@ class ConnectionController {
                 environment_id: environment.id
             };
 
-            let success: boolean;
-            let error: NangoError | null = null;
-            let connection: Connection | null = null;
-            if (instantRefresh) {
-                const credentialResponse = await connectionService.getConnectionCredentials({
-                    account,
-                    environment,
-                    connectionId,
-                    providerConfigKey,
-                    logContextGetter,
-                    instantRefresh: false
-                });
-                success = credentialResponse.isOk();
+            const credentialResponse = await connectionService.getConnectionCredentials({
+                account,
+                environment,
+                connectionId,
+                providerConfigKey,
+                logContextGetter,
+                instantRefresh
+            });
 
-                if (credentialResponse.isOk()) {
-                    connection = credentialResponse.value;
-                } else {
-                    error = credentialResponse.error;
-                }
-            } else {
-                ({ success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id));
-            }
-
-            if (!success || !connection) {
-                errorManager.errResFromNangoErr(res, error);
+            if (credentialResponse.isErr()) {
+                errorManager.errResFromNangoErr(res, credentialResponse.error);
 
                 return;
             }
+
+            const { value: connection } = credentialResponse;
 
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
@@ -101,7 +88,7 @@ class ConnectionController {
                     content: 'Unknown provider config'
                 });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
                     {
                         account,
                         environment,
@@ -118,33 +105,6 @@ class ConnectionController {
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
-            // if instantRefresh is true, we already refreshed the credentials
-            if (
-                !instantRefresh &&
-                (connection.credentials.type === ProviderAuthModes.OAuth2 ||
-                    connection.credentials.type === ProviderAuthModes.App ||
-                    connection.credentials.type === ProviderAuthModes.OAuth2CC)
-            ) {
-                const {
-                    success,
-                    error,
-                    response: credentials
-                } = await connectionService.refreshCredentialsIfNeeded({
-                    connection,
-                    providerConfig: config,
-                    template: template as ProviderTemplateOAuth2,
-                    environment_id: environment.id,
-                    instantRefresh
-                });
-
-                if (!success) {
-                    errorManager.errResFromNangoErr(res, error);
-                    return;
-                }
-
-                connection.credentials = credentials as OAuth2Credentials | OAuth2ClientCredentials;
-            }
-
             if (instantRefresh) {
                 log.provider = config.provider;
                 log.success = true;
@@ -157,7 +117,7 @@ class ConnectionController {
                     timestamp: Date.now()
                 });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
                     {
                         account,
                         environment,
@@ -215,45 +175,6 @@ class ConnectionController {
                     credentials,
                     rawCredentials
                 }
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async getConnectionsWeb(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            const connections = await connectionService.listConnections(environment.id);
-
-            const configs = await configService.listProviderConfigs(environment.id);
-
-            if (configs == null) {
-                res.status(200).send({ connections: [] });
-
-                return;
-            }
-
-            const uniqueKeyToProvider: Record<string, string> = {};
-            const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
-
-            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
-
-            const result = connections.map((connection) => {
-                return {
-                    id: connection.id,
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider,
-                    provider: uniqueKeyToProvider[connection.provider],
-                    creationDate: connection.created
-                };
-            });
-
-            res.status(200).send({
-                connections: result.sort(function (a, b) {
-                    return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
-                })
             });
         } catch (err) {
             next(err);
@@ -340,7 +261,7 @@ class ConnectionController {
             providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
 
             const result: ConnectionList[] = connections.map((connection) => {
-                return {
+                const list: ConnectionList = {
                     id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider,
@@ -348,6 +269,12 @@ class ConnectionController {
                     created: connection.created,
                     metadata: connection.metadata
                 };
+
+                if (isWeb) {
+                    list.error_log_id = connection.error_log_id;
+                }
+
+                return list;
             });
 
             res.status(200).send({

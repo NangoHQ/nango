@@ -170,7 +170,7 @@ export const InteractiveDemo: React.FC = () => {
                                 connectionId={connectionId}
                                 hostUrl={environmentAndAccount.host}
                                 providerConfigKey={providerConfigKey}
-                                publicKey={environmentAndAccount.environment.secret_key}
+                                publicKey={environmentAndAccount.environment.public_key}
                                 onProgress={onAuthorize}
                             />
 

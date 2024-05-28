@@ -77,4 +77,5 @@ export interface ConnectionList {
     provider: string;
     created: string;
     metadata?: Metadata | null;
+    error_log_id?: number | string | null;
 }

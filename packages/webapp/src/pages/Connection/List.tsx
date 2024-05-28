@@ -5,22 +5,15 @@ import { Loading } from '@geist-ui/core';
 import debounce from 'lodash/debounce';
 import uniq from 'lodash/uniq';
 
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import CopyButton from '../../components/ui/button/CopyButton';
 import { requestErrorToast } from '../../utils/api';
+import type { ConnectionList as Connection } from '@nangohq/server';
 
 import { useStore } from '../../store';
-
-interface Connection {
-    id: number;
-    connection_id: string;
-    provider: string;
-    provider_config_key: string;
-    created: string;
-}
 
 export default function ConnectionList() {
     const navigate = useNavigate();
@@ -171,7 +164,14 @@ export default function ConnectionList() {
                                 <div className="w-20">Created</div>
                             </div>
                             {filteredConnections.map(
-                                ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate }) => (
+                                ({
+                                    id,
+                                    connection_id: connectionId,
+                                    provider,
+                                    provider_config_key: providerConfigKey,
+                                    created: creationDate,
+                                    error_log_id
+                                }) => (
                                     <div
                                         key={`tr-${id}`}
                                         className={`flex gap-4 ${
@@ -183,6 +183,11 @@ export default function ConnectionList() {
                                     >
                                         <div className="flex items-center w-2/3 gap-2 py-2 truncate">
                                             <span className="break-words break-all truncate">{connectionId}</span>
+                                            {error_log_id && (
+                                                <Link to={`/${env}/logs/${error_log_id}`} className="flex items-center ml-2 text-red-500">
+                                                    <XCircleIcon className="h-5 w-5 mr-2" />
+                                                </Link>
+                                            )}
                                             <CopyButton dark text={connectionId} />
                                         </div>
                                         <div className="flex items-center w-1/3 gap-3">

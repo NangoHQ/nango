@@ -47,6 +47,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { setMetadata } from './controllers/v1/connection/setMetadata.js';
 import { updateMetadata } from './controllers/v1/connection/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
+import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 
 export const app = express();
 
@@ -226,6 +227,7 @@ web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeG
 
 web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
 web.route('/api/v1/logs/messages').post(webAuth, searchMessages);
+web.route('/api/v1/logs/filters').post(webAuth, searchFilters);
 web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
 
 // Hosted signin

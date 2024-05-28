@@ -1,6 +1,6 @@
 import { PostHog } from 'posthog-node';
 import { localhostUrl, isCloud, isStaging, baseUrl } from '@nangohq/utils';
-import { UserType, packageJsonFile } from '../utils/utils.js';
+import { UserType } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
@@ -8,6 +8,7 @@ import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Account, User } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
+import { NANGO_VERSION } from '../version.js';
 
 export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
@@ -64,7 +65,7 @@ class Analytics {
             if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
-                this.packageVersion = packageJsonFile().version;
+                this.packageVersion = NANGO_VERSION;
             }
         } catch (e) {
             errorManager.report(e, {

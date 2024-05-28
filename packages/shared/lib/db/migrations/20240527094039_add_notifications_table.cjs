@@ -9,6 +9,7 @@ exports.up = async function (knex, _) {
         table.foreign('connection_id').references('id').inTable('_nango_connections').onDelete('CASCADE');
         table.integer('activity_log_id').unsigned().notNullable();
         table.foreign('activity_log_id').references('id').inTable('_nango_activity_logs').onDelete('CASCADE');
+        table.string('log_id');
         table.boolean('active').defaultTo(true);
         table.uuid('sync_id').defaultTo(null);
         table.foreign('sync_id').references('id').inTable('_nango_syncs').onDelete('CASCADE');
