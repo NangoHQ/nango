@@ -72,3 +72,7 @@ export const oldLevelToNewLevel = {
     silly: 'debug',
     http: 'info'
 } as const;
+
+export function getFullIndexName(prefix: string, createdAt: string) {
+    return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;
+}

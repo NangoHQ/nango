@@ -1,3 +1,4 @@
+import { isTest } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
 import { client } from './client.js';
@@ -52,11 +53,17 @@ export async function migrateMapping() {
 }
 
 export async function deleteIndex() {
+    if (!isTest) {
+        throw new Error('Trying to delete stuff in prod');
+    }
+
     try {
-        await client.indices.delete({
-            index: indexMessages.index,
-            ignore_unavailable: true
-        });
+        const indices = await client.cat.indices({ format: 'json' });
+        await Promise.all(
+            indices.map(async (index) => {
+                await client.indices.delete({ index: index.index!, ignore_unavailable: true });
+            })
+        );
     } catch (err) {
         logger.error(err);
         throw new Error('failed_to_deleteIndex');

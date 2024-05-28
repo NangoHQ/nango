@@ -12,6 +12,8 @@ import type {
 import { indexMessages } from '../es/schema.js';
 import type { estypes } from '@elastic/elasticsearch';
 import { errors } from '@elastic/elasticsearch';
+import type { SetRequired } from 'type-fest';
+import { getFullIndexName } from './helpers.js';
 
 export interface ListOperations {
     count: number;
@@ -150,19 +152,25 @@ export async function listOperations(opts: {
  * Get a single operation
  */
 export async function getOperation(opts: { id: MessageRow['id'] }): Promise<MessageRow> {
-    const res = await client.get<OperationRow>({
+    // Can't perform a getById because we don't know in which index the operation is in
+    const res = await client.search<OperationRow>({
         index: indexMessages.index,
-        id: opts.id
+        query: {
+            term: { id: opts.id }
+        }
     });
-    return res._source!;
+    if (res.hits.hits.length <= 0) {
+        throw new ResponseError({ statusCode: 404, warnings: [], meta: {} as any });
+    }
+    return res.hits.hits[0]!._source!;
 }
 
 /**
  * Update a row (can be a partial update)
  */
-export async function update(opts: { id: MessageRow['id']; data: Partial<Omit<MessageRow, 'id'>> }): Promise<void> {
-    await client.update<Partial<Omit<MessageRow, 'id'>>>({
-        index: indexMessages.index,
+export async function update(opts: { id: MessageRow['id']; data: SetRequired<Partial<Omit<MessageRow, 'id'>>, 'createdAt'> }): Promise<void> {
+    await client.update({
+        index: getFullIndexName(indexMessages.index, opts.data.createdAt),
         id: opts.id,
         refresh: true,
         body: {
@@ -177,36 +185,36 @@ export async function update(opts: { id: MessageRow['id']; data: Partial<Omit<Me
 /**
  * Set an operation as currently running
  */
-export async function setRunning(opts: Pick<MessageRow, 'id'>): Promise<void> {
-    await update({ id: opts.id, data: { state: 'running', startedAt: new Date().toISOString() } });
+export async function setRunning(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'running', startedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as success
  */
-export async function setSuccess(opts: Pick<MessageRow, 'id'>): Promise<void> {
-    await update({ id: opts.id, data: { state: 'success', endedAt: new Date().toISOString() } });
+export async function setSuccess(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'success', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
-export async function setFailed(opts: Pick<MessageRow, 'id'>): Promise<void> {
-    await update({ id: opts.id, data: { state: 'failed', endedAt: new Date().toISOString() } });
+export async function setFailed(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'failed', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
-export async function setCancelled(opts: Pick<MessageRow, 'id'>): Promise<void> {
-    await update({ id: opts.id, data: { state: 'cancelled', endedAt: new Date().toISOString() } });
+export async function setCancelled(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'cancelled', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as timeout
  */
-export async function setTimeouted(opts: Pick<MessageRow, 'id'>): Promise<void> {
-    await update({ id: opts.id, data: { state: 'timeout', endedAt: new Date().toISOString() } });
+export async function setTimeouted(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'timeout', endedAt: new Date().toISOString() } });
 }
 
 /**

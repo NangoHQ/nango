@@ -64,7 +64,7 @@ class AppAuthController {
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId } = session;
         const activityLogId = Number(session.activityLogId);
-        const logCtx = logContextGetter.get({ id: session.activityLogId });
+        const logCtx = await logContextGetter.get({ id: session.activityLogId });
 
         try {
             if (!providerConfigKey) {
