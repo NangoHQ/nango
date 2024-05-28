@@ -139,7 +139,7 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
         function onAutoRefresh() {
             trigger({ cursorBefore: cursorBefore.current });
         },
-        isLive && !loading ? 5000 : 5000
+        isLive && !loading ? 5000 : null
     );
 
     // --- Infinite scroll
