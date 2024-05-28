@@ -17,7 +17,33 @@ interface SchedulingProps {
         startedToCompleted: number;
         heartbeat: number;
     };
-    args: JsonValue;
+    args: JsonValue & { type: 'action' | 'webhook' | 'sync' };
+}
+
+interface TExecuteActionArgs {
+    args: {
+        name: string;
+        connection: {
+            id: number;
+            provider_config_key: string;
+            environment_id: number;
+        };
+        activityLogId: number;
+        input: JsonValue;
+    };
+}
+interface TExecuteWebhookArgs {
+    args: {
+        name: string;
+        parentSyncName: string;
+        connection: {
+            id: number;
+            provider_config_key: string;
+            environment_id: number;
+        };
+        activityLogId: number | null;
+        input: JsonValue;
+    };
 }
 
 interface ClientError extends Error {
@@ -27,6 +53,8 @@ interface ClientError extends Error {
 
 export type TExecuteProps = SetOptional<SchedulingProps, 'retry' | 'timeoutSettingsInSecs'>;
 export type TExecuteReturn = Result<JsonValue, ClientError>;
+export type TExecuteActionProps = Omit<TExecuteProps, 'args'> & TExecuteActionArgs;
+export type TExecuteWebhookProps = Omit<TExecuteProps, 'args'> & TExecuteWebhookArgs;
 
 export class OrchestratorClient {
     private baseUrl: string;
@@ -39,7 +67,7 @@ export class OrchestratorClient {
         return routeFetch(this.baseUrl, route);
     }
 
-    public async schedule(props: SchedulingProps): Promise<Result<{ taskId: string }, ClientError>> {
+    private async schedule(props: SchedulingProps): Promise<Result<{ taskId: string }, ClientError>> {
         const res = await this.routeFetch(scheduleRoute)({
             body: {
                 scheduling: 'immediate',
@@ -61,7 +89,7 @@ export class OrchestratorClient {
         }
     }
 
-    async execute(props: TExecuteProps): Promise<TExecuteReturn> {
+    private async execute(props: TExecuteProps): Promise<TExecuteReturn> {
         const scheduleProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -110,5 +138,29 @@ export class OrchestratorClient {
                     });
             }
         }
+    }
+
+    public async executeAction(props: TExecuteActionProps): Promise<TExecuteReturn> {
+        const { args, ...rest } = props;
+        const schedulingProps = {
+            ...rest,
+            args: {
+                ...args,
+                type: 'action' as const
+            }
+        };
+        return this.execute(schedulingProps);
+    }
+
+    public async executeWebhook(props: TExecuteWebhookProps): Promise<TExecuteReturn> {
+        const { args, ...rest } = props;
+        const schedulingProps = {
+            ...rest,
+            args: {
+                ...args,
+                type: 'webhook' as const
+            }
+        };
+        return this.execute(schedulingProps);
     }
 }

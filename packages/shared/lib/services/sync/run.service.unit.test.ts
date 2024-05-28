@@ -39,7 +39,10 @@ const recordsService = {
 };
 
 const orchestratorClient = {
-    execute: () => {
+    executeAction: () => {
+        return Promise.resolve({}) as any;
+    },
+    executeWebhook: () => {
         return Promise.resolve({}) as any;
     }
 };
