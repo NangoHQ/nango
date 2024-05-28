@@ -105,7 +105,7 @@ async function getDiffs(newRecords: TargetRecord[]): Promise<TargetRecord[]> {
             updated_at::timestamp with time zone AS updated_at,
             deleted_at::timestamp with time zone AS deleted_at
         FROM json_populate_recordset(NULL::record, '${JSON.stringify(records)}')
-		AS (id uuid, external_id character varying(255), data_hash character varying(255), connection_id integer, model character varying(255), sync_id uuid, sync_job_id integer, created_at timestamp with time zone, updated_at timestamp with time zone, deleted_at timestamp with time zone)) AS t
+          	AS (id uuid, external_id character varying(255), data_hash character varying(255), connection_id integer, model character varying(255), sync_id uuid, sync_job_id integer, created_at timestamp with time zone, updated_at timestamp with time zone, deleted_at timestamp with time zone)) AS t
         LEFT JOIN nango._nango_sync_data_records AS r
           ON t.external_id = r.external_id
           AND t.model = r.model
