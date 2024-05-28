@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.39.32] - 2024-05-28
+
+### Added
+
+- *(server)* [nan-981] prep for implementing error reporting UI on connection authorization sub (#2204) by @khaliqgant
+
+### Fixed
+
+- *(docker)* Wrong node version for jobs (#2211) by @bodinsamuel
+
 ## [v0.39.31] - 2024-05-27
 
 ### Added
@@ -1168,6 +1178,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.39.32]: https://github.com/NangoHQ/nango/compare/v0.39.31..v0.39.32
 [v0.39.31]: https://github.com/NangoHQ/nango/compare/v0.39.30..v0.39.31
 [v0.39.30]: https://github.com/NangoHQ/nango/compare/v0.39.29..v0.39.30
 [v0.39.29]: https://github.com/NangoHQ/nango/compare/v0.39.28..v0.39.29
