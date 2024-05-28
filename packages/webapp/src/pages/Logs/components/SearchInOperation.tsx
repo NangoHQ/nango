@@ -232,7 +232,7 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
                     </Table.Header>
                     <Table.Body className="overflow-y-scroll block w-full">
                         {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => <MessageRow key={row.id} row={row} />)
+                            table.getRowModel().rows.map((row) => <MessageRow key={row.original.id} row={row} />)
                         ) : messages.length <= 0 && !loading && readyToDisplay ? (
                             <Table.Row>
                                 <Table.Cell colSpan={columns.length} className="h-24 text-center">
