@@ -52,6 +52,13 @@ export async function getFreshOAuth2Credentials(
     template: ProviderTemplateOAuth2
 ): Promise<ServiceResponse<OAuth2Credentials>> {
     const credentials = connection.credentials as OAuth2Credentials;
+    if (credentials.config_override && credentials.config_override.client_id && credentials.config_override.client_secret) {
+        config = {
+            ...config,
+            oauth_client_id: credentials.config_override.client_id,
+            oauth_client_secret: credentials.config_override.client_secret
+        };
+    }
     const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, template, connection.connection_config);
     if (template.token_request_auth_method === 'basic') {
         const headers = {
