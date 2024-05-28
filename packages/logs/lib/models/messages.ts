@@ -23,6 +23,8 @@ export interface ListOperations {
 export interface ListMessages {
     count: number;
     items: MessageRow[];
+    cursorAfter: string | null;
+    cursorBefore: string | null;
 }
 export interface ListFilters {
     items: { key: string; doc_count: number }[];
@@ -224,6 +226,8 @@ export async function listMessages(opts: {
     limit: number;
     states?: SearchOperationsState[] | undefined;
     search?: string | undefined;
+    cursorBefore?: string | null | undefined;
+    cursorAfter?: string | null | undefined;
 }): Promise<ListMessages> {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
@@ -248,20 +252,45 @@ export async function listMessages(opts: {
         });
     }
 
+    // Sort and cursor
+    let cursor: any[] | undefined;
+    let sort: estypes.Sort = [{ createdAt: 'desc' }, { id: 'desc' }];
+    if (opts.cursorBefore) {
+        cursor = parseCursor(opts.cursorBefore);
+        sort = [{ createdAt: 'asc' }, { id: 'asc' }];
+    } else if (opts.cursorAfter) {
+        cursor = opts.cursorAfter ? parseCursor(opts.cursorAfter) : undefined;
+    }
+
     const res = await client.search<MessageRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, 'id'],
+        sort,
         track_total_hits: true,
+        search_after: cursor,
         query
     });
     const hits = res.hits;
 
+    const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
+    const items = hits.hits.map((hit) => {
+        return hit._source!;
+    });
+    if (opts.cursorBefore) {
+        // In case we set before we have to reverse the message since we inverted the sort
+        items.reverse();
+        return {
+            count: total,
+            items,
+            cursorBefore: hits.hits.length > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null,
+            cursorAfter: null
+        };
+    }
     return {
-        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
-        items: hits.hits.map((hit) => {
-            return hit._source!;
-        })
+        count: total,
+        items,
+        cursorBefore: hits.hits.length > 0 ? createCursor(hits.hits[0]!) : null,
+        cursorAfter: hits.hits.length > 0 && total > hits.hits.length && hits.hits.length >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 

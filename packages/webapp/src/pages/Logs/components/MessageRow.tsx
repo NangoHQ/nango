@@ -12,9 +12,11 @@ export const MessageRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row }
     return (
         <Drawer direction="right" snapPoints={[drawerWidth]} handleOnly={true} noBodyStyles={true}>
             <DrawerTrigger asChild type={null as unknown as 'button'}>
-                <Table.Row data-state={row.getIsSelected() && 'selected'} className="hover:cursor-pointer border-b-border-gray-400">
+                <Table.Row data-state={row.getIsSelected() && 'selected'} className="hover:cursor-pointer border-b-border-gray-400 table table-fixed w-full ">
                     {row.getVisibleCells().map((cell) => (
-                        <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
+                        <Table.Cell key={cell.id} style={{ width: cell.column.columnDef.size }}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </Table.Cell>
                     ))}
                 </Table.Row>
             </DrawerTrigger>
