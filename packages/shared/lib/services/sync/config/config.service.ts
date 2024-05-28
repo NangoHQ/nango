@@ -9,7 +9,16 @@ import { SyncConfigType } from '../../../models/Sync.js';
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfig, NangoConfigV1, NangoV2Integration, StandardNangoConfig, NangoIntegrationDataV2 } from '../../../models/NangoConfig.js';
+import type {
+    NangoModelV1,
+    NangoSyncModelField,
+    NangoSyncModel,
+    NangoConfig,
+    NangoConfigV1,
+    NangoV2Integration,
+    StandardNangoConfig,
+    NangoIntegrationDataV2
+} from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const logger = getLogger('Sync.Config');
@@ -185,10 +194,24 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 version: syncConfig.version as string,
                 pre_built: syncConfig.pre_built as boolean,
                 is_public: syncConfig.is_public as boolean,
-                metadata: syncConfig.metadata as NangoConfigMetadata
+                metadata: syncConfig.metadata as NangoConfigMetadata,
+                enabled: syncConfig.enabled
             };
 
             nangoConfig.integrations[key] = providerConfig;
+
+            const models: NangoModelV1 = {};
+
+            syncConfig.model_schema.forEach((model: NangoSyncModel) => {
+                if (!models[model.name]) {
+                    models[model.name] = {};
+                }
+                model.fields.forEach((field: NangoSyncModelField) => {
+                    models[model.name]![field.name] = field.type;
+                });
+            });
+
+            nangoConfig.models = models;
         }
     }
 
@@ -256,6 +279,7 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
             environment_id,
             nango_config_id,
             active: true,
+            enabled: true,
             type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
             deleted: false
         });
@@ -448,6 +472,7 @@ export async function getSyncConfigByParams(
                 sync_name,
                 nango_config_id: config.id as number,
                 active: true,
+                enabled: true,
                 type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
                 deleted: false
             })
@@ -614,6 +639,7 @@ export async function getSyncConfigsWithConnections(
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.unique_key': providerConfigKey,
             active: true,
+            enabled: true,
             '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
         });
@@ -905,4 +931,24 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
         .whereRaw('webhook_subscriptions IS NOT NULL and array_length(webhook_subscriptions, 1) > 0');
 
     return result;
+}
+
+export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<SyncConfig | null> {
+    const query = db.knex
+        .select<SyncConfig>('*')
+        .where({
+            environment_id: opts.environmentId,
+            sync_name: opts.name,
+            nango_config_id: opts.config_id,
+            active: true,
+            enabled: true,
+            type: opts.isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+            deleted: false
+        })
+        .from<SyncConfig>(TABLE)
+        .first();
+
+    const res = await query;
+
+    return res || null;
 }

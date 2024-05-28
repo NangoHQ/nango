@@ -17,6 +17,14 @@ function bump_and_npm_publish {
     fi
 }
 
+function bump_other_pkg {
+    folder=$1
+    package=$2
+    pushd "$GIT_ROOT_DIR/packages/$folder"
+    npm install @nangohq/$package@$VERSION
+    popd
+}
+
 GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
 VERSION=$1
 
@@ -26,6 +34,16 @@ if [[ ! "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+|0\.0\.1-[0-9a-fA-F]{40})$ ]]; the
     exit 1
 fi
 
+# increment stored version
+# NB: macos and linux have different "sed" that don't edit in place the same way
+pushd "$GIT_ROOT_DIR/packages"
+sed -E "s/NANGO_VERSION = '[0-9a-fA-F.-]+/NANGO_VERSION = '$VERSION/" ./shared/lib/version.ts >tmp
+mv tmp ./shared/lib/version.ts
+sed -E "s/NANGO_VERSION = '[0-9a-fA-F.-]+/NANGO_VERSION = '$VERSION/" ./node-client/lib/version.ts >tmp
+mv tmp ./node-client/lib/version.ts
+popd
+
+# build codebase
 npm ci
 npm run ts-build
 
@@ -40,6 +58,13 @@ pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=false
 popd
 
+# Types
+bump_and_npm_publish "@nangohq/types" "$VERSION"
+bump_other_pkg "shared" "types"
+bump_other_pkg "server" "types"
+bump_other_pkg "webapp" "types"
+bump_other_pkg "cli" "types"
+
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/shared"
@@ -49,7 +74,7 @@ popd
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
 # Update all packages to use the new shared version
-package_dirs=("cli" "server" "runner" "jobs" "persist")
+package_dirs=("cli")
 for dir in "${package_dirs[@]}"; do
     pushd "$GIT_ROOT_DIR/packages/$dir"
     npm install @nangohq/shared@^$VERSION
@@ -65,5 +90,19 @@ pushd "$GIT_ROOT_DIR/packages/webapp"
 npm install @nangohq/frontend@^$VERSION
 popd
 
+# clean up
+rm packages/shared/package-lock.json
+rm packages/utils/package-lock.json
+pushd "$GIT_ROOT_DIR/packages/shared"
+npm install "@nangohq/utils@file:../utils"
+popd
+pushd "$GIT_ROOT_DIR/packages/utils"
+jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.json
+popd
+
+jq ".version = \"$VERSION\"" package.json >temp.json && mv temp.json package.json
+npm i
+
 # DEBUG: show changes in CI
+git diff --name-only
 git diff

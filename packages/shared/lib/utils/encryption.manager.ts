@@ -4,36 +4,32 @@ import { getLogger, Encryption } from '@nangohq/utils';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
-import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
+import type { EnvironmentVariable } from '@nangohq/types';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import type { RawDataRecordResult, DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord, UnencryptedRawRecord } from '../models/Sync.js';
 import db from '../db/database.js';
+import { hashSecretKey } from '../services/environment.service.js';
 
 const logger = getLogger('Encryption.Manager');
-
-interface DataRecordJson {
-    encryptedValue: string;
-    [key: string]: any;
-}
 
 export const pbkdf2 = utils.promisify(crypto.pbkdf2);
 export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'] || '';
 
-class EncryptionManager extends Encryption {
+export class EncryptionManager extends Encryption {
     private keySalt = 'X89FHEGqR3yNK0+v7rPWxQ==';
 
     public shouldEncrypt(): boolean {
         return Boolean(this?.key && this.key.length > 0);
     }
 
-    public encryptEnvironment(environment: Environment) {
+    public async encryptEnvironment(environment: Environment) {
         if (!this.shouldEncrypt()) {
             return environment;
         }
 
         const encryptedEnvironment: Environment = Object.assign({}, environment);
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(encryptedEnvironment.secret_key);
+        const [encryptedClientSecret, iv, authTag] = this.encrypt(environment.secret_key);
+        encryptedEnvironment.secret_key_hashed = await hashSecretKey(environment.secret_key);
         encryptedEnvironment.secret_key = encryptedClientSecret;
         encryptedEnvironment.secret_key_iv = iv;
         encryptedEnvironment.secret_key_tag = authTag;
@@ -195,112 +191,6 @@ class EncryptionManager extends Encryption {
         return decryptedConfig;
     }
 
-    public encryptDataRecords(dataRecords: DataRecord[]): DataRecord[] {
-        if (!this.shouldEncrypt()) {
-            return dataRecords;
-        }
-
-        const encryptedDataRecords: DataRecord[] = Object.assign([], dataRecords);
-
-        for (const dataRecord of encryptedDataRecords) {
-            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-            dataRecord.json = { encryptedValue, iv, authTag };
-        }
-
-        return encryptedDataRecords;
-    }
-
-    public decryptDataRecords(dataRecords: DataRecord[] | null, field = 'json'): DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord | null {
-        if (dataRecords === null) {
-            return dataRecords;
-        }
-
-        const decryptedDataRecords: DataRecord[] = [];
-
-        for (const dataRecord of dataRecords) {
-            const record = dataRecord[field] as DataRecordJson;
-
-            if (!record.encryptedValue) {
-                decryptedDataRecords.push(dataRecord);
-                continue;
-            }
-
-            const { encryptedValue, iv, authTag } = record;
-
-            const decryptedString = this.decrypt(encryptedValue, iv, authTag);
-
-            let updatedRecord = {
-                ...JSON.parse(decryptedString)
-            };
-
-            if (record['_nango_metadata']) {
-                updatedRecord['_nango_metadata'] = record['_nango_metadata'];
-                decryptedDataRecords.push({ [field]: updatedRecord } as DataRecord);
-            } else {
-                const { record: _record, ...rest } = dataRecord;
-                updatedRecord = {
-                    ...rest,
-                    record: updatedRecord
-                };
-                decryptedDataRecords.push(updatedRecord as DataRecord);
-            }
-        }
-
-        return decryptedDataRecords as unknown as DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord;
-    }
-
-    public decryptDataRecord(dataRecord: RawDataRecordResult): UnencryptedRawRecord {
-        const record = dataRecord.record;
-
-        if (!record['encryptedValue']) {
-            return record as UnencryptedRawRecord;
-        }
-
-        const { encryptedValue, iv, authTag } = record;
-
-        const decryptedString = this.decrypt(encryptedValue, iv, authTag);
-
-        return {
-            ...JSON.parse(decryptedString)
-        } as UnencryptedRawRecord;
-    }
-
-    public async encryptAllDataRecords(): Promise<void> {
-        const chunkSize = 1000;
-        const concurrencyLimit = 5;
-
-        const encryptAndSave = async (tableName: string, offset: number) => {
-            const dataRecords: DataRecord[] = await db.knex.select('*').from<DataRecord>(tableName).limit(chunkSize).offset(offset);
-
-            if (dataRecords.length === 0) {
-                return false;
-            }
-
-            const updatePromises = dataRecords.map((dataRecord) =>
-                db.knex.transaction(async (trx) => {
-                    if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
-                        return;
-                    }
-
-                    const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-                    dataRecord.json = { encryptedValue, iv, authTag };
-
-                    await db.knex.from<DataRecord>(tableName).where('id', dataRecord.id).update(dataRecord).transacting(trx);
-
-                    await trx.commit();
-                })
-            );
-
-            await Promise.all(updatePromises.slice(0, concurrencyLimit));
-            return true;
-        };
-
-        let offset = 0;
-        while (await encryptAndSave('_nango_sync_data_records', offset)) {
-            offset += chunkSize;
-        }
-    }
-
     private async saveDbConfig(dbConfig: DBConfig) {
         await db.knex.from<DBConfig>(`_nango_db_config`).del();
         await db.knex.from<DBConfig>(`_nango_db_config`).insert(dbConfig);
@@ -311,31 +201,57 @@ class EncryptionManager extends Encryption {
         return keyBuffer.toString(this.encoding);
     }
 
+    /**
+     * Determine the Database encryption status
+     */
+    public async encryptionStatus(
+        dbConfig?: DBConfig
+    ): Promise<'disabled' | 'not_started' | 'require_rotation' | 'require_decryption' | 'done' | 'incomplete'> {
+        if (!dbConfig) {
+            if (!this.key) {
+                return 'disabled';
+            } else {
+                return 'not_started';
+            }
+        } else if (!this.key) {
+            return 'require_decryption';
+        }
+
+        const previousEncryptionKeyHash = dbConfig.encryption_key_hash;
+        const encryptionKeyHash = await this.hashEncryptionKey(this.key, this.keySalt);
+        if (previousEncryptionKeyHash !== encryptionKeyHash) {
+            return 'require_rotation';
+        }
+        return dbConfig.encryption_complete ? 'done' : 'incomplete';
+    }
+
     public async encryptDatabaseIfNeeded() {
-        const dbConfig: DBConfig | null = await db.knex.first().from<DBConfig>('_nango_db_config');
-        const previousEncryptionKeyHash = dbConfig?.encryption_key_hash;
+        const dbConfig = await db.knex.select<DBConfig>('*').from<DBConfig>('_nango_db_config').first();
+        const status = await this.encryptionStatus(dbConfig);
         const encryptionKeyHash = this.key ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
-        const isEncryptionKeyNew = dbConfig == null && this.key;
-        const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && dbConfig.encryption_complete == false;
-
-        if (isEncryptionKeyNew || isEncryptionIncomplete) {
-            if (isEncryptionKeyNew) {
-                logger.info('🔐 Encryption key has been set. Encrypting database...');
-                await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: false });
-            } else if (isEncryptionIncomplete) {
-                logger.info('🔐 Previously started database encryption is incomplete. Continuing encryption of database...');
-            }
-
-            await this.encryptDatabase();
-            await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: true });
+        if (status === 'disabled') {
             return;
         }
-
-        const isEncryptionKeyChanged = dbConfig?.encryption_key_hash != null && previousEncryptionKeyHash !== encryptionKeyHash;
-        if (isEncryptionKeyChanged) {
-            throw new Error('You cannot edit or remove the encryption key once it has been set.');
+        if (status === 'done') {
+            return;
         }
+        if (status === 'require_rotation') {
+            throw new Error('Rotation of NANGO_ENCRYPTION_KEY is not supported.');
+        }
+        if (status === 'require_decryption') {
+            throw new Error('A previously set NANGO_ENCRYPTION_KEY has been removed from your environment variables.');
+        }
+        if (status === 'not_started') {
+            logger.info('🔐 Encryption key has been set. Encrypting database...');
+            await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: false });
+        }
+        if (status === 'incomplete') {
+            logger.info('🔐 Previously started database encryption is incomplete. Continuing encryption of database...');
+        }
+
+        await this.encryptDatabase();
+        await this.saveDbConfig({ encryption_key_hash: encryptionKeyHash, encryption_complete: true });
     }
 
     private async encryptDatabase() {
@@ -348,7 +264,7 @@ class EncryptionManager extends Encryption {
                 continue;
             }
 
-            environment = this.encryptEnvironment(environment);
+            environment = await this.encryptEnvironment(environment);
             await db.knex.from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
@@ -391,8 +307,6 @@ class EncryptionManager extends Encryption {
                 .where({ id: environmentVariable.id as number })
                 .update(environmentVariable);
         }
-
-        await this.encryptAllDataRecords();
 
         logger.info('🔐✅ Encryption of database complete!');
     }

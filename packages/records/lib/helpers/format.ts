@@ -3,23 +3,31 @@ import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import type { FormattedRecord, UnencryptedRecordData } from '../types.js';
-import { resultErr, resultOk, type Result } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
-export const formatRecords = (
-    data: UnencryptedRecordData[],
-    connection_id: number,
-    model: string,
-    syncId: string,
-    sync_job_id: number,
+export const formatRecords = ({
+    data,
+    connectionId,
+    model,
+    syncId,
+    syncJobId,
     softDelete = false
-): Result<FormattedRecord[]> => {
+}: {
+    data: UnencryptedRecordData[];
+    connectionId: number;
+    model: string;
+    syncId: string;
+    syncJobId: number;
+    softDelete?: boolean;
+}): Result<FormattedRecord[]> => {
     // hashing unique composite key (connection, model, external_id)
     // to generate stable record ids across script executions
     const stableId = (unencryptedData: UnencryptedRecordData): string => {
-        const namespace = uuid.v5(`${connection_id}${model}`, uuid.NIL);
-        return uuid.v5(`${connection_id}${model}${unencryptedData.id}`, namespace);
+        const namespace = uuid.v5(`${connectionId}${model}`, uuid.NIL);
+        return uuid.v5(`${connectionId}${model}${unencryptedData.id}`, namespace);
     };
     const formattedRecords: FormattedRecord[] = [];
     const now = new Date();
@@ -32,18 +40,18 @@ export const formatRecords = (
 
         if (!datum['id']) {
             const error = new Error(`Missing id field in record: ${JSON.stringify(datum)}. Model: ${model}`);
-            return resultErr(error);
+            return Err(error);
         }
 
         const formattedRecord: FormattedRecord = {
             id: stableId(datum),
             json: datum,
-            external_id: datum['id'],
+            external_id: String(datum['id']),
             data_hash,
             model,
-            connection_id,
+            connection_id: connectionId,
             sync_id: syncId,
-            sync_job_id
+            sync_job_id: syncJobId
         };
 
         if (softDelete) {
@@ -55,5 +63,5 @@ export const formatRecords = (
         }
         formattedRecords.push(formattedRecord);
     }
-    return resultOk(formattedRecords);
+    return Ok(formattedRecords);
 };

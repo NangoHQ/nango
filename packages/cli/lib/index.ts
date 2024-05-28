@@ -14,10 +14,11 @@ import * as dotenv from 'dotenv';
 import { nangoConfigFile } from '@nangohq/shared';
 import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
 import deployService from './services/deploy.service.js';
-import compileService from './services/compile.service.js';
+import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
 import dryrunService from './services/dryrun.service.js';
 import configService from './services/config.service.js';
+import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
 import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
@@ -115,10 +116,14 @@ program
         '-m, --metadata [metadata]',
         'Optional (for syncs only): metadata to stub for the sync script supplied in JSON format, for example --metadata \'{"foo": "bar"}\''
     )
+    .option(
+        '--integration-id [integrationId]',
+        'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
+    )
     .action(async function (this: Command, sync: string, connectionId: string) {
-        const { autoConfirm, debug, e: environment } = this.opts();
+        const { autoConfirm, debug, e: environment, integrationId } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
-        dryrunService.run({ ...this.opts(), sync, connectionId }, environment, debug);
+        dryrunService.run({ ...this.opts(), sync, connectionId, optionalEnvironment: environment, optionalProviderConfigKey: integrationId }, debug);
     });
 
 program
@@ -156,7 +161,15 @@ program
     .command('migrate-config')
     .description('Migrate the nango.yaml from v1 (deprecated) to v2')
     .action(async function (this: Command) {
-        await verificationService.runMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+        await v1toV2Migration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    });
+
+program
+    .command('migrate-to-directories')
+    .description('Migrate the script files from root level to structured directories.')
+    .action(async function (this: Command) {
+        const { debug } = this.opts();
+        await directoryMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION), debug);
     });
 
 // Hidden commands //
@@ -196,7 +209,7 @@ program
         const { autoConfirm, debug } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm, debug);
         await verificationService.filesMatchConfig();
-        const success = await compileService.run({ debug });
+        const success = await compileAllFiles({ debug });
         if (!success) {
             process.exitCode = 1;
         }

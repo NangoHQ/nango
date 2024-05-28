@@ -1,12 +1,13 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { Span } from 'dd-trace';
 import tracer from 'dd-trace';
-import { routeWebhook, featureFlags, environmentService } from '@nangohq/shared';
+import type { Span } from 'dd-trace';
+import { featureFlags, environmentService } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
+import routeWebhook from '../webhook/webhook.manager.js';
 
 class WebhookController {
-    async receive(req: Request, res: Response, next: NextFunction) {
+    async receive(req: Request, res: Response<any, never>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('server.sync.receiveWebhook', {
             childOf: active as Span

@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { useState, useEffect, useRef, createRef } from 'react';
 import useSWR from 'swr';
 import { Helmet } from 'react-helmet';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Loading, Tooltip } from '@geist-ui/core';
 import { requestErrorToast, swrFetcher } from '../utils/api';
 import {
@@ -21,7 +21,6 @@ import {
     XSquare
 } from '@geist-ui/icons';
 import { XCircleIcon } from '@heroicons/react/24/outline';
-import queryString from 'query-string';
 
 import { ReactComponent as SyncIcon } from '../icons/sync-code-icon.svg';
 import CopyButton from '../components/ui/button/CopyButton';
@@ -48,12 +47,12 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
 
     try {
         const jsonRegex = /({.*})|(\[.*\])/s;
-        const match = (data as string)?.match(jsonRegex);
+        const match = (data as string).match(jsonRegex);
 
         if (match) {
             const json = JSON.parse(match[0]);
             prettyJson = JSON.stringify(json, null, 2);
-            message = (data as string)?.replace(jsonRegex, '').trim();
+            message = (data as string).replace(jsonRegex, '').trim();
         } else {
             try {
                 prettyJson = JSON.stringify(JSON.parse(data as string), null, 2);
@@ -78,8 +77,6 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
 };
 
 export default function Activity() {
-    const navigate = useNavigate();
-
     const [expandedRow, setExpandedRow] = useState(-1);
     const [limit] = useState(20);
     const [logIds, setLogIds] = useState<number[]>([]);
@@ -88,9 +85,8 @@ export default function Activity() {
     const [integrations, setIntegrations] = useState<string[]>([]);
     const [connections, setConnections] = useState<string[]>([]);
 
-    const location = useLocation();
-    const queryParams = queryString.parse(location.search);
-    const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
+    const [queryParams, setSearchParams] = useSearchParams();
+    const activityLogId: string | (string | null)[] | null = queryParams.get('activity_log_id');
 
     const fifteenDaysAgo = new Date();
     fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
@@ -101,27 +97,30 @@ export default function Activity() {
     const [msgs, setMsgs] = useState<ActivityMessageResponse>([]);
     const [activityRefs, setActivityRefs] = useState<Record<number, React.RefObject<HTMLTableRowElement>>>({});
 
-    const [offset, setOffset] = useState(queryParams.offset || 0);
-    const [status, setStatus] = useState(queryParams.status || '');
-    const [selectedScript, setSelectedScript] = useState(queryParams.script || '');
-    const [selectedIntegration, setSelectedIntegration] = useState(queryParams.integration || '');
-    const [selectedConnection, setSelectedConnection] = useState(queryParams.connection || '');
-    const [selectedDate, setDate] = useState(queryParams.date || '');
+    const [offset, setOffset] = useState<number>(Number(queryParams.get('offset')) || 0);
+    const [status, setStatus] = useState<string>((queryParams.get('status') as string) || '');
+    const [selectedScript, setSelectedScript] = useState<string>((queryParams.get('script') as string) || '');
+    const [selectedIntegration, setSelectedIntegration] = useState<string>((queryParams.get('integration') as string) || '');
+    const [selectedConnection, setSelectedConnection] = useState<string>((queryParams.get('connection') as string) || '');
+    const [selectedDate, setDate] = useState<string>((queryParams.get('date') as string) || '');
     const [loading, setLoading] = useState(false);
 
     const { data: activities, error } = useSWR<ActivityResponse[]>(
+        /* eslint-disable @typescript-eslint/no-useless-template-literals */
         `/api/v1/activity?env=${env}&limit=${limit}&offset=${offset}` +
             `${status ? `&status=${status}` : ''}` +
             `${selectedScript ? `&script=${selectedScript}` : ''}` +
             `${selectedIntegration ? `&integration=${selectedIntegration}` : ''}` +
             `${selectedConnection ? `&connection=${selectedConnection}` : ''}` +
             `${selectedDate ? `&date=${selectedDate}` : ''}`,
+        /* eslint-enable @typescript-eslint/no-useless-template-literals */
         swrFetcher,
         {
             refreshInterval: 15000,
             keepPreviousData: false
         }
     );
+
     useEffect(() => {
         if (activities) {
             setLogIds(activities.map((activity: ActivityResponse) => activity.id));
@@ -161,15 +160,6 @@ export default function Activity() {
     });
 
     useEffect(() => {
-        if (queryParams.offset) setOffset(parseInt(queryParams.offset as string, 10));
-        if (queryParams.status) setStatus(queryParams.status);
-        if (queryParams.script) setSelectedScript(queryParams.script);
-        if (queryParams.integration) setSelectedIntegration(queryParams.integration);
-        if (queryParams.connection) setSelectedConnection(queryParams.connection);
-        if (queryParams.date) setDate(queryParams.date);
-    }, []);
-
-    useEffect(() => {
         if (activityFilters) {
             setScripts(activityFilters.scripts.sort());
             setIntegrations(activityFilters.integrations.sort());
@@ -192,9 +182,9 @@ export default function Activity() {
                 // wait 1 second before scrolling
                 await new Promise((resolve) => setTimeout(resolve, 500));
 
-                if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
+                if (activityRefs[id] && activityRefs[id].current && activityRefs[id].current !== null) {
                     setTimeout(() => {
-                        activityRefs[id]?.current?.scrollIntoView({
+                        activityRefs[id].current?.scrollIntoView({
                             behavior: 'smooth',
                             block: 'nearest'
                         });
@@ -217,22 +207,29 @@ export default function Activity() {
         const newOffset = Number(offset) + limit;
         setOffset(newOffset);
 
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: newOffset }));
+        setSearchParams((prev) => {
+            prev.set('offset', String(newOffset));
+            return prev;
+        });
     };
 
     const decrementPage = () => {
         if (Number(offset) - limit >= 0) {
             const newOffset = Number(offset) - limit;
             setOffset(newOffset);
-
-            navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: newOffset }));
+            setSearchParams((prev) => {
+                prev.set('offset', String(newOffset));
+                return prev;
+            });
         }
     };
 
     const resetOffset = () => {
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const renderParams = (params: Record<string, string>, level: string) => {
@@ -249,8 +246,11 @@ export default function Activity() {
         const value = e.target.value;
         setStatus(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, status: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('status', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleScriptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -258,8 +258,11 @@ export default function Activity() {
         const value = e.target.value;
         setSelectedScript(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, script: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('script', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -267,8 +270,11 @@ export default function Activity() {
         const value = e.target.value;
         setSelectedIntegration(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, integration: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('integration', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -276,8 +282,11 @@ export default function Activity() {
         const value = e.target.value;
         setSelectedConnection(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, connection: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('connection', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,19 +294,19 @@ export default function Activity() {
         const value = e.target.value;
         setDate(value);
         setOffset(0);
-
-        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, date: value, offset: 0 }));
+        setSearchParams((prev) => {
+            prev.set('data', value);
+            prev.set('offset', '0');
+            return prev;
+        });
     };
 
     const onRemoveFilter = (action: (val: string) => void, prop: string) => {
         setLoading(true);
         action('');
-        const url = window.location.pathname;
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.delete(prop);
-
-        const updatedUrl = url + '?' + searchParams.toString();
-        navigate(updatedUrl);
+        setSearchParams(searchParams);
     };
 
     const copyActivityLogUrl = (activity: ActivityResponse): string => {
@@ -390,7 +399,7 @@ export default function Activity() {
                                     name="status"
                                     className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                     onChange={handleStatusChange}
-                                    value={status as string}
+                                    value={status}
                                 >
                                     <option key="" value="" disabled>
                                         Status
@@ -416,7 +425,7 @@ export default function Activity() {
                                         name="script"
                                         className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleScriptChange}
-                                        value={selectedScript as string}
+                                        value={selectedScript}
                                     >
                                         <option key="" value="" disabled>
                                             Script
@@ -442,7 +451,7 @@ export default function Activity() {
                                         name="connection"
                                         className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleConnectionChange}
-                                        value={selectedConnection as string}
+                                        value={selectedConnection}
                                     >
                                         <option key="" value="" disabled>
                                             Connection
@@ -468,7 +477,7 @@ export default function Activity() {
                                         name="integration"
                                         className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm"
                                         onChange={handleIntegrationChange}
-                                        value={selectedIntegration as string}
+                                        value={selectedIntegration}
                                     >
                                         <option key="" value="" disabled>
                                             Integration
@@ -495,7 +504,7 @@ export default function Activity() {
                                     className="bg-pure-black border-none text-text-light-gray block w-full appearance-none py-2 text-base shadow-sm hide-calendar-icon"
                                     style={{ WebkitAppearance: 'none' }}
                                     onChange={handleDateChange}
-                                    value={selectedDate as string}
+                                    value={selectedDate}
                                     max={new Date().toISOString().split('T')[0]}
                                     min={fifteenDaysAgo.toISOString().split('T')[0]}
                                 />
@@ -520,7 +529,7 @@ export default function Activity() {
                             </span>
                             <span
                                 onClick={incrementPage}
-                                className={`flex ${activities && activities?.length < limit ? '' : 'cursor-pointer hover:bg-gray-700'} h-8 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}
+                                className={`flex ${activities && activities.length < limit ? '' : 'cursor-pointer hover:bg-gray-700'} h-8 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}
                             >
                                 <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path
@@ -550,7 +559,7 @@ export default function Activity() {
                                     <table className="table-auto">
                                         <tbody className="px-4">
                                             {activities
-                                                .filter((activity: ActivityResponse) => typeof activity?.action === 'string')
+                                                .filter((activity: ActivityResponse) => typeof activity.action === 'string')
                                                 .map((activity: ActivityResponse, index: number) => (
                                                     <tr key={activity.id} ref={activityRefs[activity.id]}>
                                                         <td
@@ -559,59 +568,59 @@ export default function Activity() {
                                                             } h-16`}
                                                         >
                                                             <div className="flex items-center px-2">
-                                                                {activity?.success === null && (
+                                                                {activity.success === null && (
                                                                     <Link
                                                                         to={
-                                                                            activity?.action === 'sync deploy'
+                                                                            activity.action === 'sync deploy'
                                                                                 ? `/${env}/integrations`
-                                                                                : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`
+                                                                                : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity.action === 'sync' ? '' : '#authorization'}`
                                                                         }
                                                                     >
                                                                         <Clock className="stroke-yellow-500" size="32" />
                                                                     </Link>
                                                                 )}
-                                                                {activity?.success === true && (
+                                                                {activity.success && (
                                                                     <Link
                                                                         to={
-                                                                            activity?.action === 'sync deploy'
+                                                                            activity.action === 'sync deploy'
                                                                                 ? `/${env}/integrations`
-                                                                                : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`
+                                                                                : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity.action === 'sync' ? '' : '#authorization'}`
                                                                         }
                                                                     >
                                                                         <CheckInCircle className="stroke-green-500" size="32" />
                                                                     </Link>
                                                                 )}
-                                                                {activity?.success === false && (
+                                                                {activity.success === false && (
                                                                     <Link
                                                                         to={
-                                                                            activity?.action === 'sync deploy'
+                                                                            activity.action === 'sync deploy'
                                                                                 ? `/${env}/integrations`
-                                                                                : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '' : '#authorization'}`
+                                                                                : `/${env}/connections/${activity.provider_config_key}/${activity.connection_id}${activity.action === 'sync' ? '' : '#authorization'}`
                                                                         }
                                                                     >
                                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                                     </Link>
                                                                 )}
                                                                 <div className="ml-10 w-60 mr-4 truncate overflow-hidden">
-                                                                    {activity?.action === 'account' && (
+                                                                    {activity.action === 'account' && (
                                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-yellow-500 bg-opacity-20">
                                                                             <User className="stroke-yellow-500 mr-2" size="16" />
                                                                             <p className="inline-block text-yellow-500">account</p>
                                                                         </div>
                                                                     )}
-                                                                    {(activity?.action === 'oauth' || activity?.action === 'auth') && (
+                                                                    {(activity.action === 'oauth' || activity.action === 'auth') && (
                                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
                                                                             <p className="inline-block text-pink-500">auth</p>
                                                                         </div>
                                                                     )}
-                                                                    {activity?.action === 'token' && (
+                                                                    {activity.action === 'token' && (
                                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-[#FBBC05] bg-opacity-20">
                                                                             <img className="h-4 mr-2" src="/images/token-icon.svg" alt="" />
                                                                             <p className="inline-block text-[#FBBC05]">token</p>
                                                                         </div>
                                                                     )}
-                                                                    {activity?.action === 'action' && (
+                                                                    {activity.action === 'action' && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
                                                                                 <SyncIcon className="h-4 -ml-3 -mr-1 stroke-red-500" />
@@ -620,20 +629,20 @@ export default function Activity() {
                                                                             {activity.operation_name && (
                                                                                 <Tooltip text={activity.operation_name} type="dark">
                                                                                     <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">
-                                                                                        ({activity?.operation_name})
+                                                                                        ({activity.operation_name})
                                                                                     </p>
                                                                                 </Tooltip>
                                                                             )}
                                                                         </span>
                                                                     )}
-                                                                    {activity?.action === 'webhook' && (
+                                                                    {activity.action === 'webhook' && (
                                                                         <div className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
                                                                                 <ArrowRight className="stroke-red-500 mr-2" size="16" />
                                                                                 <p className="inline-block text-red-500">webhook</p>
                                                                             </div>
                                                                             {activity.endpoint && (
-                                                                                <Tooltip text={`${activity.endpoint}`} type="dark">
+                                                                                <Tooltip text={activity.endpoint} type="dark">
                                                                                     <div className="w-52 text-gray-500 overflow-hidden truncate">
                                                                                         <span className="ml-3">{activity.endpoint}</span>
                                                                                     </div>
@@ -641,7 +650,7 @@ export default function Activity() {
                                                                             )}
                                                                         </div>
                                                                     )}
-                                                                    {(activity?.action === 'sync' || activity.action === 'full sync') && (
+                                                                    {(activity.action === 'sync' || activity.action === 'full sync') && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
                                                                                 <SyncIcon className="h-4 -ml-3 -mr-1 stroke-green-500" />
@@ -654,14 +663,14 @@ export default function Activity() {
                                                                                 {activity.operation_name && (
                                                                                     <Tooltip text={activity.operation_name} type="dark">
                                                                                         <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">
-                                                                                            ({activity?.operation_name})
+                                                                                            ({activity.operation_name})
                                                                                         </p>
                                                                                     </Tooltip>
                                                                                 )}
                                                                             </Link>
                                                                         </span>
                                                                     )}
-                                                                    {activity?.action === 'sync deploy' && (
+                                                                    {activity.action === 'sync deploy' && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-[#8247FF] bg-opacity-20">
                                                                                 <img className="h-4 mr-2" src="/images/sync-deploy-icon.svg" alt="" />
@@ -670,7 +679,7 @@ export default function Activity() {
                                                                             <Link to={`/${env}/integrations`}></Link>
                                                                         </span>
                                                                     )}
-                                                                    {activity?.action === 'sync init' && (
+                                                                    {activity.action === 'sync init' && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-blue-500 bg-opacity-20">
                                                                                 <Box className="stroke-blue-700 mr-2" size="16" />
@@ -680,14 +689,14 @@ export default function Activity() {
                                                                                 {activity.operation_name && (
                                                                                     <Tooltip text={activity.operation_name} type="dark">
                                                                                         <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">
-                                                                                            ({activity?.operation_name})
+                                                                                            ({activity.operation_name})
                                                                                         </p>
                                                                                     </Tooltip>
                                                                                 )}
                                                                             </Link>
                                                                         </span>
                                                                     )}
-                                                                    {activity?.action === 'pause sync' && (
+                                                                    {activity.action === 'pause sync' && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
                                                                                 <Pause className="stroke-gray-500 mr-2" size="16" />
@@ -695,12 +704,12 @@ export default function Activity() {
                                                                             </div>
                                                                             <Link to={`/${env}/integrations`}>
                                                                                 {activity.operation_name && (
-                                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                                    <p className="text-gray-500 ml-2 text-sm">({activity.operation_name})</p>
                                                                                 )}
                                                                             </Link>
                                                                         </span>
                                                                     )}
-                                                                    {activity?.action === 'restart sync' && (
+                                                                    {activity.action === 'restart sync' && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
                                                                                 <Play className="stroke-gray-500 mr-2" size="16" />
@@ -708,12 +717,12 @@ export default function Activity() {
                                                                             </div>
                                                                             <Link to={`/${env}/integrations`}>
                                                                                 {activity.operation_name && (
-                                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                                    <p className="text-gray-500 ml-2 text-sm">({activity.operation_name})</p>
                                                                                 )}
                                                                             </Link>
                                                                         </span>
                                                                     )}
-                                                                    {activity?.action === 'cancel sync' && (
+                                                                    {activity.action === 'cancel sync' && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
                                                                                 <XSquare className="stroke-red-500 mr-2" size="16" />
@@ -723,14 +732,14 @@ export default function Activity() {
                                                                                 {activity.operation_name && (
                                                                                     <Tooltip text={activity.operation_name} type="dark">
                                                                                         <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">
-                                                                                            ({activity?.operation_name})
+                                                                                            ({activity.operation_name})
                                                                                         </p>
                                                                                     </Tooltip>
                                                                                 )}
                                                                             </Link>
                                                                         </span>
                                                                     )}
-                                                                    {(activity?.action === 'trigger sync' || activity.action === 'trigger full sync') && (
+                                                                    {(activity.action === 'trigger sync' || activity.action === 'trigger full sync') && (
                                                                         <span className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
                                                                                 <FastForward className="stroke-gray-500 mr-2" size="16" />
@@ -740,21 +749,21 @@ export default function Activity() {
                                                                                 {activity.operation_name && (
                                                                                     <Tooltip text={activity.operation_name} type="dark">
                                                                                         <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">
-                                                                                            ({activity?.operation_name})
+                                                                                            ({activity.operation_name})
                                                                                         </p>
                                                                                     </Tooltip>
                                                                                 )}
                                                                             </Link>
                                                                         </span>
                                                                     )}
-                                                                    {activity?.action === 'proxy' && (
+                                                                    {activity.action === 'proxy' && (
                                                                         <div className="flex items-center">
                                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-3 bg-[#6BA4F8] bg-opacity-20">
                                                                                 <ArrowRight className="stroke-[#6BA4F8] mr-2" size="16" />
                                                                                 <p className="inline-block text-[#6BA4F8]">proxy</p>
                                                                             </div>
                                                                             {activity.endpoint && (
-                                                                                <Tooltip text={`${activity.endpoint}`} type="dark">
+                                                                                <Tooltip text={activity.endpoint} type="dark">
                                                                                     <div className="w-52 text-gray-500 overflow-hidden truncate">
                                                                                         <span className="ml-3">{activity.endpoint}</span>
                                                                                     </div>
@@ -763,7 +772,7 @@ export default function Activity() {
                                                                         </div>
                                                                     )}
                                                                 </div>
-                                                                <Tooltip text={activity?.connection_id} type="dark">
+                                                                <Tooltip text={activity.connection_id} type="dark">
                                                                     <Link
                                                                         to={`/${env}/connections/${activity.provider_config_key}/${activity.connection_id}`}
                                                                         className={`block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate ${activity.connection_id === null ? 'cursor-default' : ''}`}
@@ -789,7 +798,7 @@ export default function Activity() {
                                                                         }
                                                                     }}
                                                                 >
-                                                                    {activity?.provider ? (
+                                                                    {activity.provider ? (
                                                                         <div className="w-80 flex">
                                                                             <img
                                                                                 src={`images/template-logos/${activity.provider}.svg`}
@@ -828,28 +837,28 @@ export default function Activity() {
                                                                             <div key={index} className="flex flex-col max-w-7xl">
                                                                                 <div className="whitespace-normal break-all overflow-wrap">
                                                                                     <span className="text-gray-500">
-                                                                                        {formatTimestampWithTZ(Number(message?.timestamp))}
+                                                                                        {formatTimestampWithTZ(Number(message.timestamp))}
                                                                                     </span>{' '}
                                                                                     <span
-                                                                                        className={`whitespace-normal break-all overflow-wrap ${getLogColor(message?.level as string)}`}
+                                                                                        className={`whitespace-normal break-all overflow-wrap ${getLogColor(message.level as string)}`}
                                                                                     >
-                                                                                        <JsonPrettyPrint data={message?.content} />
+                                                                                        <JsonPrettyPrint data={message.content} />
                                                                                     </span>
                                                                                 </div>
-                                                                                {message?.auth_mode && (
+                                                                                {message.auth_mode && (
                                                                                     <div className="ml-4">auth_mode: {message.auth_mode}</div>
                                                                                 )}
-                                                                                {message?.url && (
+                                                                                {message.url && (
                                                                                     <div className="whitespace-normal break-all overflow-wrap ml-4">
                                                                                         url: {message.url}
                                                                                     </div>
                                                                                 )}
-                                                                                {message?.state && (
+                                                                                {message.state && (
                                                                                     <div className="whitespace-normal break-all overflow-wrap ml-4">
                                                                                         state: {message.state}
                                                                                     </div>
                                                                                 )}
-                                                                                {message?.params && (
+                                                                                {message.params && (
                                                                                     <div className="ml-4">
                                                                                         {renderParams(
                                                                                             message.params as unknown as Record<string, string>,

@@ -5,7 +5,8 @@ import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../m
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
-import { updateScheduleStatus, markAllAsStopped } from './schedule.service.js';
+import { updateScheduleStatus } from './schedule.service.js';
+import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -15,6 +16,7 @@ import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { LogActionEnum } from '../../models/Activity.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -201,11 +203,6 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         return [];
     }
 
-    const scheduleResponse = await syncClient?.listSchedules();
-    if (scheduleResponse?.schedules.length === 0) {
-        await markAllAsStopped();
-    }
-
     const syncJobTimestampsSubQuery = db.knex.raw(
         `(
             SELECT json_agg(json_build_object(
@@ -219,7 +216,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         ) as thirty_day_timestamps`
     );
 
-    const result = await db.knex
+    const q = db.knex
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
@@ -228,18 +225,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.frequency`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
-            db.knex.raw(
-                `(
-                    SELECT models
-                    FROM
-                        _nango_connections
-                        JOIN _nango_configs ON _nango_configs.id = _nango_connections.config_id
-                        JOIN _nango_sync_configs ON _nango_sync_configs.nango_config_id = _nango_configs.id
-                            AND _nango_sync_configs.deleted = FALSE
-                            AND _nango_sync_configs.active = TRUE
-                    WHERE _nango_connections.id = _nango_syncs.nango_connection_id AND _nango_sync_configs.sync_name = _nango_syncs.name
-                ) as models`
-            ),
+            `${SYNC_CONFIG_TABLE}.models`,
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -255,11 +241,10 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                         'activity_log_id', ${ACTIVITY_LOG_TABLE}.id
                     )
                     FROM ${SYNC_JOB_TABLE}
-                    JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id
+                    JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
                     LEFT JOIN ${ACTIVITY_LOG_TABLE} ON ${ACTIVITY_LOG_TABLE}.session_id = ${SYNC_JOB_TABLE}.id::text
                     WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
-                    AND ${SYNC_JOB_TABLE}.deleted = false
-                    AND ${SYNC_CONFIG_TABLE}.deleted = false
+                        AND ${SYNC_JOB_TABLE}.deleted = false
                     ORDER BY ${SYNC_JOB_TABLE}.updated_at DESC
                     LIMIT 1
                 ) as latest_sync
@@ -267,12 +252,20 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             ),
             syncJobTimestampsSubQuery
         )
-        .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
-        .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
+        .join(SYNC_SCHEDULE_TABLE, function () {
+            this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
+        })
+        .join(SYNC_CONFIG_TABLE, function () {
+            this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
+                .andOn(`${SYNC_CONFIG_TABLE}.deleted`, '=', db.knex.raw('FALSE'))
+                .andOn(`${SYNC_CONFIG_TABLE}.active`, '=', db.knex.raw('TRUE'))
+                .andOn(`${SYNC_CONFIG_TABLE}.type`, '=', db.knex.raw('?', 'sync'))
+                .andOn(`${SYNC_CONFIG_TABLE}.nango_config_id`, '=', db.knex.raw('?', [nangoConnection.config_id]));
+        })
+        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
             nango_connection_id: nangoConnection.id,
-            [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
-            [`${SYNC_JOB_TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.nango_config_id`]: nangoConnection.config_id,
             [`${TABLE}.deleted`]: false
         })
         .orderBy(`${TABLE}.name`, 'asc')
@@ -285,24 +278,63 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             'models'
         );
 
+    const result = await q;
     const syncsWithSchedule = result.map(async (sync) => {
         const { schedule_id } = sync;
-        const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
-        // if a disagreement trust temporal
-        if (schedule?.info?.paused && sync.schedule_status !== SyncStatus.PAUSED) {
-            sync = {
-                ...sync,
-                schedule_status: SyncStatus.PAUSED
-            };
-            await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
-        } else if (!schedule?.info?.paused && sync.schedule_status === SyncStatus.PAUSED) {
-            sync = {
-                ...sync,
-                schedule_status: SyncStatus.RUNNING
-            };
-            await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
+        const syncSchedule = await syncClient?.describeSchedule(schedule_id);
+
+        if (syncSchedule) {
+            if (syncSchedule.schedule?.state?.paused && sync.schedule_status === SyncStatus.RUNNING) {
+                sync = {
+                    ...sync,
+                    schedule_status: SyncStatus.PAUSED
+                };
+                await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
+                await telemetry.log(
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
+                    'UI: Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(nangoConnection.environment_id),
+                        syncName: sync.name,
+                        connectionId: nangoConnection.connection_id,
+                        providerConfigKey: nangoConnection.provider_config_key,
+                        syncId: sync.id,
+                        syncJobId: String(sync.latest_sync?.job_id),
+                        scheduleId: schedule_id,
+                        level: 'warn'
+                    },
+                    `syncId:${sync.id}`
+                );
+            } else if (!syncSchedule.schedule?.state?.paused && sync.schedule_status === SyncStatus.PAUSED) {
+                sync = {
+                    ...sync,
+                    schedule_status: SyncStatus.RUNNING
+                };
+                await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
+                await telemetry.log(
+                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,
+                    'UI: Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(nangoConnection.environment_id),
+                        syncName: sync.name,
+                        connectionId: nangoConnection.connection_id,
+                        providerConfigKey: nangoConnection.provider_config_key,
+                        syncId: sync.id,
+                        syncJobId: String(sync.latest_sync?.job_id),
+                        scheduleId: schedule_id,
+                        level: 'warn'
+                    },
+                    `syncId:${sync.id}`
+                );
+            }
         }
-        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber()) || [];
+
+        let futureActionTimes: number[] = [];
+        if (sync.schedule_status !== SyncStatus.PAUSED && syncSchedule && syncSchedule.info?.futureActionTimes) {
+            futureActionTimes = syncSchedule.info.futureActionTimes.map((long) => long.seconds?.toNumber()) as number[];
+        }
 
         return {
             ...sync,
@@ -647,7 +679,7 @@ export const getAndReconcileDifferences = async ({
                     deletedSyncs.push({
                         name: existingSync.sync_name,
                         providerConfigKey: existingSync.unique_key,
-                        connections: connections?.length
+                        connections: connections.length
                     });
                 } else {
                     deletedActions.push({
@@ -719,9 +751,15 @@ export const getAndReconcileDifferences = async ({
 export interface PausableSyncs {
     id: string;
     name: string;
-    environment_id: number;
+    config_id: number;
+    provider_unique_key: string;
     provider: string;
+    environment_id: number;
+    environment_name: string;
     account_id: number;
+    account_name: string;
+    sync_config_id: number;
+    connection_unique_id: number;
     connection_id: string;
     unique_key: string;
     schedule_id: string;
@@ -733,20 +771,34 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
         .select(
             '_nango_syncs.id',
             '_nango_syncs.name',
-            '_nango_environments.account_id',
-            '_nango_connections.environment_id',
+            '_nango_accounts.id as account_id',
+            '_nango_accounts.name as account_name',
+            '_nango_environments.id as environment_id',
+            '_nango_environments.name as environment_name',
+            '_nango_configs.id as config_id',
             '_nango_configs.provider',
-            '_nango_configs.unique_key',
+            '_nango_configs.unique_key as provider_unique_key',
+            '_nango_connections.id as connection_unique_id',
             '_nango_connections.connection_id',
-            '_nango_sync_schedules.schedule_id'
+            '_nango_sync_schedules.schedule_id',
+            '_nango_sync_configs.id as sync_config_id'
         )
         .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
         .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+        .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
         .join('_nango_configs', function () {
             this.on('_nango_configs.environment_id', '_nango_connections.environment_id').on(
                 '_nango_configs.unique_key',
                 '_nango_connections.provider_config_key'
             );
+        })
+        .join('_nango_sync_configs', function () {
+            this.on('_nango_sync_configs.environment_id', '_nango_environments.id')
+                .on('_nango_sync_configs.nango_config_id', '_nango_configs.id')
+                .on('_nango_sync_configs.sync_name', '_nango_syncs.name')
+                .onVal('_nango_sync_configs.type', 'sync')
+                .onVal('_nango_sync_configs.deleted', false)
+                .onVal('_nango_sync_configs.active', true);
         })
         .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
         .where({

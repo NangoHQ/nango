@@ -4,15 +4,18 @@ import type { SyncRunConfig } from './run.service.js';
 import SyncRun from './run.service.js';
 import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as database from '../../db/database.js';
-import * as dataMocks from './data/mocks.js';
-import * as dataService from './data/data.service.js';
-import * as legacyRecordsService from './data/records.service.js';
 import * as jobService from './job.service.js';
-import type { CustomerFacingDataRecord, IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
-import type { DataResponse } from '../../models/Data.js';
+import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
-import { LogContext, logContextGetter } from '@nangohq/logs';
-import { records as recordsService } from '@nangohq/records';
+import { logContextGetter } from '@nangohq/logs';
+import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
+import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
+import { createEnvironmentSeed } from '../../db/seeders/environment.seeder.js';
+import { createConnectionSeeds } from '../../db/seeders/connection.seeder.js';
+import { createSyncSeeds } from '../../db/seeders/sync.seeder.js';
+import { createSyncJobSeeds } from '../../db/seeders/sync-job.seeder.js';
+import connectionService from '../connection.service.js';
+import { createActivityLog } from '../activity/activity.service.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -25,15 +28,22 @@ class integrationServiceMock implements IntegrationServiceInterface {
     }
 }
 
+const orchestratorClient = {
+    execute: () => {
+        return Promise.resolve({}) as any;
+    }
+};
+
 const integrationService = new integrationServiceMock();
 
 describe('Running sync', () => {
     beforeAll(async () => {
-        await database.multipleMigrations();
+        await initDb();
     });
 
     afterAll(async () => {
         await clearDb();
+        await clearRecordsDb();
     });
 
     describe(`with track_deletes=false`, () => {
@@ -64,18 +74,18 @@ describe('Running sync', () => {
             const expectedResult = { added: 1, updated: 1, deleted: 0 };
             const { records } = await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
 
-            const record1 = records.find((record) => record.id == 1);
+            const record1 = records.find((record) => record.id == '1');
             if (!record1) throw new Error('record1 is not defined');
             expect(record1['name']).toEqual('A');
             expect(record1._nango_metadata.first_seen_at < record1._nango_metadata.last_modified_at).toBeTruthy();
             expect(record1._nango_metadata.deleted_at).toBeNull();
             expect(record1._nango_metadata.last_action).toEqual('UPDATED');
 
-            const record2 = records.find((record) => record.id == 2);
+            const record2 = records.find((record) => record.id == '2');
             if (!record2) throw new Error('record2 is not defined');
             expect(record2._nango_metadata.first_seen_at).toEqual(record2._nango_metadata.last_modified_at);
             expect(record2._nango_metadata.last_action).toEqual('ADDED'); // record was added as part of the initial save
-            const record3 = records.find((record) => record.id == 3);
+            const record3 = records.find((record) => record.id == '3');
             if (!record3) throw new Error('record3 is not defined');
             expect(record3._nango_metadata.first_seen_at).toEqual(record3._nango_metadata.last_modified_at);
             expect(record3._nango_metadata.last_action).toEqual('ADDED');
@@ -109,18 +119,18 @@ describe('Running sync', () => {
             ];
             const expectedResult = { added: 1, updated: 1, deleted: 1 };
             const { records } = await verifySyncRun(rawRecords, newRecords, trackDeletes, expectedResult);
-            const record1 = records.find((record) => record.id == 1);
+            const record1 = records.find((record) => record.id == '1');
             if (!record1) throw new Error('record1 is not defined');
             expect(record1['name']).toEqual('A');
             expect(record1._nango_metadata.first_seen_at < record1._nango_metadata.last_modified_at).toBeTruthy();
             expect(record1._nango_metadata.deleted_at).toBeNull();
             expect(record1._nango_metadata.last_action).toEqual('UPDATED');
-            const record2 = records.find((record) => record.id == 2);
+            const record2 = records.find((record) => record.id == '2');
             if (!record2) throw new Error('record2 is not defined');
             expect(record2._nango_metadata.first_seen_at < record2._nango_metadata.last_modified_at).toBeTruthy();
             expect(record2._nango_metadata.deleted_at).not.toBeNull();
             expect(record2._nango_metadata.last_action).toEqual('DELETED');
-            const record3 = records.find((record) => record.id == 3);
+            const record3 = records.find((record) => record.id == '3');
             if (!record3) throw new Error('record3 is not defined');
             expect(record3._nango_metadata.first_seen_at).toEqual(record3._nango_metadata.last_modified_at);
             expect(record3._nango_metadata.last_action).toEqual('ADDED');
@@ -138,7 +148,7 @@ describe('Running sync', () => {
             await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, false);
 
             const records = await getRecords(connection, model);
-            const record = records.find((record) => record.id == 2);
+            const record = records.find((record) => record.id == '2');
             if (!record) throw new Error('record is not defined');
             expect(record._nango_metadata.first_seen_at < record._nango_metadata.last_modified_at).toBeTruthy();
             expect(record._nango_metadata.deleted_at).not.toBeNull();
@@ -149,7 +159,7 @@ describe('Running sync', () => {
             expect(result).toEqual({ added: 1, updated: 0, deleted: 0 });
 
             const recordsAfter = await getRecords(connection, model);
-            const recordAfter = recordsAfter.find((record) => record.id == 2);
+            const recordAfter = recordsAfter.find((record) => record.id == '2');
             if (!recordAfter) throw new Error('record is not defined');
             expect(recordAfter._nango_metadata.first_seen_at).toEqual(recordAfter._nango_metadata.last_modified_at);
             expect(recordAfter._nango_metadata.deleted_at).toBeNull();
@@ -179,7 +189,8 @@ describe('SyncRun', () => {
     it('should initialize correctly', () => {
         const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
-            recordsService: recordsService,
+            recordsService,
+            orchestratorClient,
             logContextGetter,
             writeToDb: true,
             nangoConnection: {
@@ -212,12 +223,18 @@ describe('SyncRun', () => {
     });
 });
 
+const initDb = async () => {
+    await database.multipleMigrations();
+    await migrateRecords();
+};
+
 const clearDb = async () => {
     await db.knex.raw(`DROP SCHEMA nango CASCADE`);
+    // TODO: clear records???
 };
 
 const runJob = async (
-    rawRecords: DataResponse[],
+    rawRecords: UnencryptedRecordData[],
     activityLogId: number,
     model: string,
     connection: Connection,
@@ -233,8 +250,9 @@ const runJob = async (
 
     const config: SyncRunConfig = {
         integrationService: integrationService,
-        recordsService: recordsService,
-        logContextGetter: logContextGetter,
+        recordsService,
+        orchestratorClient,
+        logContextGetter,
         writeToDb: true,
         nangoConnection: connection,
         syncName: sync.name,
@@ -246,29 +264,27 @@ const runJob = async (
     const syncRun = new SyncRun(config);
 
     // format and upsert records
-    const { response: records } = legacyRecordsService.formatDataRecords(rawRecords, connection.id!, model, sync.id, syncJob.id, softDelete);
-    if (!records) {
+    const formatting = recordsFormatter.formatRecords({
+        data: rawRecords,
+        connectionId: connection.id as number,
+        model,
+        syncId: sync.id,
+        syncJobId: syncJob.id,
+        softDelete
+    });
+    if (formatting.isErr()) {
         throw new Error(`failed to format records`);
     }
-
-    const logCtx = new LogContext({ parentId: String(activityLogId) }, { dryRun: true, logToConsole: false });
-    const { error: upsertError, summary } = await dataService.upsert(
-        records,
-        connection.id!,
-        model,
-        activityLogId,
-        connection.environment_id,
-        softDelete,
-        logCtx
-    );
-    if (upsertError) {
-        throw new Error(`failed to upsert records: ${upsertError}`);
+    const upserting = await recordsService.upsert({ records: formatting.value, connectionId: connection.id as number, model, softDelete });
+    if (upserting.isErr()) {
+        throw new Error(`failed to upsert records: ${upserting.error.message}`);
     }
+    const summary = upserting.value;
     const updatedResults = {
         [model]: {
-            added: summary?.addedKeys.length as number,
-            updated: summary?.updatedKeys.length as number,
-            deleted: summary?.deletedKeys?.length as number
+            added: summary.addedKeys.length,
+            updated: summary.updatedKeys.length,
+            deleted: summary.deletedKeys?.length || 0
         }
     };
     await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
@@ -284,14 +300,14 @@ const runJob = async (
 };
 
 const verifySyncRun = async (
-    initialRecords: DataResponse[],
-    newRecords: DataResponse[],
+    initialRecords: UnencryptedRecordData[],
+    newRecords: UnencryptedRecordData[],
     trackDeletes: boolean,
     expectedResult: SyncResult,
     softDelete: boolean = false
-): Promise<{ connection: Connection; model: string; sync: Sync; activityLogId: number; records: CustomerFacingDataRecord[] }> => {
+): Promise<{ connection: Connection; model: string; sync: Sync; activityLogId: number; records: ReturnedRecord[] }> => {
     // Write initial records
-    const { connection, model, sync, activityLogId } = await dataMocks.upsertRecords(initialRecords);
+    const { connection, model, sync, activityLogId } = await populateRecords(initialRecords);
 
     // Run job to save new records
     const result = await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, softDelete);
@@ -303,14 +319,93 @@ const verifySyncRun = async (
 };
 
 const getRecords = async (connection: Connection, model: string) => {
-    const { response } = await legacyRecordsService.getAllDataRecords(
-        connection.connection_id,
-        connection.provider_config_key,
-        connection.environment_id,
-        model
-    );
-    if (response) {
-        return response.records;
+    const res = await recordsService.getRecords({ connectionId: connection.id!, model });
+    if (res.isOk()) {
+        return res.value.records;
     }
     throw new Error('cannot fetch records');
 };
+
+async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
+    connection: Connection;
+    model: string;
+    sync: Sync;
+    syncJob: SyncJob;
+    activityLogId: number;
+}> {
+    const {
+        records,
+        meta: { env, model, connectionId, sync, syncJob }
+    } = await mockRecords(toInsert);
+    const connection = await connectionService.getConnectionById(connectionId);
+
+    if (!connection) {
+        throw new Error(`Connection '${connectionId}' not found`);
+    }
+    const activityLogId = await createActivityLog({
+        level: 'info',
+        success: false,
+        environment_id: env.id,
+        action: 'sync',
+        start: Date.now(),
+        end: Date.now(),
+        timestamp: Date.now(),
+        connection_id: connection.connection_id,
+        provider: connection.provider_config_key,
+        provider_config_key: connection.provider_config_key
+    });
+    if (!activityLogId) {
+        throw new Error('Failed to create activity log');
+    }
+    const chunkSize = 1000;
+    for (let i = 0; i < records.length; i += chunkSize) {
+        const res = await recordsService.upsert({ records: records.slice(i, i + chunkSize), connectionId, model });
+        if (res.isErr()) {
+            throw new Error(`Failed to upsert records: ${res.error.message}`);
+        }
+    }
+    return {
+        connection: connection as Connection,
+        model,
+        sync,
+        syncJob,
+        activityLogId
+    };
+}
+
+async function mockRecords(records: UnencryptedRecordData[]) {
+    const envName = Math.random().toString(36).substring(7);
+    const env = await createEnvironmentSeed(0, envName);
+
+    const connections = await createConnectionSeeds(env);
+
+    const [connectionId]: number[] = connections;
+    if (!connectionId) {
+        throw new Error('Failed to create connection');
+    }
+    const sync = await createSyncSeeds(connectionId);
+    if (!sync.id) {
+        throw new Error('Failed to create sync');
+    }
+    const job = await createSyncJobSeeds(sync.id);
+    if (!job.id) {
+        throw new Error('Failed to create job');
+    }
+    const model = Math.random().toString(36).substring(7);
+    const formattedRecords = recordsFormatter.formatRecords({ data: records, connectionId, model, syncId: sync.id, syncJobId: job.id });
+
+    if (formattedRecords.isErr()) {
+        throw new Error(`Failed to format records: ${formattedRecords.error.message}`);
+    }
+
+    return {
+        meta: {
+            env,
+            connectionId,
+            model,
+            sync,
+            syncJob: job
+        },
+        records: formattedRecords.value
+    };
+}

@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
+import https from 'node:https';
 
 import type {
     ApiKeyCredentials,
@@ -16,6 +17,7 @@ import type {
     IntegrationWithCreds,
     ListRecordsRequestConfig,
     Metadata,
+    MetadataChangeResponse,
     NangoProps,
     OAuth1Token,
     ProxyConfiguration,
@@ -25,12 +27,13 @@ import type {
     UpdateSyncFrequencyResponse
 } from './types.js';
 import { AuthModes } from './types.js';
-import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+import { getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
 
 export * from './types.js';
+export { getUserAgent } from './utils.js';
 
 type CustomHeaders = Record<string, string | number | boolean>;
 
@@ -38,6 +41,8 @@ export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL'
 }
+
+const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
 export class Nango {
     serverUrl: string;
@@ -47,8 +52,10 @@ export class Nango {
     isSync = false;
     dryRun = false;
     activityLogId?: number;
+    userAgent: string;
+    http: AxiosInstance;
 
-    constructor(config: NangoProps) {
+    constructor(config: NangoProps, { userAgent }: { userAgent?: string } = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -81,6 +88,14 @@ export class Nango {
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
+
+        this.userAgent = getUserAgent(userAgent);
+        this.http = axios.create({
+            httpsAgent: defaultHttpsAgent,
+            headers: {
+                'User-Agent': this.userAgent
+            }
+        });
     }
 
     /**
@@ -100,7 +115,7 @@ export class Nango {
      */
     public async listIntegrations(): Promise<{ configs: Pick<Integration, 'unique_key' | 'provider'>[] }> {
         const url = `${this.serverUrl}/config`;
-        const response = await axios.get(url, { headers: this.enrichHeaders({}) });
+        const response = await this.http.get(url, { headers: this.enrichHeaders({}) });
 
         return response.data;
     }
@@ -116,7 +131,7 @@ export class Nango {
         includeIntegrationCredentials: boolean = false
     ): Promise<{ config: Integration | IntegrationWithCreds }> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
-        const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredentials } });
+        const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredentials } });
         return response.data;
     }
 
@@ -130,7 +145,7 @@ export class Nango {
      */
     public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
-        const response = await axios.post(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+        const response = await this.http.post(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
@@ -144,7 +159,7 @@ export class Nango {
      */
     public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
-        const response = await axios.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+        const response = await this.http.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
@@ -155,7 +170,7 @@ export class Nango {
      */
     public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
-        return await axios.delete(url, { headers: this.enrichHeaders({}) });
+        return await this.http.delete(url, { headers: this.enrichHeaders({}) });
     }
 
     /**
@@ -274,11 +289,11 @@ export class Nango {
     /**
      * Sets custom metadata for a connection
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId - The ID of the connection for which to set metadata
+     * @param connectionId - The ID(s) of the connection(s) for which to set metadata
      * @param metadata - The custom metadata to set
      * @returns A promise that resolves with the Axios response from the server
      */
-    public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async setMetadata(providerConfigKey: string, connectionId: string | string[], metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -291,23 +306,23 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connection/metadata`;
 
-        const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey
-        };
-
-        return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
+        return this.http.post(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
 
     /**
      * Edits custom metadata for a connection, only overriding specified properties, not the entire metadata
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId - The ID of the connection for which to update metadata
+     * @param connectionId - The ID(s) of the connection(s) for which to update metadata
      * @param metadata - The custom metadata to update
      * @returns A promise that resolves with the Axios response from the server
      */
-    public async updateMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(
+        providerConfigKey: string,
+        connectionId: string | string[],
+        metadata: Metadata
+    ): Promise<AxiosResponse<MetadataChangeResponse>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -320,13 +335,9 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connection/metadata`;
 
-        const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey
-        };
-
-        return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });
+        return this.http.patch(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
 
     /**
@@ -342,7 +353,7 @@ export class Nango {
             'Content-Type': 'application/json'
         };
 
-        return axios.delete(url, { headers: this.enrichHeaders(headers) });
+        return this.http.delete(url, { headers: this.enrichHeaders(headers) });
     }
 
     /**
@@ -363,7 +374,7 @@ export class Nango {
             'Content-Type': 'application/json'
         };
 
-        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
 
         return response.data;
     }
@@ -419,7 +430,7 @@ export class Nango {
             headers: this.enrichHeaders(headers)
         };
 
-        const response = await axios.get(url, options);
+        const response = await this.http.get(url, options);
 
         return response.data;
     }
@@ -449,7 +460,7 @@ export class Nango {
             headers: this.enrichHeaders(headers)
         };
 
-        const response = await axios.get(url, options);
+        const response = await this.http.get(url, options);
 
         return response.data;
     }
@@ -476,7 +487,7 @@ export class Nango {
             full_resync: fullResync
         };
 
-        return axios.post(url, body, { headers: this.enrichHeaders() });
+        return this.http.post(url, body, { headers: this.enrichHeaders() });
     }
 
     /**
@@ -507,7 +518,7 @@ export class Nango {
 
         const url = `${this.serverUrl}/sync/start`;
 
-        return axios.post(url, body, { headers: this.enrichHeaders() });
+        return this.http.post(url, body, { headers: this.enrichHeaders() });
     }
 
     /**
@@ -538,7 +549,7 @@ export class Nango {
             connection_id: connectionId
         };
 
-        return axios.post(url, body, { headers: this.enrichHeaders() });
+        return this.http.post(url, body, { headers: this.enrichHeaders() });
     }
 
     /**
@@ -569,7 +580,7 @@ export class Nango {
             connection_id: connectionId
         };
 
-        const response = await axios.get(url, { headers: this.enrichHeaders(), params });
+        const response = await this.http.get(url, { headers: this.enrichHeaders(), params });
 
         return response.data;
     }
@@ -613,7 +624,7 @@ export class Nango {
             frequency
         };
 
-        const response = await axios.put(url, { headers: this.enrichHeaders(), params });
+        const response = await this.http.put(url, { headers: this.enrichHeaders(), params });
 
         return response.data;
     }
@@ -629,7 +640,7 @@ export class Nango {
             'Content-Type': 'application/json'
         };
 
-        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
 
         if (!response.data) {
             return [];
@@ -666,7 +677,7 @@ export class Nango {
             input
         };
 
-        const response = await axios.post(url, body, { headers: this.enrichHeaders(headers) });
+        const response = await this.http.post(url, body, { headers: this.enrichHeaders(headers) });
 
         return response.data;
     }
@@ -749,15 +760,15 @@ export class Nango {
         }
 
         if (method?.toUpperCase() === 'POST') {
-            return axios.post(url, config.data, options);
+            return this.http.post(url, config.data, options);
         } else if (method?.toUpperCase() === 'PATCH') {
-            return axios.patch(url, config.data, options);
+            return this.http.patch(url, config.data, options);
         } else if (method?.toUpperCase() === 'PUT') {
-            return axios.put(url, config.data, options);
+            return this.http.put(url, config.data, options);
         } else if (method?.toUpperCase() === 'DELETE') {
-            return axios.delete(url, options);
+            return this.http.delete(url, options);
         } else {
-            return axios.get(url, options);
+            return this.http.get(url, options);
         }
     }
 
@@ -861,7 +872,7 @@ export class Nango {
             refresh_token: refreshToken
         };
 
-        return axios.get(url, { params: params, headers: this.enrichHeaders(headers) });
+        return this.http.get(url, { params: params, headers: this.enrichHeaders(headers) });
     }
 
     /**
@@ -879,7 +890,7 @@ export class Nango {
             'Content-Type': 'application/json'
         };
 
-        return axios.get(url, { headers: this.enrichHeaders(headers) });
+        return this.http.get(url, { headers: this.enrichHeaders(headers) });
     }
 
     /**

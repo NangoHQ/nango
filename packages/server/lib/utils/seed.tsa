@@ -1,0 +1,123 @@
+import { logContextGetter } from '@nangohq/logs';
+import { environmentService } from '@nangohq/shared';
+import type { OperationRowInsert } from '@nangohq/types';
+
+void (async () => {
+    const res = await environmentService.getAccountAndEnvironment({ accountId: 0, envName: 'dev' });
+    if (!res) {
+        throw new Error('failed_to_find_account');
+    }
+
+    console.log('Seeding..');
+    const { account, environment } = res;
+
+    const operationPayload: OperationRowInsert = {
+        operation: { type: 'sync', action: 'run' },
+        message: 'Seed operation',
+        integrationId: 1,
+        integrationName: 'unauthenticated',
+        providerName: 'unauthenticated',
+        syncConfigId: 1,
+        syncConfigName: 'unauth-lastSyncDate',
+        connectionId: 1,
+        connectionName: 'unauthenticated-connection-1'
+    };
+
+    await Promise.all([
+        (async () => {
+            // All logs types
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
+            await ctx.trace('trace msg');
+            await ctx.debug('debug msg');
+            await ctx.info('info msg');
+            await ctx.warn('warn msg');
+            await ctx.error('error msg');
+            await ctx.success();
+        })(),
+
+        (async () => {
+            // Not started
+            await logContextGetter.create(
+                { ...operationPayload, operation: { type: 'sync', action: 'cancel' } },
+                { account, environment, start: false },
+                { logToConsole: false }
+            );
+        })(),
+
+        (async () => {
+            // Started
+            const ctx = await logContextGetter.create(
+                { ...operationPayload, operation: { type: 'sync', action: 'init' } },
+                { account, environment },
+                { logToConsole: false }
+            );
+            await ctx.info('started');
+        })(),
+
+        (async () => {
+            // Failed
+            const ctx = await logContextGetter.create(
+                { ...operationPayload, operation: { type: 'sync', action: 'pause' } },
+                { account, environment },
+                { logToConsole: false }
+            );
+            await ctx.error('An error occurred', { error: new Error('An error object') });
+            await ctx.failed();
+        })(),
+
+        (async () => {
+            // Success
+            const ctx = await logContextGetter.create(
+                { ...operationPayload, operation: { type: 'sync', action: 'run_full' } },
+                { account, environment },
+                { logToConsole: false }
+            );
+            await ctx.info('success');
+            await ctx.success();
+        })(),
+
+        (async () => {
+            // Timeout
+            const ctx = await logContextGetter.create(
+                { ...operationPayload, operation: { type: 'sync', action: 'unpause' } },
+                { account, environment },
+                { logToConsole: false }
+            );
+            await ctx.info('timeout');
+            await ctx.timeout();
+        })(),
+        (async () => {
+            // Timeout
+            const ctx = await logContextGetter.create(
+                { ...operationPayload, operation: { type: 'webhook', action: 'incoming' } },
+                { account, environment },
+                { logToConsole: false }
+            );
+            await ctx.info('cancelled');
+            await ctx.cancel();
+        })(),
+
+        (async () => {
+            // Very long stuff
+            const ctx = await logContextGetter.create(
+                {
+                    operation: { type: 'auth' },
+                    message: 'Seed operation'.repeat(10),
+                    integrationId: 1,
+                    integrationName: 'unauthenticated'.repeat(10),
+                    providerName: 'unauthenticated'.repeat(10),
+                    syncConfigId: 1,
+                    syncConfigName: 'unauth-lastSyncDate'.repeat(10),
+                    connectionId: 1,
+                    connectionName: 'unauthenticated-connection-1'.repeat(10)
+                },
+                { account, environment },
+                { logToConsole: false }
+            );
+            await ctx.info('cancelled'.repeat(1000));
+            await ctx.success();
+        })()
+    ]);
+
+    console.log('✅ Seeded');
+})();

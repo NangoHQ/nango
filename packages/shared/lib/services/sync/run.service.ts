@@ -1,6 +1,8 @@
 import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
-import type { NangoConnection, Metadata } from '../../models/Connection.js';
+import type { NangoConnection } from '../../models/Connection.js';
+import type { Account } from '../../models/Admin.js';
+import type { Metadata } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -10,8 +12,7 @@ import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
-import accountService from '../account.service.js';
-import slackNotificationService from '../notification/slack.service.js';
+import { SlackService } from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
 import { integrationFilesAreRemote, isCloud, getLogger, metrics, stringifyError } from '@nangohq/utils';
 import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
@@ -19,16 +20,17 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
-import type { UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import * as legacyRecordsService from './data/records.service.js';
+import type { NangoProps } from '../../sdk/sync.js';
+import type { UpsertSummary } from '@nangohq/records';
+import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
 
 const logger = getLogger('run.service');
 
 interface BigQueryClientInterface {
-    insert(row: RunScriptRow): void;
+    insert(row: RunScriptRow): Promise<void>;
 }
 
 interface RunScriptRow {
@@ -53,6 +55,8 @@ export interface SyncRunConfig {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    dryRunService?: NangoProps['dryRunService'];
+    orchestratorClient: OrchestratorClientInterface;
     logContextGetter: LogContextGetter;
 
     writeToDb: boolean;
@@ -75,21 +79,33 @@ export interface SyncRunConfig {
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
 
-    accountName?: string;
-    environmentName?: string;
+    account?: Account;
+    environment?: Environment;
 
     temporalContext?: Context;
 }
 
 export interface RecordsServiceInterface {
-    markNonCurrentGenerationRecordsAsDeleted(connectionId: number, model: string, syncId: string, generation: number): Promise<string[]>;
+    markNonCurrentGenerationRecordsAsDeleted({
+        connectionId,
+        model,
+        syncId,
+        generation
+    }: {
+        connectionId: number;
+        model: string;
+        syncId: string;
+        generation: number;
+    }): Promise<string[]>;
 }
 
 export default class SyncRun {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
+    dryRunService?: NangoProps['dryRunService'];
     logContextGetter: LogContextGetter;
+    slackNotificationService: SlackService;
 
     writeToDb: boolean;
     isAction: boolean;
@@ -112,8 +128,8 @@ export default class SyncRun {
     };
     stubbedMetadata?: Metadata | undefined = undefined;
 
-    accountName?: string;
-    environmentName?: string;
+    account?: Account;
+    environment?: Environment;
 
     temporalContext?: Context;
     isWebhook: boolean;
@@ -124,8 +140,12 @@ export default class SyncRun {
         this.integrationService = config.integrationService;
         this.recordsService = config.recordsService;
         this.logContextGetter = config.logContextGetter;
+        this.slackNotificationService = new SlackService(config.orchestratorClient);
         if (config.bigQueryClient) {
             this.bigQueryClient = config.bigQueryClient;
+        }
+        if (config.dryRunService) {
+            this.dryRunService = config.dryRunService;
         }
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
@@ -233,29 +253,36 @@ export default class SyncRun {
         // if there is a matching customer integration code for the provider config key then run it
         if (integrations[this.nangoConnection.provider_config_key]) {
             let environment: Environment | null = null;
+            let account: Account | null = null;
 
             if (!bypassEnvironment) {
-                environment = await environmentService.getById(this.nangoConnection.environment_id);
+                const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: this.nangoConnection.environment_id });
+                if (!environmentAndAccountLookup) {
+                    const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
+                    await this.reportFailureForResults({ content: message, runTime: 0 });
+                    const errorType = this.determineErrorType();
+                    return { success: false, error: new NangoError(errorType, message, 404), response: false };
+                }
+                ({ environment, account } = environmentAndAccountLookup);
+                this.account = account;
+                this.environment = environment;
             }
 
             if (!this.nangoConnection.account_id && environment?.account_id !== null && environment?.account_id !== undefined) {
                 this.nangoConnection.account_id = environment.account_id;
             }
 
-            if (!bypassEnvironment) {
-                const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
-                this.accountName = account?.name || '';
-                this.environmentName = (await environmentService.getEnvironmentName(this.nangoConnection.environment_id)) || '';
-            }
+            let secretKey = optionalSecretKey || (environment ? environment.secret_key : '');
 
-            if (!environment && !bypassEnvironment) {
-                const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
-                await this.reportFailureForResults({ content: message, runTime: 0 });
-                const errorType = this.determineErrorType();
-                return { success: false, error: new NangoError(errorType, message, 404), response: false };
-            }
+            if (!isCloud) {
+                if (process.env['NANGO_SECRET_KEY_DEV'] && environment?.name === 'dev') {
+                    secretKey = process.env['NANGO_SECRET_KEY_DEV'];
+                }
 
-            const secretKey = optionalSecretKey || (environment ? environment?.secret_key : '');
+                if (process.env['NANGO_SECRET_KEY_PROD'] && environment?.name === 'prod') {
+                    secretKey = process.env['NANGO_SECRET_KEY_PROD'];
+                }
+            }
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
@@ -335,16 +362,16 @@ export default class SyncRun {
                 }
             }
 
-            const nangoProps = {
+            const nangoProps: NangoProps = {
                 host: optionalHost || getApiUrl(),
-                accountId: environment?.account_id as number,
-                connectionId: String(this.nangoConnection?.connection_id),
-                environmentId: this.nangoConnection?.environment_id,
-                providerConfigKey: String(this.nangoConnection?.provider_config_key),
+                accountId: this.account?.id as number,
+                connectionId: String(this.nangoConnection.connection_id),
+                environmentId: this.nangoConnection.environment_id,
+                providerConfigKey: String(this.nangoConnection.provider_config_key),
                 provider: this.provider as string,
                 activityLogId: this.activityLogId as number,
                 secretKey,
-                nangoConnectionId: this.nangoConnection?.id as number,
+                nangoConnectionId: this.nangoConnection.id as number,
                 syncId: this.syncId,
                 syncJobId: this.syncJobId,
                 lastSyncDate: lastSyncDate as Date,
@@ -354,6 +381,10 @@ export default class SyncRun {
                 logMessages: this.logMessages,
                 stubbedMetadata: this.stubbedMetadata
             };
+
+            if (this.dryRunService) {
+                nangoProps.dryRunService = this.dryRunService;
+            }
 
             if (this.debug) {
                 const content = `Last sync date is ${lastSyncDate}`;
@@ -376,6 +407,10 @@ export default class SyncRun {
                 result = true;
 
                 const syncStartDate = new Date();
+
+                if (typeof nangoProps.accountId === 'number') {
+                    metrics.increment(getMetricType(this.determineExecutionType()), 1, { accountId: nangoProps.accountId });
+                }
 
                 const {
                     success,
@@ -400,12 +435,12 @@ export default class SyncRun {
 
                 if (!success || (error && userDefinedResults === null)) {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
-                        syncData?.version ? ` version: ${syncData.version}` : ''
+                        syncData.version ? ` version: ${syncData.version}` : ''
                     }`;
 
                     const runTime = (Date.now() - startTime) / 1000;
                     if (error.type === 'script_cancelled') {
-                        await this.reportFailureForResults({ content: error.message, runTime });
+                        await this.reportFailureForResults({ content: error.message, runTime, isCancel: true });
                     } else {
                         await this.reportFailureForResults({ content: message, runTime });
                     }
@@ -434,7 +469,7 @@ export default class SyncRun {
                     await this.logCtx?.info(content);
                     await this.logCtx?.success();
 
-                    await slackNotificationService.removeFailingConnection(
+                    await this.slackNotificationService.removeFailingConnection(
                         this.nangoConnection,
                         this.syncName,
                         this.syncType,
@@ -457,7 +492,7 @@ export default class SyncRun {
                 const errorMessage = stringifyError(e, { pretty: true });
                 await this.reportFailureForResults({
                     content: `The ${this.syncType} "${this.syncName}"${
-                        syncData?.version ? ` version: ${syncData?.version}` : ''
+                        syncData.version ? ` version: ${syncData.version}` : ''
                     } sync did not complete successfully and has the following error: ${errorMessage}`,
                     runTime: (Date.now() - startTime) / 1000
                 });
@@ -481,40 +516,38 @@ export default class SyncRun {
         for (const model of models) {
             let deletedKeys: string[] = [];
             if (!this.isWebhook && trackDeletes) {
-                deletedKeys = await legacyRecordsService.markNonCurrentGenerationRecordsAsDeleted(
-                    this.nangoConnection.id as number,
+                deletedKeys = await this.recordsService.markNonCurrentGenerationRecordsAsDeleted({
+                    connectionId: this.nangoConnection.id as number,
                     model,
-                    this.syncId as string,
-                    this.syncJobId as number
-                );
-                this.recordsService
-                    .markNonCurrentGenerationRecordsAsDeleted(this.nangoConnection.id as number, model, this.syncId as string, this.syncJobId as number)
-                    .catch((e) => {
-                        logger.error(`Error marking non current generation records as deleted:`, e, {
-                            connectionId: this.nangoConnection.id,
-                            model,
-                            syncId: this.syncId,
-                            syncJobId: this.syncJobId
-                        });
-                    });
+                    syncId: this.syncId as string,
+                    generation: this.syncJobId as number
+                });
             }
 
-            await this.reportResults(model, { addedKeys: [], updatedKeys: [], deletedKeys }, i, models.length, syncStartDate, version, totalRunTime);
+            await this.reportResults(
+                model,
+                { addedKeys: [], updatedKeys: [], deletedKeys, nonUniqueKeys: [] },
+                i,
+                models.length,
+                syncStartDate,
+                version,
+                totalRunTime
+            );
             i++;
         }
 
         // we only want to report to bigquery once if it is a multi model sync
-        if (this.bigQueryClient) {
+        if (this.bigQueryClient && this.account && this.environment) {
             void this.bigQueryClient.insert({
                 executionType: this.determineExecutionType(),
                 connectionId: this.nangoConnection.connection_id,
                 internalConnectionId: this.nangoConnection.id,
-                accountId: this.nangoConnection.account_id,
-                accountName: this.accountName as string,
+                accountId: this.account.id,
+                accountName: this.account.name,
                 scriptName: this.syncName,
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
-                environmentName: this.environmentName as string,
+                environmentName: this.environment.name,
                 providerConfigKey: this.nangoConnection.provider_config_key,
                 status: 'success',
                 syncId: this.syncId as string,
@@ -547,7 +580,7 @@ export default class SyncRun {
             // any changes while the sync is running
             if (!this.isWebhook) {
                 await setLastSyncDate(this.syncId as string, syncStartDate);
-                await slackNotificationService.removeFailingConnection(
+                await this.slackNotificationService.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
@@ -616,17 +649,19 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendSyncUpdate(
-            this.nangoConnection,
-            this.syncName,
-            model,
-            results,
-            this.syncType,
-            syncStartDate,
-            this.activityLogId,
-            this.logCtx!,
-            this.nangoConnection.environment_id
-        );
+        if (this.environment) {
+            void webhookService.sendSyncUpdate(
+                this.nangoConnection,
+                this.syncName,
+                model,
+                results,
+                this.syncType,
+                syncStartDate,
+                this.activityLogId,
+                this.logCtx!,
+                this.environment
+            );
+        }
 
         if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({
@@ -673,22 +708,22 @@ export default class SyncRun {
         );
     }
 
-    async reportFailureForResults({ content, runTime }: { content: string; runTime: number }) {
+    async reportFailureForResults({ content, runTime, isCancel }: { content: string; runTime: number; isCancel?: true }) {
         if (!this.writeToDb) {
             return;
         }
 
-        if (this.bigQueryClient) {
+        if (this.bigQueryClient && this.account && this.environment) {
             void this.bigQueryClient.insert({
                 executionType: this.determineExecutionType(),
                 connectionId: this.nangoConnection.connection_id,
                 internalConnectionId: this.nangoConnection.id,
-                accountId: this.nangoConnection.account_id,
-                accountName: this.accountName as string,
+                accountId: this.account.id,
+                accountName: this.account.name,
                 scriptName: this.syncName,
                 scriptType: this.syncType,
                 environmentId: this.nangoConnection.environment_id,
-                environmentName: this.environmentName as string,
+                environmentName: this.environment.name,
                 providerConfigKey: this.nangoConnection.provider_config_key,
                 status: 'failed',
                 syncId: this.syncId as string,
@@ -700,7 +735,7 @@ export default class SyncRun {
 
         if (!this.isWebhook) {
             try {
-                await slackNotificationService.reportFailure(
+                await this.slackNotificationService.reportFailure(
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
@@ -742,8 +777,7 @@ export default class SyncRun {
             content
         });
         await this.logCtx?.error(content);
-        // TODO: fix this
-        if (content === 'The script was cancelled successfully') {
+        if (isCancel) {
             await this.logCtx?.cancel();
         } else {
             await this.logCtx?.failed();
@@ -776,7 +810,8 @@ export default class SyncRun {
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
-                debug: String(this.debug)
+                debug: String(this.debug),
+                level: 'error'
             },
             `syncId:${this.syncId}`
         );
@@ -794,5 +829,18 @@ export default class SyncRun {
 
     private determineErrorType(): string {
         return this.determineExecutionType() + '_script_failure';
+    }
+}
+
+function getMetricType(type: string): metrics.Types {
+    switch (type) {
+        case 'sync':
+            return metrics.Types.SYNC_EXECUTION;
+        case 'action':
+            return metrics.Types.ACTION_EXECUTION;
+        case 'webhook':
+            return metrics.Types.WEBHOOK_EXECUTION;
+        default:
+            return metrics.Types.SYNC_EXECUTION;
     }
 }

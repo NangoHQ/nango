@@ -1,16 +1,16 @@
 import useSWR from 'swr';
-import type { Account } from '../types';
+import type { EnvironmentAndAccount } from '@nangohq/server';
 import { swrFetcher } from '../utils/api';
 
 export function useEnvironment(env: string) {
-    const { data, error, mutate } = useSWR<{ account: Account }>(`/api/v1/environment?env=${env}`, swrFetcher, {});
+    const { data, error, mutate } = useSWR<{ environmentAndAccount: EnvironmentAndAccount }>(`/api/v1/environment?env=${env}`, swrFetcher, {});
 
     const loading = !data && !error;
 
     return {
         loading,
         error,
-        environment: data?.account,
+        environmentAndAccount: data?.environmentAndAccount,
         mutate
     };
 }

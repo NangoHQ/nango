@@ -1,4 +1,5 @@
-import { Nango } from '@nangohq/node';
+import https from 'node:https';
+import { Nango, getUserAgent } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
@@ -190,7 +191,13 @@ type AuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials;
 
-type Metadata = Record<string, string | Record<string, any>>;
+type Metadata = Record<string, unknown>;
+
+interface MetadataChangeResponse {
+    metadata: Metadata;
+    provider_config_key: string;
+    connection_id: string | string[];
+}
 
 interface Connection {
     id?: number;
@@ -219,6 +226,23 @@ export class ActionError<T = Record<string, unknown>> extends Error {
     }
 }
 
+interface RunArgs {
+    sync: string;
+    connectionId: string;
+    lastSyncDate?: string;
+    useServerLastSyncDate?: boolean;
+    input?: object;
+    metadata?: Metadata;
+    autoConfirm: boolean;
+    debug: boolean;
+    optionalEnvironment?: string;
+    optionalProviderConfigKey?: string;
+}
+
+export interface DryRunServiceInterface {
+    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
+}
+
 export interface NangoProps {
     host?: string;
     secretKey: string;
@@ -238,6 +262,7 @@ export interface NangoProps {
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
 }
 
 interface EnvironmentVariable {
@@ -248,7 +273,7 @@ interface EnvironmentVariable {
 const MEMOIZED_CONNECTION_TTL = 60000;
 
 export class NangoAction {
-    private nango: Nango;
+    protected nango: Nango;
     private attributes = {};
     activityLogId?: number;
     syncId?: string;
@@ -257,6 +282,7 @@ export class NangoAction {
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
 
     public connectionId: string;
     public providerConfigKey: string;
@@ -268,6 +294,7 @@ export class NangoAction {
         string,
         { connection: Connection; timestamp: number }
     >();
+    private memoizedIntegration: IntegrationWithCreds | undefined;
 
     constructor(config: NangoProps) {
         this.connectionId = config.connectionId;
@@ -277,10 +304,15 @@ export class NangoAction {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango({
-            isSync: true,
-            ...config
-        });
+        this.nango = new Nango(
+            {
+                isSync: true,
+                ...config
+            },
+            {
+                userAgent: 'sdk'
+            }
+        );
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -313,6 +345,10 @@ export class NangoAction {
         if (config.abortSignal) {
             this.abortSignal = config.abortSignal;
         }
+
+        if (config.dryRunService) {
+            this.dryRunService = config.dryRunService;
+        }
     }
 
     protected stringify(): string {
@@ -340,7 +376,11 @@ export class NangoAction {
         return {
             ...config,
             providerConfigKey: config.providerConfigKey,
-            connectionId: config.connectionId
+            connectionId: config.connectionId,
+            headers: {
+                ...(config.headers || {}),
+                'user-agent': this.nango.userAgent
+            }
         };
     }
 
@@ -362,6 +402,7 @@ export class NangoAction {
             }
 
             const proxyConfig = this.proxyConfig(config);
+
             const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
                 existingActivityLogId: this.activityLogId as number,
                 connection,
@@ -454,38 +495,57 @@ export class NangoAction {
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
-        return this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
+        try {
+            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
+        } finally {
+            this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
+        }
     }
 
-    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
-        return this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
+        try {
+            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
+        } finally {
+            this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
+        }
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
+    /**
+     * @deprecated please use setMetadata instead.
+     */
+    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
         logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
-        return this.nango.setMetadata(this.providerConfigKey, this.connectionId, fieldMapping);
+        return this.setMetadata(fieldMapping);
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
         this.exitSyncIfAborted();
-        return this.nango.getMetadata(this.providerConfigKey, this.connectionId);
+        return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
 
     public async getWebhookURL(): Promise<string | undefined> {
         this.exitSyncIfAborted();
+        if (this.memoizedIntegration) {
+            return this.memoizedIntegration.webhook_url;
+        }
+
         const { config: integration } = await this.nango.getIntegration(this.providerConfigKey, true);
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
-        return (integration as IntegrationWithCreds).webhook_url;
+        this.memoizedIntegration = integration as IntegrationWithCreds;
+        return this.memoizedIntegration.webhook_url;
     }
 
+    /**
+     * @deprecated please use getMetadata instead.
+     */
     public async getFieldMapping(): Promise<Metadata> {
         logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
-        const metadata = await this.nango.getMetadata(this.providerConfigKey, this.connectionId);
+        const metadata = await this.getMetadata();
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 
@@ -510,7 +570,7 @@ export class NangoAction {
         const lastArg = args[args.length - 1];
 
         const isUserDefinedLevel = (object: UserLogParameters): boolean => {
-            return typeof lastArg === 'object' && 'level' in object;
+            return lastArg && typeof lastArg === 'object' && 'level' in object;
         };
 
         const userDefinedLevel: UserLogParameters | undefined = isUserDefinedLevel(lastArg) ? lastArg : undefined;
@@ -533,6 +593,9 @@ export class NangoAction {
         const response = await persistApi({
             method: 'POST',
             url: `/environment/${this.environmentId}/log`,
+            headers: {
+                Authorization: `Bearer ${this.nango.secretKey}`
+            },
             data: {
                 activityLogId: this.activityLogId,
                 level: userDefinedLevel?.level ?? 'info',
@@ -542,7 +605,7 @@ export class NangoAction {
 
         if (response.status > 299) {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
+            throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
         }
 
         return;
@@ -620,8 +683,17 @@ export class NangoAction {
         return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input) as T;
     }
 
-    public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void> {
-        return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
+    public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {
+        if (this.dryRun && this.dryRunService) {
+            return this.dryRunService.run({
+                sync: syncName,
+                connectionId,
+                autoConfirm: true,
+                debug: false
+            });
+        } else {
+            return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
+        }
     }
 }
 
@@ -657,14 +729,7 @@ export class NangoSync extends NangoAction {
     }
 
     /**
-     * Deprecated, reach out to support
-     */
-    public async setLastSyncDate(): Promise<void> {
-        logger.warn('setLastSyncDate is deprecated. Please contact us if you are using this method.');
-    }
-
-    /**
-     * Deprecated, please use batchSave
+     * @deprecated please use batchSave
      */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
         logger.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
@@ -687,9 +752,11 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.added = Number(this.logMessages?.counts.added) + results.length;
+                this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
             }
             return null;
         }
@@ -699,6 +766,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'POST',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -712,7 +782,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot save records for sync '${this.syncId}'`);
+                throw new Error(`cannot save records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -733,9 +803,11 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.deleted = Number(this.logMessages?.counts.deleted) + results.length;
+                this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
             }
             return null;
         }
@@ -745,6 +817,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'DELETE',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -758,7 +833,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot delete records for sync '${this.syncId}'`);
+                throw new Error(`cannot delete records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -779,9 +854,11 @@ export class NangoSync extends NangoAction {
 
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
-            this.logMessages?.messages.push(...results);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
             if (this.logMessages && this.logMessages.counts) {
-                this.logMessages.counts.updated = Number(this.logMessages?.counts.updated) + results.length;
+                this.logMessages.counts.updated = Number(this.logMessages.counts.updated) + results.length;
             }
             return null;
         }
@@ -791,6 +868,9 @@ export class NangoSync extends NangoAction {
             const response = await persistApi({
                 method: 'PUT',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                headers: {
+                    Authorization: `Bearer ${this.nango.secretKey}`
+                },
                 data: {
                     model,
                     records: batch,
@@ -804,7 +884,7 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot update records for sync '${this.syncId}'`);
+                throw new Error(`cannot update records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -822,6 +902,10 @@ export class NangoSync extends NangoAction {
 
 const persistApi = axios.create({
     baseURL: getPersistAPIUrl(),
+    httpsAgent: new https.Agent({ keepAlive: true }),
+    headers: {
+        'User-Agent': getUserAgent('sdk')
+    },
     validateStatus: (_status) => {
         return true;
     }

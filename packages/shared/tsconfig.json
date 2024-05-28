@@ -12,11 +12,17 @@
             "path": "../node-client"
         },
         {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         },
         {
             "path": "../records"
+        },
+        {
+            "path": "../orchestrator"
         }
     ],
-    "include": ["lib/**/*"]
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
 }

@@ -1,7 +1,6 @@
-import https from 'https';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import fs from 'fs';
-import * as os from 'os';
+import os from 'os';
 import npa from 'npm-package-arg';
 import Module from 'node:module';
 import path, { dirname } from 'path';
@@ -12,9 +11,10 @@ import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
-import { SyncConfigType, cloudHost, stagingHost } from '@nangohq/shared';
+import { SyncConfigType, cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
+import https from 'node:https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -112,6 +112,10 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
+export function getPkgVersion() {
+    return NANGO_VERSION;
+}
+
 export async function upgradeAction(debug = false) {
     const isRunViaNpx = process.argv.some((arg) => arg.includes('npx'));
     const locallyInstalled = isLocallyInstalled('nango', debug);
@@ -141,11 +145,11 @@ export async function upgradeAction(debug = false) {
 
     try {
         const resolved = npa('nango');
-        const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+        const version = getPkgVersion();
         if (debug) {
             printDebug(`Version ${version} of nango is installed.`);
         }
-        const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
+        const response = await http.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
 
         if (debug) {
@@ -219,13 +223,13 @@ export async function getConnection(providerConfigKey: string, connectionId: str
     if (debug) {
         printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await axios
-        .get(url, { params: { provider_config_key: providerConfigKey }, headers, httpsAgent: httpsAgent() })
+    return await http
+        .get(url, { params: { provider_config_key: providerConfigKey }, headers })
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || err.message}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -235,13 +239,13 @@ export async function getConfig(providerConfigKey: string, debug = false) {
     if (debug) {
         printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await axios
-        .get(url, { headers, httpsAgent: httpsAgent() })
+    return await http
+        .get(url, { headers })
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || err.message}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -253,10 +257,19 @@ export function enrichHeaders(headers: Record<string, string | number | boolean>
     return headers;
 }
 
-export function httpsAgent() {
-    return new https.Agent({
-        rejectUnauthorized: false
-    });
+const defaultHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
+export const http = axios.create({
+    httpsAgent: defaultHttpsAgent,
+    headers: { 'User-Agent': getUserAgent() }
+});
+
+export function getUserAgent(): string {
+    const clientVersion = getPkgVersion();
+    const nodeVersion = process.versions.node;
+
+    const osName = os.platform().replace(' ', '_');
+    const osVersion = os.release().replace(' ', '_');
+    return `nango-cli/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
 }
 
 export function getFieldType(rawField: string | NangoModel, debug = false): string {
@@ -265,7 +278,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
         let hasNull = false;
         let hasUndefined = false;
         let tsType = '';
-        if (field.indexOf('null') !== -1) {
+        if (field.includes('null')) {
             field = field.replace(/\s*\|\s*null\s*/g, '');
             hasNull = true;
         }
@@ -277,7 +290,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
             return 'undefined';
         }
 
-        if (field.indexOf('undefined') !== -1) {
+        if (field.includes('undefined')) {
             field = field.replace(/\s*\|\s*undefined\s*/g, '');
             hasUndefined = true;
         }
@@ -327,7 +340,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
 }
 
 export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
-    const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
+    const returnedModels = Object.keys(integrations).reduce<string[]>((acc, providerConfigKey) => {
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
         for (const syncName of syncNames) {
@@ -342,7 +355,7 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
             }
         }
         return acc;
-    }, [] as string[]);
+    }, []);
 
     if (!models) {
         return null;
@@ -436,18 +449,11 @@ function getPackagePath(debug = false) {
 }
 
 export async function parseSecretKey(environment: string, debug = false): Promise<void> {
-    if (process.env['NANGO_SECRET_KEY_PROD'] && environment === 'prod') {
+    if (process.env[`NANGO_SECRET_KEY_${environment.toUpperCase()}`]) {
         if (debug) {
-            printDebug(`Environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
+            printDebug(`Environment is set to ${environment}, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_${environment.toUpperCase()}.`);
         }
-        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_PROD'];
-    }
-
-    if (process.env['NANGO_SECRET_KEY_DEV'] && environment === 'dev') {
-        if (debug) {
-            printDebug(`Environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
-        }
-        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
+        process.env['NANGO_SECRET_KEY'] = process.env[`NANGO_SECRET_KEY_${environment.toUpperCase()}`];
     }
 
     if (!process.env['NANGO_SECRET_KEY']) {

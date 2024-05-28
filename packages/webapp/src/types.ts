@@ -18,7 +18,7 @@ export interface ActivityResponse {
         | 'cancel sync'
         | 'action'
         | 'webhook';
-    success: boolean;
+    success: boolean | null;
     timestamp: number;
     start: number;
     end: number;
@@ -77,7 +77,7 @@ export interface SyncResponse {
     futureActionTimes: number[];
     offset: number;
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
-    models: string[];
+    models: string | string[];
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
     latest_sync: {
@@ -242,7 +242,7 @@ export interface Flow {
     webhookSubscriptions: string[];
 }
 
-export interface Account {
+export interface Environment {
     id: number;
     name: string;
     account_id: number;
@@ -252,6 +252,7 @@ export interface Account {
     secret_key_tag: string | null;
     callback_url: string;
     webhook_url: string;
+    webhook_url_secondary: string | null;
     webhook_receive_url: string;
     hmac_enabled: boolean;
     hmac_key: string;
@@ -264,7 +265,7 @@ export interface Account {
     always_send_webhook: boolean;
     slack_notifications: boolean;
     websockets_path: string;
-    secret_key_rotatable: boolean;
+    secret_key_rotatable?: boolean;
     env_variables: { id?: number; name: string; value: string }[];
     host: string;
     uuid: string;
@@ -290,13 +291,4 @@ export interface IntegrationConfig {
     connection_count: number;
     connections: Connection[];
     docs: string;
-}
-
-export interface OnboardingStatus {
-    id: number;
-    progress: number;
-    records: Record<string, unknown>[] | null;
-    provider: boolean;
-    connection: boolean;
-    sync: boolean;
 }

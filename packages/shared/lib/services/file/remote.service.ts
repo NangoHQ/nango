@@ -3,7 +3,7 @@ import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
-import { isCloud, isEnterprise, isLocal } from '@nangohq/utils';
+import { isCloud, isEnterprise, isLocal, isTest } from '@nangohq/utils';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -12,7 +12,7 @@ import { nangoConfigFile } from '../nango-config.service.js';
 import localFileService from './local.service.js';
 
 let client: S3Client | null = null;
-let useS3 = !isLocal;
+let useS3 = !isLocal && !isTest;
 
 if (isEnterprise) {
     useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
@@ -82,7 +82,7 @@ class RemoteFileService {
      * @desc copy an existing public integration file to user's location in s3,
      * on local copy to the set local destination
      */
-    async copy(integrationName: string, fileName: string, destinationPath: string, environmentId: number): Promise<string | null> {
+    async copy(integrationName: string, fileName: string, destinationPath: string, environmentId: number, destinationFileName: string): Promise<string | null> {
         try {
             const s3FilePath = `${this.publicRoute}/${integrationName}/${fileName}`;
 
@@ -99,7 +99,7 @@ class RemoteFileService {
             } else {
                 const fileContents = await this.getFile(s3FilePath, environmentId);
                 if (fileContents) {
-                    localFileService.putIntegrationFile(fileName, fileContents, integrationName.includes('dist'));
+                    localFileService.putIntegrationFile(destinationFileName, fileContents, integrationName.includes('dist'));
                 }
                 return '_LOCAL_FILE_';
             }
@@ -139,7 +139,7 @@ class RemoteFileService {
                         reject(new Error('Response body is undefined or not a Readable stream'));
                     }
                 })
-                .catch(async (err) => {
+                .catch(async (err: unknown) => {
                     errorManager.report(err, {
                         source: ErrorSourceEnum.PLATFORM,
                         environmentId,
@@ -148,7 +148,7 @@ class RemoteFileService {
                             fileName
                         }
                     });
-                    reject(err);
+                    reject(err as Error);
                 });
         });
     }
@@ -162,7 +162,7 @@ class RemoteFileService {
 
             const response = await client?.send(getObjectCommand);
 
-            if (response?.Body && response?.Body instanceof Readable) {
+            if (response?.Body && response.Body instanceof Readable) {
                 return { success: true, error: null, response: response.Body };
             } else {
                 return { success: false, error: null, response: null };
@@ -188,13 +188,24 @@ class RemoteFileService {
         await client?.send(deleteObjectsCommand);
     }
 
-    async zipAndSendPublicFiles(res: Response, integrationName: string, accountId: number, environmentId: number, providerPath: string): Promise<void> {
+    async zipAndSendPublicFiles(
+        res: Response,
+        integrationName: string,
+        accountId: number,
+        environmentId: number,
+        providerPath: string,
+        flowType: string
+    ): Promise<void> {
         const { success, error, response: nangoYaml } = await this.getStream(`${this.publicRoute}/${providerPath}/${nangoConfigFile}`);
         if (!success || nangoYaml === null) {
             errorManager.errResFromNangoErr(res, error);
             return;
         }
-        const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${this.publicRoute}/${providerPath}/${integrationName}.ts`);
+        const {
+            success: tsSuccess,
+            error: tsError,
+            response: tsFile
+        } = await this.getStream(`${this.publicRoute}/${providerPath}/${flowType}s/${integrationName}.ts`);
         if (!tsSuccess || tsFile === null) {
             errorManager.errResFromNangoErr(res, tsError);
             return;

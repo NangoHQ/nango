@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, HelpCircle } from '@geist-ui/icons';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { Tooltip, useModal, Modal } from '@geist-ui/core';
-import Nango from '@nangohq/frontend';
 
 import {
     useEditCallbackUrlAPI,
     useEditWebhookUrlAPI,
+    useEditWebhookSecondaryUrlAPI,
     useEditHmacEnabledAPI,
     useEditHmacKeyAPI,
     useEditEnvVariablesAPI,
@@ -16,13 +16,14 @@ import {
     useEditSendAuthWebhookAPI
 } from '../utils/api';
 import IntegrationLogo from '../components/ui/IntegrationLogo';
-import { isCloud, defaultCallback } from '../utils/utils';
+import { isCloud, isHosted, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/input/SecretInput';
 import { useStore } from '../store';
 import Button from '../components/ui/button/Button';
 import { useEnvironment } from '../hooks/useEnvironment';
+import { connectSlack } from '../utils/slack-connection';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -42,17 +43,23 @@ export const EnvironmentSettings: React.FC = () => {
     const [callbackEditMode, setCallbackEditMode] = useState(false);
     const [webhookEditMode, setWebhookEditMode] = useState(false);
 
-    const [slackIsConnected, setSlackIsConnected] = useState(false);
+    const [webhookUrlSecondary, setWebhookUrlSecondary] = useState('');
+    const [webhookSecondaryEditMode, setWebhookSecondaryEditMode] = useState(false);
 
-    const [hmacKey, setHmacKey] = useState('');
+    const [slackIsConnected, setSlackIsConnected] = useState(false);
+    const [slackIsConnecting, setSlackIsConnecting] = useState(false);
+    const [slackConnectedChannel, setSlackConnectedChannel] = useState<string | null>('');
+
+    const [hmacKey, setHmacKey] = useState<string | null>('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
-    const [accountUUID, setAccountUUID] = useState<string>();
+    const [accountUUID, setAccountUUID] = useState<string>('');
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
     const editCallbackUrlAPI = useEditCallbackUrlAPI(env);
     const editWebhookUrlAPI = useEditWebhookUrlAPI(env);
+    const editWebhookSecondaryUrlAPI = useEditWebhookSecondaryUrlAPI(env);
     const editHmacEnabled = useEditHmacEnabledAPI(env);
     const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI(env);
     const editSendAuthWebhook = useEditSendAuthWebhookAPI(env);
@@ -62,7 +69,7 @@ export const EnvironmentSettings: React.FC = () => {
     const { setVisible, bindings } = useModal();
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
-    const { environment, mutate } = useEnvironment(env);
+    const { environmentAndAccount, mutate } = useEnvironment(env);
 
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id));
@@ -70,10 +77,11 @@ export const EnvironmentSettings: React.FC = () => {
     }, [env]);
 
     useEffect(() => {
-        if (!environment) {
+        if (!environmentAndAccount) {
             return;
         }
 
+        const { environment, host, uuid, env_variables, slack_notifications_channel } = environmentAndAccount;
         setSecretKey(environment.pending_secret_key || environment.secret_key);
         setSecretKeyRotatable(environment.secret_key_rotatable !== false);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
@@ -85,18 +93,20 @@ export const EnvironmentSettings: React.FC = () => {
         setCallbackUrl(environment.callback_url || defaultCallback());
 
         setWebhookUrl(environment.webhook_url || '');
+        setWebhookUrlSecondary(environment.webhook_url_secondary || '');
         setSendAuthWebhook(environment.send_auth_webhook);
-        setHostUrl(environment.host);
-        setAccountUUID(environment.uuid);
+        setHostUrl(host);
+        setAccountUUID(uuid);
 
         setHmacEnabled(environment.hmac_enabled);
         setAlwaysSendWebhook(environment.always_send_webhook);
-        setHmacKey(environment.hmac_key);
+        setHmacKey(environment.hmac_key || '');
 
         setSlackIsConnected(environment.slack_notifications);
+        setSlackConnectedChannel(slack_notifications_channel);
 
-        setEnvVariables(environment.env_variables);
-    }, [environment]);
+        setEnvVariables(env_variables);
+    }, [environmentAndAccount]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -115,7 +125,7 @@ export const EnvironmentSettings: React.FC = () => {
         }
     };
 
-    const handleWebhookbackSave = async (e: React.SyntheticEvent) => {
+    const handleWebhookEditSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
 
         const target = e.target as typeof e.target & {
@@ -128,6 +138,23 @@ export const EnvironmentSettings: React.FC = () => {
             toast.success('Wehook URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setWebhookEditMode(false);
             setWebhookUrl(target.webhook_url.value);
+            void mutate();
+        }
+    };
+
+    const handleWebhookSecondaryEditSave = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+
+        const target = e.target as typeof e.target & {
+            webhook_url_secondary: { value: string };
+        };
+
+        const res = await editWebhookSecondaryUrlAPI(target.webhook_url_secondary.value);
+
+        if (res?.status === 200) {
+            toast.success('Secondary Wehook URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            setWebhookSecondaryEditMode(false);
+            setWebhookUrlSecondary(target.webhook_url_secondary.value);
             void mutate();
         }
     };
@@ -189,30 +216,27 @@ export const EnvironmentSettings: React.FC = () => {
         const formData = new FormData(e.target as HTMLFormElement);
         const entries = Array.from(formData.entries());
 
-        const envVariablesArray = entries.reduce(
-            (acc, [key, value]) => {
-                // we use the index to match on the name and value
-                // but strip everything before the dash to remove the dynamic aspect
-                // to the name. The dynamic aspect is needed to make sure the values
-                // show correctly when reloading environments
-                const strippedKey = key.split('-')[1];
-                const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
-                if (match) {
-                    const type = match[1];
-                    const index = parseInt(match[2], 10);
-                    if (!acc[index]) {
-                        acc[index] = {} as { name: string; value: string };
-                    }
-                    if (type === 'name') {
-                        acc[index].name = value as string;
-                    } else if (type === 'value') {
-                        acc[index].value = value as string;
-                    }
+        const envVariablesArray = entries.reduce<{ name: string; value: string }[]>((acc, [key, value]) => {
+            // we use the index to match on the name and value
+            // but strip everything before the dash to remove the dynamic aspect
+            // to the name. The dynamic aspect is needed to make sure the values
+            // show correctly when reloading environments
+            const strippedKey = key.split('-')[1];
+            const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
+            if (match) {
+                const type = match[1];
+                const index = parseInt(match[2], 10);
+                if (!acc[index]) {
+                    acc[index] = {} as { name: string; value: string };
                 }
-                return acc;
-            },
-            [] as { name: string; value: string }[]
-        );
+                if (type === 'name') {
+                    acc[index].name = value as string;
+                } else if (type === 'value') {
+                    acc[index].value = value as string;
+                }
+            }
+            return acc;
+        }, []);
 
         const res = await editEnvVariables(envVariablesArray);
 
@@ -257,7 +281,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             const key = (await res.json())['key'];
             if (publicKey) {
                 setPublicKey(key);
@@ -273,7 +297,7 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRevertKey = async (publicKey = true) => {
-        const res = await fetch(`/api/v1/environment/?env=${env}`, {
+        const res = await fetch(`/api/v1/environment/revert-key?env=${env}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -283,7 +307,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             const key = (await res.json())['key'];
             if (publicKey) {
                 setPublicKey(key);
@@ -309,7 +333,7 @@ export const EnvironmentSettings: React.FC = () => {
             })
         });
 
-        if (res?.status === 200) {
+        if (res.status === 200) {
             if (publicKey) {
                 toast.success('New public key activated', { position: toast.POSITION.BOTTOM_CENTER });
                 setVisible(false);
@@ -338,11 +362,11 @@ export const EnvironmentSettings: React.FC = () => {
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
 
-        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}?env=${env}`, {
+        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}-${env}?env=${env}`, {
             method: 'DELETE'
         });
 
-        if (res?.status !== 204) {
+        if (res.status !== 204) {
             toast.error('There was a problem when disconnecting Slack', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
             toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
@@ -351,40 +375,20 @@ export const EnvironmentSettings: React.FC = () => {
         }
     };
 
-    const connectSlack = async () => {
-        const connectionId = `account-${accountUUID}`;
+    const createSlackConnection = async () => {
+        setSlackIsConnecting(true);
+        const onFinish = () => {
+            setSlackIsConnected(true);
+            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            void mutate();
+            setSlackIsConnecting(false);
+        };
 
-        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (res?.status !== 200) {
+        const onFailure = () => {
             toast.error('Something went wrong during the lookup for the Slack connect', { position: toast.POSITION.BOTTOM_CENTER });
-            return;
-        }
-
-        const authResponse = await res.json();
-        const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
-
-        const nango = new Nango({ host: hostUrl, publicKey });
-        nango
-            .auth(integrationKey, connectionId, {
-                user_scope: [],
-                params: {},
-                hmac: hmacDigest
-            })
-            .then(async () => {
-                await updateSlackNotifications(true);
-                setSlackIsConnected(true);
-                toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
-                void mutate();
-            })
-            .catch((err: { message: string; type: string }) => {
-                console.log(err);
-            });
+            setSlackIsConnecting(false);
+        };
+        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
 
     return (
@@ -578,7 +582,7 @@ export const EnvironmentSettings: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                        {env !== 'dev' && (
+                        {!isHosted() && (
                             <div className="flex items-center justify-between mx-8 mt-8">
                                 <div>
                                     <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
@@ -597,9 +601,14 @@ export const EnvironmentSettings: React.FC = () => {
                                     </label>
                                 </div>
                                 <div className="">
-                                    <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
-                                        <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
-                                        {slackIsConnected ? 'Disconnect' : 'Connect'}
+                                    <Button
+                                        disabled={slackIsConnecting}
+                                        className="items-center"
+                                        variant="primary"
+                                        onClick={slackIsConnected ? disconnectSlack : createSlackConnection}
+                                    >
+                                        <IntegrationLogo provider="slack" height={5} width={6} classNames="" />
+                                        {slackIsConnected ? `Disconnect ${slackConnectedChannel}` : 'Connect'}
                                     </Button>
                                 </div>
                             </div>
@@ -710,7 +719,7 @@ export const EnvironmentSettings: React.FC = () => {
                                     </Tooltip>
                                 </div>
                                 {webhookEditMode && (
-                                    <form className="mt-2" onSubmit={handleWebhookbackSave}>
+                                    <form className="mt-2" onSubmit={handleWebhookEditSave}>
                                         <div className="flex">
                                             <input
                                                 id="webhook_url"
@@ -744,6 +753,81 @@ export const EnvironmentSettings: React.FC = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                        <div>
+                            {!environmentAndAccount?.environment.webhook_url_secondary && !webhookSecondaryEditMode ? (
+                                <button
+                                    onClick={() => setWebhookSecondaryEditMode(true)}
+                                    className="mx-8 mt-4 hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm"
+                                    type="button"
+                                >
+                                    Add Secondary Webhook URL
+                                </button>
+                            ) : (
+                                <>
+                                    <div className="mx-8 mt-8">
+                                        <div className="flex">
+                                            <label htmlFor="webhook_url" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                                Secondary Webhook URL
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            {`Be notified when new data is available from Nango (cf. `}
+                                                            <a
+                                                                href="https://docs.nango.dev/integrate/guides/sync-data-from-an-api#listen-for-webhooks-from-nango"
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="text-text-blue ml-1"
+                                                            >
+                                                                webhook docs
+                                                            </a>
+                                                            {`).`}
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        {webhookSecondaryEditMode && (
+                                            <form className="mt-2" onSubmit={handleWebhookSecondaryEditSave}>
+                                                <div className="flex">
+                                                    <input
+                                                        id="webhook_url_secondary"
+                                                        name="webhook_url_secondary"
+                                                        autoComplete="new-password"
+                                                        type="url"
+                                                        defaultValue={webhookUrlSecondary}
+                                                        className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                                    />
+
+                                                    <button
+                                                        type="submit"
+                                                        className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        {!webhookSecondaryEditMode && (
+                                            <div className="flex">
+                                                <Prism language="bash" colorScheme="dark" className="w-full">
+                                                    {webhookUrlSecondary || '\u0000'}
+                                                </Prism>
+                                                <button
+                                                    onClick={() => setWebhookSecondaryEditMode(!webhookSecondaryEditMode)}
+                                                    className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                >
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <div>
                             <div className="mx-8 mt-8">
@@ -847,7 +931,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                 name="hmac_key"
                                                 autoComplete="new-password"
                                                 type="text"
-                                                value={hmacKey}
+                                                value={hmacKey || ''}
                                                 onChange={(event) => setHmacKey(event.target.value)}
                                                 className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
                                             />

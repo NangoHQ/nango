@@ -1,16 +1,23 @@
 import { nanoid } from '@nangohq/utils';
-import type { MessageRow } from '../types/messages';
+import type { MessageRow } from '@nangohq/types';
+import { z } from 'zod';
+
+export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
 
 export interface FormatMessageData {
-    account?: { id: number; name?: string };
+    account?: { id: number; name: string };
     user?: { id: number } | undefined;
-    environment?: { id: number; name?: string } | undefined;
-    connection?: { id: number; name?: string } | undefined;
-    config?: { id: number; name?: string } | undefined;
-    sync?: { id: string; name?: string } | undefined;
+    environment?: { id: number; name: string } | undefined;
+    connection?: { id: number; name: string } | undefined;
+    integration?: { id: number; name: string; provider: string } | undefined;
+    syncConfig?: { id: number; name: string } | undefined;
+    meta?: MessageRow['meta'];
 }
 
-export function getFormattedMessage(data: Partial<MessageRow>, { account, user, environment, config, connection, sync }: FormatMessageData = {}): MessageRow {
+export function getFormattedMessage(
+    data: Partial<MessageRow>,
+    { account, user, environment, integration, connection, syncConfig, meta }: FormatMessageData = {}
+): MessageRow {
     return {
         id: data.id || nanoid(),
 
@@ -23,20 +30,21 @@ export function getFormattedMessage(data: Partial<MessageRow>, { account, user, 
         code: data.code || null,
         state: data.state || 'waiting',
 
-        accountId: account?.id || data.accountId || null,
+        accountId: account?.id ?? data.accountId ?? null,
         accountName: account?.name || data.accountName || null,
 
-        environmentId: environment?.id || data.environmentId || null,
+        environmentId: environment?.id ?? data.environmentId ?? null,
         environmentName: environment?.name || data.environmentName || null,
 
-        configId: config?.id || data.configId || null,
-        configName: config?.name || data.configName || null,
+        integrationId: integration?.id ?? data.integrationId ?? null,
+        integrationName: integration?.name || data.integrationName || null,
+        providerName: integration?.provider || data.providerName || null,
 
-        connectionId: connection?.id || data.connectionId || null,
+        connectionId: connection?.id ?? data.connectionId ?? null,
         connectionName: connection?.name || data.connectionName || null,
 
-        syncId: sync?.id || data.syncId || null,
-        syncName: sync?.name || data.syncName || null,
+        syncConfigId: syncConfig?.id || data.syncConfigId || null,
+        syncConfigName: syncConfig?.name || data.syncConfigName || null,
 
         jobId: data.jobId || null,
 
@@ -46,7 +54,7 @@ export function getFormattedMessage(data: Partial<MessageRow>, { account, user, 
         error: data.error || null,
         request: data.request || null,
         response: data.response || null,
-        meta: data.meta || null,
+        meta: meta || data.meta || null,
 
         createdAt: data.createdAt || new Date().toISOString(),
         updatedAt: data.updatedAt || new Date().toISOString(),

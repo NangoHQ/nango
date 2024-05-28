@@ -1,6 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
+    "version": "0.39.32",
     "workspaces": [
         "packages/cli",
         "packages/shared",
@@ -10,11 +11,14 @@
         "packages/records",
         "packages/server",
         "packages/runner",
+        "packages/scheduler",
+        "packages/orchestrator",
         "packages/persist",
         "packages/jobs",
         "packages/webapp",
         "packages/utils",
-        "packages/data-ingestion"
+        "packages/data-ingestion",
+        "packages/types"
     ],
     "scripts": {
         "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
@@ -40,12 +44,13 @@
         "server:dev:watch": "cd ./packages/server && npm run dev",
         "jobs:dev:watch": "npm run dev -w @nangohq/nango-jobs",
         "persist:dev:watch": "npm run dev -w @nangohq/nango-persist",
-        "webapp:dev:watch": "cd ./packages/webapp && npm run start:hosted",
+        "orchestrator:dev:watch": "npm run dev -w @nangohq/nango-orchestrator",
+        "webapp:dev:watch": "cd ./packages/webapp && npm run start:local",
         "prepare": "husky install",
         "build:watch": "tsc -b -w --preserveWatchOutput tsconfig.build.json",
         "dev:watch": "npm run -w nango copy:files && npm run build:watch",
         "watch:dev": "npm run dev:watch",
-        "dev:watch:apps": "concurrently --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\"",
+        "dev:watch:apps": "concurrently --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\"",
         "watch:dev:apps": "npm run dev:watch:apps",
         "dw": "npm run dev:watch",
         "dwa": "npm run dev:watch:apps",
@@ -59,8 +64,8 @@
     "devDependencies": {
         "@tsconfig/node18-strictest-esm": "^1.0.1",
         "@types/node": "20.12.2",
-        "@typescript-eslint/eslint-plugin": "6.21.0",
-        "@typescript-eslint/parser": "6.21.0",
+        "@typescript-eslint/eslint-plugin": "7.7.1",
+        "@typescript-eslint/parser": "7.7.1",
         "concurrently": "^8.0.1",
         "eslint": "8.56.0",
         "eslint-config-prettier": "9.1.0",
@@ -68,6 +73,7 @@
         "eslint-plugin-prettier": "5.1.3",
         "eslint-plugin-react": "7.33.2",
         "eslint-plugin-react-hooks": "4.6.0",
+        "git-cliff": "2.2.1",
         "husky": "^8.0.3",
         "js-yaml": "4.1.0",
         "lint-staged": "15.2.2",
@@ -76,11 +82,8 @@
         "testcontainers": "^9.12.0",
         "tsx": "^4.6.2",
         "typescript": "^5.3.3",
-        "vitest": "^0.33.0"
-    },
-    "dependencies": {
-        "@babel/parser": "^7.22.5",
-        "@babel/traverse": "^7.22.5"
+        "vitest": "0.33.0",
+        "zx": "8.0.2"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,ejs,cjs}": [

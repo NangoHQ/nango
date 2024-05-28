@@ -1,23 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
-import { WorkOS } from '@workos-inc/node';
 import crypto from 'crypto';
 import util from 'util';
-import { resetPasswordSecret, getUserFromSession } from '../utils/utils.js';
+import { resetPasswordSecret } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import EmailClient from '../clients/email.client.js';
 import type { User } from '@nangohq/shared';
-import { isCloud, baseUrl, basePublicUrl, getLogger, isOk, resultErr, resultOk, type Result, isErr } from '@nangohq/utils';
-import {
-    userService,
-    accountService,
-    errorManager,
-    ErrorSourceEnum,
-    environmentService,
-    analytics,
-    AnalyticsTypes,
-    NangoError,
-    createOnboardingProvider
-} from '@nangohq/shared';
+import { baseUrl, basePublicUrl, getLogger, Err, Ok } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { getWorkOSClient } from '../clients/workos.client.js';
+import { userService, accountService, errorManager, ErrorSourceEnum, NangoError } from '@nangohq/shared';
 
 export interface WebUser {
     id: number;
@@ -35,24 +26,15 @@ interface InviteAccountState extends InviteAccountBody {
     token: string;
 }
 
-let workos: WorkOS | null = null;
-if (process.env['WORKOS_API_KEY'] && process.env['WORKOS_CLIENT_ID']) {
-    workos = new WorkOS(process.env['WORKOS_API_KEY']);
-} else {
-    if (isCloud) {
-        throw new NangoError('workos_not_configured');
-    }
-}
-
 const allowedProviders = ['GoogleOAuth'];
 
-const parseState = (state: string): Result<InviteAccountState, Error> => {
+const parseState = (state: string): Result<InviteAccountState> => {
     try {
         const parsed = JSON.parse(Buffer.from(state, 'base64').toString('ascii')) as InviteAccountState;
-        return resultOk(parsed);
+        return Ok(parsed);
     } catch {
         const error = new Error('Invalid state');
-        return resultErr(error);
+        return Err(error);
     }
 };
 
@@ -67,8 +49,8 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 
     const parsedState: Result<InviteAccountState> = parseState(state);
 
-    if (isOk(parsedState)) {
-        const { accountId, token } = parsedState.res;
+    if (parsedState.isOk()) {
+        const { accountId, token } = parsedState.value;
         const validToken = await userService.getInvitedUserByToken(token);
         if (validToken) {
             await userService.markAcceptedInvite(token);
@@ -80,28 +62,7 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 };
 
 class AuthController {
-    async signin(req: Request, res: Response, next: NextFunction) {
-        try {
-            const getUser = await getUserFromSession(req);
-            if (isErr(getUser)) {
-                errorManager.errResFromNangoErr(res, getUser.err);
-                return;
-            }
-
-            const user = getUser.res;
-            const webUser: WebUser = {
-                id: user.id,
-                accountId: user.account_id,
-                email: user.email,
-                name: user.name
-            };
-            res.status(200).send({ user: webUser });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async logout(req: Request, res: Response, next: NextFunction) {
+    async logout(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             req.session.destroy((err) => {
                 if (err) {
@@ -115,98 +76,7 @@ class AuthController {
         }
     }
 
-    async signup(req: Request, res: Response, next: NextFunction) {
-        try {
-            if (req.body == null) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const email = req.body['email'];
-            if (email == null) {
-                errorManager.errRes(res, 'missing_email_param');
-                return;
-            }
-
-            const name = req.body['name'];
-            if (name == null) {
-                errorManager.errRes(res, 'missing_name_param');
-                return;
-            }
-
-            const password = req.body['password'];
-            if (password == null) {
-                errorManager.errRes(res, 'missing_password_param');
-                return;
-            }
-
-            if ((await userService.getUserByEmail(email)) != null) {
-                errorManager.errRes(res, 'duplicate_account');
-                return;
-            }
-
-            let account;
-            let joinedWithToken = false;
-
-            if (req.body['account_id'] != null) {
-                const token = req.body['token'];
-                const validToken = userService.getInvitedUserByToken(token);
-                if (!validToken) {
-                    errorManager.errRes(res, 'invalid_invite_token');
-                    return;
-                }
-                account = await accountService.getAccountById(Number(req.body['account_id']));
-                joinedWithToken = true;
-            } else {
-                account = await accountService.createAccount(`${name}'s Organization`);
-            }
-
-            if (account == null) {
-                throw new NangoError('account_creation_failure');
-            }
-
-            const salt = crypto.randomBytes(16).toString('base64');
-            const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
-            const user = await userService.createUser(email, name, hashedPassword, salt, account.id);
-
-            if (user == null) {
-                throw new NangoError('user_creation_failure');
-            }
-
-            const event = joinedWithToken ? AnalyticsTypes.ACCOUNT_JOINED : AnalyticsTypes.ACCOUNT_CREATED;
-            void analytics.track(event, account.id, {}, isCloud ? { email: email } : {});
-
-            if (isCloud && !joinedWithToken) {
-                // On Cloud version, create default provider config to simplify onboarding.
-                const env = await environmentService.getByEnvironmentName(account.id, 'dev');
-                if (env) {
-                    await createOnboardingProvider({ envId: env.id });
-                }
-            }
-
-            if (joinedWithToken) {
-                await userService.markAcceptedInvite(req.body['token']);
-            }
-
-            req.login(user, function (err) {
-                if (err) {
-                    return next(err);
-                }
-
-                const webUser: WebUser = {
-                    id: user.id,
-                    accountId: user.account_id,
-                    email: user.email,
-                    name: user.name
-                };
-                res.status(200).send({ user: webUser });
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    async forgotPassword(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { email } = req.body;
 
@@ -235,7 +105,7 @@ class AuthController {
         }
     }
 
-    async resetPassword(req: Request, res: Response, next: NextFunction) {
+    async resetPassword(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { password, token } = req.body;
 
@@ -276,7 +146,7 @@ class AuthController {
         try {
             const emailClient = EmailClient.getInstance();
             emailClient
-                ?.send(
+                .send(
                     user.email,
                     'Nango password reset',
                     `<p><b>Reset your password</b></p>
@@ -292,7 +162,7 @@ class AuthController {
         }
     }
 
-    async invitation(req: Request, res: Response, next: NextFunction) {
+    async invitation(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const token = req.query['token'] as string;
 
@@ -314,7 +184,7 @@ class AuthController {
         }
     }
 
-    getManagedLogin(req: Request, res: Response, next: NextFunction) {
+    getManagedLogin(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;
 
@@ -323,12 +193,9 @@ class AuthController {
                 return;
             }
 
-            if (!workos) {
-                errorManager.errRes(res, 'workos_not_configured');
-                return;
-            }
+            const workos = getWorkOSClient();
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = workos.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${basePublicUrl}/api/v1/login/callback`
@@ -340,8 +207,9 @@ class AuthController {
         }
     }
 
-    getManagedLoginWithInvite(req: Request, res: Response, next: NextFunction) {
+    getManagedLoginWithInvite(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
+            const workos = getWorkOSClient();
             const provider = req.query['provider'] as string;
 
             if (!provider || !allowedProviders.includes(provider)) {
@@ -363,11 +231,6 @@ class AuthController {
                 return;
             }
 
-            if (!workos) {
-                errorManager.errRes(res, 'workos_not_configured');
-                return;
-            }
-
             const accountId = body.accountId;
 
             const inviteParams: InviteAccountState = {
@@ -375,7 +238,7 @@ class AuthController {
                 token
             };
 
-            const oAuthUrl = workos?.userManagement.getAuthorizationUrl({
+            const oAuthUrl = workos.userManagement.getAuthorizationUrl({
                 clientId: process.env['WORKOS_CLIENT_ID'] || '',
                 provider,
                 redirectUri: `${basePublicUrl}/api/v1/login/callback`,
@@ -388,21 +251,16 @@ class AuthController {
         }
     }
 
-    async loginCallback(req: Request, res: Response, next: NextFunction) {
+    async loginCallback(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { code, state } = req.query;
 
-            if (!workos) {
-                const error = new NangoError('workos_not_configured');
-                logger.error(error);
-                res.redirect(`${basePublicUrl}`);
-                return;
-            }
+            const workos = getWorkOSClient();
 
             if (!code) {
                 const error = new NangoError('missing_managed_login_callback_code');
                 logger.error(error);
-                res.redirect(`${basePublicUrl}`);
+                res.redirect(basePublicUrl);
                 return;
             }
 

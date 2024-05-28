@@ -1,6 +1,6 @@
 import { PostHog } from 'posthog-node';
 import { localhostUrl, isCloud, isStaging, baseUrl } from '@nangohq/utils';
-import { UserType, packageJsonFile } from '../utils/utils.js';
+import { UserType } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
@@ -8,6 +8,7 @@ import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Account, User } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
+import { NANGO_VERSION } from '../version.js';
 
 export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
@@ -40,6 +41,10 @@ export enum AnalyticsTypes {
     PRE_UNAUTH = 'server:pre_unauth',
     PRE_WS_OAUTH = 'server:pre_ws_oauth',
     PRE_OAUTH2_CC_AUTH = 'server:pre_oauth2_cc_auth',
+    RESOURCE_CAPPED_CONNECTION_CREATED = 'server:resource_capped:connection_creation',
+    RESOURCE_CAPPED_CONNECTION_IMPORTED = 'server:resource_capped:connection_imported',
+    RESOURCE_CAPPED_SCRIPT_ACTIVATE = 'server:resource_capped:script_activate',
+    RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED = 'server:resource_capped:script_deploy_is_disabled',
     SYNC_DEPLOY_SUCCESS = 'sync:deploy_succeeded',
     SYNC_PAUSE = 'sync:command_pause',
     SYNC_RUN = 'sync:command_run',
@@ -60,7 +65,7 @@ class Analytics {
             if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
-                this.packageVersion = packageJsonFile().version;
+                this.packageVersion = NANGO_VERSION;
             }
         } catch (e) {
             errorManager.report(e, {
@@ -124,8 +129,8 @@ class Analytics {
         userProperties?: Record<string | number, any>
     ) {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
-        if (accountId) {
-            this.track(name, accountId, eventProperties, userProperties);
+        if (typeof accountId !== 'undefined' && accountId !== null) {
+            return this.track(name, accountId, eventProperties, userProperties);
         }
     }
 

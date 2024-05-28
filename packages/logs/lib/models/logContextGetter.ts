@@ -6,7 +6,7 @@ import type { FormatMessageData } from './helpers.js';
 import { getFormattedMessage } from './helpers.js';
 import { LogContext } from '../client.js';
 import { logger } from '../utils.js';
-import type { MessageRow, OperationRowInsert } from '../types/messages.js';
+import type { MessageRow, OperationRowInsert } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;
@@ -25,10 +25,10 @@ export const logContextGetter = {
      */
     async create(
         data: OperationRowInsert,
-        { start, account, user, environment }: SetRequired<OperationContextData, 'account' | 'environment'>,
+        { start, ...rest }: SetRequired<OperationContextData, 'account' | 'environment'>,
         options?: Options
     ): Promise<LogContext> {
-        const msg = getFormattedMessage(data, { account, user, environment });
+        const msg = getFormattedMessage(data, rest);
         if (typeof start === 'undefined' || start) {
             msg.startedAt = msg.startedAt ?? new Date().toISOString();
             msg.state = msg.state === 'waiting' ? 'running' : msg.state;

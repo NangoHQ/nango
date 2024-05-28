@@ -4,9 +4,10 @@ import { server } from './server.js';
 import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
+import { reconcileTemporalSchedules } from './crons/reconcileTemporalSchedules.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { JOBS_PORT } from './constants.js';
-import { cronDeleteOldLogs } from './crons/deleteOldLogs.js';
+import { db } from '@nangohq/shared';
 
 const logger = getLogger('Jobs');
 
@@ -19,11 +20,13 @@ try {
     // This promise never resolve
     void temporal.start();
 
+    db.enableMetrics();
+
     // Register recurring tasks
     cronAutoIdleDemo();
     deleteOldActivityLogs();
     deleteSyncsData();
-    cronDeleteOldLogs();
+    reconcileTemporalSchedules();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {

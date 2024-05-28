@@ -23,6 +23,7 @@
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-type-checked",
         "plugin:@typescript-eslint/strict",
+        "plugin:@typescript-eslint/strict-type-checked",
         "plugin:@typescript-eslint/stylistic",
         "plugin:react/recommended",
         "plugin:react/jsx-runtime",
@@ -50,12 +51,20 @@
         "@typescript-eslint/no-unsafe-return": "warn",
         "@typescript-eslint/no-empty-function": "warn",
         "@typescript-eslint/no-unsafe-enum-comparison": "warn",
-        "@typescript-eslint/restrict-template-expressions": "warn",
-        "@typescript-eslint/await-thenable": "warn",
+        "@typescript-eslint/restrict-template-expressions": [
+            "warn",
+            {
+                "allowNumber": true,
+                "allowBoolean": true
+            }
+        ],
+        "@typescript-eslint/await-thenable": "error",
         "@typescript-eslint/no-invalid-void-type": "warn",
         "@typescript-eslint/no-base-to-string": "warn",
         "@typescript-eslint/restrict-plus-operands": "warn",
         "@typescript-eslint/consistent-type-exports": "error",
+        "@typescript-eslint/no-unnecessary-condition": "off", // Our types are not good enough right now
+        "@typescript-eslint/only-throw-error": "warn",
         "react/prop-types": "off",
         "@typescript-eslint/no-unused-vars": [
             "error",
@@ -72,7 +81,15 @@
         "@typescript-eslint/consistent-type-imports": [
             "error",
             {
-                "prefer": "type-imports"
+                "prefer": "type-imports",
+                "fixStyle": "separate-type-imports"
+            }
+        ],
+        "@typescript-eslint/no-confusing-void-expression": [
+            "warn",
+            {
+                "ignoreVoidOperator": true,
+                "ignoreArrowShorthand": true
             }
         ],
         // Import
@@ -87,11 +104,16 @@
             }
         ],
         "import/no-unresolved": "off",
+        "import/no-duplicates": "error",
         "import/no-extraneous-dependencies": "error",
         "import/no-empty-named-blocks": "error",
         "import/no-absolute-path": "error",
         "import/no-self-import": "error",
-        "import/newline-after-import": "error"
+        "import/newline-after-import": "error",
+        "import/consistent-type-specifier-style": [
+            "error",
+            "prefer-top-level"
+        ]
     },
     "overrides": [
         {

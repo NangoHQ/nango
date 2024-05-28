@@ -13,17 +13,17 @@ exports[`mapping > should apply mapping 1`] = `
     "code": {
       "type": "keyword",
     },
-    "configId": {
-      "type": "keyword",
-    },
-    "configName": {
-      "type": "keyword",
-    },
     "connectionId": {
       "type": "keyword",
     },
     "connectionName": {
-      "type": "keyword",
+      "analyzer": "standard",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+        },
+      },
+      "type": "text",
     },
     "createdAt": {
       "type": "date",
@@ -43,6 +43,18 @@ exports[`mapping > should apply mapping 1`] = `
     },
     "id": {
       "type": "keyword",
+    },
+    "integrationId": {
+      "type": "keyword",
+    },
+    "integrationName": {
+      "analyzer": "standard",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+        },
+      },
+      "type": "text",
     },
     "jobId": {
       "type": "keyword",
@@ -69,6 +81,9 @@ exports[`mapping > should apply mapping 1`] = `
       },
     },
     "parentId": {
+      "type": "keyword",
+    },
+    "providerName": {
       "type": "keyword",
     },
     "request": {
@@ -105,11 +120,17 @@ exports[`mapping > should apply mapping 1`] = `
     "state": {
       "type": "keyword",
     },
-    "syncId": {
+    "syncConfigId": {
       "type": "keyword",
     },
-    "syncName": {
-      "type": "keyword",
+    "syncConfigName": {
+      "analyzer": "standard",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+        },
+      },
+      "type": "text",
     },
     "title": {
       "type": "keyword",

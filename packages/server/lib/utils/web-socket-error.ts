@@ -31,6 +31,13 @@ export function InvalidCallbackOAuth2(): WSErr {
     };
 }
 
+export function EnvironmentOrAccountNotFound(): WSErr {
+    return {
+        type: 'account_or_environment_retrieval_err',
+        message: `The account or environment could not be retrieved.`
+    };
+}
+
 export function UnknownGrantType(grantType: string): WSErr {
     return {
         type: 'grant_type_err',
@@ -62,7 +69,7 @@ export function UnknownProviderConfigKey(providerConfigKey: string): WSErr {
 export function InvalidProviderConfig(providerConfigKey: string): WSErr {
     return {
         type: 'provider_config_err',
-        message: `Provider Config "${providerConfigKey}" is missing cliend ID, secret and/or scopes.`
+        message: `Provider Config "${providerConfigKey}" is missing client ID, secret and/or scopes.`
     };
 }
 

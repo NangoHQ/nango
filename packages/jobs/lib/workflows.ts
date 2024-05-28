@@ -1,6 +1,7 @@
+import type { ActivityFailure } from '@temporalio/workflow';
 import { CancellationScope, proxyActivities, isCancellation } from '@temporalio/workflow';
 import type * as activities from './activities.js';
-import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/worker';
+import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs, RunnerOutput } from '@nangohq/shared';
 
 const SYNC_TIMEOUT = '24h';
 const SYNC_MAX_ATTEMPTS = 3;
@@ -19,7 +20,7 @@ const { routeSync, scheduleAndRouteSync } = proxyActivities<typeof activities>({
     },
     heartbeatTimeout: '30m'
 });
-const { runAction } = proxyActivities<typeof activities>({
+const { runAction, reportFailure: reportActionFailure } = proxyActivities<typeof activities>({
     // actions are more time sensitive, hence shorter timeout
     // actions are synchronous so no retry and fast eviction from the queue
     scheduleToStartTimeout: '1m',
@@ -79,21 +80,29 @@ export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean 
     }
 }
 
-export async function action(args: ActionArgs): Promise<object> {
+export async function action(args: ActionArgs): Promise<RunnerOutput> {
     try {
         return await runAction(args);
-    } catch (e) {
-        await reportFailure(e, args, ACTION_TIMEOUT, ACTION_MAX_ATTEMPTS);
+    } catch (err) {
+        await reportActionFailure(err, args, ACTION_TIMEOUT, ACTION_MAX_ATTEMPTS);
 
-        return { success: false };
+        return {
+            success: false,
+            error: {
+                type: 'nango_internal_error',
+                status: 500,
+                payload: { message: (err as ActivityFailure).cause?.message }
+            },
+            response: null
+        };
     }
 }
 
 export async function webhook(args: WebhookArgs): Promise<boolean> {
     try {
         return await runWebhook(args);
-    } catch (e) {
-        await reportFailure(e, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
+    } catch (err) {
+        await reportFailure(err, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
 
         return false;
     }

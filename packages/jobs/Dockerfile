@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:20.12.2-slim
 
 RUN apt-get update \
     && apt-get install -y ca-certificates \
@@ -16,6 +16,7 @@ COPY packages/data-ingestion/ packages/data-ingestion/
 COPY packages/jobs/ packages/jobs/
 COPY packages/logs/ packages/logs/
 COPY packages/runner/ packages/runner/
+COPY packages/orchestrator/ packages/orchestrator/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare

@@ -12,7 +12,7 @@ export default async function fetchData(nango: NangoSync) {
         .then((result) => {
             console.log(result);
         })
-        .catch((err) => {
+        .catch((err: unknown) => {
             console.log(err);
         });
 

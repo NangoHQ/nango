@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/node",
-    "version": "0.39.18",
+    "version": "0.39.32",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
@@ -36,6 +36,7 @@
         "README.md"
     ],
     "devDependencies": {
-        "tsup": "^7.2.0"
+        "tsup": "^8.0.2",
+        "vitest": "^0.33.0"
     }
 }

@@ -3,9 +3,9 @@ import { Helmet } from 'react-helmet';
 import { Loading, useModal, Modal } from '@geist-ui/core';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { useSWRConfig } from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 
-import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../../utils/api';
+import { requestErrorToast, swrFetcher, useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import ActionModal from '../../components/ui/ActionModal';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -13,10 +13,13 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import Info from '../../components/ui/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
+import { useEnvironment } from '../../hooks/useEnvironment';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
 import type { SyncResponse, Connection } from '../../types';
 import PageNotFound from '../PageNotFound';
+import { isHosted } from '../../utils/utils';
+import { connectSlack } from '../../utils/slack-connection';
 
 import { useStore } from '../../store';
 
@@ -28,19 +31,19 @@ export enum Tabs {
 export default function ShowIntegration() {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
+    const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
 
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
-    const [syncs, setSyncs] = useState<SyncResponse[] | null>(null);
-    const [syncLoaded, setSyncLoaded] = useState(false);
+    const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [pageNotFound, setPageNotFound] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
+    const [slackIsConnected, setSlackIsConnected] = useState(true);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI(env);
     const deleteConnectionAPI = useDeleteConnectionAPI(env);
-    const getSyncAPI = useGetSyncAPI(env);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,11 +51,33 @@ export default function ShowIntegration() {
     const { setVisible: setErrorVisible, bindings: errorBindings } = useModal();
     const { connectionId, providerConfigKey } = useParams();
 
+    const {
+        data: syncs,
+        isLoading: syncLoading,
+        error: syncLoadError,
+        mutate: reload
+    } = useSWR<SyncResponse[]>(`/api/v1/sync?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, swrFetcher, {
+        refreshInterval: 10000,
+        keepPreviousData: false
+    });
+
+    useEffect(() => {
+        if (syncLoadError) {
+            requestErrorToast();
+        }
+    }, [syncLoadError]);
+
+    useEffect(() => {
+        if (environmentAndAccount) {
+            setSlackIsConnected(environmentAndAccount.environment.slack_notifications);
+        }
+    }, [environmentAndAccount]);
+
     useEffect(() => {
         if (location.hash === '#models' || location.hash === '#syncs') {
             setActiveTab(Tabs.Syncs);
         }
-        if (location.hash === '#authorization') {
+        if (location.hash === '#authorization' || isHosted()) {
             setActiveTab(Tabs.Authorization);
         }
     }, [location]);
@@ -85,29 +110,6 @@ We could not retrieve and/or refresh your access token due to the following erro
             getConnections();
         }
     }, [connectionId, providerConfigKey, getConnectionDetailsAPI, loaded, setLoaded]);
-
-    useEffect(() => {
-        if (!connectionId || !providerConfigKey) return;
-
-        const getSyncs = async () => {
-            const res = await getSyncAPI(connectionId, providerConfigKey);
-
-            if (res?.status === 200) {
-                try {
-                    const data = await res.json();
-                    setSyncs(data);
-                } catch (e) {
-                    console.log(e);
-                }
-                setSyncLoaded(true);
-            }
-        };
-
-        if (!syncLoaded) {
-            setSyncLoaded(true);
-            getSyncs();
-        }
-    }, [getSyncAPI, syncLoaded, setLoaded, connectionId, providerConfigKey]);
 
     const deleteButtonClicked = async () => {
         if (!connectionId || !providerConfigKey) return;
@@ -147,11 +149,28 @@ We could not retrieve and/or refresh your access token due to the following erro
         }, 400);
     };
 
+    const createSlackConnection = async () => {
+        setSlackIsConnecting(true);
+        if (!environmentAndAccount) return;
+        const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
+        const onFinish = () => {
+            environmentMutate();
+            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            setSlackIsConnecting(false);
+        };
+
+        const onFailure = () => {
+            toast.error('Failed to create Slack connection!', { position: toast.POSITION.BOTTOM_CENTER });
+            setSlackIsConnecting(false);
+        };
+        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
+    };
+
     if (pageNotFound) {
         return <PageNotFound />;
     }
 
-    if (!loaded || !syncLoaded) {
+    if (!loaded || syncLoading) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
                 <Loading spaceRatio={2.5} className="-top-36" />
@@ -193,7 +212,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                         <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
                             {connection?.provider && (
                                 <IntegrationLogo
-                                    provider={connection?.provider}
+                                    provider={connection.provider}
                                     height={24}
                                     width={24}
                                     classNames="cursor-pointer p-1 border border-border-gray rounded-xl"
@@ -234,6 +253,22 @@ We could not retrieve and/or refresh your access token due to the following erro
                         Authorization
                     </li>
                 </ul>
+
+                {!slackIsConnected && !isHosted() && (
+                    <Info size={8} color="blue" showIcon={false} padding="mt-4 p-1">
+                        <div className="flex text-sm items-center">
+                            <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
+                            Receive instant monitoring alerts on Slack.{' '}
+                            <button
+                                disabled={slackIsConnecting}
+                                onClick={createSlackConnection}
+                                className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
+                            >
+                                Set up now for the {env} environment.
+                            </button>
+                        </div>
+                    </Info>
+                )}
             </section>
 
             {serverErrorMessage && (
@@ -250,10 +285,10 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             <section className="mt-10">
                 {activeTab === Tabs.Syncs && (
-                    <Syncs syncs={syncs} connection={connection} setSyncLoaded={setSyncLoaded} loaded={loaded} syncLoaded={syncLoaded} env={env} />
+                    <Syncs syncs={syncs} connection={connection} reload={reload} loaded={loaded} syncLoaded={!syncLoading} env={env} />
                 )}
                 {activeTab === Tabs.Authorization && (
-                    <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={syncLoaded} />
+                    <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={!syncLoading} />
                 )}
             </section>
             <Helmet>

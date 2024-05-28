@@ -39,20 +39,20 @@ export function useLogoutAPI() {
             headers: getHeaders()
         };
 
-        await fetch('/api/v1/logout', options);
+        await fetch('/api/v1/account/logout', options);
     };
 }
 
 export function useSignupAPI() {
-    return async (name: string, email: string, password: string, account_id?: number, token?: string) => {
+    return async (name: string, email: string, password: string) => {
         try {
             const options = {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify({ name: name, email: email, password: password, account_id, token })
+                body: JSON.stringify({ name: name, email: email, password: password })
             };
 
-            return fetch('/api/v1/signup', options);
+            return fetch('/api/v1/account/signup', options);
         } catch {
             requestErrorToast();
         }
@@ -68,9 +68,9 @@ export function useSigninAPI() {
                 body: JSON.stringify({ email: email, password: password })
             };
 
-            const res = await fetch('/api/v1/signin', options);
+            const res = await fetch('/api/v1/account/signin', options);
 
-            if (res.status !== 200 && res.status !== 401) {
+            if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
                 return serverErrorToast();
             }
 
@@ -277,6 +277,34 @@ export function useEditWebhookUrlAPI(env: string) {
             };
 
             const res = await fetch(`/api/v1/environment/webhook?env=${env}`, options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditWebhookSecondaryUrlAPI(env: string) {
+    const signout = useSignout();
+
+    return async (webhookSecondaryUrl: string) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ webhook_secondary_url: webhookSecondaryUrl })
+            };
+
+            const res = await fetch(`/api/v1/environment/webhook-secondary?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -605,7 +633,7 @@ export function useDeleteConnectionAPI(env: string) {
 export function useRequestPasswordResetAPI() {
     return async (email: string) => {
         try {
-            const res = await fetch(`/api/v1/forgot-password`, {
+            const res = await fetch(`/api/v1/account/forgot-password`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ email: email })
@@ -621,7 +649,7 @@ export function useRequestPasswordResetAPI() {
 export function useResetPasswordAPI() {
     return async (token: string, password: string) => {
         try {
-            const res = await fetch(`/api/v1/reset-password`, {
+            const res = await fetch(`/api/v1/account/reset-password`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ password: password, token: token })
@@ -802,7 +830,7 @@ export function useInviteSignupAPI() {
 
     return async (token: string) => {
         try {
-            const res = await fetch(`/api/v1/signup/invite?token=${token}`, {
+            const res = await fetch(`/api/v1/account/signup/invite?token=${token}`, {
                 method: 'GET',
                 headers: getHeaders()
             });

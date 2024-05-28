@@ -26,7 +26,8 @@ export enum LeftNavBarItems {
     Syncs,
     AccountSettings,
     UserSettings,
-    InteractiveDemo
+    InteractiveDemo,
+    Logs
 }
 
 export interface LeftNavBarProps {
@@ -73,23 +74,14 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
         let newPath = `/${pathSegments.join('/')}`;
 
-        let requiresRedirect = false;
-
         // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
         if (pathSegments[1] === 'integration' && pathSegments.length > 2) {
             newPath = `/${newEnv}/integrations`;
-            requiresRedirect = true;
         } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
             newPath = `/${newEnv}/connections`;
-            requiresRedirect = true;
         }
 
-        if (requiresRedirect) {
-            window.location.href = newPath;
-            return;
-        }
-
-        window.history.pushState({}, '', newPath);
+        navigate(newPath);
     };
 
     if (!meta) {
@@ -168,6 +160,17 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Activity ? 'text-white' : 'text-gray-400'}`} />
                             <p>Activity</p>
                         </Link>
+                        {/* <Link
+                            to={`/${env}/logs`}
+                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                props.selectedItem === LeftNavBarItems.Logs ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                            }`}
+                        >
+                            <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Logs ? 'text-white' : 'text-gray-400'}`} />
+                            <p className="flex gap-4 items-center">
+                                Logs <span className="text-xs text-green-400">beta</span>
+                            </p>
+                        </Link> */}
                         <Link
                             to={`/${env}/environment-settings`}
                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${

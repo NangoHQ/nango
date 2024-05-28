@@ -85,12 +85,6 @@ export async function updateProviderConfigAndConnectionId(id: number, provider_c
     });
 }
 
-export async function updateSessionId(id: number, session_id: string): Promise<void> {
-    await db.knex.from<ActivityLog>(activityLogTableName).where({ id }).update({
-        session_id
-    });
-}
-
 export async function updateSuccess(id: number, success: boolean | null): Promise<void> {
     if (!id) {
         return;
@@ -181,16 +175,6 @@ export async function createActivityLogMessageAndEnd(logMessage: ActivityLogMess
     if (logMessage.activity_log_id !== undefined) {
         await addEndTime(logMessage.activity_log_id);
     }
-}
-
-export async function findActivityLogBySession(session_id: string): Promise<number | null> {
-    const result = await db.knex.from<ActivityLog>(activityLogTableName).select('id').where({ session_id });
-
-    if (!result || result.length == 0 || !result[0]) {
-        return null;
-    }
-
-    return result[0].id;
 }
 
 export async function getTopLevelLogByEnvironment(

@@ -1,4 +1,7 @@
+import os from 'os';
+
 import type { ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
+import { NANGO_VERSION } from './version.js';
 
 /**
  * Validates the configuration for a proxy call
@@ -29,3 +32,11 @@ export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig)
         }
     });
 };
+
+export function getUserAgent(userAgent?: string): string {
+    const nodeVersion = process.versions.node;
+
+    const osName = os.platform().replace(' ', '_');
+    const osVersion = os.release().replace(' ', '_');
+    return `nango-node-client/${NANGO_VERSION} (${osName}/${osVersion}; node.js/${nodeVersion})${userAgent ? `; ${userAgent}` : ''}`;
+}

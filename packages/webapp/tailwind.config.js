@@ -17,6 +17,7 @@ module.exports = {
                 'bg-cta-green': '#75E270',
                 'text-cta-green1': '#224421',
                 'border-gray': '#333333',
+                'border-gray-400': '#323439',
                 'border-blue': '#1489DF',
                 'text-blue': '#1489DF',
                 'text-light-blue': '#76C5FF',
@@ -30,14 +31,22 @@ module.exports = {
                 'dark-700': '#18181B',
                 'dark-800': '#09090B',
                 'bg-dark-blue': '#182633',
-                white: '#FFFFFF'
+                'row-hover': '#0d0d14',
+                white: '#FFFFFF',
+
+                // From Figma
+                'green-base': '#84D65A'
             },
             width: {
                 largebox: '1200px',
                 largecell: '480px'
             },
             fontSize: {
+                s: '13px',
                 '3xl': '28px'
+            },
+            fontFamily: {
+                code: ['"Roboto Mono"', '"Source Code Pro"', 'system-ui', 'sans-serif']
             }
         }
     },

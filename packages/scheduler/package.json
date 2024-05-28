@@ -1,0 +1,28 @@
+{
+    "name": "@nangohq/scheduler",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "private": true,
+    "scripts": {
+        "dev:migration:create": "npm run knex -- migrate:make",
+        "dev:migration:run": "npm run knex -- migrate:latest",
+        "knex": "tsx ../../node_modules/knex/bin/cli.js --knexfile lib/db/knexfile.ts",
+        "prod:migration:run": "knex --knexfile dist/db/knexfile.js migrate:latest"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/scheduler"
+    },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils",
+        "knex": "3.1.0",
+        "uuidv7": "0.6.3"
+    },
+    "devDependencies": {
+        "type-fest": "4.14.0",
+        "vitest": "0.33.0"
+    }
+}

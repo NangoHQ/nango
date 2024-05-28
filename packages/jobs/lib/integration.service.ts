@@ -1,6 +1,6 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
-import { integrationFilesAreRemote, isCloud, isProd, getLogger, isOk, stringifyError } from '@nangohq/utils';
+import { integrationFilesAreRemote, isCloud, isProd, getLogger, stringifyError } from '@nangohq/utils';
 import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
@@ -37,7 +37,7 @@ class IntegrationService implements IntegrationServiceInterface {
             syncId
         });
 
-        if (isOk(res)) {
+        if (res.isOk()) {
             this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
         } else {
             if (activityLogId && environmentId) {
@@ -67,7 +67,7 @@ class IntegrationService implements IntegrationServiceInterface {
         optionalLoadLocation,
         input,
         temporalContext
-    }: RunScriptOptions): Promise<ServiceResponse<any>> {
+    }: RunScriptOptions): Promise<ServiceResponse> {
         const span = tracer
             .startSpan('runScript')
             .setTag('accountId', nangoProps.accountId)
@@ -97,17 +97,6 @@ class IntegrationService implements IntegrationServiceInterface {
                     });
                     await logCtx?.error(content);
                 }
-            }
-
-            if (!script && activityLogId && writeToDb) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content: `Unable to find integration file for ${syncName}`,
-                    timestamp: Date.now()
-                });
-                await logCtx?.error(`Unable to find integration file for ${syncName}`);
 
                 const error = new NangoError('Unable to find integration file', 404);
 
@@ -137,7 +126,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 // https://github.com/trpc/trpc/blob/66d7db60e59b7c758709175a53765c9db0563dc0/packages/tests/server/abortQuery.test.ts#L26
                 const res = await runner.client.run.mutate({
                     nangoProps,
-                    code: script as string,
+                    code: script,
                     codeParams: input as object,
                     isInvokedImmediately,
                     isWebhook

@@ -125,7 +125,13 @@ export interface ApiKeyCredentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
-export type Metadata = Record<string, string | Record<string, any>>;
+export type Metadata = Record<string, unknown>;
+
+export interface MetadataChangeResponse {
+    metadata: Metadata;
+    provider_config_key: string;
+    connection_id: string | string[];
+}
 
 export interface Connection {
     id?: number;
@@ -135,7 +141,7 @@ export interface Connection {
     connection_id: string;
     connection_config: Record<string, string>;
     environment_id: number;
-    metadata: Metadata | null;
+    metadata?: Metadata | null;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AuthCredentials;

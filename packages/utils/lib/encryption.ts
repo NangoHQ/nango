@@ -1,4 +1,5 @@
-import crypto, { type CipherGCMTypes } from 'crypto';
+import crypto from 'crypto';
+import type { CipherGCMTypes } from 'crypto';
 
 export class Encryption {
     protected key: string;
@@ -12,6 +13,10 @@ export class Encryption {
         if (key && Buffer.from(key, this.encoding).byteLength !== this.encryptionKeyByteLength) {
             throw new Error('Encryption key must be base64-encoded and 256-bit long.');
         }
+    }
+
+    getKey() {
+        return this.key;
     }
 
     public encrypt(str: string): [string, string, string] {

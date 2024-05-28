@@ -17,6 +17,7 @@ services:
     nango-server:
         image: nangohq/nango-server:hosted
         container_name: nango-server
+        platform: linux/amd64
         environment:
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
@@ -25,6 +26,7 @@ services:
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - NANGO_DB_ADDITIONAL_SCHEMAS=${NANGO_DB_ADDITIONAL_SCHEMAS}
             - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
@@ -35,9 +37,10 @@ services:
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-opensearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         volumes:
             - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         restart: always
@@ -45,7 +48,7 @@ services:
             - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
         depends_on:
             - nango-db
-            - nanog-opensearch
+            # - nango-elasticsearch
         networks:
             - nango
 
@@ -56,28 +59,30 @@ services:
             - '6379:6379'
         networks:
             - nango
-
-    nanog-opensearch:
-        image: opensearchproject/opensearch:2.13.0
-        container_name: nango-opensearch
-        ulimits:
-            memlock:
-                soft: -1
-                hard: -1
-        volumes:
-            - opensearch-data1:/usr/share/opensearch/data
-        ports:
-            - 9500:9200
-            - 9600:9300
-        environment:
-            - discovery.type=single-node
-            - DISABLE_SECURITY_PLUGIN=true
-        networks:
-            - nango
+    #
+    # Optional dependency
+    # To load elasticsearch, set NANGO_LOGS_ENABLED=true in nango-server and uncomment this dependency
+    # nango-elasticsearch:
+    #     image: elasticsearch:8.13.0
+    #     container_name: nango-elasticsearch
+    #     ulimits:
+    #         memlock:
+    #             soft: -1
+    #             hard: -1
+    #     volumes:
+    #         - elasticsearch-data1:/usr/share/elasticsearch/data
+    #     ports:
+    #         - 9500:9200
+    #         - 9600:9300
+    #     environment:
+    #         - discovery.type=single-node
+    #         - xpack.security.enabled=false
+    #     networks:
+    #         - nango
 
 networks:
     nango:
 
 volumes:
-    opensearch-data1:
+    elasticsearch-data1:
         driver: local

@@ -6,10 +6,10 @@ import type { ErrorEvent } from '@sentry/types';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
 import { getLogger, isCloud, stringifyError } from '@nangohq/utils';
-import { getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, isApiAuthenticated, isUserAuthenticated, packageJsonFile } from './utils.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
+import { NANGO_VERSION } from '../version.js';
 
 const logger = getLogger('ErrorManager');
 
@@ -24,7 +24,7 @@ interface ErrorOptionalConfig {
     source: ErrorSource;
     accountId?: number;
     userId?: number;
-    environmentId?: number;
+    environmentId?: number | undefined;
     metadata?: Record<string, unknown>;
     operation?: string;
 }
@@ -33,7 +33,7 @@ class ErrorManager {
     constructor() {
         try {
             if (isCloud && process.env['SENTRY_DNS']) {
-                const packageVersion = packageJsonFile().version;
+                const packageVersion = NANGO_VERSION;
                 sentry.init({
                     dsn: process.env['SENTRY_DNS'],
                     beforeSend(event: ErrorEvent, _: EventHint) {
@@ -48,6 +48,9 @@ class ErrorManager {
         }
     }
 
+    /**
+     * TODO: reuse information in res.locals when possible
+     */
     public report(e: unknown, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }, tracer?: Tracer): void {
         void sentry.withScope(async function (scope) {
             if (config.environmentId || config.accountId) {
@@ -90,17 +93,14 @@ class ErrorManager {
             }
 
             if (config.metadata) {
-                const metadata = Object.entries(config.metadata).reduce(
-                    (acc, [key, value]) => {
-                        if (typeof value === 'object') {
-                            acc[key] = JSON.stringify(value);
-                        } else {
-                            acc[key] = value;
-                        }
-                        return acc;
-                    },
-                    {} as Record<string, unknown>
-                );
+                const metadata = Object.entries(config.metadata).reduce<Record<string, unknown>>((acc, [key, value]) => {
+                    if (typeof value === 'object') {
+                        acc[key] = JSON.stringify(value);
+                    } else {
+                        acc[key] = value;
+                    }
+                    return acc;
+                }, {});
                 scope.setContext('metadata', metadata);
             }
 
@@ -111,7 +111,7 @@ class ErrorManager {
             }
         });
 
-        logger.error(`Exception caught: ${stringifyError(e)}`);
+        logger.error(`Exception caught: ${stringifyError(e, { stack: true })}`);
 
         if (e instanceof Error && tracer) {
             // Log to datadog manually
@@ -127,42 +127,37 @@ class ErrorManager {
         if (err) {
             logger.error(`Response error: ${JSON.stringify({ statusCode: err.status, type: err.type, payload: err.payload, message: err.message })}`);
             if (!err.message) {
-                res.status(err.status || 500).send({ type: err.type, payload: err.payload });
+                res.status(err.status || 500).send({ type: err.type || 'unknown_error', payload: err.payload });
             } else {
                 res.status(err.status || 500).send({ error: err.message, type: err.type, payload: err.payload });
             }
+        } else {
+            res.status(500).json({ error: { code: 'unknown_empty_error' } });
         }
     }
 
-    public errRes(res: any, type: string) {
+    public errRes(res: Response, type: string) {
         const err = new NangoError(type);
         this.errResFromNangoErr(res, err);
     }
 
-    public async handleGenericError(err: any, req: Request, res: any, tracer: Tracer): Promise<void> {
+    public handleGenericError(err: any, _: Request, res: Response, tracer: Tracer): void {
         const errorId = uuid.v4();
+        let nangoErr: NangoError;
         if (!(err instanceof Error)) {
-            err = new NangoError('generic_error_malformed', errorId);
+            nangoErr = new NangoError('generic_error_malformed', errorId);
         } else if (!(err instanceof NangoError)) {
-            err = new NangoError(err.message, errorId);
-        }
-
-        const nangoErr: NangoError = err;
-
-        if (isApiAuthenticated(res)) {
-            const environmentId = getEnvironmentId(res);
-            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
-        } else if (isUserAuthenticated(req)) {
-            const { response, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
-            if (!success || response === null) {
-                this.report(error, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
-            } else {
-                const { environmentId } = response;
-                this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload }, tracer);
-            }
+            nangoErr = new NangoError(err.message, errorId);
         } else {
-            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload }, tracer);
+            nangoErr = err;
         }
+
+        let environmentId: number | undefined;
+        if ('environment' in res.locals) {
+            environmentId = res.locals['environment'].id;
+        }
+
+        this.report(err, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: nangoErr.payload }, tracer);
 
         const supportError = new NangoError('generic_error_support', errorId);
         this.errResFromNangoErr(res, supportError);

@@ -1,13 +1,13 @@
 import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
-import compileService from './compile.service.js';
+import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
-import { printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
+import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
 import type { DeployOptions } from '../types.js';
 
 class DeployService {
@@ -35,7 +35,12 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        await compileService.run({ debug });
+        const successfulCompile = await compileAllFiles({ debug });
+
+        if (!successfulCompile) {
+            console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
+            process.exit(1);
+        }
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -62,17 +67,13 @@ class DeployService {
         const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
 
         try {
-            await axios
-                .post(
-                    url,
-                    { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody },
-                    { headers: enrichHeaders(), httpsAgent: httpsAgent() }
-                )
+            await http
+                .post(url, { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody }, { headers: enrichHeaders() })
                 .then(() => {
                     console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
                 })
-                .catch((err: any) => {
-                    const errorMessage = JSON.stringify(err.response.data, null, 2);
+                .catch((err: unknown) => {
+                    const errorMessage = JSON.stringify(err instanceof AxiosError ? err.response?.data : err, null, 2);
                     console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                     process.exit(1);
                 });
@@ -108,7 +109,12 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        await compileService.run({ debug });
+        const successfulCompile = await compileAllFiles({ debug });
+
+        if (!successfulCompile) {
+            console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
+            process.exit(1);
+        }
 
         const { success, error, response: config } = await configService.load('', debug);
 
@@ -129,11 +135,7 @@ class DeployService {
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
             const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
             try {
-                const response = await axios.post(
-                    confirmationUrl,
-                    { syncs: postData, reconcile: false, debug, singleDeployMode },
-                    { headers: enrichHeaders(), httpsAgent: httpsAgent() }
-                );
+                const response = await http.post(confirmationUrl, { syncs: postData, reconcile: false, debug, singleDeployMode }, { headers: enrichHeaders() });
                 console.log(JSON.stringify(response.data, null, 2));
                 const { newSyncs, deletedSyncs } = response.data;
 
@@ -160,7 +162,11 @@ class DeployService {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
                 }
-            } catch (err) {
+            } catch (err: any) {
+                if (err?.response?.data?.error) {
+                    console.log(chalk.red(err.response.data.error));
+                    process.exit(1);
+                }
                 let errorMessage;
                 if (err instanceof AxiosError) {
                     const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
@@ -183,8 +189,8 @@ class DeployService {
         url: string,
         body: { syncs: IncomingFlowConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
     ) {
-        await axios
-            .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+        await http
+            .post(url, body, { headers: enrichHeaders() })
             .then((response: AxiosResponse<SyncDeploymentResult[]>) => {
                 const results = response.data;
                 if (results.length === 0) {
@@ -194,7 +200,7 @@ class DeployService {
                     console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
                 }
             })
-            .catch((err) => {
+            .catch((err: unknown) => {
                 const errorMessage =
                     err instanceof AxiosError ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
                 console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
@@ -275,7 +281,7 @@ class DeployService {
                     printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
                 }
 
-                if (flow?.input?.fields) {
+                if (flow.input?.fields) {
                     model_schema.push(flow.input);
                 }
 
@@ -289,7 +295,7 @@ class DeployService {
                     auto_start: flow.auto_start === false ? false : true,
                     attributes: flow.attributes || {},
                     metadata: metadata || {},
-                    input: flow?.input?.name || '',
+                    input: flow.input?.name || '',
                     sync_type: flow.sync_type as SyncType,
                     type,
                     fileBody: {

@@ -1,6 +1,6 @@
 import type { ScheduleDescription } from '@temporalio/client';
 import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
-import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
+import type { NangoConnection } from '../models/Connection.js';
 import type { StringValue } from 'ms';
 import ms from 'ms';
 import fs from 'fs-extra';
@@ -8,10 +8,9 @@ import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
 import type { Sync, SyncWithSchedule } from '../models/Sync.js';
 import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
-import type { ServiceResponse } from '../models/Generic.js';
 import type { LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
-import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
+import { SYNC_TASK_QUEUE } from '../constants.js';
 import {
     createActivityLog,
     createActivityLogMessage,
@@ -20,24 +19,21 @@ import {
 } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
-import { getSyncConfig } from '../services/sync/config/config.service.js';
+import { getSyncConfig, getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
-import { deleteRecordsBySyncId } from '../services/sync/data/records.service.js';
 import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
-import telemetry, { LogTypes } from '../utils/telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
-import type { RunnerOutput } from '../models/Runner.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, getLogger, metrics, isErr, resultOk, type Result, resultErr, stringifyError } from '@nangohq/utils';
+import { isTest, isProd, getLogger, Ok, Err, stringifyError } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import type { InitialSyncArgs } from '../models/worker.js';
+import environmentService from '../services/environment.service.js';
 
 const logger = getLogger('Sync.Client');
 
-const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
-const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
-    `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connectionId}.${Date.now()}`;
 const generateWorkflowId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) =>
     `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
@@ -71,9 +67,14 @@ class SyncClient {
             return new SyncClient(true as any);
         }
 
+        const temporalAddress = process.env['TEMPORAL_ADDRESS'];
+        if (!temporalAddress) {
+            throw new Error('TEMPORAL_ADDRESS missing from env var');
+        }
+
         try {
             const connection = await Connection.connect({
-                address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
+                address: temporalAddress,
                 tls: isProd
                     ? {
                           clientCertPair: {
@@ -94,12 +95,14 @@ class SyncClient {
                 operation: LogActionEnum.SYNC_CLIENT,
                 metadata: {
                     namespace,
-                    address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
+                    address: temporalAddress
                 }
             });
             return null;
         }
     }
+
+    getClient = (): Client | null => this.client;
 
     async initiate(nangoConnectionId: number, logContextGetter: LogContextGetter): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
@@ -123,7 +126,7 @@ class SyncClient {
             return;
         }
 
-        const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        const providerConfig: ProviderConfig = (await configService.getProviderConfig(
             nangoConnection?.provider_config_key,
             nangoConnection?.environment_id
         )) as ProviderConfig;
@@ -133,10 +136,13 @@ class SyncClient {
         for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
+            if (!syncData.enabled) {
+                continue;
+            }
             const sync = await createSync(nangoConnectionId, syncName);
 
             if (sync) {
-                await this.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData, logContextGetter);
+                await this.startContinuous(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter);
             }
         }
     }
@@ -150,12 +156,14 @@ class SyncClient {
     async startContinuous(
         nangoConnection: NangoConnection,
         sync: Sync,
-        syncConfig: ProviderConfig,
+        providerConfig: ProviderConfig,
         syncName: string,
         syncData: NangoIntegrationData,
         logContextGetter: LogContextGetter,
         debug = false
     ): Promise<void> {
+        let logCtx: LogContext | undefined;
+
         try {
             const activityLogId = await createActivityLog({
                 level: 'info' as LogLevel,
@@ -166,7 +174,7 @@ class SyncClient {
                 timestamp: Date.now(),
                 connection_id: nangoConnection.connection_id,
                 provider_config_key: nangoConnection.provider_config_key,
-                provider: syncConfig.provider,
+                provider: providerConfig.provider,
                 session_id: sync?.id?.toString(),
                 environment_id: nangoConnection.environment_id,
                 operation_name: syncName
@@ -175,10 +183,24 @@ class SyncClient {
                 return;
             }
 
-            // TODO: do that outside try/catch
-            const logCtx = await logContextGetter.create(
+            const syncConfig = await getSyncConfigRaw({
+                environmentId: nangoConnection.environment_id,
+                config_id: providerConfig.id!,
+                name: syncName,
+                isAction: false
+            });
+
+            const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
+
+            logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
-                { account: { id: nangoConnection.account_id! }, environment: { id: nangoConnection.environment_id }, connection: { id: nangoConnection.id! } }
+                {
+                    account,
+                    environment,
+                    integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
+                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
+                }
             );
 
             const { success, error, response } = getInterval(syncData.runs, new Date());
@@ -201,7 +223,7 @@ class SyncClient {
                     environmentId: nangoConnection.environment_id,
                     metadata: {
                         connectionDetails: nangoConnection,
-                        syncConfig,
+                        providerConfig,
                         syncName,
                         sync,
                         syncData
@@ -270,7 +292,7 @@ class SyncClient {
             });
 
             if (syncData.auto_start === false && scheduleHandle) {
-                await scheduleHandle.pause();
+                await scheduleHandle.pause(`schedule for sync '${sync.id}' paused at ${new Date().toISOString()}. Reason: auto_start is false`);
             }
 
             await createSyncSchedule(sync.id, interval, offset, syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING, scheduleId);
@@ -288,8 +310,8 @@ class SyncClient {
 
             await updateSuccessActivityLog(activityLogId, true);
             await logCtx.success();
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: nangoConnection.environment_id,
@@ -297,13 +319,14 @@ class SyncClient {
                     syncName,
                     connectionDetails: JSON.stringify(nangoConnection),
                     syncId: sync.id,
-                    syncConfig,
+                    providerConfig,
                     syncData: JSON.stringify(syncData)
                 }
             });
-            // TODO: reup this
-            // await logCtx.error('Failed to init sync', {error: err});
-            // await logCtx.failed();
+            if (logCtx) {
+                await logCtx.error('Failed to init sync', { error: err });
+                await logCtx.failed();
+            }
         }
     }
 
@@ -363,20 +386,6 @@ class SyncClient {
         return date;
     }
 
-    async listSchedules() {
-        if (!this.client) {
-            return;
-        }
-
-        const workflowService = this.client?.workflowService;
-
-        const schedules = await workflowService?.listSchedules({
-            namespace: this.namespace
-        });
-
-        return schedules;
-    }
-
     async runSyncCommand({
         scheduleId,
         syncId,
@@ -388,7 +397,8 @@ class SyncClient {
         syncName,
         nangoConnectionId,
         logCtx,
-        recordsService
+        recordsService,
+        initiator
     }: {
         scheduleId: string;
         syncId: string;
@@ -401,6 +411,7 @@ class SyncClient {
         nangoConnectionId?: number | undefined;
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
+        initiator: string;
     }): Promise<Result<boolean>> {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
@@ -410,19 +421,19 @@ class SyncClient {
                     {
                         const result = await this.cancelSync(syncId);
 
-                        if (isErr(result)) {
-                            return resultErr(result.err);
+                        if (result.isErr()) {
+                            return result;
                         }
                     }
                     break;
                 case SyncCommand.PAUSE:
                     {
-                        await scheduleHandle?.pause();
+                        await scheduleHandle?.pause(`${initiator} paused the schedule for sync '${syncId}' at ${new Date().toISOString()}`);
                     }
                     break;
                 case SyncCommand.UNPAUSE:
                     {
-                        await scheduleHandle?.unpause();
+                        await scheduleHandle?.unpause(`${initiator} unpaused the schedule for sync '${syncId}' at ${new Date().toISOString()}`);
                         await scheduleHandle?.trigger(OVERLAP_POLICY);
                         const schedule = await getScheduleById(scheduleId);
                         if (schedule) {
@@ -446,8 +457,7 @@ class SyncClient {
                         await this.cancelSync(syncId);
 
                         await clearLastSyncDate(syncId);
-                        await deleteRecordsBySyncId({ syncId });
-                        await recordsService.deleteRecordsBySyncId({ syncId });
+                        const del = await recordsService.deleteRecordsBySyncId({ syncId });
                         await createActivityLogMessage({
                             level: 'info',
                             environment_id: environmentId,
@@ -455,6 +465,7 @@ class SyncClient {
                             timestamp: Date.now(),
                             content: `Records for the sync were deleted successfully`
                         });
+                        await logCtx.info(`Records for the sync were deleted successfully`, del);
                         const nangoConnection: NangoConnection = {
                             id: nangoConnectionId as number,
                             provider_config_key: providerConfigKey,
@@ -467,7 +478,7 @@ class SyncClient {
                     break;
             }
 
-            return resultOk(true);
+            return Ok(true);
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
 
@@ -478,9 +489,9 @@ class SyncClient {
                 timestamp: Date.now(),
                 content: `The sync command: ${command} failed with error: ${errorMessage}`
             });
-            await logCtx.error('Sync command failed', { error: err, command });
+            await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
 
-            return resultErr(err as Error);
+            return Err(err as Error);
         }
     }
 
@@ -490,13 +501,13 @@ class SyncClient {
             const { job_id, run_id } = jobIsRunning;
             if (!run_id) {
                 const error = new NangoError('run_id_not_found');
-                return resultErr(error);
+                return Err(error);
             }
 
             const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
             if (!workflowHandle) {
                 const error = new NangoError('run_id_not_found');
-                return resultErr(error);
+                return Err(error);
             }
 
             try {
@@ -504,14 +515,14 @@ class SyncClient {
                 // We await the results otherwise it might not be cancelled yet
                 await workflowHandle.result();
             } catch (err) {
-                return resultErr(new NangoError('failed_to_cancel_sync', err as any));
+                return Err(new NangoError('failed_to_cancel_sync', err as any));
             }
         } else {
             const error = new NangoError('sync_job_not_running');
-            return resultErr(error);
+            return Err(error);
         }
 
-        return resultOk(true);
+        return Ok(true);
     }
 
     async triggerSyncs(syncs: SyncWithSchedule[], environmentId: number) {
@@ -529,279 +540,6 @@ class SyncClient {
                     }
                 });
             }
-        }
-    }
-
-    async triggerAction<T = any>({
-        connection,
-        actionName,
-        input,
-        activityLogId,
-        environment_id,
-        writeLogs = true,
-        logCtx
-    }: {
-        connection: NangoConnection;
-        actionName: string;
-        input: object;
-        activityLogId: number;
-        environment_id: number;
-        writeLogs?: boolean;
-        logCtx: LogContext;
-    }): Promise<Result<T, NangoError>> {
-        const startTime = Date.now();
-        const workflowId = generateActionWorkflowId(actionName, connection.connection_id);
-
-        try {
-            if (writeLogs) {
-                await createActivityLogMessage({
-                    level: 'info',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
-                    params: {
-                        input: JSON.stringify(input, null, 2)
-                    },
-                    timestamp: Date.now()
-                });
-                await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
-            }
-
-            const actionHandler = await this.client?.workflow.execute('action', {
-                taskQueue: SYNC_TASK_QUEUE,
-                workflowId,
-                args: [
-                    {
-                        actionName,
-                        nangoConnection: {
-                            id: connection.id,
-                            connection_id: connection.connection_id,
-                            provider_config_key: connection.provider_config_key,
-                            environment_id: connection.environment_id
-                        },
-                        input,
-                        activityLogId: writeLogs ? activityLogId : undefined
-                    }
-                ]
-            });
-
-            const { success, error: rawError, response }: RunnerOutput = actionHandler;
-
-            // Errors received from temporal are raw objects not classes
-            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
-
-            if (success === false || error) {
-                if (writeLogs) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `The action workflow ${workflowId} did not complete successfully`
-                    });
-                    await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
-                }
-
-                return resultErr(error!);
-            }
-
-            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
-                0,
-                100
-            )}`;
-
-            if (writeLogs) {
-                await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
-                await updateSuccessActivityLog(activityLogId, true);
-                await logCtx.info(content);
-            }
-
-            await telemetry.log(
-                LogTypes.ACTION_SUCCESS,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
-
-            return resultOk(response);
-        } catch (e) {
-            const errorMessage = stringifyError(e, { pretty: true });
-            const error = new NangoError('action_failure', { errorMessage });
-
-            const content = `The action workflow ${workflowId} failed with error: ${e}`;
-
-            if (writeLogs) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
-                await logCtx.error(content);
-            }
-
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.SYNC_CLIENT,
-                environmentId: connection.environment_id,
-                metadata: {
-                    actionName,
-                    connectionDetails: JSON.stringify(connection),
-                    input
-                }
-            });
-
-            await telemetry.log(
-                LogTypes.ACTION_FAILURE,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    workflowId,
-                    input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
-
-            return resultErr(error);
-        } finally {
-            const endTime = Date.now();
-            const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
-        }
-    }
-
-    async triggerWebhook<T = any>(
-        nangoConnection: NangoConnection,
-        webhookName: string,
-        provider: string,
-        parentSyncName: string,
-        input: object,
-        environment_id: number,
-        logContextGetter: LogContextGetter
-    ): Promise<ServiceResponse<T>> {
-        const log = {
-            level: 'info' as LogLevel,
-            success: null,
-            action: LogActionEnum.WEBHOOK,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id,
-            provider_config_key: nangoConnection?.provider_config_key,
-            provider,
-            environment_id: nangoConnection?.environment_id,
-            operation_name: webhookName
-        };
-
-        const activityLogId = await createActivityLog(log);
-        const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
-            { account: { id: nangoConnection.account_id! }, environment: { id: environment_id } }
-        );
-
-        const workflowId = generateWebhookWorkflowId(parentSyncName, webhookName, nangoConnection.connection_id);
-
-        try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Starting webhook workflow ${workflowId} in the task queue: ${WEBHOOK_TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
-            await logCtx.info('Starting webhook workflow', { workflowId, input });
-
-            const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
-                nangoConnection as unknown as NangoFullConnection;
-
-            const webhookHandler = await this.client?.workflow.execute('webhook', {
-                taskQueue: WEBHOOK_TASK_QUEUE,
-                workflowId,
-                args: [
-                    {
-                        name: webhookName,
-                        parentSyncName,
-                        nangoConnection: nangoConnectionWithoutCredentials,
-                        input,
-                        activityLogId
-                    }
-                ]
-            });
-
-            const { success, error, response } = webhookHandler;
-
-            if (success === false || error) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `The webhook workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error('The webhook workflow did not complete successfully');
-                await logCtx.failed();
-
-                return { success, error, response };
-            }
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} was successfully run.`
-            });
-            await logCtx.info('The webhook workflow was successfully run');
-            await logCtx.success();
-
-            await updateSuccessActivityLog(activityLogId as number, true);
-
-            return { success, error, response };
-        } catch (e) {
-            const errorMessage = stringifyError(e, { pretty: true });
-            const error = new NangoError('webhook_script_failure', { errorMessage });
-
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} failed with error: ${errorMessage}`
-            });
-            await logCtx.error('The webhook workflow failed', { error: e });
-            await logCtx.failed();
-
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.SYNC_CLIENT,
-                environmentId: nangoConnection.environment_id,
-                metadata: {
-                    parentSyncName,
-                    webhookName,
-                    connectionDetails: JSON.stringify(nangoConnection),
-                    input
-                }
-            });
-
-            return { success: false, error, response: null };
         }
     }
 
@@ -876,10 +614,12 @@ class SyncClient {
             return false;
         }
 
+        const args: InitialSyncArgs = { syncId: syncId, syncJobId: syncJobId.id, nangoConnection, syncName, debug: debug === true };
+
         const handle = await this.client?.workflow.start('initialSync', {
             taskQueue: SYNC_TASK_QUEUE,
             workflowId: jobId,
-            args: [{ syncId: syncId, syncJobId: syncJobId.id, nangoConnection, syncName, debug }]
+            args: [args]
         });
         if (!handle) {
             return false;

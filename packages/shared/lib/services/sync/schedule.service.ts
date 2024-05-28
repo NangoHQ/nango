@@ -6,7 +6,8 @@ import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext } from '@nangohq/logs';
-import { resultOk, type Result, resultErr } from '@nangohq/utils';
+import { Ok, Err } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
@@ -69,7 +70,7 @@ export const updateScheduleStatus = async (
 ): Promise<Result<boolean>> => {
     try {
         await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
-        return resultOk(true);
+        return Ok(true);
     } catch (error) {
         if (activityLogId) {
             await createActivityLogDatabaseErrorMessageAndEnd(
@@ -81,7 +82,7 @@ export const updateScheduleStatus = async (
             await logCtx?.error(`Failed to update schedule status to ${status} for schedule_id: ${schedule_id}`, { error });
         }
 
-        return resultErr(error as Error);
+        return Err(error as Error);
     }
 };
 
@@ -132,4 +133,25 @@ export async function softDeleteSchedules({ syncId, limit }: { syncId: string; l
         .whereIn('id', function (sub) {
             sub.select('id').from('_nango_sync_schedules').where({ deleted: false, sync_id: syncId }).limit(limit);
         });
+}
+
+export async function getRunningSchedules({
+    limit,
+    offset
+}: {
+    limit: number;
+    offset?: number;
+}): Promise<Pick<SyncSchedule, 'id' | 'schedule_id' | 'sync_id'>[]> {
+    const query = db
+        .knex('_nango_sync_schedules')
+        .select('id', 'schedule_id', 'sync_id')
+        .where({ status: ScheduleStatus.RUNNING, deleted: false })
+        .orderBy('id')
+        .limit(limit);
+
+    if (offset) {
+        query.where('id', '>', offset);
+    }
+
+    return query;
 }

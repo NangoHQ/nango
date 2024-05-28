@@ -1,7 +1,7 @@
 import { envs } from '../env.js';
 import type { Knex } from 'knex';
 
-export const schema = 'nango_records';
+export const schema = envs.RECORDS_DATABASE_SCHEMA;
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
 
