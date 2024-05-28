@@ -20,7 +20,7 @@ import type { LogLevel } from '@nangohq/types';
 import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
-import type { TExecuteReturn, TExecuteProps } from '@nangohq/nango-orchestrator';
+import type { TExecuteReturn, TExecuteActionProps, TExecuteWebhookProps } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import type { SyncConfig } from '../models/index.js';
@@ -36,7 +36,8 @@ async function getTemporal(): Promise<TemporalClient> {
 }
 
 export interface OrchestratorClientInterface {
-    execute(props: TExecuteProps): Promise<TExecuteReturn>;
+    executeAction(props: TExecuteActionProps): Promise<TExecuteReturn>;
+    executeWebhook(props: TExecuteWebhookProps): Promise<TExecuteReturn>;
 }
 
 export class Orchestrator {
@@ -80,22 +81,51 @@ export class Orchestrator {
                 await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
             }
 
-            // Execute dry-mode: no await for now
-            const groupKey: string = 'action';
-            this.dryExecute({
-                executionId: `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`,
-                groupKey,
-                args: {
-                    name: actionName,
-                    connection: {
-                        id: connection.id!,
-                        provider_config_key: connection.provider_config_key,
-                        environment_id: connection.environment_id
-                    },
-                    activityLogId,
-                    input: input
+            const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
+            if (isOchestratorEnabled) {
+                try {
+                    const groupKey: string = 'action';
+                    const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
+                    const parsedInput = JSON.parse(JSON.stringify(input));
+                    const args = {
+                        name: actionName,
+                        connection: {
+                            id: connection.id!,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
+                        activityLogId,
+                        input: parsedInput
+                    };
+                    // Execute dry-mode: no await for now
+                    void this.client
+                        .executeAction({
+                            name: executionId,
+                            groupKey,
+                            args,
+                            timeoutSettingsInSecs: {
+                                createdToStarted: 5,
+                                startedToCompleted: 5,
+                                heartbeat: 10
+                            }
+                        })
+                        .then(
+                            (res) => {
+                                if (res.isErr()) {
+                                    logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
+                                } else {
+                                    logger.info(`Execution '${executionId}' executed successfully with result: ${res.value}`);
+                                }
+                            },
+                            (error) => {
+                                logger.error(`Error: Action '${executionId}' failed: ${stringifyError(error)}`);
+                            }
+                        );
+                } catch (e: unknown) {
+                    const errorMsg = `Execute: Failed to parse input object ${JSON.stringify(input)} to JsonValue: ${stringifyError(e)}`;
+                    logger.error(errorMsg);
                 }
-            });
+            }
 
             const temporal = await getTemporal();
             const actionHandler = await temporal.workflow.execute('action', {
@@ -286,23 +316,52 @@ export class Orchestrator {
             const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
                 connection as unknown as NangoFullConnection;
 
-            // Execute dry-mode: no await for now
-            const groupKey: string = 'webhook';
-            this.dryExecute({
-                executionId: `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`,
-                groupKey,
-                args: {
-                    name: webhookName,
-                    parentSyncName: syncConfig.sync_name,
-                    connection: {
-                        id: connection.id!,
-                        provider_config_key: connection.provider_config_key,
-                        environment_id: connection.environment_id
-                    },
-                    input,
-                    activityLogId
+            const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
+            if (isOchestratorEnabled) {
+                try {
+                    const groupKey: string = 'webhook';
+                    const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
+                    const parsedInput = JSON.parse(JSON.stringify(input));
+                    const args = {
+                        name: webhookName,
+                        parentSyncName: syncConfig.sync_name,
+                        connection: {
+                            id: connection.id!,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
+                        input: parsedInput,
+                        activityLogId
+                    };
+                    // Execute dry-mode: no await for now
+                    void this.client
+                        .executeWebhook({
+                            name: executionId,
+                            groupKey,
+                            args,
+                            timeoutSettingsInSecs: {
+                                createdToStarted: 5,
+                                startedToCompleted: 5,
+                                heartbeat: 10
+                            }
+                        })
+                        .then(
+                            (res) => {
+                                if (res.isErr()) {
+                                    logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
+                                } else {
+                                    logger.info(`Execution '${executionId}' executed successfully with result: ${res.value}`);
+                                }
+                            },
+                            (error) => {
+                                logger.error(`Error: Action '${executionId}' failed: ${stringifyError(error)}`);
+                            }
+                        );
+                } catch (e: unknown) {
+                    const errorMsg = `Execute: Failed to parse input object ${JSON.stringify(input)} to JsonValue: ${stringifyError(e)}`;
+                    logger.error(errorMsg);
                 }
-            });
+            }
 
             const temporal = await getTemporal();
             const webhookHandler = await temporal.workflow.execute('webhook', {
@@ -376,46 +435,5 @@ export class Orchestrator {
 
             return Err(error);
         }
-    }
-    // TODO: remove once Temporal has been removed
-    private async dryExecute({ executionId, groupKey, args }: { executionId: string; groupKey: string; args: Record<string, any> }): Promise<void> {
-        const isEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
-        if (!isEnabled) {
-            return;
-        }
-
-        if ('input' in args) {
-            const { input, ...rest } = args;
-            try {
-                // TODO: make input a JsonValue once Temporal has been removed
-                args = { ...rest, input: JSON.parse(JSON.stringify(input)) };
-            } catch (e: unknown) {
-                const errorMsg = `Execute: Failed to parse input object ${JSON.stringify(input)} to JsonValue: ${stringifyError(e)}`;
-                logger.error(errorMsg);
-            }
-        }
-        return this.client
-            .execute({
-                name: executionId,
-                groupKey,
-                args,
-                timeoutSettingsInSecs: {
-                    createdToStarted: 5,
-                    startedToCompleted: 5,
-                    heartbeat: 10
-                }
-            })
-            .then(
-                (res) => {
-                    if (res.isErr()) {
-                        logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
-                    } else {
-                        logger.info(`Execution '${executionId}' executed successfully with result: ${res.value}`);
-                    }
-                },
-                (error) => {
-                    logger.error(`Error: Action '${executionId}' failed: ${stringifyError(error)}`);
-                }
-            );
     }
 }
