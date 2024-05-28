@@ -6,9 +6,10 @@ import { model, envs } from '@nangohq/logs';
 
 const validation = z
     .object({
-        limit: z.number().optional().default(100),
+        limit: z.number().max(500).optional().default(100),
         states: z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
+            .max(10)
             .optional()
             .default(['all']),
         types: z
@@ -31,11 +32,12 @@ const validation = z
                     'webhook'
                 ])
             )
+            .max(20)
             .optional()
             .default(['all']),
-        integrations: z.array(z.string()).optional().default(['all']),
-        connections: z.array(z.string()).optional().default(['all']),
-        syncs: z.array(z.string()).optional().default(['all']),
+        integrations: z.array(z.string()).max(10).optional().default(['all']),
+        connections: z.array(z.string()).max(10).optional().default(['all']),
+        syncs: z.array(z.string()).max(10).optional().default(['all']),
         period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional(),
         cursor: z.string().or(z.null()).optional()
     })

@@ -306,7 +306,7 @@ export const LogsSearch: React.FC = () => {
                     ) : operations.length <= 0 && !loading && readyToDisplay ? (
                         <Table.Row>
                             <Table.Cell colSpan={columns.length} className="h-24 text-center">
-                                No results. {loading && 'true'}
+                                No results.
                             </Table.Cell>
                         </Table.Row>
                     ) : (

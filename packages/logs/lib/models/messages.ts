@@ -12,6 +12,8 @@ import type {
 import { indexMessages } from '../es/schema.js';
 import type { estypes } from '@elastic/elasticsearch';
 import { errors } from '@elastic/elasticsearch';
+import { createCursor, parseCursor } from './helpers.js';
+import { isTest } from '@nangohq/utils';
 
 export interface ListOperations {
     count: number;
@@ -36,7 +38,7 @@ export async function createMessage(row: MessageRow): Promise<void> {
         index: indexMessages.index,
         id: row.id,
         document: row,
-        refresh: true
+        refresh: isTest
     });
 }
 
@@ -130,7 +132,7 @@ export async function listOperations(opts: {
         });
     }
 
-    const cursor = opts.cursor ? JSON.parse(Buffer.from(opts.cursor, 'base64').toString('utf8')) : undefined;
+    const cursor = opts.cursor ? parseCursor(opts.cursor) : undefined;
     const res = await client.search<OperationRow>({
         index: indexMessages.index,
         size: opts.limit,
@@ -147,10 +149,7 @@ export async function listOperations(opts: {
         items: hits.hits.map((hit) => {
             return hit._source!;
         }),
-        cursor:
-            hits.hits.length > 0 && total > hits.hits.length && hits.hits.length >= opts.limit
-                ? Buffer.from(JSON.stringify(hits.hits[hits.hits.length - 1]!.sort)).toString('base64')
-                : null
+        cursor: hits.hits.length > 0 && total > hits.hits.length && hits.hits.length >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
@@ -172,7 +171,7 @@ export async function update(opts: { id: MessageRow['id']; data: Partial<Omit<Me
     await client.update<Partial<Omit<MessageRow, 'id'>>>({
         index: indexMessages.index,
         id: opts.id,
-        refresh: true,
+        refresh: isTest,
         body: {
             doc: {
                 ...opts.data,

@@ -44,7 +44,7 @@ describe('client', () => {
 
         const list = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
         expect(list).toStrictEqual<ListOperations>({
-            cursor: expect.any(String),
+            cursor: null,
             count: 1,
             items: [
                 {

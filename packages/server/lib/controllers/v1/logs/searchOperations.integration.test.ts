@@ -71,9 +71,9 @@ describe('POST /logs/operations', () => {
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
-        expect(res.json).toStrictEqual({
+        expect(res.json).toStrictEqual<typeof res.json>({
             data: [],
-            pagination: { total: 0 }
+            pagination: { total: 0, cursor: null }
         });
     });
 
@@ -135,7 +135,7 @@ describe('POST /logs/operations', () => {
                     userId: null
                 }
             ],
-            pagination: { total: 1, cursor: expect.any(String) }
+            pagination: { total: 1, cursor: null }
         });
     });
 
@@ -161,7 +161,7 @@ describe('POST /logs/operations', () => {
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [],
-            pagination: { total: 0, cursor: expect.any(String) }
+            pagination: { total: 0, cursor: null }
         });
     });
 });

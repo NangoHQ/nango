@@ -29,17 +29,17 @@ describe('model', () => {
             });
         });
 
-        it('should pagination', async () => {
+        it('should paginate', async () => {
             await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
             await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
 
-            // First operation
+            // First operation = should list one
             const list1 = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
             expect(list1.count).toBe(2);
             expect(list1.items).toHaveLength(1);
             expect(list1.cursor).toBeDefined();
 
-            // Second operation
+            // Second operation = should list the second one
             const list2 = await listOperations({ accountId: account.id, limit: 1, states: ['all'], cursor: list1.cursor! });
             expect(list2.count).toBe(2);
             expect(list2.items).toHaveLength(1);
