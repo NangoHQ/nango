@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Loading, useModal } from '@geist-ui/core';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { toast } from 'react-toastify';
 import useSWR, { useSWRConfig } from 'swr';
 
@@ -233,10 +233,13 @@ We could not retrieve and/or refresh your access token due to the following erro
             <section className="mt-14">
                 <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
                     <li
-                        className={`p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        className={`flex items-center p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
+                        {syncs && syncs.find((sync) => typeof sync.error_activity_log_id === 'number') && (
+                            <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>
+                        )}
                     </li>
                     <li
                         className={`flex items-center p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
@@ -287,6 +290,35 @@ We could not retrieve and/or refresh your access token due to the following erro
                             >
                                 (logs).
                             </Link>
+                        </div>
+                    </Info>
+                </div>
+            )}
+
+            {activeTab === Tabs.Syncs && syncs && syncs.find((sync) => typeof sync.error_activity_log_id === 'number') && (
+                <div className="flex my-4">
+                    <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
+                        <div className="flex items-center text-sm">
+                            <ErrorCircle />
+                            <span className="ml-2">
+                                Last sync execution failed for the following sync:{' '}
+                                {syncs.filter((sync) => typeof sync.error_activity_log_id === 'number').length > 1 ? 's' : ''}
+                                {syncs
+                                    .filter((sync) => typeof sync.error_activity_log_id === 'number')
+                                    .map((sync, index) => (
+                                        <Fragment key={sync.name}>
+                                            {sync.name} (
+                                            <Link
+                                                className="underline"
+                                                to={`/${env}/activity?activity_log_id=${sync.error_activity_log_id}&script=${sync.name}`}
+                                            >
+                                                logs
+                                            </Link>
+                                            ){index < syncs.filter((sync) => typeof sync.error_activity_log_id === 'number').length - 1 && ', '}
+                                        </Fragment>
+                                    ))}
+                                .
+                            </span>
                         </div>
                     </Info>
                 </div>

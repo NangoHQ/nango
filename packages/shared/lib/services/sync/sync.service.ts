@@ -196,25 +196,14 @@ export const getSyncsFlatWithNames = async (nangoConnection: Connection, syncNam
  * @description get the sync related to the connection
  * the latest sync and its result and the next sync based on the schedule
  */
-export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { status: SyncStatus })[]> => {
+export const getSyncs = async (
+    nangoConnection: Connection
+): Promise<(Sync & { status: SyncStatus; error_activity_log_id: number; error_log_id: string })[]> => {
     const syncClient = await SyncClient.getInstance();
 
     if (!syncClient || !nangoConnection || !nangoConnection.id) {
         return [];
     }
-
-    const syncJobTimestampsSubQuery = db.knex.raw(
-        `(
-            SELECT json_agg(json_build_object(
-                'created_at', ${SYNC_JOB_TABLE}.created_at,
-                'updated_at', ${SYNC_JOB_TABLE}.updated_at
-            ))
-            FROM ${SYNC_JOB_TABLE}
-            WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
-                AND ${SYNC_JOB_TABLE}.created_at >= CURRENT_DATE - INTERVAL '30 days'
-                AND ${SYNC_JOB_TABLE}.deleted = false
-        ) as thirty_day_timestamps`
-    );
 
     const q = db.knex
         .from<Sync>(TABLE)
@@ -226,6 +215,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
             `${SYNC_CONFIG_TABLE}.models`,
+            '_nango_ui_notifications.activity_log_id as error_activity_log_id',
+            '_nango_ui_notifications.log_id as error_log_id',
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -249,11 +240,13 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                     LIMIT 1
                 ) as latest_sync
                 `
-            ),
-            syncJobTimestampsSubQuery
+            )
         )
         .join(SYNC_SCHEDULE_TABLE, function () {
             this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
+        })
+        .leftJoin('_nango_ui_notifications', function () {
+            this.on(`_nango_ui_notifications.sync_id`, `${TABLE}.id`).andOn(`_nango_ui_notifications.active`, '=', db.knex.raw('TRUE'));
         })
         .join(SYNC_CONFIG_TABLE, function () {
             this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
@@ -275,7 +268,9 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
-            'models'
+            '_nango_ui_notifications.activity_log_id',
+            '_nango_ui_notifications.log_id',
+            `${SYNC_CONFIG_TABLE}.models`
         );
 
     const result = await q;

@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import useSWR from 'swr';
 import { Loading } from '@geist-ui/core';
 import debounce from 'lodash/debounce';
 import uniq from 'lodash/uniq';
 
+import { Input } from '../../components/ui/input/Input';
+import { useConnections } from '../../hooks/useConnections';
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ui/label/error-circle';
@@ -12,18 +13,23 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import CopyButton from '../../components/ui/button/CopyButton';
 import { requestErrorToast } from '../../utils/api';
+import { MultiSelect } from '../../components/MultiSelect';
 import type { ConnectionList as Connection } from '@nangohq/server';
 
 import { useStore } from '../../store';
 
+const defaultFilter = ['all'];
+
 export default function ConnectionList() {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
-    const { data, error } = useSWR<{ connections: Connection[] }>(`/api/v1/connection?env=${env}`);
+    const { data, error, errorNotifications } = useConnections(env);
 
     const [connections, setConnections] = useState<Connection[] | null>(null);
     const [filteredConnections, setFilteredConnections] = useState<Connection[]>([]);
-    const [selectedIntegration, setSelectedIntegration] = useState<string>('_ALL');
+    const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
+    const [connectionSearch, setConnectionSearch] = useState<string>('');
+    const [states, setStates] = useState<string[]>(defaultFilter);
 
     useEffect(() => {
         if (data) {
@@ -32,14 +38,38 @@ export default function ConnectionList() {
         }
     }, [data]);
 
+    useEffect(() => {
+        if (data) {
+            let filtered = data.connections;
+            if (connectionSearch) {
+                filtered = filtered?.filter((connection) => connection.connection_id.toLowerCase().includes(connectionSearch.toLowerCase()));
+            }
+
+            if (selectedIntegration.length > 0 && !selectedIntegration.includes('all')) {
+                filtered = filtered?.filter((connection) => selectedIntegration.includes(connection.provider_config_key));
+            }
+
+            if (states.length !== 0 && !states.includes('all') && !(states.includes('ok') && states.includes('error'))) {
+                if (states.includes('error')) {
+                    filtered = filtered?.filter((connection) => connection.error_log_id);
+                }
+                if (states.includes('ok')) {
+                    filtered = filtered?.filter((connection) => !connection.error_log_id);
+                }
+            }
+
+            setFilteredConnections(filtered || []);
+        }
+    }, [connectionSearch, selectedIntegration, states, data]);
+
     const debouncedSearch = useCallback(
         debounce((value: string) => {
             if (!value.trim()) {
+                setConnectionSearch('');
                 setFilteredConnections(data?.connections || []);
                 return;
             }
-            const filtered = data?.connections.filter((connection) => connection.connection_id.toLowerCase().includes(value.toLowerCase()));
-            setFilteredConnections(filtered || []);
+            setConnectionSearch(value);
         }, 300),
         [data?.connections]
     );
@@ -48,16 +78,12 @@ export default function ConnectionList() {
         debouncedSearch(event.currentTarget.value);
     };
 
-    const handleIntegrationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = event.target.value;
-        if (value === '_ALL') {
-            setFilteredConnections(data?.connections || []);
-            setSelectedIntegration('_ALL');
+    const handleIntegrationChange = (values: string[]) => {
+        if (values.includes('all')) {
+            setSelectedIntegration(defaultFilter);
             return;
         }
-        const filtered = data?.connections.filter((connection) => connection.provider_config_key.toLowerCase() === value.toLowerCase());
-        setFilteredConnections(filtered || []);
-        setSelectedIntegration(value);
+        setSelectedIntegration(values);
     };
 
     useEffect(() => {
@@ -127,40 +153,52 @@ export default function ConnectionList() {
             </div>
             {connections && connections.length > 0 && (
                 <>
-                    <div className="flex relative mb-3">
-                        <div className="h-fit rounded-md text-white text-sm">
-                            <MagnifyingGlassIcon className="absolute top-2 left-4 h-5 w-5 text-gray-400" />
-                            <input
-                                id="search"
-                                name="search"
-                                type="text"
+                    <div className="flex justify-end w-full text-[12px] text-white">
+                        {connections.length} connections{' '}
+                        {errorNotifications && (
+                            <span className="flex items-center ml-1">
+                                ({errorNotifications} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex gap-2 relative my-3">
+                        <div className="flex-grow">
+                            <Input
+                                before={<MagnifyingGlassIcon className="w-4" />}
                                 placeholder="Search by ID"
-                                className="border-border-gray bg-active-gray indent-8 text-white block w-full appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                className="border-active-gray"
                                 onChange={handleInputChange}
                                 onKeyUp={handleInputChange}
                             />
                         </div>
-                        <select
-                            id="integration"
-                            name="integration"
-                            className="ml-4 bg-active-gray border-border-gray text-text-light-gray block appearance-none py-1 rounded-md text-sm shadow-sm"
-                            onChange={handleIntegrationChange}
-                            value={selectedIntegration}
-                        >
-                            <option key="all" value="_ALL">
-                                All Integrations
-                            </option>
-                            {providers.map((integration: string) => (
-                                <option key={integration} value={integration}>
-                                    {integration}
-                                </option>
-                            ))}
-                        </select>
+                        <div className="flex">
+                            <MultiSelect
+                                label="Integrations"
+                                options={providers.map((integration: string) => {
+                                    return { name: integration, value: integration };
+                                })}
+                                selected={selectedIntegration}
+                                defaultSelect={defaultFilter}
+                                onChange={handleIntegrationChange}
+                                all
+                            />
+                            <MultiSelect
+                                label="Filter Errors"
+                                options={[
+                                    { name: 'OK', value: 'ok' },
+                                    { name: 'Error', value: 'error' }
+                                ]}
+                                selected={states}
+                                defaultSelect={defaultFilter}
+                                onChange={setStates}
+                                all
+                            />
+                        </div>
                     </div>
                     <div className="h-fit rounded-md text-white text-sm">
                         <div className="w-full">
                             <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md">
-                                <div className="w-2/3">ID</div>
+                                <div className="w-2/3">Connection IDs</div>
                                 <div className="w-1/3">Integration</div>
                                 <div className="w-20">Created</div>
                             </div>

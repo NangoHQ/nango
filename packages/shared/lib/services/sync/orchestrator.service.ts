@@ -517,7 +517,8 @@ export class OrchestratorService {
             name: sync?.name,
             status,
             frequency: schedule?.frequency,
-            latestResult: latestJob?.result
+            latestResult: latestJob?.result,
+            latestExecutionStatus: latestJob?.status === SyncStatus.STOPPED ? SyncStatus.ERROR : latestJob?.status
         } as ReportedSyncJobStatus;
 
         if (includeJobStatus) {

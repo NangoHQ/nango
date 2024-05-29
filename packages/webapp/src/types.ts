@@ -92,10 +92,8 @@ export interface SyncResponse {
         version: string;
         models: string[];
     };
-    thirty_day_timestamps: {
-        created_at: string;
-        updated_at: string;
-    }[];
+    error_log_id?: string;
+    error_activity_log_id?: number;
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';

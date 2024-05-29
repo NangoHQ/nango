@@ -31,7 +31,7 @@ export default function Authorization(props: AuthorizationProps) {
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
-            <div className="flex gap-4">
+            <div className="flex">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
                     <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ export default function Authorization(props: AuthorizationProps) {
                 {'expires_at' in connection.credentials && connection.credentials.expires_at && (
                     <div className="flex flex-col w-1/2">
                         <span className="text-gray-400 text-xs uppercase mb-1">Access Token Expiration</span>
-                        <span className="text-white">{new Date(connection.credentials.expires_at).toLocaleString()}</span>
+                        <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at.toString())}</span>
                     </div>
                 )}
             </div>

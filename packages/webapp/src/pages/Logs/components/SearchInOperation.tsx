@@ -13,7 +13,7 @@ import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
 import { useDebounce, useInterval } from 'react-use';
-import { Tag } from './Tag';
+import { Tag } from '../../../components/ui/label/Tag';
 import { Skeleton } from '../../../components/ui/Skeleton';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { formatDateToLogFormat } from '../../utils/utils';
 import { Prism } from '@mantine/prism';
 import { LevelTag } from './components/LevelTag';
-import { Tag } from './components/Tag';
+import { Tag } from '../../components/ui/label/Tag';
 import { CalendarIcon } from '@radix-ui/react-icons';
 
 export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {

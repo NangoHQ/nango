@@ -49,7 +49,8 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     const queryParams = queryParamValues.data;
     const params = paramValue.data;
 
-    const { provider_config_key: providerConfigKey, force_refresh: instantRefresh } = queryParams;
+    const { provider_config_key: providerConfigKey, force_refresh } = queryParams;
+    const instantRefresh = force_refresh === 'true';
     const { connectionId } = params;
 
     const action = LogActionEnum.TOKEN;
@@ -73,7 +74,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         connectionId,
         providerConfigKey,
         logContextGetter,
-        instantRefresh: instantRefresh === 'true'
+        instantRefresh
     });
 
     if (credentialResponse.isErr()) {
