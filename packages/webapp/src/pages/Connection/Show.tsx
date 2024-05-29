@@ -301,8 +301,8 @@ We could not retrieve and/or refresh your access token due to the following erro
                         <div className="flex items-center text-sm">
                             <ErrorCircle />
                             <span className="ml-2">
-                                Last sync execution failed for the following sync:{' '}
-                                {syncs.filter((sync) => typeof sync.error_activity_log_id === 'number').length > 1 ? 's' : ''}
+                                Last sync execution failed for the following sync
+                                {syncs.filter((sync) => typeof sync.error_activity_log_id === 'number').length > 1 ? 's' : ''}:{' '}
                                 {syncs
                                     .filter((sync) => typeof sync.error_activity_log_id === 'number')
                                     .map((sync, index) => (

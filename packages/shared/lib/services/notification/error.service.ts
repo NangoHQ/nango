@@ -72,6 +72,9 @@ export const errorNotificationService = {
         },
         invalidate: async ({ sync_id, connection_id }: Required<Pick<SyncNotification, 'sync_id' | 'connection_id'>>): Promise<void> => {
             await db.knex.from<UINotification>(DB_TABLE).where({ type: 'sync', sync_id, connection_id }).update({ active: false });
+        },
+        invalidateBySyncId: async ({ sync_id }: Pick<SyncNotification, 'sync_id'>): Promise<void> => {
+            await db.knex.from<UINotification>(DB_TABLE).where({ type: 'sync', sync_id }).update({ active: false });
         }
     }
 };
