@@ -260,6 +260,27 @@ class OAuthController {
                         oauth_client_secret_override: config.oauth_client_secret
                     };
                 }
+
+                const obfuscatedClientSecret = config.oauth_client_secret ? config.oauth_client_secret.slice(0, 4) + '***' : '';
+
+                await createActivityLogMessage({
+                    level: 'info',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId as number,
+                    content: 'Credentials override',
+                    timestamp: Date.now(),
+                    auth_mode: template.auth_mode,
+                    url: callbackUrl,
+                    params: {
+                        oauth_client_id: config.oauth_client_id,
+                        oauth_client_secret: obfuscatedClientSecret
+                    }
+                });
+
+                await logCtx.info('Credentials override', {
+                    oauth_client_id: config.oauth_client_id,
+                    oauth_client_secret: obfuscatedClientSecret
+                });
             }
 
             if (connectionConfig['oauth_scopes_override']) {
