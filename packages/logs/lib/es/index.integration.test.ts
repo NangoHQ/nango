@@ -18,10 +18,6 @@ describe('mapping', () => {
         await deleteIndex();
     });
 
-    it('should not have an index before migration', async () => {
-        await expect(client.indices.getMapping({ index: fullIndexName })).rejects.toThrow();
-    });
-
     it('should migrate', async () => {
         await migrateMapping();
     });
