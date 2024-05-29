@@ -90,9 +90,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         const connCreatedHook = async (res: ConnectionUpsertResponse) => {
             void connectionCreatedHook(
                 {
-                    id: res.id,
-                    connection_id: connection.connection_id,
-                    provider_config_key: integration.unique_key,
+                    connection: res.connection,
                     environment,
                     account,
                     auth_mode: ProviderAuthModes.App,
