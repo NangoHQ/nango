@@ -1,50 +1,72 @@
 import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } from '@nangohq/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { swrFetcher } from '../utils/api';
 
-export function useSearchOperations(enabled: boolean, env: string, body: SearchOperations['Body']) {
+export function useSearchOperations(env: string, body: SearchOperations['Body']) {
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<SearchOperations['Success']>();
     const [error, setError] = useState<SearchOperations['Errors']>();
+    const signal = useRef<AbortController | null>();
 
-    async function fetchData() {
+    async function manualFetch(cursor?: SearchOperations['Body']['cursor']) {
+        if (signal.current && !signal.current.signal.aborted) {
+            signal.current.abort();
+        }
+
         setLoading(true);
+        signal.current = new AbortController();
         try {
             const res = await fetch(`/api/v1/logs/operations?env=${env}`, {
                 method: 'POST',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
+                body: JSON.stringify({ ...body, cursor }),
+                headers: { 'Content-Type': 'application/json' },
+                signal: signal.current.signal
             });
             if (res.status !== 200) {
-                setData(undefined);
-                setError((await res.json()) as SearchOperations['Errors']);
-                return;
+                return { error: (await res.json()) as SearchOperations['Errors'] };
             }
 
-            setError(undefined);
-            setData((await res.json()) as SearchOperations['Success']);
+            return { res: (await res.json()) as SearchOperations['Success'] };
         } catch (err) {
-            setData(undefined);
-            setError(err as any);
+            if (err instanceof DOMException && err.ABORT_ERR) {
+                return;
+            }
+            return { error: err };
         } finally {
             setLoading(false);
         }
     }
 
-    useEffect(() => {
-        if (enabled && !loading) {
-            void fetchData();
+    async function fetchData(cursor?: SearchOperations['Body']['cursor']) {
+        const man = await manualFetch(cursor);
+        if (!man) {
+            return;
         }
-    }, [enabled, env, body.limit, body.states, body.integrations, body.period, body.types, body.connections, body.syncs]);
+        if (man.error) {
+            setData(undefined);
+            setError(man.error as any);
+            return;
+        }
 
-    function trigger() {
-        if (enabled && !loading) {
-            void fetchData();
+        setError(undefined);
+        setData(man.res);
+    }
+
+    // We trigger manually to control live refresh, infinite scroll
+    // useEffect(() => {
+    //     if (enabled && !loading) {
+    //         void fetchData();
+    //     }
+    // }, [enabled, env, body.limit, body.states, body.integrations, body.period, body.types, body.connections, body.syncs]);
+
+    function trigger(cursor?: SearchOperations['Body']['cursor']) {
+        if (!loading) {
+            void fetchData(cursor);
         }
     }
 
-    return { data, error, loading, trigger };
+    return { data, error, loading, trigger, manualFetch };
 }
 
 export function useGetOperation(env: string, params: GetOperation['Params']) {

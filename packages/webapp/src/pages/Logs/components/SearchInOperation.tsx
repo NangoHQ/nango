@@ -145,7 +145,7 @@ export const SearchInOperation: React.FC<{ operationId: string; live: boolean }>
                     </Table.Header>
                     <Table.Body>
                         {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => <MessageRow key={row.id} row={row} />)
+                            table.getRowModel().rows.map((row) => <MessageRow key={row.original.id} row={row} />)
                         ) : (
                             <Table.Row>
                                 <Table.Cell colSpan={columns.length} className="h-24 text-center">
