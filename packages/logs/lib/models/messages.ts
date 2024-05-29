@@ -144,12 +144,13 @@ export async function listOperations(opts: {
     const hits = res.hits;
 
     const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
+    const totalPage = hits.hits.length;
     return {
         count: total,
         items: hits.hits.map((hit) => {
             return hit._source!;
         }),
-        cursor: hits.hits.length > 0 && total > hits.hits.length && hits.hits.length >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursor: totalPage > 0 && total > totalPage && opts.limit >= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 

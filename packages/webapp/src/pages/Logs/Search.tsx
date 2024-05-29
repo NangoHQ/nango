@@ -302,7 +302,7 @@ export const LogsSearch: React.FC = () => {
                 </Table.Header>
                 <Table.Body>
                     {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => <OperationRow key={row.id} row={row} />)
+                        table.getRowModel().rows.map((row) => <OperationRow key={row.original.id} row={row} />)
                     ) : operations.length <= 0 && !loading && readyToDisplay ? (
                         <Table.Row>
                             <Table.Cell colSpan={columns.length} className="h-24 text-center">
@@ -325,7 +325,13 @@ export const LogsSearch: React.FC = () => {
             {data && data.pagination.total > 0 && data.data.length > 0 && cursor.current && readyToDisplay && (
                 <div ref={bottomScrollRef}>
                     <Button disabled={loading} variant="active" className="w-full justify-center" onClick={() => loadMore()}>
-                        {loading && <Spinner size={1} />} Load More
+                        {loading ? (
+                            <>
+                                <Spinner size={1} /> Loading...
+                            </>
+                        ) : (
+                            'Load More'
+                        )}
                     </Button>
                 </div>
             )}
