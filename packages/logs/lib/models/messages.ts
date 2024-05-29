@@ -150,7 +150,7 @@ export async function listOperations(opts: {
         items: hits.hits.map((hit) => {
             return hit._source!;
         }),
-        cursor: totalPage > 0 && total > totalPage && opts.limit >= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursor: totalPage > 0 && total > totalPage && opts.limit <= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
