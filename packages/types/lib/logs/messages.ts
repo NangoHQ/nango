@@ -122,6 +122,7 @@ export type MessageRow = {
     updatedAt: string;
     startedAt: string | null;
     endedAt: string | null;
+    expiresAt: string | null;
 } & { operation: MessageOperation | null };
 
 /**

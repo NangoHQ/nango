@@ -1,10 +1,13 @@
 import { describe, beforeAll, it, expect, vi } from 'vitest';
 import { deleteIndex, migrateMapping } from '../es/helpers.js';
 import type { ListOperations } from './messages.js';
-import { listOperations } from './messages.js';
+import { getOperation, listOperations } from './messages.js';
 import { afterEach } from 'node:test';
 import { logContextGetter } from './logContextGetter.js';
 import type { OperationRowInsert } from '@nangohq/types';
+import { timeoutOperations } from '../helpers/timeoutOperations.js';
+import { setTimeout } from 'node:timers/promises';
+import { getFormattedMessage } from './helpers.js';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };
@@ -52,6 +55,28 @@ describe('model', () => {
             expect(list3.count).toBe(2);
             expect(list3.items).toHaveLength(0);
             expect(list3.cursor).toBeNull();
+        });
+
+        it('should timeout old operations', async () => {
+            const ctx1 = await logContextGetter.create(
+                getFormattedMessage({ ...operationPayload, expiresAt: new Date(Date.now() - 86400 * 1000).toISOString() }),
+                { account, environment },
+                { logToConsole: false }
+            );
+            const ctx2 = await logContextGetter.create(
+                getFormattedMessage({ ...operationPayload, expiresAt: new Date(Date.now() + 86400 * 1000).toISOString() }),
+                { account, environment },
+                { logToConsole: false }
+            );
+
+            await timeoutOperations();
+            await setTimeout(500);
+
+            const op1 = await getOperation({ id: ctx1.id });
+            expect(op1.state).toBe('timeout');
+
+            const op2 = await getOperation({ id: ctx2.id });
+            expect(op2.state).toBe('running');
         });
     });
 });

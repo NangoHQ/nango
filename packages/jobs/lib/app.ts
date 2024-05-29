@@ -8,6 +8,7 @@ import { reconcileTemporalSchedules } from './crons/reconcileTemporalSchedules.j
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { JOBS_PORT } from './constants.js';
 import { db } from '@nangohq/shared';
+import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 
 const logger = getLogger('Jobs');
 
@@ -27,6 +28,7 @@ try {
     deleteOldActivityLogs();
     deleteSyncsData();
     reconcileTemporalSchedules();
+    timeoutLogsOperations();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {

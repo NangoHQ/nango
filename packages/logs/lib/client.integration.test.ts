@@ -61,6 +61,7 @@ describe('client', () => {
                     environmentId: 5678,
                     environmentName: 'dev',
                     error: null,
+                    expiresAt: null,
                     id: ctx.id,
                     jobId: null,
                     level: 'info',

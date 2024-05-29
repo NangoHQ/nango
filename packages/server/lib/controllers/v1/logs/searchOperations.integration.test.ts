@@ -112,6 +112,7 @@ describe('POST /logs/operations', () => {
                     environmentId: env.id,
                     environmentName: 'dev',
                     error: null,
+                    expiresAt: null,
                     id: logCtx.id,
                     jobId: null,
                     level: 'info',

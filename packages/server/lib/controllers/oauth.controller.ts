@@ -86,7 +86,12 @@ class OAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization OAuth' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Authorization OAuth',
+                    expiresAt: new Date(Date.now() + 300 * 1000).toISOString()
+                },
                 { account, environment }
             );
             if (!wsClientId) {
