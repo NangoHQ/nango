@@ -213,6 +213,9 @@ class DryRunService {
             },
             get: () => {
                 return {} as any;
+            },
+            getStateLess: () => {
+                return {} as any;
             }
         };
 
