@@ -47,6 +47,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         styles={() => {
                             return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                         }}
+                        noCopy
                     >
                         {message.message}
                     </Prism>
