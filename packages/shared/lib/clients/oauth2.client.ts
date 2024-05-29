@@ -121,6 +121,13 @@ export async function getFreshOAuth2Credentials(
             newCredentials.refresh_token = credentials.refresh_token;
         }
 
+        if (credentials.config_override && credentials.config_override.client_id && credentials.config_override.client_secret) {
+            newCredentials.config_override = {
+                client_id: credentials.config_override.client_id,
+                client_secret: credentials.config_override.client_secret
+            };
+        }
+
         return { success: true, error: null, response: newCredentials };
     } catch (err) {
         const error = new NangoError(`refresh_token_parsing_error`, { cause: err });
