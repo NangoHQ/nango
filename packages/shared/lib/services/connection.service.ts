@@ -571,7 +571,7 @@ class ConnectionService {
         providerConfigKey: string;
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
-    }): Promise<Result<Connection, NangoError>> {
+    }): Promise<Result<Connection, NangoError, Connection>> {
         if (connectionId === null) {
             const error = new NangoError('missing_connection');
 
@@ -660,9 +660,8 @@ class ConnectionService {
                 await logCtx.error('Failed to refresh credentials', error);
                 await logCtx.failed();
 
-                // TODO now insert into notifications to recall this error and link to it
                 if (activityLogId) {
-                    const result = await errorNotificationService.auth.create({
+                    await errorNotificationService.auth.create({
                         type: 'auth',
                         action: 'token_refresh',
                         connection_id: connection.id,
@@ -670,10 +669,9 @@ class ConnectionService {
                         log_id: logCtx.id,
                         active: true
                     });
-                    console.log(result);
                 }
 
-                return Err(error);
+                return Err(error, connection);
             }
 
             connection.credentials = credentials as OAuth2Credentials;

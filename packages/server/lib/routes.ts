@@ -31,6 +31,7 @@ import type { Response, Request } from 'express';
 import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
+import { getConnection as getConnectionWeb } from './controllers/v1/connection/web/get.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
 import {
@@ -44,8 +45,8 @@ import {
     getEmailByExpiredToken
 } from './controllers/v1/account/index.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
-import { setMetadata } from './controllers/v1/connection/setMetadata.js';
-import { updateMetadata } from './controllers/v1/connection/updateMetadata.js';
+import { setMetadata } from './controllers/v1/connection/api/setMetadata.js';
+import { updateMetadata } from './controllers/v1/connection/api/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 
@@ -193,7 +194,7 @@ web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, con
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
 web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
-web.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
+web.route('/api/v1/connection/:connectionId').get(webAuth, getConnectionWeb);
 web.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
 web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 

@@ -15,3 +15,6 @@ export type * from './connection/db.js';
 
 export type * from './environment/db.js';
 export type * from './notification/ui/db.js';
+export type * from './connection/api/get.js';
+export type * from './integration/db.js';
+export type * from './integration/template.js';

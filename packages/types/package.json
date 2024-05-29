@@ -11,6 +11,9 @@
         "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/utils"
     },
+    "devDependencies": {
+        "axios": "^1.3.4"
+    },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "files": [
         "dist/**/*"

@@ -41,6 +41,9 @@ export const errorNotificationService = {
                 return Err('Failed to create notification');
             }
         },
+        get: async (id: number): Promise<UINotification | null> => {
+            return await db.knex.from<UINotification>(DB_TABLE).where({ type: 'auth', connection_id: id, active: true }).first();
+        },
         invalidate: async ({ connection_id }: Required<Pick<AuthNotification, 'connection_id'>>): Promise<void> => {
             await db.knex.from<UINotification>(DB_TABLE).where({ type: 'auth', connection_id }).update({ active: false });
         }

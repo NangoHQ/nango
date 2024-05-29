@@ -14,7 +14,8 @@ import {
     ArrowPathRoundedSquareIcon,
     StopCircleIcon
 } from '@heroicons/react/24/outline';
-import type { SyncResponse, RunSyncCommand, Connection } from '../../types';
+import type { SyncResponse, RunSyncCommand } from '../../types';
+import type { Connection } from '@nangohq/types';
 import { UserFacingSyncCommand } from '../../types';
 import {
     formatFrequency,
@@ -31,13 +32,14 @@ import { useRunSyncAPI } from '../../utils/api';
 interface SyncsProps {
     syncs: SyncResponse[] | undefined;
     connection: Connection | null;
+    provider: string | null;
     loaded: boolean;
     syncLoaded: boolean;
     reload: () => void;
     env: string;
 }
 
-export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, env }: SyncsProps) {
+export default function Syncs({ syncs, connection, provider, reload, loaded, syncLoaded, env }: SyncsProps) {
     const [sync, setSync] = useState<SyncResponse | null>(null);
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [showPauseStartLoader, setShowPauseStartLoader] = useState(false);
@@ -88,7 +90,7 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
             return;
         }
         setSyncCommandButtonsDisabled(true);
-        const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
+        const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, provider || '');
 
         if (res?.status === 200) {
             reload();
@@ -109,7 +111,7 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
         setShowTriggerFullLoader(true);
         setSyncCommandButtonsDisabled(true);
         setModalShowSpinner(true);
-        const res = await runCommandSyncAPI('RUN_FULL', sync.schedule_id, sync.nango_connection_id, sync.id, sync.name, connection?.provider);
+        const res = await runCommandSyncAPI('RUN_FULL', sync.schedule_id, sync.nango_connection_id, sync.id, sync.name, provider || '');
 
         if (res?.status === 200) {
             reload();
@@ -186,13 +188,13 @@ export default function Syncs({ syncs, connection, reload, loaded, syncLoaded, e
             {!syncs || syncs.length === 0 ? (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-xl text-center w-full">
-                        No models are syncing for <span className="capitalize">{connection?.provider}</span>
+                        No models are syncing for <span className="capitalize">{provider}</span>
                     </h2>
                     <div className="mt-4 text-gray-400">
-                        Start syncing models for <span className="capitalize">{connection?.provider}</span> on the Sync Configuration tab.
+                        Start syncing models for <span className="capitalize">{provider}</span> on the Sync Configuration tab.
                     </div>
                     <Link
-                        to={`/${env}/integration/${connection?.providerConfigKey}#scripts`}
+                        to={`/${env}/integration/${connection?.provider_config_key}#scripts`}
                         className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300"
                     >
                         <span className="flex">

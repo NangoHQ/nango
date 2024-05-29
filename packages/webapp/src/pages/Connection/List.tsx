@@ -5,8 +5,9 @@ import { Loading } from '@geist-ui/core';
 import debounce from 'lodash/debounce';
 import uniq from 'lodash/uniq';
 
-import { PlusIcon, MagnifyingGlassIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { ErrorCircle } from '../../components/ui/label/error-circle';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import CopyButton from '../../components/ui/button/CopyButton';
@@ -183,11 +184,7 @@ export default function ConnectionList() {
                                     >
                                         <div className="flex items-center w-2/3 gap-2 py-2 truncate">
                                             <span className="break-words break-all truncate">{connectionId}</span>
-                                            {error_log_id && (
-                                                <Link to={`/${env}/logs/${error_log_id}`} className="flex items-center ml-2 text-red-500">
-                                                    <XCircleIcon className="h-5 w-5 mr-2" />
-                                                </Link>
-                                            )}
+                                            {error_log_id && <ErrorCircle />}
                                             <CopyButton dark text={connectionId} />
                                         </div>
                                         <div className="flex items-center w-1/3 gap-3">
