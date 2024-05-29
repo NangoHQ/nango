@@ -1,6 +1,7 @@
 import { nanoid } from '@nangohq/utils';
 import type { MessageRow } from '@nangohq/types';
 import { z } from 'zod';
+import type { estypes } from '@elastic/elasticsearch';
 
 export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
 
@@ -75,4 +76,12 @@ export const oldLevelToNewLevel = {
 
 export function getFullIndexName(prefix: string, createdAt: string) {
     return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;
+}
+
+export function createCursor({ sort }: estypes.SearchHit): string {
+    return Buffer.from(JSON.stringify(sort)).toString('base64');
+}
+
+export function parseCursor(str: string): any[] {
+    return JSON.parse(Buffer.from(str, 'base64').toString('utf8'));
 }

@@ -2,53 +2,95 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import Info from '../../components/ui/Info';
-import { Loading } from '@geist-ui/core';
 import { useSearchOperations } from '../../hooks/useLogs';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from './components/MultiSelect';
 import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
-import { useEffect, useMemo, useState } from 'react';
-import type { SearchOperationsIntegration, SearchOperationsPeriod, SearchOperationsState, SearchOperationsSync, SearchOperationsType } from '@nangohq/types';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type {
+    SearchOperations,
+    SearchOperationsData,
+    SearchOperationsIntegration,
+    SearchOperationsPeriod,
+    SearchOperationsState,
+    SearchOperationsSync,
+    SearchOperationsType
+} from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
-import { OperationRow } from './components/OperationRow';
 // import { Input } from '../../components/ui/input/Input';
 // import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity } from '../../utils/utils';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useInterval } from 'react-use';
+import { useDebounce, useIntersection, useInterval } from 'react-use';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 import { TypesSelect } from './components/TypesSelect';
 import { DatePicker } from './components/DatePicker';
+import Button from '../../components/ui/button/Button';
+import { OperationRow } from './components/OperationRow';
+import { Skeleton } from '../../components/ui/Skeleton';
+
+const limit = 20;
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // State
-    const [hasLogs, setHasLogs] = useState<boolean>(false);
+    // --- Global state
     const [synced, setSynced] = useState(false);
 
-    // Data fetch
+    // --- Data fetch
     const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
     const [types, setTypes] = useState<SearchOperationsType[]>(typesDefaultOptions);
     const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
     const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
-    const { data, error, loading, trigger } = useSearchOperations(synced, env, { limit: 20, states, types, integrations, connections, syncs, period });
+    const cursor = useRef<SearchOperations['Body']['cursor']>();
+    const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
+    const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
+    const { data, error, loading, trigger, manualFetch } = useSearchOperations(env, { limit, states, types, integrations, connections, syncs, period });
+    const [operations, setOperations] = useState<SearchOperationsData[]>([]);
+    useEffect(() => {
+        // Data aggregation to enable infinite scroll
+        // Because states are changing we need to deduplicate and update rows
+        setOperations((prev) => {
+            if (prev.length <= 0 || !data?.data) {
+                return data?.data || [];
+            }
 
-    const table = useReactTable({
-        data: data ? data.data : [],
-        columns,
-        getCoreRowModel: getCoreRowModel()
-    });
+            const next = data.data;
+            for (const item of prev) {
+                if (next.find((n) => n.id === item.id)) {
+                    continue;
+                }
+                next.push(item);
+            }
 
-    const isLive = useMemo(() => {
-        return !period;
-    }, [period]);
+            return next;
+        });
+        setReadyToDisplay(true);
+    }, [data?.data]);
+    useEffect(() => {
+        if (data?.pagination.cursor && !hasLoadedMore) {
+            // We set the cursor only on first page (if we haven't hit a next page)
+            // Otherwise the live refresh will erase
+            cursor.current = data.pagination.cursor;
+        }
+    }, [hasLoadedMore, data]);
+    useDebounce(
+        () => {
+            // We clear the cursor because it's a brand new search
+            cursor.current = null;
+            // Debounce the trigger to avoid spamming the backend and avoid conflict with rapid filter change
+            trigger();
+        },
+        200,
+        [limit, states, types, integrations, connections, syncs, period]
+    );
 
+    // --- Query Params
     useEffect(
         function syncQueryParamsToState() {
             // Sync the query params to the react state, it allows to share the URL
@@ -58,23 +100,35 @@ export const LogsSearch: React.FC = () => {
             }
 
             const tmpStates = searchParams.get('states');
-            setStates(tmpStates ? (tmpStates.split(',') as any) : statusDefaultOptions);
+            if (tmpStates) {
+                setStates(tmpStates.split(',') as any);
+            }
 
             const tmpIntegrations = searchParams.get('integrations');
-            setIntegrations(tmpIntegrations ? (tmpIntegrations.split(',') as any) : integrationsDefaultOptions);
+            if (tmpIntegrations) {
+                setIntegrations(tmpIntegrations.split(',') as any);
+            }
 
             const tmpConnections = searchParams.get('integrations');
-            setIntegrations(tmpConnections ? (tmpConnections.split(',') as any) : integrationsDefaultOptions);
+            if (tmpConnections) {
+                setIntegrations(tmpConnections.split(',') as any);
+            }
 
             const tmpSyncs = searchParams.get('syncs');
-            setSyncs(tmpSyncs ? (tmpSyncs.split(',') as any) : syncsDefaultOptions);
+            if (tmpSyncs) {
+                setSyncs(tmpSyncs.split(',') as any);
+            }
 
             const tmpTypes = searchParams.get('types');
-            setTypes(tmpTypes ? (tmpTypes.split(',') as any) : typesDefaultOptions);
+            if (tmpTypes) {
+                setTypes(tmpTypes.split(',') as any);
+            }
 
             const tmpFrom = searchParams.get('from');
             const tmpTo = searchParams.get('to');
-            setPeriod(tmpFrom && tmpTo ? { from: tmpFrom, to: tmpTo } : undefined);
+            if (tmpFrom && tmpTo) {
+                setPeriod({ from: tmpFrom, to: tmpTo });
+            }
 
             setSynced(true);
         },
@@ -83,6 +137,11 @@ export const LogsSearch: React.FC = () => {
 
     useEffect(
         function syncStateToQueryParams() {
+            // reset pagination and stored items
+            setOperations([]);
+            setHasLoadedMore(false);
+            setReadyToDisplay(false);
+
             // Sync the state back to the URL for sharing
             const tmp = new URLSearchParams({
                 states: states as any,
@@ -100,32 +159,70 @@ export const LogsSearch: React.FC = () => {
         [states, integrations, period, connections, syncs, types]
     );
 
-    useEffect(() => {
-        if (!loading) {
-            // We set this so it does not flicker when we go from a state of "filtered no records" to "default with records"...
-            // ...to not redisplay the empty state
-            setHasLogs(true);
-        }
-    }, [loading]);
-
-    useInterval(
-        () => {
-            // Auto refresh
-            trigger();
-        },
-        synced && isLive ? 10000 : null
-    );
-
-    const total = useMemo(() => {
+    // --- Table Display
+    const table = useReactTable({
+        data: operations,
+        columns,
+        getCoreRowModel: getCoreRowModel()
+    });
+    const totalHumanReadable = useMemo(() => {
         if (!data?.pagination) {
             return 0;
         }
         return formatQuantity(data.pagination.total);
     }, [data?.pagination]);
 
+    // --- Live // auto refresh
+    const isLive = useMemo(() => {
+        return !period;
+    }, [period]);
+    useInterval(
+        function onAutoRefresh() {
+            trigger();
+        },
+        synced && isLive && !loading ? 7000 : null
+    );
+
+    // --- Infinite scroll
+    // We use the cursor manually because we want to keep refreshing the head even we add stuff to the tail
+    const bottomScrollRef = useRef(null);
+    const bottomScroll = useIntersection(bottomScrollRef, {
+        root: null,
+        rootMargin: '0px',
+        threshold: 1
+    });
+    const appendItems = async () => {
+        if (!cursor.current) {
+            return;
+        }
+        const rows = await manualFetch(cursor.current);
+        if (!rows || 'error' in rows) {
+            return;
+        }
+
+        setHasLoadedMore(true);
+        cursor.current = rows.res.pagination.cursor;
+        setOperations((prev) => [...prev, ...rows.res.data]);
+    };
+    useEffect(() => {
+        // when the load more button is fully in view
+        if (!bottomScroll || !bottomScroll.isIntersecting) {
+            return;
+        }
+        if (cursor.current && !loading) {
+            void appendItems();
+        }
+    }, [bottomScroll, loading, bottomScrollRef]);
+
+    const loadMore = () => {
+        if (!loading) {
+            void appendItems();
+        }
+    };
+
     if (error) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
+            <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
                 <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
                 {error.error.code === 'feature_disabled' ? (
                     <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
@@ -147,32 +244,25 @@ export const LogsSearch: React.FC = () => {
         );
     }
 
-    if ((loading && !data) || !data) {
+    if (!synced) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
-                <Loading spaceRatio={2.5} className="-top-36" />
-            </DashboardLayout>
-        );
-    }
-
-    if (data.pagination.total <= 0 && !hasLogs) {
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
+            <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
                 <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
 
-                <div className="flex flex-col border border-zinc-500 rounded items-center text-white text-center py-24 gap-2">
-                    <h2 className="text-xl">You don&apos;t have logs yet.</h2>
-                    <div className="text-sm text-zinc-400">Note that logs older than 15 days are automatically cleared.</div>
+                <div className="flex gap-2 flex-col">
+                    <Skeleton style={{ width: '50%' }} />
+                    <Skeleton style={{ width: '50%' }} />
+                    <Skeleton style={{ width: '50%' }} />
                 </div>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Logs} marginBottom={60}>
+        <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
-                <div className="text-white text-xs">{total} logs found</div>
+                <div className="text-white text-xs">{totalHumanReadable} logs found</div>
             </div>
 
             <div className="flex gap-2 justify-between">
@@ -212,16 +302,39 @@ export const LogsSearch: React.FC = () => {
                 </Table.Header>
                 <Table.Body>
                     {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => <OperationRow key={row.id} row={row} />)
-                    ) : (
+                        table.getRowModel().rows.map((row) => <OperationRow key={row.original.id} row={row} />)
+                    ) : operations.length <= 0 && !loading && readyToDisplay ? (
                         <Table.Row>
                             <Table.Cell colSpan={columns.length} className="h-24 text-center">
                                 No results.
                             </Table.Cell>
                         </Table.Row>
+                    ) : (
+                        <Table.Row>
+                            {table.getAllColumns().map((col, i) => {
+                                return (
+                                    <Table.Cell key={i}>
+                                        <Skeleton style={{ width: col.getSize() }} />
+                                    </Table.Cell>
+                                );
+                            })}
+                        </Table.Row>
                     )}
                 </Table.Body>
             </Table.Table>
+            {data && data.pagination.total > 0 && data.data.length > 0 && cursor.current && readyToDisplay && (
+                <div ref={bottomScrollRef}>
+                    <Button disabled={loading} variant="active" className="w-full justify-center" onClick={() => loadMore()}>
+                        {loading ? (
+                            <>
+                                <Spinner size={1} /> Loading...
+                            </>
+                        ) : (
+                            'Load More'
+                        )}
+                    </Button>
+                </div>
+            )}
         </DashboardLayout>
     );
 };

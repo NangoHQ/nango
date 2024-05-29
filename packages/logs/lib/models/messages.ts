@@ -13,11 +13,13 @@ import { indexMessages } from '../es/schema.js';
 import type { estypes } from '@elastic/elasticsearch';
 import { errors } from '@elastic/elasticsearch';
 import type { SetRequired } from 'type-fest';
-import { getFullIndexName } from './helpers.js';
+import { getFullIndexName, createCursor, parseCursor } from './helpers.js';
+import { isTest } from '@nangohq/utils';
 
 export interface ListOperations {
     count: number;
     items: OperationRow[];
+    cursor: string | null;
 }
 export interface ListMessages {
     count: number;
@@ -37,7 +39,7 @@ export async function createMessage(row: MessageRow): Promise<void> {
         index: indexMessages.index,
         id: row.id,
         document: row,
-        refresh: true,
+        refresh: isTest,
         pipeline: `daily.${indexMessages.index}`
     });
 }
@@ -55,6 +57,7 @@ export async function listOperations(opts: {
     connections?: SearchOperationsConnection[] | undefined;
     syncs?: SearchOperationsSync[] | undefined;
     period?: SearchOperationsPeriod | undefined;
+    cursor?: string | null | undefined;
 }): Promise<ListOperations> {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
@@ -131,20 +134,25 @@ export async function listOperations(opts: {
         });
     }
 
+    const cursor = opts.cursor ? parseCursor(opts.cursor) : undefined;
     const res = await client.search<OperationRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort: [{ createdAt: 'desc' }, 'id'],
         track_total_hits: true,
+        search_after: cursor,
         query
     });
     const hits = res.hits;
 
+    const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
+    const totalPage = hits.hits.length;
     return {
-        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
+        count: total,
         items: hits.hits.map((hit) => {
             return hit._source!;
-        })
+        }),
+        cursor: totalPage > 0 && total > totalPage && opts.limit <= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
@@ -172,7 +180,7 @@ export async function update(opts: { id: MessageRow['id']; data: SetRequired<Par
     await client.update({
         index: getFullIndexName(indexMessages.index, opts.data.createdAt),
         id: opts.id,
-        refresh: true,
+        refresh: isTest,
         body: {
             doc: {
                 ...opts.data,
@@ -252,7 +260,7 @@ export async function listMessages(opts: {
     const res = await client.search<MessageRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort: [{ createdAt: 'desc' }, 'id'],
         track_total_hits: true,
         query
     });
