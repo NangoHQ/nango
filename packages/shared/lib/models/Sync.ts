@@ -107,7 +107,8 @@ export interface SyncConfig extends TimestampsAndDeleted {
     endpoints?: NangoSyncEndpoint[];
     input?: string | SyncModelSchema | undefined;
     sync_type?: SyncType | undefined;
-    webhook_subscriptions?: string[];
+    webhook_subscriptions: string[] | null;
+    post_connection_scripts: string[] | null;
     enabled: boolean;
 }
 
@@ -200,6 +201,7 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     track_deletes?: boolean;
     sync_type?: SyncType;
     webhookSubscriptions?: string[];
+    postConnectionScripts?: string[];
 }
 
 export enum ScheduleStatus {

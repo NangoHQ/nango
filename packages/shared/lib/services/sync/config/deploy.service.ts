@@ -446,7 +446,9 @@ export async function deployPreBuilt(
             metadata,
             pre_built: true,
             is_public,
-            enabled: true
+            enabled: true,
+            post_connection_scripts: null,
+            webhook_subscriptions: null
         };
 
         insertData.push(flowData);
@@ -794,7 +796,8 @@ async function compileDeployInfo({
         input: flow.input || '',
         sync_type: flow.sync_type,
         webhook_subscriptions: flow.webhookSubscriptions || [],
-        enabled: lastSyncWasEnabled && !shouldCap
+        enabled: lastSyncWasEnabled && !shouldCap,
+        post_connection_scripts: flow.postConnectionScripts || []
     });
 
     flowReturnData.push({

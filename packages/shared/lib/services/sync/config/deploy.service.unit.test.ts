@@ -110,7 +110,9 @@ describe('Sync config create', () => {
                     auto_start: true,
                     track_deletes: false,
                     version: '1',
-                    enabled: true
+                    enabled: true,
+                    post_connection_scripts: null,
+                    webhook_subscriptions: null
                 }
             ]);
         });
@@ -130,7 +132,9 @@ describe('Sync config create', () => {
                 auto_start: true,
                 track_deletes: false,
                 version: '1',
-                enabled: true
+                enabled: true,
+                post_connection_scripts: null,
+                webhook_subscriptions: null
             });
         });
 
@@ -149,7 +153,9 @@ describe('Sync config create', () => {
                 auto_start: true,
                 track_deletes: false,
                 version: '1',
-                enabled: true
+                enabled: true,
+                post_connection_scripts: null,
+                webhook_subscriptions: null
             });
         });
 

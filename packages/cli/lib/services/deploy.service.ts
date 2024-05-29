@@ -212,7 +212,7 @@ class DeployService {
         const postData: IncomingFlowConfig[] = [];
 
         for (const integration of config) {
-            const { providerConfigKey } = integration;
+            const { providerConfigKey, postConnectionScripts } = integration;
             let { syncs, actions } = integration;
 
             let flows = [...syncs, ...actions];
@@ -304,7 +304,8 @@ class DeployService {
                     },
                     model_schema: JSON.stringify(model_schema),
                     endpoints: flow.endpoints,
-                    webhookSubscriptions: flow.webhookSubscriptions || []
+                    webhookSubscriptions: flow.webhookSubscriptions || [],
+                    postConnectionScripts: postConnectionScripts || []
                 };
 
                 postData.push(body);
