@@ -113,7 +113,7 @@ export const ENVS = z.object({
     SENTRY_DNS: z.string().url().optional(),
 
     // Temporal
-    TEMPORAL_NAMESPACE: z.string().optional(),
+    TEMPORAL_NAMESPACE: z.string().optional().default('default'),
     TEMPORAL_ADDRESS: z.string().optional(),
     TEMPORAL_WORKER_MAX_CONCURRENCY: z.coerce.number().default(500),
 

@@ -5,10 +5,11 @@ import { createRequire } from 'module';
 import * as activities from './activities.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '@nangohq/shared';
 import { isProd, isEnterprise, getLogger } from '@nangohq/utils';
+import { envs } from './env.js';
 
 const logger = getLogger('Jobs.Temporal');
 
-const TEMPORAL_WORKER_MAX_CONCURRENCY = parseInt(process.env['TEMPORAL_WORKER_MAX_CONCURRENCY'] || '0') || 500;
+const TEMPORAL_WORKER_MAX_CONCURRENCY = envs.TEMPORAL_WORKER_MAX_CONCURRENCY;
 
 export class Temporal {
     namespace: string;

@@ -1,8 +1,12 @@
 import express from 'express';
 import type { Express, Request, Response, NextFunction } from 'express';
-import { getRouteHandler as scheduleHandler } from './routes/v1/schedule.js';
-import { handler as healthHandler } from './routes/health.js';
-import { getRouteHandler as outputHandler } from './routes/v1/task/taskId/output.js';
+import { postRouteHandler as postScheduleHandler } from './routes/v1/schedule.js';
+import { postRouteHandler as postSearchHandler } from './routes/v1/search.js';
+import { getRouteHandler as getDequeueHandler } from './routes/v1/dequeue.js';
+import { putRouteHandler as putTaskHandler } from './routes/v1/tasks/taskId.js';
+import { getHandler as getHealthHandler } from './routes/health.js';
+import { getRouteHandler as getOutputHandler } from './routes/v1/tasks/taskId/output.js';
+import { postRouteHandler as postHeartbeatHandler } from './routes/v1/tasks/taskId/heartbeat.js';
 import { getLogger, createRoute } from '@nangohq/utils';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
@@ -33,9 +37,13 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
 
     //TODO: add auth middleware
 
-    createRoute(server, healthHandler);
-    createRoute(server, scheduleHandler(scheduler));
-    createRoute(server, outputHandler(scheduler, eventEmmiter));
+    createRoute(server, getHealthHandler);
+    createRoute(server, postScheduleHandler(scheduler));
+    createRoute(server, postSearchHandler(scheduler));
+    createRoute(server, putTaskHandler(scheduler));
+    createRoute(server, getOutputHandler(scheduler, eventEmmiter));
+    createRoute(server, postHeartbeatHandler(scheduler));
+    createRoute(server, getDequeueHandler(scheduler, eventEmmiter));
 
     server.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
         res.status(500).json({ error: `Internal server error: '${err}'` });
