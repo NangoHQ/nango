@@ -29,7 +29,7 @@ export function getRunnerId(suffix: string): string {
 
 export async function getOrStartRunner(runnerId: string): Promise<Runner> {
     const waitForRunner = async function (runner: Runner): Promise<void> {
-        const timeoutMs = 5000;
+        const timeoutMs = isEnterprise ? 60000 : 5000;
         let healthCheck = false;
         const startTime = Date.now();
         while (!healthCheck && Date.now() - startTime < timeoutMs) {
@@ -56,9 +56,7 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
     }
     const isRender = process.env['IS_RENDER'] === 'true';
     let runner: Runner;
-    if (isEnterprise) {
-        runner = await RemoteRunner.getOrStart(runnerId);
-    } else if (isRender) {
+    if (isRender) {
         runner = await RenderRunner.getOrStart(runnerId);
     } else {
         runner = await LocalRunner.getOrStart(runnerId);
